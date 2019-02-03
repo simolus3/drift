@@ -1,18 +1,11 @@
 language: dart
 
-env:
-  - PKG="sally"
-  - PKG="sally_generator"
-
 dart:
   - stable
 
-matrix:
-  include:
-    - name: "Sally"
-      env: PKG="sally"
-    - name: "Sally generator"
-      env: PGK="sally_generator"
+env:
+  - PKG="sally"
+  - PKG="sally_generator"
 
 script: ./tool/travis.sh dartfmt dartanalyzer test
 
