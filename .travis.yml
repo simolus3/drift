@@ -1,42 +1,20 @@
-# Created with package:mono_repo v1.2.1
 language: dart
 
-jobs:
-  include:
-    - stage: analyze
-      name: "SDK: stable - DIR: sally - TASKS: dartanalyzer ."
-      script: ./tool/travis.sh dartanalyzer
-      env: PKG="sally"
-      dart: stable
-    - stage: analyze
-      name: "SDK: stable - DIR: sally - TASKS: dartfmt -n --set-exit-if-changed ."
-      script: ./tool/travis.sh dartfmt
-      env: PKG="sally"
-      dart: stable
-    - stage: unit_test
-      name: "SDK: stable - DIR: sally - TASKS: pub run test"
-      script: ./tool/travis.sh test
-      env: PKG="sally"
-      dart: stable
-    - stage: analyze
-      name: "SDK: stable - DIR: sally_generator - TASKS: dartanalyzer ."
-      script: ./tool/travis.sh dartanalyzer
-      env: PKG="sally_generator"
-      dart: stable
-    - stage: analyze
-      name: "SDK: stable - DIR: sally_generator - TASKS: dartfmt -n --set-exit-if-changed ."
-      script: ./tool/travis.sh dartfmt
-      env: PKG="sally_generator"
-      dart: stable
-    - stage: unit_test
-      name: "SDK: stable - DIR: sally_generator - TASKS: pub run test"
-      script: ./tool/travis.sh test
-      env: PKG="sally_generator"
-      dart: stable
+env:
+  - PKG="sally"
+  - PKG="sally_generator"
 
-stages:
-  - analyze
-  - unit_test
+dart:
+  - stable
+
+matrix:
+  include:
+    - name: "Sally"
+      env: PKG="sally"
+    - name: "Sally generator"
+      env: PGK="sally_generator"
+
+script: ./tool/travis.sh dartfmt dartanalyzer test
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
