@@ -21,6 +21,6 @@ class Users extends Table {
 class ShopDb extends SallyDb with _$ShopDbMixin {
 
   Future<List<User>> allUsers() => users.select().get();
-  Future<User> userByName(String name) => users.select().where((u) => u.name.equals(name)).single();
+  Future<User> userByName(String name) => (users.select()..where((u) => u.name.equals(name))).single();
 
 }

@@ -7,6 +7,7 @@ class UseData {
 
 abstract class QueryExecutor {
   Future<List<Map<String, dynamic>>> executeQuery(String sql, [dynamic params]);
+  Future<int> executeDelete(String sql, [dynamic params]);
 }
 
 abstract class SallyDb {}

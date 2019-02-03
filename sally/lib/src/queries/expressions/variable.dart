@@ -13,3 +13,16 @@ class Variable extends SqlExpression {
     context.buffer.write('? ');
   }
 }
+
+class HardcodedConstant extends SqlExpression {
+
+  final dynamic value;
+
+  HardcodedConstant(this.value);
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer.write(context.harcodedSqlValue(value));
+  }
+
+}

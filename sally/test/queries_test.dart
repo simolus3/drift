@@ -56,25 +56,40 @@ void main() {
     });
 
     test("generates limit statements", () {
-      users.select().limit(amount: 10).get();
+      (users.select()..limit(amount: 10)).get();
       verify(executor.executeQuery("SELECT * FROM users LIMIT 10 ", any));
     });
 
     test("generates like expressions", () {
-      users.select().where((u) => u.name.like("Dash%")).get();
+      (users.select()..where((u) => u.name.like("Dash%"))).get();
       verify(executor
           .executeQuery("SELECT * FROM users WHERE name LIKE ? ", ["Dash%"]));
     });
 
     test("generates complex predicates", () {
-      users
-          .select()
-          .where((u) => not(u.name.equals("Dash")).and(u.id.isBiggerThan(12)))
+      (users.select()
+            ..where(
+                (u) => not(u.name.equals("Dash")).and(u.id.isBiggerThan(12))))
           .get();
 
       verify(executor.executeQuery(
           "SELECT * FROM users WHERE (NOT name = ? ) AND (id > ? ) ",
           ["Dash", 12]));
+    });
+
+    test("generates expressions from boolean fields", () {
+      (users.select()..where((u) => u.isAwesome.isTrue())).get();
+
+      verify(executor.executeQuery(
+          "SELECT * FROM users WHERE is_awesome = 1", any));
+    });
+  });
+
+  group("Generates DELETE statements", () {
+    test("without any constaints", () {
+      users.delete().performDelete();
+
+      verify(executor.executeDelete("DELETE FROM users ", argThat(isEmpty)));
     });
   });
 }

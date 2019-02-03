@@ -6,7 +6,8 @@ import 'package:sally/src/queries/generation_context.dart';
 import 'package:sally/src/queries/predicates/numbers.dart';
 import 'package:sally/src/queries/predicates/predicate.dart';
 import 'package:sally/src/queries/predicates/text.dart';
-import 'package:sally/src/queries/statements.dart';
+import 'package:sally/src/queries/statement/delete.dart';
+import 'package:sally/src/queries/statement/select.dart';
 
 abstract class TableStructure<UserSpecifiedTable, ResolvedType> {
   QueryExecutor executor;
@@ -18,6 +19,8 @@ abstract class TableStructure<UserSpecifiedTable, ResolvedType> {
 
   SelectStatement<UserSpecifiedTable, ResolvedType> select() =>
       SelectStatement<UserSpecifiedTable, ResolvedType>(this);
+
+  DeleteStatement<UserSpecifiedTable> delete() => DeleteStatement(this);
 }
 
 class StructuredColumn<T> implements SqlExpression, Column<T> {
@@ -51,14 +54,15 @@ class StructuredBoolColumn extends StructuredColumn<bool>
     implements BoolColumn {
   StructuredBoolColumn(String sqlName) : super(sqlName);
 
-  @override
-  Predicate isFalse() {
-    return not(isTrue());
-  }
+  // Booleans will be stored as integers, where 0 means false and 1 means true
 
   @override
+  Predicate isFalse() {
+    return EqualityPredicate(this, HardcodedConstant(0));
+  }
+  @override
   Predicate isTrue() {
-    return BooleanExpressionPredicate(this);
+    return EqualityPredicate(this, HardcodedConstant(1));
   }
 }
 

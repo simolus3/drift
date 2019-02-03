@@ -8,6 +8,10 @@ class _$ShopDbMixin implements QueryExecutor {
     return null;
   }
 
+  Future<int> executeDelete(String sql, [dynamic params]) {
+    return null;
+  }
+
 }
 
 class StructuredUsersTable extends Users with TableStructure<Users, User> {

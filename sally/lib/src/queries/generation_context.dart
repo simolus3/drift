@@ -5,4 +5,8 @@ class GenerationContext {
   void addBoundVariable(dynamic data) {
     boundVariables.add(data);
   }
+
+  String harcodedSqlValue(dynamic value) {
+    return value.toString();
+  }
 }

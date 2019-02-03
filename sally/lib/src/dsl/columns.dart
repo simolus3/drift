@@ -7,18 +7,18 @@ class Column<T> {
   Predicate equals(T compare) => null;
 }
 
-class IntColumn extends Column<int> {
-  Predicate isBiggerThan(int i) => null;
-  Predicate isSmallerThan(int i) => null;
+abstract class IntColumn extends Column<int> {
+  Predicate isBiggerThan(int i);
+  Predicate isSmallerThan(int i);
 }
 
-class BoolColumn extends Column<bool> {
-  Predicate isTrue() => null;
-  Predicate isFalse() => null;
+abstract class BoolColumn extends Column<bool> {
+  Predicate isTrue();
+  Predicate isFalse();
 }
 
-class TextColumn extends Column<String> {
-  Predicate like(String regex) => null;
+abstract class TextColumn extends Column<String> {
+  Predicate like(String regex);
 }
 
 class ColumnBuilder<T> {
