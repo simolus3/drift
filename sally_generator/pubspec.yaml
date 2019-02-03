@@ -1,0 +1,24 @@
+name: sally_generator
+description: A starting point for Dart libraries or applications.
+# version: 1.0.0
+# homepage: https://www.example.com
+# author: Simon Binder <email@example.com>
+
+environment:
+  sdk: '>=2.1.0 <3.0.0'
+
+dependencies:
+  analyzer: '< 0.35.0'
+  recase:
+  built_value:
+  source_gen:
+  sally:
+    path:
+      ../sally
+
+dev_dependencies:
+  test: ^1.0.0
+  built_value_generator:
+  build_runner:
+  build_config:
+  build_test: '>=0.10.0 <0.11.0'
