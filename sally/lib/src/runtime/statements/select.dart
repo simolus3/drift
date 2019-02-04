@@ -5,6 +5,7 @@ import 'package:sally/src/runtime/structure/table_info.dart';
 
 class SelectStatement<UserTable, DataType> extends Query<UserTable> {
   @override
+  // ignore: overridden_fields
   covariant TableInfo<UserTable, DataType> table;
 
   SelectStatement(GeneratedDatabase database, this.table)

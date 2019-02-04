@@ -4,22 +4,22 @@ import 'package:sally_generator/src/model/specified_column.dart';
 import 'package:sally_generator/src/parser/parser.dart';
 import 'package:sally_generator/src/sally_generator.dart';
 
-const String startInt = "integer";
-const String startString = "text";
-const String startBool = "boolean";
+const String startInt = 'integer';
+const String startString = 'text';
+const String startBool = 'boolean';
 
 // todo replace with set literal once dart supports it
 final Set<String> starters = [startInt, startString, startBool].toSet();
 
-const String functionNamed = "named";
-const String functionPrimaryKey = "primaryKey";
-const String functionReferences = "references";
-const String functionAutoIncrement = "autoIncrement";
-const String functionWithLength = "withLength";
+const String functionNamed = 'named';
+const String functionPrimaryKey = 'primaryKey';
+const String functionReferences = 'references';
+const String functionAutoIncrement = 'autoIncrement';
+const String functionWithLength = 'withLength';
 
-const String errorMessage = "This getter does not create a valid column that "
-    "can be parsed by sally. Please refer to the readme from sally to see how "
-    "columns are formed. If you have any questions, feel free to raise an issue.";
+const String errorMessage = 'This getter does not create a valid column that '
+    'can be parsed by sally. Please refer to the readme from sally to see how '
+    'columns are formed. If you have any questions, feel free to raise an issue.';
 
 class ColumnParser extends ParserBase {
   ColumnParser(SallyGenerator generator) : super(generator);
@@ -51,9 +51,9 @@ class ColumnParser extends ParserBase {
 
     String foundStartMethod;
     String foundExplicitName;
-    bool wasDeclaredAsPrimaryKey = false;
+    var wasDeclaredAsPrimaryKey = false;
     // todo parse reference
-    List<ColumnFeature> foundFeatures = [];
+    final foundFeatures = <ColumnFeature>[];
 
     while (true) {
       final methodName = remainingExpr.methodName.name;
@@ -71,7 +71,7 @@ class ColumnParser extends ParserBase {
                 affectedElement: getter.declaredElement,
                 message:
                     "You're setting more than one name here, the first will "
-                    "be used"));
+                    'be used'));
           }
 
           foundExplicitName =
@@ -80,8 +80,8 @@ class ColumnParser extends ParserBase {
                 critical: false,
                 affectedElement: getter.declaredElement,
                 message:
-                    "This table name is cannot be resolved! Please only use "
-                    "a constant string as parameter for .named()."));
+                    'This table name is cannot be resolved! Please only use '
+                    'a constant string as parameter for .named().'));
           });
           break;
         case functionPrimaryKey:
@@ -91,8 +91,8 @@ class ColumnParser extends ParserBase {
           break; // todo: parsing this is going to suck
         case functionWithLength:
           final args = remainingExpr.argumentList;
-          final minArg = findNamedArgument(args, "min");
-          final maxArg = findNamedArgument(args, "max");
+          final minArg = findNamedArgument(args, 'min');
+          final maxArg = findNamedArgument(args, 'max');
 
           foundFeatures.add(LimitingTextLength.withLength(
             min: readIntLiteral(minArg, () {}),

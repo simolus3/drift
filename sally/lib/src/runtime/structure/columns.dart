@@ -23,6 +23,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     implements TextColumn {
+  @override
   final String $name;
 
   GeneratedTextColumn(this.$name);
@@ -34,6 +35,7 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
+  @override
   final String $name;
 
   GeneratedBoolColumn(this.$name);
@@ -48,6 +50,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     implements IntColumn {
+  @override
   final String $name;
 
   GeneratedIntColumn(this.$name);

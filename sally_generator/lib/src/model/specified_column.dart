@@ -54,6 +54,9 @@ class AutoIncrement extends ColumnFeature {
 
   @override
   bool operator ==(other) => other is AutoIncrement;
+
+  @override
+  int get hashCode => 1337420;
 }
 
 abstract class LimitingTextLength extends ColumnFeature

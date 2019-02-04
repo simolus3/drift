@@ -19,13 +19,16 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
 
   GeneratedUsersTable(this.db);
 
-  IntColumn id = GeneratedIntColumn("id");
-  TextColumn name = GeneratedTextColumn("name");
-  BoolColumn isAwesome = GeneratedBoolColumn("is_awesome");
+  @override
+  IntColumn id = GeneratedIntColumn('id');
+  @override
+  TextColumn name = GeneratedTextColumn('name');
+  @override
+  BoolColumn isAwesome = GeneratedBoolColumn('is_awesome');
   @override
   List<Column<dynamic, SqlType>> get $columns => [id, name, isAwesome];
   @override
-  String get $tableName => "users";
+  String get $tableName => 'users';
   @override
   Users get asDslTable => this;
   @override
@@ -36,7 +39,7 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
 
 class TestDatabase extends GeneratedDatabase {
   TestDatabase(QueryExecutor executor)
-      : super(SqlTypeSystem.withDefaults(), executor);
+      : super(const SqlTypeSystem.withDefaults(), executor);
 
   GeneratedUsersTable get users => GeneratedUsersTable(this);
 }

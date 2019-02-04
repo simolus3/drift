@@ -17,40 +17,40 @@ void main() {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
   });
 
-  group("Generates SELECT statements", () {
-    test("generates simple statements", () {
+  group('Generates SELECT statements', () {
+    test('generates simple statements', () {
       db.select(db.users).get();
-      verify(executor.runSelect("SELECT * FROM users;", argThat(isEmpty)));
+      verify(executor.runSelect('SELECT * FROM users;', argThat(isEmpty)));
     });
 
-    test("generates limit statements", () {
+    test('generates limit statements', () {
       (db.select(db.users)..limit(10)).get();
       verify(executor.runSelect(
-          "SELECT * FROM users LIMIT 10;", argThat(isEmpty)));
+          'SELECT * FROM users LIMIT 10;', argThat(isEmpty)));
     });
 
-    test("generates like expressions", () {
-      (db.select(db.users)..where((u) => u.name.like("Dash%"))).get();
+    test('generates like expressions', () {
+      (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
       verify(executor
-          .runSelect("SELECT * FROM users WHERE name LIKE ?;", ["Dash%"]));
+          .runSelect('SELECT * FROM users WHERE name LIKE ?;', ['Dash%']));
     });
 
-    test("generates complex predicates", () {
+    test('generates complex predicates', () {
       (db.select(db.users)
             ..where((u) =>
-                and(not(u.name.equalsVal("Dash")), (u.id.isBiggerThan(12)))))
+                and(not(u.name.equalsVal('Dash')), (u.id.isBiggerThan(12)))))
           .get();
 
       verify(executor.runSelect(
-          "SELECT * FROM users WHERE (NOT name = ?) AND (id > ?);",
-          ["Dash", 12]));
+          'SELECT * FROM users WHERE (NOT name = ?) AND (id > ?);',
+          ['Dash', 12]));
     });
 
-    test("generates expressions from boolean fields", () {
+    test('generates expressions from boolean fields', () {
       (db.select(db.users)..where((u) => u.isAwesome)).get();
 
       verify(executor.runSelect(
-          "SELECT * FROM users WHERE (is_awesome = 1);", argThat(isEmpty)));
+          'SELECT * FROM users WHERE (is_awesome = 1);', argThat(isEmpty)));
     });
   });
 

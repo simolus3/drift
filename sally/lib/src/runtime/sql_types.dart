@@ -27,7 +27,7 @@ class BoolType extends SqlType<bool> {
 
   @override
   String mapToSqlConstant(bool content) {
-    return content ? "1" : "0";
+    return content ? '1' : '0';
   }
 
   @override
@@ -40,7 +40,7 @@ class StringType extends SqlType<String> {
   const StringType();
 
   @override
-  String mapFromDatabaseResponse(response) => response;
+  String mapFromDatabaseResponse(response) => response as String;
 
   @override
   String mapToSqlConstant(String content) {
@@ -56,7 +56,7 @@ class IntType extends SqlType<int> {
   const IntType();
 
   @override
-  int mapFromDatabaseResponse(response) => response;
+  int mapFromDatabaseResponse(response) => response as int;
 
   @override
   String mapToSqlConstant(int content) => content.toString();

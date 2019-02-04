@@ -8,17 +8,21 @@ Expression<BoolType> and(Expression<BoolType> a, Expression<BoolType> b) =>
 Expression<BoolType> not(Expression<BoolType> a) => NotExpression(a);
 
 class AndExpression extends Expression<BoolType> with InfixOperator<BoolType> {
+  @override
   Expression<BoolType> left, right;
 
-  final String operator = "AND";
+  @override
+  final String operator = 'AND';
 
   AndExpression(this.left, this.right);
 }
 
 class OrExpression extends Expression<BoolType> with InfixOperator<BoolType> {
+  @override
   Expression<BoolType> left, right;
 
-  final String operator = "AND";
+  @override
+  final String operator = 'AND';
 
   OrExpression(this.left, this.right);
 }

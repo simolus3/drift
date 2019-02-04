@@ -10,7 +10,7 @@ class Variable<T, S extends SqlType<T>> extends Expression<S> {
   @override
   void writeInto(GenerationContext context) {
     context.introduceVariable(value);
-    context.buffer.write("?");
+    context.buffer.write('?');
   }
 }
 

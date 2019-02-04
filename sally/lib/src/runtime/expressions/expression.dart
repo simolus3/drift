@@ -39,21 +39,24 @@ abstract class InfixOperator<T extends SqlType> implements Expression<T> {
   }
 }
 
-enum ComparisonOperator { less, less_or_equal, equal, more_or_equal, more }
+enum ComparisonOperator { less, lessOrEqual, equal, moreOrEqual, more }
 
 class Comparison extends InfixOperator<BoolType> {
   static const Map<ComparisonOperator, String> operatorNames = {
     ComparisonOperator.less: '<',
-    ComparisonOperator.less_or_equal: '<=',
+    ComparisonOperator.lessOrEqual: '<=',
     ComparisonOperator.equal: '=',
-    ComparisonOperator.more_or_equal: '>=',
+    ComparisonOperator.moreOrEqual: '>=',
     ComparisonOperator.more: '>'
   };
 
+  @override
   final Expression left;
+  @override
   final Expression right;
   final ComparisonOperator op;
 
+  @override
   final bool placeBrackets = false;
 
   @override
@@ -61,5 +64,5 @@ class Comparison extends InfixOperator<BoolType> {
 
   Comparison(this.left, this.op, this.right);
 
-  Comparison.equal(this.left, this.right) : this.op = ComparisonOperator.equal;
+  Comparison.equal(this.left, this.right) : op = ComparisonOperator.equal;
 }

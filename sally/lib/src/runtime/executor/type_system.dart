@@ -11,6 +11,6 @@ class SqlTypeSystem {
   /// Returns the appropriate sql type for the dart type provided as the
   /// generic parameter.
   SqlType<T> forDartType<T>() {
-    return types.singleWhere((t) => t is SqlType<T>);
+    return types.singleWhere((t) => t is SqlType<T>) as SqlType<T>;
   }
 }

@@ -22,7 +22,7 @@ class ParserBase {
           affectedElement: method.declaredElement,
           critical: true,
           message:
-              "This method must have an expression body (use => instead of {return ...})"));
+              'This method must have an expression body (use => instead of {return ...})'));
       return null;
     }
 
@@ -33,7 +33,7 @@ class ParserBase {
     if (!(expression is StringLiteral)) {
       onError();
     } else {
-      String value = (expression as StringLiteral).stringValue;
+      final value = (expression as StringLiteral).stringValue;
       if (value == null)
         onError();
       else
@@ -46,6 +46,7 @@ class ParserBase {
   int readIntLiteral(Expression expression, void onError()) {
     if (!(expression is IntegerLiteral)) {
       onError();
+      // ignore: avoid_returning_null
       return null;
     } else {
       return (expression as IntegerLiteral).value;

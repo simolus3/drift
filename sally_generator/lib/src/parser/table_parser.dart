@@ -12,19 +12,19 @@ class TableParser extends ParserBase {
   TableParser(SallyGenerator generator) : super(generator);
 
   SpecifiedTable parse(ClassElement element) {
-    String sqlName = _parseTableName(element);
+    final sqlName = _parseTableName(element);
 
     return SpecifiedTable(
         fromClass: element,
         columns: _parseColumns(element),
         sqlName: sqlName,
         dartTypeName:
-            "${element.name}_Data" // TODO better name for generated data classes
+            '${element.name}_Data' // TODO better name for generated data classes
         );
   }
 
   String _parseTableName(ClassElement element) {
-    final tableNameGetter = element.getGetter("tableName");
+    final tableNameGetter = element.getGetter('tableName');
     if (tableNameGetter == null) {
       // class does not override tableName. So just use the dart class name
       // instead. Will use placed_orders for a class called PlacedOrders
@@ -38,11 +38,11 @@ class TableParser extends ParserBase {
     final returnExpr = returnExpressionOfMethod(
         tableNameDeclaration.node as MethodDeclaration);
 
-    String tableName = readStringLiteral(returnExpr, () {
+    final tableName = readStringLiteral(returnExpr, () {
       generator.errors.add(SallyError(
           critical: true,
           message:
-              "This getter must return a string literal, and do nothing more",
+              'This getter must return a string literal, and do nothing more',
           affectedElement: tableNameGetter));
     });
 

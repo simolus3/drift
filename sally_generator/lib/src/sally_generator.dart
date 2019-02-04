@@ -8,8 +8,8 @@ import 'package:sally_generator/src/parser/table_parser.dart';
 import 'package:source_gen/source_gen.dart';
 
 class SallyGenerator extends Generator {
-  Map<String, ParsedLibraryResult> _astForLibs = Map();
-  ErrorStore errors = ErrorStore();
+  final Map<String, ParsedLibraryResult> _astForLibs = {};
+  final ErrorStore errors = ErrorStore();
 
   TableParser tableParser;
   ColumnParser columnParser;
@@ -25,12 +25,12 @@ class SallyGenerator extends Generator {
 
   @override
   String generate(LibraryReader library, BuildStep buildStep) {
-    final testUsers = library.findType("Users");
+    final testUsers = library.findType('Users');
 
-    if (testUsers == null) return "";
+    if (testUsers == null) return '';
 
     TableParser(this).parse(testUsers);
 
-    return "";
+    return '';
   }
 }

@@ -9,7 +9,7 @@ class Where extends Component {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write("WHERE ");
+    context.buffer.write('WHERE ');
     predicate.writeInto(context);
   }
 }
