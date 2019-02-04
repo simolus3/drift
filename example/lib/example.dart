@@ -1,5 +1,4 @@
 import 'package:sally/sally.dart';
-import 'package:sally/src/queries/table_structure.dart';
 
 part 'example.g.dart';
 
@@ -18,9 +17,10 @@ class Users extends Table {
 }
 
 @UseData(tables: [Products, Users])
-class ShopDb extends SallyDb with _$ShopDbMixin {
+class ShopDb extends _$ShopDb {
+  ShopDb(SqlTypeSystem typeSystem, QueryExecutor executor) : super(typeSystem, executor);
 
-  Future<List<User>> allUsers() => users.select().get();
-  Future<User> userByName(String name) => (users.select()..where((u) => u.name.equals(name))).single();
+  Future<List<User>> allUsers() => select(users).get();
+  Future<List<User>> userByName(String name) => (select(users)..where((u) => u.name.equalsVal(name))).get();
 
 }

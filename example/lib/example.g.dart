@@ -1,37 +1,10 @@
 part of 'example.dart';
 
-class _$ShopDbMixin implements QueryExecutor {
+class _$ShopDb extends GeneratedDatabase {
 
-  final StructuredUsersTable users = StructuredUsersTable();
+  _$ShopDb(SqlTypeSystem typeSystem, QueryExecutor executor) : super(typeSystem, executor);
 
-  Future<List<Map<String, dynamic>>> executeQuery(String sql, [dynamic params]) {
-    return null;
-  }
-
-  Future<int> executeDelete(String sql, [dynamic params]) {
-    return null;
-  }
-
-}
-
-class StructuredUsersTable extends Users with TableStructure<Users, User> {
-
-
-  @override
-  final StructuredIntColumn id = StructuredIntColumn("id");
-  @override
-  final StructuredTextColumn name = StructuredTextColumn("name");
-
-  @override
-  String get sqlTableName => "users";
-
-  @override
-  User parse(Map<String, dynamic> result) {
-    return User(result["id"], result["name"]);
-  }
-  @override
-  Users get asTable => this;
-
+  UsersTable get users => null;
 }
 
 class User {
@@ -40,5 +13,36 @@ class User {
   final String name;
 
   User(this.id, this.name);
+
+}
+
+class UsersTable extends Users implements TableInfo<Users, User> {
+
+  final GeneratedDatabase db;
+
+  UsersTable(this.db);
+
+  @override
+  List<Column> get $columns => [id, name];
+
+  @override
+  String get $tableName => "users";
+
+  @override
+  IntColumn get id => GeneratedIntColumn("id");
+
+  @override
+  TextColumn get name => GeneratedTextColumn("name");
+
+  @override
+  Users get asDslTable => this;
+
+  @override
+  User map(Map<String, dynamic> data) {
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+
+    return User(intType.mapFromDatabaseResponse(data["id"]), stringType.mapFromDatabaseResponse(data["name"]));
+  }
 
 }
