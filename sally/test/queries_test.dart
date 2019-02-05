@@ -54,12 +54,12 @@ void main() {
     });
   });
 
-  /*
-  group("Generates DELETE statements", () {
-    test("without any constraints", () {
-      users.delete().performDelete();
 
-      verify(executor.executeDelete("DELETE FROM users ", argThat(isEmpty)));
+  group('Generates DELETE statements', () {
+    test('without any constraints', () {
+      db.delete(db.users).go();
+
+      verify(executor.runDelete('DELETE FROM users;', argThat(isEmpty)));
     });
-  });*/
+  });
 }

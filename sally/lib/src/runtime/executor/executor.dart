@@ -1,5 +1,6 @@
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/executor/type_system.dart';
+import 'package:sally/src/runtime/statements/delete.dart';
 import 'package:sally/src/runtime/statements/select.dart';
 
 /// A base class for all generated databases.
@@ -13,6 +14,9 @@ abstract class GeneratedDatabase {
       TableInfo<Table, ReturnType> table) {
     return SelectStatement<Table, ReturnType>(this, table);
   }
+
+  DeleteStatement<Table> delete<Table>(TableInfo<Table, dynamic> table) =>
+      DeleteStatement<Table>(this, table);
 }
 
 abstract class QueryExecutor {

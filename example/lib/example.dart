@@ -4,7 +4,7 @@ part 'example.g.dart';
 
 class Products extends Table {
 
-  IntColumn get id => integer().named("products_id").autoIncrement()();
+  IntColumn get id => integer().named('products_id').autoIncrement()();
   TextColumn get name => text()();
 
 }
