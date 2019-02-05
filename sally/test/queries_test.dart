@@ -46,7 +46,7 @@ void main() {
           ['Dash', 12]));
     });
 
-    test('generates expressions from boolean fields', () {
+    test('generates expressions from boolean columns', () {
       (db.select(db.users)..where((u) => u.isAwesome)).get();
 
       verify(executor.runSelect(
@@ -54,12 +54,22 @@ void main() {
     });
   });
 
-
   group('Generates DELETE statements', () {
     test('without any constraints', () {
       db.delete(db.users).go();
 
       verify(executor.runDelete('DELETE FROM users;', argThat(isEmpty)));
+    });
+
+    test('for complex components', () {
+      (db.delete(db.users)
+            ..where((u) => or(not(u.isAwesome), u.id.isSmallerThan(100)))
+            ..limit(10, offset: 100))
+          .go();
+
+      verify(executor.runDelete(
+          'DELETE FROM users WHERE (NOT (is_awesome = 1)) OR (id < ?) LIMIT 10, 100;',
+          [100]));
     });
   });
 }

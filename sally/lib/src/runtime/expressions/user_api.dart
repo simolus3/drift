@@ -1,1 +1,1 @@
-export 'bools.dart' show and, not;
+export 'bools.dart' show and, or, not;

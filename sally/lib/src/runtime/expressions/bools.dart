@@ -5,6 +5,9 @@ import 'package:sally/src/runtime/sql_types.dart';
 Expression<BoolType> and(Expression<BoolType> a, Expression<BoolType> b) =>
     AndExpression(a, b);
 
+Expression<BoolType> or(Expression<BoolType> a, Expression<BoolType> b) =>
+    OrExpression(a, b);
+
 Expression<BoolType> not(Expression<BoolType> a) => NotExpression(a);
 
 class AndExpression extends Expression<BoolType> with InfixOperator<BoolType> {
@@ -22,7 +25,7 @@ class OrExpression extends Expression<BoolType> with InfixOperator<BoolType> {
   Expression<BoolType> left, right;
 
   @override
-  final String operator = 'AND';
+  final String operator = 'OR';
 
   OrExpression(this.left, this.right);
 }

@@ -5,8 +5,7 @@ class SallyError {
   final String message;
   final Element affectedElement;
 
-  SallyError(
-      {this.critical = false, this.message, this.affectedElement});
+  SallyError({this.critical = false, this.message, this.affectedElement});
 }
 
 class ErrorStore {
