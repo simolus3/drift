@@ -42,7 +42,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build-1.1.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build-1.1.1/lib" />
             </list>
           </value>
         </entry>
@@ -64,7 +63,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_resolvers-0.2.3/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_resolvers-1.0.0/lib" />
             </list>
           </value>
         </entry>
@@ -72,7 +70,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner-1.2.3/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner-1.2.5/lib" />
             </list>
           </value>
         </entry>
@@ -80,7 +77,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner_core-2.0.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner_core-2.0.2/lib" />
             </list>
           </value>
         </entry>
@@ -544,15 +540,11 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/async-2.0.8/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/boolean_selector-1.0.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build-1.1.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build-1.1.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_config-0.3.1+4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_daemon-0.2.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_resolvers-0.2.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_resolvers-1.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner-1.2.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner-1.2.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner_core-2.0.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_runner_core-2.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/build_test-0.10.6/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/built_collection-4.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/built_value-6.3.0/lib" />

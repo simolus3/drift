@@ -1,8 +1,8 @@
-#builders:
-#  sally_generator:
-#    import: "package:sally_generator/generator.dart"
-#    builder_factories: ["sallyBuilder"]
-#    build_extensions: {".dart": [".sally.g.part"]}
-#    auto_apply: dependents
-#    build_to: cache
-#    applies_builders: ["source_gen|combining_builder"]
+builders:
+  sally_generator:
+    import: "package:sally_generator/generator.dart"
+    builder_factories: ["sallyBuilder"]
+    build_extensions: {".dart": [".sally.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

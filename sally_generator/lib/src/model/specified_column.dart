@@ -9,20 +9,24 @@ abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
   /// field name in the table class. It's explicit if `.named()` was called in
   /// the column builder.
   bool get implicit;
+
   String get name;
 
   ColumnName._();
+
   factory ColumnName([updates(ColumnNameBuilder b)]) = _$ColumnName;
 
   factory ColumnName.implicitly(String name) => ColumnName((b) => b
     ..implicit = true
     ..name = name);
+
   factory ColumnName.explicitly(String name) => ColumnName((b) => b
     ..implicit = false
     ..name = name);
 }
 
 class SpecifiedColumn {
+  final String dartGetterName;
   final ColumnType type;
   final ColumnName name;
 
@@ -34,8 +38,15 @@ class SpecifiedColumn {
   final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
+  String get dartTypeName => {
+        ColumnType.boolean: 'bool',
+        ColumnType.text: 'String',
+        ColumnType.integer: 'int'
+      }[type];
+
   const SpecifiedColumn(
       {this.type,
+      this.dartGetterName,
       this.name,
       this.declaredAsPrimaryKey = false,
       this.features = const []});
@@ -63,10 +74,12 @@ abstract class LimitingTextLength extends ColumnFeature
     implements Built<LimitingTextLength, LimitingTextLengthBuilder> {
   @nullable
   int get minLength;
+
   @nullable
   int get maxLength;
 
   LimitingTextLength._();
+
   factory LimitingTextLength(void updates(LimitingTextLengthBuilder b)) =
       _$LimitingTextLength;
 

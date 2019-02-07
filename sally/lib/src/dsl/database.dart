@@ -1,6 +1,5 @@
-class UseData {
+class UseSally {
   final List<Type> tables;
-  final int schemaVersion;
 
-  const UseData({this.tables, this.schemaVersion = 1});
+  const UseSally({this.tables});
 }

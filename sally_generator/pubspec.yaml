@@ -12,6 +12,8 @@ dependencies:
   recase:
   built_value:
   source_gen:
+  build_runner:
+  build_config:
   sally:
     path:
       ../sally
@@ -19,6 +21,4 @@ dependencies:
 dev_dependencies:
   test: ^1.0.0
   built_value_generator:
-  build_runner:
-  build_config:
   build_test: '>=0.10.0 <0.11.0'

@@ -1,48 +1,19 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'example.dart';
 
-class _$ShopDb extends GeneratedDatabase {
+// **************************************************************************
+// SallyGenerator
+// **************************************************************************
 
-  _$ShopDb(SqlTypeSystem typeSystem, QueryExecutor executor) : super(typeSystem, executor);
-
-  UsersTable get users => null;
-}
-
-class User {
-
+class Products_Data {
   final int id;
   final String name;
-
-  User(this.id, this.name);
-
+  Products_Data({this.id, this.name});
 }
 
-class UsersTable extends Users implements TableInfo<Users, User> {
-
-  final GeneratedDatabase db;
-
-  UsersTable(this.db);
-
-  @override
-  List<Column> get $columns => [id, name];
-
-  @override
-  String get $tableName => "users";
-
-  @override
-  IntColumn get id => GeneratedIntColumn("id");
-
-  @override
-  TextColumn get name => GeneratedTextColumn("name");
-
-  @override
-  Users get asDslTable => this;
-
-  @override
-  User map(Map<String, dynamic> data) {
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-
-    return User(intType.mapFromDatabaseResponse(data["id"]), stringType.mapFromDatabaseResponse(data["name"]));
-  }
-
+class Users_Data {
+  final int id;
+  final String name;
+  Users_Data({this.id, this.name});
 }

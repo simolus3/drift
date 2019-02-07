@@ -3,6 +3,7 @@ import 'package:sally_generator/src/errors.dart';
 import 'package:sally_generator/src/model/specified_column.dart';
 import 'package:sally_generator/src/parser/parser.dart';
 import 'package:sally_generator/src/sally_generator.dart';
+import 'package:recase/recase.dart';
 
 const String startInt = 'integer';
 const String startString = 'text';
@@ -114,11 +115,12 @@ class ColumnParser extends ParserBase {
     if (foundExplicitName != null) {
       name = ColumnName.explicitly(foundExplicitName);
     } else {
-      name = ColumnName.implicitly(getter.name.name);
+      name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
     }
 
     return SpecifiedColumn(
         type: _startMethodToColumnType(foundStartMethod),
+        dartGetterName: getter.name.name,
         name: name,
         declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
         features: foundFeatures);

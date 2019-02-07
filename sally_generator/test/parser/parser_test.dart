@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:sally_generator/src/model/specified_column.dart';
-import 'package:sally_generator/src/parser/column_parser.dart';
 import 'package:sally_generator/src/parser/table_parser.dart';
 import 'package:sally_generator/src/sally_generator.dart';
 import 'package:test_api/test_api.dart';
@@ -41,7 +40,6 @@ void main() async {
 
   setUp(() {
     generator = SallyGenerator();
-    generator.columnParser = ColumnParser(generator);
   });
 
   group('SQL table name', () {

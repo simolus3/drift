@@ -1,5 +1,6 @@
 import 'package:sally/sally.dart';
 
+part 'example.g.dart.custom';
 part 'example.g.dart';
 
 class Products extends Table {
@@ -16,7 +17,7 @@ class Users extends Table {
 
 }
 
-@UseData(tables: [Products, Users])
+@UseSally(tables: [Products, Users])
 class ShopDb extends _$ShopDb {
   ShopDb(SqlTypeSystem typeSystem, QueryExecutor executor) : super(typeSystem, executor);
 
