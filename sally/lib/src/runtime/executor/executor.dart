@@ -1,5 +1,6 @@
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/executor/type_system.dart';
+import 'package:sally/src/runtime/migration.dart';
 import 'package:sally/src/runtime/statements/delete.dart';
 import 'package:sally/src/runtime/statements/select.dart';
 
@@ -7,6 +8,9 @@ import 'package:sally/src/runtime/statements/select.dart';
 abstract class GeneratedDatabase {
   final SqlTypeSystem typeSystem;
   final QueryExecutor executor;
+
+  int get schemaVersion;
+  MigrationStrategy get migration;
 
   GeneratedDatabase(this.typeSystem, this.executor);
 
@@ -23,7 +27,7 @@ abstract class QueryExecutor {
   Future<bool> ensureOpen();
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List<dynamic> args);
-  List<int> runCreate(String statement, List<dynamic> args);
+  List<int> runInsert(String statement, List<dynamic> args);
   Future<int> runUpdate(String statement, List<dynamic> args);
   Future<int> runDelete(String statement, List<dynamic> args);
 }

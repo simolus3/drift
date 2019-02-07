@@ -12,3 +12,4 @@ export 'package:sally/src/runtime/statements/select.dart';
 export 'package:sally/src/runtime/structure/columns.dart';
 export 'package:sally/src/runtime/structure/table_info.dart';
 export 'package:sally/src/runtime/sql_types.dart';
+export 'package:sally/src/runtime/migration.dart';

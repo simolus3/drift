@@ -1,4 +1,5 @@
 import 'package:sally/sally.dart';
+import 'package:sally/src/runtime/migration.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -20,11 +21,13 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
   GeneratedUsersTable(this.db);
 
   @override
-  IntColumn id = GeneratedIntColumn('id');
+  Set<Column> get $primaryKey => Set()..add(id);
   @override
-  TextColumn name = GeneratedTextColumn('name');
+  IntColumn id = GeneratedIntColumn('id', false);
   @override
-  BoolColumn isAwesome = GeneratedBoolColumn('is_awesome');
+  TextColumn name = GeneratedTextColumn('name', false);
+  @override
+  BoolColumn isAwesome = GeneratedBoolColumn('is_awesome', true);
   @override
   List<Column<dynamic, SqlType>> get $columns => [id, name, isAwesome];
   @override
@@ -42,4 +45,10 @@ class TestDatabase extends GeneratedDatabase {
       : super(const SqlTypeSystem.withDefaults(), executor);
 
   GeneratedUsersTable get users => GeneratedUsersTable(this);
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy();
+
+  @override
+  int get schemaVersion => 1;
 }

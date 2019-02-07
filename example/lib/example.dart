@@ -23,4 +23,9 @@ class ShopDb extends _$ShopDb {
   Future<List<User>> allUsers() => select(users).get();
   Future<List<User>> userByName(String name) => (select(users)..where((u) => u.name.equalsVal(name))).get();
 
+  @override
+  MigrationStrategy get migration => MigrationStrategy();
+  @override
+  int get schemaVersion => 1;
+
 }

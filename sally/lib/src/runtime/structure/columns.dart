@@ -6,7 +6,10 @@ import 'package:sally/src/runtime/expressions/variables.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
-  String get $name;
+  final String $name;
+  final bool $nullable;
+
+  GeneratedColumn(this.$name, this.$nullable);
 
   @override
   Expression<BoolType> equals(Expression<S> compare) =>
@@ -23,10 +26,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     implements TextColumn {
-  @override
-  final String $name;
-
-  GeneratedTextColumn(this.$name);
+  GeneratedTextColumn(String name, bool nullable) : super(name, nullable);
 
   @override
   Expression<BoolType> like(String regex) =>
@@ -35,10 +35,7 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
-  @override
-  final String $name;
-
-  GeneratedBoolColumn(this.$name);
+  GeneratedBoolColumn(String name, bool nullable) : super(name, nullable);
 
   @override
   void writeInto(GenerationContext context) {
@@ -50,10 +47,11 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     implements IntColumn {
-  @override
-  final String $name;
+  final bool hasAutoIncrement;
 
-  GeneratedIntColumn(this.$name);
+  GeneratedIntColumn(String name, bool nullable,
+      {this.hasAutoIncrement = false})
+      : super(name, nullable);
 
   @override
   Expression<BoolType> isBiggerThan(int i) =>
