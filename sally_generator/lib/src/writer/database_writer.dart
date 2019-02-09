@@ -3,7 +3,6 @@ import 'package:sally_generator/src/model/specified_database.dart';
 import 'package:sally_generator/src/writer/table_writer.dart';
 
 class DatabaseWriter {
-
   final SpecifiedDatabase db;
 
   DatabaseWriter(this.db);
@@ -17,7 +16,7 @@ class DatabaseWriter {
     // Write the database class
     final className = '_\$${db.fromClass.name}';
     buffer.write('abstract class $className extends GeneratedDatabase {\n'
-      '$className() : super(const SqlTypeSystem.withDefaults(), null); \n');
+        '$className() : super(const SqlTypeSystem.withDefaults(), null); \n');
 
     final tableGetters = <String>[];
 
@@ -26,7 +25,8 @@ class DatabaseWriter {
       tableGetters.add(tableFieldName);
       final tableClassName = table.tableInfoName;
 
-      buffer.write('$tableClassName get $tableFieldName => $tableClassName(this);');
+      buffer.write(
+          '$tableClassName get $tableFieldName => $tableClassName(this);');
     }
 
     // Write List of tables, close bracket for class

@@ -5,6 +5,7 @@ class SpecifiedTable {
   final ClassElement fromClass;
   final List<SpecifiedColumn> columns;
   final String sqlName;
+
   /// The name for the data class associated with this table
   final String dartTypeName;
 

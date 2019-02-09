@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/executor/type_system.dart';
 import 'package:sally/src/runtime/migration.dart';
@@ -19,14 +20,15 @@ abstract class GeneratedDatabase {
   /// Creates a migrator with the provided query executor. We sometimes can't
   /// use the regular [GeneratedDatabase.executor] because migration happens
   /// before that executor is ready.
-  Migrator _createMigrator(QueryExecutor executor) => Migrator(this, executor);
+  Migrator _createMigrator(SqlExecutor executor) => Migrator(this, executor);
 
-  Future<void> handleDatabaseCreation(QueryExecutor executor) {
+  Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
     final migrator = _createMigrator(executor);
     return migration.onCreate(migrator);
   }
 
-  Future<void> handleDatabaseVersionChange(QueryExecutor executor, int from, int to) {
+  Future<void> handleDatabaseVersionChange(
+      {@required SqlExecutor executor, int from, int to}) {
     final migrator = _createMigrator(executor);
     return migration.onUpgrade(migrator, from, to);
   }
@@ -41,7 +43,6 @@ abstract class GeneratedDatabase {
 }
 
 abstract class QueryExecutor {
-
   GeneratedDatabase databaseInfo;
 
   Future<bool> ensureOpen();
@@ -50,4 +51,5 @@ abstract class QueryExecutor {
   Future<int> runInsert(String statement, List<dynamic> args);
   Future<int> runUpdate(String statement, List<dynamic> args);
   Future<int> runDelete(String statement, List<dynamic> args);
+  Future<void> runCustom(String statement);
 }

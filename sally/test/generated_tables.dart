@@ -21,15 +21,15 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
   GeneratedUsersTable(this.db);
 
   @override
-  Set<Column> get $primaryKey => Set()..add(id);
+  Set<GeneratedColumn> get $primaryKey => Set()..add(id);
   @override
-  IntColumn id = GeneratedIntColumn('id', false);
+  GeneratedIntColumn id = GeneratedIntColumn('id', false);
   @override
-  TextColumn name = GeneratedTextColumn('name', false);
+  GeneratedTextColumn name = GeneratedTextColumn('name', false);
   @override
-  BoolColumn isAwesome = GeneratedBoolColumn('is_awesome', true);
+  GeneratedBoolColumn isAwesome = GeneratedBoolColumn('is_awesome', true);
   @override
-  List<Column<dynamic, SqlType>> get $columns => [id, name, isAwesome];
+  List<GeneratedColumn<dynamic, SqlType>> get $columns => [id, name, isAwesome];
   @override
   String get $tableName => 'users';
   @override

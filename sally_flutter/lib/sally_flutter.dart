@@ -36,11 +36,13 @@ class FlutterQueryExecutor extends QueryExecutor {
       resolvedPath,
       version: databaseInfo.schemaVersion,
       onCreate: (db, version) {
-        return databaseInfo.handleDatabaseCreation(_SqfliteExecutor(db));
+        return databaseInfo.handleDatabaseCreation(
+          executor: (sql) => db.execute(sql),
+        );
       },
       onUpgrade: (db, from, to) {
         return databaseInfo.handleDatabaseVersionChange(
-            _SqfliteExecutor(db), from, to);
+            executor: (sql) => db.execute(sql), from: from, to: to);
       },
     );
 
@@ -66,35 +68,9 @@ class FlutterQueryExecutor extends QueryExecutor {
   Future<int> runUpdate(String statement, List args) {
     return _db.rawUpdate(statement, args);
   }
-}
-
-class _SqfliteExecutor extends QueryExecutor {
-  final Database _db;
-
-  _SqfliteExecutor(this._db);
 
   @override
-  Future<bool> ensureOpen() async {
-    return true;
-  }
-
-  @override
-  Future<int> runDelete(String statement, List args) {
-    return _db.rawDelete(statement, args);
-  }
-
-  @override
-  Future<int> runInsert(String statement, List args) {
-    return _db.rawInsert(statement, args);
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
-    return _db.rawQuery(statement, args);
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List args) {
-    return _db.rawUpdate(statement, args);
+  Future<void> runCustom(String statement) {
+    return _db.execute(statement);
   }
 }

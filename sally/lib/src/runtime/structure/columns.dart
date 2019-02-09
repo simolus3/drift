@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
@@ -10,6 +11,22 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   final bool $nullable;
 
   GeneratedColumn(this.$name, this.$nullable);
+
+  /// Writes the definition of this column, as defined
+  /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
+  /// buffer.
+  void writeColumnDefinition(StringBuffer into) {
+    into
+      ..write('${$name} $typeName ')
+      ..write($nullable ? 'NULL' : 'NOT NULL')
+      ..write(' ');
+    writeCustomConstraints(into);
+  }
+
+  @visibleForOverriding
+  void writeCustomConstraints(StringBuffer into) {}
+  @visibleForOverriding
+  String get typeName;
 
   @override
   Expression<BoolType> equals(Expression<S> compare) =>
@@ -31,11 +48,22 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   @override
   Expression<BoolType> like(String regex) =>
       LikeOperator(this, Variable<String, StringType>(regex));
+
+  @override
+  final String typeName = 'VARCHAR';
 }
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
   GeneratedBoolColumn(String name, bool nullable) : super(name, nullable);
+
+  @override
+  final String typeName = 'BOOLEAN';
+
+  @override
+  void writeCustomConstraints(StringBuffer into) {
+    into.write('CHECK (${$name} in (0, 1))');
+  }
 
   @override
   void writeInto(GenerationContext context) {
@@ -48,6 +76,9 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     implements IntColumn {
   final bool hasAutoIncrement;
+
+  @override
+  final String typeName = 'INTEGER';
 
   GeneratedIntColumn(String name, bool nullable,
       {this.hasAutoIncrement = false})

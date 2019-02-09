@@ -6,11 +6,11 @@ abstract class TableInfo<TableDsl, DataClass> {
 
   /// The primary key of this table. Can be null if no custom primary key has
   /// been specified
-  Set<Column> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => null;
 
   /// The table name in the sql table
   String get $tableName;
-  List<Column> get $columns;
+  List<GeneratedColumn> get $columns;
 
   DataClass map(Map<String, dynamic> data);
 }

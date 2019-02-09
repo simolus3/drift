@@ -16,17 +16,17 @@ class _$ProductsTable extends Products implements TableInfo<Products, Product> {
   final GeneratedDatabase db;
   _$ProductsTable(this.db);
   @override
-  IntColumn get id => GeneratedIntColumn('products_id', false);
+  GeneratedIntColumn get id => GeneratedIntColumn('products_id', false);
   @override
-  TextColumn get name => GeneratedTextColumn('name', false);
+  GeneratedTextColumn get name => GeneratedTextColumn('name', false);
   @override
-  List<Column> get $columns => [id, name];
+  List<GeneratedColumn> get $columns => [id, name];
   @override
   Products get asDslTable => this;
   @override
   String get $tableName => 'products';
   @override
-  Set<Column> get $primaryKey => Set();
+  Set<GeneratedColumn> get $primaryKey => Set();
   @override
   Product map(Map<String, dynamic> data) {
     final intType = db.typeSystem.forDartType<int>();
@@ -48,17 +48,17 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
   final GeneratedDatabase db;
   _$UsersTable(this.db);
   @override
-  IntColumn get id => GeneratedIntColumn('id', false);
+  GeneratedIntColumn get id => GeneratedIntColumn('id', false);
   @override
-  TextColumn get name => GeneratedTextColumn('name', false);
+  GeneratedTextColumn get name => GeneratedTextColumn('name', false);
   @override
-  List<Column> get $columns => [id, name];
+  List<GeneratedColumn> get $columns => [id, name];
   @override
   Users get asDslTable => this;
   @override
   String get $tableName => 'users';
   @override
-  Set<Column> get $primaryKey => Set();
+  Set<GeneratedColumn> get $primaryKey => Set();
   @override
   User map(Map<String, dynamic> data) {
     final intType = db.typeSystem.forDartType<int>();

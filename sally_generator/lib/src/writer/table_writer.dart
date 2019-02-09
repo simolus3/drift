@@ -47,25 +47,27 @@ class TableWriter {
       final isNullable = false;
 
       // @override
-      // IntColumn get id => GeneratedIntColumn('sql_name', isNullable);
+      // GeneratedIntColumn get id => GeneratedIntColumn('sql_name', isNullable);
       buffer
         ..write('@override \n')
-        ..write('${column.dslColumnTypeName} get ${column.dartGetterName} => '
-                '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable);\n');
+        ..write('${column.implColumnTypeName} get ${column.dartGetterName} => '
+            '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable);\n');
     }
 
     // Generate $columns, $tableName, asDslTable getters
-    final columnsWithGetters = table.columns.map((c) => c.dartGetterName).join(', ');
+    final columnsWithGetters =
+        table.columns.map((c) => c.dartGetterName).join(', ');
 
     buffer
-        ..write('@override\nList<Column> get \$columns => [$columnsWithGetters];\n')
-        ..write('@override\n$tableDslName get asDslTable => this;\n')
-        ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n');
+      ..write(
+          '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
+      ..write('@override\n$tableDslName get asDslTable => this;\n')
+      ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n');
 
     // todo replace set syntax with literal once dart supports it
     // write primary key getter: Set<Column> get $primaryKey => Set().add(id);
     final primaryKeyColumns = table.primaryKey.map((c) => c.dartGetterName);
-    buffer.write('@override\nSet<Column> get \$primaryKey => Set()');
+    buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => Set()');
     for (var pkColumn in primaryKeyColumns) {
       buffer.write('..add($pkColumn)');
     }
@@ -80,7 +82,8 @@ class TableWriter {
   void _writeMappingMethod(StringBuffer buffer) {
     final dataClassName = table.dartTypeName;
 
-    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data) {\n');
+    buffer
+        .write('@override\n$dataClassName map(Map<String, dynamic> data) {\n');
 
     final dartTypeToResolver = <String, String>{};
 
@@ -90,7 +93,8 @@ class TableWriter {
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
 
-      buffer.write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
+      buffer
+          .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
     }
 
     // finally, the mighty constructor invocation:
@@ -100,7 +104,8 @@ class TableWriter {
       // id: intType.mapFromDatabaseResponse(data["id])
       final getter = column.dartGetterName;
       final resolver = dartTypeToResolver[column.dartTypeName];
-      final typeParser = '$resolver.mapFromDatabaseResponse(data[\'${column.name.name}\'])';
+      final typeParser =
+          '$resolver.mapFromDatabaseResponse(data[\'${column.name.name}\'])';
 
       buffer.write('$getter: $typeParser,');
     }

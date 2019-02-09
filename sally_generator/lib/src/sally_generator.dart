@@ -56,10 +56,10 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
       }
     }
 
-    if (_foundTables.isEmpty)
-      return '';
+    if (_foundTables.isEmpty) return '';
 
-    final specifiedDb = SpecifiedDatabase(element as ClassElement, tablesForThisDb);
+    final specifiedDb =
+        SpecifiedDatabase(element as ClassElement, tablesForThisDb);
 
     final buffer = StringBuffer();
     DatabaseWriter(specifiedDb).write(buffer);

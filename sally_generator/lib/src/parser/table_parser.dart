@@ -19,8 +19,7 @@ class TableParser extends ParserBase {
         fromClass: element,
         columns: _parseColumns(element),
         sqlName: sqlName,
-        dartTypeName: dataClassNameForClassName(element.name)
-    );
+        dartTypeName: dataClassNameForClassName(element.name));
   }
 
   String _parseTableName(ClassElement element) {
