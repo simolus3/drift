@@ -66,7 +66,7 @@ class Migrator {
     final sql = StringBuffer();
 
     // ignore: cascade_invocations
-    sql.write('ALTER TABLE ${table.$tableName} ADD COLUMN');
+    sql.write('ALTER TABLE ${table.$tableName} ADD COLUMN ');
     column.writeColumnDefinition(sql);
 
     return issueCustomQuery(sql.toString());
