@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:sally_generator/src/model/specified_column.dart';
+import 'package:sally_generator/src/parser/column_parser.dart';
 import 'package:sally_generator/src/parser/table_parser.dart';
 import 'package:sally_generator/src/sally_generator.dart';
 import 'package:test_api/test_api.dart';
@@ -40,6 +41,9 @@ void main() async {
 
   setUp(() {
     generator = SallyGenerator();
+    generator
+      ..columnParser = ColumnParser(generator)
+      ..tableParser = TableParser(generator);
   });
 
   group('SQL table name', () {
@@ -92,7 +96,7 @@ void main() async {
     test('should only parse max length when relevant', () {
       final table = TableParser(generator).parse(testLib.getType('Users'));
       final idColumn =
-          table.columns.singleWhere((col) => col.name.name == 'onlyMax');
+          table.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
 
       expect(
           idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
