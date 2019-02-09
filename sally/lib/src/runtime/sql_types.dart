@@ -44,7 +44,8 @@ class StringType extends SqlType<String> {
 
   @override
   String mapToSqlConstant(String content) {
-    // TODO: implement mapToSqlConstant
+    // TODO: implement mapToSqlConstant, we would probably have to take care
+    // of sql injection vulnerabilities here
     return null;
   }
 

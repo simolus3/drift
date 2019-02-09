@@ -12,7 +12,15 @@ class Users extends Table {
   TextColumn get name => text().withLength(min: 6, max: 32)();
 }
 
-@UseSally(tables: [Products, Users])
+class Todos extends Table {
+
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 6, max: 10)();
+  TextColumn get content => text().named('body')();
+
+}
+
+@UseSally(tables: [Products, Users, Todos])
 class ShopDb extends _$ShopDb {
   Future<List<User>> allUsers() => select(users).get();
   Future<List<User>> userByName(String name) =>
