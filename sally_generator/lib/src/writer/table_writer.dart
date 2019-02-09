@@ -44,14 +44,14 @@ class TableWriter {
 
     // Generate the columns
     for (var column in table.columns) {
-      final isPrimaryKey = table.primaryKey.contains(column); // todo
+      final isNullable = false;
 
       // @override
-      // IntColumn get id => GeneratedIntColumn('sql_name', isPrimaryKey);
+      // IntColumn get id => GeneratedIntColumn('sql_name', isNullable);
       buffer
         ..write('@override \n')
         ..write('${column.dslColumnTypeName} get ${column.dartGetterName} => '
-                '${column.implColumnTypeName}(\'${column.name.name}\', $isPrimaryKey);\n');
+                '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable);\n');
     }
 
     // Generate $columns, $tableName, asDslTable getters

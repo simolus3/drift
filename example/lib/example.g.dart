@@ -6,14 +6,13 @@ part of 'example.dart';
 // SallyGenerator
 // **************************************************************************
 
-class ProductsData {
+class Product {
   final int id;
   final String name;
-  ProductsData({this.id, this.name});
+  Product({this.id, this.name});
 }
 
-class _$ProductsTable extends Products
-    implements TableInfo<Products, ProductsData> {
+class _$ProductsTable extends Products implements TableInfo<Products, Product> {
   final GeneratedDatabase db;
   _$ProductsTable(this.db);
   @override
@@ -29,23 +28,23 @@ class _$ProductsTable extends Products
   @override
   Set<Column> get $primaryKey => Set();
   @override
-  ProductsData map(Map<String, dynamic> data) {
+  Product map(Map<String, dynamic> data) {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    return ProductsData(
+    return Product(
       id: intType.mapFromDatabaseResponse(data['products_id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
     );
   }
 }
 
-class UsersData {
+class User {
   final int id;
   final String name;
-  UsersData({this.id, this.name});
+  User({this.id, this.name});
 }
 
-class _$UsersTable extends Users implements TableInfo<Users, UsersData> {
+class _$UsersTable extends Users implements TableInfo<Users, User> {
   final GeneratedDatabase db;
   _$UsersTable(this.db);
   @override
@@ -61,12 +60,18 @@ class _$UsersTable extends Users implements TableInfo<Users, UsersData> {
   @override
   Set<Column> get $primaryKey => Set();
   @override
-  UsersData map(Map<String, dynamic> data) {
+  User map(Map<String, dynamic> data) {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    return UsersData(
+    return User(
       id: intType.mapFromDatabaseResponse(data['id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
     );
   }
+}
+
+abstract class _$ShopDb extends GeneratedDatabase {
+  _$ShopDb() : super(const SqlTypeSystem.withDefaults(), null);
+  _$ProductsTable get products => _$ProductsTable(this);
+  _$UsersTable get users => _$UsersTable(this);
 }

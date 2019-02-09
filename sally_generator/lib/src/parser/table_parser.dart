@@ -4,6 +4,7 @@ import 'package:sally_generator/src/errors.dart';
 import 'package:sally_generator/src/model/specified_column.dart';
 import 'package:sally_generator/src/model/specified_table.dart';
 import 'package:sally_generator/src/parser/parser.dart';
+import 'package:sally_generator/src/utils/names.dart';
 import 'package:sally_generator/src/utils/type_utils.dart';
 import 'package:sally_generator/src/sally_generator.dart'; // ignore: implementation_imports
 import 'package:recase/recase.dart';
@@ -18,9 +19,8 @@ class TableParser extends ParserBase {
         fromClass: element,
         columns: _parseColumns(element),
         sqlName: sqlName,
-        dartTypeName:
-            '${element.name}Data' // TODO better name for generated data classes
-        );
+        dartTypeName: dataClassNameForClassName(element.name)
+    );
   }
 
   String _parseTableName(ClassElement element) {

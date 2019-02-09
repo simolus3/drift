@@ -5,10 +5,11 @@ import 'package:analyzer/src/dart/analysis/results.dart'; // ignore: implementat
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:sally_generator/src/errors.dart';
+import 'package:sally_generator/src/model/specified_database.dart';
 import 'package:sally_generator/src/model/specified_table.dart';
 import 'package:sally_generator/src/parser/column_parser.dart';
 import 'package:sally_generator/src/parser/table_parser.dart';
-import 'package:sally_generator/src/writer/table_writer.dart';
+import 'package:sally_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 class SallyGenerator extends GeneratorForAnnotation<UseSally> {
@@ -40,6 +41,8 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
     tableParser ??= TableParser(this);
     columnParser ??= ColumnParser(this);
 
+    final tablesForThisDb = <SpecifiedTable>[];
+
     for (var table in types) {
       if (!tableTypeChecker.isAssignableFrom(table.element)) {
         errors.add(SallyError(
@@ -47,17 +50,19 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
             message: 'The type $table is not a sally table',
             affectedElement: element));
       } else {
-        _foundTables[table] = tableParser.parse(table.element as ClassElement);
+        final specifiedTable = tableParser.parse(table.element as ClassElement);
+        _foundTables[table] = specifiedTable;
+        tablesForThisDb.add(specifiedTable);
       }
     }
 
     if (_foundTables.isEmpty)
       return '';
 
+    final specifiedDb = SpecifiedDatabase(element as ClassElement, tablesForThisDb);
+
     final buffer = StringBuffer();
-    for (var tbl in _foundTables.values) {
-      TableWriter(tbl).writeInto(buffer);
-    }
+    DatabaseWriter(specifiedDb).write(buffer);
 
     return buffer.toString();
   }
