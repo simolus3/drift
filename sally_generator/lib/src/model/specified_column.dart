@@ -44,6 +44,18 @@ class SpecifiedColumn {
         ColumnType.integer: 'int'
       }[type];
 
+  String get dslColumnTypeName => {
+      ColumnType.boolean: 'BoolColumn',
+      ColumnType.text: 'TextColumn',
+      ColumnType.integer: 'IntColumn'
+  }[type];
+
+  String get implColumnTypeName => {
+    ColumnType.boolean: 'GeneratedBoolColumn',
+    ColumnType.text: 'GeneratedTextColumn',
+    ColumnType.integer: 'GeneratedIntColumn'
+  }[type];
+
   const SpecifiedColumn(
       {this.type,
       this.dartGetterName,

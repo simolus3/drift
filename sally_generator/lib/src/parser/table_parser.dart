@@ -19,7 +19,7 @@ class TableParser extends ParserBase {
         columns: _parseColumns(element),
         sqlName: sqlName,
         dartTypeName:
-            '${element.name}_Data' // TODO better name for generated data classes
+            '${element.name}Data' // TODO better name for generated data classes
         );
   }
 
@@ -53,7 +53,7 @@ class TableParser extends ParserBase {
     return element.fields
         .where((field) => isColumn(field.type) && field.getter != null)
         .map((field) {
-      var node = generator.loadElementDeclaration(field.getter).node;
+      final node = generator.loadElementDeclaration(field.getter).node;
 
       return node as MethodDeclaration;
     });
