@@ -12,6 +12,8 @@ abstract class GeneratedDatabase {
   int get schemaVersion;
   MigrationStrategy get migration;
 
+  List<TableInfo> get allTables;
+
   GeneratedDatabase(this.typeSystem, this.executor);
 
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(

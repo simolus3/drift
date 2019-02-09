@@ -74,4 +74,6 @@ abstract class _$ShopDb extends GeneratedDatabase {
   _$ShopDb() : super(const SqlTypeSystem.withDefaults(), null);
   _$ProductsTable get products => _$ProductsTable(this);
   _$UsersTable get users => _$UsersTable(this);
+  @override
+  List<TableInfo> get allTables => [products, users];
 }

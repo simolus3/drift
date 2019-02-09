@@ -51,4 +51,7 @@ class TestDatabase extends GeneratedDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  List<TableInfo> get allTables => [users];
 }
