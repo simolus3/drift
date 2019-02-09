@@ -1,3 +1,4 @@
+import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/structure/columns.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
@@ -21,6 +22,12 @@ class MigrationStrategy {
 }
 
 class Migrator {
+
+  final GeneratedDatabase _db;
+  final QueryExecutor _customExecutor;
+
+  Migrator(this._db, this._customExecutor);
+
   Future<void> createAllTables() async {}
 
   Future<void> createTable(TableInfo table) async {}

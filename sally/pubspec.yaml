@@ -5,7 +5,7 @@ description: A starting point for Dart libraries or applications.
 # author: Simon Binder <email@example.com>
 
 environment:
-  sdk: '>=2.1.0 <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
   meta: '>= 1.0.0 <2.0.0'

@@ -16,6 +16,21 @@ abstract class GeneratedDatabase {
 
   GeneratedDatabase(this.typeSystem, this.executor);
 
+  /// Creates a migrator with the provided query executor. We sometimes can't
+  /// use the regular [GeneratedDatabase.executor] because migration happens
+  /// before that executor is ready.
+  Migrator _createMigrator(QueryExecutor executor) => Migrator(this, executor);
+
+  Future<void> handleDatabaseCreation(QueryExecutor executor) {
+    final migrator = _createMigrator(executor);
+    return migration.onCreate(migrator);
+  }
+
+  Future<void> handleDatabaseVersionChange(QueryExecutor executor, int from, int to) {
+    final migrator = _createMigrator(executor);
+    return migration.onUpgrade(migrator, from, to);
+  }
+
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(
       TableInfo<Table, ReturnType> table) {
     return SelectStatement<Table, ReturnType>(this, table);
@@ -26,10 +41,13 @@ abstract class GeneratedDatabase {
 }
 
 abstract class QueryExecutor {
+
+  GeneratedDatabase databaseInfo;
+
   Future<bool> ensureOpen();
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List<dynamic> args);
-  List<int> runInsert(String statement, List<dynamic> args);
+  Future<int> runInsert(String statement, List<dynamic> args);
   Future<int> runUpdate(String statement, List<dynamic> args);
   Future<int> runDelete(String statement, List<dynamic> args);
 }
