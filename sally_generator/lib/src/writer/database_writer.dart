@@ -16,7 +16,7 @@ class DatabaseWriter {
     // Write the database class
     final className = '_\$${db.fromClass.name}';
     buffer.write('abstract class $className extends GeneratedDatabase {\n'
-        '$className() : super(const SqlTypeSystem.withDefaults(), null); \n');
+        '$className(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e); \n');
 
     final tableGetters = <String>[];
 
