@@ -33,7 +33,7 @@ abstract class GeneratedDatabase {
     return migration.onUpgrade(migrator, from, to);
   }
 
-  InsertStatement<T> insert<T>(TableInfo<dynamic, T> table) =>
+  InsertStatement<T> into<T>(TableInfo<dynamic, T> table) =>
     InsertStatement<T>(this, table);
 
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(
