@@ -19,7 +19,22 @@ class TableParser extends ParserBase {
         fromClass: element,
         columns: _parseColumns(element),
         sqlName: sqlName,
-        dartTypeName: dataClassNameForClassName(element.name));
+        dartTypeName: _readDartTypeName(element));
+  }
+
+  String _readDartTypeName(ClassElement element) {
+    final nameAnnotation = element.metadata.singleWhere(
+        (e) => e.computeConstantValue().type.name == 'DataClassName',
+        orElse: () => null);
+
+    if (nameAnnotation == null) {
+      return dataClassNameForClassName(element.name);
+    } else {
+      return nameAnnotation
+          .constantValue
+          .getField('name')
+          .toStringValue();
+    }
   }
 
   String _parseTableName(ClassElement element) {

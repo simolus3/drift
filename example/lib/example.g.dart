@@ -82,24 +82,24 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
   }
 }
 
-class Todo {
+class TodoEntry {
   final int id;
   final String name;
   final String content;
-  Todo({this.id, this.name, this.content});
+  TodoEntry({this.id, this.name, this.content});
   @override
   int get hashCode =>
       ((id.hashCode) * 31 + name.hashCode) * 31 + content.hashCode;
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Todo &&
+      (other is TodoEntry &&
           other.id == id &&
           other.name == name &&
           other.content == content);
 }
 
-class _$TodosTable extends Todos implements TableInfo<Todos, Todo> {
+class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   final GeneratedDatabase db;
   _$TodosTable(this.db);
   @override
@@ -117,10 +117,10 @@ class _$TodosTable extends Todos implements TableInfo<Todos, Todo> {
   @override
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
-  Todo map(Map<String, dynamic> data) {
+  TodoEntry map(Map<String, dynamic> data) {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    return Todo(
+    return TodoEntry(
       id: intType.mapFromDatabaseResponse(data['id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
       content: stringType.mapFromDatabaseResponse(data['body']),

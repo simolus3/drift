@@ -12,12 +12,12 @@ class Users extends Table {
   TextColumn get name => text().withLength(min: 6, max: 32)();
 }
 
+@DataClassName('TodoEntry')
 class Todos extends Table {
 
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 6, max: 10)();
   TextColumn get content => text().named('body')();
-
 }
 
 @UseSally(tables: [Products, Users, Todos])

@@ -104,7 +104,6 @@ create an issue.
 - Custom primary keys
 - Stabilize all end-user APIs
 - Support default values and expressions, auto-increment
-- Allow custom table names for the generated dart types
 ##### Definitely planned for the future
 - Allow using DAOs instead of having to put everything in the main database
 class.
