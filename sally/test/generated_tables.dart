@@ -38,6 +38,7 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
   UserDataObject map(Map<String, dynamic> data) {
     return null;
   }
+
   @override
   Map<String, Variable> entityToSql(UserDataObject d) {
     final map = <String, Variable>{};

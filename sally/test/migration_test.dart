@@ -25,7 +25,8 @@ void main() {
   test('generates CREATE TABLE statements', () {
     migrator.createAllTables();
 
-    verify(executor.call('CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL , name VARCHAR NOT NULL , is_awesome BOOLEAN NULL CHECK (is_awesome in (0, 1)))'));
+    verify(executor.call(
+        'CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL , name VARCHAR NOT NULL , is_awesome BOOLEAN NULL CHECK (is_awesome in (0, 1)))'));
   });
 
   test('generates DROP TABLE statements', () {
@@ -37,6 +38,7 @@ void main() {
   test('generates ALTER TABLE statements to add columns', () {
     migrator.addColumn(db.users, db.users.isAwesome);
 
-    verify(executor.call('ALTER TABLE users ADD COLUMN is_awesome BOOLEAN NULL CHECK (is_awesome in (0, 1))'));
+    verify(executor.call(
+        'ALTER TABLE users ADD COLUMN is_awesome BOOLEAN NULL CHECK (is_awesome in (0, 1))'));
   });
 }

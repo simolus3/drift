@@ -49,7 +49,8 @@ class TableWriter {
           '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
       ..write('@override\n$tableDslName get asDslTable => this;\n')
       ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n')
-      ..write('@override\nvoid validateIntegrity($dataClass instance, bool isInserting) => null;');
+      ..write(
+          '@override\nvoid validateIntegrity($dataClass instance, bool isInserting) => null;');
 
     // todo replace set syntax with literal once dart supports it
     // write primary key getter: Set<Column> get $primaryKey => Set().add(id);
@@ -104,7 +105,8 @@ class TableWriter {
   void _writeReverseMappingMethod(StringBuffer buffer) {
     // Map<String, Variable> entityToSql(User d) {
     buffer
-      ..write('@override\nMap<String, Variable> entityToSql(${table.dartTypeName} d) {\n')
+      ..write(
+          '@override\nMap<String, Variable> entityToSql(${table.dartTypeName} d) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {

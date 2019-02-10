@@ -30,10 +30,7 @@ class TableParser extends ParserBase {
     if (nameAnnotation == null) {
       return dataClassNameForClassName(element.name);
     } else {
-      return nameAnnotation
-          .constantValue
-          .getField('name')
-          .toStringValue();
+      return nameAnnotation.constantValue.getField('name').toStringValue();
     }
   }
 

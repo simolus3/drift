@@ -34,7 +34,7 @@ abstract class GeneratedDatabase {
   }
 
   InsertStatement<T> into<T>(TableInfo<dynamic, T> table) =>
-    InsertStatement<T>(this, table);
+      InsertStatement<T>(this, table);
 
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(
       TableInfo<Table, ReturnType> table) {

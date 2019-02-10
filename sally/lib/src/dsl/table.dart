@@ -32,11 +32,9 @@ class PrimaryKey {}
 /// used.
 /// {@template}
 class DataClassName {
-
   final String name;
 
   /// Customize the data class name for a given table.
   /// {@macro sally:custom_data_class}
   const DataClassName(this.name);
-
 }

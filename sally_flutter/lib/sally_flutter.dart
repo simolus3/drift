@@ -9,6 +9,8 @@ import 'package:path/path.dart';
 import 'package:sally/sally.dart';
 import 'package:sqflite/sqflite.dart';
 
+export 'package:sally/sally.dart';
+
 /// A query executor that uses sqlfite internally.
 class FlutterQueryExecutor extends QueryExecutor {
   final bool _inDbPath;

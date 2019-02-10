@@ -3,7 +3,6 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 
 class InsertStatement<DataClass> {
-
   @protected
   final GeneratedDatabase database;
   @protected
@@ -14,18 +13,17 @@ class InsertStatement<DataClass> {
   Future<void> insert(DataClass entity) async {
     table.validateIntegrity(entity, true);
 
-    final map = table
-        .entityToSql(entity)
-        ..removeWhere((_, value) => value == null);
+    final map = table.entityToSql(entity)
+      ..removeWhere((_, value) => value == null);
 
     final ctx = GenerationContext(database);
     ctx.buffer
-        ..write('INSERT INTO ')
-        ..write(table.$tableName)
-        ..write(' (')
-        ..write(map.keys.join(', '))
-        ..write(') ')
-        ..write('VALUES (');
+      ..write('INSERT INTO ')
+      ..write(table.$tableName)
+      ..write(' (')
+      ..write(map.keys.join(', '))
+      ..write(') ')
+      ..write('VALUES (');
 
     var first = true;
     for (var variable in map.values) {

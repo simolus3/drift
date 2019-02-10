@@ -57,10 +57,10 @@ class SpecifiedColumn {
       }[type];
 
   String get sqlTypeName => {
-      ColumnType.boolean: 'BoolType',
-      ColumnType.text: 'StringType',
-      ColumnType.integer: 'IntType'
-  }[type];
+        ColumnType.boolean: 'BoolType',
+        ColumnType.text: 'StringType',
+        ColumnType.integer: 'IntType'
+      }[type];
 
   const SpecifiedColumn(
       {this.type,

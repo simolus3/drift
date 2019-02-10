@@ -77,7 +77,8 @@ void main() {
     test('with full data', () {
       db.into(db.users).insert(UserDataObject(10, 'User'));
 
-      verify(executor.runInsert('INSERT INTO users (id, name) VALUES (?, ?)', [10, 'User']));
+      verify(executor.runInsert(
+          'INSERT INTO users (id, name) VALUES (?, ?)', [10, 'User']));
     });
   });
 }
