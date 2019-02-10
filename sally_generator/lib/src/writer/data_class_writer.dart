@@ -1,0 +1,67 @@
+import 'package:sally_generator/src/model/specified_table.dart';
+
+class DataClassWriter {
+  final SpecifiedTable table;
+
+  DataClassWriter(this.table);
+
+  void writeInto(StringBuffer buffer) {
+    buffer.write('class ${table.dartTypeName} {\n');
+
+    // write individual fields
+    for (var column in table.columns) {
+      buffer.write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
+    }
+
+    // write constructor with named optional fields
+    buffer
+      ..write(table.dartTypeName)
+      ..write('({')
+      ..write(table.columns
+          .map((column) => 'this.${column.dartGetterName}')
+          .join(', '))
+      ..write('});')
+      ..write('@override\n int get hashCode => ');
+
+    if (table.columns.isEmpty) {
+      buffer.write('identityHashCode(this); \n');
+    } else {
+      final fields = table.columns.map((c) => c.dartGetterName).toList();
+      buffer..write(_calculateHashCode(fields))..write('; \n');
+    }
+
+    // override ==
+    //    return identical(this, other) || (other is Todo && other.id == id && other.)
+    buffer
+      ..write('@override\nbool operator ==(other) => ')
+      ..write('identical(this, other) || (other is ${table.dartTypeName}');
+
+    if (table.columns.isNotEmpty) {
+      buffer
+        ..write('&&')
+        ..write(table.columns.map((c) {
+          final getter = c.dartGetterName;
+
+          return 'other.$getter == $getter';
+        }).join(' && '));
+    }
+
+    // finish overrides method and class declaration
+    buffer.write(');\n}');
+  }
+
+  /// Recursively creates the implementation for hashCode of the data class,
+  /// assuming it has at least one field. When it has one field, we just return
+  /// the hash code of that field. Otherwise, we multiply it with 31 and add
+  /// the hash code of the next field, and so on.
+  String _calculateHashCode(List<String> fields) {
+    if (fields.length == 1) {
+      return '${fields.last}.hashCode';
+    } else {
+      final last = fields.removeLast();
+      final innerHash = _calculateHashCode(fields);
+
+      return '($innerHash) * 31 + $last.hashCode';
+    }
+  }
+}

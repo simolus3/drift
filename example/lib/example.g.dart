@@ -10,6 +10,12 @@ class Product {
   final int id;
   final String name;
   Product({this.id, this.name});
+  @override
+  int get hashCode => (id.hashCode) * 31 + name.hashCode;
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is Product && other.id == id && other.name == name);
 }
 
 class _$ProductsTable extends Products implements TableInfo<Products, Product> {
@@ -42,6 +48,12 @@ class User {
   final int id;
   final String name;
   User({this.id, this.name});
+  @override
+  int get hashCode => (id.hashCode) * 31 + name.hashCode;
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is User && other.id == id && other.name == name);
 }
 
 class _$UsersTable extends Users implements TableInfo<Users, User> {
@@ -75,6 +87,16 @@ class Todo {
   final String name;
   final String content;
   Todo({this.id, this.name, this.content});
+  @override
+  int get hashCode =>
+      ((id.hashCode) * 31 + name.hashCode) * 31 + content.hashCode;
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is Todo &&
+          other.id == id &&
+          other.name == name &&
+          other.content == content);
 }
 
 class _$TodosTable extends Todos implements TableInfo<Todos, Todo> {
@@ -85,7 +107,7 @@ class _$TodosTable extends Todos implements TableInfo<Todos, Todo> {
   @override
   GeneratedTextColumn get name => GeneratedTextColumn('name', false);
   @override
-  GeneratedTextColumn get content => GeneratedTextColumn('content', false);
+  GeneratedTextColumn get content => GeneratedTextColumn('body', false);
   @override
   List<GeneratedColumn> get $columns => [id, name, content];
   @override
@@ -101,7 +123,7 @@ class _$TodosTable extends Todos implements TableInfo<Todos, Todo> {
     return Todo(
       id: intType.mapFromDatabaseResponse(data['id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
-      content: stringType.mapFromDatabaseResponse(data['content']),
+      content: stringType.mapFromDatabaseResponse(data['body']),
     );
   }
 }
