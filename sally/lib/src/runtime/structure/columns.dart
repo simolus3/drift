@@ -29,7 +29,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   String get typeName;
 
   @override
-  Expression<BoolType> equals(Expression<S> compare) =>
+  Expression<BoolType> equalsExp(Expression<S> compare) =>
       Comparison.equal(this, compare);
 
   @override
@@ -38,7 +38,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   }
 
   @override
-  Expression<BoolType> equalsVal(T compare) => equals(Variable<T, S>(compare));
+  Expression<BoolType> equals(T compare) => equalsExp(Variable<T, S>(compare));
 }
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>

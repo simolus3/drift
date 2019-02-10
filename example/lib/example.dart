@@ -24,10 +24,10 @@ class Todos extends Table {
 class ShopDb extends _$ShopDb {
   Future<List<User>> allUsers() => select(users).get();
   Future<List<User>> userByName(String name) =>
-      (select(users)..where((u) => u.name.equalsVal(name))).get();
+      (select(users)..where((u) => u.name.equals(name))).get();
 
   Future<void> deleteUser(User user) =>
-      (delete(users)..where((u) => u.id.equalsVal(user.id))).go();
+      (delete(users)..where((u) => u.id.equals(user.id))).go();
 
   @override
   MigrationStrategy get migration => MigrationStrategy();

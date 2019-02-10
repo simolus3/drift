@@ -38,7 +38,7 @@ void main() {
     test('generates complex predicates', () {
       (db.select(db.users)
             ..where((u) =>
-                and(not(u.name.equalsVal('Dash')), (u.id.isBiggerThan(12)))))
+                and(not(u.name.equals('Dash')), (u.id.isBiggerThan(12)))))
           .get();
 
       verify(executor.runSelect(

@@ -5,8 +5,8 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
 abstract class Column<T, S extends SqlType<T>> extends Expression<S> {
-  Expression<BoolType> equals(Expression<S> compare);
-  Expression<BoolType> equalsVal(T compare);
+  Expression<BoolType> equalsExp(Expression<S> compare);
+  Expression<BoolType> equals(T compare);
 }
 
 abstract class IntColumn extends Column<int, IntType> {
