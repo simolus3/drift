@@ -38,6 +38,17 @@ class GeneratedUsersTable extends Users with TableInfo<Users, UserDataObject> {
   UserDataObject map(Map<String, dynamic> data) {
     return null;
   }
+  @override
+  Map<String, Variable> entityToSql(UserDataObject d) {
+    final map = <String, Variable>{};
+    if (d.id != null) {
+      map['id'] = Variable<int, IntType>(d.id);
+    }
+    if (d.name != null) {
+      map['name'] = Variable<String, StringType>(d.name);
+    }
+    return map;
+  }
 }
 
 class TestDatabase extends GeneratedDatabase {

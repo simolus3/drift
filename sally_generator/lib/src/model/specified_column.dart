@@ -56,6 +56,12 @@ class SpecifiedColumn {
         ColumnType.integer: 'GeneratedIntColumn'
       }[type];
 
+  String get sqlTypeName => {
+      ColumnType.boolean: 'BoolType',
+      ColumnType.text: 'StringType',
+      ColumnType.integer: 'IntType'
+  }[type];
+
   const SpecifiedColumn(
       {this.type,
       this.dartGetterName,

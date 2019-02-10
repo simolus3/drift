@@ -32,6 +32,8 @@ class _$ProductsTable extends Products implements TableInfo<Products, Product> {
   @override
   String get $tableName => 'products';
   @override
+  void validateIntegrity(Product instance, bool isInserting) => null;
+  @override
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   Product map(Map<String, dynamic> data) {
@@ -41,6 +43,18 @@ class _$ProductsTable extends Products implements TableInfo<Products, Product> {
       id: intType.mapFromDatabaseResponse(data['products_id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
     );
+  }
+
+  @override
+  Map<String, Variable> entityToSql(Product d) {
+    final map = <String, Variable>{};
+    if (d.id != null) {
+      map['products_id'] = Variable<int, IntType>(d.id);
+    }
+    if (d.name != null) {
+      map['name'] = Variable<String, StringType>(d.name);
+    }
+    return map;
   }
 }
 
@@ -70,6 +84,8 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
   @override
   String get $tableName => 'users';
   @override
+  void validateIntegrity(User instance, bool isInserting) => null;
+  @override
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   User map(Map<String, dynamic> data) {
@@ -79,6 +95,18 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
       id: intType.mapFromDatabaseResponse(data['id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
     );
+  }
+
+  @override
+  Map<String, Variable> entityToSql(User d) {
+    final map = <String, Variable>{};
+    if (d.id != null) {
+      map['id'] = Variable<int, IntType>(d.id);
+    }
+    if (d.name != null) {
+      map['name'] = Variable<String, StringType>(d.name);
+    }
+    return map;
   }
 }
 
@@ -115,6 +143,8 @@ class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   @override
   String get $tableName => 'todos';
   @override
+  void validateIntegrity(TodoEntry instance, bool isInserting) => null;
+  @override
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   TodoEntry map(Map<String, dynamic> data) {
@@ -125,6 +155,21 @@ class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
       name: stringType.mapFromDatabaseResponse(data['name']),
       content: stringType.mapFromDatabaseResponse(data['body']),
     );
+  }
+
+  @override
+  Map<String, Variable> entityToSql(TodoEntry d) {
+    final map = <String, Variable>{};
+    if (d.id != null) {
+      map['id'] = Variable<int, IntType>(d.id);
+    }
+    if (d.name != null) {
+      map['name'] = Variable<String, StringType>(d.name);
+    }
+    if (d.content != null) {
+      map['body'] = Variable<String, StringType>(d.content);
+    }
+    return map;
   }
 }
 
