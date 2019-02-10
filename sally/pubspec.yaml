@@ -9,7 +9,11 @@ environment:
 
 dependencies:
   meta: '>= 1.0.0 <2.0.0'
+  sqflite: ^1.1.0
+  flutter:
+    sdk: flutter
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   mockito: ^4.0.0
-  test: ^1.0.0

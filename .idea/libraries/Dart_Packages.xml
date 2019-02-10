@@ -6,7 +6,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-0.34.3/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-0.35.0/lib" />
             </list>
           </value>
         </entry>
@@ -186,7 +185,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/front_end-0.1.9+1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/front_end-0.1.10/lib" />
             </list>
           </value>
         </entry>
@@ -264,7 +262,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/kernel-0.3.9+1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/kernel-0.3.10/lib" />
             </list>
           </value>
         </entry>
@@ -301,7 +298,7 @@
         <entry key="mockito">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/mockito-4.0.0/lib" />
+              <option value="$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/mockito-4.0.0/lib" />
             </list>
           </value>
         </entry>
@@ -591,7 +588,6 @@
     </properties>
     <CLASSES>
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-0.34.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer-0.35.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/analyzer_plugin-0.0.1-alpha.6/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/args-1.5.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/async-2.0.8/lib" />
@@ -614,7 +610,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/csslib-0.14.6/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/dart_style-1.2.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/fixnum-0.10.9/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/front_end-0.1.10/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/front_end-0.1.9+1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/glob-1.1.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/graphs-0.2.0/lib" />
@@ -626,13 +621,11 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/js-0.6.1+1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/json_annotation-2.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/json_rpc_2-2.0.9/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/kernel-0.3.10/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/kernel-0.3.9+1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/logging-0.11.3+2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/matcher-0.12.3+1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/meta-1.1.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/mime-0.9.6+2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/mockito-4.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/multi_server_socket-1.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/node_preamble-1.4.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/package_config-1.0.5/lib" />
@@ -674,6 +667,7 @@
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/collection-1.14.11/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/matcher-0.12.3+1/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/meta-1.1.6/lib" />
+      <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/mockito-4.0.0/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/path-1.6.2/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/quiver-2.0.1/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/source_span-1.4.1/lib" />

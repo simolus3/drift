@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
       <module fileurl="file://$PROJECT_DIR$/sally/sally.iml" filepath="$PROJECT_DIR$/sally/sally.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sally_flutter/sally_flutter.iml" filepath="$PROJECT_DIR$/sally_flutter/sally_flutter.iml" />
       <module fileurl="file://$PROJECT_DIR$/sally_generator/sally_generator.iml" filepath="$PROJECT_DIR$/sally_generator/sally_generator.iml" />
     </modules>
   </component>
