@@ -8,17 +8,17 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  analyzer: '< 0.35.0'
-  recase:
-  built_value:
-  source_gen:
-  build_runner:
-  build_config:
+  analyzer: '>=0.34.0 <0.36.0'
+  recase: ^2.0.1
+  built_value: ^6.3.0
+  source_gen: ^0.9.4
+  build_runner: ^1.2.0
+  build_config: ^0.3.1
   sally:
     path:
       ../sally
 
 dev_dependencies:
   test: ^1.0.0
-  built_value_generator:
+  built_value_generator: ^6.3.0
   build_test: '>=0.10.0 <0.11.0'

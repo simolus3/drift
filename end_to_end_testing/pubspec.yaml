@@ -13,6 +13,7 @@ dependencies:
 dev_dependencies:
   sally_generator:
     path: ../sally_generator
+  built_value_generator: ^6.3.0
   build_runner:
   build_test:
   test: ^1.0.0
