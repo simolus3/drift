@@ -8,12 +8,13 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
-/// Statement that operates on a table (select, update, insert, delete).
-abstract class Query<Table> {
+/// Statement that operates with data that already exists (select, delete,
+/// update).
+abstract class Query<Table, DataClass> {
   @protected
   GeneratedDatabase database;
   @protected
-  TableInfo<Table, dynamic> table;
+  TableInfo<Table, DataClass> table;
 
   Query(this.database, this.table);
 

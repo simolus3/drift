@@ -34,9 +34,7 @@ class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn> {
   IntColumnBuilder autoIncrement() => this;
 }
 
-class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {
-
-}
+class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {}
 
 class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {
   TextColumnBuilder withLength({int min, int max}) => this;

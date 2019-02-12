@@ -80,5 +80,16 @@ void main() {
       verify(executor.runInsert(
           'INSERT INTO users (id, name) VALUES (?, ?)', [10, 'User']));
     });
+
+    // todo verify auto-increment and default values
+  });
+
+  group('Generates UPDATE statements', () {
+    test('without constraints', () {
+      db.update(db.users).write(UserDataObject(3, 'User'));
+
+      verify(
+          executor.runUpdate('UPDATE users SET id = ? name = ?;', [3, 'User']));
+    });
   });
 }

@@ -100,16 +100,16 @@ If you have suggestions for new features or any other questions, feel free to
 create an issue.
 
 ##### Before this library can be released
-- Insert and update statements
 - Custom primary keys
-- Stabilize all end-user APIs
+- Stabilize all end-user APIs and document them extensively
 - Support default values and expressions, auto-increment
+- Escape table and column names
+- Auto-updating streams for select statements
 ##### Definitely planned for the future
 - Allow using DAOs instead of having to put everything in the main database
 class.
-- Auto-updating streams
 - Support more Datatypes: We should at least support `DateTime` and `Uint8List`,
-supporting floating point numbers as well would be awesome
+supporting floating / fixed point numbers as well would be awesome
 - Nullable / non-nullable datatypes
   - DSL API
   - Support in generator

@@ -3,7 +3,7 @@ import 'package:sally/src/runtime/executor/executor.dart';
 import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
-class DeleteStatement<UserTable> extends Query<UserTable> {
+class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
   DeleteStatement(
       GeneratedDatabase database, TableInfo<UserTable, dynamic> table)
       : super(database, table);

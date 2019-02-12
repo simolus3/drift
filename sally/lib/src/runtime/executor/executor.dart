@@ -4,6 +4,7 @@ import 'package:sally/src/runtime/executor/type_system.dart';
 import 'package:sally/src/runtime/migration.dart';
 import 'package:sally/src/runtime/statements/delete.dart';
 import 'package:sally/src/runtime/statements/select.dart';
+import 'package:sally/src/runtime/statements/update.dart';
 
 /// A base class for all generated databases.
 abstract class GeneratedDatabase {
@@ -11,6 +12,7 @@ abstract class GeneratedDatabase {
   final QueryExecutor executor;
 
   int get schemaVersion;
+
   MigrationStrategy get migration;
 
   List<TableInfo> get allTables;
@@ -36,6 +38,10 @@ abstract class GeneratedDatabase {
   InsertStatement<T> into<T>(TableInfo<dynamic, T> table) =>
       InsertStatement<T>(this, table);
 
+  UpdateStatement<Tbl, ReturnType> update<Tbl, ReturnType>(
+          TableInfo<Tbl, ReturnType> table) =>
+      UpdateStatement(this, table);
+
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(
       TableInfo<Table, ReturnType> table) {
     return SelectStatement<Table, ReturnType>(this, table);
@@ -49,10 +55,15 @@ abstract class QueryExecutor {
   GeneratedDatabase databaseInfo;
 
   Future<bool> ensureOpen();
+
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List<dynamic> args);
+
   Future<int> runInsert(String statement, List<dynamic> args);
+
   Future<int> runUpdate(String statement, List<dynamic> args);
+
   Future<int> runDelete(String statement, List<dynamic> args);
+
   Future<void> runCustom(String statement);
 }
