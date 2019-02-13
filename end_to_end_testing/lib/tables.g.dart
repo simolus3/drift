@@ -24,14 +24,21 @@ class User {
 }
 
 class _$UsersTable extends Users implements TableInfo<Users, User> {
-  final GeneratedDatabase db;
-  _$UsersTable(this.db);
+  final GeneratedDatabase _db;
+  _$UsersTable(this._db);
   @override
-  GeneratedIntColumn get id => GeneratedIntColumn('id', false);
+  GeneratedIntColumn get id =>
+      GeneratedIntColumn('id', false, hasAutoIncrement: true);
   @override
-  GeneratedTextColumn get userName => GeneratedTextColumn('name', false);
+  GeneratedTextColumn get userName => GeneratedTextColumn(
+        'name',
+        false,
+      );
   @override
-  GeneratedTextColumn get bio => GeneratedTextColumn('bio', false);
+  GeneratedTextColumn get bio => GeneratedTextColumn(
+        'bio',
+        false,
+      );
   @override
   List<GeneratedColumn> get $columns => [id, userName, bio];
   @override
@@ -39,13 +46,16 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
   @override
   String get $tableName => 'users';
   @override
-  void validateIntegrity(User instance, bool isInserting) => null;
+  void validateIntegrity(User instance, bool isInserting) =>
+      id.isAcceptableValue(instance.id, isInserting) &&
+      userName.isAcceptableValue(instance.userName, isInserting) &&
+      bio.isAcceptableValue(instance.bio, isInserting);
   @override
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   User map(Map<String, dynamic> data) {
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
+    final intType = _db.typeSystem.forDartType<int>();
+    final stringType = _db.typeSystem.forDartType<String>();
     return User(
       id: intType.mapFromDatabaseResponse(data['id']),
       userName: stringType.mapFromDatabaseResponse(data['name']),

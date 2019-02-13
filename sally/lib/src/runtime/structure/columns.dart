@@ -39,6 +39,17 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
   @override
   Expression<BoolType> equals(T compare) => equalsExp(Variable<T, S>(compare));
+
+  /// Checks whether the given value fits into this column. The default
+  /// implementation checks whether the value is not null, as null values are
+  /// only allowed for updates or if the column is nullable.
+  /// If [duringInsert] is true, the method should check whether the value is
+  /// suitable for a new row that is being inserted. If it's false, we the
+  /// method should check whether the value is valid for an update. Null values
+  /// should always be accepted for updates, as the describe a value that should
+  /// not be replaced.
+  bool isAcceptableValue(T value, bool duringInsert) =>
+      ($nullable || !duringInsert) || value != null;
 }
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
@@ -91,4 +102,8 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   @override
   Expression<BoolType> isSmallerThan(int i) =>
       Comparison(this, ComparisonOperator.less, Variable<int, IntType>(i));
+
+  @override
+  bool isAcceptableValue(int value, bool duringInsert) =>
+      hasAutoIncrement || super.isAcceptableValue(value, duringInsert);
 }

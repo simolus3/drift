@@ -80,7 +80,7 @@ class MyDatabase extends _$MyDatabase {
   MigrationStrategy get migration => MigrationStrategy();
 }
 ```
-You can ignore these two getters there at the moment, the imporant part is that you can
+You can ignore these two getters there at the moment, the important part is that you can
 now run your queries with fluent Dart code:
 ```dart
 class MyDatabase extends _$MyDatabase {
@@ -114,6 +114,7 @@ supporting floating / fixed point numbers as well would be awesome
   - DSL API
   - Support in generator
   - Use in queries (`IS NOT NULL`)
+  - Setting fields to null during updates
 - Verify constraints (text length, nullability, etc.) before inserting or
   deleting data.
 - Support Dart VM apps

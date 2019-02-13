@@ -1,4 +1,5 @@
 import 'package:recase/recase.dart';
+import 'package:sally_generator/src/model/specified_column.dart';
 import 'package:sally_generator/src/model/specified_table.dart';
 import 'package:sally_generator/src/writer/data_class_writer.dart';
 
@@ -25,19 +26,12 @@ class TableWriter {
       ..write('class ${table.tableInfoName} extends $tableDslName '
           'implements TableInfo<$tableDslName, $dataClass> {\n')
       // should have a GeneratedDatabase reference that is set in the constructor
-      ..write('final GeneratedDatabase db;\n')
-      ..write('${table.tableInfoName}(this.db);\n');
+      ..write('final GeneratedDatabase _db;\n')
+      ..write('${table.tableInfoName}(this._db);\n');
 
     // Generate the columns
     for (var column in table.columns) {
-      final isNullable = false;
-
-      // @override
-      // GeneratedIntColumn get id => GeneratedIntColumn('sql_name', isNullable);
-      buffer
-        ..write('@override \n')
-        ..write('${column.implColumnTypeName} get ${column.dartGetterName} => '
-            '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable);\n');
+      _writeColumnGetter(buffer, column);
     }
 
     // Generate $columns, $tableName, asDslTable getters
@@ -48,9 +42,9 @@ class TableWriter {
       ..write(
           '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
       ..write('@override\n$tableDslName get asDslTable => this;\n')
-      ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n')
-      ..write(
-          '@override\nvoid validateIntegrity($dataClass instance, bool isInserting) => null;');
+      ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n');
+
+    _writeValidityCheckMethod(buffer);
 
     // todo replace set syntax with literal once dart supports it
     // write primary key getter: Set<Column> get $primaryKey => Set().add(id);
@@ -83,7 +77,7 @@ class TableWriter {
       dartTypeToResolver[usedType] = resolver;
 
       buffer
-          .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
+          .write('final $resolver = _db.typeSystem.forDartType<$usedType>();\n');
     }
 
     // finally, the mighty constructor invocation:
@@ -118,5 +112,51 @@ class TableWriter {
     }
 
     buffer.write('return map; \n}\n');
+  }
+
+  void _writeColumnGetter(StringBuffer buffer, SpecifiedColumn column) {
+    final isNullable = false; // todo nullability for columns
+    final additionalParams = <String, String>{};
+
+    if (column.hasAI) {
+      additionalParams['hasAutoIncrement'] = 'true';
+    }
+
+    // @override
+    // GeneratedIntColumn get id => GeneratedIntColumn('sql_name', isNullable);
+    buffer
+      ..write('@override \n')
+      ..write('${column.implColumnTypeName} get ${column.dartGetterName} => '
+          '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable, ');
+
+    var first = true;
+    additionalParams.forEach((name, value) {
+      if (!first) {
+        buffer.write(', ');
+      } else {
+        first = false;
+      }
+
+      buffer..write(name)..write(': ')..write(value);
+    });
+
+    buffer.write(');\n');
+  }
+
+  void _writeValidityCheckMethod(StringBuffer buffer) {
+    final dataClass = table.dartTypeName;
+
+    buffer.write('@override\nvoid validateIntegrity($dataClass instance, bool isInserting) => ');
+
+    final validationCode = table.columns.map((column) {
+      final getterName = column.dartGetterName;
+
+      // generated columns have a isAcceptableValue(T value, bool duringInsert)
+      // method
+
+      return '$getterName.isAcceptableValue(instance.$getterName, isInserting)';
+    }).join('&&');
+
+    buffer..write(validationCode)..write(';\n');
   }
 }
