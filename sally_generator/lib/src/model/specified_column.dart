@@ -1,9 +1,13 @@
 import 'package:built_value/built_value.dart';
+import 'package:sally_generator/src/sqlite_keywords.dart' show isSqliteKeyword;
 
 part 'specified_column.g.dart';
 
 enum ColumnType { integer, text, boolean }
 
+/// Name of a column. Contains additional info on whether the name was chosen
+/// implicitly (based on the dart getter name) or explicitly (via an named())
+/// call in the column builder dsl.
 abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
   /// A column name is implicit if it has been looked up with the associated
   /// field name in the table class. It's explicit if `.named()` was called in
@@ -13,6 +17,14 @@ abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
   String get name;
 
   ColumnName._();
+
+  ColumnName escapeIfSqlKeyword() {
+    if (isSqliteKeyword(name)) {
+      return rebuild((b) => b.name = '`$name`'); // wrap name in backticks
+    } else {
+      return this;
+    }
+  }
 
   factory ColumnName([updates(ColumnNameBuilder b)]) = _$ColumnName;
 
@@ -25,11 +37,18 @@ abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
     ..name = name);
 }
 
+/// A column, as specified by a getter in a table.
 class SpecifiedColumn {
+  /// The getter name of this column in the table class. It will also be used
+  /// as getter name in the TableInfo class (as it needs to override the field)
+  /// and in the generated data class that will be generated for each table.
   final String dartGetterName;
+  /// The sql type of this column
   final ColumnType type;
+  /// The name of this column, as chosen by the user
   final ColumnName name;
 
+  /// Whether this column has auto increment.
   bool get hasAI => features.any((f) => f is AutoIncrement);
 
   /// Whether this column has been declared as the primary key via the
@@ -38,24 +57,34 @@ class SpecifiedColumn {
   final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
+  /// The dart type that matches this column. For instance, if a table has
+  /// declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName => {
         ColumnType.boolean: 'bool',
         ColumnType.text: 'String',
         ColumnType.integer: 'int'
       }[type];
 
+  /// The column type from the dsl library. For instance, if a table has
+  /// declared an `IntColumn`, the matching dsl column name would also be an
+  /// `IntColumn`.
   String get dslColumnTypeName => {
         ColumnType.boolean: 'BoolColumn',
         ColumnType.text: 'TextColumn',
         ColumnType.integer: 'IntColumn'
       }[type];
 
+  /// The `GeneratedColumn` class that implements the [dslColumnTypeName].
+  /// For instance, if a table has declared an `IntColumn`, the matching
+  /// implementation name would be an `GeneratedIntColumn`.
   String get implColumnTypeName => {
         ColumnType.boolean: 'GeneratedBoolColumn',
         ColumnType.text: 'GeneratedTextColumn',
         ColumnType.integer: 'GeneratedIntColumn'
       }[type];
 
+  /// The class inside the sally library that represents the same sql type as
+  /// this column.
   String get sqlTypeName => {
         ColumnType.boolean: 'BoolType',
         ColumnType.text: 'StringType',

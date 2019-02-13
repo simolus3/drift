@@ -103,7 +103,6 @@ create an issue.
 - Custom primary keys
 - Stabilize all end-user APIs and document them extensively
 - Support default values and expressions, auto-increment
-- Escape table and column names
 - Auto-updating streams for select statements
 ##### Definitely planned for the future
 - Allow using DAOs instead of having to put everything in the main database

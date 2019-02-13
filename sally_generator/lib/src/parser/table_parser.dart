@@ -4,6 +4,7 @@ import 'package:sally_generator/src/errors.dart';
 import 'package:sally_generator/src/model/specified_column.dart';
 import 'package:sally_generator/src/model/specified_table.dart';
 import 'package:sally_generator/src/parser/parser.dart';
+import 'package:sally_generator/src/sqlite_keywords.dart';
 import 'package:sally_generator/src/utils/names.dart';
 import 'package:sally_generator/src/utils/type_utils.dart';
 import 'package:sally_generator/src/sally_generator.dart'; // ignore: implementation_imports
@@ -18,7 +19,7 @@ class TableParser extends ParserBase {
     return SpecifiedTable(
         fromClass: element,
         columns: _parseColumns(element),
-        sqlName: sqlName,
+        sqlName: escapeIfNeeded(sqlName),
         dartTypeName: _readDartTypeName(element));
   }
 

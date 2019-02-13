@@ -89,7 +89,7 @@ class ColumnParser extends ParserBase {
           wasDeclaredAsPrimaryKey = true;
           break;
         case functionReferences:
-          break; // todo: parsing this is going to suck
+          break;
         case functionWithLength:
           final args = remainingExpr.argumentList;
           final minArg = findNamedArgument(args, 'min');
@@ -121,7 +121,7 @@ class ColumnParser extends ParserBase {
     return SpecifiedColumn(
         type: _startMethodToColumnType(foundStartMethod),
         dartGetterName: getter.name.name,
-        name: name,
+        name: name.escapeIfSqlKeyword(),
         declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
         features: foundFeatures);
   }

@@ -25,6 +25,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
   @visibleForOverriding
   void writeCustomConstraints(StringBuffer into) {}
+
   @visibleForOverriding
   String get typeName;
 
@@ -54,7 +55,12 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     implements TextColumn {
-  GeneratedTextColumn(String name, bool nullable) : super(name, nullable);
+  final int minTextLength;
+  final int maxTextLength;
+
+  GeneratedTextColumn(String name, bool nullable,
+      {this.minTextLength, this.maxTextLength})
+      : super(name, nullable);
 
   @override
   Expression<BoolType> like(String regex) =>
@@ -62,6 +68,22 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
   @override
   final String typeName = 'VARCHAR';
+
+  @override
+  bool isAcceptableValue(String value, bool duringInsert) {
+    final nullOk = !duringInsert || $nullable;
+    if (value == null) return nullOk;
+
+    final length = value.length;
+    if (minTextLength != null && minTextLength > length)
+      return false;
+    if (maxTextLength != null && maxTextLength < length)
+      return false;
+
+    return true;
+  }
+
+
 }
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
