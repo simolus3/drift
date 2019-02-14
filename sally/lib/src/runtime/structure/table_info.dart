@@ -17,7 +17,7 @@ abstract class TableInfo<TableDsl, DataClass> {
   /// that it respects all constraints (nullability, text length, etc.).
   /// During insertion mode, fields that have a default value or are
   /// auto-incrementing are allowed to be null as they will be set by sqlite.
-  void validateIntegrity(DataClass instance, bool isInserting) => null;
+  bool validateIntegrity(DataClass instance, bool isInserting) => null;
 
   /// Maps the given data class into a map that can be inserted into sql. The
   /// keys should represent the column name in sql, the values the corresponding

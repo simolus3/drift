@@ -38,7 +38,9 @@ class UpdateStatement<T, D> extends Query<T, D> {
   /// explicitly, this method will update all rows in the specific table.
   Future<int> write(D entity) async {
     _updateReference = entity;
-    table.validateIntegrity(_updateReference, false);
+    if (!table.validateIntegrity(_updateReference, false)) {
+      throw InvalidDataException('Invalid data: $entity cannot be written into ${table.$tableName}');
+    }
 
     final ctx = constructQuery();
     final rows = await ctx.database.executor.runUpdate(ctx.sql, ctx.boundVariables);

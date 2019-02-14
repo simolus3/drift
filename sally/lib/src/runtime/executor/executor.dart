@@ -19,8 +19,9 @@ abstract class GeneratedDatabase {
 
   List<TableInfo> get allTables;
 
-  GeneratedDatabase(this.typeSystem, this.executor,
-      {this.streamQueries = const StreamQueryStore()});
+  GeneratedDatabase(this.typeSystem, this.executor, {this.streamQueries}) {
+    streamQueries ??= StreamQueryStore();
+  }
 
   /// Creates a migrator with the provided query executor. We sometimes can't
   /// use the regular [GeneratedDatabase.executor] because migration happens

@@ -55,7 +55,7 @@ class _$TodosTableTable extends TodosTable
   @override
   String get $tableName => 'todos';
   @override
-  void validateIntegrity(TodoEntry instance, bool isInserting) =>
+  bool validateIntegrity(TodoEntry instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
       title.isAcceptableValue(instance.title, isInserting) &&
       content.isAcceptableValue(instance.content, isInserting) &&
@@ -124,7 +124,7 @@ class _$CategoriesTable extends Categories
   @override
   String get $tableName => 'categories';
   @override
-  void validateIntegrity(Category instance, bool isInserting) =>
+  bool validateIntegrity(Category instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
@@ -192,7 +192,7 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
   @override
   String get $tableName => 'users';
   @override
-  void validateIntegrity(User instance, bool isInserting) =>
+  bool validateIntegrity(User instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
       name.isAcceptableValue(instance.name, isInserting) &&
       isAwesome.isAcceptableValue(instance.isAwesome, isInserting);

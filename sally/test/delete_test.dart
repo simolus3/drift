@@ -43,7 +43,7 @@ void main() {
       verify(streamQueries.handleTableUpdates('users'));
     });
 
-    test('are not issues when no data was changed', () async {
+    test('are not issued when no data was changed', () async {
       when(executor.runDelete(any, any)).thenAnswer((_) => Future.value(0));
 
       await db.delete(db.users).go();

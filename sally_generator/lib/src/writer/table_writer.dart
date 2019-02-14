@@ -146,7 +146,7 @@ class TableWriter {
   void _writeValidityCheckMethod(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
 
-    buffer.write('@override\nvoid validateIntegrity($dataClass instance, bool isInserting) => ');
+    buffer.write('@override\nbool validateIntegrity($dataClass instance, bool isInserting) => ');
 
     final validationCode = table.columns.map((column) {
       final getterName = column.dartGetterName;

@@ -11,7 +11,9 @@ class InsertStatement<DataClass> {
   InsertStatement(this.database, this.table);
 
   Future<void> insert(DataClass entity) async {
-    table.validateIntegrity(entity, true);
+    if (!table.validateIntegrity(entity, true)) {
+      throw InvalidDataException('Invalid data: $entity cannot be written into ${table.$tableName}');
+    }
 
     final map = table.entityToSql(entity)
       ..removeWhere((_, value) => value == null);
