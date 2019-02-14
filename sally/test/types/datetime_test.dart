@@ -3,14 +3,16 @@ import 'package:test_api/test_api.dart';
 
 const _exampleUnixSqlite = 1550172560;
 const _exampleUnixMillis = 1550172560000;
-final _exampleDateTime = DateTime.fromMillisecondsSinceEpoch(_exampleUnixMillis);
+final _exampleDateTime =
+    DateTime.fromMillisecondsSinceEpoch(_exampleUnixMillis);
 
 void main() {
   final type = const DateTimeType();
 
   group('DateTimes', () {
     test('can be read from unix stamps returned by sql', () {
-      expect(type.mapFromDatabaseResponse(_exampleUnixSqlite), _exampleDateTime);
+      expect(
+          type.mapFromDatabaseResponse(_exampleUnixSqlite), _exampleDateTime);
     });
 
     test('can read null value from sql', () {
@@ -18,7 +20,8 @@ void main() {
     });
 
     test('can be mapped to sql constants', () {
-      expect(type.mapToSqlConstant(_exampleDateTime), _exampleUnixSqlite.toString());
+      expect(type.mapToSqlConstant(_exampleDateTime),
+          _exampleUnixSqlite.toString());
     });
 
     test('can be mapped to variables', () {

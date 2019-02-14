@@ -21,9 +21,7 @@ abstract class TextColumn extends Column<String, StringType> {
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {
-
-}
+abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
 
 class ColumnBuilder<Builder, ResultColumn> {
   /// By default, the field name will be used as the column name, e.g.

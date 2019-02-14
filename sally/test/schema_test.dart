@@ -46,7 +46,8 @@ void main() {
     });
 
     test('adds columns', () async {
-      await Migrator(db, mockQueryExecutor).addColumn(db.users, db.users.isAwesome);
+      await Migrator(db, mockQueryExecutor)
+          .addColumn(db.users, db.users.isAwesome);
 
       verify(mockQueryExecutor.call('ALTER TABLE users ADD COLUMN '
           'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1));'));
