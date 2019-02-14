@@ -467,13 +467,6 @@
             </list>
           </value>
         </entry>
-        <entry key="sqlite2">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/sqlite2-0.5.1/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="stack_trace">
           <value>
             <list>
@@ -671,7 +664,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/source_map_stack_trace-1.1.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/source_maps-0.10.8/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/source_span-1.5.4/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/sqlite2-0.5.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stack_trace-1.9.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stream_channel-1.6.8/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stream_transform-0.0.14+1/lib" />

@@ -11,14 +11,16 @@ import 'package:sally/src/runtime/statements/update.dart';
 abstract class GeneratedDatabase {
   final SqlTypeSystem typeSystem;
   final QueryExecutor executor;
-  final StreamQueryStore streamQueries = StreamQueryStore();
+  @visibleForTesting
+  StreamQueryStore streamQueries;
 
   int get schemaVersion;
   MigrationStrategy get migration;
 
   List<TableInfo> get allTables;
 
-  GeneratedDatabase(this.typeSystem, this.executor);
+  GeneratedDatabase(this.typeSystem, this.executor,
+      {this.streamQueries = const StreamQueryStore()});
 
   /// Creates a migrator with the provided query executor. We sometimes can't
   /// use the regular [GeneratedDatabase.executor] because migration happens
@@ -28,6 +30,9 @@ abstract class GeneratedDatabase {
   void markTableUpdated(String tableName) {
     streamQueries.handleTableUpdates(tableName);
   }
+
+  Stream<List<T>> createStream<T>(SelectStatement<dynamic, T> stmt) =>
+      streamQueries.registerStream(stmt);
 
   Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
     final migrator = _createMigrator(executor);

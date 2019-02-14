@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:sally/sally.dart';
 
 class StreamQueryStore {
-  final List<_QueryStream> _activeStreams = [];
+  final List<_QueryStream> _activeStreams = const [];
+
+  const StreamQueryStore();
 
   Stream<List<T>> registerStream<T>(SelectStatement<dynamic, T> statement) {
     final stream = _QueryStream(statement, this);

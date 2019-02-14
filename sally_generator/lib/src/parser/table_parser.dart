@@ -36,6 +36,8 @@ class TableParser extends ParserBase {
   }
 
   String _parseTableName(ClassElement element) {
+    // todo allow override via a field (final String tableName = '') as well
+
     final tableNameGetter = element.getGetter('tableName');
     if (tableNameGetter == null) {
       // class does not override tableName. So just use the dart class name

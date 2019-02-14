@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/end_to_end_testing/end_to_end_testing.iml" filepath="$PROJECT_DIR$/end_to_end_testing/end_to_end_testing.iml" />
       <module fileurl="file://$PROJECT_DIR$/sally/sally.iml" filepath="$PROJECT_DIR$/sally/sally.iml" />
       <module fileurl="file://$PROJECT_DIR$/sally_flutter/sally_flutter.iml" filepath="$PROJECT_DIR$/sally_flutter/sally_flutter.iml" />
       <module fileurl="file://$PROJECT_DIR$/sally_generator/sally_generator.iml" filepath="$PROJECT_DIR$/sally_generator/sally_generator.iml" />
