@@ -51,7 +51,7 @@ class Migrator {
       if (i < table.$columns.length - 1) sql.write(', ');
     }
 
-    sql.write(')');
+    sql.write(');');
 
     return issueCustomQuery(sql.toString());
   }
@@ -59,7 +59,7 @@ class Migrator {
   /// Deletes the table with the given name. Note that this function does not
   /// escape the [name] parameter.
   Future<void> deleteTable(String name) async {
-    return issueCustomQuery('DROP TABLE IF EXISTS $name');
+    return issueCustomQuery('DROP TABLE IF EXISTS $name;');
   }
 
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
@@ -68,6 +68,7 @@ class Migrator {
     // ignore: cascade_invocations
     sql.write('ALTER TABLE ${table.$tableName} ADD COLUMN ');
     column.writeColumnDefinition(sql);
+    sql.write(';');
 
     return issueCustomQuery(sql.toString());
   }

@@ -18,8 +18,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   void writeColumnDefinition(StringBuffer into) {
     into
       ..write('${$name} $typeName ')
-      ..write($nullable ? 'NULL' : 'NOT NULL')
-      ..write(' ');
+      ..write($nullable ? 'NULL' : 'NOT NULL');
     writeCustomConstraints(into);
   }
 
@@ -91,7 +90,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 
   @override
   void writeCustomConstraints(StringBuffer into) {
-    into.write('CHECK (${$name} in (0, 1))');
+    into.write(' CHECK (${$name} in (0, 1))');
   }
 
   @override
@@ -112,6 +111,14 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   GeneratedIntColumn(String name, bool nullable,
       {this.hasAutoIncrement = false})
       : super(name, nullable);
+
+
+  @override
+  void writeCustomConstraints(StringBuffer into) {
+    if (hasAutoIncrement) {
+      into.write(' AUTO INCREMENT');
+    }
+  }
 
   @override
   Expression<BoolType> isBiggerThan(int i) =>
