@@ -8,9 +8,11 @@ import 'package:recase/recase.dart';
 const String startInt = 'integer';
 const String startString = 'text';
 const String startBool = 'boolean';
+const String startDateTime = 'dateTime';
 
 // todo replace with set literal once dart supports it
-final Set<String> starters = [startInt, startString, startBool].toSet();
+final Set<String> starters =
+    [startInt, startString, startBool, startDateTime].toSet();
 
 const String functionNamed = 'named';
 const String functionPrimaryKey = 'primaryKey';
@@ -136,6 +138,7 @@ class ColumnParser extends ParserBase {
       startBool: ColumnType.boolean,
       startString: ColumnType.text,
       startInt: ColumnType.integer,
+      startDateTime: ColumnType.datetime,
     }[startMethod];
   }
 }

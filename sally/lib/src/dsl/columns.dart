@@ -1,5 +1,4 @@
-// todo more datatypes (at least DateTime and Binary blobs)!
-// todo nullability
+// todo more datatypes (at least binary blobs)
 
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
@@ -18,6 +17,12 @@ abstract class BoolColumn extends Column<bool, BoolType> {}
 
 abstract class TextColumn extends Column<String, StringType> {
   Expression<BoolType> like(String regex);
+}
+
+/// A column that stores a [DateTime]. Times will be stored as unix timestamp
+/// and will thus have a second accuracy.
+abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {
+
 }
 
 class ColumnBuilder<Builder, ResultColumn> {
@@ -43,3 +48,6 @@ class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {}
 class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {
   TextColumnBuilder withLength({int min, int max}) => this;
 }
+
+class DateTimeColumnBuilder
+    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn> {}

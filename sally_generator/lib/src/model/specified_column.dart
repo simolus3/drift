@@ -3,7 +3,7 @@ import 'package:sally_generator/src/sqlite_keywords.dart' show isSqliteKeyword;
 
 part 'specified_column.g.dart';
 
-enum ColumnType { integer, text, boolean }
+enum ColumnType { integer, text, boolean, datetime }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -68,7 +68,8 @@ class SpecifiedColumn {
   String get dartTypeName => {
         ColumnType.boolean: 'bool',
         ColumnType.text: 'String',
-        ColumnType.integer: 'int'
+        ColumnType.integer: 'int',
+        ColumnType.datetime: 'DateTime',
       }[type];
 
   /// The column type from the dsl library. For instance, if a table has
@@ -77,7 +78,8 @@ class SpecifiedColumn {
   String get dslColumnTypeName => {
         ColumnType.boolean: 'BoolColumn',
         ColumnType.text: 'TextColumn',
-        ColumnType.integer: 'IntColumn'
+        ColumnType.integer: 'IntColumn',
+        ColumnType.datetime: 'DateTimeColumn',
       }[type];
 
   /// The `GeneratedColumn` class that implements the [dslColumnTypeName].
@@ -86,7 +88,8 @@ class SpecifiedColumn {
   String get implColumnTypeName => {
         ColumnType.boolean: 'GeneratedBoolColumn',
         ColumnType.text: 'GeneratedTextColumn',
-        ColumnType.integer: 'GeneratedIntColumn'
+        ColumnType.integer: 'GeneratedIntColumn',
+        ColumnType.datetime: 'GeneratedDateTimeColumn',
       }[type];
 
   /// The class inside the sally library that represents the same sql type as
@@ -94,7 +97,8 @@ class SpecifiedColumn {
   String get sqlTypeName => {
         ColumnType.boolean: 'BoolType',
         ColumnType.text: 'StringType',
-        ColumnType.integer: 'IntType'
+        ColumnType.integer: 'IntType',
+        ColumnType.datetime: 'DateTimeType',
       }[type];
 
   const SpecifiedColumn(

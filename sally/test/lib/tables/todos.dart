@@ -10,6 +10,7 @@ class TodosTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
   TextColumn get content => text()();
+  DateTimeColumn get targetDate => dateTime().nullable()();
 
   IntColumn get category => integer().nullable()();
 }

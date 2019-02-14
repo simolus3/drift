@@ -16,9 +16,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(StringBuffer into) {
-    into
-      ..write('${$name} $typeName ')
-      ..write($nullable ? 'NULL' : 'NOT NULL');
+    into..write('${$name} $typeName ')..write($nullable ? 'NULL' : 'NOT NULL');
     writeCustomConstraints(into);
   }
 
@@ -112,7 +110,6 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
       {this.hasAutoIncrement = false})
       : super(name, nullable);
 
-
   @override
   void writeCustomConstraints(StringBuffer into) {
     if (hasAutoIncrement) {
@@ -131,4 +128,13 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   @override
   bool isAcceptableValue(int value, bool duringInsert) =>
       hasAutoIncrement || super.isAcceptableValue(value, duringInsert);
+}
+
+class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
+    implements DateTimeColumn {
+  GeneratedDateTimeColumn(String $name, bool $nullable)
+      : super($name, $nullable);
+
+  @override
+  String get typeName => 'INTEGER';
 }

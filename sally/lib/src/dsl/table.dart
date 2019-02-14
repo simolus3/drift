@@ -17,6 +17,8 @@ abstract class Table {
   TextColumnBuilder text() => null;
   @protected
   BoolColumnBuilder boolean() => null;
+  @protected
+  DateTimeColumnBuilder dateTime() => null;
 }
 
 class PrimaryKey {}

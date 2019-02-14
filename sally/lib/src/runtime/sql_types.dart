@@ -67,3 +67,30 @@ class IntType extends SqlType<int> {
     return content;
   }
 }
+
+class DateTimeType extends SqlType<DateTime> {
+  const DateTimeType();
+
+  @override
+  DateTime mapFromDatabaseResponse(response) {
+    if (response == null) return null;
+
+    final unixSeconds = response as int;
+
+    return DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000);
+  }
+
+  @override
+  String mapToSqlConstant(DateTime content) {
+    if (content == null) return 'NULL';
+
+    return (content.millisecondsSinceEpoch ~/ 1000).toString();
+  }
+
+  @override
+  mapToSqlVariable(DateTime content) {
+    if (content == null) return null;
+
+    return content.millisecondsSinceEpoch ~/ 1000;
+  }
+}

@@ -10,11 +10,15 @@ class TodoEntry {
   final int id;
   final String title;
   final String content;
+  final DateTime targetDate;
   final int category;
-  TodoEntry({this.id, this.title, this.content, this.category});
+  TodoEntry(
+      {this.id, this.title, this.content, this.targetDate, this.category});
   @override
   int get hashCode =>
-      (((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
+      ((((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
+              targetDate.hashCode) *
+          31 +
       category.hashCode;
   @override
   bool operator ==(other) =>
@@ -23,6 +27,7 @@ class TodoEntry {
           other.id == id &&
           other.title == title &&
           other.content == content &&
+          other.targetDate == targetDate &&
           other.category == category);
 }
 
@@ -44,12 +49,18 @@ class _$TodosTableTable extends TodosTable
         false,
       );
   @override
+  GeneratedDateTimeColumn get targetDate => GeneratedDateTimeColumn(
+        'target_date',
+        true,
+      );
+  @override
   GeneratedIntColumn get category => GeneratedIntColumn(
         'category',
         true,
       );
   @override
-  List<GeneratedColumn> get $columns => [id, title, content, category];
+  List<GeneratedColumn> get $columns =>
+      [id, title, content, targetDate, category];
   @override
   TodosTable get asDslTable => this;
   @override
@@ -59,6 +70,7 @@ class _$TodosTableTable extends TodosTable
       id.isAcceptableValue(instance.id, isInserting) &&
       title.isAcceptableValue(instance.title, isInserting) &&
       content.isAcceptableValue(instance.content, isInserting) &&
+      targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
   Set<GeneratedColumn> get $primaryKey => Set();
@@ -66,10 +78,12 @@ class _$TodosTableTable extends TodosTable
   TodoEntry map(Map<String, dynamic> data) {
     final intType = _db.typeSystem.forDartType<int>();
     final stringType = _db.typeSystem.forDartType<String>();
+    final dateTimeType = _db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
       id: intType.mapFromDatabaseResponse(data['id']),
       title: stringType.mapFromDatabaseResponse(data['title']),
       content: stringType.mapFromDatabaseResponse(data['content']),
+      targetDate: dateTimeType.mapFromDatabaseResponse(data['target_date']),
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
@@ -85,6 +99,9 @@ class _$TodosTableTable extends TodosTable
     }
     if (d.content != null) {
       map['content'] = Variable<String, StringType>(d.content);
+    }
+    if (d.targetDate != null) {
+      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate);
     }
     if (d.category != null) {
       map['category'] = Variable<int, IntType>(d.category);

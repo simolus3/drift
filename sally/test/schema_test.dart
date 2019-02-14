@@ -19,8 +19,9 @@ void main() {
 
       // should create todos, categories and users table
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS todos '
-          '(id INTEGER NOT NULL AUTO INCREMENT, title VARCHAR NULL,'
-          ' content VARCHAR NOT NULL, category INTEGER NULL);'));
+          '(id INTEGER NOT NULL AUTO INCREMENT, title VARCHAR NULL, '
+          'content VARCHAR NOT NULL, target_date INTEGER NULL, '
+          'category INTEGER NULL);'));
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL AUTO INCREMENT, `desc` VARCHAR NOT NULL);'));
