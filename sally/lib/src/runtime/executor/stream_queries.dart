@@ -14,7 +14,8 @@ class StreamQueryStore {
   }
 
   Future<void> handleTableUpdates(String table) async {
-    final affectedStreams = _activeStreams.where((stream) => stream.isAffectedByTableChange(table));
+    final affectedStreams =
+        _activeStreams.where((stream) => stream.isAffectedByTableChange(table));
 
     for (var stream in affectedStreams) {
       await stream.fetchAndEmitData();

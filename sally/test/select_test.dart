@@ -53,12 +53,7 @@ void main() {
   group('SELECT results are parsed', () {
     test('when all fields are non-null', () {
       final data = [
-        {
-          'id': 10,
-          'title': 'A todo title',
-          'content': 'Content',
-          'category': 3
-        }
+        {'id': 10, 'title': 'A todo title', 'content': 'Content', 'category': 3}
       ];
       final resolved = TodoEntry(
         id: 10,

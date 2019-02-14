@@ -12,7 +12,8 @@ class InsertStatement<DataClass> {
 
   Future<void> insert(DataClass entity) async {
     if (!table.validateIntegrity(entity, true)) {
-      throw InvalidDataException('Invalid data: $entity cannot be written into ${table.$tableName}');
+      throw InvalidDataException(
+          'Invalid data: $entity cannot be written into ${table.$tableName}');
     }
 
     final map = table.entityToSql(entity)

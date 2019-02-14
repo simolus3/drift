@@ -3,7 +3,7 @@ dart:
 
 stages:
   - analyze:
-      - dartanalyzer
+      - dartanalyzer: --fatal-infos --fatal-warnings .
       - dartfmt
   - unit_test:
-      - test
+      - command: pub run build_runner test

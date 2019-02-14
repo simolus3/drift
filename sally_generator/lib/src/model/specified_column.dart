@@ -43,10 +43,13 @@ class SpecifiedColumn {
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
   final String dartGetterName;
+
   /// The sql type of this column
   final ColumnType type;
+
   /// The name of this column, as chosen by the user
   final ColumnName name;
+
   /// Whether the user has explicitly declared this column to be nullable, the
   /// default is false
   final bool nullable;

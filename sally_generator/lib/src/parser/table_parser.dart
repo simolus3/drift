@@ -15,6 +15,7 @@ class TableParser extends ParserBase {
 
   SpecifiedTable parse(ClassElement element) {
     final sqlName = _parseTableName(element);
+    if (sqlName == null) return null;
 
     return SpecifiedTable(
         fromClass: element,

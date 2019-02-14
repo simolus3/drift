@@ -7,7 +7,7 @@ env:
   - PKG="sally"
   - PKG="sally_generator"
 
-script: ./tool/travis.sh dartfmt dartanalyzer test
+script: ./tool/mono_repo_wrapper.sh
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

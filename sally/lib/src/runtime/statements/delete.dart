@@ -16,7 +16,8 @@ class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
   Future<int> go() async {
     final ctx = constructQuery();
 
-    final rows = await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
+    final rows =
+        await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
 
     if (rows > 0) {
       database.markTableUpdated(table.$tableName);

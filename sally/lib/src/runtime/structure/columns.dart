@@ -75,15 +75,11 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     if (value == null) return nullOk;
 
     final length = value.length;
-    if (minTextLength != null && minTextLength > length)
-      return false;
-    if (maxTextLength != null && maxTextLength < length)
-      return false;
+    if (minTextLength != null && minTextLength > length) return false;
+    if (maxTextLength != null && maxTextLength < length) return false;
 
     return true;
   }
-
-
 }
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>

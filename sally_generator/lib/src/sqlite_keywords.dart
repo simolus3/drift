@@ -141,7 +141,6 @@ const sqliteKeywords = [
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 
 String escapeIfNeeded(String s) {
-  if (isSqliteKeyword(s))
-    return '`$s`';
+  if (isSqliteKeyword(s)) return '`$s`';
   return s;
 }

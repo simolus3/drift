@@ -76,8 +76,8 @@ class TableWriter {
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
 
-      buffer
-          .write('final $resolver = _db.typeSystem.forDartType<$usedType>();\n');
+      buffer.write(
+          'final $resolver = _db.typeSystem.forDartType<$usedType>();\n');
     }
 
     // finally, the mighty constructor invocation:
@@ -146,7 +146,8 @@ class TableWriter {
   void _writeValidityCheckMethod(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
 
-    buffer.write('@override\nbool validateIntegrity($dataClass instance, bool isInserting) => ');
+    buffer.write(
+        '@override\nbool validateIntegrity($dataClass instance, bool isInserting) => ');
 
     final validationCode = table.columns.map((column) {
       final getterName = column.dartGetterName;

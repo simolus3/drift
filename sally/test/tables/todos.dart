@@ -4,7 +4,6 @@ part 'todos.g.dart';
 
 @DataClassName('TodoEntry')
 class TodosTable extends Table {
-
   @override
   String get tableName => 'todos';
 
@@ -13,7 +12,6 @@ class TodosTable extends Table {
   TextColumn get content => text()();
 
   IntColumn get category => integer().nullable()();
-
 }
 
 class Users extends Table {
@@ -24,10 +22,8 @@ class Users extends Table {
 
 @DataClassName('Category')
 class Categories extends Table {
-
   IntColumn get id => integer().autoIncrement()();
   TextColumn get description => text().named('desc')();
-
 }
 
 @UseSally(tables: [TodosTable, Categories, Users])
@@ -39,5 +35,4 @@ class TodoDb extends _$TodoDb {
 
   @override
   int get schemaVersion => 1;
-
 }
