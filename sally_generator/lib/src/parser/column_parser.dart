@@ -17,6 +17,7 @@ const String functionPrimaryKey = 'primaryKey';
 const String functionReferences = 'references';
 const String functionAutoIncrement = 'autoIncrement';
 const String functionWithLength = 'withLength';
+const String functionNullable = 'nullable';
 
 const String errorMessage = 'This getter does not create a valid column that '
     'can be parsed by sally. Please refer to the readme from sally to see how '
@@ -53,6 +54,7 @@ class ColumnParser extends ParserBase {
     String foundStartMethod;
     String foundExplicitName;
     var wasDeclaredAsPrimaryKey = false;
+    var nullable = false;
     // todo parse reference
     final foundFeatures = <ColumnFeature>[];
 
@@ -104,6 +106,8 @@ class ColumnParser extends ParserBase {
           wasDeclaredAsPrimaryKey = true;
           foundFeatures.add(AutoIncrement());
           break;
+        case functionNullable:
+          nullable = true;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -123,6 +127,7 @@ class ColumnParser extends ParserBase {
         dartGetterName: getter.name.name,
         name: name.escapeIfSqlKeyword(),
         declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
+        nullable: nullable,
         features: foundFeatures);
   }
 

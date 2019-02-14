@@ -27,6 +27,10 @@ class ColumnBuilder<Builder, ResultColumn> {
   Builder named(String name) => null;
   Builder primaryKey() => null;
 
+  /// Marks this column as nullable. Nullable columns should not appear in a
+  /// primary key.
+  Builder nullable() => null;
+
   ResultColumn call() => null;
 }
 

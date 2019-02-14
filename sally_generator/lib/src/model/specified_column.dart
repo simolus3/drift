@@ -47,6 +47,9 @@ class SpecifiedColumn {
   final ColumnType type;
   /// The name of this column, as chosen by the user
   final ColumnName name;
+  /// Whether the user has explicitly declared this column to be nullable, the
+  /// default is false
+  final bool nullable;
 
   /// Whether this column has auto increment.
   bool get hasAI => features.any((f) => f is AutoIncrement);
@@ -96,6 +99,7 @@ class SpecifiedColumn {
       this.dartGetterName,
       this.name,
       this.declaredAsPrimaryKey = false,
+      this.nullable = false,
       this.features = const []});
 }
 

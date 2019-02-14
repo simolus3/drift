@@ -11,5 +11,8 @@ dependencies:
   meta: '>= 1.0.0 <2.0.0'
 
 dev_dependencies:
+  sally_generator:
+    path: ../sally_generator
+  build_runner: ^1.2.6
   test: ^1.5.3
   mockito: ^4.0.0

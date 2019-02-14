@@ -115,7 +115,7 @@ class TableWriter {
   }
 
   void _writeColumnGetter(StringBuffer buffer, SpecifiedColumn column) {
-    final isNullable = false; // todo nullability for columns
+    final isNullable = column.nullable;
     final additionalParams = <String, String>{};
 
     if (column.hasAI) {
