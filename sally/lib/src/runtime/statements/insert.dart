@@ -37,7 +37,8 @@ class InsertStatement<DataClass> {
 
     ctx.buffer.write(')');
 
-    return database.executor.runInsert(ctx.sql, ctx.boundVariables);
+    await database.executor.runInsert(ctx.sql, ctx.boundVariables);
+    database.markTableUpdated(table.$tableName);
   }
 
   // TODO insert multiple values

@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
+import 'package:sally/src/runtime/executor/stream_queries.dart';
 import 'package:sally/src/runtime/executor/type_system.dart';
 import 'package:sally/src/runtime/migration.dart';
 import 'package:sally/src/runtime/statements/delete.dart';
@@ -10,9 +11,9 @@ import 'package:sally/src/runtime/statements/update.dart';
 abstract class GeneratedDatabase {
   final SqlTypeSystem typeSystem;
   final QueryExecutor executor;
+  final StreamQueryStore streamQueries = StreamQueryStore();
 
   int get schemaVersion;
-
   MigrationStrategy get migration;
 
   List<TableInfo> get allTables;
@@ -23,6 +24,10 @@ abstract class GeneratedDatabase {
   /// use the regular [GeneratedDatabase.executor] because migration happens
   /// before that executor is ready.
   Migrator _createMigrator(SqlExecutor executor) => Migrator(this, executor);
+
+  void markTableUpdated(String tableName) {
+    streamQueries.handleTableUpdates(tableName);
+  }
 
   Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
     final migrator = _createMigrator(executor);

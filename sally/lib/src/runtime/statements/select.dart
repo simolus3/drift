@@ -20,4 +20,10 @@ class SelectStatement<T, D> extends Query<T, D> {
         await ctx.database.executor.runSelect(ctx.sql, ctx.boundVariables);
     return results.map(table.map).toList();
   }
+
+  /// Creates an auto-updating stream that emits new items whenever this table
+  /// changes.
+  Stream<List<D>> watch() {
+    return database.streamQueries.registerStream(this);
+  }
 }

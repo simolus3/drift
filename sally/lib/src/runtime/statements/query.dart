@@ -13,7 +13,6 @@ import 'package:sally/src/runtime/structure/table_info.dart';
 abstract class Query<Table, DataClass> {
   @protected
   GeneratedDatabase database;
-  @protected
   TableInfo<Table, DataClass> table;
 
   Query(this.database, this.table);

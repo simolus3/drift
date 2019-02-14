@@ -15,6 +15,9 @@ void main() {
     db = TestDatabase(executor);
 
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+    when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(0));
+    when(executor.runDelete(any, any)).thenAnswer((_) => Future.value(0));
+    when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(0));
   });
 
   group('Generates SELECT statements', () {
@@ -51,6 +54,17 @@ void main() {
 
       verify(executor.runSelect(
           'SELECT * FROM users WHERE (is_awesome = 1);', argThat(isEmpty)));
+    });
+  });
+
+  group('Streams for queries', () {
+    test('update correctly', () {
+      final stream = db.select(db.users).watch();
+      stream.listen((_) => null);
+
+      db.markTableUpdated('users');
+
+      verify(executor.runSelect('SELECT * FROM users;', argThat(isEmpty))).called(2);
     });
   });
 
