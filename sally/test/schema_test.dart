@@ -9,8 +9,8 @@ void main() {
   MockQueryExecutor mockQueryExecutor;
 
   setUp(() {
-    db = TodoDb(null);
     mockQueryExecutor = MockQueryExecutor();
+    db = TodoDb(null);
   });
 
   group('Migrations', () {
@@ -19,15 +19,15 @@ void main() {
 
       // should create todos, categories and users table
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS todos '
-          '(id INTEGER NOT NULL AUTO INCREMENT, title VARCHAR NULL, '
+          '(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
           'content VARCHAR NOT NULL, target_date INTEGER NULL, '
           'category INTEGER NULL);'));
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS categories '
-          '(id INTEGER NOT NULL AUTO INCREMENT, `desc` VARCHAR NOT NULL);'));
+          '(id INTEGER PRIMARY KEY AUTOINCREMENT, `desc` VARCHAR NOT NULL);'));
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER NOT NULL AUTO INCREMENT, name VARCHAR NOT NULL, '
+          '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
           'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)));'));
     });
 
@@ -35,7 +35,7 @@ void main() {
       await Migrator(db, mockQueryExecutor).createTable(db.users);
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER NOT NULL AUTO INCREMENT, name VARCHAR NOT NULL, '
+          '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
           'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)));'));
     });
 

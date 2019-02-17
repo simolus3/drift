@@ -23,7 +23,7 @@ abstract class GeneratedDatabase {
 
   GeneratedDatabase(this.typeSystem, this.executor, {this.streamQueries}) {
     streamQueries ??= StreamQueryStore();
-    executor.databaseInfo = this;
+    executor?.databaseInfo = this;
   }
 
   /// Creates a migrator with the provided query executor. We sometimes can't
