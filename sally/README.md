@@ -100,10 +100,11 @@ If you have suggestions for new features or any other questions, feel free to
 create an issue.
 
 ##### Before this library can be released
-- Custom primary keys
 - Stabilize all end-user APIs and document them extensively
-- Support default values and expressions, auto-increment
+- More unit tests
 ##### Definitely planned for the future
+- Specify primary keys
+- Support default values and expressions
 - Allow using DAOs instead of having to put everything in the main database
 class.
 - Support more Datatypes: We should at least support `DateTime` and `Uint8List`,

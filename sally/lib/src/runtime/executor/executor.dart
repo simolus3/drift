@@ -15,7 +15,7 @@ abstract class GeneratedDatabase {
   StreamQueryStore streamQueries;
 
   int get schemaVersion;
-  MigrationStrategy get migration;
+  MigrationStrategy get migration => MigrationStrategy();
 
   List<TableInfo> get allTables;
 

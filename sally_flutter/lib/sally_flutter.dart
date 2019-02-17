@@ -15,11 +15,17 @@ export 'package:sally/sally.dart';
 class FlutterQueryExecutor extends QueryExecutor {
   final bool _inDbPath;
   final String path;
+
+  final bool logStatements;
+
   Database _db;
 
-  FlutterQueryExecutor({@required this.path}) : _inDbPath = false;
+  FlutterQueryExecutor({@required this.path, this.logStatements})
+      : _inDbPath = false;
 
-  FlutterQueryExecutor.inDatabaseFolder(this.path) : _inDbPath = true;
+  FlutterQueryExecutor.inDatabaseFolder(
+      {@required this.path, this.logStatements})
+      : _inDbPath = true;
 
   @override
   Future<bool> ensureOpen() async {
@@ -51,28 +57,40 @@ class FlutterQueryExecutor extends QueryExecutor {
     return true;
   }
 
+  void _log(String sql, List args) {
+    if (logStatements) {
+      final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
+      print('Sally: $sql with $formattedArgs');
+    }
+  }
+
   @override
   Future<int> runDelete(String statement, List args) {
+    _log(statement, args);
     return _db.rawDelete(statement, args);
   }
 
   @override
   Future<int> runInsert(String statement, List args) {
+    _log(statement, args);
     return _db.rawInsert(statement, args);
   }
 
   @override
   Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+    _log(statement, args);
     return _db.rawQuery(statement, args);
   }
 
   @override
   Future<int> runUpdate(String statement, List args) {
+    _log(statement, args);
     return _db.rawUpdate(statement, args);
   }
 
   @override
   Future<void> runCustom(String statement) {
+    _log(statement, null);
     return _db.execute(statement);
   }
 }
