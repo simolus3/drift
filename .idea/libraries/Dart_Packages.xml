@@ -437,6 +437,13 @@
             </list>
           </value>
         </entry>
+        <entry key="rxdart">
+          <value>
+            <list>
+              <option value="$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/rxdart-0.20.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="shelf">
           <value>
             <list>
@@ -772,6 +779,7 @@
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/pubspec_parse-0.1.4/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/quiver-2.0.1/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/recase-2.0.1/lib" />
+      <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/rxdart-0.20.0/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/shelf-0.7.4/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/shelf_web_socket-0.2.2+4/lib" />
       <root url="file://$USER_HOME$/Android/flutter/.pub-cache/hosted/pub.dartlang.org/source_gen-0.9.4+1/lib" />

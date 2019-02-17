@@ -1,7 +1,7 @@
 import 'package:test_api/test_api.dart';
 
-import 'lib/tables/todos.dart';
-import 'lib/utils/mocks.dart';
+import 'data/tables/todos.dart';
+import 'data/utils/mocks.dart';
 
 void main() {
   TodoDb db;

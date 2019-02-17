@@ -110,10 +110,13 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
       {this.hasAutoIncrement = false})
       : super(name, nullable);
 
+
   @override
-  void writeCustomConstraints(StringBuffer into) {
+  void writeColumnDefinition(StringBuffer into) {
     if (hasAutoIncrement) {
-      into.write(' AUTO INCREMENT');
+      into.write('${$name} $typeName PRIMARY KEY AUTOINCREMENT');
+    } else {
+      super.writeColumnDefinition(into);
     }
   }
 

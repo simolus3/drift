@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/executor/stream_queries.dart';
@@ -16,11 +18,12 @@ abstract class GeneratedDatabase {
 
   int get schemaVersion;
   MigrationStrategy get migration => MigrationStrategy();
-
+  
   List<TableInfo> get allTables;
 
   GeneratedDatabase(this.typeSystem, this.executor, {this.streamQueries}) {
     streamQueries ??= StreamQueryStore();
+    executor.databaseInfo = this;
   }
 
   /// Creates a migrator with the provided query executor. We sometimes can't
@@ -64,6 +67,10 @@ abstract class GeneratedDatabase {
 
 abstract class QueryExecutor {
   GeneratedDatabase databaseInfo;
+
+  Future<T> doWhenOpened<T>(FutureOr<T> fn(QueryExecutor e)) {
+    return ensureOpen().then((_) => fn(this));
+  }
 
   Future<bool> ensureOpen();
 

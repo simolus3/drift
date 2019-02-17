@@ -40,8 +40,10 @@ class InsertStatement<DataClass> {
 
     ctx.buffer.write(')');
 
-    await database.executor.runInsert(ctx.sql, ctx.boundVariables);
-    database.markTableUpdated(table.$tableName);
+    await database.executor.doWhenOpened((e) async {
+      await database.executor.runInsert(ctx.sql, ctx.boundVariables);
+      database.markTableUpdated(table.$tableName);
+    });
   }
 
   // TODO insert multiple values

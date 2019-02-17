@@ -44,8 +44,9 @@ class UpdateStatement<T, D> extends Query<T, D> {
     }
 
     final ctx = constructQuery();
-    final rows =
-        await ctx.database.executor.runUpdate(ctx.sql, ctx.boundVariables);
+    final rows = await ctx.database.executor.doWhenOpened((e) async {
+      return await e.runUpdate(ctx.sql, ctx.boundVariables);
+    });
 
     if (rows > 0) {
       database.markTableUpdated(table.$tableName);

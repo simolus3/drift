@@ -8,7 +8,7 @@ import 'package:sally/src/runtime/sql_types.dart';
 abstract class Expression<T extends SqlType> implements Component {}
 
 /// An expression that looks like "$a operator $b$, where $a and $b itself
-/// are expressions and operator is any string.
+/// are expressions and the operator is any string.
 abstract class InfixOperator<T extends SqlType> implements Expression<T> {
   Expression get left;
   Expression get right;

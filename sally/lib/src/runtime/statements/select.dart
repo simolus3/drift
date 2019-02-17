@@ -16,8 +16,9 @@ class SelectStatement<T, D> extends Query<T, D> {
   Future<List<D>> get() async {
     final ctx = constructQuery();
 
-    final results =
-        await ctx.database.executor.runSelect(ctx.sql, ctx.boundVariables);
+    final results = await ctx.database.executor.doWhenOpened((e) async {
+      return await ctx.database.executor.runSelect(ctx.sql, ctx.boundVariables);
+    });
     return results.map(table.map).toList();
   }
 

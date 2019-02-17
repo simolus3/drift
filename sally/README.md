@@ -104,6 +104,7 @@ create an issue.
 - More unit tests
 ##### Definitely planned for the future
 - Specify primary keys
+- Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
 - Allow using DAOs instead of having to put everything in the main database
 class.
@@ -120,6 +121,8 @@ supporting floating / fixed point numbers as well would be awesome
 - References
 - Table joins
 ##### Interesting stuff that would be nice to have
+- Find a way to hide implementation details from users while still making them
+  accessible for the generated code
 - `GROUP BY` grouping functions 
 - Support for different database engines
   - Support webapps via `AlaSQL` or a different engine

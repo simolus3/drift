@@ -1,4 +1,4 @@
-import 'package:sally/sally.dart';
+import 'package:sally/sally.dart' as sally;
 import 'package:test_api/test_api.dart';
 
 const _exampleUnixSqlite = 1550172560;
@@ -7,7 +7,7 @@ final _exampleDateTime =
     DateTime.fromMillisecondsSinceEpoch(_exampleUnixMillis);
 
 void main() {
-  final type = const DateTimeType();
+  final type = const sally.DateTimeType();
 
   group('DateTimes', () {
     test('can be read from unix stamps returned by sql', () {
