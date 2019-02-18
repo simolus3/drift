@@ -27,16 +27,9 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   String get typeName;
 
   @override
-  Expression<BoolType> equalsExp(Expression<S> compare) =>
-      Comparison.equal(this, compare);
-
-  @override
   void writeInto(GenerationContext context) {
     context.buffer.write($name);
   }
-
-  @override
-  Expression<BoolType> equals(T compare) => equalsExp(Variable<T, S>(compare));
 
   /// Checks whether the given value fits into this column. The default
   /// implementation checks whether the value is not null, as null values are
@@ -60,7 +53,7 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
       : super(name, nullable);
 
   @override
-  Expression<BoolType> like(String regex) =>
+  Expression<bool, BoolType> like(String regex) =>
       LikeOperator(this, Variable<String, StringType>(regex));
 
   @override
@@ -110,7 +103,6 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
       {this.hasAutoIncrement = false})
       : super(name, nullable);
 
-
   @override
   void writeColumnDefinition(StringBuffer into) {
     if (hasAutoIncrement) {
@@ -121,11 +113,11 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   }
 
   @override
-  Expression<BoolType> isBiggerThan(int i) =>
+  Expression<bool, BoolType> isBiggerThan(int i) =>
       Comparison(this, ComparisonOperator.more, Variable<int, IntType>(i));
 
   @override
-  Expression<BoolType> isSmallerThan(int i) =>
+  Expression<bool, BoolType> isSmallerThan(int i) =>
       Comparison(this, ComparisonOperator.less, Variable<int, IntType>(i));
 
   @override

@@ -24,7 +24,7 @@ abstract class Query<Table, DataClass> {
 
   void writeStartPart(GenerationContext ctx);
 
-  void where(Expression<BoolType> filter(Table tbl)) {
+  void where(Expression<bool, BoolType> filter(Table tbl)) {
     final predicate = filter(table.asDslTable);
 
     if (whereExpr == null) {

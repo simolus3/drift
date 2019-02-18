@@ -3,7 +3,7 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
 class Where extends Component {
-  final Expression<BoolType> predicate;
+  final Expression<bool, BoolType> predicate;
 
   Where(this.predicate);
 

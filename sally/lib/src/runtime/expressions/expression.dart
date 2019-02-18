@@ -1,15 +1,27 @@
 import 'package:meta/meta.dart';
+import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
-abstract class Expression<T extends SqlType> implements Component {}
+abstract class Expression<D, T extends SqlType<D>> implements Component {
+  /// Whether this expression is equal to the given expression.
+  Expression<bool, BoolType> equalsExp(Expression<D, T> compare) =>
+      Comparison.equal(this, compare);
+
+  /// Whether this column is equal to the given value, which must have a fitting
+  /// type. The [compare] value will be written
+  /// as a variable using prepared statements, so there is no risk of
+  /// an SQL-injection.
+  Expression<bool, BoolType> equals(D compare) =>
+      Comparison.equal(this, Variable<D, T>(compare));
+}
 
 /// An expression that looks like "$a operator $b$, where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class InfixOperator<T extends SqlType> implements Expression<T> {
+abstract class InfixOperator<D, T extends SqlType<D>> with Expression<D, T> {
   Expression get left;
   Expression get right;
   String get operator;
@@ -41,7 +53,7 @@ abstract class InfixOperator<T extends SqlType> implements Expression<T> {
 
 enum ComparisonOperator { less, lessOrEqual, equal, moreOrEqual, more }
 
-class Comparison extends InfixOperator<BoolType> {
+class Comparison extends InfixOperator<bool, BoolType> {
   static const Map<ComparisonOperator, String> operatorNames = {
     ComparisonOperator.less: '<',
     ComparisonOperator.lessOrEqual: '<=',

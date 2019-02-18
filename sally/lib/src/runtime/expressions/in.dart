@@ -3,18 +3,19 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
-Expression<BoolType> isIn<X extends SqlType<T>, T>(
-    Expression<X> expression, Iterable<T> values, {bool not = false}) {
+Expression<bool, BoolType> isIn<X extends SqlType<T>, T>(
+    Expression<T, X> expression, Iterable<T> values,
+    {bool not = false}) {
   return _InExpression(expression, values, not);
 }
 
-Expression<BoolType> isNotIn<X extends SqlType<T>, T>(
-        Expression<X> expression, Iterable<T> values) =>
+Expression<bool, BoolType> isNotIn<X extends SqlType<T>, T>(
+        Expression<T, X> expression, Iterable<T> values) =>
     isIn(expression, values, not: true);
 
-class _InExpression<X extends SqlType<T>, T> extends Expression<BoolType> {
-
-  final Expression<X> _expression;
+class _InExpression<X extends SqlType<T>, T>
+    extends Expression<bool, BoolType> {
+  final Expression<T, X> _expression;
   final Iterable<T> _values;
   final bool _not;
 
@@ -46,5 +47,4 @@ class _InExpression<X extends SqlType<T>, T> extends Expression<BoolType> {
 
     context.buffer.write(')');
   }
-
 }

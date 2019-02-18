@@ -18,7 +18,7 @@ class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
 
     final rows = ctx.database.executor.doWhenOpened((e) async {
       final rows =
-      await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
+          await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {
         database.markTableUpdated(table.$tableName);

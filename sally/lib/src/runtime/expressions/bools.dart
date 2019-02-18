@@ -2,17 +2,20 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
-Expression<BoolType> and(Expression<BoolType> a, Expression<BoolType> b) =>
+Expression<bool, BoolType> and(
+        Expression<bool, BoolType> a, Expression<bool, BoolType> b) =>
     AndExpression(a, b);
 
-Expression<BoolType> or(Expression<BoolType> a, Expression<BoolType> b) =>
+Expression<bool, BoolType> or(
+        Expression<bool, BoolType> a, Expression<bool, BoolType> b) =>
     OrExpression(a, b);
 
-Expression<BoolType> not(Expression<BoolType> a) => NotExpression(a);
+Expression<bool, BoolType> not(Expression<bool, BoolType> a) =>
+    NotExpression(a);
 
-class AndExpression extends Expression<BoolType> with InfixOperator<BoolType> {
+class AndExpression extends InfixOperator<bool, BoolType> {
   @override
-  Expression<BoolType> left, right;
+  Expression<bool, BoolType> left, right;
 
   @override
   final String operator = 'AND';
@@ -20,9 +23,9 @@ class AndExpression extends Expression<BoolType> with InfixOperator<BoolType> {
   AndExpression(this.left, this.right);
 }
 
-class OrExpression extends Expression<BoolType> with InfixOperator<BoolType> {
+class OrExpression extends InfixOperator<bool, BoolType> {
   @override
-  Expression<BoolType> left, right;
+  Expression<bool, BoolType> left, right;
 
   @override
   final String operator = 'OR';
@@ -30,8 +33,8 @@ class OrExpression extends Expression<BoolType> with InfixOperator<BoolType> {
   OrExpression(this.left, this.right);
 }
 
-class NotExpression extends Expression<BoolType> {
-  Expression<BoolType> inner;
+class NotExpression extends Expression<bool, BoolType> {
+  Expression<bool, BoolType> inner;
 
   NotExpression(this.inner);
 

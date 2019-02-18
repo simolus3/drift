@@ -2,11 +2,11 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 
-Expression<BoolType> isNull(Expression inner) => _NullCheck(inner, true);
-Expression<BoolType> isNotNull(Expression inner) => _NullCheck(inner, false);
+Expression<bool, BoolType> isNull(Expression inner) => _NullCheck(inner, true);
+Expression<bool, BoolType> isNotNull(Expression inner) =>
+    _NullCheck(inner, false);
 
-class _NullCheck extends Expression<BoolType> {
-
+class _NullCheck extends Expression<bool, BoolType> {
   final Expression _inner;
   final bool _isNull;
 
@@ -22,5 +22,4 @@ class _NullCheck extends Expression<BoolType> {
     }
     context.buffer.write('NULL');
   }
-
 }

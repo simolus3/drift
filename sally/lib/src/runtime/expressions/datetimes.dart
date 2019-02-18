@@ -2,24 +2,24 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 
-Expression<IntType> year(Expression<DateTimeType> date) =>
+Expression<int, IntType> year(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%Y', date);
-Expression<IntType> month(Expression<DateTimeType> date) =>
+Expression<int, IntType> month(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%m', date);
-Expression<IntType> day(Expression<DateTimeType> date) =>
+Expression<int, IntType> day(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%d', date);
-Expression<IntType> hour(Expression<DateTimeType> date) =>
+Expression<int, IntType> hour(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%H', date);
-Expression<IntType> minute(Expression<DateTimeType> date) =>
+Expression<int, IntType> minute(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%M', date);
-Expression<IntType> second(Expression<DateTimeType> date) =>
+Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%S', date);
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.
-class _StrftimeSingleFieldExpression extends Expression<IntType> {
+class _StrftimeSingleFieldExpression extends Expression<int, IntType> {
   final String format;
-  final Expression<DateTimeType> date;
+  final Expression<DateTime, DateTimeType> date;
 
   _StrftimeSingleFieldExpression(this.format, this.date);
 

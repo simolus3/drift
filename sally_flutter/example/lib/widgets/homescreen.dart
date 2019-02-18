@@ -11,36 +11,31 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       drawer: Text('Hi'),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 9,
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: Text('TODO List'),
-                ),
-                StreamBuilder<List<TodoEntry>>(
-                  stream: bloc.todosForHomepage,
-                  builder: (ctx, snapshot) {
-                    final data = snapshot.hasData ? snapshot.data : <TodoEntry>[];
-                    
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, index) => Text(data[index].content),
-                        childCount: data.length,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            title: Text('TODO List'),
           ),
-          Expanded(
-            flex: 9,
-            child: Container(),
+          StreamBuilder<List<TodoEntry>>(
+            stream: bloc.todosForHomepage,
+            builder: (ctx, snapshot) {
+              final data = snapshot.hasData ? snapshot.data : <TodoEntry>[];
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, index) => Text(data[index].content),
+                  childCount: data.length,
+                ),
+              );
+            },
           ),
         ],
+      ),
+      bottomSheet: Material(
+        elevation: 12.0,
+        child: TextField(
+          onSubmitted: bloc.createTodoEntry,
+        ),
       ),
     );
   }

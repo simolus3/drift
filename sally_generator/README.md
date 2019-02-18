@@ -1,22 +1,7 @@
-A library for Dart developers.
+# Sally Generator
 
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+This library contains the generator that turns your `Table` classes from sally
+into database code. When using the sally, you'll probably want to use the 
+sally_flutter implementation directly.
 
-## Usage
-
-A simple usage example:
-
-```dart
-import 'package:sally_generator/sally_generator.dart';
-
-main() {
-  var awesome = new Awesome();
-}
-```
-
-## Features and bugs
-
-Please file feature requests and bugs at the [issue tracker][tracker].
-
-[tracker]: http://example.com/issues/replaceme
+Please see the homepage of [sally](https://github.com/simolus3/sally) for details.

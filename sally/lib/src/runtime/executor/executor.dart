@@ -18,7 +18,7 @@ abstract class GeneratedDatabase {
 
   int get schemaVersion;
   MigrationStrategy get migration => MigrationStrategy();
-  
+
   List<TableInfo> get allTables;
 
   GeneratedDatabase(this.typeSystem, this.executor, {this.streamQueries}) {

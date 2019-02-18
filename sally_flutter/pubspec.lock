@@ -73,7 +73,7 @@ packages:
       path: "../sally"
       relative: true
     source: path
-    version: "0.0.0"
+    version: "1.0.0"
   sky_engine:
     dependency: transitive
     description: flutter

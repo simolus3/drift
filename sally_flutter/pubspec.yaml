@@ -1,8 +1,10 @@
 name: sally_flutter
-description: Flutter implementation for the sally database
-version: 0.0.1
-author:
-homepage:
+description: Flutter implementation of sally, a safe and reactive persistence library for Dart applications
+version: 1.0.0
+authors:
+  - Flutter Community <community@flutter.zone>
+  - Simon Binder <simolus3@gmail.com>
+maintainer: Simon Binder (@simolus3)
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"

@@ -3,7 +3,8 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:test_api/test_api.dart';
 
-typedef Expression<IntType> _Extractor(Expression<DateTimeType> d);
+typedef Expression<int, IntType> _Extractor(
+    Expression<DateTime, DateTimeType> d);
 
 /// Tests the top level [year], [month], ..., [second] methods
 void main() {
