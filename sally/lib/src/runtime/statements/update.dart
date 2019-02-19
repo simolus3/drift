@@ -33,7 +33,7 @@ class UpdateStatement<T, D> extends Query<T, D> {
   }
 
   /// Writes all non-null fields from [entity] into the columns of all rows
-  /// that match the set [where] and [limit] constraints. Warning: That also
+  /// that match the set [where] and limit constraints. Warning: That also
   /// means that, when you're not setting a where or limit expression
   /// explicitly, this method will update all rows in the specific table.
   Future<int> write(D entity) async {

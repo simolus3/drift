@@ -6,22 +6,27 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 /// to a datetime.
 Expression<int, IntType> year(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%Y', date);
+
 /// Extracts the (UTC) month from the given expression that resolves
 /// to a datetime.
 Expression<int, IntType> month(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%m', date);
+
 /// Extracts the (UTC) day from the given expression that resolves
 /// to a datetime.
 Expression<int, IntType> day(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%d', date);
+
 /// Extracts the (UTC) hour from the given expression that resolves
 /// to a datetime.
 Expression<int, IntType> hour(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%H', date);
+
 /// Extracts the (UTC) minute from the given expression that resolves
 /// to a datetime.
 Expression<int, IntType> minute(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%M', date);
+
 /// Extracts the (UTC) second from the given expression that resolves
 /// to a datetime.
 Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>

@@ -10,6 +10,7 @@ import 'package:sally/src/runtime/sql_types.dart';
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
   final String $name;
+
   /// Whether null values are allowed for this column.
   final bool $nullable;
 
@@ -97,7 +98,8 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 }
 
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
-    with ComparableExpr implements IntColumn {
+    with ComparableExpr
+    implements IntColumn {
   final bool hasAutoIncrement;
 
   @override

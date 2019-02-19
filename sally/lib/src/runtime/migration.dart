@@ -14,6 +14,7 @@ Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
 class MigrationStrategy {
   /// Executes when the database is opened for the first time.
   final OnCreate onCreate;
+
   /// Executes when the database has been opened previously, but the last access
   /// happened at a lower [GeneratedDatabase.schemaVersion].
   final OnUpgrade onUpgrade;

@@ -14,8 +14,10 @@ abstract class GeneratedDatabase {
   /// The type system to use with this database. The type system is responsible
   /// for mapping Dart objects into sql expressions and vice-versa.
   final SqlTypeSystem typeSystem;
+
   /// The executor to use when queries are executed.
   final QueryExecutor executor;
+
   /// Manages active streams from select statements.
   @visibleForTesting
   StreamQueryStore streamQueries;
@@ -23,6 +25,7 @@ abstract class GeneratedDatabase {
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
   int get schemaVersion;
+
   /// Defines the migration strategy that will determine how to deal with an
   /// increasing [schemaVersion]. The default value only supports creating the
   /// database by creating all tables known in this database. When you have

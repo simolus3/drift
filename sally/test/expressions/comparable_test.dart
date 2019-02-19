@@ -21,7 +21,7 @@ void main() {
 
   group('can compare with other expressions', () {
     final compare = GeneratedIntColumn('compare', false);
-    
+
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
         final ctx = GenerationContext(null);

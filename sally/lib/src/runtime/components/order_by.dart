@@ -5,6 +5,7 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 enum OrderingMode {
   /// Ascending ordering mode (lowest items first)
   asc,
+
   /// Descending ordering mode (highest items first)
   desc
 }
@@ -17,9 +18,9 @@ const _modeToString = {
 /// A single term in a [OrderBy] clause. The priority of this term is determined
 /// by its position in [OrderBy.terms].
 class OrderingTerm extends Component {
-
   /// The expression after which the ordering should happen
   final Expression expression;
+
   /// The ordering mode (ascending or descending).
   final OrderingMode mode;
 
@@ -31,7 +32,6 @@ class OrderingTerm extends Component {
     context.writeWhitespace();
     context.buffer.write(_modeToString[mode]);
   }
-
 }
 
 /// An order-by clause as part of a select statement. The clause can consist
@@ -39,7 +39,6 @@ class OrderingTerm extends Component {
 /// the later terms only being considered if the first term considers two rows
 /// equal.
 class OrderBy extends Component {
-
   final List<OrderingTerm> terms;
 
   OrderBy(this.terms);
@@ -60,5 +59,4 @@ class OrderBy extends Component {
       term.writeInto(context);
     }
   }
-
 }

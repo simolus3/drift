@@ -4,6 +4,7 @@ import 'package:sally/src/runtime/expressions/expression.dart';
 
 /// Expression that is true if the inner expression resolves to a null value.
 Expression<bool, BoolType> isNull(Expression inner) => _NullCheck(inner, true);
+
 /// Expression that is true if the inner expression resolves to a non-null
 /// value.
 Expression<bool, BoolType> isNotNull(Expression inner) =>

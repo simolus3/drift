@@ -31,8 +31,7 @@ void main() {
           .write(TodoEntry(title: 'Changed title'));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ? WHERE id < ?;',
-          ['Changed title', 50]));
+          'UPDATE todos SET title = ? WHERE id < ?;', ['Changed title', 50]));
     });
   });
 
