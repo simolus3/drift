@@ -154,7 +154,7 @@ Future feelingLazy() {
   return (delete(todos)..limit(10)).go();
 }
 ```
-__⚠️ Caution:__ If you don't explicitly add a `where` or `limit` clause on updates or deletes, 
+__⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
 the statement will affect all rows in the table!
 
 ### Inserts

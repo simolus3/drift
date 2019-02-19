@@ -37,13 +37,6 @@ abstract class Query<Table, DataClass> {
     }
   }
 
-  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
-  /// is provided as well, the first [offset] rows will be skipped and not
-  /// included in the result.
-  void limit(int limit, {int offset}) {
-    limitExpr = Limit(limit, offset);
-  }
-
   /// Constructs the query that can then be sent to the database executor.
   @protected
   GenerationContext constructQuery() {

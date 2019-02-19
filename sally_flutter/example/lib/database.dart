@@ -63,7 +63,7 @@ class Database extends _$Database {
       (select(todos)..where((t) => isNull(t.category))).watch();
 
   Future test() {
-    (delete(todos)..limit(10)).go();
+
   }
 
   Future addTodoEntry(TodoEntry entry) {

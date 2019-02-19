@@ -25,14 +25,13 @@ void main() {
           'UPDATE todos SET title = ? category = ?;', ['Updated title', 3]));
     });
 
-    test('with WHERE and LIMIT clauses', () async {
+    test('with a WHERE clause', () async {
       await (db.update(db.todosTable)
-            ..where((t) => t.id.isSmallerThanValue(50))
-            ..limit(10))
+            ..where((t) => t.id.isSmallerThanValue(50)))
           .write(TodoEntry(title: 'Changed title'));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ? WHERE id < ? LIMIT 10;',
+          'UPDATE todos SET title = ? WHERE id < ?;',
           ['Changed title', 50]));
     });
   });

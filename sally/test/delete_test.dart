@@ -24,12 +24,11 @@ void main() {
 
     test('for complex components', () async {
       await (db.delete(db.users)
-            ..where((u) => or(not(u.isAwesome), u.id.isSmallerThanValue(100)))
-            ..limit(10, offset: 100))
+            ..where((u) => or(not(u.isAwesome), u.id.isSmallerThanValue(100))))
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE (NOT (is_awesome = 1)) OR (id < ?) LIMIT 10, 100;',
+          'DELETE FROM users WHERE (NOT (is_awesome = 1)) OR (id < ?);',
           [100]));
     });
   });
