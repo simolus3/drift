@@ -6,6 +6,7 @@ export 'package:sally/src/dsl/database.dart';
 
 export 'package:sally/src/runtime/executor/executor.dart';
 export 'package:sally/src/runtime/executor/type_system.dart';
+export 'package:sally/src/runtime/expressions/comparable.dart';
 export 'package:sally/src/runtime/expressions/user_api.dart';
 export 'package:sally/src/runtime/statements/query.dart';
 export 'package:sally/src/runtime/statements/select.dart';

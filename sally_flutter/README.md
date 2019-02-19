@@ -226,8 +226,8 @@ let us know by creating an issue!
 
 - Refactor comparison API
   1. Instead of defining them in `IntColumn`, move `isBiggerThan` and `isSmallerThan` into
-     a new class (comparable expression?)
-  2. Support for non-strict comparisons (<=, >=)
+     a new class (comparable expression?) ✔️
+  2. Support for non-strict comparisons (<=, >=) ✔️
   3. Support `ORDER BY` clauses.
 - Specify primary keys
 - Simple `COUNT(*)` operations (group operations will be much more complicated)

@@ -97,7 +97,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 }
 
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
-    implements IntColumn {
+    with ComparableExpr implements IntColumn {
   final bool hasAutoIncrement;
 
   @override
@@ -115,14 +115,6 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
       super.writeColumnDefinition(into);
     }
   }
-
-  @override
-  Expression<bool, BoolType> isBiggerThan(int i) =>
-      Comparison(this, ComparisonOperator.more, Variable<int, IntType>(i));
-
-  @override
-  Expression<bool, BoolType> isSmallerThan(int i) =>
-      Comparison(this, ComparisonOperator.less, Variable<int, IntType>(i));
 
   @override
   bool isAcceptableValue(int value, bool duringInsert) =>

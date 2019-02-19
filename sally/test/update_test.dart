@@ -27,7 +27,7 @@ void main() {
 
     test('with WHERE and LIMIT clauses', () async {
       await (db.update(db.todosTable)
-            ..where((t) => t.id.isSmallerThan(50))
+            ..where((t) => t.id.isSmallerThanValue(50))
             ..limit(10))
           .write(TodoEntry(title: 'Changed title'));
 

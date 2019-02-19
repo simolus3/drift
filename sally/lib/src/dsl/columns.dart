@@ -1,16 +1,12 @@
 // todo more datatypes (at least binary blobs)
 
 import 'package:sally/src/runtime/expressions/expression.dart';
+import 'package:sally/src/runtime/expressions/comparable.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
 abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
 
-abstract class IntColumn extends Column<int, IntType> {
-  /// Whether this column is strictly bigger than [i].
-  Expression<bool, BoolType> isBiggerThan(int i);
-
-  /// Whether this column is strictly smaller than [i].
-  Expression<bool, BoolType> isSmallerThan(int i);
+abstract class IntColumn extends Column<int, IntType> implements IntExpression {
 }
 
 /// A column that stores boolean values. Booleans will be stored as an integer
