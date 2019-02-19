@@ -6,8 +6,11 @@ import 'package:sally/src/runtime/expressions/text.dart';
 import 'package:sally/src/runtime/expressions/variables.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
+/// Base class for the implementation of [Column].
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
+  /// The sql name of this column.
   final String $name;
+  /// Whether null values are allowed for this column.
   final bool $nullable;
 
   GeneratedColumn(this.$name, this.$nullable);
@@ -23,6 +26,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   @visibleForOverriding
   void writeCustomConstraints(StringBuffer into) {}
 
+  /// The sql type name, such as VARCHAR for texts.
   @visibleForOverriding
   String get typeName;
 
@@ -53,8 +57,8 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
       : super(name, nullable);
 
   @override
-  Expression<bool, BoolType> like(String regex) =>
-      LikeOperator(this, Variable<String, StringType>(regex));
+  Expression<bool, BoolType> like(String pattern) =>
+      LikeOperator(this, Variable<String, StringType>(pattern));
 
   @override
   final String typeName = 'VARCHAR';
@@ -131,5 +135,5 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
       : super($name, $nullable);
 
   @override
-  String get typeName => 'INTEGER';
+  String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
 }

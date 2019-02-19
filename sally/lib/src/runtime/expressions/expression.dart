@@ -53,6 +53,7 @@ abstract class InfixOperator<D, T extends SqlType<D>> with Expression<D, T> {
 
 enum ComparisonOperator { less, lessOrEqual, equal, moreOrEqual, more }
 
+/// An expression that compares two child expressions.
 class Comparison extends InfixOperator<bool, BoolType> {
   static const Map<ComparisonOperator, String> operatorNames = {
     ComparisonOperator.less: '<',

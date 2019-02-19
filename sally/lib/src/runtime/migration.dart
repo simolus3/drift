@@ -12,7 +12,10 @@ Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
         'adapting the migrations getter in your database class.');
 
 class MigrationStrategy {
+  /// Executes when the database is opened for the first time.
   final OnCreate onCreate;
+  /// Executes when the database has been opened previously, but the last access
+  /// happened at a lower [GeneratedDatabase.schemaVersion].
   final OnUpgrade onUpgrade;
 
   MigrationStrategy({
@@ -30,10 +33,12 @@ class Migrator {
 
   Migrator(this._db, this._executor);
 
+  /// Creates all tables specified for the database, if they don't exist
   Future<void> createAllTables() async {
     return Future.wait(_db.allTables.map(createTable));
   }
 
+  /// Creates the given table if it doesn't exist
   Future<void> createTable(TableInfo table) async {
     final sql = StringBuffer();
 
@@ -62,6 +67,7 @@ class Migrator {
     return issueCustomQuery('DROP TABLE IF EXISTS $name;');
   }
 
+  /// Adds the given column to the specified table.
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
     final sql = StringBuffer();
 
@@ -73,6 +79,7 @@ class Migrator {
     return issueCustomQuery(sql.toString());
   }
 
+  /// Executes the custom query.
   Future<void> issueCustomQuery(String sql) async {
     return _executor(sql);
   }

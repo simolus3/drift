@@ -1,8 +1,12 @@
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/expressions/variables.dart';
 
-/// Base class for generated classes.
+/// Base class for generated classes. [TableDsl] is the type specified by the
+/// user that extends [Table], [DataClass] is the type of the data class
+/// generated from the table.
 abstract class TableInfo<TableDsl, DataClass> {
+  /// Type system sugar. Implementations are likely to inherit from both
+  /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
 
   /// The primary key of this table. Can be null if no custom primary key has
@@ -24,5 +28,6 @@ abstract class TableInfo<TableDsl, DataClass> {
   /// values of the field.
   Map<String, Variable> entityToSql(DataClass instance);
 
+  /// Maps the given row returned by the database into the fitting data class.
   DataClass map(Map<String, dynamic> data);
 }

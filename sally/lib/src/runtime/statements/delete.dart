@@ -4,6 +4,7 @@ import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
 class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
+  /// This constructor should be called by [GeneratedDatabase.delete] for you.
   DeleteStatement(
       GeneratedDatabase database, TableInfo<UserTable, dynamic> table)
       : super(database, table);
@@ -13,18 +14,19 @@ class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
     ctx.buffer.write('DELETE FROM ${table.$tableName}');
   }
 
+  /// Deletes all rows matched by the set [where] clause and the optional
+  /// limit.
   Future<int> go() async {
     final ctx = constructQuery();
 
-    final rows = ctx.database.executor.doWhenOpened((e) async {
+    return ctx.database.executor.doWhenOpened((e) async {
       final rows =
           await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {
         database.markTableUpdated(table.$tableName);
       }
+      return rows;
     });
-
-    return rows;
   }
 }

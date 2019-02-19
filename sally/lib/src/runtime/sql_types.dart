@@ -22,7 +22,7 @@ class BoolType extends SqlType<bool> {
 
   @override
   bool mapFromDatabaseResponse(response) {
-    return !(response == 0);
+    return response != 0;
   }
 
   @override
@@ -46,7 +46,7 @@ class StringType extends SqlType<String> {
   String mapToSqlConstant(String content) {
     // TODO: implement mapToSqlConstant, we would probably have to take care
     // of sql injection vulnerabilities here
-    return null;
+    throw UnimplementedError("Strings can't be mapped to sql literals yet");
   }
 
   @override
@@ -60,7 +60,7 @@ class IntType extends SqlType<int> {
   int mapFromDatabaseResponse(response) => response as int;
 
   @override
-  String mapToSqlConstant(int content) => content.toString();
+  String mapToSqlConstant(int content) => content?.toString() ?? 'NULL';
 
   @override
   mapToSqlVariable(int content) {

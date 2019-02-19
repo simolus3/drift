@@ -3,12 +3,16 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/sql_types.dart';
 
+/// An expression that is true if the given [expression] resolves to any of the
+/// values in [values].
 Expression<bool, BoolType> isIn<X extends SqlType<T>, T>(
     Expression<T, X> expression, Iterable<T> values,
     {bool not = false}) {
   return _InExpression(expression, values, not);
 }
 
+/// An expression that is true if the given [expression] does not resolve to any
+/// of the values in [values].
 Expression<bool, BoolType> isNotIn<X extends SqlType<T>, T>(
         Expression<T, X> expression, Iterable<T> values) =>
     isIn(expression, values, not: true);

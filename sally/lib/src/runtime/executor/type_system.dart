@@ -1,5 +1,7 @@
 import 'package:sally/src/runtime/sql_types.dart';
 
+/// Manages the set of [SqlType] known to a database. It's also responsible for
+/// returning the appropriate sql type for a given dart type.
 class SqlTypeSystem {
   final List<SqlType> types;
 

@@ -34,6 +34,14 @@ void main() {
     });
   });
 
+  group('executes DELETE statements', () {
+    test('and reports the correct amount of affected rows', () async {
+      when(executor.runDelete(any, any)).thenAnswer((_) async => 12);
+
+      expect(await db.delete(db.users).go(), 12);
+    });
+  });
+
   group('Table updates for delete statements', () {
     test('are issued when data was changed', () async {
       when(executor.runDelete(any, any)).thenAnswer((_) => Future.value(3));
