@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/components/limit.dart';
+import 'package:sally/src/runtime/components/order_by.dart';
 import 'package:sally/src/runtime/components/where.dart';
 import 'package:sally/src/runtime/executor/executor.dart';
 import 'package:sally/src/runtime/expressions/bools.dart';
@@ -19,6 +20,8 @@ abstract class Query<Table, DataClass> {
 
   @protected
   Where whereExpr;
+  @protected
+  OrderBy orderByExpr;
   @protected
   Limit limitExpr;
 
@@ -50,6 +53,13 @@ abstract class Query<Table, DataClass> {
       if (needsWhitespace) ctx.writeWhitespace();
 
       whereExpr.writeInto(ctx);
+      needsWhitespace = true;
+    }
+
+    if (orderByExpr != null) {
+      if (needsWhitespace) ctx.writeWhitespace();
+
+      orderByExpr.writeInto(ctx);
       needsWhitespace = true;
     }
 

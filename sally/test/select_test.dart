@@ -31,6 +31,17 @@ void main() {
           .runSelect('SELECT * FROM users WHERE name LIKE ?;', ['Dash%']));
     });
 
+    test('with order-by clauses', () async {
+      await (db.select(db.users)
+        ..orderBy([
+          (u) => OrderingTerm(expression: u.isAwesome, mode: OrderingMode.desc),
+          (u) => OrderingTerm(expression: u.id)
+        ])).get();
+
+      verify(executor.runSelect('SELECT * FROM users ORDER BY '
+          '(is_awesome = 1) DESC, id ASC;', argThat(isEmpty)));
+    });
+
     test('with complex predicates', () {
       (db.select(db.users)
             ..where((u) =>

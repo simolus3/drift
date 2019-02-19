@@ -1,8 +1,11 @@
+import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/components/limit.dart';
 import 'package:sally/src/runtime/executor/executor.dart';
 import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
+
+typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
 class SelectStatement<T, D> extends Query<T, D> {
   SelectStatement(GeneratedDatabase database, TableInfo<T, D> table)
@@ -28,6 +31,13 @@ class SelectStatement<T, D> extends Query<T, D> {
   /// included in the result.
   void limit(int limit, {int offset}) {
     limitExpr = Limit(limit, offset);
+  }
+
+  /// Orders the result by the given clauses. The clauses coming first in the
+  /// list have a higher priority, the later clauses are only considered if the
+  /// first clause considers two rows to be equal.
+  void orderBy(List<OrderClauseGenerator<T>> clauses) {
+    orderByExpr = OrderBy(clauses.map((t) => t(table.asDslTable)).toList());
   }
 
   /// Creates an auto-updating stream that emits new items whenever this table

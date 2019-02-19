@@ -4,6 +4,7 @@ export 'package:sally/src/dsl/table.dart';
 export 'package:sally/src/dsl/columns.dart';
 export 'package:sally/src/dsl/database.dart';
 
+export 'package:sally/src/runtime/components/order_by.dart';
 export 'package:sally/src/runtime/executor/executor.dart';
 export 'package:sally/src/runtime/executor/type_system.dart';
 export 'package:sally/src/runtime/expressions/comparable.dart';
