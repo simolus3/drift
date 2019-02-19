@@ -62,8 +62,8 @@ class Database extends _$Database {
   Stream<List<TodoEntry>> get todosWithoutCategories =>
       (select(todos)..where((t) => isNull(t.category))).watch();
 
-  Future test() {
-
+  Future<List<TodoEntry>> sortEntriesAlphabetically() {
+    return (select(todos)..orderBy([(u) => OrderingTerm(expression: u.title)])).get();
   }
 
   Future addTodoEntry(TodoEntry entry) {

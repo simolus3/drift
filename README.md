@@ -137,6 +137,16 @@ and `isSmallerThan`. You can compose expressions using `and(a, b), or(a, b)` and
 #### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
 the amount of rows to return and an optional offset.
+#### Ordering
+You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
+ordering terms from the table.
+```dart
+Future<List<TodoEntry>> sortEntriesAlphabetically() {
+  return (select(todos)..orderBy([(t) => OrderingTerm(expression: t.title)])).get();
+}
+```
+You can also reverse the order by setting the `mode` property of the `OrderingTerm` to
+`OrderingMode.desc`.
 ### Updates and deletes
 You can use the generated `row` class to update individual fields of any row:
 ```dart
@@ -154,7 +164,7 @@ Future feelingLazy() {
   return (delete(todos)..limit(10)).go();
 }
 ```
-__⚠️ Caution:__ If you don't explicitly add a `where` or `limit` clause on updates or deletes, 
+__⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
 the statement will affect all rows in the table!
 
 ### Inserts
@@ -218,17 +228,10 @@ You can also add individual tables or drop them.
 - No joins
 - No `group by` or window functions
 - Custom primary key support is very limited
-- No `ORDER BY`
 
 ### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
 let us know by creating an issue!
-
-- Refactor comparison API
-  1. Instead of defining them in `IntColumn`, move `isBiggerThan` and `isSmallerThan` into
-     a new class (comparable expression?)
-  2. Support for non-strict comparisons (<=, >=)
-  3. Support `ORDER BY` clauses.
 - Specify primary keys
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
