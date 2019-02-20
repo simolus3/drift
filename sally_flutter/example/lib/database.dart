@@ -50,4 +50,8 @@ class Database extends _$Database {
   Future addEntry(TodoEntry entry) {
     return into(todos).insert(entry);
   }
+
+  Future deleteEntry(TodoEntry entry) {
+    return (delete(todos)..where((t) => t.id.equals(entry.id))).go();
+  }
 }
