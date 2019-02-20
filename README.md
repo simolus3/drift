@@ -161,8 +161,8 @@ Future moveImportantTasksIntoCategory(Category target) {
 }
 
 Future feelingLazy() {
-  // delete 10 todo entries just cause
-  return (delete(todos)..limit(10)).go();
+  // delete the oldest nine entries
+  return (delete(todos)..where((t) => t.id.isSmallerThanValue(10))).go();
 }
 ```
 __⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
@@ -205,7 +205,7 @@ class Todos extends Table {
 We can now change the `database` class like this:
 ```dart
   @override
-  int get schemaVersion => 1; // bump because the tables have changed
+  int get schemaVersion => 2; // bump because the tables have changed
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -214,7 +214,7 @@ We can now change the `database` class like this:
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from == 1) {
-        // we added the dueDate propery in the change from version 1
+        // we added the dueDate property in the change from version 1
         await m.addColumn(todos, todos.dueDate);
       }
     }
