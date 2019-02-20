@@ -43,30 +43,11 @@ class Database extends _$Database {
     }
   );
 
-  Stream<List<Category>> get definedCategories => select(categories).watch();
-
-  Stream<List<TodoEntry>> todosInCategories(List<Category> categories) {
-    final ids = categories.map((c) => c.id);
-
-    return (select(todos)..where((t) => isIn(t.category, ids))).watch();
+  Stream<List<TodoEntry>> allEntries() {
+    return select(todos).watch();
   }
 
-  Future<void> deleteOldEntries() {
-    return (delete(todos)..where((t) => year(t.targetDate).equals(2017))).go();
-  }
-
-  Stream<List<TodoEntry>> watchEntriesInCategory(Category c) {
-    return (select(todos)..where((t) => t.category.equals(c.id))).watch();
-  }
-
-  Stream<List<TodoEntry>> get todosWithoutCategories =>
-      (select(todos)..where((t) => isNull(t.category))).watch();
-
-  Future<List<TodoEntry>> sortEntriesAlphabetically() {
-    return (select(todos)..orderBy([(u) => OrderingTerm(expression: u.title)])).get();
-  }
-
-  Future addTodoEntry(TodoEntry entry) {
+  Future addEntry(TodoEntry entry) {
     return into(todos).insert(entry);
   }
 }

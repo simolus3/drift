@@ -7,6 +7,8 @@ import 'package:sally/sally.dart';
 class StreamQueryStore {
   final List<_QueryStream> _activeStreams = [];
 
+  // todo cache streams (return same instance for same sql + variables)
+
   StreamQueryStore();
 
   /// Creates a new stream from the select statement.

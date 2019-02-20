@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sally_example/bloc.dart';
-import 'package:sally_example/widgets/homescreen.dart';
+import 'database.dart';
+import 'widgets/homescreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,24 +13,18 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
 
-  TodoBloc _bloc;
+  Database _db;
 
   @override
   void initState() {
-    _bloc = TodoBloc();
+    _db = Database();
     super.initState();
   }
 
   @override
-  void dispose() {
-    _bloc.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      bloc: _bloc,
+    return DatabaseProvider(
+      db: _db,
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
@@ -42,16 +36,16 @@ class MyAppState extends State<MyApp> {
   }
 }
 
-class BlocProvider extends InheritedWidget {
+class DatabaseProvider extends InheritedWidget {
 
-  final TodoBloc bloc;
+  final Database db;
 
-  BlocProvider({@required this.bloc, Widget child}) : super(child: child);
+  DatabaseProvider({@required this.db, Widget child}) : super(child: child);
 
   @override
-  bool updateShouldNotify(BlocProvider oldWidget) {
-    return oldWidget.bloc != bloc;
+  bool updateShouldNotify(DatabaseProvider oldWidget) {
+    return oldWidget.db != db;
   }
 
-  static TodoBloc provideBloc(BuildContext ctx) => (ctx.inheritFromWidgetOfExactType(BlocProvider) as BlocProvider).bloc;
+  static Database provideDb(BuildContext ctx) => (ctx.inheritFromWidgetOfExactType(DatabaseProvider) as DatabaseProvider).db;
 }
