@@ -122,12 +122,14 @@ List<Snake> calculateDiff(DiffInput input) {
   final first = snakes.isEmpty ? null : snakes.first;
 
   if (first == null || first.x != 0 || first.y != 0) {
-    snakes.insert(0, Snake()
-      ..x = 0
-      ..y = 0
-      ..removal = false
-      ..size = 0
-      ..reverse = false);
+    snakes.insert(
+        0,
+        Snake()
+          ..x = 0
+          ..y = 0
+          ..removal = false
+          ..size = 0
+          ..reverse = false);
   }
 
   return snakes;
@@ -239,5 +241,5 @@ Snake _diffPartial(DiffInput input, int startOld, int endOld, int startNew,
   }
 
   throw StateError("Unexpected case: Please make sure the lists don't change "
-  'during a diff');
+      'during a diff');
 }

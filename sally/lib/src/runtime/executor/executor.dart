@@ -76,14 +76,16 @@ abstract class GeneratedDatabase {
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
-  @protected @visibleForTesting
+  @protected
+  @visibleForTesting
   InsertStatement<T> into<T>(TableInfo<dynamic, T> table) =>
       InsertStatement<T>(this, table);
 
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where
   /// clause on that table and then use [UpdateStatement.write].
-  @protected @visibleForTesting
+  @protected
+  @visibleForTesting
   UpdateStatement<Tbl, ReturnType> update<Tbl, ReturnType>(
           TableInfo<Tbl, ReturnType> table) =>
       UpdateStatement(this, table);
@@ -91,14 +93,16 @@ abstract class GeneratedDatabase {
   /// Starts a query on the given table. Queries can be limited with an limit
   /// or a where clause and can either return a current snapshot or a continuous
   /// stream of data
-  @protected @visibleForTesting
+  @protected
+  @visibleForTesting
   SelectStatement<Table, ReturnType> select<Table, ReturnType>(
       TableInfo<Table, ReturnType> table) {
     return SelectStatement<Table, ReturnType>(this, table);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
-  @protected @visibleForTesting
+  @protected
+  @visibleForTesting
   DeleteStatement<Table> delete<Table>(TableInfo<Table, dynamic> table) =>
       DeleteStatement<Table>(this, table);
 }

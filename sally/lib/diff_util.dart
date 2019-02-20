@@ -6,21 +6,23 @@ library diff_util;
 import 'package:sally/src/utils/android_diffutils_port.dart' as impl;
 
 class EditAction {
-
   /// The index of the first list on which this action should be applied. If
   /// this action [isDelete], that index and the next [amount] indices should be
   /// deleted. Otherwise, this index should be moved back by [amount] and
   /// entries from the second list (starting at [indexFromOther]) should be
   /// inserted into the gap.
   final int index;
+
   /// The amount of entries affected by this action
   final int amount;
+
   /// If this action [isInsert], this is the first index from the second list
   /// from where the items should be taken from.
   final int indexFromOther;
 
   /// Whether this action should delete entries from the first list
   bool get isDelete => indexFromOther == null;
+
   /// Whether this action should insert entries into the first list
   bool get isInsert => indexFromOther != null;
 
@@ -30,14 +32,13 @@ class EditAction {
   String toString() {
     if (isDelete) {
       return 'EditAction: Delete $amount entries from the first list, starting '
-        'at index $index';
+          'at index $index';
     } else {
       return 'EditAction: Insert $amount entries into the first list, taking '
           'them from the second list starting at $indexFromOther. The entries '
-        'should be written starting at index $index';
+          'should be written starting at index $index';
     }
   }
-
 }
 
 /// Finds the shortest edit script that turns list [a] into list [b].

@@ -9,7 +9,8 @@ List<T> applyEditScript<T>(List<T> a, List<T> b, List<EditAction> actions) {
       final deleteStartIndex = action.index;
       copy.removeRange(deleteStartIndex, deleteStartIndex + action.amount);
     } else {
-      final toAdd = b.getRange(action.indexFromOther, action.indexFromOther + action.amount);
+      final toAdd = b.getRange(
+          action.indexFromOther, action.indexFromOther + action.amount);
       copy.insertAll(action.index, toAdd);
     }
   }
@@ -18,7 +19,7 @@ List<T> applyEditScript<T>(List<T> a, List<T> b, List<EditAction> actions) {
 }
 
 void main() {
-  final a  = ['a', 'b', 'c', 'a', 'b', 'b', 'a'];
+  final a = ['a', 'b', 'c', 'a', 'b', 'b', 'a'];
   final b = ['c', 'b', 'a', 'b', 'a', 'c'];
 
   test('diff matcher should produce a correct edit script', () {
