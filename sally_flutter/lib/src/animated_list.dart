@@ -1,123 +1,118 @@
-/*
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:sally_flutter/src/utils.dart';
+import 'package:sally/diff_util.dart';
 
-typedef Widget AppearingAnimationBuilder<T>(
-    BuildContext ctx, T item, Animation<double> animation,
-    {int index});
-typedef Widget OutgoingAnimationBuilder<T>(
-    BuildContext ctx, T item, Animation<double> animation,
-    {int index});
+typedef Widget ItemBuilder<T>(BuildContext context, T item, Animation<double> anim);
+typedef Widget RemovedItemBuilder<T>(BuildContext context, T item, Animation<double> anim);
 
-/// A list that animatse
-class AnimatedStreamList<T> extends StatefulWidget {
-  static const Widget _defaultPlaceholder = SizedBox();
+/// An [AnimatedList] that shows the result of a sally query stream.
+class SallyAnimatedList<T> extends StatefulWidget {
 
-  /// Builder that builds widget as they appear on the list.
-  final AppearingAnimationBuilder<T> appearing;
+  final Stream<List<T>> stream;
+  final ItemBuilder<T> itemBuilder;
+  final RemovedItemBuilder<T> removedItemBuilder;
 
-  /// Builder that builds widgets as they leave the list.
-  final OutgoingAnimationBuilder<T> leaving;
-
-  /// Widget that will be built when the stream emits an empty list after all
-  /// remaining list items have animated away.
-  final WidgetBuilder empty;
-
-  /// Widget that will be built when the stream has not yet emitted any item.
-  final WidgetBuilder loading;
-
-  AnimatedStreamList(
-      {@required this.appearing,
-      @required this.leaving,
-      this.empty,
-      this.loading});
+  SallyAnimatedList({@required this.stream, @required this.itemBuilder, @required this.removedItemBuilder});
 
   @override
-  _AnimatedStreamListState<T> createState() => _AnimatedStreamListState<T>();
+  _SallyAnimatedListState createState() {
+    return _SallyAnimatedListState();
+  }
 }
 
-const Duration _kDuration = Duration(milliseconds: 300);
-
-class _AnimatedStreamListState<T> extends State<AnimatedStreamList<T>>
-    with TickerProviderStateMixin {
-  StreamSubscription _subscription;
+class _SallyAnimatedListState<T> extends State<SallyAnimatedList<T>> {
 
   List<T> _lastSnapshot;
-  final List<_AnimatedItemState> _insertingItems = [];
-  final List<_AnimatedItemState> _leavingItems = [];
+  int _initialItemCount;
 
-  void _handleDataReceived(List<T> data) {
-    if (_lastSnapshot == null) {
-      for (var i = 0; i < data.length; i++) {
-        _animateIncomingItem(i);
-      }
-    } else {
+  StreamSubscription _subscription;
 
+  final GlobalKey<AnimatedListState> _key = GlobalKey();
+  AnimatedListState get listState => _key.currentState;
+
+  @override
+  void initState() {
+    _setupSubscription();
+    super.initState();
+  }
+
+  void _receiveData(List<T> data) {
+    if (listState == null) {
+      setState(() {
+        _lastSnapshot = data;
+        _initialItemCount = data.length;
+      });
+      return;
     }
 
-    setState(() {
+    if (_lastSnapshot == null) {
+      // no diff possible. Initialize lists instead of diffing
       _lastSnapshot = data;
-    });
+      for (var i = 0; i < data.length; i++) {
+        listState.insertItem(i);
+      }
+    } else {
+      final editScript = diff(_lastSnapshot, data);
+
+      for (var action in editScript) {
+        if (action.isDelete) {
+          // we need to delete action.amount items at index action.index
+          for (var i = 0; i < action.amount; i++) {
+            // i items have already been deleted, so + 1 for the index. Notice
+            // that we don't have to do this when calling removeItem on the
+            // animated list state, as it will reflect the operation immediately.
+            final itemHere = _lastSnapshot[action.index + i];
+            listState.removeItem(action.index, (ctx, anim) {
+              return widget.removedItemBuilder(ctx, itemHere, anim);
+            });
+          }
+        } else {
+          for (var i = 0; i < action.amount; i++) {
+            listState.insertItem(action.index + i);
+          }
+        }
+      }
+
+      setState(() {
+        _lastSnapshot = data;
+      });
+    }
   }
 
-  void _animateIncomingItem(int index) {
-    final controller = AnimationController(vsync: this);
-    final state = _AnimatedItemState(controller, true, index);
-
-    insertIntoSortedList<_AnimatedItemState>(_insertingItems, state,
-        compare: (a, b) => a.itemIndex.compareTo(b.itemIndex));
-  }
-
-  void _animateOutgoingItem(int index) {
-
+  void _setupSubscription() {
+    _subscription = widget.stream.listen(_receiveData);
   }
 
   @override
-  void initState() {}
+  void didUpdateWidget(SallyAnimatedList<T> oldWidget) {
+    _subscription?.cancel();
+    _lastSnapshot = null;
+    _setupSubscription();
 
-  @override
-  void didUpdateWidget(AnimatedStreamList oldWidget) {}
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   void dispose() {
-    for (var item in _insertingItems) {
-      item._controller.dispose();
-    }
-    for (var item in _leavingItems) {
-      item._controller.dispose();
-    }
-
     _subscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_lastSnapshot == null) {
-      // no data yet, show placeholder
-      return widget.loading != null
-          ? widget.loading(context)
-          : AnimatedStreamList._defaultPlaceholder;
-    } else if (_lastSnapshot.isEmpty && _leavingItems.isEmpty) {
-      return widget.empty != null
-          ? widget.empty(context)
-          : AnimatedStreamList._defaultPlaceholder;
-    }
+    if (_lastSnapshot == null)
+      return const SizedBox();
 
-    return ListView.builder(
-      itemBuilder: (ctx, i) {},
-      itemCount: _lastSnapshot.length + _leavingItems.length,
+    return AnimatedList(
+      key: _key,
+      initialItemCount: _initialItemCount ?? 0,
+      itemBuilder: (ctx, index, anim) {
+        final item = _lastSnapshot[index];
+        final child = widget.itemBuilder(ctx, item, anim);
+
+        return child;
+      },
     );
   }
 }
-
-class _AnimatedItemState {
-  final AnimationController _controller;
-  final bool isInserting;
-  int itemIndex;
-
-  _AnimatedItemState(this._controller, this.isInserting, this.itemIndex);
-}
-*/
