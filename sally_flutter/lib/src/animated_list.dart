@@ -3,17 +3,21 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:sally/diff_util.dart';
 
-typedef Widget ItemBuilder<T>(BuildContext context, T item, Animation<double> anim);
-typedef Widget RemovedItemBuilder<T>(BuildContext context, T item, Animation<double> anim);
+typedef Widget ItemBuilder<T>(
+    BuildContext context, T item, Animation<double> anim);
+typedef Widget RemovedItemBuilder<T>(
+    BuildContext context, T item, Animation<double> anim);
 
 /// An [AnimatedList] that shows the result of a sally query stream.
 class SallyAnimatedList<T> extends StatefulWidget {
-
   final Stream<List<T>> stream;
   final ItemBuilder<T> itemBuilder;
   final RemovedItemBuilder<T> removedItemBuilder;
 
-  SallyAnimatedList({@required this.stream, @required this.itemBuilder, @required this.removedItemBuilder});
+  SallyAnimatedList(
+      {@required this.stream,
+      @required this.itemBuilder,
+      @required this.removedItemBuilder});
 
   @override
   _SallyAnimatedListState createState() {
@@ -22,7 +26,6 @@ class SallyAnimatedList<T> extends StatefulWidget {
 }
 
 class _SallyAnimatedListState<T> extends State<SallyAnimatedList<T>> {
-
   List<T> _lastSnapshot;
   int _initialItemCount;
 
@@ -101,8 +104,7 @@ class _SallyAnimatedListState<T> extends State<SallyAnimatedList<T>> {
 
   @override
   Widget build(BuildContext context) {
-    if (_lastSnapshot == null)
-      return const SizedBox();
+    if (_lastSnapshot == null) return const SizedBox();
 
     return AnimatedList(
       key: _key,

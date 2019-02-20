@@ -32,16 +32,13 @@ class Database extends _$Database {
   int get schemaVersion => 1;
 
   @override
-  MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) {
-      return m.createAllTables();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      if (from == 1) {
-        await m.addColumn(todos, todos.targetDate);
-      }
-    }
-  );
+  MigrationStrategy get migration => MigrationStrategy(onCreate: (Migrator m) {
+        return m.createAllTables();
+      }, onUpgrade: (Migrator m, int from, int to) async {
+        if (from == 1) {
+          await m.addColumn(todos, todos.targetDate);
+        }
+      });
 
   Stream<List<TodoEntry>> allEntries() {
     return select(todos).watch();

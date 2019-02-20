@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 

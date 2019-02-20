@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/executor/executor.dart';
 import 'package:sally/src/runtime/statements/query.dart';

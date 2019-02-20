@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/structure/columns.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';

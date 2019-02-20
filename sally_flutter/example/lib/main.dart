@@ -12,7 +12,6 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-
   Database _db;
 
   @override
@@ -37,7 +36,6 @@ class MyAppState extends State<MyApp> {
 }
 
 class DatabaseProvider extends InheritedWidget {
-
   final Database db;
 
   DatabaseProvider({@required this.db, Widget child}) : super(child: child);
@@ -47,5 +45,7 @@ class DatabaseProvider extends InheritedWidget {
     return oldWidget.db != db;
   }
 
-  static Database provideDb(BuildContext ctx) => (ctx.inheritFromWidgetOfExactType(DatabaseProvider) as DatabaseProvider).db;
+  static Database provideDb(BuildContext ctx) =>
+      (ctx.inheritFromWidgetOfExactType(DatabaseProvider) as DatabaseProvider)
+          .db;
 }

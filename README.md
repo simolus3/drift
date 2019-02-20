@@ -84,7 +84,7 @@ class MyDatabase {
 ```
 
 __⚠️ Warning:__ Even though it might look like it, the content of a `Table` class does not support full Dart code. It can only
-be used to declare the table name, it's primary keys and columns. The code inside of a table class will never be 
+be used to declare the table name, its primary key and columns. The code inside of a table class will never be 
 executed. Instead, the generator will take a look at your table classes to figure out how their structure looks like.
 This won't work if the body of your tables is not constant. This should not be problem, but please be aware of this as you can't put logic inside these classes.
 

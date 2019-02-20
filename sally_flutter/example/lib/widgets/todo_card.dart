@@ -3,7 +3,6 @@ import 'package:sally_example/database.dart';
 import 'package:sally_example/main.dart';
 
 class TodoCard extends StatelessWidget {
-
   final TodoEntry entry;
 
   TodoCard(this.entry) : super(key: ObjectKey(entry.id));
