@@ -15,11 +15,12 @@ API that will deliver auto-updating streams for your queries.
     + [Select statements](#select-statements)
       - [Where](#where)
       - [Limit](#limit)
+      - [Ordering](#ordering)
     + [Updates and deletes](#updates-and-deletes)
     + [Inserts](#inserts)
   * [Migrations](#migrations)
   * [TODO-List and current limitations](#todo-list-and-current-limitations)
-    + [Limitions (at the moment)](#limitions--at-the-moment-)
+    + [Limitations (at the moment)](#limitations-at-the-moment)
     + [Planned for the future](#planned-for-the-future)
     + [Interesting stuff that would be nice to have](#interesting-stuff-that-would-be-nice-to-have)
 
@@ -224,7 +225,7 @@ We can now change the `database` class like this:
 You can also add individual tables or drop them.
 
 ## TODO-List and current limitations
-### Limitions (at the moment)
+### Limitations (at the moment)
 - No joins
 - No `group by` or window functions
 - Custom primary key support is very limited
