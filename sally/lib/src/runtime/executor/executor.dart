@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
+import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/executor/stream_queries.dart';
 import 'package:sally/src/runtime/executor/type_system.dart';
 import 'package:sally/src/runtime/migration.dart';
@@ -105,6 +106,27 @@ abstract class GeneratedDatabase {
   @visibleForTesting
   DeleteStatement<Table> delete<Table>(TableInfo<Table, dynamic> table) =>
       DeleteStatement<Table>(this, table);
+
+  /// Executes a custom delete or update statement and returns the amount of
+  /// rows that have been changed.
+  /// You can use the [updates] parameter so that sally knows which tables are
+  /// affected by your query. All select streams that depend on a table
+  /// specified there will then issue another query.
+  Future<int> updateCustom(String query,
+      {List<Variable> variables = const [], Set<TableInfo> updates}) async {
+    final ctx = GenerationContext(this);
+    final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
+
+    final affectedRows = await executor.runUpdate(query, mappedArgs);
+
+    if (updates != null) {
+      for (var table in updates) {
+        await streamQueries.handleTableUpdates(table.$tableName);
+      }
+    }
+
+    return affectedRows;
+  }
 }
 
 /// A query executor is responsible for executing statements on a database and

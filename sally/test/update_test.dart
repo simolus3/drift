@@ -62,4 +62,39 @@ void main() {
       verifyNever(streamQueries.handleTableUpdates(any));
     });
   });
+
+  group('custom updates', () {
+    test('execute the correct sql', () async {
+      await db.updateCustom('DELETE FROM users');
+
+      verify(executor.runUpdate('DELETE FROM users', []));
+    });
+
+    test('map the variables correctly', () async {
+      await db.updateCustom(
+          'DELETE FROM users WHERE name = ? AND birthdate < ?',
+          variables: [
+            Variable.withString('Name'),
+            Variable.withDateTime(
+                DateTime.fromMillisecondsSinceEpoch(1551297563000))
+          ]);
+
+      verify(executor.runUpdate(
+          'DELETE FROM users WHERE name = ? AND birthdate < ?',
+          ['Name', 1551297563]));
+    });
+
+    test('returns information from executor', () async {
+      when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(10));
+
+      expect(await db.updateCustom(''), 10);
+    });
+
+    test('informs about updated tables', () async {
+      await db.updateCustom('', updates: Set.of([db.users, db.todosTable]));
+
+      verify(streamQueries.handleTableUpdates('users'));
+      verify(streamQueries.handleTableUpdates('todos'));
+    });
+  });
 }

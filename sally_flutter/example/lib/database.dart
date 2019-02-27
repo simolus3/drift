@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:sally_flutter/sally_flutter.dart';
 
 part 'database.g.dart';

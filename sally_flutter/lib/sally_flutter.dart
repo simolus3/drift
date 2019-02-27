@@ -4,6 +4,7 @@
 /// [sally](https://github.com/simolus3/sally)
 library sally_flutter;
 
+import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:sally/sally.dart';
