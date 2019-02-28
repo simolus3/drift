@@ -189,6 +189,8 @@ If a column is nullable or has a default value (this includes auto-increments), 
 can be omitted. All other fields must be set and non-null. The `insert` method will throw
 otherwise.
 
+'
+
 ## Migrations
 Sally provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
@@ -226,6 +228,8 @@ You can also add individual tables or drop them.
 
 ## TODO-List and current limitations
 ### Limitations (at the moment)
+Please note that a workaround for most on this list exists with custom statements.
+
 - No joins
 - No `group by` or window functions
 - Custom primary key support is very limited

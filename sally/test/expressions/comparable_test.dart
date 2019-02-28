@@ -2,8 +2,11 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:test_api/test_api.dart';
 
+import '../data/tables/todos.dart';
+
 void main() {
   final expression = GeneratedIntColumn('col', false);
+  final db = TodoDb(null);
 
   final comparisons = {
     expression.isSmallerThan: '<',
@@ -24,7 +27,7 @@ void main() {
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext(null);
+        final ctx = GenerationContext(db);
 
         fn(compare).writeInto(ctx);
 
@@ -36,7 +39,7 @@ void main() {
   group('can compare with values', () {
     comparisonsVal.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext(null);
+        final ctx = GenerationContext(db);
 
         fn(12).writeInto(ctx);
 

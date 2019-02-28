@@ -65,13 +65,13 @@ void main() {
 
   group('custom updates', () {
     test('execute the correct sql', () async {
-      await db.updateCustom('DELETE FROM users');
+      await db.customUpdate('DELETE FROM users');
 
       verify(executor.runUpdate('DELETE FROM users', []));
     });
 
     test('map the variables correctly', () async {
-      await db.updateCustom(
+      await db.customUpdate(
           'DELETE FROM users WHERE name = ? AND birthdate < ?',
           variables: [
             Variable.withString('Name'),
@@ -87,11 +87,11 @@ void main() {
     test('returns information from executor', () async {
       when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(10));
 
-      expect(await db.updateCustom(''), 10);
+      expect(await db.customUpdate(''), 10);
     });
 
     test('informs about updated tables', () async {
-      await db.updateCustom('', updates: Set.of([db.users, db.todosTable]));
+      await db.customUpdate('', updates: Set.of([db.users, db.todosTable]));
 
       verify(streamQueries.handleTableUpdates('users'));
       verify(streamQueries.handleTableUpdates('todos'));

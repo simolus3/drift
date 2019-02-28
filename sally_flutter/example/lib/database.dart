@@ -23,6 +23,13 @@ class Categories extends Table {
   TextColumn get description => text().named('desc')();
 }
 
+class CategoryWithCount {
+  final Category category;
+  final int count; // amount of entries in this category
+
+  CategoryWithCount(this.category, this.count);
+}
+
 @UseSally(tables: [Todos, Categories])
 class Database extends _$Database {
   Database()

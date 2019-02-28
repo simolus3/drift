@@ -4,12 +4,14 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/components/limit.dart';
 import 'package:sally/src/runtime/executor/executor.dart';
+import 'package:sally/src/runtime/executor/stream_queries.dart';
 import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
-class SelectStatement<T, D> extends Query<T, D> {
+class SelectStatement<T, D> extends Query<T, D>
+    implements TableChangeListener<List<D>> {
   SelectStatement(GeneratedDatabase database, TableInfo<T, D> table)
       : super(database, table);
 
@@ -47,4 +49,71 @@ class SelectStatement<T, D> extends Query<T, D> {
   Stream<List<D>> watch() {
     return database.createStream(this);
   }
+
+  @override
+  Future<List<D>> handleDataChanged() {
+    return get();
+  }
+
+  @override
+  bool isAffectedBy(String table) {
+    return table == super.table.$tableName;
+  }
+}
+
+class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
+  /// Tables this select statement reads from
+  final Set<TableInfo> tables;
+  final String query;
+  final List<Variable> variables;
+  final GeneratedDatabase db;
+
+  CustomSelectStatement(this.query, this.variables, this.tables, this.db);
+
+  Future<List<QueryRow>> read() => handleDataChanged();
+
+  @override
+  Future<List<QueryRow>> handleDataChanged() async {
+    final ctx = GenerationContext(db);
+    final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
+
+    final result =
+        await db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
+
+    return result.map((row) => QueryRow(row, db)).toList();
+  }
+
+  @override
+  bool isAffectedBy(String table) {
+    return tables.any((t) => t.$tableName == table);
+  }
+}
+
+/// For custom select statement, represents a row in the result set.
+class QueryRow {
+  final Map<String, dynamic> _data;
+  final GeneratedDatabase _db;
+
+  QueryRow(this._data, this._db);
+
+  /// Reads an arbitrary value from the row and maps it to a fitting dart type.
+  /// The dart type [T] must be supported by the type system of the database
+  /// used (mostly contains booleans, strings, integers and dates).
+  T read<T>(String key) {
+    final type = _db.typeSystem.forDartType<T>();
+
+    return type.mapFromDatabaseResponse(_data[key]);
+  }
+
+  /// Reads a bool from the column named [key].
+  bool readBool(String key) => read<bool>(key);
+
+  /// Reads a string from the column named [key].
+  String readString(String key) => read<String>(key);
+
+  /// Reads a int from the column named [key].
+  int readInt(String key) => read<int>(key);
+
+  /// Reads a [DateTime] from the column named [key].
+  DateTime readDateTime(String key) => read<DateTime>(key);
 }

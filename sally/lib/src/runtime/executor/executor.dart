@@ -57,7 +57,7 @@ abstract class GeneratedDatabase {
 
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
-  Stream<List<T>> createStream<T>(SelectStatement<dynamic, T> stmt) =>
+  Stream<List<T>> createStream<T>(TableChangeListener<List<T>> stmt) =>
       streamQueries.registerStream(stmt);
 
   /// Handles database creation by delegating the work to the [migration]
@@ -112,12 +112,13 @@ abstract class GeneratedDatabase {
   /// You can use the [updates] parameter so that sally knows which tables are
   /// affected by your query. All select streams that depend on a table
   /// specified there will then issue another query.
-  Future<int> updateCustom(String query,
+  Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
     final ctx = GenerationContext(this);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final affectedRows = await executor.runUpdate(query, mappedArgs);
+    final affectedRows =
+        executor.doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
 
     if (updates != null) {
       for (var table in updates) {
@@ -126,6 +127,25 @@ abstract class GeneratedDatabase {
     }
 
     return affectedRows;
+  }
+
+  /// Executes a custom select statement once. To use the variables, mark them
+  /// with a "?" in your [query]. They will then be changed to the appropriate
+  /// value.
+  Future<List<QueryRow>> customSelect(String query,
+      {List<Variable> variables = const []}) async {
+    return CustomSelectStatement(query, variables, Set(), this).read();
+  }
+
+  /// Creates a stream from a custom select statement.To use the variables, mark
+  /// them with a "?" in your [query]. They will then be changed to the
+  /// appropriate value. The stream will re-emit items when any table in
+  /// [readsFrom] changes, so be sure to set it to the set of tables your query
+  /// reads data from.
+  Stream<List<QueryRow>> customSelectStream(String query,
+      {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
+    final tables = readsFrom ?? Set();
+    return createStream(CustomSelectStatement(query, variables, tables, this));
   }
 }
 

@@ -2,6 +2,16 @@ import 'dart:async';
 
 import 'package:sally/sally.dart';
 
+/// Internal interface to mark classes that respond to table changes
+abstract class TableChangeListener<T> {
+  /// Called to check if this listener should update after the table with the
+  /// given name has changed.
+  bool isAffectedBy(String table);
+
+  /// Called to reload data from the table after it has changed.
+  Future<T> handleDataChanged();
+}
+
 /// Keeps track of active streams created from [SelectStatement]s and updates
 /// them when needed.
 class StreamQueryStore {
@@ -12,7 +22,7 @@ class StreamQueryStore {
   StreamQueryStore();
 
   /// Creates a new stream from the select statement.
-  Stream<List<T>> registerStream<T>(SelectStatement<dynamic, T> statement) {
+  Stream<List<T>> registerStream<T>(TableChangeListener<List<T>> statement) {
     final stream = _QueryStream(statement, this);
     _activeStreams.add(stream);
     return stream.stream;
@@ -34,13 +44,13 @@ class StreamQueryStore {
   }
 }
 
-class _QueryStream<T, D> {
-  final SelectStatement<T, D> query;
+class _QueryStream<T> {
+  final TableChangeListener<T> listener;
   final StreamQueryStore _store;
 
-  StreamController<List<D>> _controller;
+  StreamController<T> _controller;
 
-  Stream<List<D>> get stream {
+  Stream<T> get stream {
     _controller ??= StreamController.broadcast(
       onListen: _onListen,
       onCancel: _onCancel,
@@ -49,7 +59,7 @@ class _QueryStream<T, D> {
     return _controller.stream;
   }
 
-  _QueryStream(this.query, this._store);
+  _QueryStream(this.listener, this._store);
 
   void _onListen() {
     // first listener added, fetch query
@@ -70,14 +80,12 @@ class _QueryStream<T, D> {
     // Fetch data if it's needed, publish that data if it's possible.
     if (!_controller.hasListener) return;
 
-    final data = await query.get();
+    final data = await listener.handleDataChanged();
 
     if (!_controller.isClosed) {
       _controller.add(data);
     }
   }
 
-  bool isAffectedByTableChange(String table) {
-    return table == query.table.$tableName;
-  }
+  bool isAffectedByTableChange(String table) => listener.isAffectedBy(table);
 }
