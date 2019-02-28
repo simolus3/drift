@@ -14,6 +14,18 @@ class TodoEntry {
   final int category;
   TodoEntry(
       {this.id, this.title, this.content, this.targetDate, this.category});
+  factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
+    return TodoEntry(
+      id: intType.mapFromDatabaseResponse(data['id']),
+      title: stringType.mapFromDatabaseResponse(data['title']),
+      content: stringType.mapFromDatabaseResponse(data['content']),
+      targetDate: dateTimeType.mapFromDatabaseResponse(data['target_date']),
+      category: intType.mapFromDatabaseResponse(data['category']),
+    );
+  }
   @override
   int get hashCode =>
       ((((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
@@ -75,16 +87,7 @@ class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   TodoEntry map(Map<String, dynamic> data) {
-    final intType = _db.typeSystem.forDartType<int>();
-    final stringType = _db.typeSystem.forDartType<String>();
-    final dateTimeType = _db.typeSystem.forDartType<DateTime>();
-    return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      title: stringType.mapFromDatabaseResponse(data['title']),
-      content: stringType.mapFromDatabaseResponse(data['content']),
-      targetDate: dateTimeType.mapFromDatabaseResponse(data['target_date']),
-      category: intType.mapFromDatabaseResponse(data['category']),
-    );
+    return TodoEntry.fromData(data, _db);
   }
 
   @override
@@ -113,6 +116,14 @@ class Category {
   final int id;
   final String description;
   Category({this.id, this.description});
+  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return Category(
+      id: intType.mapFromDatabaseResponse(data['id']),
+      description: stringType.mapFromDatabaseResponse(data['`desc`']),
+    );
+  }
   @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override
@@ -147,12 +158,7 @@ class _$CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => Set();
   @override
   Category map(Map<String, dynamic> data) {
-    final intType = _db.typeSystem.forDartType<int>();
-    final stringType = _db.typeSystem.forDartType<String>();
-    return Category(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      description: stringType.mapFromDatabaseResponse(data['`desc`']),
-    );
+    return Category.fromData(data, _db);
   }
 
   @override

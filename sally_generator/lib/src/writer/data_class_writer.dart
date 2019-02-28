@@ -1,3 +1,4 @@
+import 'package:recase/recase.dart';
 import 'package:sally_generator/src/model/specified_table.dart';
 
 class DataClassWriter {
@@ -20,8 +21,12 @@ class DataClassWriter {
       ..write(table.columns
           .map((column) => 'this.${column.dartGetterName}')
           .join(', '))
-      ..write('});')
-      ..write('@override\n int get hashCode => ');
+      ..write('});');
+
+      // Also write parsing factory
+      _writeMappingConstructor(buffer);
+
+      buffer.write('@override\n int get hashCode => ');
 
     if (table.columns.isEmpty) {
       buffer.write('identityHashCode(this); \n');
@@ -31,7 +36,7 @@ class DataClassWriter {
     }
 
     // override ==
-    //    return identical(this, other) || (other is Todo && other.id == id && other.)
+    //    return identical(this, other) || (other is DataClass && other.id == id && other.)
     buffer
       ..write('@override\nbool operator ==(other) => ')
       ..write('identical(this, other) || (other is ${table.dartTypeName}');
@@ -48,6 +53,40 @@ class DataClassWriter {
 
     // finish overrides method and class declaration
     buffer.write(');\n}');
+  }
+
+  void _writeMappingConstructor(StringBuffer buffer) {
+    final dataClassName = table.dartTypeName;
+
+    buffer
+        .write('factory $dataClassName.fromData(Map<String, dynamic> data, GeneratedDatabase db) {\n');
+
+    final dartTypeToResolver = <String, String>{};
+
+    final types = table.columns.map((c) => c.dartTypeName).toSet();
+    for (var usedType in types) {
+      // final intType = db.typeSystem.forDartType<int>();
+      final resolver = '${ReCase(usedType).camelCase}Type';
+      dartTypeToResolver[usedType] = resolver;
+
+      buffer.write(
+          'final $resolver = db.typeSystem.forDartType<$usedType>();\n');
+    }
+
+    // finally, the mighty constructor invocation:
+    buffer.write('return $dataClassName(');
+
+    for (var column in table.columns) {
+      // id: intType.mapFromDatabaseResponse(data["id])
+      final getter = column.dartGetterName;
+      final resolver = dartTypeToResolver[column.dartTypeName];
+      final typeParser =
+          '$resolver.mapFromDatabaseResponse(data[\'${column.name.name}\'])';
+
+      buffer.write('$getter: $typeParser,');
+    }
+
+    buffer.write(');}\n');
   }
 
   /// Recursively creates the implementation for hashCode of the data class,

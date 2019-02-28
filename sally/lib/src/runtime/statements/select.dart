@@ -91,10 +91,10 @@ class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
 
 /// For custom select statement, represents a row in the result set.
 class QueryRow {
-  final Map<String, dynamic> _data;
+  final Map<String, dynamic> data;
   final GeneratedDatabase _db;
 
-  QueryRow(this._data, this._db);
+  QueryRow(this.data, this._db);
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
   /// The dart type [T] must be supported by the type system of the database
@@ -102,7 +102,7 @@ class QueryRow {
   T read<T>(String key) {
     final type = _db.typeSystem.forDartType<T>();
 
-    return type.mapFromDatabaseResponse(_data[key]);
+    return type.mapFromDatabaseResponse(data[key]);
   }
 
   /// Reads a bool from the column named [key].
