@@ -11,6 +11,8 @@ class MyApp extends StatefulWidget {
   }
 }
 
+// We use this widget to set up the material app and provide an InheritedWidget that
+// the rest of this simple app can then use to access the database
 class MyAppState extends State<MyApp> {
   Database _db;
 
@@ -25,7 +27,7 @@ class MyAppState extends State<MyApp> {
     return DatabaseProvider(
       db: _db,
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Sally Demo',
         theme: ThemeData(
           primarySwatch: Colors.purple,
         ),

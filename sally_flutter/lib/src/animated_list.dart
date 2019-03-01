@@ -20,8 +20,8 @@ class SallyAnimatedList<T> extends StatefulWidget {
       @required this.removedItemBuilder});
 
   @override
-  _SallyAnimatedListState createState() {
-    return _SallyAnimatedListState();
+  _SallyAnimatedListState<T> createState() {
+    return _SallyAnimatedListState<T>();
   }
 }
 

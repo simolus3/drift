@@ -13,8 +13,11 @@ class HomeScreen extends StatefulWidget {
   }
 }
 
+/// Shows a list of todo entries and displays a text input to add another one
 class HomeScreenState extends State<HomeScreen> {
+  // we only use this to reset the input field at the bottom when a entry has been added 
   final TextEditingController controller = TextEditingController();
+
   Database get db => DatabaseProvider.provideDb(context);
 
   @override
@@ -23,50 +26,65 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text('Todo list'),
       ),
+      // A SallyAnimatedList automatically animates incoming and leaving items, we only
+      // have to tell it what data to display and how to turn data into widgets.
       body: SallyAnimatedList<TodoEntry>(
-        stream: db.allEntries(),
-        itemBuilder: (ctx, dynamic item, animation) {
+        stream: db.allEntries(), // we want to show an updating stream of all todo entries
+        itemBuilder: (ctx, item, animation) {
+          // When a new item arrives, it will expand verticallly
           return SizeTransition(
-            key: ObjectKey((item as TodoEntry).id),
+            key: ObjectKey(item.id),
             sizeFactor: animation,
             axis: Axis.vertical,
-            child: TodoCard(item as TodoEntry),
+            child: TodoCard(item),
           );
         },
-        removedItemBuilder: (ctx, dynamic item, animation) {
+        removedItemBuilder: (ctx, item, animation) {
+          // and it will leave the same way after being deleted.
           return SizeTransition(
-            key: ObjectKey((item as TodoEntry).id),
+            key: ObjectKey(item.id),
             sizeFactor: animation,
             axis: Axis.vertical,
-            child: TodoCard(item as TodoEntry),
+            child: AnimatedBuilder(
+              animation: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: TodoCard(item),
+              builder: (context, child) {
+                return Opacity(
+                  opacity: animation.value,
+                  child: child,
+                );
+              }
+            ),
           );
         },
       ),
       bottomSheet: Material(
         elevation: 12.0,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('What needs to be done?'),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      onSubmitted: (_) => _createTodoEntry(),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('What needs to be done?'),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        onSubmitted: (_) => _createTodoEntry(),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.send),
-                    color: Theme.of(context).accentColor,
-                    onPressed: _createTodoEntry,
-                  ),
-                ],
-              ),
-            ],
+                    IconButton(
+                      icon: Icon(Icons.send),
+                      color: Theme.of(context).accentColor,
+                      onPressed: _createTodoEntry,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

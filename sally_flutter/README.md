@@ -18,6 +18,7 @@ API that will deliver auto-updating streams for your queries.
       - [Ordering](#ordering)
     + [Updates and deletes](#updates-and-deletes)
     + [Inserts](#inserts)
+    + [Custom statements](#custom-statements)
   * [Migrations](#migrations)
   * [TODO-List and current limitations](#todo-list-and-current-limitations)
     + [Limitations (at the moment)](#limitations-at-the-moment)
