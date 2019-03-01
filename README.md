@@ -27,21 +27,21 @@ API that will deliver auto-updating streams for your queries.
 
 ## Getting started
 ### Adding the dependency
-First, let's add sally to your project's `pubspec.yaml`:
-TODO: Finish this part of the readme when sally is out on pub.
+First, let's add sally to your project's `pubspec.yaml`. The library is not yet
+out on pub, so you'll need to use the git repository for now:
 ```yaml
 dependencies:
   sally:
     git:
-      url: 
+      url: https://github.com/simolus3/sally.git
       path: sally/
 
 dev_dependencies:
   sally_generator:
     git:
-      url:
+      url: https://github.com/simolus3/sally.git
       path: sally_generator/
-  build_runner:
+  build_runner: ^1.2.0
 ```
 We're going to use the `sally_flutter` library to specify tables and access the database. The
 `sally_generator` library will take care of generating the necessary code so the
