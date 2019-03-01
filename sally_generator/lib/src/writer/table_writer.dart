@@ -48,7 +48,8 @@ class TableWriter {
     // write primary key getter: Set<Column> get $primaryKey => <GeneratedColumn>{id};
     final primaryKeyColumns = table.primaryKey.map((c) => c.dartGetterName);
     buffer
-      ..write('@override\nSet<GeneratedColumn> get \$primaryKey => <GeneratedColumn>{')
+      ..write(
+          '@override\nSet<GeneratedColumn> get \$primaryKey => <GeneratedColumn>{')
       ..write(primaryKeyColumns.join(', '))
       ..write('};\n');
 

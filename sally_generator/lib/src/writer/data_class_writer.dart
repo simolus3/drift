@@ -23,10 +23,10 @@ class DataClassWriter {
           .join(', '))
       ..write('});');
 
-      // Also write parsing factory
-      _writeMappingConstructor(buffer);
+    // Also write parsing factory
+    _writeMappingConstructor(buffer);
 
-      buffer.write('@override\n int get hashCode => ');
+    buffer.write('@override\n int get hashCode => ');
 
     if (table.columns.isEmpty) {
       buffer.write('identityHashCode(this); \n');
@@ -58,8 +58,8 @@ class DataClassWriter {
   void _writeMappingConstructor(StringBuffer buffer) {
     final dataClassName = table.dartTypeName;
 
-    buffer
-        .write('factory $dataClassName.fromData(Map<String, dynamic> data, GeneratedDatabase db) {\n');
+    buffer.write(
+        'factory $dataClassName.fromData(Map<String, dynamic> data, GeneratedDatabase db) {\n');
 
     final dartTypeToResolver = <String, String>{};
 
@@ -69,8 +69,8 @@ class DataClassWriter {
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
 
-      buffer.write(
-          'final $resolver = db.typeSystem.forDartType<$usedType>();\n');
+      buffer
+          .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
     }
 
     // finally, the mighty constructor invocation:
