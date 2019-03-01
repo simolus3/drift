@@ -12,7 +12,7 @@ class SpecifiedTable {
   String get tableInfoName => '_\$${fromClass.name}Table';
 
   // todo support primary keys
-  Set<SpecifiedColumn> get primaryKey => Set();
+  Set<SpecifiedColumn> get primaryKey => <SpecifiedColumn>{};
 
   const SpecifiedTable(
       {this.fromClass, this.columns, this.sqlName, this.dartTypeName});

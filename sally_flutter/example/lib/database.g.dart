@@ -84,7 +84,7 @@ class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
       targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => Set();
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   TodoEntry map(Map<String, dynamic> data) {
     return TodoEntry.fromData(data, _db);
@@ -155,7 +155,7 @@ class _$CategoriesTable extends Categories
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => Set();
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   Category map(Map<String, dynamic> data) {
     return Category.fromData(data, _db);

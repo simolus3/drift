@@ -53,7 +53,7 @@ class Database extends _$Database {
     // each category
     return customSelectStream(
         'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
-        readsFrom: Set.of([todos, categories])).map((rows) {
+        readsFrom: {todos, categories}).map((rows) {
       // when we have the result set, map each row to the data class
       return rows
           .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.readInt('amount')))

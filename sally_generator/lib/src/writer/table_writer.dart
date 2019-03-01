@@ -45,14 +45,12 @@ class TableWriter {
 
     _writeValidityCheckMethod(buffer);
 
-    // todo replace set syntax with literal once dart supports it
-    // write primary key getter: Set<Column> get $primaryKey => Set().add(id);
+    // write primary key getter: Set<Column> get $primaryKey => <GeneratedColumn>{id};
     final primaryKeyColumns = table.primaryKey.map((c) => c.dartGetterName);
-    buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => Set()');
-    for (var pkColumn in primaryKeyColumns) {
-      buffer.write('..add($pkColumn)');
-    }
-    buffer.write('\n;');
+    buffer
+      ..write('@override\nSet<GeneratedColumn> get \$primaryKey => <GeneratedColumn>{')
+      ..write(primaryKeyColumns.join(', '))
+      ..write('};\n');
 
     _writeMappingMethod(buffer);
     _writeReverseMappingMethod(buffer);
@@ -65,9 +63,9 @@ class TableWriter {
     final dataClassName = table.dartTypeName;
 
     buffer
-        ..write('@override\n$dataClassName map(Map<String, dynamic> data) {\n')
-        ..write('return $dataClassName.fromData(data, _db);\n')
-        ..write('}\n');
+      ..write('@override\n$dataClassName map(Map<String, dynamic> data) {\n')
+      ..write('return $dataClassName.fromData(data, _db);\n')
+      ..write('}\n');
   }
 
   void _writeReverseMappingMethod(StringBuffer buffer) {

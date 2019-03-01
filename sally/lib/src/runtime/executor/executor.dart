@@ -134,7 +134,7 @@ abstract class GeneratedDatabase {
   /// value.
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(query, variables, Set(), this).read();
+    return CustomSelectStatement(query, variables, <TableInfo>{}, this).read();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -144,7 +144,7 @@ abstract class GeneratedDatabase {
   /// reads data from.
   Stream<List<QueryRow>> customSelectStream(String query,
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
-    final tables = readsFrom ?? Set();
+    final tables = readsFrom ?? <TableInfo>{};
     return createStream(CustomSelectStatement(query, variables, tables, this));
   }
 }

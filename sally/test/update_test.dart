@@ -91,7 +91,7 @@ void main() {
     });
 
     test('informs about updated tables', () async {
-      await db.customUpdate('', updates: Set.of([db.users, db.todosTable]));
+      await db.customUpdate('', updates: {db.users, db.todosTable});
 
       verify(streamQueries.handleTableUpdates('users'));
       verify(streamQueries.handleTableUpdates('todos'));

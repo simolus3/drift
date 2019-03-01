@@ -8,7 +8,7 @@ authors:
 maintainer: Simon Binder (@simolus3)
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.1.2-dev.0.0 <3.0.0'
 
 dependencies:
   analyzer: '>=0.34.0 <0.36.0'

@@ -10,9 +10,7 @@ const String startString = 'text';
 const String startBool = 'boolean';
 const String startDateTime = 'dateTime';
 
-// todo replace with set literal once dart supports it
-final Set<String> starters =
-    [startInt, startString, startBool, startDateTime].toSet();
+final Set<String> starters = {startInt, startString, startBool, startDateTime};
 
 const String functionNamed = 'named';
 const String functionPrimaryKey = 'primaryKey';
