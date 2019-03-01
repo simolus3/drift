@@ -16,5 +16,6 @@ branches:
 
 cache:
   directories:
-    - sally/.dart_tool
-    - sally_generator/.dart_tool
+    - "$HOME/.pub-cache"
+    - sally/.dart_tool/build
+    - sally_generator/.dart_tool/build
