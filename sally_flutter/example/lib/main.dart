@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'database.dart';
+import 'package:sally_example/database/database.dart';
 import 'widgets/homescreen.dart';
 
 void main() => runApp(MyApp());

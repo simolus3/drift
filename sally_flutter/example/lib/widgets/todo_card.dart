@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sally_example/database.dart';
+import 'package:sally_example/database/database.dart';
 import 'package:sally_example/main.dart';
 
 /// Card that displays a todo entry and an icon button to delete that entry

@@ -14,7 +14,7 @@ class UseSally {
 
   /// Use this class as an annotation to inform sally_generator that a database
   /// class should be generated using the specified [UseSally.tables].
-  const UseSally({@required this.tables, this.daos});
+  const UseSally({@required this.tables, this.daos = const []});
 }
 
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specified

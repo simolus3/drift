@@ -35,15 +35,20 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    final types =
+    final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
+    final daoTypes = annotation
+        .peek('daos')
+        .listValue
+        .map((obj) => obj.toTypeValue())
+        .toList();
 
     tableParser ??= TableParser(this);
     columnParser ??= ColumnParser(this);
 
     final tablesForThisDb = <SpecifiedTable>[];
 
-    for (var table in types) {
+    for (var table in tableTypes) {
       if (!tableTypeChecker.isAssignableFrom(table.element)) {
         errors.add(SallyError(
             critical: true,
@@ -59,7 +64,7 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
     if (_foundTables.isEmpty) return '';
 
     final specifiedDb =
-        SpecifiedDatabase(element as ClassElement, tablesForThisDb);
+        SpecifiedDatabase(element as ClassElement, tablesForThisDb, daoTypes);
 
     final buffer = StringBuffer();
     DatabaseWriter(specifiedDb).write(buffer);

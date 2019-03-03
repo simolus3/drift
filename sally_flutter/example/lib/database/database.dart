@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:sally_example/database/todos_dao.dart';
 import 'package:sally_flutter/sally_flutter.dart';
 
 part 'database.g.dart';
@@ -30,7 +31,7 @@ class CategoryWithCount {
   CategoryWithCount(this.category, this.count);
 }
 
-@UseSally(tables: [Todos, Categories])
+@UseSally(tables: [Todos, Categories], daos: [TodosDao])
 class Database extends _$Database {
   Database()
       : super(FlutterQueryExecutor.inDatabaseFolder(

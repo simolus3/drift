@@ -29,6 +29,21 @@ class DatabaseWriter {
           '$tableClassName get $tableFieldName => $tableClassName(this);');
     }
 
+    // Write fields to access an dao. We use a lazy getter:
+    /*
+        DaoType _daoName;
+        DaoType get daoName => _daoName ??= DaoType(this);
+     */
+    for (var dao in db.daos) {
+      final typeName = dao.displayName;
+      final getterName = ReCase(typeName).camelCase;
+      final fieldName = '_$getterName';
+
+      buffer
+        ..write('$typeName $fieldName;\n')
+        ..write('$typeName get $getterName => $fieldName ??= $typeName(this);');
+    }
+
     // Write List of tables, close bracket for class
     buffer
       ..write('@override\nList<TableInfo> get allTables => [')

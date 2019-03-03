@@ -178,6 +178,8 @@ abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   _$TodosTable get todos => _$TodosTable(this);
   _$CategoriesTable get categories => _$CategoriesTable(this);
+  TodosDao _todosDao;
+  TodosDao get todosDao => _todosDao ??= TodosDao(this);
   @override
   List<TableInfo> get allTables => [todos, categories];
 }
