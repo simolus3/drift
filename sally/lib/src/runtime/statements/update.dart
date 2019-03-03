@@ -7,23 +7,18 @@ class UpdateStatement<T, D> extends Query<T, D> {
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
-  /// The object to update. The non-null fields of this object will be written
-  /// into the rows matched by [whereExpr] and [limitExpr].
-  D _updateReference;
+  Map<String, dynamic> _updatedFields;
 
   @override
   void writeStartPart(GenerationContext ctx) {
     // TODO support the OR (ROLLBACK / ABORT / REPLACE / FAIL / IGNORE...) thing
 
-    final map = table.entityToSql(_updateReference)
-      ..remove((_, value) => value == null);
-
     ctx.buffer.write('UPDATE ${table.$tableName} SET ');
 
     var first = true;
-    map.forEach((columnName, variable) {
+    _updatedFields.forEach((columnName, variable) {
       if (!first) {
-        ctx.writeWhitespace();
+        ctx.buffer.write(', ');
       } else {
         first = false;
       }
@@ -39,10 +34,17 @@ class UpdateStatement<T, D> extends Query<T, D> {
   /// means that, when you're not setting a where or limit expression
   /// explicitly, this method will update all rows in the specific table.
   Future<int> write(D entity) async {
-    _updateReference = entity;
-    if (!table.validateIntegrity(_updateReference, false)) {
+    if (!table.validateIntegrity(entity, false)) {
       throw InvalidDataException(
           'Invalid data: $entity cannot be written into ${table.$tableName}');
+    }
+
+    _updatedFields = table.entityToSql(entity)
+      ..remove((_, value) => value == null);
+
+    if (_updatedFields.isEmpty) {
+      // nothing to update, we're done
+      return Future.value(0);
     }
 
     final ctx = constructQuery();

@@ -45,7 +45,8 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
         'DatabaseAccessor<${dbImpl.displayName}> {\n');
 
     for (var table in tableTypes) {
-      final infoType = tableInfoNameForTableClass(table.element as ClassElement);
+      final infoType =
+          tableInfoNameForTableClass(table.element as ClassElement);
       final getterName = ReCase(table.name).camelCase;
 
       buffer.write('$infoType get $getterName => db.$getterName;\n');

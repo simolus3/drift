@@ -14,10 +14,17 @@ class SallyAnimatedList<T> extends StatefulWidget {
   final ItemBuilder<T> itemBuilder;
   final RemovedItemBuilder<T> removedItemBuilder;
 
+  /// A function that decides whether two items are considered equal. By
+  /// default, `a == b` will be used. A customization is useful if the content
+  /// of items can change (e.g. when a title changes, you'd only want to change
+  /// one text and not let the item disappear to show up again).
+  final bool Function(T a, T b) equals;
+
   SallyAnimatedList(
       {@required this.stream,
       @required this.itemBuilder,
-      @required this.removedItemBuilder});
+      @required this.removedItemBuilder,
+      this.equals});
 
   @override
   _SallyAnimatedListState<T> createState() {
@@ -56,7 +63,7 @@ class _SallyAnimatedListState<T> extends State<SallyAnimatedList<T>> {
         listState.insertItem(i);
       }
     } else {
-      final editScript = diff(_lastSnapshot, data);
+      final editScript = diff(_lastSnapshot, data, equals: widget.equals);
 
       for (var action in editScript) {
         if (action.isDelete) {

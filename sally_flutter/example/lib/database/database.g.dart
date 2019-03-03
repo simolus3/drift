@@ -8,19 +8,16 @@ part of 'database.dart';
 
 class TodoEntry {
   final int id;
-  final String title;
   final String content;
   final DateTime targetDate;
   final int category;
-  TodoEntry(
-      {this.id, this.title, this.content, this.targetDate, this.category});
+  TodoEntry({this.id, this.content, this.targetDate, this.category});
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
       id: intType.mapFromDatabaseResponse(data['id']),
-      title: stringType.mapFromDatabaseResponse(data['title']),
       content: stringType.mapFromDatabaseResponse(data['content']),
       targetDate: dateTimeType.mapFromDatabaseResponse(data['target_date']),
       category: intType.mapFromDatabaseResponse(data['category']),
@@ -28,8 +25,7 @@ class TodoEntry {
   }
   @override
   int get hashCode =>
-      ((((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
-              targetDate.hashCode) *
+      (((id.hashCode) * 31 + content.hashCode) * 31 + targetDate.hashCode) *
           31 +
       category.hashCode;
   @override
@@ -37,7 +33,6 @@ class TodoEntry {
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == id &&
-          other.title == title &&
           other.content == content &&
           other.targetDate == targetDate &&
           other.category == category);
@@ -49,11 +44,6 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
-  @override
-  GeneratedTextColumn get title => GeneratedTextColumn(
-        'title',
-        true,
-      );
   @override
   GeneratedTextColumn get content => GeneratedTextColumn(
         'content',
@@ -70,8 +60,7 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
         true,
       );
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, targetDate, category];
+  List<GeneratedColumn> get $columns => [id, content, targetDate, category];
   @override
   Todos get asDslTable => this;
   @override
@@ -79,7 +68,6 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   @override
   bool validateIntegrity(TodoEntry instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
-      title.isAcceptableValue(instance.title, isInserting) &&
       content.isAcceptableValue(instance.content, isInserting) &&
       targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
@@ -95,9 +83,6 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
     final map = <String, Variable>{};
     if (d.id != null) {
       map['id'] = Variable<int, IntType>(d.id);
-    }
-    if (d.title != null) {
-      map['title'] = Variable<String, StringType>(d.title);
     }
     if (d.content != null) {
       map['content'] = Variable<String, StringType>(d.content);

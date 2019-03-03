@@ -18,4 +18,5 @@ class SpecifiedTable {
       {this.fromClass, this.columns, this.sqlName, this.dartTypeName});
 }
 
-String tableInfoNameForTableClass(ClassElement fromClass) => '\$${fromClass.name}Table';
+String tableInfoNameForTableClass(ClassElement fromClass) =>
+    '\$${fromClass.name}Table';

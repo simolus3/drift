@@ -265,6 +265,8 @@ Please note that a workaround for most on this list exists with custom statement
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
 let us know by creating an issue!
 - Specify primary keys
+  - Support an simplified update that doesn't need an explicit where based on the primary key
+- Data classes: Generate a `copyWith` method.
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
 - Allow using DAOs or some other mechanism instead of having to put everything in the main 

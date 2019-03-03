@@ -38,10 +38,13 @@ class Range {
 class DiffInput<T> {
   final List<T> from;
   final List<T> to;
+  final bool Function(T a, T b) equals;
 
-  DiffInput(this.from, this.to);
+  DiffInput(this.from, this.to, this.equals);
 
-  bool areItemsTheSame(int fromPos, int toPos) => from[fromPos] == to[toPos];
+  bool areItemsTheSame(int fromPos, int toPos) {
+    return equals(from[fromPos], to[toPos]);
+  }
 }
 
 List<Snake> calculateDiff(DiffInput input) {

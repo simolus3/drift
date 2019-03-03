@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sally_example/bloc.dart';
 import 'package:sally_example/database/database.dart';
 import 'package:sally_example/main.dart';
 import 'package:sally_example/widgets/todo_card.dart';
@@ -13,12 +14,12 @@ class HomeScreen extends StatefulWidget {
   }
 }
 
-/// Shows a list of todo entries and displays a text input to add another one
+/// Shows a list of todos and displays a text input to add another one
 class HomeScreenState extends State<HomeScreen> {
-  // we only use this to reset the input field at the bottom when a entry has been added 
+  // we only use this to reset the input field at the bottom when a entry has been added
   final TextEditingController controller = TextEditingController();
 
-  Database get db => DatabaseProvider.provideDb(context);
+  TodoAppBloc get bloc => BlocProvider.provideBloc(context);
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +30,14 @@ class HomeScreenState extends State<HomeScreen> {
       // A SallyAnimatedList automatically animates incoming and leaving items, we only
       // have to tell it what data to display and how to turn data into widgets.
       body: SallyAnimatedList<TodoEntry>(
-        stream: db.allEntries(), // we want to show an updating stream of all todo entries
+        stream: bloc
+            .allEntries, // we want to show an updating stream of all entries
+        // consider items equal if their id matches. Otherwise, we'd get an
+        // animation of an old item leaving and another one coming in every time
+        // the content of an item changed!
+        equals: (a, b) => a.id == b.id,
         itemBuilder: (ctx, item, animation) {
-          // When a new item arrives, it will expand verticallly
+          // When a new item arrives, it will expand vertically
           return SizeTransition(
             key: ObjectKey(item.id),
             sizeFactor: animation,
@@ -46,15 +52,15 @@ class HomeScreenState extends State<HomeScreen> {
             sizeFactor: animation,
             axis: Axis.vertical,
             child: AnimatedBuilder(
-              animation: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-              child: TodoCard(item),
-              builder: (context, child) {
-                return Opacity(
-                  opacity: animation.value,
-                  child: child,
-                );
-              }
-            ),
+                animation:
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                child: TodoCard(item),
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: animation.value,
+                    child: child,
+                  );
+                }),
           );
         },
       ),
@@ -95,7 +101,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (controller.text.isNotEmpty) {
       // We write the entry here. Notice how we don't have to call setState()
       // or anything - sally will take care of updating the list automatically.
-      db.addEntry(TodoEntry(content: controller.text));
+      bloc.addEntry(TodoEntry(content: controller.text));
       controller.clear();
     }
   }

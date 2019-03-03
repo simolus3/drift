@@ -48,8 +48,10 @@ class EditAction {
 /// number of addition and removal operations between the two lists. It has
 /// O(N + D^2) time performance, where D is the minimum amount of edits needed
 /// to turn a into b.
-List<EditAction> diff<T>(List<T> a, List<T> b) {
-  final snakes = impl.calculateDiff(impl.DiffInput(a, b));
+List<EditAction> diff<T>(List<T> a, List<T> b,
+    {bool Function(T a, T b) equals}) {
+  final defaultEquals = equals ?? (T a, T b) => a == b;
+  final snakes = impl.calculateDiff(impl.DiffInput<T>(a, b, defaultEquals));
   final actions = <EditAction>[];
 
   var posOld = a.length;

@@ -8,8 +8,6 @@ part 'database.g.dart';
 class Todos extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
-
   TextColumn get content => text()();
 
   DateTimeColumn get targetDate => dateTime().nullable()();
@@ -53,11 +51,13 @@ class Database extends _$Database {
     // select all categories and load how many associated entries there are for
     // each category
     return customSelectStream(
-        'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
-        readsFrom: {todos, categories}).map((rows) {
+            'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
+            readsFrom: {todos, categories})
+        .map((rows) {
       // when we have the result set, map each row to the data class
       return rows
-          .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.readInt('amount')))
+          .map((row) => CategoryWithCount(
+              Category.fromData(row.data, this), row.readInt('amount')))
           .toList();
     });
   }
@@ -72,5 +72,15 @@ class Database extends _$Database {
 
   Future deleteEntry(TodoEntry entry) {
     return (delete(todos)..where((t) => t.id.equals(entry.id))).go();
+  }
+
+  Future updateContent(int id, String content) {
+    return (update(todos)..where((t) => t.id.equals(id)))
+        .write(TodoEntry(content: content));
+  }
+
+  Future updateDate(int id, DateTime dueDate) {
+    return (update(todos)..where((t) => t.id.equals(id)))
+        .write(TodoEntry(targetDate: dueDate));
   }
 }

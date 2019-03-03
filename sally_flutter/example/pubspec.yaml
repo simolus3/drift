@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl:
   cupertino_icons: ^0.1.2
   rxdart: 0.20.0
   sally_flutter:

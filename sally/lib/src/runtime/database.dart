@@ -11,9 +11,8 @@ import 'package:sally/src/runtime/statements/update.dart';
 /// This comes in handy to structure large amounts of database code better: The
 /// migration logic can live in the main [GeneratedDatabase] class, but code
 /// can be extracted into [DatabaseAccessor]s outside of that database.
-abstract class DatabaseAccessor<T extends GeneratedDatabase> extends DatabaseConnectionUser
-    with QueryEngine {
-
+abstract class DatabaseAccessor<T extends GeneratedDatabase>
+    extends DatabaseConnectionUser with QueryEngine {
   @protected
   final T db;
 
@@ -154,7 +153,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})
-      : super(types, executor, streamQueries: streamStore);
+      : super(types, executor, streamQueries: streamStore) {
+    executor.databaseInfo = this;
+  }
 
   /// Creates a migrator with the provided query executor. We sometimes can't
   /// use the regular [GeneratedDatabase.executor] because migration happens
