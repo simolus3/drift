@@ -43,9 +43,9 @@ class TodoEntry {
           other.category == category);
 }
 
-class _$TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
+class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   final GeneratedDatabase _db;
-  _$TodosTable(this._db);
+  $TodosTable(this._db);
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
@@ -132,10 +132,10 @@ class Category {
       (other is Category && other.id == id && other.description == description);
 }
 
-class _$CategoriesTable extends Categories
+class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
-  _$CategoriesTable(this._db);
+  $CategoriesTable(this._db);
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
@@ -176,10 +176,10 @@ class _$CategoriesTable extends Categories
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
-  _$TodosTable get todos => _$TodosTable(this);
-  _$CategoriesTable get categories => _$CategoriesTable(this);
+  $TodosTable get todos => $TodosTable(this);
+  $CategoriesTable get categories => $CategoriesTable(this);
   TodosDao _todosDao;
-  TodosDao get todosDao => _todosDao ??= TodosDao(this);
+  TodosDao get todosDao => _todosDao ??= TodosDao(this as Database);
   @override
   List<TableInfo> get allTables => [todos, categories];
 }

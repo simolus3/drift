@@ -39,9 +39,12 @@ class DatabaseWriter {
       final getterName = ReCase(typeName).camelCase;
       final fieldName = '_$getterName';
 
+      final databaseImplName = db.fromClass.name;
+
       buffer
         ..write('$typeName $fieldName;\n')
-        ..write('$typeName get $getterName => $fieldName ??= $typeName(this);');
+        ..write('$typeName get $getterName => $fieldName ??= '
+            '$typeName(this as $databaseImplName);');
     }
 
     // Write List of tables, close bracket for class

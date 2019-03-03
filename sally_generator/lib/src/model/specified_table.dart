@@ -9,7 +9,7 @@ class SpecifiedTable {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
-  String get tableInfoName => '_\$${fromClass.name}Table';
+  String get tableInfoName => tableInfoNameForTableClass(fromClass);
 
   // todo support primary keys
   Set<SpecifiedColumn> get primaryKey => <SpecifiedColumn>{};
@@ -17,3 +17,5 @@ class SpecifiedTable {
   const SpecifiedTable(
       {this.fromClass, this.columns, this.sqlName, this.dartTypeName});
 }
+
+String tableInfoNameForTableClass(ClassElement fromClass) => '\$${fromClass.name}Table';

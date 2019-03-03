@@ -11,9 +11,13 @@ import 'package:sally/src/runtime/statements/update.dart';
 /// This comes in handy to structure large amounts of database code better: The
 /// migration logic can live in the main [GeneratedDatabase] class, but code
 /// can be extracted into [DatabaseAccessor]s outside of that database.
-abstract class DatabaseAccessor extends DatabaseConnectionUser
+abstract class DatabaseAccessor<T extends GeneratedDatabase> extends DatabaseConnectionUser
     with QueryEngine {
-  DatabaseAccessor(GeneratedDatabase db) : super.delegate(db);
+
+  @protected
+  final T db;
+
+  DatabaseAccessor(this.db) : super.delegate(db);
 }
 
 /// Mediocre class name for something that manages a typesystem to map between
