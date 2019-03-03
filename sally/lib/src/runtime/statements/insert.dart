@@ -6,7 +6,7 @@ import 'package:sally/src/runtime/components/component.dart';
 
 class InsertStatement<DataClass> {
   @protected
-  final GeneratedDatabase database;
+  final QueryEngine database;
   @protected
   final TableInfo<dynamic, DataClass> table;
 

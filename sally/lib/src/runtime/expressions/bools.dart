@@ -1,6 +1,6 @@
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// Returns an expression that is true iff both [a] and [b] are true.
 Expression<bool, BoolType> and(

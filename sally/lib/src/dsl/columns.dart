@@ -2,7 +2,7 @@
 
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/expressions/comparable.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
 

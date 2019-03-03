@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
-import 'package:sally/src/runtime/executor/executor.dart';
 import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
 class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
   /// This constructor should be called by [GeneratedDatabase.delete] for you.
-  DeleteStatement(
-      GeneratedDatabase database, TableInfo<UserTable, dynamic> table)
+  DeleteStatement(QueryEngine database, TableInfo<UserTable, dynamic> table)
       : super(database, table);
 
   @override

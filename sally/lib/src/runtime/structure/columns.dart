@@ -4,7 +4,7 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
 import 'package:sally/src/runtime/expressions/text.dart';
 import 'package:sally/src/runtime/expressions/variables.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// Base class for the implementation of [Column].
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {

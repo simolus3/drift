@@ -1,6 +1,6 @@
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.

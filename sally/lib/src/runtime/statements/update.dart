@@ -4,7 +4,7 @@ import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 
 class UpdateStatement<T, D> extends Query<T, D> {
-  UpdateStatement(GeneratedDatabase database, TableInfo<T, D> table)
+  UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
   /// The object to update. The non-null fields of this object will be written

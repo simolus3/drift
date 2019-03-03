@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/components/limit.dart';
-import 'package:sally/src/runtime/executor/executor.dart';
+import 'package:sally/src/runtime/database.dart';
 import 'package:sally/src/runtime/executor/stream_queries.dart';
 import 'package:sally/src/runtime/statements/query.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
@@ -12,7 +12,7 @@ typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
 class SelectStatement<T, D> extends Query<T, D>
     implements TableChangeListener<List<D>> {
-  SelectStatement(GeneratedDatabase database, TableInfo<T, D> table)
+  SelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
   @override
@@ -66,7 +66,7 @@ class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
   final Set<TableInfo> tables;
   final String query;
   final List<Variable> variables;
-  final GeneratedDatabase db;
+  final QueryEngine db;
 
   CustomSelectStatement(this.query, this.variables, this.tables, this.db);
 
@@ -92,7 +92,7 @@ class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
 /// For custom select statement, represents a row in the result set.
 class QueryRow {
   final Map<String, dynamic> data;
-  final GeneratedDatabase _db;
+  final QueryEngine _db;
 
   QueryRow(this.data, this._db);
 

@@ -1,7 +1,7 @@
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// An expression that is true if the given [expression] resolves to any of the
 /// values in [values].

@@ -3,17 +3,17 @@ import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/components/limit.dart';
 import 'package:sally/src/runtime/components/order_by.dart';
 import 'package:sally/src/runtime/components/where.dart';
-import 'package:sally/src/runtime/executor/executor.dart';
+import 'package:sally/src/runtime/database.dart';
 import 'package:sally/src/runtime/expressions/bools.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 import 'package:sally/src/runtime/structure/table_info.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
 abstract class Query<Table, DataClass> {
   @protected
-  GeneratedDatabase database;
+  QueryEngine database;
   TableInfo<Table, DataClass> table;
 
   Query(this.database, this.table);

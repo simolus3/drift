@@ -1,6 +1,6 @@
 import 'package:sally/src/runtime/components/component.dart';
 import 'package:sally/src/runtime/expressions/expression.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// A where clause in a select, update or delete statement.
 class Where extends Component {

@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:sally/sally.dart';
 import 'package:sally/src/runtime/components/component.dart';
-import 'package:sally/src/runtime/sql_types.dart';
+import 'package:sally/src/types/sql_types.dart';
 
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual

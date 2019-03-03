@@ -1,4 +1,4 @@
-import 'package:sally/src/runtime/executor/executor.dart';
+import 'package:sally/sally.dart';
 
 /// A component is anything that can appear in a sql query.
 abstract class Component {
@@ -12,7 +12,7 @@ abstract class Component {
 
 /// Contains information about a query while it's being constructed.
 class GenerationContext {
-  final GeneratedDatabase database;
+  final QueryEngine database;
 
   final List<dynamic> _boundVariables = [];
   List<dynamic> get boundVariables => _boundVariables;
