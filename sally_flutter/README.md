@@ -253,6 +253,35 @@ We can now change the `database` class like this:
 ```
 You can also add individual tables or drop them.
 
+### Extracting functionality with DAOs
+When you have a lot of queries, putting them all into one class quickly becomes
+tedious. You can avoid this by extracting some queries into classes that are 
+available from your main database class. Consider the following code:
+```dart
+part 'todos_dao.g.dart';
+
+// the _TodosDaoMixin will be created by sally. It contains all the necessary
+// fields for the tables. The <MyDatabase> type annotation is the database class
+// that should use this dao.
+@UseDao(tables: [Todos])
+class TodosDao extends DatabaseAccessor<MyDatabase> with _TodosDaoMixin {
+  // this constructor is required so that the main database can create an instance
+  // of this object.
+  TodosDao(Database db) : super(db);
+
+  Stream<List<TodoEntry>> todosInCategory(Category category) {
+    if (category == null) {
+      return (select(todos)..where((t) => isNull(t.category))).watch();
+    } else {
+      return (select(todos)..where((t) => t.category.equals(category.id)))
+          .watch();
+    }
+  }
+}
+```
+If we now change the annotation on the `MyDatabase` class to `@UseSally(tables: [Todos, Categories], daos: [TodosDao])`
+and re-run the code generation, a getter `todosDao` can be used to access the instance of that dao.
+
 ## TODO-List and current limitations
 ### Limitations (at the moment)
 Please note that a workaround for most on this list exists with custom statements.
@@ -266,11 +295,8 @@ These aren't sorted by priority. If you have more ideas or want some features ha
 let us know by creating an issue!
 - Specify primary keys
   - Support an simplified update that doesn't need an explicit where based on the primary key
-- Data classes: Generate a `copyWith` method.
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
-- Allow using DAOs or some other mechanism instead of having to put everything in the main 
-database class.
 - Support more Datatypes: We should at least support `Uint8List` out of the box,
 supporting floating / fixed point numbers as well would be awesome
 - Nullable / non-nullable datatypes

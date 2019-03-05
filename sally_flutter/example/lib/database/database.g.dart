@@ -23,6 +23,14 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  TodoEntry copyWith(
+          {int id, String content, DateTime targetDate, int category}) =>
+      TodoEntry(
+        id: id ?? this.id,
+        content: content ?? this.content,
+        targetDate: targetDate ?? this.targetDate,
+        category: category ?? this.category,
+      );
   @override
   int get hashCode =>
       (((id.hashCode) * 31 + content.hashCode) * 31 + targetDate.hashCode) *
@@ -109,6 +117,10 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  Category copyWith({int id, String description}) => Category(
+        id: id ?? this.id,
+        description: description ?? this.description,
+      );
   @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override

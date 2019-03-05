@@ -26,6 +26,9 @@ class DataClassWriter {
     // Also write parsing factory
     _writeMappingConstructor(buffer);
 
+    // And a convenience method to copy data from this class.
+    _writeCopyWith(buffer);
+
     buffer.write('@override\n int get hashCode => ');
 
     if (table.columns.isEmpty) {
@@ -36,7 +39,7 @@ class DataClassWriter {
     }
 
     // override ==
-    //    return identical(this, other) || (other is DataClass && other.id == id && other.)
+    //    return identical(this, other) || (other is DataClass && other.id == id && ...)
     buffer
       ..write('@override\nbool operator ==(other) => ')
       ..write('identical(this, other) || (other is ${table.dartTypeName}');
@@ -87,6 +90,32 @@ class DataClassWriter {
     }
 
     buffer.write(');}\n');
+  }
+
+  void _writeCopyWith(StringBuffer buffer) {
+    final dataClassName = table.dartTypeName;
+
+    buffer.write('$dataClassName copyWith({');
+    for (var i = 0; i < table.columns.length; i++) {
+      final column = table.columns[i];
+      final last = i == table.columns.length - 1;
+
+      buffer.write('${column.dartTypeName} ${column.dartGetterName}');
+      if (!last) {
+        buffer.write(',');
+      }
+    }
+
+    buffer.write('}) => $dataClassName(');
+
+    for (var column in table.columns) {
+      // we also have a method parameter called getter, so we can use
+      // field: field ?? this.field
+      final getter = column.dartGetterName;
+      buffer.write('$getter: $getter ?? this.$getter,');
+    }
+
+    buffer.write(');');
   }
 
   /// Recursively creates the implementation for hashCode of the data class,
