@@ -26,6 +26,19 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  TodoEntry copyWith(
+          {int id,
+          String title,
+          String content,
+          DateTime targetDate,
+          int category}) =>
+      TodoEntry(
+        id: id ?? this.id,
+        title: title ?? this.title,
+        content: content ?? this.content,
+        targetDate: targetDate ?? this.targetDate,
+        category: category ?? this.category,
+      );
   @override
   int get hashCode =>
       ((((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
@@ -43,10 +56,10 @@ class TodoEntry {
           other.category == category);
 }
 
-class _$TodosTableTable extends TodosTable
+class $TodosTableTable extends TodosTable
     implements TableInfo<TodosTable, TodoEntry> {
   final GeneratedDatabase _db;
-  _$TodosTableTable(this._db);
+  $TodosTableTable(this._db);
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
@@ -125,6 +138,10 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  Category copyWith({int id, String description}) => Category(
+        id: id ?? this.id,
+        description: description ?? this.description,
+      );
   @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override
@@ -133,10 +150,10 @@ class Category {
       (other is Category && other.id == id && other.description == description);
 }
 
-class _$CategoriesTable extends Categories
+class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
-  _$CategoriesTable(this._db);
+  $CategoriesTable(this._db);
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
@@ -190,6 +207,11 @@ class User {
       isAwesome: boolType.mapFromDatabaseResponse(data['is_awesome']),
     );
   }
+  User copyWith({int id, String name, bool isAwesome}) => User(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        isAwesome: isAwesome ?? this.isAwesome,
+      );
   @override
   int get hashCode =>
       ((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode;
@@ -202,9 +224,9 @@ class User {
           other.isAwesome == isAwesome);
 }
 
-class _$UsersTable extends Users implements TableInfo<Users, User> {
+class $UsersTable extends Users implements TableInfo<Users, User> {
   final GeneratedDatabase _db;
-  _$UsersTable(this._db);
+  $UsersTable(this._db);
   @override
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
@@ -254,9 +276,9 @@ class _$UsersTable extends Users implements TableInfo<Users, User> {
 
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
-  _$TodosTableTable get todosTable => _$TodosTableTable(this);
-  _$CategoriesTable get categories => _$CategoriesTable(this);
-  _$UsersTable get users => _$UsersTable(this);
+  $TodosTableTable get todosTable => $TodosTableTable(this);
+  $CategoriesTable get categories => $CategoriesTable(this);
+  $UsersTable get users => $UsersTable(this);
   @override
   List<TableInfo> get allTables => [todosTable, categories, users];
 }

@@ -154,7 +154,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})
       : super(types, executor, streamQueries: streamStore) {
-    executor.databaseInfo = this;
+    executor?.databaseInfo = this;
   }
 
   /// Creates a migrator with the provided query executor. We sometimes can't

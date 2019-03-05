@@ -109,7 +109,7 @@ class DataClassWriter {
     buffer.write('}) => $dataClassName(');
 
     for (var column in table.columns) {
-      // we also have a method parameter called getter, so we can use
+      // we also have a method parameter called like the getter, so we can use
       // field: field ?? this.field
       final getter = column.dartGetterName;
       buffer.write('$getter: $getter ?? this.$getter,');

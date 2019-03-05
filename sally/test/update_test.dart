@@ -24,7 +24,7 @@ void main() {
           .write(TodoEntry(title: 'Updated title', category: 3));
 
       verify(executor.runUpdate(
-          'UPDATE todos SET title = ? category = ?;', ['Updated title', 3]));
+          'UPDATE todos SET title = ?, category = ?;', ['Updated title', 3]));
     });
 
     test('with a WHERE clause', () async {
@@ -49,7 +49,9 @@ void main() {
     test('are issued when data was changed', () async {
       when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
 
-      await db.update(db.todosTable).write(TodoEntry());
+      await db.update(db.todosTable).write(TodoEntry(
+            content: 'Updated content',
+          ));
 
       verify(streamQueries.handleTableUpdates('todos'));
     });
