@@ -11,11 +11,13 @@ class SpecifiedTable {
 
   String get tableInfoName => tableInfoNameForTableClass(fromClass);
 
-  // todo support primary keys
-  Set<SpecifiedColumn> get primaryKey => <SpecifiedColumn>{};
+  /// The set of primary keys, if they have been explicitly defined by
+  /// overriding `primaryKey` in the table class. `null` if the primary key has
+  /// not been defined that way.
+  final Set<SpecifiedColumn> primaryKey;
 
   const SpecifiedTable(
-      {this.fromClass, this.columns, this.sqlName, this.dartTypeName});
+      {this.fromClass, this.columns, this.sqlName, this.dartTypeName, this.primaryKey});
 }
 
 String tableInfoNameForTableClass(ClassElement fromClass) =>

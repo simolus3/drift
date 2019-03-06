@@ -17,11 +17,15 @@ class TableParser extends ParserBase {
     final sqlName = _parseTableName(element);
     if (sqlName == null) return null;
 
+    final columns = _parseColumns(element);
+
     return SpecifiedTable(
-        fromClass: element,
-        columns: _parseColumns(element),
-        sqlName: escapeIfNeeded(sqlName),
-        dartTypeName: _readDartTypeName(element));
+      fromClass: element,
+      columns: columns,
+      sqlName: escapeIfNeeded(sqlName),
+      dartTypeName: _readDartTypeName(element),
+      primaryKey: _readPrimaryKey(element, columns),
+    );
   }
 
   String _readDartTypeName(ClassElement element) {
@@ -62,6 +66,39 @@ class TableParser extends ParserBase {
     });
 
     return tableName;
+  }
+
+  Set<SpecifiedColumn> _readPrimaryKey(ClassElement element, List<SpecifiedColumn> columns) {
+    final primaryKeyGetter = element.getGetter('primaryKey');
+    if (primaryKeyGetter == null) {
+      return null;
+    }
+
+    final ast = generator.loadElementDeclaration(primaryKeyGetter).node as MethodDeclaration;
+    final body = ast.body;
+    if (body is! ExpressionFunctionBody) {
+      generator.errors.add(SallyError(affectedElement: primaryKeyGetter, message: 'This must return a set literal using the => syntax!'));
+      return null;
+    }
+    final expression = (body as ExpressionFunctionBody).expression;
+    // set expressions {x, y} are parsed as map literals whose values are an empty
+    // identifier {x: , y: }. yeah.
+    // todo should we support MapLiteral2 to support the experiments discussed there?
+    if (expression is! MapLiteral) {
+      generator.errors.add(SallyError(affectedElement: primaryKeyGetter, message: 'This must return a set literal!'));
+      return null;
+    }
+    final mapLiteral = expression as MapLiteral;
+
+    final parsedPrimaryKey = <SpecifiedColumn>{};
+
+    for (var entry in mapLiteral.entries) {
+      final key = entry.key as Identifier;
+      final column = columns.singleWhere((column) => column.dartGetterName == key.name);
+      parsedPrimaryKey.add(column);
+    }
+
+    return parsedPrimaryKey;
   }
 
   Iterable<MethodDeclaration> _findColumnGetters(ClassElement element) {

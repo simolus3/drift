@@ -27,6 +27,14 @@ void main() async {
        TextColumn get onlyMax => text().withLength(max: 100)();
      }
      
+     class CustomPrimaryKey extends Table {
+        IntColumn get partA => integer()();
+        IntColumn get partB => integer()();
+        
+        @override
+        Set<Column> get primaryKey => {partA, partB};
+     }
+     
      class WrongName extends Table {
         
          String constructTableName() {
@@ -34,7 +42,7 @@ void main() async {
          }
        
          @override
-         String get tableName => constructTableName();"
+         String get tableName => constructTableName();
      }
     ''', (r) => r.findLibraryByName('test_parser'));
   });
@@ -101,5 +109,11 @@ void main() async {
       expect(
           idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
     });
+  });
+
+  test('parses custom primary keys', () {
+    final table = TableParser(generator).parse(testLib.getType('CustomPrimaryKey'));
+
+    expect(table.primaryKey, containsAll(table.columns));
   });
 }

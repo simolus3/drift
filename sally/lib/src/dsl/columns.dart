@@ -40,8 +40,8 @@ class ColumnBuilder<Builder, ResultColumn> {
   /// `IntColumn get id = integer((c) => c.named('user_id'))`.
   Builder named(String name) => null;
 
-  /// Marks this column as being part of a primary key. This is not yet
-  /// supported by sally.
+  @Deprecated('Ignored by the generator. Please override primaryKey in your '
+      'table class instead')
   Builder primaryKey() => null;
 
   /// Marks this column as nullable. Nullable columns should not appear in a

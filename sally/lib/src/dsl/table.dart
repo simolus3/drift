@@ -20,8 +20,7 @@ abstract class Table {
   /// In the future, you can override this to specify a custom primary key. This
   /// is not supported by sally at the moment.
   @visibleForOverriding
-  // todo allow custom primary key
-  PrimaryKey get primaryKey => null;
+  Set<Column> get primaryKey => null;
 
   /// Use this as the body of a getter to declare a column that holds integers.
   /// Example (inside the body of a table class):
@@ -56,8 +55,6 @@ abstract class Table {
   @protected
   DateTimeColumnBuilder dateTime() => null;
 }
-
-class PrimaryKey {}
 
 /// A class to to be used as an annotation on [Table] classes to customize the
 /// name for the data class that will be generated for the table class. The data

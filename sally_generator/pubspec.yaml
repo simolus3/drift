@@ -1,9 +1,8 @@
 name: sally_generator
-description: Sally generator generated database code from your table classes
+description: Sally generator generates database code from your table classes
 version: 1.0.0
 homepage: https://github.com/simolus3/sally
 authors:
-  - Flutter Community <community@flutter.zone>
   - Simon Binder <simolus3@gmail.com>
 maintainer: Simon Binder (@simolus3)
 
