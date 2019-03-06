@@ -17,7 +17,7 @@ void main() {
     test('creates all tables', () async {
       await Migrator(db, mockQueryExecutor).createAllTables();
 
-      // should create todos, categories and users table
+      // should create todos, categories, users and shared_todos table
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS todos '
           '(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
           'content VARCHAR NOT NULL, target_date INTEGER NULL, '
@@ -29,6 +29,9 @@ void main() {
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
           'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)));'));
+
+      verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS shared_todos '
+          '(todo INTEGER NOT NULL, user INTEGER NOT NULL, PRIMARY KEY (todo, user));'));
     });
 
     test('creates individual tables', () async {

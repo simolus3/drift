@@ -7,6 +7,10 @@ import 'package:sally/src/runtime/structure/table_info.dart';
 typedef Future<void> OnCreate(Migrator m);
 typedef Future<void> OnUpgrade(Migrator m, int from, int to);
 
+/// Signature of a function that's called after a migration has finished and the
+/// database is ready to be used. Useful to populate data.
+typedef Future<void> OnMigrationFinished();
+
 Future<void> _defaultOnCreate(Migrator m) => m.createAllTables();
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
     throw Exception("You've bumped the schema version for your sally database "
@@ -21,9 +25,15 @@ class MigrationStrategy {
   /// happened at a lower [GeneratedDatabase.schemaVersion].
   final OnUpgrade onUpgrade;
 
+  /// Executes after the database is ready and all migrations ran, but before
+  /// any other queries will be executed, making this method suitable to
+  /// populate data.
+  final OnMigrationFinished onFinished;
+
   MigrationStrategy({
     this.onCreate = _defaultOnCreate,
     this.onUpgrade = _defaultOnUpdate,
+    this.onFinished,
   });
 }
 
@@ -57,6 +67,19 @@ class Migrator {
       column.writeColumnDefinition(sql);
 
       if (i < table.$columns.length - 1) sql.write(', ');
+    }
+
+    if (table.$primaryKey != null) {
+      sql.write(', PRIMARY KEY (');
+      final pkList = table.$primaryKey.toList(growable: false);
+      for (var i = 0; i < pkList.length; i++) {
+        final column = pkList[i];
+
+        sql.write(column.$name);
+
+        if (i != pkList.length - 1) sql.write(', ');
+      }
+      sql.write(')');
     }
 
     sql.write(');');

@@ -64,10 +64,8 @@ class $TodosTableTable extends TodosTable
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
   @override
-  GeneratedTextColumn get title => GeneratedTextColumn(
-        'title',
-        true,
-      );
+  GeneratedTextColumn get title =>
+      GeneratedTextColumn('title', true, minTextLength: 4, maxTextLength: 16);
   @override
   GeneratedTextColumn get content => GeneratedTextColumn(
         'content',
@@ -98,7 +96,7 @@ class $TodosTableTable extends TodosTable
       targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => null;
   @override
   TodoEntry map(Map<String, dynamic> data) {
     return TodoEntry.fromData(data, _db);
@@ -173,7 +171,7 @@ class $CategoriesTable extends Categories
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => null;
   @override
   Category map(Map<String, dynamic> data) {
     return Category.fromData(data, _db);
@@ -231,10 +229,8 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   GeneratedIntColumn get id =>
       GeneratedIntColumn('id', false, hasAutoIncrement: true);
   @override
-  GeneratedTextColumn get name => GeneratedTextColumn(
-        'name',
-        false,
-      );
+  GeneratedTextColumn get name =>
+      GeneratedTextColumn('name', false, minTextLength: 6, maxTextLength: 32);
   @override
   GeneratedBoolColumn get isAwesome => GeneratedBoolColumn(
         'is_awesome',
@@ -252,7 +248,7 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
       name.isAcceptableValue(instance.name, isInserting) &&
       isAwesome.isAcceptableValue(instance.isAwesome, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => null;
   @override
   User map(Map<String, dynamic> data) {
     return User.fromData(data, _db);
@@ -274,11 +270,79 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   }
 }
 
+class SharedTodo {
+  final int todo;
+  final int user;
+  SharedTodo({this.todo, this.user});
+  factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+    final intType = db.typeSystem.forDartType<int>();
+    return SharedTodo(
+      todo: intType.mapFromDatabaseResponse(data['todo']),
+      user: intType.mapFromDatabaseResponse(data['user']),
+    );
+  }
+  SharedTodo copyWith({int todo, int user}) => SharedTodo(
+        todo: todo ?? this.todo,
+        user: user ?? this.user,
+      );
+  @override
+  int get hashCode => (todo.hashCode) * 31 + user.hashCode;
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is SharedTodo && other.todo == todo && other.user == user);
+}
+
+class $SharedTodosTable extends SharedTodos
+    implements TableInfo<SharedTodos, SharedTodo> {
+  final GeneratedDatabase _db;
+  $SharedTodosTable(this._db);
+  @override
+  GeneratedIntColumn get todo => GeneratedIntColumn(
+        'todo',
+        false,
+      );
+  @override
+  GeneratedIntColumn get user => GeneratedIntColumn(
+        'user',
+        false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [todo, user];
+  @override
+  SharedTodos get asDslTable => this;
+  @override
+  String get $tableName => 'shared_todos';
+  @override
+  bool validateIntegrity(SharedTodo instance, bool isInserting) =>
+      todo.isAcceptableValue(instance.todo, isInserting) &&
+      user.isAcceptableValue(instance.user, isInserting);
+  @override
+  Set<GeneratedColumn> get $primaryKey => {todo, user};
+  @override
+  SharedTodo map(Map<String, dynamic> data) {
+    return SharedTodo.fromData(data, _db);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(SharedTodo d) {
+    final map = <String, Variable>{};
+    if (d.todo != null) {
+      map['todo'] = Variable<int, IntType>(d.todo);
+    }
+    if (d.user != null) {
+      map['user'] = Variable<int, IntType>(d.user);
+    }
+    return map;
+  }
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable get todosTable => $TodosTableTable(this);
   $CategoriesTable get categories => $CategoriesTable(this);
   $UsersTable get users => $UsersTable(this);
+  $SharedTodosTable get sharedTodos => $SharedTodosTable(this);
   @override
-  List<TableInfo> get allTables => [todosTable, categories, users];
+  List<TableInfo> get allTables => [todosTable, categories, users, sharedTodos];
 }

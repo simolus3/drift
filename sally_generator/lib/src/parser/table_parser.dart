@@ -68,34 +68,47 @@ class TableParser extends ParserBase {
     return tableName;
   }
 
-  Set<SpecifiedColumn> _readPrimaryKey(ClassElement element, List<SpecifiedColumn> columns) {
+  Set<SpecifiedColumn> _readPrimaryKey(
+      ClassElement element, List<SpecifiedColumn> columns) {
     final primaryKeyGetter = element.getGetter('primaryKey');
     if (primaryKeyGetter == null) {
       return null;
     }
 
-    final ast = generator.loadElementDeclaration(primaryKeyGetter).node as MethodDeclaration;
+    final ast = generator.loadElementDeclaration(primaryKeyGetter).node
+        as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      generator.errors.add(SallyError(affectedElement: primaryKeyGetter, message: 'This must return a set literal using the => syntax!'));
+      generator.errors.add(SallyError(
+          affectedElement: primaryKeyGetter,
+          message: 'This must return a set literal using the => syntax!'));
       return null;
     }
     final expression = (body as ExpressionFunctionBody).expression;
-    // set expressions {x, y} are parsed as map literals whose values are an empty
-    // identifier {x: , y: }. yeah.
+    // set expressions {x, y} are sometimes parsed as map literals whose values
+    // are an empty identifier {x: , y: }, but sometimes as proper set literal.
+    // this is probably due to backwards compatibility.
     // todo should we support MapLiteral2 to support the experiments discussed there?
-    if (expression is! MapLiteral) {
-      generator.errors.add(SallyError(affectedElement: primaryKeyGetter, message: 'This must return a set literal!'));
-      return null;
-    }
-    final mapLiteral = expression as MapLiteral;
-
     final parsedPrimaryKey = <SpecifiedColumn>{};
 
-    for (var entry in mapLiteral.entries) {
-      final key = entry.key as Identifier;
-      final column = columns.singleWhere((column) => column.dartGetterName == key.name);
-      parsedPrimaryKey.add(column);
+    if (expression is MapLiteral) {
+      for (var entry in expression.entries) {
+        final key = entry.key as Identifier;
+        final column =
+            columns.singleWhere((column) => column.dartGetterName == key.name);
+        parsedPrimaryKey.add(column);
+      }
+    } else if (expression is SetLiteral) {
+      for (var entry in expression.elements) {
+        final column = columns.singleWhere(
+            (column) => column.dartGetterName == (entry as Identifier).name);
+        parsedPrimaryKey.add(column);
+      }
+    } else {
+      generator.errors.add(SallyError(
+          affectedElement: primaryKeyGetter,
+          message: 'This must return a set literal!'));
+      return null;
     }
 
     return parsedPrimaryKey;

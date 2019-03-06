@@ -112,8 +112,10 @@ void main() async {
   });
 
   test('parses custom primary keys', () {
-    final table = TableParser(generator).parse(testLib.getType('CustomPrimaryKey'));
+    final table =
+        TableParser(generator).parse(testLib.getType('CustomPrimaryKey'));
 
     expect(table.primaryKey, containsAll(table.columns));
+    expect(table.columns.any((column) => column.hasAI), isFalse);
   });
 }

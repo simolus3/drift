@@ -44,14 +44,7 @@ class TableWriter {
       ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n');
 
     _writeValidityCheckMethod(buffer);
-
-    // write primary key getter: Set<Column> get $primaryKey => <GeneratedColumn>{id};
-    final primaryKeyColumns = table.primaryKey.map((c) => c.dartGetterName);
-    buffer
-      ..write(
-          '@override\nSet<GeneratedColumn> get \$primaryKey => <GeneratedColumn>{')
-      ..write(primaryKeyColumns.join(', '))
-      ..write('};\n');
+    _writePrimaryKeyOverride(buffer);
 
     _writeMappingMethod(buffer);
     _writeReverseMappingMethod(buffer);
@@ -91,8 +84,17 @@ class TableWriter {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
 
-    if (column.hasAI) {
-      additionalParams['hasAutoIncrement'] = 'true';
+    for (var feature in column.features) {
+      if (feature is AutoIncrement) {
+        additionalParams['hasAutoIncrement'] = 'true';
+      } else if (feature is LimitingTextLength) {
+        if (feature.minLength != null) {
+          additionalParams['minTextLength'] = feature.minLength.toString();
+        }
+        if (feature.maxLength != null) {
+          additionalParams['maxTextLength'] = feature.maxLength.toString();
+        }
+      }
     }
 
     // @override
@@ -132,5 +134,25 @@ class TableWriter {
     }).join('&&');
 
     buffer..write(validationCode)..write(';\n');
+  }
+
+  void _writePrimaryKeyOverride(StringBuffer buffer) {
+    buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
+    if (table.primaryKey == null) {
+      buffer.write('null;');
+      return;
+    }
+
+    buffer.write('{');
+    final pkList = table.primaryKey.toList();
+    for (var i = 0; i < pkList.length; i++) {
+      final pk = pkList[i];
+
+      buffer.write(pk.dartGetterName);
+      if (i != pkList.length - 1) {
+        buffer.write(', ');
+      }
+    }
+    buffer.write('};\n');
   }
 }

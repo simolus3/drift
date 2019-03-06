@@ -1,5 +1,7 @@
 import 'package:sally/sally.dart';
 
+part 'example.g.dart';
+
 // Define tables that can model a database of recipes.
 
 @DataClassName('Category')
@@ -22,7 +24,6 @@ class Ingredients extends Table {
 }
 
 class IngredientInRecipes extends Table {
-
   @override
   String get tableName => 'recipe_ingredients';
 
@@ -30,8 +31,22 @@ class IngredientInRecipes extends Table {
   @override
   Set<Column> get primaryKey => {recipe, ingredient};
 
-  IntColumn get recipe => integer().autoIncrement()();
-  IntColumn get ingredient => integer().autoIncrement()();
+  IntColumn get recipe => integer()();
+  IntColumn get ingredient => integer()();
 
   IntColumn get amountInGrams => integer().named('amount')();
+}
+
+@UseSally(tables: [Categories, Recipes, Ingredients, IngredientInRecipes])
+class Database extends _$Database {
+  Database(QueryExecutor e) : super(e);
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(onFinished: () async {
+        // populate data
+        await into(categories).insert(Category(description: 'Sweets'));
+      });
 }

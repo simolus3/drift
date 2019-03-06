@@ -13,7 +13,7 @@ import 'package:sally_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 class SallyGenerator extends GeneratorForAnnotation<UseSally> {
-  final Map<String, ParsedLibraryResult> _astForLibs = {};
+  //final Map<String, ParsedLibraryResult> _astForLibs = {};
   final ErrorStore errors = ErrorStore();
 
   TableParser tableParser;
@@ -24,11 +24,12 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
   final Map<DartType, SpecifiedTable> _foundTables = {};
 
   ElementDeclarationResult loadElementDeclaration(Element element) {
-    final result = _astForLibs.putIfAbsent(element.library.name, () {
+    /*final result = _astForLibs.putIfAbsent(element.library.name, () {
       // ignore: deprecated_member_use
       return ParsedLibraryResultImpl.tmp(element.library);
-    });
-
+    });*/
+    // ignore: deprecated_member_use
+    final result = ParsedLibraryResultImpl.tmp(element.library);
     return result.getElementDeclaration(element);
   }
 
@@ -59,6 +60,20 @@ class SallyGenerator extends GeneratorForAnnotation<UseSally> {
         _foundTables[table] = specifiedTable;
         tablesForThisDb.add(specifiedTable);
       }
+    }
+
+    if (errors.errors.isNotEmpty) {
+      print('Warning: There were some errors whily running sally_generator:');
+
+      for (var error in errors.errors) {
+        print(error.message);
+
+        if (error.affectedElement != null) {
+          final span = spanForElement(error.affectedElement);
+          print('${span.start.toolString}\n${span.highlight()}');
+        }
+      }
+      errors.errors.clear();
     }
 
     if (_foundTables.isEmpty) return '';

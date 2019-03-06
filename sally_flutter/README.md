@@ -293,7 +293,7 @@ Please note that a workaround for most on this list exists with custom statement
 ### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
 let us know by creating an issue!
-- Specify primary keys
+- Specify custom primary keys ✔️
   - Support an simplified update that doesn't need an explicit where based on the primary key
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions

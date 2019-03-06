@@ -17,7 +17,11 @@ class SpecifiedTable {
   final Set<SpecifiedColumn> primaryKey;
 
   const SpecifiedTable(
-      {this.fromClass, this.columns, this.sqlName, this.dartTypeName, this.primaryKey});
+      {this.fromClass,
+      this.columns,
+      this.sqlName,
+      this.dartTypeName,
+      this.primaryKey});
 }
 
 String tableInfoNameForTableClass(ClassElement fromClass) =>

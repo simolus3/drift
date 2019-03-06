@@ -17,8 +17,23 @@ abstract class Table {
   @visibleForOverriding
   String get tableName => null;
 
-  /// In the future, you can override this to specify a custom primary key. This
-  /// is not supported by sally at the moment.
+  /// Override this to specify custom primary keys:
+  /// ```dart
+  /// class IngredientInRecipes extends Table {
+  ///  @override
+  ///  Set<Column> get primaryKey => {recipe, ingredient};
+  ///
+  ///  IntColumn get recipe => integer().autoIncrement()();
+  ///  IntColumn get ingredient => integer().autoIncrement()();
+  ///
+  ///  IntColumn get amountInGrams => integer().named('amount')();
+  ///}
+  /// ```
+  /// The getter must return a set literal using the `=>` syntax so that the
+  /// sally generator can understand the code.
+  /// Also, please not that it's an error to have a
+  /// [IntColumnBuilder.autoIncrement] column and a custom primary key.
+  /// Writing such table in sql will throw at runtime.
   @visibleForOverriding
   Set<Column> get primaryKey => null;
 

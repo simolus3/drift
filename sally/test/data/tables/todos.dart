@@ -27,7 +27,15 @@ class Categories extends Table {
   TextColumn get description => text().named('desc')();
 }
 
-@UseSally(tables: [TodosTable, Categories, Users])
+class SharedTodos extends Table {
+  IntColumn get todo => integer()();
+  IntColumn get user => integer()();
+
+  @override
+  Set<Column> get primaryKey => {todo, user};
+}
+
+@UseSally(tables: [TodosTable, Categories, Users, SharedTodos])
 class TodoDb extends _$TodoDb {
   TodoDb(QueryExecutor e) : super(e);
 
