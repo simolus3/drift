@@ -1,0 +1,110 @@
+/// Flutter implementation for the moor database. This library merely provides
+/// a thin level of abstraction between the
+/// [sqflite](https://pub.dartlang.org/packages/sqflite) library and
+/// [moor](https://github.com/simolus3/moor)
+library moor_flutter;
+
+import 'dart:async';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart';
+import 'package:moor/moor.dart';
+import 'package:sqflite/sqflite.dart';
+
+export 'package:moor_flutter/src/animated_list.dart';
+export 'package:moor/moor.dart' hide Column;
+
+/// A query executor that uses sqlfite internally.
+class FlutterQueryExecutor extends QueryExecutor {
+  final bool _inDbPath;
+  final String path;
+
+  final bool logStatements;
+
+  Database _db;
+  bool _hadMigration = false;
+
+  FlutterQueryExecutor({@required this.path, this.logStatements})
+      : _inDbPath = false;
+
+  FlutterQueryExecutor.inDatabaseFolder(
+      {@required this.path, this.logStatements})
+      : _inDbPath = true;
+
+  @override
+  Future<bool> ensureOpen() async {
+    if (_db != null && _db.isOpen) {
+      return true;
+    }
+
+    String resolvedPath;
+    if (_inDbPath) {
+      resolvedPath = join(await getDatabasesPath(), path);
+    } else {
+      resolvedPath = path;
+    }
+
+    _db = await openDatabase(
+      resolvedPath,
+      version: databaseInfo.schemaVersion,
+      onCreate: (db, version) {
+        _hadMigration = true;
+        return databaseInfo.handleDatabaseCreation(
+          executor: (sql) => db.execute(sql),
+        );
+      },
+      onUpgrade: (db, from, to) {
+        _hadMigration = true;
+        return databaseInfo.handleDatabaseVersionChange(
+            executor: (sql) => db.execute(sql), from: from, to: to);
+      },
+      onOpen: (db) async {
+        _db = db;
+        // the openDatabase future will resolve later, so we can get an instance
+        // where we can send the queries from the onFinished operation;
+        final fn = databaseInfo.migration.onFinished;
+        if (fn != null && _hadMigration) {
+          await fn();
+        }
+      }
+    );
+
+    return true;
+  }
+
+  void _log(String sql, List args) {
+    if (logStatements) {
+      final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
+      print('moor: $sql with $formattedArgs');
+    }
+  }
+
+  @override
+  Future<int> runDelete(String statement, List args) {
+    _log(statement, args);
+    return _db.rawDelete(statement, args);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    _log(statement, args);
+    return _db.rawInsert(statement, args);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+    _log(statement, args);
+    return _db.rawQuery(statement, args);
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List args) {
+    _log(statement, args);
+    return _db.rawUpdate(statement, args);
+  }
+
+  @override
+  Future<void> runCustom(String statement) {
+    _log(statement, null);
+    return _db.execute(statement);
+  }
+}

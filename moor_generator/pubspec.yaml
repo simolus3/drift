@@ -1,0 +1,26 @@
+name: moor_generator
+description: moor generator generates database code from your table classes
+version: 1.0.0
+homepage: https://github.com/simolus3/moor
+authors:
+  - Simon Binder <simolus3@gmail.com>
+maintainer: Simon Binder (@simolus3)
+
+environment:
+  sdk: '>=2.1.2-dev.0.0 <3.0.0'
+
+dependencies:
+  analyzer: '>=0.34.0 <0.36.0'
+  recase: ^2.0.1
+  built_value: ^6.3.0
+  source_gen: ^0.9.4
+  build_runner: '>=1.1.0 <1.3.0'
+  build_config: ^0.3.1
+  moor:
+    path:
+      ../moor
+
+dev_dependencies:
+  test: ^1.0.0
+  built_value_generator: ^6.3.0
+  build_test: '>=0.10.0 <0.11.0'

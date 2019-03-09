@@ -1,0 +1,8 @@
+builders:
+  moor_generator:
+    import: "package:moor_generator/generator.dart"
+    builder_factories: ["moorBuilder"]
+    build_extensions: {".dart": [".moor.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
