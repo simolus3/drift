@@ -30,7 +30,8 @@ abstract class TableInfo<TableDsl, DataClass> {
   /// If [includeNulls] is true, fields of the [DataClass] that are null will be
   /// written as a [Variable] with a value of null. Otherwise, these fields will
   /// not be written into the map at all.
-  Map<String, Variable> entityToSql(DataClass instance, {bool includeNulls = false});
+  Map<String, Variable> entityToSql(DataClass instance,
+      {bool includeNulls = false});
 
   /// Maps the given row returned by the database into the fitting data class.
   DataClass map(Map<String, dynamic> data);

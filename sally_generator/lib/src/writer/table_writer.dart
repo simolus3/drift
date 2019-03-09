@@ -65,9 +65,8 @@ class TableWriter {
   void _writeReverseMappingMethod(StringBuffer buffer) {
     // Map<String, Variable> entityToSql(User d, {bool includeNulls = false) {
     buffer
-      ..write(
-          '@override\nMap<String, Variable> entityToSql('
-              '${table.dartTypeName} d, {bool includeNulls = false}) {\n')
+      ..write('@override\nMap<String, Variable> entityToSql('
+          '${table.dartTypeName} d, {bool includeNulls = false}) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {

@@ -112,7 +112,8 @@ class UpdateStatement<T, D> extends Query<T, D> {
     for (var entry in primaryKeyValues.entries) {
       // custom expression that references the column
       final columnExpression = CustomExpression(entry.key);
-      final comparison = Comparison(columnExpression, ComparisonOperator.equal, entry.value);
+      final comparison =
+          Comparison(columnExpression, ComparisonOperator.equal, entry.value);
 
       if (predicate == null) {
         predicate = comparison;

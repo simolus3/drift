@@ -8,6 +8,4 @@ class InvalidDataException implements Exception {
   String toString() {
     return 'InvalidDataException: $message';
   }
-
-
 }
