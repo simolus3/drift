@@ -1,2 +1,2 @@
 rm README.md
-cp sally_flutter/README.md README.md
+cp moor_flutter/README.md README.md

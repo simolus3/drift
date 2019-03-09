@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 case $PKG in
-sally_generator)
+mono_generator)
     ./tool/travis.sh dartfmt dartanalyzer test
 ;;
-sally)
+mono)
     ./tool/travis.sh dartfmt dartanalyzer command
 ;;
 esac

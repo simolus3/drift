@@ -1,9 +1,9 @@
 #!/bin/bash
 
-rm -f sally/LICENSE
-rm -f sally_flutter/LICENSE
-rm -f sally_generator/LICENSE
+rm -f moor/LICENSE
+rm -f moor_flutter/LICENSE
+rm -f moor_generator/LICENSE
 
-cp LICENSE sally/LICENSE
-cp LICENSE sally_flutter/LICENSE
-cp LICENSE sally_generator/LICENSE
+cp LICENSE moor/LICENSE
+cp LICENSE moor_flutter/LICENSE
+cp LICENSE moor_generator/LICENSE
