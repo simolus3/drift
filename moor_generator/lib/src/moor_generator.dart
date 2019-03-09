@@ -12,7 +12,7 @@ import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
-class moorGenerator extends GeneratorForAnnotation<Usemoor> {
+class MoorGenerator extends GeneratorForAnnotation<Usemoor> {
   //final Map<String, ParsedLibraryResult> _astForLibs = {};
   final ErrorStore errors = ErrorStore();
 
@@ -51,7 +51,7 @@ class moorGenerator extends GeneratorForAnnotation<Usemoor> {
 
     for (var table in tableTypes) {
       if (!tableTypeChecker.isAssignableFrom(table.element)) {
-        errors.add(moorError(
+        errors.add(MoorError(
             critical: true,
             message: 'The type $table is not a moor table',
             affectedElement: element));

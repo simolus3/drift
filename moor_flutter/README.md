@@ -1,7 +1,7 @@
-# moor
+# Moor
 [![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
 
-moor is an easy to use and safe way to persist data for Flutter apps. It features
+Moor is an easy to use and safe way to persist data for Flutter apps. It features
 a fluent Dart DSL to describe tables and will generate matching database code that
 can be used to easily read and store your app's data. It also features a reactive
 API that will deliver auto-updating streams for your queries.

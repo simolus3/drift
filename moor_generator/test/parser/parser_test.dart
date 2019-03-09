@@ -8,7 +8,7 @@ import 'package:build_test/build_test.dart';
 
 void main() async {
   LibraryElement testLib;
-  moorGenerator generator;
+  MoorGenerator generator;
 
   setUpAll(() async {
     testLib = await resolveSource(r''' 
@@ -48,7 +48,7 @@ void main() async {
   });
 
   setUp(() {
-    generator = moorGenerator();
+    generator = MoorGenerator();
     generator
       ..columnParser = ColumnParser(generator)
       ..tableParser = TableParser(generator);

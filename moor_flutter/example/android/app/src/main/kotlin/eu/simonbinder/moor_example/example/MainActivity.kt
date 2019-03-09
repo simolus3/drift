@@ -1,4 +1,4 @@
-package eu.simonbinder.moorexample.moorexample
+package eu.simonbinder.moor_example.example
 
 import android.os.Bundle
 

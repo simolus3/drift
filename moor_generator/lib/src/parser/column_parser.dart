@@ -24,7 +24,7 @@ const String errorMessage = 'This getter does not create a valid column that '
     'columns are formed. If you have any questions, feel free to raise an issue.';
 
 class ColumnParser extends ParserBase {
-  ColumnParser(moorGenerator generator) : super(generator);
+  ColumnParser(MoorGenerator generator) : super(generator);
 
   SpecifiedColumn parse(MethodDeclaration getter) {
     /*
@@ -39,7 +39,7 @@ class ColumnParser extends ParserBase {
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      generator.errors.add(moorError(
+      generator.errors.add(MoorError(
         affectedElement: getter.declaredElement,
         message: errorMessage,
         critical: true,
@@ -69,7 +69,7 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case functionNamed:
           if (foundExplicitName != null) {
-            generator.errors.add(moorError(
+            generator.errors.add(MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
                 message:
@@ -79,7 +79,7 @@ class ColumnParser extends ParserBase {
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.errors.add(moorError(
+            generator.errors.add(MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
                 message:

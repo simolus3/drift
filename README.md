@@ -1,12 +1,12 @@
-# Sally
-[![Build Status](https://travis-ci.com/simolus3/sally.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/sally)
+# Moor
+[![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
 
-Sally is an easy to use and safe way to persist data for Flutter apps. It features
+moor is an easy to use and safe way to persist data for Flutter apps. It features
 a fluent Dart DSL to describe tables and will generate matching database code that
 can be used to easily read and store your app's data. It also features a reactive
 API that will deliver auto-updating streams for your queries.
 
-- [Sally](#sally)
+- [moor](#moor)
   * [Getting started](#getting-started)
     + [Adding the dependency](#adding-the-dependency)
     + [Declaring tables](#declaring-tables)
@@ -27,34 +27,34 @@ API that will deliver auto-updating streams for your queries.
 
 ## Getting started
 ### Adding the dependency
-First, let's add sally to your project's `pubspec.yaml`. The library is not yet
+First, let's add moor to your project's `pubspec.yaml`. The library is not yet
 out on pub, so you'll need to use the git repository for now:
 ```yaml
 dependencies:
-  sally:
+  moor:
     git:
-      url: https://github.com/simolus3/sally.git
-      path: sally/
+      url: https://github.com/simolus3/moor.git
+      path: moor/
 
 dev_dependencies:
-  sally_generator:
+  moor_generator:
     git:
-      url: https://github.com/simolus3/sally.git
-      path: sally_generator/
+      url: https://github.com/simolus3/moor.git
+      path: moor_generator/
   build_runner: ^1.2.0
 ```
-We're going to use the `sally_flutter` library to specify tables and access the database. The
-`sally_generator` library will take care of generating the necessary code so the
+We're going to use the `moor_flutter` library to specify tables and access the database. The
+`moor_generator` library will take care of generating the necessary code so the
 library knows how your table structure looks like.
 
 ### Declaring tables
 You can use the DSL included with this library to specify your libraries with simple
 dart code:
 ```dart
-import 'package:sally_flutter/sally_flutter.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 
 // assuming that your file is called filename.dart. This will give an error at first,
-// but it's needed for sally to know about the generated code
+// but it's needed for moor to know about the generated code
 part 'filename.g.dart'; 
 
 // this will generate a table called "todos" for us. The rows of that table will
@@ -66,7 +66,7 @@ class Todos extends Table {
   IntColumn get category => integer().nullable()();
 }
 
-// This will make sally generate a class called "Category" to represent a row in this table.
+// This will make moor generate a class called "Category" to represent a row in this table.
 // By default, "Categorie" would have been used because it only strips away the trailing "s"
 // in the table name.
 @DataClassName("Category")
@@ -76,9 +76,9 @@ class Categories extends Table {
   TextColumn get description => text()();
 }
 
-// this annotation tells sally to prepare a database class that uses both of the
+// this annotation tells moor to prepare a database class that uses both of the
 // tables we just defined. We'll see how to use that database class in a moment.
-@UseSally(tables: [Todos, Categories])
+@Usemoor(tables: [Todos, Categories])
 class MyDatabase {
   
 }
@@ -90,14 +90,14 @@ executed. Instead, the generator will take a look at your table classes to figur
 This won't work if the body of your tables is not constant. This should not be problem, but please be aware of this as you can't put logic inside these classes.
 
 ### Generating the code
-Sally integrates with the dart `build` system, so you can generate all the code needed with 
+moor integrates with the dart `build` system, so you can generate all the code needed with 
 `flutter packages pub run build_runner build`. If you want to continously rebuild the code
 whever you change your code, run `flutter packages pub run build_runner watch` instead.
-After running either command once, sally generator will have created a class for your
+After running either command once, moor generator will have created a class for your
 database and data classes for your entities. To use it, change the `MyDatabase` class as
 follows:
 ```dart
-@UseSally(tables: [Todos, Categories])
+@Usemoor(tables: [Todos, Categories])
 class MyDatabase extends _$MyDatabase {
   // we tell the database where to store the data with this constructor
   MyDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
@@ -128,7 +128,7 @@ class MyDatabase extends _$MyDatabase {
 ### Select statements
 You can create `select` statements by starting them with `select(tableName)`, where the 
 table name
-is a field generated for you by sally. Each table used in a database will have a matching field
+is a field generated for you by moor. Each table used in a database will have a matching field
 to run queries against. A query can be run once with `get()` or be turned into an auto-updating
 stream using `watch()`.
 #### Where
@@ -232,7 +232,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
 ```
 
 ## Migrations
-Sally provides a migration API that can be used to gradually apply schema changes after bumping
+moor provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
 getter. Here's an example: Let's say you wanted to add a due date to your todo entries:
 ```dart
@@ -273,7 +273,7 @@ available from your main database class. Consider the following code:
 ```dart
 part 'todos_dao.g.dart';
 
-// the _TodosDaoMixin will be created by sally. It contains all the necessary
+// the _TodosDaoMixin will be created by moor. It contains all the necessary
 // fields for the tables. The <MyDatabase> type annotation is the database class
 // that should use this dao.
 @UseDao(tables: [Todos])
@@ -292,7 +292,7 @@ class TodosDao extends DatabaseAccessor<MyDatabase> with _TodosDaoMixin {
   }
 }
 ```
-If we now change the annotation on the `MyDatabase` class to `@UseSally(tables: [Todos, Categories], daos: [TodosDao])`
+If we now change the annotation on the `MyDatabase` class to `@Usemoor(tables: [Todos, Categories], daos: [TodosDao])`
 and re-run the code generation, a getter `todosDao` can be used to access the instance of that dao.
 
 ## TODO-List and current limitations

@@ -11,7 +11,7 @@ import 'package:moor_generator/src/moor_generator.dart'; // ignore: implementati
 import 'package:recase/recase.dart';
 
 class TableParser extends ParserBase {
-  TableParser(moorGenerator generator) : super(generator);
+  TableParser(MoorGenerator generator) : super(generator);
 
   SpecifiedTable parse(ClassElement element) {
     final sqlName = _parseTableName(element);
@@ -58,7 +58,7 @@ class TableParser extends ParserBase {
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = readStringLiteral(returnExpr, () {
-      generator.errors.add(moorError(
+      generator.errors.add(MoorError(
           critical: true,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -79,7 +79,7 @@ class TableParser extends ParserBase {
         as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      generator.errors.add(moorError(
+      generator.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -105,7 +105,7 @@ class TableParser extends ParserBase {
         parsedPrimaryKey.add(column);
       }
     } else {
-      generator.errors.add(moorError(
+      generator.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
       return null;

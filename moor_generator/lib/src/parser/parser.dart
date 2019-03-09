@@ -10,7 +10,7 @@ class Parser {
 }
 
 class ParserBase {
-  final moorGenerator generator;
+  final MoorGenerator generator;
 
   ParserBase(this.generator);
 
@@ -18,7 +18,7 @@ class ParserBase {
     final body = method.body;
 
     if (!(body is ExpressionFunctionBody)) {
-      generator.errors.add(moorError(
+      generator.errors.add(MoorError(
           affectedElement: method.declaredElement,
           critical: true,
           message:

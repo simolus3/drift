@@ -4,8 +4,8 @@ dart:
   - stable
 
 env:
-  - PKG="sally"
-  - PKG="sally_generator"
+  - PKG="moor"
+  - PKG="moor_generator"
 
 script: ./tool/mono_repo_wrapper.sh
 
@@ -17,5 +17,5 @@ branches:
 cache:
   directories:
     - "$HOME/.pub-cache"
-    - sally/.dart_tool/build
-    - sally_generator/.dart_tool/build
+    - moor/.dart_tool/build
+    - moor_generator/.dart_tool/build
