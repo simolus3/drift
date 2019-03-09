@@ -1,5 +1,8 @@
 # Moor
 [![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
+[API: ![Generator version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor)
+[Runtime: ![Generator version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dartlang.org/packages/moor_flutter)
+[Generator: ![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
 
 Moor is an easy to use and safe way to persist data for Flutter apps. It features
 a fluent Dart DSL to describe tables and will generate matching database code that
