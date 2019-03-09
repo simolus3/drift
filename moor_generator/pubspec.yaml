@@ -14,13 +14,13 @@ dependencies:
   recase: ^2.0.1
   built_value: ^6.3.0
   source_gen: ^0.9.4
+  build: ^1.1.0
   build_runner: '>=1.1.0 <1.3.0'
   build_config: ^0.3.1
-  moor:
-    path:
-      ../moor
+  moor: ^1.0.0
 
 dev_dependencies:
   test: ^1.0.0
+  test_api: ^0.2.0
   built_value_generator: ^6.3.0
   build_test: '>=0.10.0 <0.11.0'

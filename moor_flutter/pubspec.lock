@@ -47,7 +47,7 @@ packages:
     source: hosted
     version: "0.12.3+1"
   meta:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: meta
       url: "https://pub.dartlang.org"
@@ -56,12 +56,12 @@ packages:
   moor:
     dependency: "direct main"
     description:
-      path: "../moor"
-      relative: true
-    source: path
+      name: moor
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "1.0.0"
   path:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path
       url: "https://pub.dartlang.org"
