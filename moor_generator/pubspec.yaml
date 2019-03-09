@@ -1,5 +1,5 @@
 name: moor_generator
-description: moor generator generates database code from your table classes
+description: Dev-dependency to generate table and dataclasses together with the moor package.
 version: 1.0.0
 homepage: https://github.com/simolus3/moor
 authors:

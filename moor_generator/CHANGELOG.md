@@ -1,3 +1,2 @@
 ## 1.0.0
-
-- Initial version, created by Stagehand
+- Initial version of the Moor generator
