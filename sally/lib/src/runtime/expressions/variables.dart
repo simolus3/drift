@@ -39,8 +39,12 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write('?');
-    context.introduceVariable(mapToSimpleValue(context));
+    if (value != null) {
+      context.buffer.write('?');
+      context.introduceVariable(mapToSimpleValue(context));
+    } else {
+      context.buffer.write('NULL');
+    }
   }
 }
 

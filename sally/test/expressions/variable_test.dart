@@ -15,4 +15,14 @@ void main() {
     expect('?', ctx.sql);
     expect(ctx.boundVariables, [1551297563]);
   });
+
+  test('writes null directly for null values', () {
+    final variable = Variable.withString(null);
+    final ctx = GenerationContext(TodoDb(null));
+
+    variable.writeInto(ctx);
+
+    expect('NULL', ctx.sql);
+    expect(ctx.boundVariables, isEmpty);
+  });
 }

@@ -37,6 +37,20 @@ void main() {
     });
   });
 
+  test('generates replace statements', () async {
+    await db.update(db.todosTable).replace(TodoEntry(
+          id: 3,
+          title: 'Title',
+          content: 'Updated content',
+          // category and targetDate are null
+        ));
+
+    verify(executor.runUpdate(
+        'UPDATE todos SET title = ?, content = ?, '
+        'target_date = NULL, category = NULL WHERE id = ?;',
+        ['Title', 'Updated content', 3]));
+  });
+
   test('does not update with invalid data', () {
     // The length of a title must be between 4 and 16 chars
 
@@ -45,7 +59,7 @@ void main() {
     }, throwsA(const TypeMatcher<InvalidDataException>()));
   });
 
-  group('Table updates for delete statements', () {
+  group('Table updates for update statements', () {
     test('are issued when data was changed', () async {
       when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
 

@@ -96,28 +96,28 @@ class $TodosTableTable extends TodosTable
       targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data) {
     return TodoEntry.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(TodoEntry d) {
+  Map<String, Variable> entityToSql(TodoEntry d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.title != null) {
+    if (d.title != null || includeNulls) {
       map['title'] = Variable<String, StringType>(d.title);
     }
-    if (d.content != null) {
+    if (d.content != null || includeNulls) {
       map['content'] = Variable<String, StringType>(d.content);
     }
-    if (d.targetDate != null) {
+    if (d.targetDate != null || includeNulls) {
       map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate);
     }
-    if (d.category != null) {
+    if (d.category != null || includeNulls) {
       map['category'] = Variable<int, IntType>(d.category);
     }
     return map;
@@ -171,19 +171,19 @@ class $CategoriesTable extends Categories
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data) {
     return Category.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(Category d) {
+  Map<String, Variable> entityToSql(Category d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.description != null) {
+    if (d.description != null || includeNulls) {
       map['`desc`'] = Variable<String, StringType>(d.description);
     }
     return map;
@@ -248,22 +248,22 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
       name.isAcceptableValue(instance.name, isInserting) &&
       isAwesome.isAcceptableValue(instance.isAwesome, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data) {
     return User.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(User d) {
+  Map<String, Variable> entityToSql(User d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.name != null) {
+    if (d.name != null || includeNulls) {
       map['name'] = Variable<String, StringType>(d.name);
     }
-    if (d.isAwesome != null) {
+    if (d.isAwesome != null || includeNulls) {
       map['is_awesome'] = Variable<bool, BoolType>(d.isAwesome);
     }
     return map;
@@ -325,12 +325,12 @@ class $SharedTodosTable extends SharedTodos
   }
 
   @override
-  Map<String, Variable> entityToSql(SharedTodo d) {
+  Map<String, Variable> entityToSql(SharedTodo d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.todo != null) {
+    if (d.todo != null || includeNulls) {
       map['todo'] = Variable<int, IntType>(d.todo);
     }
-    if (d.user != null) {
+    if (d.user != null || includeNulls) {
       map['user'] = Variable<int, IntType>(d.user);
     }
     return map;

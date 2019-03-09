@@ -63,15 +63,16 @@ class TableWriter {
   }
 
   void _writeReverseMappingMethod(StringBuffer buffer) {
-    // Map<String, Variable> entityToSql(User d) {
+    // Map<String, Variable> entityToSql(User d, {bool includeNulls = false) {
     buffer
       ..write(
-          '@override\nMap<String, Variable> entityToSql(${table.dartTypeName} d) {\n')
+          '@override\nMap<String, Variable> entityToSql('
+              '${table.dartTypeName} d, {bool includeNulls = false}) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
       buffer.write('''
-        if (d.${column.dartGetterName} != null) {
+        if (d.${column.dartGetterName} != null || includeNulls) {
           map['${column.name.name}'] = Variable<${column.dartTypeName}, ${column.sqlTypeName}>(d.${column.dartGetterName});
         }
       ''');
@@ -138,13 +139,20 @@ class TableWriter {
 
   void _writePrimaryKeyOverride(StringBuffer buffer) {
     buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
-    if (table.primaryKey == null) {
+    var primaryKey = table.primaryKey;
+
+    // If there is an auto increment column, that forms the primary key. The
+    // PK returned by table.primaryKey only contains column that have been
+    // explicitly defined as PK, but with AI this happens implicitly.
+    primaryKey ??= table.columns.where((c) => c.hasAI).toSet();
+
+    if (primaryKey == null) {
       buffer.write('null;');
       return;
     }
 
     buffer.write('{');
-    final pkList = table.primaryKey.toList();
+    final pkList = primaryKey.toList();
     for (var i = 0; i < pkList.length; i++) {
       final pk = pkList[i];
 

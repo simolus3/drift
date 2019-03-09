@@ -53,19 +53,19 @@ class $CategoriesTable extends Categories
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data) {
     return Category.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(Category d) {
+  Map<String, Variable> entityToSql(Category d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.description != null) {
+    if (d.description != null || includeNulls) {
       map['description'] = Variable<String, StringType>(d.description);
     }
     return map;
@@ -142,25 +142,25 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
       instructions.isAcceptableValue(instance.instructions, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Recipe map(Map<String, dynamic> data) {
     return Recipe.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(Recipe d) {
+  Map<String, Variable> entityToSql(Recipe d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.title != null) {
+    if (d.title != null || includeNulls) {
       map['title'] = Variable<String, StringType>(d.title);
     }
-    if (d.instructions != null) {
+    if (d.instructions != null || includeNulls) {
       map['instructions'] = Variable<String, StringType>(d.instructions);
     }
-    if (d.category != null) {
+    if (d.category != null || includeNulls) {
       map['category'] = Variable<int, IntType>(d.category);
     }
     return map;
@@ -227,22 +227,22 @@ class $IngredientsTable extends Ingredients
       name.isAcceptableValue(instance.name, isInserting) &&
       caloriesPer100g.isAcceptableValue(instance.caloriesPer100g, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Ingredient map(Map<String, dynamic> data) {
     return Ingredient.fromData(data, _db);
   }
 
   @override
-  Map<String, Variable> entityToSql(Ingredient d) {
+  Map<String, Variable> entityToSql(Ingredient d, {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.id != null) {
+    if (d.id != null || includeNulls) {
       map['id'] = Variable<int, IntType>(d.id);
     }
-    if (d.name != null) {
+    if (d.name != null || includeNulls) {
       map['name'] = Variable<String, StringType>(d.name);
     }
-    if (d.caloriesPer100g != null) {
+    if (d.caloriesPer100g != null || includeNulls) {
       map['calories'] = Variable<int, IntType>(d.caloriesPer100g);
     }
     return map;
@@ -321,15 +321,16 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 
   @override
-  Map<String, Variable> entityToSql(IngredientInRecipe d) {
+  Map<String, Variable> entityToSql(IngredientInRecipe d,
+      {bool includeNulls = false}) {
     final map = <String, Variable>{};
-    if (d.recipe != null) {
+    if (d.recipe != null || includeNulls) {
       map['recipe'] = Variable<int, IntType>(d.recipe);
     }
-    if (d.ingredient != null) {
+    if (d.ingredient != null || includeNulls) {
       map['ingredient'] = Variable<int, IntType>(d.ingredient);
     }
-    if (d.amountInGrams != null) {
+    if (d.amountInGrams != null || includeNulls) {
       map['amount'] = Variable<int, IntType>(d.amountInGrams);
     }
     return map;

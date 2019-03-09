@@ -55,13 +55,15 @@ class Migrator {
   Future<void> createTable(TableInfo table) async {
     final sql = StringBuffer();
 
-    // todo write primary key
-
     // ignore: cascade_invocations
     sql.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
 
+    var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
       final column = table.$columns[i];
+
+      if (column is GeneratedIntColumn && column.hasAutoIncrement)
+        hasAutoIncrement = true;
 
       // ignore: cascade_invocations
       column.writeColumnDefinition(sql);
@@ -69,7 +71,7 @@ class Migrator {
       if (i < table.$columns.length - 1) sql.write(', ');
     }
 
-    if (table.$primaryKey != null) {
+    if (table.$primaryKey != null && !hasAutoIncrement) {
       sql.write(', PRIMARY KEY (');
       final pkList = table.$primaryKey.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {

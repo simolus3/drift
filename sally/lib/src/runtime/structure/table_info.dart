@@ -23,10 +23,14 @@ abstract class TableInfo<TableDsl, DataClass> {
   /// auto-incrementing are allowed to be null as they will be set by sqlite.
   bool validateIntegrity(DataClass instance, bool isInserting);
 
-  /// Maps the given data class into a map that can be inserted into sql. The
+  /// Maps the given data class to a [Map] that can be inserted into sql. The
   /// keys should represent the column name in sql, the values the corresponding
   /// values of the field.
-  Map<String, Variable> entityToSql(DataClass instance);
+  ///
+  /// If [includeNulls] is true, fields of the [DataClass] that are null will be
+  /// written as a [Variable] with a value of null. Otherwise, these fields will
+  /// not be written into the map at all.
+  Map<String, Variable> entityToSql(DataClass instance, {bool includeNulls = false});
 
   /// Maps the given row returned by the database into the fitting data class.
   DataClass map(Map<String, dynamic> data);
