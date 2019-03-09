@@ -1,12 +1,12 @@
 # Moor
 [![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
 
-moor is an easy to use and safe way to persist data for Flutter apps. It features
+Moor is an easy to use and safe way to persist data for Flutter apps. It features
 a fluent Dart DSL to describe tables and will generate matching database code that
 can be used to easily read and store your app's data. It also features a reactive
 API that will deliver auto-updating streams for your queries.
 
-- [moor](#moor)
+- [Moor](#moor)
   * [Getting started](#getting-started)
     + [Adding the dependency](#adding-the-dependency)
     + [Declaring tables](#declaring-tables)
@@ -90,14 +90,14 @@ executed. Instead, the generator will take a look at your table classes to figur
 This won't work if the body of your tables is not constant. This should not be problem, but please be aware of this as you can't put logic inside these classes.
 
 ### Generating the code
-moor integrates with the dart `build` system, so you can generate all the code needed with 
-`flutter packages pub run build_runner build`. If you want to continously rebuild the code
+Moor integrates with the dart `build` system, so you can generate all the code needed with 
+`flutter packages pub run build_runner build`. If you want to continously rebuild the generated code
 whever you change your code, run `flutter packages pub run build_runner watch` instead.
-After running either command once, moor generator will have created a class for your
+After running either command once, the moor generator will have created a class for your
 database and data classes for your entities. To use it, change the `MyDatabase` class as
 follows:
 ```dart
-@Usemoor(tables: [Todos, Categories])
+@UseMoor(tables: [Todos, Categories])
 class MyDatabase extends _$MyDatabase {
   // we tell the database where to store the data with this constructor
   MyDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
@@ -112,8 +112,7 @@ You can ignore the `schemaVersion` at the moment, the important part is that you
 now run your queries with fluent Dart code:
 ## Writing queries
 ```dart
-class MyDatabase extends _$MyDatabase {
-  // .. the versionCode getter still needs to be here
+// inside the database class:
 
   // loads all todo entries
   Future<List<Todo>> get allTodoEntries => select(todos).get();
@@ -129,7 +128,7 @@ class MyDatabase extends _$MyDatabase {
 You can create `select` statements by starting them with `select(tableName)`, where the 
 table name
 is a field generated for you by moor. Each table used in a database will have a matching field
-to run queries against. A query can be run once with `get()` or be turned into an auto-updating
+to run queries against. Any query can be run once with `get()` or be turned into an auto-updating
 stream using `watch()`.
 #### Where
 You can apply filters to a query by calling `where()`. The where method takes a function that
@@ -170,7 +169,7 @@ Future update(TodoEntry entry) {
   // it will also make sure that only the entry with the same primary key will be updated.
   // Here, this means that the row that has the same id as entry will be updated to reflect
   // the entry's title, content and category. Unlike write, this supports setting columns back
-  // to null.
+  // to null. As it set's its where clause automatically, it can not be used together with where.
   return update(todos).replace(entry);
 }
 
@@ -222,7 +221,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
     // each category
     return customSelectStream(
         'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
-        readsFrom: Set.of([todos, categories])).map((rows) {
+        readsFrom: {todos, categories}).map((rows) {
       // when we have the result set, map each row to the data class
       return rows
           .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.readInt('amount')))
@@ -230,9 +229,13 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
     });
   }
 ```
+For custom selects, you should use the `readsFrom` parameter to specify from which tables the query is
+reading. When using a `Stream`, moor will be able to know after which updates the stream should emit
+items. If you're using a custom query for updates or deletes with `customUpdate`, you should also
+use the `updates` parameter to let moor know which tables you're touching.
 
 ## Migrations
-moor provides a migration API that can be used to gradually apply schema changes after bumping
+Moor provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
 getter. Here's an example: Let's say you wanted to add a due date to your todo entries:
 ```dart
@@ -264,7 +267,10 @@ We can now change the `database` class like this:
 
   // rest of class can stay the same
 ```
-You can also add individual tables or drop them.
+You can also add individual tables or drop them. You can't use the high-level query API in
+migrations. If you need to use it, please specify the `onFinished` method on the 
+`MigrationStrategy`. It will be called after a migration happened and it's safe to call methods
+on your database from inside that method.
 
 ### Extracting functionality with DAOs
 When you have a lot of queries, putting them all into one class quickly becomes
@@ -280,7 +286,7 @@ part 'todos_dao.g.dart';
 class TodosDao extends DatabaseAccessor<MyDatabase> with _TodosDaoMixin {
   // this constructor is required so that the main database can create an instance
   // of this object.
-  TodosDao(Database db) : super(db);
+  TodosDao(MyDatabase db) : super(db);
 
   Stream<List<TodoEntry>> todosInCategory(Category category) {
     if (category == null) {
@@ -292,8 +298,8 @@ class TodosDao extends DatabaseAccessor<MyDatabase> with _TodosDaoMixin {
   }
 }
 ```
-If we now change the annotation on the `MyDatabase` class to `@Usemoor(tables: [Todos, Categories], daos: [TodosDao])`
-and re-run the code generation, a getter `todosDao` can be used to access the instance of that dao.
+If we now change the annotation on the `MyDatabase` class to `@UseMoor(tables: [Todos, Categories], daos: [TodosDao])`
+and re-run the code generation, a generated getter `todosDao` can be used to access the instance of that dao.
 
 ## TODO-List and current limitations
 ### Limitations (at the moment)
@@ -304,7 +310,7 @@ Please note that a workaround for most on this list exists with custom statement
 
 ### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
-let us know by creating an issue!
+let me know by creating an issue!
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
 - Support more Datatypes: We should at least support `Uint8List` out of the box,

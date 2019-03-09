@@ -2,8 +2,8 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 
 /// Use this class as an annotation to inform moor_generator that a database
-/// class should be generated using the specified [Usemoor.tables].
-class Usemoor {
+/// class should be generated using the specified [UseMoor.tables].
+class UseMoor {
   /// The tables to include in the database
   final List<Type> tables;
 
@@ -13,8 +13,8 @@ class Usemoor {
   final List<Type> daos;
 
   /// Use this class as an annotation to inform moor_generator that a database
-  /// class should be generated using the specified [Usemoor.tables].
-  const Usemoor({@required this.tables, this.daos = const []});
+  /// class should be generated using the specified [UseMoor.tables].
+  const UseMoor({@required this.tables, this.daos = const []});
 }
 
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specified

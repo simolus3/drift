@@ -12,7 +12,7 @@ import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
-class MoorGenerator extends GeneratorForAnnotation<Usemoor> {
+class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
   //final Map<String, ParsedLibraryResult> _astForLibs = {};
   final ErrorStore errors = ErrorStore();
 

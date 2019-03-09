@@ -35,7 +35,7 @@ class SharedTodos extends Table {
   Set<Column> get primaryKey => {todo, user};
 }
 
-@Usemoor(tables: [TodosTable, Categories, Users, SharedTodos])
+@UseMoor(tables: [TodosTable, Categories, Users, SharedTodos])
 class TodoDb extends _$TodoDb {
   TodoDb(QueryExecutor e) : super(e);
 

@@ -37,7 +37,7 @@ class IngredientInRecipes extends Table {
   IntColumn get amountInGrams => integer().named('amount')();
 }
 
-@Usemoor(tables: [Categories, Recipes, Ingredients, IngredientInRecipes])
+@UseMoor(tables: [Categories, Recipes, Ingredients, IngredientInRecipes])
 class Database extends _$Database {
   Database(QueryExecutor e) : super(e);
 

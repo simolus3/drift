@@ -29,7 +29,7 @@ class CategoryWithCount {
   CategoryWithCount(this.category, this.count);
 }
 
-@Usemoor(tables: [Todos, Categories], daos: [TodosDao])
+@UseMoor(tables: [Todos, Categories], daos: [TodosDao])
 class Database extends _$Database {
   Database()
       : super(FlutterQueryExecutor.inDatabaseFolder(
