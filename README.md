@@ -31,7 +31,7 @@ First, let's add moor to your project's `pubspec.yaml`. The library is not yet
 out on pub, so you'll need to use the git repository for now:
 ```yaml
 dependencies:
-  moor:
+  moor_flutter:
     git:
       url: https://github.com/simolus3/moor.git
       path: moor/
