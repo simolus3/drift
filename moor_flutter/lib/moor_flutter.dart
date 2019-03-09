@@ -43,30 +43,25 @@ class FlutterQueryExecutor extends QueryExecutor {
       resolvedPath = path;
     }
 
-    _db = await openDatabase(
-      resolvedPath,
-      version: databaseInfo.schemaVersion,
-      onCreate: (db, version) {
-        _hadMigration = true;
-        return databaseInfo.handleDatabaseCreation(
-          executor: (sql) => db.execute(sql),
-        );
-      },
-      onUpgrade: (db, from, to) {
-        _hadMigration = true;
-        return databaseInfo.handleDatabaseVersionChange(
-            executor: (sql) => db.execute(sql), from: from, to: to);
-      },
-      onOpen: (db) async {
-        _db = db;
-        // the openDatabase future will resolve later, so we can get an instance
-        // where we can send the queries from the onFinished operation;
-        final fn = databaseInfo.migration.onFinished;
-        if (fn != null && _hadMigration) {
-          await fn();
-        }
+    _db = await openDatabase(resolvedPath, version: databaseInfo.schemaVersion,
+        onCreate: (db, version) {
+      _hadMigration = true;
+      return databaseInfo.handleDatabaseCreation(
+        executor: (sql) => db.execute(sql),
+      );
+    }, onUpgrade: (db, from, to) {
+      _hadMigration = true;
+      return databaseInfo.handleDatabaseVersionChange(
+          executor: (sql) => db.execute(sql), from: from, to: to);
+    }, onOpen: (db) async {
+      _db = db;
+      // the openDatabase future will resolve later, so we can get an instance
+      // where we can send the queries from the onFinished operation;
+      final fn = databaseInfo.migration.onFinished;
+      if (fn != null && _hadMigration) {
+        await fn();
       }
-    );
+    });
 
     return true;
   }

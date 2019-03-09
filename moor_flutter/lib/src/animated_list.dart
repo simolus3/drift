@@ -9,7 +9,7 @@ typedef Widget RemovedItemBuilder<T>(
     BuildContext context, T item, Animation<double> anim);
 
 /// An [AnimatedList] that shows the result of a moor query stream.
-class moorAnimatedList<T> extends StatefulWidget {
+class MoorAnimatedList<T> extends StatefulWidget {
   final Stream<List<T>> stream;
   final ItemBuilder<T> itemBuilder;
   final RemovedItemBuilder<T> removedItemBuilder;
@@ -20,19 +20,19 @@ class moorAnimatedList<T> extends StatefulWidget {
   /// one text and not let the item disappear to show up again).
   final bool Function(T a, T b) equals;
 
-  moorAnimatedList(
+  MoorAnimatedList(
       {@required this.stream,
       @required this.itemBuilder,
       @required this.removedItemBuilder,
       this.equals});
 
   @override
-  _moorAnimatedListState<T> createState() {
-    return _moorAnimatedListState<T>();
+  _MoorAnimatedListState<T> createState() {
+    return _MoorAnimatedListState<T>();
   }
 }
 
-class _moorAnimatedListState<T> extends State<moorAnimatedList<T>> {
+class _MoorAnimatedListState<T> extends State<MoorAnimatedList<T>> {
   List<T> _lastSnapshot;
   int _initialItemCount;
 
@@ -95,7 +95,7 @@ class _moorAnimatedListState<T> extends State<moorAnimatedList<T>> {
   }
 
   @override
-  void didUpdateWidget(moorAnimatedList<T> oldWidget) {
+  void didUpdateWidget(MoorAnimatedList<T> oldWidget) {
     _subscription?.cancel();
     _lastSnapshot = null;
     _setupSubscription();

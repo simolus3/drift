@@ -31,16 +31,10 @@ First, let's add moor to your project's `pubspec.yaml`. The library is not yet
 out on pub, so you'll need to use the git repository for now:
 ```yaml
 dependencies:
-  moor_flutter:
-    git:
-      url: https://github.com/simolus3/moor.git
-      path: moor/
+  moor_flutter: ^1.0.0
 
 dev_dependencies:
-  moor_generator:
-    git:
-      url: https://github.com/simolus3/moor.git
-      path: moor_generator/
+  moor_generator: ^1.0.0
   build_runner: ^1.2.0
 ```
 We're going to use the `moor_flutter` library to specify tables and access the database. The
