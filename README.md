@@ -153,12 +153,25 @@ You can also reverse the order by setting the `mode` property of the `OrderingTe
 You can use the generated `row` class to update individual fields of any row:
 ```dart
 Future moveImportantTasksIntoCategory(Category target) {
+  // use update(...).write when you have a custom where clause and want to update
+  // only the columns that you specify (here, only "category" will be updated, the
+  // title and description of the rows affected will be left unchanged).
+  // Notice that you can't set fields back to null with this method.
   return (update(todos)
       ..where((t) => t.title.like('%Important%'))
     ).write(TodoEntry(
       category: target.id
     ),
   );
+}
+
+Future update(TodoEntry entry) {
+  // using replace will update all fields from the entry that are not marked as a primary key.
+  // it will also make sure that only the entry with the same primary key will be updated.
+  // Here, this means that the row that has the same id as entry will be updated to reflect
+  // the entry's title, content and category. Unlike write, this supports setting columns back
+  // to null.
+  return update(todos).replace(entry);
 }
 
 Future feelingLazy() {
@@ -288,22 +301,14 @@ Please note that a workaround for most on this list exists with custom statement
 
 - No joins
 - No `group by` or window functions
-- Custom primary key support is very limited
 
 ### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
 let us know by creating an issue!
-- Specify primary keys
-  - Support an simplified update that doesn't need an explicit where based on the primary key
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
 - Support more Datatypes: We should at least support `Uint8List` out of the box,
 supporting floating / fixed point numbers as well would be awesome
-- Nullable / non-nullable datatypes
-  - DSL API ✔️
-  - Support in generator ✔️
-  - Use in queries (`IS NOT NULL`) ✔️
-  - Setting fields to null during updates
 - Support Dart VM apps
 - References
   - DSL API
@@ -312,6 +317,7 @@ supporting floating / fixed point numbers as well would be awesome
 - Table joins
 - Bulk inserts
 - Transactions
+- Custom column constraints
 ### Interesting stuff that would be nice to have
 Implementing this will very likely result in backwards-incompatible changes.
 
