@@ -60,6 +60,7 @@ class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn> {
 }
 
 class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {}
+
 class BlobColumnBuilder extends ColumnBuilder<BlobColumnBuilder, BlobColumn> {}
 
 class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {

@@ -43,11 +43,13 @@ class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
   $CategoriesTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description => GeneratedTextColumn(
+  GeneratedTextColumn get description => _description ??= GeneratedTextColumn(
         'description',
         true,
       );
@@ -133,19 +135,23 @@ class Recipe {
 class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   final GeneratedDatabase _db;
   $RecipesTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _title;
   @override
   GeneratedTextColumn get title =>
-      GeneratedTextColumn('title', false, maxTextLength: 16);
+      _title ??= GeneratedTextColumn('title', false, maxTextLength: 16);
+  GeneratedTextColumn _instructions;
   @override
-  GeneratedTextColumn get instructions => GeneratedTextColumn(
+  GeneratedTextColumn get instructions => _instructions ??= GeneratedTextColumn(
         'instructions',
         false,
       );
+  GeneratedIntColumn _category;
   @override
-  GeneratedIntColumn get category => GeneratedIntColumn(
+  GeneratedIntColumn get category => _category ??= GeneratedIntColumn(
         'category',
         true,
       );
@@ -232,16 +238,20 @@ class $IngredientsTable extends Ingredients
     implements TableInfo<Ingredients, Ingredient> {
   final GeneratedDatabase _db;
   $IngredientsTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => GeneratedTextColumn(
+  GeneratedTextColumn get name => _name ??= GeneratedTextColumn(
         'name',
         false,
       );
+  GeneratedIntColumn _caloriesPer100g;
   @override
-  GeneratedIntColumn get caloriesPer100g => GeneratedIntColumn(
+  GeneratedIntColumn get caloriesPer100g =>
+      _caloriesPer100g ??= GeneratedIntColumn(
         'calories',
         false,
       );
@@ -327,18 +337,21 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     implements TableInfo<IngredientInRecipes, IngredientInRecipe> {
   final GeneratedDatabase _db;
   $IngredientInRecipesTable(this._db);
+  GeneratedIntColumn _recipe;
   @override
-  GeneratedIntColumn get recipe => GeneratedIntColumn(
+  GeneratedIntColumn get recipe => _recipe ??= GeneratedIntColumn(
         'recipe',
         false,
       );
+  GeneratedIntColumn _ingredient;
   @override
-  GeneratedIntColumn get ingredient => GeneratedIntColumn(
+  GeneratedIntColumn get ingredient => _ingredient ??= GeneratedIntColumn(
         'ingredient',
         false,
       );
+  GeneratedIntColumn _amountInGrams;
   @override
-  GeneratedIntColumn get amountInGrams => GeneratedIntColumn(
+  GeneratedIntColumn get amountInGrams => _amountInGrams ??= GeneratedIntColumn(
         'amount',
         false,
       );
@@ -379,11 +392,15 @@ class $IngredientInRecipesTable extends IngredientInRecipes
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
-  $CategoriesTable get categories => $CategoriesTable(this);
-  $RecipesTable get recipes => $RecipesTable(this);
-  $IngredientsTable get ingredients => $IngredientsTable(this);
+  $CategoriesTable _categories;
+  $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
+  $RecipesTable _recipes;
+  $RecipesTable get recipes => _recipes ??= $RecipesTable(this);
+  $IngredientsTable _ingredients;
+  $IngredientsTable get ingredients => _ingredients ??= $IngredientsTable(this);
+  $IngredientInRecipesTable _ingredientInRecipes;
   $IngredientInRecipesTable get ingredientInRecipes =>
-      $IngredientInRecipesTable(this);
+      _ingredientInRecipes ??= $IngredientInRecipesTable(this);
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];

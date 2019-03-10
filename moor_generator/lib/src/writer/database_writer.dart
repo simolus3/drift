@@ -1,6 +1,7 @@
 import 'package:recase/recase.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/writer/table_writer.dart';
+import 'utils.dart';
 
 class DatabaseWriter {
   final SpecifiedDatabase db;
@@ -25,26 +26,26 @@ class DatabaseWriter {
       tableGetters.add(tableFieldName);
       final tableClassName = table.tableInfoName;
 
-      buffer.write(
-          '$tableClassName get $tableFieldName => $tableClassName(this);');
+      writeMemoizedGetter(
+        buffer: buffer,
+        getterName: tableFieldName,
+        returnType: tableClassName,
+        code: '$tableClassName(this)',
+      );
     }
 
-    // Write fields to access an dao. We use a lazy getter:
-    /*
-        DaoType _daoName;
-        DaoType get daoName => _daoName ??= DaoType(this);
-     */
+    // Write fields to access an dao. We use a lazy getter for that.
     for (var dao in db.daos) {
       final typeName = dao.displayName;
       final getterName = ReCase(typeName).camelCase;
-      final fieldName = '_$getterName';
-
       final databaseImplName = db.fromClass.name;
 
-      buffer
-        ..write('$typeName $fieldName;\n')
-        ..write('$typeName get $getterName => $fieldName ??= '
-            '$typeName(this as $databaseImplName);');
+      writeMemoizedGetter(
+        buffer: buffer,
+        getterName: getterName,
+        returnType: typeName,
+        code: '$typeName(this as $databaseImplName)',
+      );
     }
 
     // Write List of tables, close bracket for class

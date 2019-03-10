@@ -13,6 +13,7 @@ script: ./tool/mono_repo_wrapper.sh
 branches:
   only:
     - master
+    - develop
 
 cache:
   directories:

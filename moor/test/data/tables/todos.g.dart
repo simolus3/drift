@@ -72,24 +72,30 @@ class $TodosTableTable extends TodosTable
     implements TableInfo<TodosTable, TodoEntry> {
   final GeneratedDatabase _db;
   $TodosTableTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _title;
   @override
-  GeneratedTextColumn get title =>
+  GeneratedTextColumn get title => _title ??=
       GeneratedTextColumn('title', true, minTextLength: 4, maxTextLength: 16);
+  GeneratedTextColumn _content;
   @override
-  GeneratedTextColumn get content => GeneratedTextColumn(
+  GeneratedTextColumn get content => _content ??= GeneratedTextColumn(
         'content',
         false,
       );
+  GeneratedDateTimeColumn _targetDate;
   @override
-  GeneratedDateTimeColumn get targetDate => GeneratedDateTimeColumn(
+  GeneratedDateTimeColumn get targetDate =>
+      _targetDate ??= GeneratedDateTimeColumn(
         'target_date',
         true,
       );
+  GeneratedIntColumn _category;
   @override
-  GeneratedIntColumn get category => GeneratedIntColumn(
+  GeneratedIntColumn get category => _category ??= GeneratedIntColumn(
         'category',
         true,
       );
@@ -173,11 +179,13 @@ class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
   $CategoriesTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description => GeneratedTextColumn(
+  GeneratedTextColumn get description => _description ??= GeneratedTextColumn(
         '`desc`',
         false,
       );
@@ -266,19 +274,24 @@ class User {
 class $UsersTable extends Users implements TableInfo<Users, User> {
   final GeneratedDatabase _db;
   $UsersTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name =>
+  GeneratedTextColumn get name => _name ??=
       GeneratedTextColumn('name', false, minTextLength: 6, maxTextLength: 32);
+  GeneratedBoolColumn _isAwesome;
   @override
-  GeneratedBoolColumn get isAwesome => GeneratedBoolColumn(
+  GeneratedBoolColumn get isAwesome => _isAwesome ??= GeneratedBoolColumn(
         'is_awesome',
         false,
       );
+  GeneratedBlobColumn _profilePicture;
   @override
-  GeneratedBlobColumn get profilePicture => GeneratedBlobColumn(
+  GeneratedBlobColumn get profilePicture =>
+      _profilePicture ??= GeneratedBlobColumn(
         'profile_picture',
         false,
       );
@@ -356,13 +369,15 @@ class $SharedTodosTable extends SharedTodos
     implements TableInfo<SharedTodos, SharedTodo> {
   final GeneratedDatabase _db;
   $SharedTodosTable(this._db);
+  GeneratedIntColumn _todo;
   @override
-  GeneratedIntColumn get todo => GeneratedIntColumn(
+  GeneratedIntColumn get todo => _todo ??= GeneratedIntColumn(
         'todo',
         false,
       );
+  GeneratedIntColumn _user;
   @override
-  GeneratedIntColumn get user => GeneratedIntColumn(
+  GeneratedIntColumn get user => _user ??= GeneratedIntColumn(
         'user',
         false,
       );
@@ -398,10 +413,14 @@ class $SharedTodosTable extends SharedTodos
 
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
-  $TodosTableTable get todosTable => $TodosTableTable(this);
-  $CategoriesTable get categories => $CategoriesTable(this);
-  $UsersTable get users => $UsersTable(this);
-  $SharedTodosTable get sharedTodos => $SharedTodosTable(this);
+  $TodosTableTable _todosTable;
+  $TodosTableTable get todosTable => _todosTable ??= $TodosTableTable(this);
+  $CategoriesTable _categories;
+  $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
+  $UsersTable _users;
+  $UsersTable get users => _users ??= $UsersTable(this);
+  $SharedTodosTable _sharedTodos;
+  $SharedTodosTable get sharedTodos => _sharedTodos ??= $SharedTodosTable(this);
   @override
   List<TableInfo> get allTables => [todosTable, categories, users, sharedTodos];
 }

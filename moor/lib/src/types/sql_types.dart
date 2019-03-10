@@ -98,7 +98,6 @@ class DateTimeType extends SqlType<DateTime> {
 }
 
 class BlobType extends SqlType<Uint8List> {
-
   const BlobType();
 
   @override
@@ -111,5 +110,4 @@ class BlobType extends SqlType<Uint8List> {
 
   @override
   mapToSqlVariable(content) => content;
-
 }

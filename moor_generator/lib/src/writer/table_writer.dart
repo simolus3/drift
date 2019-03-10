@@ -1,6 +1,7 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
+import 'package:moor_generator/src/writer/utils.dart';
 
 class TableWriter {
   final SpecifiedTable table;
@@ -97,25 +98,31 @@ class TableWriter {
       }
     }
 
-    // @override
-    // GeneratedIntColumn get id => GeneratedIntColumn('sql_name', isNullable);
-    buffer
-      ..write('@override \n')
-      ..write('${column.implColumnTypeName} get ${column.dartGetterName} => '
-          '${column.implColumnTypeName}(\'${column.name.name}\', $isNullable, ');
+    // GeneratedIntColumn('sql_name', isNullable, additionalField: true)
+    final expressionBuffer = StringBuffer()
+      ..write(column.implColumnTypeName)
+      ..write('(\'${column.name.name}\', $isNullable, ');
 
     var first = true;
     additionalParams.forEach((name, value) {
       if (!first) {
-        buffer.write(', ');
+        expressionBuffer.write(', ');
       } else {
         first = false;
       }
 
-      buffer..write(name)..write(': ')..write(value);
+      expressionBuffer..write(name)..write(': ')..write(value);
     });
 
-    buffer.write(');\n');
+    expressionBuffer.write(')');
+
+    writeMemoizedGetter(
+      buffer: buffer,
+      getterName: column.dartGetterName,
+      returnType: column.implColumnTypeName,
+      code: expressionBuffer.toString(),
+      hasOverride: true,
+    );
   }
 
   void _writeValidityCheckMethod(StringBuffer buffer) {

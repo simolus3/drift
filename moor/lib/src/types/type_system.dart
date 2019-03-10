@@ -8,7 +8,13 @@ class SqlTypeSystem {
   const SqlTypeSystem(this.types);
 
   const SqlTypeSystem.withDefaults()
-      : this(const [BoolType(), StringType(), IntType(), DateTimeType(), BlobType()]);
+      : this(const [
+          BoolType(),
+          StringType(),
+          IntType(),
+          DateTimeType(),
+          BlobType()
+        ]);
 
   /// Returns the appropriate sql type for the dart type provided as the
   /// generic parameter.
