@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 /// A type that can be mapped from Dart to sql. The generic type parameter here
 /// denotes the resolved dart type.
 abstract class SqlType<T> {
@@ -93,4 +95,21 @@ class DateTimeType extends SqlType<DateTime> {
 
     return content.millisecondsSinceEpoch ~/ 1000;
   }
+}
+
+class BlobType extends SqlType<Uint8List> {
+
+  const BlobType();
+
+  @override
+  mapFromDatabaseResponse(response) => response as Uint8List;
+
+  @override
+  String mapToSqlConstant(content) {
+    throw UnimplementedError("Blobs can't be mapped to sql literals");
+  }
+
+  @override
+  mapToSqlVariable(content) => content;
+
 }

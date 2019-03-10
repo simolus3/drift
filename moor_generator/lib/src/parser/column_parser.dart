@@ -9,8 +9,10 @@ const String startInt = 'integer';
 const String startString = 'text';
 const String startBool = 'boolean';
 const String startDateTime = 'dateTime';
+const String startBlob = 'blob';
 
-final Set<String> starters = {startInt, startString, startBool, startDateTime};
+final Set<String> starters =
+    {startInt, startString, startBool, startDateTime, startBlob};
 
 const String functionNamed = 'named';
 const String functionPrimaryKey = 'primaryKey';
@@ -137,6 +139,7 @@ class ColumnParser extends ParserBase {
       startString: ColumnType.text,
       startInt: ColumnType.integer,
       startDateTime: ColumnType.datetime,
+      startBlob: ColumnType.blob,
     }[startMethod];
   }
 }

@@ -215,42 +215,52 @@ class User {
   final int id;
   final String name;
   final bool isAwesome;
-  User({this.id, this.name, this.isAwesome});
+  final Uint8List profilePicture;
+  User({this.id, this.name, this.isAwesome, this.profilePicture});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
+    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
     return User(
       id: intType.mapFromDatabaseResponse(data['id']),
       name: stringType.mapFromDatabaseResponse(data['name']),
       isAwesome: boolType.mapFromDatabaseResponse(data['is_awesome']),
+      profilePicture:
+          uint8ListType.mapFromDatabaseResponse(data['profile_picture']),
     );
   }
-  User copyWith({int id, String name, bool isAwesome}) => User(
+  User copyWith(
+          {int id, String name, bool isAwesome, Uint8List profilePicture}) =>
+      User(
         id: id ?? this.id,
         name: name ?? this.name,
         isAwesome: isAwesome ?? this.isAwesome,
+        profilePicture: profilePicture ?? this.profilePicture,
       );
   @override
   String toString() {
     return (StringBuffer('User(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('isAwesome: $isAwesome')
+          ..write('isAwesome: $isAwesome, ')
+          ..write('profilePicture: $profilePicture')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      ((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode;
+      (((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode) * 31 +
+      profilePicture.hashCode;
   @override
   bool operator ==(other) =>
       identical(this, other) ||
       (other is User &&
           other.id == id &&
           other.name == name &&
-          other.isAwesome == isAwesome);
+          other.isAwesome == isAwesome &&
+          other.profilePicture == profilePicture);
 }
 
 class $UsersTable extends Users implements TableInfo<Users, User> {
@@ -268,7 +278,12 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
         false,
       );
   @override
-  List<GeneratedColumn> get $columns => [id, name, isAwesome];
+  GeneratedBlobColumn get profilePicture => GeneratedBlobColumn(
+        'profile_picture',
+        false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, isAwesome, profilePicture];
   @override
   Users get asDslTable => this;
   @override
@@ -277,7 +292,8 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   bool validateIntegrity(User instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
       name.isAcceptableValue(instance.name, isInserting) &&
-      isAwesome.isAcceptableValue(instance.isAwesome, isInserting);
+      isAwesome.isAcceptableValue(instance.isAwesome, isInserting) &&
+      profilePicture.isAcceptableValue(instance.profilePicture, isInserting);
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -296,6 +312,9 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
     }
     if (d.isAwesome != null || includeNulls) {
       map['is_awesome'] = Variable<bool, BoolType>(d.isAwesome);
+    }
+    if (d.profilePicture != null || includeNulls) {
+      map['profile_picture'] = Variable<Uint8List, BlobType>(d.profilePicture);
     }
     return map;
   }

@@ -309,8 +309,6 @@ These aren't sorted by priority. If you have more ideas or want some features ha
 let me know by creating an issue!
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support default values and expressions
-- Support more Datatypes: We should at least support `Uint8List` out of the box,
-supporting floating / fixed point numbers as well would be awesome
 - Support Dart VM apps
 - References
   - DSL API

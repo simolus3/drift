@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/types/sql_types.dart';
@@ -26,6 +28,11 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
 
   /// Creates a variable that holds the specified date.
   static Variable<DateTime, DateTimeType> withDateTime(DateTime value) {
+    return Variable(value);
+  }
+
+  /// Creates a variable that holds the specified data blob.
+  static Variable<Uint8List, BlobType> withBlob(Uint8List value) {
     return Variable(value);
   }
 

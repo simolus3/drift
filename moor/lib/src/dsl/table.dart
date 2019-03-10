@@ -1,3 +1,4 @@
+import 'dart:typed_data' show Uint8List;
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 
@@ -69,6 +70,14 @@ abstract class Table {
   /// ```
   @protected
   DateTimeColumnBuilder dateTime() => null;
+
+  /// Use this as the body of a getter to declare a column that holds arbitrary
+  /// data blobs, stored as an [Uint8List]. Example:
+  /// ```
+  /// BlobColumnBuilder get payload => blob()();
+  /// ```
+  @protected
+  BlobColumnBuilder blob() => null;
 }
 
 /// A class to to be used as an annotation on [Table] classes to customize the

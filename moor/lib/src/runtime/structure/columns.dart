@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
@@ -130,4 +132,12 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
 
   @override
   String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
+}
+
+class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
+    implements BlobColumn {
+  GeneratedBlobColumn(String $name, bool $nullable) : super($name, $nullable);
+
+  @override
+  final String typeName = 'BLOB';
 }

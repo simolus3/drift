@@ -1,4 +1,4 @@
-// todo more datatypes (at least binary blobs)
+import 'dart:typed_data';
 
 import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/runtime/expressions/comparable.dart';
@@ -24,6 +24,9 @@ abstract class TextColumn extends Column<String, StringType> {
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
 abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
+
+/// A column that stores arbitrary blobs of data as a [Uint8List].
+abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
@@ -57,6 +60,7 @@ class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn> {
 }
 
 class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {}
+class BlobColumnBuilder extends ColumnBuilder<BlobColumnBuilder, BlobColumn> {}
 
 class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {
   /// Puts a constraint on the minimum and maximum length of text that can be

@@ -19,6 +19,8 @@ class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 6, max: 32)();
   BoolColumn get isAwesome => boolean()();
+
+  BlobColumn get profilePicture => blob()();
 }
 
 @DataClassName('Category')

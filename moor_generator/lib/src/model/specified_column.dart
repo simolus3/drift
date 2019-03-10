@@ -3,7 +3,7 @@ import 'package:moor_generator/src/sqlite_keywords.dart' show isSqliteKeyword;
 
 part 'specified_column.g.dart';
 
-enum ColumnType { integer, text, boolean, datetime }
+enum ColumnType { integer, text, boolean, datetime, blob }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -63,13 +63,14 @@ class SpecifiedColumn {
   final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
-  /// The dart type that matches this column. For instance, if a table has
-  /// declared an `IntColumn`, the matching dart type name would be [int].
+  /// The dart type that matches the values of this column. For instance, if a
+  /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName => {
         ColumnType.boolean: 'bool',
         ColumnType.text: 'String',
         ColumnType.integer: 'int',
         ColumnType.datetime: 'DateTime',
+        ColumnType.blob: 'Uint8List',
       }[type];
 
   /// The column type from the dsl library. For instance, if a table has
@@ -80,6 +81,7 @@ class SpecifiedColumn {
         ColumnType.text: 'TextColumn',
         ColumnType.integer: 'IntColumn',
         ColumnType.datetime: 'DateTimeColumn',
+        ColumnType.blob: 'BlobColumn',
       }[type];
 
   /// The `GeneratedColumn` class that implements the [dslColumnTypeName].
@@ -90,6 +92,7 @@ class SpecifiedColumn {
         ColumnType.text: 'GeneratedTextColumn',
         ColumnType.integer: 'GeneratedIntColumn',
         ColumnType.datetime: 'GeneratedDateTimeColumn',
+        ColumnType.blob: 'GeneratedBlobColumn'
       }[type];
 
   /// The class inside the moor library that represents the same sql type as
@@ -99,6 +102,7 @@ class SpecifiedColumn {
         ColumnType.text: 'StringType',
         ColumnType.integer: 'IntType',
         ColumnType.datetime: 'DateTimeType',
+        ColumnType.blob: 'BlobType',
       }[type];
 
   const SpecifiedColumn(

@@ -1,3 +1,6 @@
+## 1.2.0
+- Blob data type
+
 ## 1.1.0
 - The generated data classes now implement `toString()`
 

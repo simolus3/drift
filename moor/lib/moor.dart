@@ -1,5 +1,9 @@
 library moor;
 
+// needed for the generated code that generates data classes with an Uint8List
+// field.
+export 'dart:typed_data' show Uint8List;
+
 export 'package:moor/src/dsl/table.dart';
 export 'package:moor/src/dsl/columns.dart';
 export 'package:moor/src/dsl/database.dart';
