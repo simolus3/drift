@@ -30,15 +30,14 @@ API that will deliver auto-updating streams for your queries.
 
 ## Getting started
 ### Adding the dependency
-First, let's add moor to your project's `pubspec.yaml`. The library is not yet
-out on pub, so you'll need to use the git repository for now:
+First, let's add moor to your project's `pubspec.yaml`.
 ```yaml
 dependencies:
-  moor_flutter: ^1.0.0
+  moor_flutter:
 
 dev_dependencies:
-  moor_generator: ^1.0.0
-  build_runner: ^1.2.0
+  moor_generator:
+  build_runner: 
 ```
 We're going to use the `moor_flutter` library to specify tables and access the database. The
 `moor_generator` library will take care of generating the necessary code so the
