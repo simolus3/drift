@@ -35,4 +35,16 @@ abstract class QueryExecutor {
   /// Runs a custom SQL statement without any variables. The result of that
   /// statement will be ignored.
   Future<void> runCustom(String statement);
+
+  /// Starts a [TransactionExecutor].
+  TransactionExecutor beginTransaction();
+}
+
+/// A [QueryExecutor] that runs multiple queries atomically.
+abstract class TransactionExecutor extends QueryExecutor {
+
+  /// Completes the transaction. No further queries may be sent to to this
+  /// [QueryExecutor] after this method was called.
+  Future<void> send();
+
 }

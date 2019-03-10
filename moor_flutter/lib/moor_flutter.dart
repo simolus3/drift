@@ -8,42 +8,89 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite.dart' as s;
 
 export 'package:moor_flutter/src/animated_list.dart';
 export 'package:moor/moor.dart' hide Column;
 
-/// A query executor that uses sqlfite internally.
-class FlutterQueryExecutor extends QueryExecutor {
-  final bool _inDbPath;
-  final String path;
+abstract class _DatabaseOwner extends QueryExecutor {
+  _DatabaseOwner(this.logStatements);
+
+  @visibleForOverriding
+  s.DatabaseExecutor get db;
 
   final bool logStatements;
 
-  Database _db;
+  void _log(String sql, List args) {
+    if (logStatements == true) {
+      final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
+      print('moor: $sql with $formattedArgs');
+    }
+  }
+
+  @override
+  Future<int> runDelete(String statement, List args) {
+    _log(statement, args);
+    return db.rawDelete(statement, args);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    _log(statement, args);
+    return db.rawInsert(statement, args);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+    _log(statement, args);
+    return db.rawQuery(statement, args);
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List args) {
+    _log(statement, args);
+    return db.rawUpdate(statement, args);
+  }
+
+  @override
+  Future<void> runCustom(String statement) {
+    _log(statement, null);
+    return db.execute(statement);
+  }
+}
+
+/// A query executor that uses sqflite internally.
+class FlutterQueryExecutor extends _DatabaseOwner {
+  final bool _inDbPath;
+  final String path;
+
+  @override
+  s.Database db;
   bool _hadMigration = false;
 
-  FlutterQueryExecutor({@required this.path, this.logStatements})
-      : _inDbPath = false;
+  FlutterQueryExecutor({@required this.path, bool logStatements})
+      : _inDbPath = false,
+        super(logStatements);
 
   FlutterQueryExecutor.inDatabaseFolder(
-      {@required this.path, this.logStatements})
-      : _inDbPath = true;
+      {@required this.path, bool logStatements})
+      : _inDbPath = true,
+        super(logStatements);
 
   @override
   Future<bool> ensureOpen() async {
-    if (_db != null && _db.isOpen) {
+    if (db != null && db.isOpen) {
       return true;
     }
 
     String resolvedPath;
     if (_inDbPath) {
-      resolvedPath = join(await getDatabasesPath(), path);
+      resolvedPath = join(await s.getDatabasesPath(), path);
     } else {
       resolvedPath = path;
     }
 
-    _db = await openDatabase(resolvedPath, version: databaseInfo.schemaVersion,
+    db = await s.openDatabase(resolvedPath, version: databaseInfo.schemaVersion,
         onCreate: (db, version) {
       _hadMigration = true;
       return databaseInfo.handleDatabaseCreation(
@@ -54,7 +101,7 @@ class FlutterQueryExecutor extends QueryExecutor {
       return databaseInfo.handleDatabaseVersionChange(
           executor: (sql) => db.execute(sql), from: from, to: to);
     }, onOpen: (db) async {
-      _db = db;
+      db = db;
       // the openDatabase future will resolve later, so we can get an instance
       // where we can send the queries from the onFinished operation;
       final fn = databaseInfo.migration.onFinished;
@@ -66,40 +113,58 @@ class FlutterQueryExecutor extends QueryExecutor {
     return true;
   }
 
-  void _log(String sql, List args) {
-    if (logStatements) {
-      final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
-      print('moor: $sql with $formattedArgs');
-    }
+  @override
+  TransactionExecutor beginTransaction() {
+    return _SqfliteTransactionExecutor.startFromDb(this);
+  }
+}
+
+class _SqfliteTransactionExecutor extends _DatabaseOwner
+    implements TransactionExecutor {
+  @override
+  s.Transaction db;
+  /// This future should complete with the transaction once the transaction has
+  /// been created.
+  final Future<s.Transaction> _open;
+  // This completer will complete when send() is called. We use it because
+  // sqflite expects a future in the db.transaction() method. The transaction
+  // will be executed when that future completes.
+  final Completer _actionCompleter;
+  /// This future should complete when the call to db.transaction completes.
+  final Future _sendFuture;
+
+  _SqfliteTransactionExecutor(
+      this._open, this._actionCompleter, this._sendFuture, bool logStatements)
+      : super(logStatements) {
+    _open.then((transaction) => db = transaction);
+  }
+
+  factory _SqfliteTransactionExecutor.startFromDb(FlutterQueryExecutor db) {
+    final actionCompleter = Completer();
+    final openingCompleter = Completer<s.Transaction>();
+
+    final sendFuture = db.db.transaction((t) {
+      openingCompleter.complete(t);
+      return actionCompleter.future;
+    });
+
+    return _SqfliteTransactionExecutor(
+        openingCompleter.future, actionCompleter, sendFuture, db.logStatements);
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
-    _log(statement, args);
-    return _db.rawDelete(statement, args);
+  TransactionExecutor beginTransaction() {
+    throw StateError('Transactions cannot create another transaction!');
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
-    _log(statement, args);
-    return _db.rawInsert(statement, args);
-  }
+  Future<bool> ensureOpen() => _open.then((_) => true);
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
-    _log(statement, args);
-    return _db.rawQuery(statement, args);
+  Future<void> send() {
+    _actionCompleter.complete(null);
+    return _sendFuture;
   }
 
-  @override
-  Future<int> runUpdate(String statement, List args) {
-    _log(statement, args);
-    return _db.rawUpdate(statement, args);
-  }
 
-  @override
-  Future<void> runCustom(String statement) {
-    _log(statement, null);
-    return _db.execute(statement);
-  }
 }

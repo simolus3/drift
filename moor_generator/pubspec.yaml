@@ -24,3 +24,7 @@ dev_dependencies:
   test_api: ^0.2.0
   built_value_generator: ^6.3.0
   build_test: '>=0.10.0 <0.11.0'
+
+dependency_overrides:
+  moor:
+    path: ../moor

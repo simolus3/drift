@@ -4,9 +4,9 @@ import 'package:moor/moor.dart';
 
 /// Internal interface to mark classes that respond to table changes
 abstract class TableChangeListener<T> {
-  /// Called to check if this listener should update after the table with the
-  /// given name has changed.
-  bool isAffectedBy(String table);
+  /// Called to check if this listener should update after any table who's name
+  /// is in the set has changed.
+  bool isAffectedBy(Set<String> tables);
 
   /// Called to reload data from the table after it has changed.
   Future<T> handleDataChanged();
@@ -15,7 +15,7 @@ abstract class TableChangeListener<T> {
 /// Keeps track of active streams created from [SelectStatement]s and updates
 /// them when needed.
 class StreamQueryStore {
-  final List<_QueryStream> _activeStreams = [];
+  final List<QueryStream> _activeStreams = [];
 
   // todo cache streams (return same instance for same sql + variables)
 
@@ -23,28 +23,28 @@ class StreamQueryStore {
 
   /// Creates a new stream from the select statement.
   Stream<List<T>> registerStream<T>(TableChangeListener<List<T>> statement) {
-    final stream = _QueryStream(statement, this);
+    final stream = QueryStream(statement, this);
     _activeStreams.add(stream);
     return stream.stream;
   }
 
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
-  Future<void> handleTableUpdates(String table) async {
+  Future<void> handleTableUpdates(Set<String> tables) async {
     final affectedStreams =
-        _activeStreams.where((stream) => stream.isAffectedByTableChange(table));
+        _activeStreams.where((stream) => stream.isAffectedByTableChange(tables));
 
     for (var stream in affectedStreams) {
       await stream.fetchAndEmitData();
     }
   }
 
-  void _markAsClosed(_QueryStream stream) {
+  void markAsClosed(QueryStream stream) {
     _activeStreams.remove(stream);
   }
 }
 
-class _QueryStream<T> {
+class QueryStream<T> {
   final TableChangeListener<T> listener;
   final StreamQueryStore _store;
 
@@ -59,7 +59,7 @@ class _QueryStream<T> {
     return _controller.stream;
   }
 
-  _QueryStream(this.listener, this._store);
+  QueryStream(this.listener, this._store);
 
   void _onListen() {
     // first listener added, fetch query
@@ -73,7 +73,7 @@ class _QueryStream<T> {
     // collected. When a stream is never listened to, we have a memory leak as
     // this will never be called. Maybe an Expando (which uses weak references)
     // can save us here?
-    _store._markAsClosed(this);
+    _store.markAsClosed(this);
   }
 
   Future<void> fetchAndEmitData() async {
@@ -87,5 +87,5 @@ class _QueryStream<T> {
     }
   }
 
-  bool isAffectedByTableChange(String table) => listener.isAffectedBy(table);
+  bool isAffectedByTableChange(Set<String> tables) => listener.isAffectedBy(tables);
 }

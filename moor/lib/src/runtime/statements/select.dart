@@ -56,8 +56,8 @@ class SelectStatement<T, D> extends Query<T, D>
   }
 
   @override
-  bool isAffectedBy(String table) {
-    return table == super.table.$tableName;
+  bool isAffectedBy(Set<String> tables) {
+    return tables.contains(super.table.$tableName);
   }
 }
 
@@ -84,8 +84,8 @@ class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
   }
 
   @override
-  bool isAffectedBy(String table) {
-    return tables.any((t) => t.$tableName == table);
+  bool isAffectedBy(Set<String> tables) {
+    return this.tables.intersection(tables).isNotEmpty;
   }
 }
 

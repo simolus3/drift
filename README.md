@@ -75,7 +75,7 @@ class Categories extends Table {
 
 // this annotation tells moor to prepare a database class that uses both of the
 // tables we just defined. We'll see how to use that database class in a moment.
-@Usemoor(tables: [Todos, Categories])
+@UseMoor(tables: [Todos, Categories])
 class MyDatabase {
   
 }
