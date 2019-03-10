@@ -9,7 +9,6 @@ export 'package:mockito/mockito.dart';
 typedef Future<T> _EnsureOpenAction<T>(QueryExecutor e);
 
 class MockExecutor extends Mock implements QueryExecutor {
-
   final MockTransactionExecutor transactions = MockTransactionExecutor();
 
   MockExecutor() {
@@ -28,7 +27,6 @@ class MockExecutor extends Mock implements QueryExecutor {
 }
 
 class MockTransactionExecutor extends Mock implements TransactionExecutor {
-
   MockTransactionExecutor() {
     when(runSelect(any, any)).thenAnswer((_) => Future.value([]));
     when(runUpdate(any, any)).thenAnswer((_) => Future.value(0));
@@ -42,7 +40,6 @@ class MockTransactionExecutor extends Mock implements TransactionExecutor {
 
     when(send()).thenAnswer((_) => Future.value(null));
   }
-
 }
 
 class MockStreamQueries extends Mock implements StreamQueryStore {}

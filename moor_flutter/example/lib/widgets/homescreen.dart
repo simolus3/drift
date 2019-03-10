@@ -29,7 +29,7 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       // A moorAnimatedList automatically animates incoming and leaving items, we only
       // have to tell it what data to display and how to turn data into widgets.
-      body: moorAnimatedList<TodoEntry>(
+      body: MoorAnimatedList<TodoEntry>(
         stream: bloc
             .allEntries, // we want to show an updating stream of all entries
         // consider items equal if their id matches. Otherwise, we'd get an

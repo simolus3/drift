@@ -71,7 +71,7 @@ class Database extends _$Database {
   }
 
   Future deleteEntry(TodoEntry entry) {
-    return (delete(todos)..where((t) => t.id.equals(entry.id))).go();
+    return delete(todos).delete(entry);
   }
 
   Future updateContent(int id, String content) {
@@ -82,5 +82,20 @@ class Database extends _$Database {
   Future updateDate(int id, DateTime dueDate) {
     return (update(todos)..where((t) => t.id.equals(id)))
         .write(TodoEntry(targetDate: dueDate));
+  }
+
+  Future testTransaction(TodoEntry entry) {
+    return transaction((t) {
+      final updatedContent = entry.copyWith(
+        content: entry.content.toUpperCase(),
+      );
+      t.update(todos).replace(updatedContent);
+
+      final updatedDate = updatedContent.copyWith(
+        targetDate: DateTime.now(),
+      );
+
+      t.update(todos).replace(updatedDate);
+    });
   }
 }

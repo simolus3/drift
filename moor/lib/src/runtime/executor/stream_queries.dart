@@ -31,8 +31,8 @@ class StreamQueryStore {
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
   Future<void> handleTableUpdates(Set<String> tables) async {
-    final affectedStreams =
-        _activeStreams.where((stream) => stream.isAffectedByTableChange(tables));
+    final affectedStreams = _activeStreams
+        .where((stream) => stream.isAffectedByTableChange(tables));
 
     for (var stream in affectedStreams) {
       await stream.fetchAndEmitData();
@@ -87,5 +87,6 @@ class QueryStream<T> {
     }
   }
 
-  bool isAffectedByTableChange(Set<String> tables) => listener.isAffectedBy(tables);
+  bool isAffectedByTableChange(Set<String> tables) =>
+      listener.isAffectedBy(tables);
 }

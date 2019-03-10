@@ -16,9 +16,15 @@ class TodoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget dueDate;
     if (entry.targetDate == null) {
-      dueDate = const Text(
-        'No due date set',
-        style: TextStyle(color: Colors.grey, fontSize: 12),
+      dueDate = GestureDetector(
+        onTap: () {
+          final db = BlocProvider.provideBloc(context).db;
+          db.testTransaction(entry);
+        },
+        child: const Text(
+          'No due date set',
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+        ),
       );
     } else {
       dueDate = Text(

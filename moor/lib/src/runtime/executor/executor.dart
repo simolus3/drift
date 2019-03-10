@@ -42,9 +42,7 @@ abstract class QueryExecutor {
 
 /// A [QueryExecutor] that runs multiple queries atomically.
 abstract class TransactionExecutor extends QueryExecutor {
-
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
   Future<void> send();
-
 }

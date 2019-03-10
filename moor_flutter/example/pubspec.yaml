@@ -20,5 +20,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+dependency_overrides:
+  moor_flutter:
+    path: ..
+  moor_generator:
+    path: ../../moor_generator
+  moor:
+    path: ../../moor
+
 flutter:
   uses-material-design: true

@@ -33,6 +33,13 @@ void main() {
           'DELETE FROM users WHERE (NOT (is_awesome = 1)) OR (id < ?);',
           [100]));
     });
+
+    test('to delete an entity via a dataclasss', () async {
+      await db.delete(db.sharedTodos).delete(SharedTodo(todo: 3, user: 2));
+
+      verify(executor.runDelete(
+          'DELETE FROM shared_todos WHERE (todo = ?) AND (user = ?);', [3, 2]));
+    });
   });
 
   group('executes DELETE statements', () {

@@ -101,8 +101,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   @protected
   @visibleForTesting
-  DeleteStatement<Table> delete<Table>(TableInfo<Table, dynamic> table) =>
-      DeleteStatement<Table>(this, table);
+  DeleteStatement<Table, Entity> delete<Table, Entity>(
+      TableInfo<Table, Entity> table) {
+    return DeleteStatement<Table, Entity>(this, table);
+  }
 
   /// Executes a custom delete or update statement and returns the amount of
   /// rows that have been changed.

@@ -5,14 +5,25 @@ import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/statements/query.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
-class DeleteStatement<UserTable> extends Query<UserTable, dynamic> {
+class DeleteStatement<T, D> extends Query<T, D> {
   /// This constructor should be called by [GeneratedDatabase.delete] for you.
-  DeleteStatement(QueryEngine database, TableInfo<UserTable, dynamic> table)
+  DeleteStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
   @override
   void writeStartPart(GenerationContext ctx) {
     ctx.buffer.write('DELETE FROM ${table.$tableName}');
+  }
+
+  /// Deletes just this entity. May not be used together with [where].
+  Future<int> delete(D entity) {
+    assert(
+        whereExpr == null,
+        'When deleting an entity, you may not use where(...)'
+        'as well. The where clause will be determined automatically');
+
+    whereSamePrimaryKey(entity);
+    return go();
   }
 
   /// Deletes all rows matched by the set [where] clause and the optional

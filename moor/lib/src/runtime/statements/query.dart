@@ -5,6 +5,7 @@ import 'package:moor/src/runtime/components/order_by.dart';
 import 'package:moor/src/runtime/components/where.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/runtime/expressions/bools.dart';
+import 'package:moor/src/runtime/expressions/custom.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/types/sql_types.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
@@ -73,5 +74,32 @@ abstract class Query<Table, DataClass> {
     ctx.buffer.write(';');
 
     return ctx;
+  }
+
+  /// Applies a [where] statement so that the row with the same primary key as
+  /// [d] will be matched.
+  void whereSamePrimaryKey(DataClass d) {
+    final primaryKeys = table.$primaryKey.map((c) => c.$name);
+
+    final updatedFields = table.entityToSql(d, includeNulls: true);
+    // Extract values of the primary key as they are needed for the where clause
+    final primaryKeyValues = Map.fromEntries(updatedFields.entries
+        .where((entry) => primaryKeys.contains(entry.key)));
+
+    Expression<bool, BoolType> predicate;
+    for (var entry in primaryKeyValues.entries) {
+      // custom expression that references the column
+      final columnExpression = CustomExpression(entry.key);
+      final comparison =
+          Comparison(columnExpression, ComparisonOperator.equal, entry.value);
+
+      if (predicate == null) {
+        predicate = comparison;
+      } else {
+        predicate = and(predicate, comparison);
+      }
+    }
+
+    whereExpr = Where(predicate);
   }
 }

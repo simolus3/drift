@@ -123,6 +123,7 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
     implements TransactionExecutor {
   @override
   s.Transaction db;
+
   /// This future should complete with the transaction once the transaction has
   /// been created.
   final Future<s.Transaction> _open;
@@ -130,6 +131,7 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
   // sqflite expects a future in the db.transaction() method. The transaction
   // will be executed when that future completes.
   final Completer _actionCompleter;
+
   /// This future should complete when the call to db.transaction completes.
   final Future _sendFuture;
 
@@ -165,6 +167,4 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
     _actionCompleter.complete(null);
     return _sendFuture;
   }
-
-
 }

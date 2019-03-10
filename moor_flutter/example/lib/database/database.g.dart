@@ -3,7 +3,7 @@
 part of 'database.dart';
 
 // **************************************************************************
-// moorGenerator
+// MoorGenerator
 // **************************************************************************
 
 class TodoEntry {
@@ -31,6 +31,17 @@ class TodoEntry {
         targetDate: targetDate ?? this.targetDate,
         category: category ?? this.category,
       );
+  @override
+  String toString() {
+    return (StringBuffer('TodoEntry(')
+          ..write('id: $id, ')
+          ..write('content: $content, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
+
   @override
   int get hashCode =>
       (((id.hashCode) * 31 + content.hashCode) * 31 + targetDate.hashCode) *
@@ -80,7 +91,7 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
       targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
       category.isAcceptableValue(instance.category, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data) {
     return TodoEntry.fromData(data, _db);
@@ -122,6 +133,15 @@ class Category {
         description: description ?? this.description,
       );
   @override
+  String toString() {
+    return (StringBuffer('Category(')
+          ..write('id: $id, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override
   bool operator ==(other) =>
@@ -152,7 +172,7 @@ class $CategoriesTable extends Categories
       id.isAcceptableValue(instance.id, isInserting) &&
       description.isAcceptableValue(instance.description, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data) {
     return Category.fromData(data, _db);

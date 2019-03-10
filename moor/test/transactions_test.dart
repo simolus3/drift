@@ -25,7 +25,8 @@ void main() {
   });
 
   test('transactions notify about table udpates after completing', () async {
-    when(executor.transactions.runUpdate(any, any)).thenAnswer((_) => Future.value(2));
+    when(executor.transactions.runUpdate(any, any))
+        .thenAnswer((_) => Future.value(2));
 
     await db.transaction((t) async {
       await t.update(db.users).write(User(name: 'Updated name'));
@@ -36,7 +37,7 @@ void main() {
     });
 
     // After the transaction completes, the queries should be updated
-    verify(streamQueries.handleTableUpdates({'users'}));
+    verify(streamQueries.handleTableUpdates({'users'})).called(1);
     verify(executor.transactions.send());
   });
 }

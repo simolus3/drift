@@ -2,9 +2,6 @@ import 'dart:async';
 
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/components/where.dart';
-import 'package:moor/src/runtime/expressions/custom.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
 
 class UpdateStatement<T, D> extends Query<T, D> {
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
@@ -98,31 +95,13 @@ class UpdateStatement<T, D> extends Query<T, D> {
         'When using replace on an update statement, you may not use where(...)'
         'as well. The where clause will be determined automatically');
 
+    whereSamePrimaryKey(entity);
+
     _updatedFields = table.entityToSql(entity, includeNulls: true);
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
 
-    // Extract values of the primary key as they are needed for the where clause
-    final primaryKeyValues = Map.fromEntries(_updatedFields.entries
-        .where((entry) => primaryKeys.contains(entry.key)));
-
-    // But remove them from the map of columns that should be changed.
+    // Don't update the primary key
     _updatedFields.removeWhere((key, _) => primaryKeys.contains(key));
-
-    Expression<bool, BoolType> predicate;
-    for (var entry in primaryKeyValues.entries) {
-      // custom expression that references the column
-      final columnExpression = CustomExpression(entry.key);
-      final comparison =
-          Comparison(columnExpression, ComparisonOperator.equal, entry.value);
-
-      if (predicate == null) {
-        predicate = comparison;
-      } else {
-        predicate = and(predicate, comparison);
-      }
-    }
-
-    whereExpr = Where(predicate);
 
     final updatedRows = await _performQuery();
     return updatedRows != 0;
