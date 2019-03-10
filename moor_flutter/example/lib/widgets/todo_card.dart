@@ -18,8 +18,7 @@ class TodoCard extends StatelessWidget {
     if (entry.targetDate == null) {
       dueDate = GestureDetector(
         onTap: () {
-          final db = BlocProvider.provideBloc(context).db;
-          db.testTransaction(entry);
+          BlocProvider.provideBloc(context).db.testTransaction(entry);
         },
         child: const Text(
           'No due date set',

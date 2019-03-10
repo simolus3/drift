@@ -1,6 +1,6 @@
 name: moor_flutter
 description: Flutter implementation of moor, a safe and reactive persistence library for Dart applications
-version: 1.0.1
+version: 1.1.0
 homepage: https://github.com/simolus3/moor
 authors:
   - Simon Binder <simolus3@gmail.com>
