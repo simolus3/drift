@@ -319,8 +319,8 @@ supporting floating / fixed point numbers as well would be awesome
   - Validation
 - Table joins
 - Bulk inserts
-- Transactions
 - Custom column constraints
+- When inserts / updates fail, explain why that happened
 ### Interesting stuff that would be nice to have
 Implementing this will very likely result in backwards-incompatible changes.
 

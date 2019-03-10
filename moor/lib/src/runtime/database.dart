@@ -206,10 +206,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   ///     [action] function.
   Future transaction(Future Function(QueryEngine transaction) action) async {
     final transaction = Transaction(this, executor.beginTransaction());
+
     try {
       await action(transaction);
     } finally {
-      await transaction?.complete();
+      await transaction.complete();
     }
   }
 }
