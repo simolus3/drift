@@ -23,6 +23,15 @@ class Category {
         description: description ?? this.description,
       );
   @override
+  String toString() {
+    return (StringBuffer('Category(')
+          ..write('id: $id, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override
   bool operator ==(other) =>
@@ -95,6 +104,17 @@ class Recipe {
         instructions: instructions ?? this.instructions,
         category: category ?? this.category,
       );
+  @override
+  String toString() {
+    return (StringBuffer('Recipe(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('instructions: $instructions, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
+
   @override
   int get hashCode =>
       (((id.hashCode) * 31 + title.hashCode) * 31 + instructions.hashCode) *
@@ -187,6 +207,16 @@ class Ingredient {
         caloriesPer100g: caloriesPer100g ?? this.caloriesPer100g,
       );
   @override
+  String toString() {
+    return (StringBuffer('Ingredient(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('caloriesPer100g: $caloriesPer100g')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
   int get hashCode =>
       ((id.hashCode) * 31 + name.hashCode) * 31 + caloriesPer100g.hashCode;
   @override
@@ -270,6 +300,16 @@ class IngredientInRecipe {
         ingredient: ingredient ?? this.ingredient,
         amountInGrams: amountInGrams ?? this.amountInGrams,
       );
+  @override
+  String toString() {
+    return (StringBuffer('IngredientInRecipe(')
+          ..write('recipe: $recipe, ')
+          ..write('ingredient: $ingredient, ')
+          ..write('amountInGrams: $amountInGrams')
+          ..write(')'))
+        .toString();
+  }
+
   @override
   int get hashCode =>
       ((recipe.hashCode) * 31 + ingredient.hashCode) * 31 +

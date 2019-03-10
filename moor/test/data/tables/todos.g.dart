@@ -40,6 +40,18 @@ class TodoEntry {
         category: category ?? this.category,
       );
   @override
+  String toString() {
+    return (StringBuffer('TodoEntry(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
   int get hashCode =>
       ((((id.hashCode) * 31 + title.hashCode) * 31 + content.hashCode) * 31 +
               targetDate.hashCode) *
@@ -141,6 +153,15 @@ class Category {
         description: description ?? this.description,
       );
   @override
+  String toString() {
+    return (StringBuffer('Category(')
+          ..write('id: $id, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
   int get hashCode => (id.hashCode) * 31 + description.hashCode;
   @override
   bool operator ==(other) =>
@@ -210,6 +231,16 @@ class User {
         name: name ?? this.name,
         isAwesome: isAwesome ?? this.isAwesome,
       );
+  @override
+  String toString() {
+    return (StringBuffer('User(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAwesome: $isAwesome')
+          ..write(')'))
+        .toString();
+  }
+
   @override
   int get hashCode =>
       ((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode;
@@ -285,6 +316,15 @@ class SharedTodo {
         todo: todo ?? this.todo,
         user: user ?? this.user,
       );
+  @override
+  String toString() {
+    return (StringBuffer('SharedTodo(')
+          ..write('todo: $todo, ')
+          ..write('user: $user')
+          ..write(')'))
+        .toString();
+  }
+
   @override
   int get hashCode => (todo.hashCode) * 31 + user.hashCode;
   @override

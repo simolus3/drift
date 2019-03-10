@@ -29,6 +29,8 @@ class DataClassWriter {
     // And a convenience method to copy data from this class.
     _writeCopyWith(buffer);
 
+    _writeToString(buffer);
+
     buffer.write('@override\n int get hashCode => ');
 
     if (table.columns.isEmpty) {
@@ -116,6 +118,35 @@ class DataClassWriter {
     }
 
     buffer.write(');');
+  }
+
+  void _writeToString(StringBuffer buffer) {
+    /*
+      @override
+      String toString() {
+        return (StringBuffer('User(')
+            ..write('id: $id,')
+            ..write('name: $name,')
+            ..write('isAwesome: $isAwesome')
+            ..write(')')).toString();
+      }
+     */
+
+    buffer
+      ..write('@override\nString toString() {')
+      ..write("return (StringBuffer('${table.dartTypeName}(')");
+
+    for (var i = 0; i < table.columns.length; i++) {
+      final column = table.columns[i];
+      final getterName = column.dartGetterName;
+
+      buffer.write("..write('$getterName: \$$getterName");
+      if (i != table.columns.length - 1) buffer.write(', ');
+
+      buffer.write("')");
+    }
+
+    buffer..write("..write(')')).toString();")..write('\}\n');
   }
 
   /// Recursively creates the implementation for hashCode of the data class,
