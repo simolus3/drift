@@ -117,7 +117,10 @@ mixin QueryEngine on DatabaseConnectionUser {
     final affectedRows =
         executor.doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
 
-    await streamQueries.handleTableUpdates(updates.map((t) => t.$tableName).toSet());
+    if (updates != null) {
+      await streamQueries
+          .handleTableUpdates(updates.map((t) => t.$tableName).toSet());
+    }
 
     return affectedRows;
   }

@@ -24,7 +24,7 @@ void main() {
   test('streams fetch when the underlying data changes', () {
     db.select(db.users).watch().listen((_) {});
 
-    db.markTableUpdated('users');
+    db.markTablesUpdated({'users'});
 
     // twice: Once because the listener attached, once because the data changed
     verify(executor.runSelect(any, any)).called(2);
@@ -34,7 +34,7 @@ void main() {
     test('when no listeners were attached', () {
       db.select(db.users).watch();
 
-      db.markTableUpdated('users');
+      db.markTablesUpdated({'users'});
 
       verifyNever(executor.runSelect(any, any));
     });
@@ -44,7 +44,7 @@ void main() {
       clearInteractions(executor);
 
       subscription.cancel();
-      db.markTableUpdated('users');
+      db.markTablesUpdated({'users'});
 
       verifyNever(executor.runSelect(any, any));
     });
