@@ -28,7 +28,8 @@ void main() {
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
-          'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)));'));
+          'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)), '
+          'profile_picture BLOB NOT NULL);'));
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS shared_todos '
           '(todo INTEGER NOT NULL, user INTEGER NOT NULL, PRIMARY KEY (todo, user));'));
@@ -39,7 +40,8 @@ void main() {
 
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
-          'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)));'));
+          'is_awesome BOOLEAN NOT NULL CHECK (is_awesome in (0, 1)), '
+          'profile_picture BLOB NOT NULL);'));
     });
 
     test('drops tables', () async {
