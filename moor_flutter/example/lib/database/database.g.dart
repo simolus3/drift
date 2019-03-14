@@ -23,6 +23,15 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  Map<String, Object> toJson() {
+    return {
+      'id': id,
+      'content': content,
+      'targetDate': targetDate,
+      'category': category,
+    };
+  }
+
   TodoEntry copyWith(
           {int id, String content, DateTime targetDate, int category}) =>
       TodoEntry(
@@ -128,6 +137,13 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  Map<String, Object> toJson() {
+    return {
+      'id': id,
+      'description': description,
+    };
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,

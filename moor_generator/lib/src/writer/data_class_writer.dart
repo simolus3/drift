@@ -26,6 +26,9 @@ class DataClassWriter {
     // Also write parsing factory
     _writeMappingConstructor(buffer);
 
+    // And a serializer method
+    _writeToJson(buffer);
+
     // And a convenience method to copy data from this class.
     _writeCopyWith(buffer);
 
@@ -92,6 +95,17 @@ class DataClassWriter {
     }
 
     buffer.write(');}\n');
+  }
+
+  void _writeToJson(StringBuffer buffer) {
+    buffer.write('Map<String, Object> toJson() {\n return {');
+
+    for (var column in table.columns) {
+      final getter = column.dartGetterName;
+      buffer.write('\'$getter\': $getter,');
+    }
+
+    buffer.write('};}');
   }
 
   void _writeCopyWith(StringBuffer buffer) {
