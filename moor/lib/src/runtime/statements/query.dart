@@ -79,6 +79,19 @@ abstract class Query<Table, DataClass> {
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
   void whereSamePrimaryKey(DataClass d) {
+    assert(
+        table.$primaryKey != null && table.$primaryKey.isNotEmpty,
+        'When using Query.whereSamePrimaryKey, which is also called from '
+        'DeleteStatement.delete and UpdateStatement.replace, the affected table'
+        'must have a primary key. You can either specify a primary implicitly '
+        'by making an integer() column autoIncrement(), or by explictly '
+        'overriding the primaryKey getter in your table class. You\'ll also '
+        'have to re-run the code generation step.\n'
+        'Alternatively, if you\'re using DeleteStatement.delete or '
+        'UpdateStatement.replace, consider using DeleteStatement.go or '
+        'UpdateStatement.write respectively. In that case, you need to use a '
+        'custom where statement.');
+
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
 
     final updatedFields = table.entityToSql(d, includeNulls: true);

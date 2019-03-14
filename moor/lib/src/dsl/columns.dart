@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/runtime/expressions/comparable.dart';
-import 'package:moor/src/types/sql_types.dart';
 
 abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
 
@@ -46,6 +45,33 @@ class ColumnBuilder<Builder, ResultColumn> {
   /// Marks this column as nullable. Nullable columns should not appear in a
   /// primary key. Columns are non-null by default.
   Builder nullable() => null;
+
+  /// Tells moor to write a custom constraint after this column definition when
+  /// writing this column, for instance in a CREATE TABLE statement.
+  ///
+  /// When no custom constraint is set, columns will be written like this:
+  /// `name TYPE NULLABILITY NATIVE_CONSTRAINTS`. Native constraints are used to
+  /// enforce that booleans are either 0 or 1 (e.g.
+  /// `field BOOLEAN NOT NULL CHECK (field in (0, 1)`). Auto-Increment
+  /// columns also make use of the native constraints.
+  /// If [customConstraint] has been called, the nullability information and
+  /// native constraints will never be written. Instead, they will be replaced
+  /// with the [constraint]. For example, if you call
+  /// `customConstraint('UNIQUE')` on an [IntColumn] named "votes", the
+  /// generated column definition will be `votes INTEGER UNIQUE`. Notice how the
+  /// nullability information is lost - you'll have to include it in
+  /// [constraint] if that is desired.
+  ///
+  /// This can be used to implement constraints that moor does not (yet)
+  /// support (e.g. unique keys, etc.). If you've found a common use-case for
+  /// this, it should be considered a limitation of moor itself. Please feel
+  /// free to open an issue at https://github.com/simolus3/moor/issues/new to
+  /// report that.
+  ///
+  /// See also:
+  /// - https://www.sqlite.org/syntax/column-constraint.html
+  /// - [GeneratedColumn.writeCustomConstraints]
+  Builder customConstraint(String constraint) => null;
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your

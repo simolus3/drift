@@ -16,7 +16,12 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// Whether null values are allowed for this column.
   final bool $nullable;
 
-  GeneratedColumn(this.$name, this.$nullable);
+  /// If custom constraints have been specified for this column via
+  /// [ColumnBuilder.customConstraint], these are kept here. Otherwise, this
+  /// field is going to be null.
+  final String $customConstraints;
+
+  GeneratedColumn(this.$name, this.$nullable, {this.$customConstraints});
 
   /// Writes the definition of this column, as defined
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
@@ -56,8 +61,8 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   final int maxTextLength;
 
   GeneratedTextColumn(String name, bool nullable,
-      {this.minTextLength, this.maxTextLength})
-      : super(name, nullable);
+      {this.minTextLength, this.maxTextLength, String $customConstraints})
+      : super(name, nullable, $customConstraints: $customConstraints);
 
   @override
   Expression<bool, BoolType> like(String pattern) =>
@@ -81,7 +86,8 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
-  GeneratedBoolColumn(String name, bool nullable) : super(name, nullable);
+  GeneratedBoolColumn(String name, bool nullable, {String $customConstraints})
+      : super(name, nullable, $customConstraints: $customConstraints);
 
   @override
   final String typeName = 'BOOLEAN';
@@ -108,8 +114,8 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   final String typeName = 'INTEGER';
 
   GeneratedIntColumn(String name, bool nullable,
-      {this.hasAutoIncrement = false})
-      : super(name, nullable);
+      {this.hasAutoIncrement = false, String $customConstraints})
+      : super(name, nullable, $customConstraints: $customConstraints);
 
   @override
   void writeColumnDefinition(StringBuffer into) {
@@ -127,8 +133,9 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
     implements DateTimeColumn {
-  GeneratedDateTimeColumn(String $name, bool $nullable)
-      : super($name, $nullable);
+  GeneratedDateTimeColumn(String $name, bool $nullable,
+      {String $customConstraints})
+      : super($name, $nullable, $customConstraints: $customConstraints);
 
   @override
   String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
@@ -136,7 +143,8 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
 
 class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
     implements BlobColumn {
-  GeneratedBlobColumn(String $name, bool $nullable) : super($name, $nullable);
+  GeneratedBlobColumn(String $name, bool $nullable, {String $customConstraints})
+      : super($name, $nullable, $customConstraints: $customConstraints);
 
   @override
   final String typeName = 'BLOB';

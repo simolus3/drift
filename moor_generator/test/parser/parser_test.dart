@@ -29,7 +29,7 @@ void main() async {
      
      class CustomPrimaryKey extends Table {
         IntColumn get partA => integer()();
-        IntColumn get partB => integer()();
+        IntColumn get partB => integer().customConstraint('custom')();
         
         @override
         Set<Column> get primaryKey => {partA, partB};
@@ -108,6 +108,19 @@ void main() async {
 
       expect(
           idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
+    });
+
+    test('parses custom constraints', () {
+      final table =
+          TableParser(generator).parse(testLib.getType('CustomPrimaryKey'));
+
+      final partA =
+          table.columns.singleWhere((c) => c.dartGetterName == 'partA');
+      final partB =
+          table.columns.singleWhere((c) => c.dartGetterName == 'partB');
+
+      expect(partB.customConstraints, 'custom');
+      expect(partA.customConstraints, isNull);
     });
   });
 

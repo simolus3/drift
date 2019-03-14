@@ -20,6 +20,7 @@ const String functionReferences = 'references';
 const String functionAutoIncrement = 'autoIncrement';
 const String functionWithLength = 'withLength';
 const String functionNullable = 'nullable';
+const String functionCustomConstraint = 'customConstraint';
 
 const String errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -55,6 +56,7 @@ class ColumnParser extends ParserBase {
 
     String foundStartMethod;
     String foundExplicitName;
+    String foundCustomConstraint;
     var wasDeclaredAsPrimaryKey = false;
     var nullable = false;
     // todo parse reference
@@ -71,22 +73,28 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case functionNamed:
           if (foundExplicitName != null) {
-            generator.errors.add(MoorError(
+            generator.errors.add(
+              MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
                 message:
                     "You're setting more than one name here, the first will "
-                    'be used'));
+                    'be used',
+              ),
+            );
           }
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.errors.add(MoorError(
+            generator.errors.add(
+              MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
                 message:
                     'This table name is cannot be resolved! Please only use '
-                    'a constant string as parameter for .named().'));
+                    'a constant string as parameter for .named().',
+              ),
+            );
           });
           break;
         case functionPrimaryKey:
@@ -110,6 +118,21 @@ class ColumnParser extends ParserBase {
           break;
         case functionNullable:
           nullable = true;
+          break;
+        case functionCustomConstraint:
+          foundCustomConstraint =
+              readStringLiteral(remainingExpr.argumentList.arguments.first, () {
+            generator.errors.add(
+              MoorError(
+                critical: false,
+                affectedElement: getter.declaredElement,
+                message:
+                    'This constraint is cannot be resolved! Please only use '
+                    'a constant string as parameter for .customConstraint().',
+              ),
+            );
+          });
+          break;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -129,6 +152,7 @@ class ColumnParser extends ParserBase {
         dartGetterName: getter.name.name,
         name: name.escapeIfSqlKeyword(),
         declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
+        customConstraints: foundCustomConstraint,
         nullable: nullable,
         features: foundFeatures);
   }

@@ -316,7 +316,6 @@ let me know by creating an issue!
   - Validation
 - Table joins
 - Bulk inserts
-- Custom column constraints
 - When inserts / updates fail, explain why that happened
 ### Interesting stuff that would be nice to have
 Implementing this will very likely result in backwards-incompatible changes.

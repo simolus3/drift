@@ -63,6 +63,10 @@ class SpecifiedColumn {
   final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
+  /// If this columns has custom constraints that should be used instead of the
+  /// default ones.
+  final String customConstraints;
+
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName => {
@@ -105,13 +109,15 @@ class SpecifiedColumn {
         ColumnType.blob: 'BlobType',
       }[type];
 
-  const SpecifiedColumn(
-      {this.type,
-      this.dartGetterName,
-      this.name,
-      this.declaredAsPrimaryKey = false,
-      this.nullable = false,
-      this.features = const []});
+  const SpecifiedColumn({
+    this.type,
+    this.dartGetterName,
+    this.name,
+    this.customConstraints,
+    this.declaredAsPrimaryKey = false,
+    this.nullable = false,
+    this.features = const [],
+  });
 }
 
 abstract class ColumnFeature {
