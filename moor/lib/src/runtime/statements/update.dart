@@ -43,17 +43,17 @@ class UpdateStatement<T, D> extends Query<T, D> {
   }
 
   /// Writes all non-null fields from [entity] into the columns of all rows
-  /// that match the set [where] and limit constraints. Warning: That also
-  /// means that, when you're not setting a where or limit expression
-  /// explicitly, this method will update all rows in the specific table.
+  /// that match the [where] clause. Warning: That also means that, when you're
+  /// not setting a where clause explicitly, this method will update all rows in
+  /// the [table].
   ///
   /// The fields that are null on the [entity] object will not be changed by
-  /// this operation.
+  /// this operation, they will be ignored.
   ///
   /// Returns the amount of rows that have been affected by this operation.
   ///
   /// See also: [replace], which does not require [where] statements and
-  /// supports setting fields to null.
+  /// supports setting fields back to null.
   Future<int> write(D entity) async {
     if (!table.validateIntegrity(entity, false)) {
       throw InvalidDataException(
@@ -81,6 +81,12 @@ class UpdateStatement<T, D> extends Query<T, D> {
   /// null fields.
   ///
   /// Returns true if a row was affected by this operation.
+  ///
+  /// See also:
+  ///  - [write], which doesn't apply a [where] statement itself and ignores
+  ///    null values in the entity.
+  ///  - [InsertStatement.insertOrReplace], which behaves similar to this method
+  ///    but creates a new row if none exists.
   Future<bool> replace(D entity) async {
     // We set isInserting to true here although we're in an update. This is
     // because all the fields from the entity will be written (as opposed to a

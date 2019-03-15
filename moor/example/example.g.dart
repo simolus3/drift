@@ -18,6 +18,13 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['description']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'description': description,
+    };
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,
@@ -99,6 +106,15 @@ class Recipe {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'instructions': instructions,
+      'category': category,
+    };
+  }
+
   Recipe copyWith({int id, String title, String instructions, int category}) =>
       Recipe(
         id: id ?? this.id,
@@ -207,6 +223,14 @@ class Ingredient {
       caloriesPer100g: intType.mapFromDatabaseResponse(data['calories']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'caloriesPer100g': caloriesPer100g,
+    };
+  }
+
   Ingredient copyWith({int id, String name, int caloriesPer100g}) => Ingredient(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -303,6 +327,14 @@ class IngredientInRecipe {
       amountInGrams: intType.mapFromDatabaseResponse(data['amount']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'recipe': recipe,
+      'ingredient': ingredient,
+      'amountInGrams': amountInGrams,
+    };
+  }
+
   IngredientInRecipe copyWith(
           {int recipe, int ingredient, int amountInGrams}) =>
       IngredientInRecipe(

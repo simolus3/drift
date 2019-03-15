@@ -26,6 +26,16 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'targetDate': targetDate,
+      'category': category,
+    };
+  }
+
   TodoEntry copyWith(
           {int id,
           String title,
@@ -154,6 +164,13 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'description': description,
+    };
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,
@@ -238,6 +255,15 @@ class User {
           uint8ListType.mapFromDatabaseResponse(data['profile_picture']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'isAwesome': isAwesome,
+      'profilePicture': profilePicture,
+    };
+  }
+
   User copyWith(
           {int id, String name, bool isAwesome, Uint8List profilePicture}) =>
       User(
@@ -344,6 +370,13 @@ class SharedTodo {
       user: intType.mapFromDatabaseResponse(data['user']),
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'todo': todo,
+      'user': user,
+    };
+  }
+
   SharedTodo copyWith({int todo, int user}) => SharedTodo(
         todo: todo ?? this.todo,
         user: user ?? this.user,

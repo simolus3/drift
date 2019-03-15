@@ -55,7 +55,7 @@ void main() {
     // The length of a title must be between 4 and 16 chars
 
     expect(() async {
-      await db.into(db.todosTable).insert(TodoEntry(title: 'lol'));
+      await db.update(db.todosTable).write(TodoEntry(title: 'lol'));
     }, throwsA(const TypeMatcher<InvalidDataException>()));
   });
 
