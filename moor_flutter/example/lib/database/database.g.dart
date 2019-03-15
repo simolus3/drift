@@ -23,6 +23,14 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  factory TodoEntry.fromJson(Map<String, dynamic> json) {
+    return TodoEntry(
+      id: json['id'] as int,
+      content: json['content'] as String,
+      targetDate: json['targetDate'] as DateTime,
+      category: json['category'] as int,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -69,21 +77,26 @@ class TodoEntry {
 class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   final GeneratedDatabase _db;
   $TodosTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _content;
   @override
-  GeneratedTextColumn get content => GeneratedTextColumn(
+  GeneratedTextColumn get content => _content ??= GeneratedTextColumn(
         'content',
         false,
       );
+  GeneratedDateTimeColumn _targetDate;
   @override
-  GeneratedDateTimeColumn get targetDate => GeneratedDateTimeColumn(
+  GeneratedDateTimeColumn get targetDate =>
+      _targetDate ??= GeneratedDateTimeColumn(
         'target_date',
         true,
       );
+  GeneratedIntColumn _category;
   @override
-  GeneratedIntColumn get category => GeneratedIntColumn(
+  GeneratedIntColumn get category => _category ??= GeneratedIntColumn(
         'category',
         true,
       );
@@ -137,6 +150,12 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as int,
+      description: json['description'] as String,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -169,11 +188,13 @@ class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
   $CategoriesTable(this._db);
+  GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
-      GeneratedIntColumn('id', false, hasAutoIncrement: true);
+      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description => GeneratedTextColumn(
+  GeneratedTextColumn get description => _description ??= GeneratedTextColumn(
         '`desc`',
         false,
       );
@@ -209,8 +230,10 @@ class $CategoriesTable extends Categories
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
-  $TodosTable get todos => $TodosTable(this);
-  $CategoriesTable get categories => $CategoriesTable(this);
+  $TodosTable _todos;
+  $TodosTable get todos => _todos ??= $TodosTable(this);
+  $CategoriesTable _categories;
+  $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
   TodosDao _todosDao;
   TodosDao get todosDao => _todosDao ??= TodosDao(this as Database);
   @override

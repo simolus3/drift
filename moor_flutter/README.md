@@ -80,10 +80,10 @@ class MyDatabase {
 }
 ```
 
-__⚠️ Warning:__ Even though it might look like it, the content of a `Table` class does not support full Dart code. It can only
-be used to declare the table name, its primary key and columns. The code inside of a table class will never be 
-executed. Instead, the generator will take a look at your table classes to figure out how their structure looks like.
-This won't work if the body of your tables is not constant. This should not be problem, but please be aware of this as you can't put logic inside these classes.
+__⚠️ Note:__ The column definitions, the table name and the primary key must be known at
+compile time. For column definitions and the primary key, the function must use the `=>`
+operator and can't contain anything more than what's included in this `readme` and the
+examples. Otherwise, the generator won't be able to know what's going on.
 
 ### Generating the code
 Moor integrates with the dart `build` system, so you can generate all the code needed with 
