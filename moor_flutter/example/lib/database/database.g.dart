@@ -23,7 +23,7 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
-  Map<String, Object> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'content': content,
@@ -137,7 +137,7 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
-  Map<String, Object> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'description': description,

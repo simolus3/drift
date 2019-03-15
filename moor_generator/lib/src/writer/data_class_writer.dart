@@ -1,5 +1,5 @@
-import 'package:recase/recase.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:recase/recase.dart';
 
 class DataClassWriter {
   final SpecifiedTable table;
@@ -98,7 +98,7 @@ class DataClassWriter {
   }
 
   void _writeToJson(StringBuffer buffer) {
-    buffer.write('Map<String, Object> toJson() {\n return {');
+    buffer.write('Map<String, dynamic> toJson() {\n return {');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
