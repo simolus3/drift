@@ -18,6 +18,12 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['description']),
     );
   }
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as int,
+      description: json['description'] as String,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -104,6 +110,14 @@ class Recipe {
       title: stringType.mapFromDatabaseResponse(data['title']),
       instructions: stringType.mapFromDatabaseResponse(data['instructions']),
       category: intType.mapFromDatabaseResponse(data['category']),
+    );
+  }
+  factory Recipe.fromJson(Map<String, dynamic> json) {
+    return Recipe(
+      id: json['id'] as int,
+      title: json['title'] as String,
+      instructions: json['instructions'] as String,
+      category: json['category'] as int,
     );
   }
   Map<String, dynamic> toJson() {
@@ -223,6 +237,13 @@ class Ingredient {
       caloriesPer100g: intType.mapFromDatabaseResponse(data['calories']),
     );
   }
+  factory Ingredient.fromJson(Map<String, dynamic> json) {
+    return Ingredient(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      caloriesPer100g: json['caloriesPer100g'] as int,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -325,6 +346,13 @@ class IngredientInRecipe {
       recipe: intType.mapFromDatabaseResponse(data['recipe']),
       ingredient: intType.mapFromDatabaseResponse(data['ingredient']),
       amountInGrams: intType.mapFromDatabaseResponse(data['amount']),
+    );
+  }
+  factory IngredientInRecipe.fromJson(Map<String, dynamic> json) {
+    return IngredientInRecipe(
+      recipe: json['recipe'] as int,
+      ingredient: json['ingredient'] as int,
+      amountInGrams: json['amountInGrams'] as int,
     );
   }
   Map<String, dynamic> toJson() {

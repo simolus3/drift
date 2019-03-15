@@ -26,7 +26,8 @@ class DataClassWriter {
     // Also write parsing factory
     _writeMappingConstructor(buffer);
 
-    // And a serializer method
+    // And a serializer and deserializer method
+    _writeFromJson(buffer);
     _writeToJson(buffer);
 
     // And a convenience method to copy data from this class.
@@ -97,12 +98,29 @@ class DataClassWriter {
     buffer.write(');}\n');
   }
 
+  void _writeFromJson(StringBuffer buffer) {
+    final dataClassName = table.dartTypeName;
+
+    buffer
+      ..write('factory $dataClassName.fromJson(Map<String, dynamic> json) {\n')
+      ..write('return $dataClassName(');
+
+    for (var column in table.columns) {
+      final getter = column.dartGetterName;
+      final type = column.dartTypeName;
+
+      buffer.write("$getter: json['$getter'] as $type,");
+    }
+
+    buffer.write(');}\n');
+  }
+
   void _writeToJson(StringBuffer buffer) {
     buffer.write('Map<String, dynamic> toJson() {\n return {');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
-      buffer.write('\'$getter\': $getter,');
+      buffer.write("'$getter': $getter,");
     }
 
     buffer.write('};}');

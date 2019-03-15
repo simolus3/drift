@@ -26,6 +26,15 @@ class TodoEntry {
       category: intType.mapFromDatabaseResponse(data['category']),
     );
   }
+  factory TodoEntry.fromJson(Map<String, dynamic> json) {
+    return TodoEntry(
+      id: json['id'] as int,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      targetDate: json['targetDate'] as DateTime,
+      category: json['category'] as int,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -164,6 +173,12 @@ class Category {
       description: stringType.mapFromDatabaseResponse(data['`desc`']),
     );
   }
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as int,
+      description: json['description'] as String,
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -253,6 +268,14 @@ class User {
       isAwesome: boolType.mapFromDatabaseResponse(data['is_awesome']),
       profilePicture:
           uint8ListType.mapFromDatabaseResponse(data['profile_picture']),
+    );
+  }
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      isAwesome: json['isAwesome'] as bool,
+      profilePicture: json['profilePicture'] as Uint8List,
     );
   }
   Map<String, dynamic> toJson() {
@@ -368,6 +391,12 @@ class SharedTodo {
     return SharedTodo(
       todo: intType.mapFromDatabaseResponse(data['todo']),
       user: intType.mapFromDatabaseResponse(data['user']),
+    );
+  }
+  factory SharedTodo.fromJson(Map<String, dynamic> json) {
+    return SharedTodo(
+      todo: json['todo'] as int,
+      user: json['user'] as int,
     );
   }
   Map<String, dynamic> toJson() {
