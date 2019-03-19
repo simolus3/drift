@@ -19,7 +19,13 @@ dev_dependencies:
   test: ^1.5.3
   test_api:
   mockito: ^4.0.0
+  grinder: ^0.8.0
+  coverage: ^0.12.0
 
 dependency_overrides:
   moor_generator:
     path: ../moor_generator
+  coveralls: ^5.1.0
+  # Temporarily use my fork because it can collect coverage when running tests with the test runner
+  coverage:
+    git: https://github.com/simolus3/coverage.git
