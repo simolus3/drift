@@ -85,30 +85,41 @@ class TableParser extends ParserBase {
       return null;
     }
     final expression = (body as ExpressionFunctionBody).expression;
-    // set expressions {x, y} are sometimes parsed as map literals whose values
-    // are an empty identifier {x: , y: }, but sometimes as proper set literal.
-    // this is probably due to backwards compatibility.
-    // todo should we support MapLiteral2 to support the experiments discussed there?
     final parsedPrimaryKey = <SpecifiedColumn>{};
 
-    if (expression is MapLiteral) {
+    // todo no longer support SetLiteral / MapLiteral when we can afford
+    // dropping support for older analyzer versions
+    if (expression is SetOrMapLiteral) {
+      for (var entry in expression.elements2) {
+        if (entry is Identifier) {
+          final column = columns.singleWhere(
+                  (column) => column.dartGetterName == entry.name);
+          parsedPrimaryKey.add(column);
+        } else {
+          // Don't add an error, these features aren't on a stable dart release
+          // yet.
+          print('Unexpected entry in expression.elements2: $entry');
+        }
+      }
+    // ignore: deprecated_member_use
+    } else if (expression is MapLiteral) {
       for (var entry in expression.entries) {
         final key = entry.key as Identifier;
         final column =
-            columns.singleWhere((column) => column.dartGetterName == key.name);
+        columns.singleWhere((column) => column.dartGetterName == key.name);
         parsedPrimaryKey.add(column);
       }
+    // ignore: deprecated_member_use
     } else if (expression is SetLiteral) {
       for (var entry in expression.elements) {
         final column = columns.singleWhere(
-            (column) => column.dartGetterName == (entry as Identifier).name);
+                (column) => column.dartGetterName == (entry as Identifier).name);
         parsedPrimaryKey.add(column);
       }
     } else {
       generator.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
-      return null;
     }
 
     return parsedPrimaryKey;
