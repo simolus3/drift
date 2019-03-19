@@ -15,14 +15,16 @@ Future<void> main(List<String> args) async {
 
   // Start coverage collection (resume isolates, don't wait for pause, collect
   // when isolates exit).
-  final collectorFuture = collect(Uri.parse('http://localhost:$_vmPort'), true, false, true);
+  final collectorFuture =
+      collect(Uri.parse('http://localhost:$_vmPort'), true, false, true);
 
   // Next, run the test script in another dart process that has the vm services
   // enabled.
   final tests = join(File.fromUri(Platform.script).parent.path, 'tester.dart');
   // not using Dart.run because that only prints to stdout after the process has
   // completed.
-  await Dart.runAsync(tests, vmArgs: ['--enable-vm-service=$_vmPort', '--pause-isolates-on-exit']);
+  await Dart.runAsync(tests,
+      vmArgs: ['--enable-vm-service=$_vmPort', '--pause-isolates-on-exit']);
 
   File('coverage.json').writeAsStringSync(json.encode(await collectorFuture));
 
