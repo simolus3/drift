@@ -3,7 +3,7 @@ dart:
 
 stages:
   - analyze:
-      - dartanalyzer: --fatal-infos --fatal-warnings .
+      - dartanalyzer: --fatal-infos --fatal-warnings lib/ test/
       - dartfmt
   - unit_test:
       - command: dart tool/coverage.dart

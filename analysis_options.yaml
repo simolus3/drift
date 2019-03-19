@@ -8,6 +8,10 @@ analyzer:
     unused_local_variable: error
     dead_code: error
     override_on_non_overriding_method: error
+  exclude:
+    - "**/.g.dart"
+    # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround
+    - ".dart_tool/build/entrypoint/build.dart"
 linter:
   rules:
     - annotate_overrides

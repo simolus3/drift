@@ -26,7 +26,7 @@ while (( "$#" )); do
     ;;
   dartanalyzer) echo
     echo -e '\033[1mTASK: dartanalyzer\033[22m'
-    echo -e 'dartanalyzer --fatal-infos --fatal-warnings .'
+    echo -e 'dartanalyzer --fatal-infos --fatal-warnings lib/ test/'
     dartanalyzer --fatal-infos --fatal-warnings . || EXIT_CODE=$?
     ;;
   dartfmt) echo
