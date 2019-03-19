@@ -21,8 +21,8 @@ while (( "$#" )); do
   case $TASK in
   command) echo
     echo -e '\033[1mTASK: command\033[22m'
-    echo -e 'pub run build_runner test --delete-conflicting-outputs'
-    pub run build_runner test --delete-conflicting-outputs || EXIT_CODE=$?
+    echo -e 'dart tool/coverage.dart'
+    dart tool/coverage.dart || EXIT_CODE=$?
     ;;
   dartanalyzer) echo
     echo -e '\033[1mTASK: dartanalyzer\033[22m'
