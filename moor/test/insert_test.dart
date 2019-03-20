@@ -42,7 +42,7 @@ void main() {
           profilePicture: Uint8List(0),
         ));
 
-    verify(streamQueries.handleTableUpdates({'users'}));
+    verify(streamQueries.handleTableUpdates({db.users}));
   });
 
   test('enforces data integrety', () {

@@ -37,7 +37,7 @@ void main() {
     });
 
     // After the transaction completes, the queries should be updated
-    verify(streamQueries.handleTableUpdates({'users'})).called(1);
+    verify(streamQueries.handleTableUpdates({db.users})).called(1);
     verify(executor.transactions.send());
   });
 }

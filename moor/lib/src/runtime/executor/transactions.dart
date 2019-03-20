@@ -21,18 +21,18 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 /// updates to the outer stream query store when the transaction is completed.
 class _TransactionStreamStore extends StreamQueryStore {
   final StreamQueryStore parent;
-  final Set<String> affectedTables = <String>{};
+  final Set<TableInfo> affectedTables = <TableInfo>{};
 
   _TransactionStreamStore(this.parent);
 
   @override
-  Stream<List<T>> registerStream<T>(TableChangeListener<List<T>> statement) {
+  Stream<T> registerStream<T>(QueryStreamFetcher<T> statement) {
     throw StateError('Streams cannot be created inside a transaction. See the '
         'documentation of GeneratedDatabase.transaction for details.');
   }
 
   @override
-  Future handleTableUpdates(Set<String> tables) {
+  Future handleTableUpdates(Set<TableInfo> tables) {
     affectedTables.addAll(tables);
     return Future.value(null);
   }

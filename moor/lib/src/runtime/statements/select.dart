@@ -10,8 +10,7 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
-class SelectStatement<T, D> extends Query<T, D>
-    implements TableChangeListener<List<D>> {
+class SelectStatement<T, D> extends Query<T, D> {
   SelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
@@ -23,7 +22,10 @@ class SelectStatement<T, D> extends Query<T, D>
   /// Loads and returns all results from this select query.
   Future<List<D>> get() async {
     final ctx = constructQuery();
+    return _getWithQuery(ctx);
+  }
 
+  Future<List<D>> _getWithQuery(GenerationContext ctx) async {
     final results = await ctx.database.executor.doWhenOpened((e) async {
       return await ctx.database.executor.runSelect(ctx.sql, ctx.boundVariables);
     });
@@ -47,21 +49,18 @@ class SelectStatement<T, D> extends Query<T, D>
   /// Creates an auto-updating stream that emits new items whenever this table
   /// changes.
   Stream<List<D>> watch() {
-    return database.createStream(this);
-  }
+    final query = constructQuery();
+    final fetcher = QueryStreamFetcher<List<D>>(
+      readsFrom: {table},
+      fetchData: () => _getWithQuery(query),
+      key: StreamKey(query.sql, query.boundVariables, D),
+    );
 
-  @override
-  Future<List<D>> handleDataChanged() {
-    return get();
-  }
-
-  @override
-  bool isAffectedBy(Set<String> tables) {
-    return tables.contains(super.table.$tableName);
+    return database.createStream(fetcher);
   }
 }
 
-class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
+class CustomSelectStatement {
   /// Tables this select statement reads from
   final Set<TableInfo> tables;
   final String query;
@@ -70,26 +69,35 @@ class CustomSelectStatement implements TableChangeListener<List<QueryRow>> {
 
   CustomSelectStatement(this.query, this.variables, this.tables, this.db);
 
-  Future<List<QueryRow>> read() => handleDataChanged();
+  QueryStreamFetcher<List<QueryRow>> constructFetcher() {
+    final args = _mapArgs();
 
-  @override
-  Future<List<QueryRow>> handleDataChanged() async {
+    return QueryStreamFetcher<List<QueryRow>>(
+      readsFrom: tables,
+      fetchData: () => _executeWithMappedArgs(args),
+      key: StreamKey(query, args, QueryRow),
+    );
+  }
+
+  Future<List<QueryRow>> execute() async {
+    return _executeWithMappedArgs(_mapArgs());
+  }
+
+  List<dynamic> _mapArgs() {
     final ctx = GenerationContext(db);
-    final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
+    return variables.map((v) => v.mapToSimpleValue(ctx)).toList();
+  }
 
+  Future<List<QueryRow>> _executeWithMappedArgs(
+      List<dynamic> mappedArgs) async {
     final result =
         await db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
 
     return result.map((row) => QueryRow(row, db)).toList();
   }
-
-  @override
-  bool isAffectedBy(Set<String> tables) {
-    return this.tables.intersection(tables).isNotEmpty;
-  }
 }
 
-/// For custom select statement, represents a row in the result set.
+/// For custom select statements, represents a row in the result set.
 class QueryRow {
   final Map<String, dynamic> data;
   final QueryEngine _db;

@@ -56,7 +56,7 @@ class InsertStatement<DataClass> {
 
     await database.executor.doWhenOpened((e) async {
       await database.executor.runInsert(ctx.sql, ctx.boundVariables);
-      database.markTablesUpdated({table.$tableName});
+      database.markTablesUpdated({table});
     });
   }
 

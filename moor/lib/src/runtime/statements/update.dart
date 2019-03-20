@@ -36,7 +36,7 @@ class UpdateStatement<T, D> extends Query<T, D> {
     });
 
     if (rows > 0) {
-      database.markTablesUpdated({table.$tableName});
+      database.markTablesUpdated({table});
     }
 
     return rows;

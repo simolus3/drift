@@ -46,26 +46,17 @@ abstract class DatabaseConnectionUser {
         executor = executor ?? other.executor,
         streamQueries = streamQueries ?? other.streamQueries;
 
-  /// Marks the table as updated. This method will be called internally whenever
-  /// a update, delete or insert statement is issued on the database. We can
-  /// then inform all active select-streams on that table that their snapshot
-  /// might be out-of-date and needs to be fetched again.
-  @Deprecated('Use markTablesUpdated instead')
-  void markTableUpdated(String tableName) {
-    markTablesUpdated({tableName});
-  }
-
   /// Marks the tables as updated. This method will be called internally
   /// whenever a update, delete or insert statement is issued on the database.
   /// We can then inform all active select-streams on those tables that their
   /// snapshot might be out-of-date and needs to be fetched again.
-  void markTablesUpdated(Set<String> tables) {
+  void markTablesUpdated(Set<TableInfo> tables) {
     streamQueries.handleTableUpdates(tables);
   }
 
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
-  Stream<List<T>> createStream<T>(TableChangeListener<List<T>> stmt) =>
+  Stream<T> createStream<T>(QueryStreamFetcher<T> stmt) =>
       streamQueries.registerStream(stmt);
 }
 
@@ -120,8 +111,7 @@ mixin QueryEngine on DatabaseConnectionUser {
         executor.doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
 
     if (updates != null) {
-      await streamQueries
-          .handleTableUpdates(updates.map((t) => t.$tableName).toSet());
+      await streamQueries.handleTableUpdates(updates);
     }
 
     return affectedRows;
@@ -132,7 +122,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// value.
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(query, variables, <TableInfo>{}, this).read();
+    return CustomSelectStatement(query, variables, <TableInfo>{}, this)
+        .execute();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -143,7 +134,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   Stream<List<QueryRow>> customSelectStream(String query,
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
     final tables = readsFrom ?? <TableInfo>{};
-    return createStream(CustomSelectStatement(query, variables, tables, this));
+    final statement = CustomSelectStatement(query, variables, tables, this);
+    return createStream(statement.constructFetcher());
   }
 }
 
