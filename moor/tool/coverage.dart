@@ -6,6 +6,8 @@ import 'package:grinder/grinder_sdk.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart';
 
+import 'format_coverage.dart' as fc;
+
 const int _vmPort = 9876;
 
 Future<void> main(List<String> args) async {
@@ -31,13 +33,5 @@ Future<void> main(List<String> args) async {
   print('coverage collected - formatting as lcov');
 
   print('formatting to .lcov format');
-  await Pub.runAsync('coverage:format_coverage', arguments: [
-    '--lcov',
-    '--packages=.packages',
-    '--report-on=lib',
-    '-i',
-    'coverage.json',
-    '-o',
-    'lcov.info'
-  ]);
+  await fc.main();
 }

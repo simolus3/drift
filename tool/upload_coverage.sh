@@ -2,5 +2,5 @@
 
 if [ "$PKG" == "moor" ]; then
     pushd moor
-    pub run coveralls lcov.info
+    bash <(curl -s https://codecov.io/bash) -f lcov.info
 fi
