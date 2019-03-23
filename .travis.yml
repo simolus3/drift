@@ -19,5 +19,3 @@ branches:
 cache:
   directories:
     - "$HOME/.pub-cache"
-    - moor/.dart_tool/build
-    - moor_generator/.dart_tool/build
