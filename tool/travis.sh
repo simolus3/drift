@@ -44,6 +44,7 @@ while (( "$#" )); do
     ;;
   esac
 
+  echo -e 'task exited with' $EXIT_CODE
   shift
 done
 

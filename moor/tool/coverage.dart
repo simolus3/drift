@@ -30,8 +30,6 @@ Future<void> main(List<String> args) async {
 
   File('coverage.json').writeAsStringSync(json.encode(await collectorFuture));
 
-  print('coverage collected - formatting as lcov');
-
   print('formatting to .lcov format');
   await fc.main();
 }

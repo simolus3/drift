@@ -18,7 +18,7 @@ Future main() async {
       'moor/lib/',
       'moor_generator/lib',
     ],
-    basePath: '.'
+    basePath: '.',
   ).format(coverage);
 
   File('moor/lcov.info').writeAsStringSync(lcov);
