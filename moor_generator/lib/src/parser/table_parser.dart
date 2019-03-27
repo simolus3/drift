@@ -87,8 +87,6 @@ class TableParser extends ParserBase {
     final expression = (body as ExpressionFunctionBody).expression;
     final parsedPrimaryKey = <SpecifiedColumn>{};
 
-    // todo no longer support SetLiteral / MapLiteral when we can afford
-    // dropping support for older analyzer versions
     if (expression is SetOrMapLiteral) {
       for (var entry in expression.elements2) {
         if (entry is Identifier) {
@@ -100,21 +98,6 @@ class TableParser extends ParserBase {
           // yet.
           print('Unexpected entry in expression.elements2: $entry');
         }
-      }
-      // ignore: deprecated_member_use
-    } else if (expression is MapLiteral) {
-      for (var entry in expression.entries) {
-        final key = entry.key as Identifier;
-        final column =
-            columns.singleWhere((column) => column.dartGetterName == key.name);
-        parsedPrimaryKey.add(column);
-      }
-      // ignore: deprecated_member_use
-    } else if (expression is SetLiteral) {
-      for (var entry in expression.elements) {
-        final column = columns.singleWhere(
-            (column) => column.dartGetterName == (entry as Identifier).name);
-        parsedPrimaryKey.add(column);
       }
     } else {
       generator.errors.add(MoorError(
