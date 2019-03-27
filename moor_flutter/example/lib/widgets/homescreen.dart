@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Column;
+import 'package:flutter/widgets.dart' as f show Column;
 import 'package:moor_example/bloc.dart';
 import 'package:moor_example/database/database.dart';
 import 'package:moor_example/main.dart';
@@ -69,7 +70,7 @@ class HomeScreenState extends State<HomeScreen> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Column(
+            child: f.Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[

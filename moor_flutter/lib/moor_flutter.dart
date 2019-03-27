@@ -11,7 +11,7 @@ import 'package:moor/moor.dart';
 import 'package:sqflite/sqflite.dart' as s;
 
 export 'package:moor_flutter/src/animated_list.dart';
-export 'package:moor/moor.dart' hide Column;
+export 'package:moor/moor.dart';
 
 abstract class _DatabaseOwner extends QueryExecutor {
   _DatabaseOwner(this.logStatements);
