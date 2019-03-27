@@ -139,6 +139,32 @@ mixin QueryEngine on DatabaseConnectionUser {
     final statement = CustomSelectStatement(query, variables, tables, this);
     return createStream(statement.constructFetcher());
   }
+
+  /// Executes [action] in a transaction, which means that all its queries and
+  /// updates will be called atomically.
+  ///
+  /// Please be aware of the following limitations of transactions:
+  ///  1. Inside a transaction, auto-updating streams cannot be created. This
+  ///     operation will throw at runtime. The reason behind this is that a
+  ///     stream might have a longer lifespan than a transaction, but it still
+  ///     needs to know about the transaction because the data in a transaction
+  ///     might be different than that of the "global" database instance.
+  ///  2. Nested transactions are not supported. Calling
+  ///     [GeneratedDatabase.transaction] on the [QueryEngine] passed to the [action]
+  ///     will throw.
+  ///  3. The code inside [action] must not call any method of this
+  ///     [GeneratedDatabase]. Doing so will cause a dead-lock. Instead, all
+  ///     queries and updates must be sent to the [QueryEngine] passed to the
+  ///     [action] function.
+  Future transaction(Future Function(QueryEngine transaction) action) async {
+    final transaction = Transaction(this, executor.beginTransaction());
+
+    try {
+      await action(transaction);
+    } finally {
+      await transaction.complete();
+    }
+  }
 }
 
 /// A base class for all generated databases.
@@ -182,31 +208,5 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       {@required SqlExecutor executor, int from, int to}) {
     final migrator = _createMigrator(executor);
     return migration.onUpgrade(migrator, from, to);
-  }
-
-  /// Executes [action] in a transaction, which means that all its queries and
-  /// updates will be called atomically.
-  ///
-  /// Please be aware of the following limitations of transactions:
-  ///  1. Inside a transaction, auto-updating streams cannot be created. This
-  ///     operation will throw at runtime. The reason behind this is that a
-  ///     stream might have a longer lifespan than a transaction, but it still
-  ///     needs to know about the transaction because the data in a transaction
-  ///     might be different than that of the "global" database instance.
-  ///  2. Nested transactions are not supported. Calling
-  ///     [GeneratedDatabase.transaction] on the [QueryEngine] passed to the [action]
-  ///     will throw.
-  ///  3. The code inside [action] must not call any method of this
-  ///     [GeneratedDatabase]. Doing so will cause a dead-lock. Instead, all
-  ///     queries and updates must be sent to the [QueryEngine] passed to the
-  ///     [action] function.
-  Future transaction(Future Function(QueryEngine transaction) action) async {
-    final transaction = Transaction(this, executor.beginTransaction());
-
-    try {
-      await action(transaction);
-    } finally {
-      await transaction.complete();
-    }
   }
 }

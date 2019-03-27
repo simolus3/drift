@@ -24,6 +24,16 @@ void main() {
     verify(executor.transactions.send());
   });
 
+  test('transactions cannot be nested', () {
+    expect(() async {
+      await db.transaction((t) async {
+        await t.transaction((t2) {
+          fail('nested transactions were allowed');
+        });
+      });
+    }, throwsStateError);
+  });
+
   test('transactions notify about table udpates after completing', () async {
     when(executor.transactions.runUpdate(any, any))
         .thenAnswer((_) => Future.value(2));
