@@ -10,12 +10,6 @@ env:
 script: ./tool/mono_repo_wrapper.sh
 after_success: ./tool/upload_coverage.sh
 
-# Only building master means that we don't run two builds for each pull request.
-branches:
-  only:
-    - master
-    - develop
-
 cache:
   directories:
     - "$HOME/.pub-cache"

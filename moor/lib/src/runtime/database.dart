@@ -8,9 +8,11 @@ import 'package:moor/src/runtime/statements/select.dart';
 import 'package:moor/src/runtime/statements/update.dart';
 
 /// Class that runs queries to a subset of all available queries in a database.
+///
 /// This comes in handy to structure large amounts of database code better: The
 /// migration logic can live in the main [GeneratedDatabase] class, but code
 /// can be extracted into [DatabaseAccessor]s outside of that database.
+/// For details on how to write a dao, see [UseDao].
 abstract class DatabaseAccessor<T extends GeneratedDatabase>
     extends DatabaseConnectionUser with QueryEngine {
   @protected

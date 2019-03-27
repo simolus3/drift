@@ -6,7 +6,7 @@ import 'database.dart';
 part 'todos_dao.g.dart';
 
 @UseDao(tables: [Todos])
-class TodosDao extends DatabaseAccessor<Database> with _TodosDaoMixin {
+class TodosDao extends DatabaseAccessor<Database> with _$TodosDaoMixin {
   TodosDao(Database db) : super(db);
 
   Stream<List<TodoEntry>> todosInCategory(Category category) {

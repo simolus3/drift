@@ -41,7 +41,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
 
     final daoName = enclosingClass.displayName;
 
-    buffer.write('mixin _${daoName}Mixin on '
+    buffer.write('mixin _\$${daoName}Mixin on '
         'DatabaseAccessor<${dbImpl.displayName}> {\n');
 
     for (var table in tableTypes) {
