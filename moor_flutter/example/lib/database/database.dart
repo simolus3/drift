@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:moor_example/database/todos_dao.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
@@ -14,10 +13,6 @@ class Todos extends Table {
   DateTimeColumn get targetDate => dateTime().nullable()();
 
   IntColumn get category => integer().nullable()();
-
-  String toJson(TodoEntry entry) {
-    return json.encode(entry.toJson());
-  }
 }
 
 @DataClassName('Category')

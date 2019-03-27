@@ -1,8 +1,11 @@
 # Moor
 [![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
-[API: ![Generator version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor)
-[Runtime: ![Generator version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dartlang.org/packages/moor_flutter)
-[Generator: ![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
+[![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
+
+
+| Core API      | Flutter           | Generator  |
+|:-------------:|:-------------:|:-----:|
+| [![Generator version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor) | [![Flutter version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dartlang.org/packages/moor_flutter) | [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator) |
 
 Moor is an easy to use and safe way to persist data for Flutter apps. It features
 a fluent Dart DSL to describe tables and will generate matching database code that
@@ -33,10 +36,10 @@ API that will deliver auto-updating streams for your queries.
 First, let's add moor to your project's `pubspec.yaml`.
 ```yaml
 dependencies:
-  moor_flutter:
+  moor_flutter: # use the latest version
 
 dev_dependencies:
-  moor_generator:
+  moor_generator: # use the latest versions
   build_runner: 
 ```
 We're going to use the `moor_flutter` library to specify tables and access the database. The
