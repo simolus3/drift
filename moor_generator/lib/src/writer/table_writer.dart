@@ -98,6 +98,11 @@ class TableWriter {
       }
     }
 
+    if (column.customConstraints != null) {
+      // todo should we worry about escaping this string?
+      additionalParams['\$customConstraints'] = "'${column.customConstraints}'";
+    }
+
     // GeneratedIntColumn('sql_name', isNullable, additionalField: true)
     final expressionBuffer = StringBuffer()
       ..write(column.implColumnTypeName)

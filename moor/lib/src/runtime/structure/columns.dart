@@ -27,8 +27,15 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(StringBuffer into) {
-    into..write('${$name} $typeName ')..write($nullable ? 'NULL' : 'NOT NULL');
-    writeCustomConstraints(into);
+    into.write('${$name} $typeName ');
+
+    if ($customConstraints == null) {
+      into.write($nullable ? 'NULL' : 'NOT NULL');
+      // these custom constraints refer to builtin constraints from moor
+      writeCustomConstraints(into);
+    } else {
+      into.write($customConstraints);
+    }
   }
 
   @visibleForOverriding

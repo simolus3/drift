@@ -217,10 +217,9 @@ class $CategoriesTable extends Categories
       _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
   GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description => _description ??= GeneratedTextColumn(
-        '`desc`',
-        false,
-      );
+  GeneratedTextColumn get description =>
+      _description ??= GeneratedTextColumn('`desc`', false,
+          $customConstraints: 'NOT NULL UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override

@@ -26,7 +26,8 @@ class Users extends Table {
 @DataClassName('Category')
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text().named('desc')();
+  TextColumn get description =>
+      text().named('desc').customConstraint('NOT NULL UNIQUE')();
 }
 
 class SharedTodos extends Table {
