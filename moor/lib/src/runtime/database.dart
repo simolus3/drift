@@ -157,13 +157,15 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     queries and updates must be sent to the [QueryEngine] passed to the
   ///     [action] function.
   Future transaction(Future Function(QueryEngine transaction) action) async {
-    final transaction = Transaction(this, executor.beginTransaction());
+    await executor.doWhenOpened((executor) async {
+      final transaction = Transaction(this, executor.beginTransaction());
 
-    try {
-      await action(transaction);
-    } finally {
-      await transaction.complete();
-    }
+      try {
+        await action(transaction);
+      } finally {
+        await transaction.complete();
+      }
+    });
   }
 }
 

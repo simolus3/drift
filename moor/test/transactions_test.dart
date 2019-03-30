@@ -50,4 +50,10 @@ void main() {
     verify(streamQueries.handleTableUpdates({db.users})).called(1);
     verify(executor.transactions.send());
   });
+
+  test('the database is opened before starting a transaction', () async {
+    await db.transaction((t) async {
+      verify(executor.doWhenOpened(any));
+    });
+  });
 }
