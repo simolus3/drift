@@ -67,8 +67,11 @@ class DataClassWriter {
   void _writeMappingConstructor(StringBuffer buffer) {
     final dataClassName = table.dartTypeName;
 
-    buffer.write(
-        'factory $dataClassName.fromData(Map<String, dynamic> data, GeneratedDatabase db) {\n');
+    buffer
+      ..write('factory $dataClassName.fromData')
+      ..write('(Map<String, dynamic> data, GeneratedDatabase db, ')
+      ..write('{String alias}) {\n')
+      ..write("final effectivePrefix = alias != null ? '\$alias.' : '';");
 
     final dartTypeToResolver = <String, String>{};
 
@@ -89,8 +92,8 @@ class DataClassWriter {
       // id: intType.mapFromDatabaseResponse(data["id])
       final getter = column.dartGetterName;
       final resolver = dartTypeToResolver[column.dartTypeName];
-      final typeParser =
-          '$resolver.mapFromDatabaseResponse(data[\'${column.name.name}\'])';
+      final columnName = "'\${effectivePrefix}${column.name.name}'";
+      final typeParser = '$resolver.mapFromDatabaseResponse(data[$columnName])';
 
       buffer.write('$getter: $typeParser,');
     }

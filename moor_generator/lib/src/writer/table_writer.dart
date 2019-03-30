@@ -87,6 +87,7 @@ class TableWriter {
   void _writeColumnGetter(StringBuffer buffer, SpecifiedColumn column) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
+    final expressionBuffer = StringBuffer();
 
     for (var feature in column.features) {
       if (feature is AutoIncrement) {
@@ -106,9 +107,12 @@ class TableWriter {
       additionalParams['\$customConstraints'] = "'${column.customConstraints}'";
     }
 
-    // GeneratedIntColumn('sql_name', isNullable, additionalField: true)
-    final expressionBuffer = StringBuffer()
-      ..write(column.implColumnTypeName)
+    // Handle aliasing
+    expressionBuffer
+      ..write("var cName = '${column.name.name}';\n")
+      ..write("if (_alias != null) cName = '\$_alias.\$cName';\n")
+      // GeneratedIntColumn('sql_name', isNullable, additionalField: true)
+      ..write('return ${column.implColumnTypeName}')
       ..write('(\'${column.name.name}\', $isNullable, ');
 
     var first = true;
@@ -122,9 +126,9 @@ class TableWriter {
       expressionBuffer..write(name)..write(': ')..write(value);
     });
 
-    expressionBuffer.write(')');
+    expressionBuffer.write(');');
 
-    writeMemoizedGetter(
+    writeMemoizedGetterWithBody(
       buffer: buffer,
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,

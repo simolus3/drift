@@ -14,16 +14,22 @@ class TodoEntry {
   final int category;
   TodoEntry(
       {this.id, this.title, this.content, this.targetDate, this.category});
-  factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      title: stringType.mapFromDatabaseResponse(data['title']),
-      content: stringType.mapFromDatabaseResponse(data['content']),
-      targetDate: dateTimeType.mapFromDatabaseResponse(data['target_date']),
-      category: intType.mapFromDatabaseResponse(data['category']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      title:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
+      content:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}content']),
+      targetDate: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
+      category:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   factory TodoEntry.fromJson(Map<String, dynamic> json) {
@@ -94,31 +100,60 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _title;
   @override
-  GeneratedTextColumn get title => _title ??=
-      GeneratedTextColumn('title', true, minTextLength: 4, maxTextLength: 16);
+  GeneratedTextColumn get title => _title ??= _constructTitle();
+  GeneratedTextColumn _constructTitle() {
+    var cName = 'title';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn('title', true,
+        minTextLength: 4, maxTextLength: 16);
+  }
+
   GeneratedTextColumn _content;
   @override
-  GeneratedTextColumn get content => _content ??= GeneratedTextColumn(
-        'content',
-        false,
-      );
+  GeneratedTextColumn get content => _content ??= _constructContent();
+  GeneratedTextColumn _constructContent() {
+    var cName = 'content';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn(
+      'content',
+      false,
+    );
+  }
+
   GeneratedDateTimeColumn _targetDate;
   @override
   GeneratedDateTimeColumn get targetDate =>
-      _targetDate ??= GeneratedDateTimeColumn(
-        'target_date',
-        true,
-      );
+      _targetDate ??= _constructTargetDate();
+  GeneratedDateTimeColumn _constructTargetDate() {
+    var cName = 'target_date';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedDateTimeColumn(
+      'target_date',
+      true,
+    );
+  }
+
   GeneratedIntColumn _category;
   @override
-  GeneratedIntColumn get category => _category ??= GeneratedIntColumn(
-        'category',
-        true,
-      );
+  GeneratedIntColumn get category => _category ??= _constructCategory();
+  GeneratedIntColumn _constructCategory() {
+    var cName = 'category';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'category',
+      true,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
@@ -171,12 +206,15 @@ class Category {
   final int id;
   final String description;
   Category({this.id, this.description});
-  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      description: stringType.mapFromDatabaseResponse(data['`desc`']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      description:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}`desc`']),
     );
   }
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -220,13 +258,24 @@ class $CategoriesTable extends Categories
   $CategoriesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _description;
   @override
   GeneratedTextColumn get description =>
-      _description ??= GeneratedTextColumn('`desc`', false,
-          $customConstraints: 'NOT NULL UNIQUE');
+      _description ??= _constructDescription();
+  GeneratedTextColumn _constructDescription() {
+    var cName = '`desc`';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn('`desc`', false,
+        $customConstraints: 'NOT NULL UNIQUE');
+  }
+
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
@@ -268,17 +317,20 @@ class User {
   final bool isAwesome;
   final Uint8List profilePicture;
   User({this.id, this.name, this.isAwesome, this.profilePicture});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
     final uint8ListType = db.typeSystem.forDartType<Uint8List>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      name: stringType.mapFromDatabaseResponse(data['name']),
-      isAwesome: boolType.mapFromDatabaseResponse(data['is_awesome']),
-      profilePicture:
-          uint8ListType.mapFromDatabaseResponse(data['profile_picture']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      isAwesome: boolType
+          .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome']),
+      profilePicture: uint8ListType
+          .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
     );
   }
   factory User.fromJson(Map<String, dynamic> json) {
@@ -337,25 +389,48 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   $UsersTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => _name ??=
-      GeneratedTextColumn('name', false, minTextLength: 6, maxTextLength: 32);
+  GeneratedTextColumn get name => _name ??= _constructName();
+  GeneratedTextColumn _constructName() {
+    var cName = 'name';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn('name', false,
+        minTextLength: 6, maxTextLength: 32);
+  }
+
   GeneratedBoolColumn _isAwesome;
   @override
-  GeneratedBoolColumn get isAwesome => _isAwesome ??= GeneratedBoolColumn(
-        'is_awesome',
-        false,
-      );
+  GeneratedBoolColumn get isAwesome => _isAwesome ??= _constructIsAwesome();
+  GeneratedBoolColumn _constructIsAwesome() {
+    var cName = 'is_awesome';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedBoolColumn(
+      'is_awesome',
+      false,
+    );
+  }
+
   GeneratedBlobColumn _profilePicture;
   @override
   GeneratedBlobColumn get profilePicture =>
-      _profilePicture ??= GeneratedBlobColumn(
-        'profile_picture',
-        false,
-      );
+      _profilePicture ??= _constructProfilePicture();
+  GeneratedBlobColumn _constructProfilePicture() {
+    var cName = 'profile_picture';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedBlobColumn(
+      'profile_picture',
+      false,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [id, name, isAwesome, profilePicture];
   @override
@@ -403,11 +478,13 @@ class SharedTodo {
   final int todo;
   final int user;
   SharedTodo({this.todo, this.user});
-  factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     return SharedTodo(
-      todo: intType.mapFromDatabaseResponse(data['todo']),
-      user: intType.mapFromDatabaseResponse(data['user']),
+      todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo']),
+      user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user']),
     );
   }
   factory SharedTodo.fromJson(Map<String, dynamic> json) {
@@ -451,16 +528,28 @@ class $SharedTodosTable extends SharedTodos
   $SharedTodosTable(this._db, [this._alias]);
   GeneratedIntColumn _todo;
   @override
-  GeneratedIntColumn get todo => _todo ??= GeneratedIntColumn(
-        'todo',
-        false,
-      );
+  GeneratedIntColumn get todo => _todo ??= _constructTodo();
+  GeneratedIntColumn _constructTodo() {
+    var cName = 'todo';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'todo',
+      false,
+    );
+  }
+
   GeneratedIntColumn _user;
   @override
-  GeneratedIntColumn get user => _user ??= GeneratedIntColumn(
-        'user',
-        false,
-      );
+  GeneratedIntColumn get user => _user ??= _constructUser();
+  GeneratedIntColumn _constructUser() {
+    var cName = 'user';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'user',
+      false,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [todo, user];
   @override

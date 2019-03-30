@@ -10,12 +10,15 @@ class Category {
   final int id;
   final String description;
   Category({this.id, this.description});
-  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      description: stringType.mapFromDatabaseResponse(data['description']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      description: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}description']),
     );
   }
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -59,14 +62,26 @@ class $CategoriesTable extends Categories
   $CategoriesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description => _description ??= GeneratedTextColumn(
-        'description',
-        true,
-      );
+  GeneratedTextColumn get description =>
+      _description ??= _constructDescription();
+  GeneratedTextColumn _constructDescription() {
+    var cName = 'description';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn(
+      'description',
+      true,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
@@ -108,14 +123,19 @@ class Recipe {
   final String instructions;
   final int category;
   Recipe({this.id, this.title, this.instructions, this.category});
-  factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Recipe(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      title: stringType.mapFromDatabaseResponse(data['title']),
-      instructions: stringType.mapFromDatabaseResponse(data['instructions']),
-      category: intType.mapFromDatabaseResponse(data['category']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      title:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
+      instructions: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}instructions']),
+      category:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   factory Recipe.fromJson(Map<String, dynamic> json) {
@@ -174,24 +194,47 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   $RecipesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _title;
   @override
-  GeneratedTextColumn get title =>
-      _title ??= GeneratedTextColumn('title', false, maxTextLength: 16);
+  GeneratedTextColumn get title => _title ??= _constructTitle();
+  GeneratedTextColumn _constructTitle() {
+    var cName = 'title';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn('title', false, maxTextLength: 16);
+  }
+
   GeneratedTextColumn _instructions;
   @override
-  GeneratedTextColumn get instructions => _instructions ??= GeneratedTextColumn(
-        'instructions',
-        false,
-      );
+  GeneratedTextColumn get instructions =>
+      _instructions ??= _constructInstructions();
+  GeneratedTextColumn _constructInstructions() {
+    var cName = 'instructions';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn(
+      'instructions',
+      false,
+    );
+  }
+
   GeneratedIntColumn _category;
   @override
-  GeneratedIntColumn get category => _category ??= GeneratedIntColumn(
-        'category',
-        true,
-      );
+  GeneratedIntColumn get category => _category ??= _constructCategory();
+  GeneratedIntColumn _constructCategory() {
+    var cName = 'category';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'category',
+      true,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [id, title, instructions, category];
   @override
@@ -240,13 +283,16 @@ class Ingredient {
   final String name;
   final int caloriesPer100g;
   Ingredient({this.id, this.name, this.caloriesPer100g});
-  factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db) {
+  factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Ingredient(
-      id: intType.mapFromDatabaseResponse(data['id']),
-      name: stringType.mapFromDatabaseResponse(data['name']),
-      caloriesPer100g: intType.mapFromDatabaseResponse(data['calories']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      caloriesPer100g:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}calories']),
     );
   }
   factory Ingredient.fromJson(Map<String, dynamic> json) {
@@ -298,21 +344,38 @@ class $IngredientsTable extends Ingredients
   $IngredientsTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id =>
-      _id ??= GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    var cName = 'id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+  }
+
   GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => _name ??= GeneratedTextColumn(
-        'name',
-        false,
-      );
+  GeneratedTextColumn get name => _name ??= _constructName();
+  GeneratedTextColumn _constructName() {
+    var cName = 'name';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedTextColumn(
+      'name',
+      false,
+    );
+  }
+
   GeneratedIntColumn _caloriesPer100g;
   @override
   GeneratedIntColumn get caloriesPer100g =>
-      _caloriesPer100g ??= GeneratedIntColumn(
-        'calories',
-        false,
-      );
+      _caloriesPer100g ??= _constructCaloriesPer100g();
+  GeneratedIntColumn _constructCaloriesPer100g() {
+    var cName = 'calories';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'calories',
+      false,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [id, name, caloriesPer100g];
   @override
@@ -358,12 +421,16 @@ class IngredientInRecipe {
   final int amountInGrams;
   IngredientInRecipe({this.recipe, this.ingredient, this.amountInGrams});
   factory IngredientInRecipe.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db) {
+      Map<String, dynamic> data, GeneratedDatabase db,
+      {String alias}) {
+    final effectivePrefix = alias != null ? '$alias.' : '';
     final intType = db.typeSystem.forDartType<int>();
     return IngredientInRecipe(
-      recipe: intType.mapFromDatabaseResponse(data['recipe']),
-      ingredient: intType.mapFromDatabaseResponse(data['ingredient']),
-      amountInGrams: intType.mapFromDatabaseResponse(data['amount']),
+      recipe: intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe']),
+      ingredient:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}ingredient']),
+      amountInGrams:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}amount']),
     );
   }
   factory IngredientInRecipe.fromJson(Map<String, dynamic> json) {
@@ -418,22 +485,41 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   $IngredientInRecipesTable(this._db, [this._alias]);
   GeneratedIntColumn _recipe;
   @override
-  GeneratedIntColumn get recipe => _recipe ??= GeneratedIntColumn(
-        'recipe',
-        false,
-      );
+  GeneratedIntColumn get recipe => _recipe ??= _constructRecipe();
+  GeneratedIntColumn _constructRecipe() {
+    var cName = 'recipe';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'recipe',
+      false,
+    );
+  }
+
   GeneratedIntColumn _ingredient;
   @override
-  GeneratedIntColumn get ingredient => _ingredient ??= GeneratedIntColumn(
-        'ingredient',
-        false,
-      );
+  GeneratedIntColumn get ingredient => _ingredient ??= _constructIngredient();
+  GeneratedIntColumn _constructIngredient() {
+    var cName = 'ingredient';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'ingredient',
+      false,
+    );
+  }
+
   GeneratedIntColumn _amountInGrams;
   @override
-  GeneratedIntColumn get amountInGrams => _amountInGrams ??= GeneratedIntColumn(
-        'amount',
-        false,
-      );
+  GeneratedIntColumn get amountInGrams =>
+      _amountInGrams ??= _constructAmountInGrams();
+  GeneratedIntColumn _constructAmountInGrams() {
+    var cName = 'amount';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'amount',
+      false,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns => [recipe, ingredient, amountInGrams];
   @override
