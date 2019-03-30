@@ -14,6 +14,7 @@ export 'package:moor/src/types/type_system.dart';
 export 'package:moor/src/runtime/expressions/comparable.dart';
 export 'package:moor/src/runtime/expressions/user_api.dart';
 export 'package:moor/src/runtime/executor/transactions.dart';
+export 'package:moor/src/runtime/statements/joins/joins.dart';
 export 'package:moor/src/runtime/statements/query.dart';
 export 'package:moor/src/runtime/statements/select.dart';
 export 'package:moor/src/runtime/statements/insert.dart';

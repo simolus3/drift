@@ -35,4 +35,6 @@ abstract class TableInfo<TableDsl, DataClass> {
 
   /// Maps the given row returned by the database into the fitting data class.
   DataClass map(Map<String, dynamic> data);
+
+  TableInfo<TableDsl, DataClass> createAlias(String alias);
 }

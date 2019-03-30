@@ -55,7 +55,8 @@ class Category {
 class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
-  $CategoriesTable(this._db);
+  final String _alias;
+  $CategoriesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -93,6 +94,11 @@ class $CategoriesTable extends Categories
       map['description'] = Variable<String, StringType>(d.description);
     }
     return map;
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(_db, alias);
   }
 }
 
@@ -164,7 +170,8 @@ class Recipe {
 
 class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   final GeneratedDatabase _db;
-  $RecipesTable(this._db);
+  final String _alias;
+  $RecipesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -220,6 +227,11 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
       map['category'] = Variable<int, IntType>(d.category);
     }
     return map;
+  }
+
+  @override
+  $RecipesTable createAlias(String alias) {
+    return $RecipesTable(_db, alias);
   }
 }
 
@@ -282,7 +294,8 @@ class Ingredient {
 class $IngredientsTable extends Ingredients
     implements TableInfo<Ingredients, Ingredient> {
   final GeneratedDatabase _db;
-  $IngredientsTable(this._db);
+  final String _alias;
+  $IngredientsTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -331,6 +344,11 @@ class $IngredientsTable extends Ingredients
       map['calories'] = Variable<int, IntType>(d.caloriesPer100g);
     }
     return map;
+  }
+
+  @override
+  $IngredientsTable createAlias(String alias) {
+    return $IngredientsTable(_db, alias);
   }
 }
 
@@ -396,7 +414,8 @@ class IngredientInRecipe {
 class $IngredientInRecipesTable extends IngredientInRecipes
     implements TableInfo<IngredientInRecipes, IngredientInRecipe> {
   final GeneratedDatabase _db;
-  $IngredientInRecipesTable(this._db);
+  final String _alias;
+  $IngredientInRecipesTable(this._db, [this._alias]);
   GeneratedIntColumn _recipe;
   @override
   GeneratedIntColumn get recipe => _recipe ??= GeneratedIntColumn(
@@ -447,6 +466,11 @@ class $IngredientInRecipesTable extends IngredientInRecipes
       map['amount'] = Variable<int, IntType>(d.amountInGrams);
     }
     return map;
+  }
+
+  @override
+  $IngredientInRecipesTable createAlias(String alias) {
+    return $IngredientInRecipesTable(_db, alias);
   }
 }
 

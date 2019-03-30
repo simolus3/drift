@@ -90,7 +90,8 @@ class TodoEntry {
 class $TodosTableTable extends TodosTable
     implements TableInfo<TodosTable, TodoEntry> {
   final GeneratedDatabase _db;
-  $TodosTableTable(this._db);
+  final String _alias;
+  $TodosTableTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -159,6 +160,11 @@ class $TodosTableTable extends TodosTable
     }
     return map;
   }
+
+  @override
+  $TodosTableTable createAlias(String alias) {
+    return $TodosTableTable(_db, alias);
+  }
 }
 
 class Category {
@@ -210,7 +216,8 @@ class Category {
 class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
-  $CategoriesTable(this._db);
+  final String _alias;
+  $CategoriesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -247,6 +254,11 @@ class $CategoriesTable extends Categories
       map['`desc`'] = Variable<String, StringType>(d.description);
     }
     return map;
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(_db, alias);
   }
 }
 
@@ -321,7 +333,8 @@ class User {
 
 class $UsersTable extends Users implements TableInfo<Users, User> {
   final GeneratedDatabase _db;
-  $UsersTable(this._db);
+  final String _alias;
+  $UsersTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -379,6 +392,11 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
     }
     return map;
   }
+
+  @override
+  $UsersTable createAlias(String alias) {
+    return $UsersTable(_db, alias);
+  }
 }
 
 class SharedTodo {
@@ -429,7 +447,8 @@ class SharedTodo {
 class $SharedTodosTable extends SharedTodos
     implements TableInfo<SharedTodos, SharedTodo> {
   final GeneratedDatabase _db;
-  $SharedTodosTable(this._db);
+  final String _alias;
+  $SharedTodosTable(this._db, [this._alias]);
   GeneratedIntColumn _todo;
   @override
   GeneratedIntColumn get todo => _todo ??= GeneratedIntColumn(
@@ -469,6 +488,11 @@ class $SharedTodosTable extends SharedTodos
       map['user'] = Variable<int, IntType>(d.user);
     }
     return map;
+  }
+
+  @override
+  $SharedTodosTable createAlias(String alias) {
+    return $SharedTodosTable(_db, alias);
   }
 }
 

@@ -27,7 +27,8 @@ class TableWriter {
           'implements TableInfo<$tableDslName, $dataClass> {\n')
       // should have a GeneratedDatabase reference that is set in the constructor
       ..write('final GeneratedDatabase _db;\n')
-      ..write('${table.tableInfoName}(this._db);\n');
+      ..write('final String _alias;\n')
+      ..write('${table.tableInfoName}(this._db, [this._alias]);\n');
 
     // Generate the columns
     for (var column in table.columns) {
@@ -49,6 +50,8 @@ class TableWriter {
 
     _writeMappingMethod(buffer);
     _writeReverseMappingMethod(buffer);
+
+    _writeAliasGenerator(buffer);
 
     // close class
     buffer.write('}');
@@ -173,5 +176,15 @@ class TableWriter {
       }
     }
     buffer.write('};\n');
+  }
+
+  void _writeAliasGenerator(StringBuffer buffer) {
+    final typeName = table.tableInfoName;
+
+    buffer
+      ..write('@override\n')
+      ..write('$typeName createAlias(String alias) {\n')
+      ..write('return $typeName(_db, alias);')
+      ..write('}');
   }
 }

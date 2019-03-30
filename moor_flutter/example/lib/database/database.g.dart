@@ -76,7 +76,8 @@ class TodoEntry {
 
 class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
   final GeneratedDatabase _db;
-  $TodosTable(this._db);
+  final String _alias;
+  $TodosTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -136,6 +137,11 @@ class $TodosTable extends Todos implements TableInfo<Todos, TodoEntry> {
     }
     return map;
   }
+
+  @override
+  $TodosTable createAlias(String alias) {
+    return $TodosTable(_db, alias);
+  }
 }
 
 class Category {
@@ -187,7 +193,8 @@ class Category {
 class $CategoriesTable extends Categories
     implements TableInfo<Categories, Category> {
   final GeneratedDatabase _db;
-  $CategoriesTable(this._db);
+  final String _alias;
+  $CategoriesTable(this._db, [this._alias]);
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id =>
@@ -225,6 +232,11 @@ class $CategoriesTable extends Categories
       map['`desc`'] = Variable<String, StringType>(d.description);
     }
     return map;
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(_db, alias);
   }
 }
 

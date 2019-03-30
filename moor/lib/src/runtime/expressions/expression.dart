@@ -19,7 +19,7 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
       Comparison.equal(this, Variable<D, T>(compare));
 }
 
-/// An expression that looks like "$a operator $b$, where $a and $b itself
+/// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
 abstract class InfixOperator<D, T extends SqlType<D>> with Expression<D, T> {
   Expression get left;

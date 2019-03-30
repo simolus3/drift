@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/components/limit.dart';
@@ -13,6 +14,9 @@ typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 class SelectStatement<T, D> extends Query<T, D> {
   SelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
+
+  @visibleForOverriding
+  Set<TableInfo> get watchedTables => {table};
 
   @override
   void writeStartPart(GenerationContext ctx) {
@@ -51,7 +55,7 @@ class SelectStatement<T, D> extends Query<T, D> {
   Stream<List<D>> watch() {
     final query = constructQuery();
     final fetcher = QueryStreamFetcher<List<D>>(
-      readsFrom: {table},
+      readsFrom: watchedTables,
       fetchData: () => _getWithQuery(query),
       key: StreamKey(query.sql, query.boundVariables, D),
     );
@@ -124,4 +128,7 @@ class QueryRow {
 
   /// Reads a [DateTime] from the column named [key].
   DateTime readDateTime(String key) => read<DateTime>(key);
+
+  /// Reads a [Uint8List] from the column named [key].
+  Uint8List readBlob(String key) => read<Uint8List>(key);
 }
