@@ -31,16 +31,6 @@ abstract class Query<Table, DataClass> {
   @visibleForOverriding
   void writeStartPart(GenerationContext ctx);
 
-  void where(Expression<bool, BoolType> filter(Table tbl)) {
-    final predicate = filter(table.asDslTable);
-
-    if (whereExpr == null) {
-      whereExpr = Where(predicate);
-    } else {
-      whereExpr = Where(and(whereExpr.predicate, predicate));
-    }
-  }
-
   /// Constructs the query that can then be sent to the database executor.
   @protected
   GenerationContext constructQuery() {
@@ -74,6 +64,18 @@ abstract class Query<Table, DataClass> {
     ctx.buffer.write(';');
 
     return ctx;
+  }
+}
+
+mixin SingleTableQueryMixin<Table, DataClass> on Query<Table, DataClass> {
+  void where(Expression<bool, BoolType> filter(Table tbl)) {
+    final predicate = filter(table.asDslTable);
+
+    if (whereExpr == null) {
+      whereExpr = Where(predicate);
+    } else {
+      whereExpr = Where(and(whereExpr.predicate, predicate));
+    }
   }
 
   /// Applies a [where] statement so that the row with the same primary key as
@@ -114,5 +116,14 @@ abstract class Query<Table, DataClass> {
     }
 
     whereExpr = Where(predicate);
+  }
+}
+
+mixin LimitContainerMixin<T, D> on Query<T, D> {
+  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
+  /// is provided as well, the first [offset] rows will be skipped and not
+  /// included in the result.
+  void limit(int limit, {int offset}) {
+    limitExpr = Limit(limit, offset);
   }
 }

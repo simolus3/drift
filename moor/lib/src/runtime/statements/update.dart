@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 
-class UpdateStatement<T, D> extends Query<T, D> {
+class UpdateStatement<T, D> extends Query<T, D>
+    with SingleTableQueryMixin<T, D> {
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 

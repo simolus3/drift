@@ -4,7 +4,6 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/components/join.dart';
-import 'package:moor/src/runtime/components/limit.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/statements/query.dart';
@@ -12,7 +11,8 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
-class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD> {
+class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
+    with LimitContainerMixin {
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins)
       : super(database, table);
@@ -57,6 +57,7 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD> {
     }
   }
 
+  /// Executes this statement and returns the result.
   Future<List<TypedResult>> get() async {
     final ctx = constructQuery();
     final results = await ctx.database.executor.doWhenOpened((e) async {
@@ -81,17 +82,11 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD> {
       return TypedResult(map);
     }).toList();
   }
-
-  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
-  /// is provided as well, the first [offset] rows will be skipped and not
-  /// included in the result.
-  void limit(int limit, {int offset}) {
-    limitExpr = Limit(limit, offset);
-  }
 }
 
 /// A select statement that doesn't use joins
-class SimpleSelectStatement<T, D> extends Query<T, D> {
+class SimpleSelectStatement<T, D> extends Query<T, D>
+    with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D> {
   SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
@@ -116,20 +111,46 @@ class SimpleSelectStatement<T, D> extends Query<T, D> {
     return results.map(table.map).toList();
   }
 
+  /// Creates a select statement that operates on more than one table by
+  /// applying the given joins.
+  ///
+  /// Example from the todolist example which will load the category for each
+  /// item:
+  /// ```
+  /// final results = await select(todos).join([
+  ///   leftOuterJoin(categories, categories.id.equalsExp(todos.category))
+  /// ]).get();
+  ///
+  /// return results.map((row) {
+  ///   final entry = row.readTable(todos);
+  ///   final category = row.readTable(categories);
+  ///   return EntryWithCategory(entry, category);
+  /// }).toList();
+  /// ```
+  ///
+  /// See also:
+  ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
+  ///  construct a [Join].
+  ///  - [GeneratedDatabase.alias], which can be used to build statements that
+  ///  refer to the same table multiple times.
   JoinedSelectStatement join(List<Join> joins) {
     return JoinedSelectStatement(database, table, joins);
-  }
-
-  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
-  /// is provided as well, the first [offset] rows will be skipped and not
-  /// included in the result.
-  void limit(int limit, {int offset}) {
-    limitExpr = Limit(limit, offset);
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
   /// list have a higher priority, the later clauses are only considered if the
   /// first clause considers two rows to be equal.
+  ///
+  /// Example that first displays the users who are awesome and sorts users by
+  /// their id as a secondary criterion:
+  /// ```
+  /// (db.select(db.users)
+  ///    ..orderBy([
+  ///      (u) => OrderingTerm(expression: u.isAwesome, mode: OrderingMode.desc),
+  ///      (u) => OrderingTerm(expression: u.id)
+  ///    ]))
+  ///  .get()
+  /// ```
   void orderBy(List<OrderClauseGenerator<T>> clauses) {
     orderByExpr = OrderBy(clauses.map((t) => t(table.asDslTable)).toList());
   }
@@ -148,15 +169,27 @@ class SimpleSelectStatement<T, D> extends Query<T, D> {
   }
 }
 
+/// A select statement that is constructed with a raw sql prepared statement
+/// instead of the high-level moor api.
 class CustomSelectStatement {
-  /// Tables this select statement reads from
+  /// Tables this select statement reads from. When turning this select query
+  /// into an auto-updating stream, that stream will emit new items whenever
+  /// any of these tables changes.
   final Set<TableInfo> tables;
+
+  /// The sql query string for this statement.
   final String query;
+
+  /// The variables for the prepared statement, in the order they appear in
+  /// [query]. Variables are denoted using a question mark in the query.
   final List<Variable> variables;
-  final QueryEngine db;
+  final QueryEngine _db;
 
-  CustomSelectStatement(this.query, this.variables, this.tables, this.db);
+  /// Constructs a new
+  CustomSelectStatement(this.query, this.variables, this.tables, this._db);
 
+  /// Constructs a fetcher for this query. The fetcher is responsible for
+  /// updating a stream at the right moment.
   QueryStreamFetcher<List<QueryRow>> constructFetcher() {
     final args = _mapArgs();
 
@@ -167,35 +200,34 @@ class CustomSelectStatement {
     );
   }
 
+  /// Executes this query and returns the result.
   Future<List<QueryRow>> execute() async {
     return _executeWithMappedArgs(_mapArgs());
   }
 
   List<dynamic> _mapArgs() {
-    final ctx = GenerationContext(db);
+    final ctx = GenerationContext(_db);
     return variables.map((v) => v.mapToSimpleValue(ctx)).toList();
   }
 
   Future<List<QueryRow>> _executeWithMappedArgs(
       List<dynamic> mappedArgs) async {
     final result =
-        await db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
+        await _db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
 
-    return result.map((row) => QueryRow(row, db)).toList();
+    return result.map((row) => QueryRow(row, _db)).toList();
   }
 }
 
 /// A result row in a [JoinedSelectStatement] that can consist of multiple
 /// entities.
 class TypedResult {
+  /// Creates the result from the parsed table data.
   TypedResult(this._data);
 
   final Map<TableInfo, dynamic> _data;
 
-  D operator []<T, D>(TableInfo<T, D> table) {
-    return _data[table] as D;
-  }
-
+  /// Reads all data that belongs to the given [table] from this row.
   D readTable<T, D>(TableInfo<T, D> table) {
     return _data[table] as D;
   }
@@ -203,9 +235,12 @@ class TypedResult {
 
 /// For custom select statements, represents a row in the result set.
 class QueryRow {
+  /// The raw data in this row.
   final Map<String, dynamic> data;
   final QueryEngine _db;
 
+  /// Construct a row from the raw data and the query engine that maps the raw
+  /// response to appropriate dart types.
   QueryRow(this.data, this._db);
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
