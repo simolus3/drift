@@ -30,8 +30,7 @@ void main() {
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE (NOT (is_awesome = 1)) OR (id < ?);',
-          [100]));
+          'DELETE FROM users WHERE (NOT is_awesome) OR (id < ?);', [100]));
     });
 
     test('to delete an entity via a dataclasss', () async {

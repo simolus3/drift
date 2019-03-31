@@ -4,7 +4,7 @@ import 'package:moor/src/runtime/expressions/variables.dart';
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [DataClass] is the type of the data class
 /// generated from the table.
-abstract class TableInfo<TableDsl, DataClass> {
+mixin TableInfo<TableDsl, DataClass> {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
@@ -13,8 +13,25 @@ abstract class TableInfo<TableDsl, DataClass> {
   /// been specified
   Set<GeneratedColumn> get $primaryKey => null;
 
-  /// The table name in the sql table
+  /// The table name in the sql table. This can be an alias for the actual table
+  /// name. See [actualTableName] for a table name that is not aliased.
   String get $tableName;
+
+  /// The name of the table in the database. Unless [$tableName], this can not
+  /// be aliased.
+  String get actualTableName;
+
+  /// The table name, optionally suffixed with the alias if one exists. This
+  /// can be used in select statements, as it returns something like "users u"
+  /// for a table called users that has been aliased as "u".
+  String get tableWithAlias {
+    if ($tableName == actualTableName) {
+      return actualTableName;
+    } else {
+      return '$actualTableName ${$tableName}';
+    }
+  }
+
   List<GeneratedColumn> get $columns;
 
   /// Validates that the given entity can be inserted into this table, meaning
@@ -34,7 +51,7 @@ abstract class TableInfo<TableDsl, DataClass> {
       {bool includeNulls = false});
 
   /// Maps the given row returned by the database into the fitting data class.
-  DataClass map(Map<String, dynamic> data);
+  DataClass map(Map<String, dynamic> data, {String tablePrefix});
 
   TableInfo<TableDsl, DataClass> createAlias(String alias);
 }

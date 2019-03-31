@@ -16,7 +16,7 @@ void main() {
     minute: 'CAST(strftime("%M", column, "unixepoch") AS INTEGER)',
     second: 'CAST(strftime("%S", column, "unixepoch") AS INTEGER)',
   };
-  final column = GeneratedDateTimeColumn('column', false);
+  final column = GeneratedDateTimeColumn('column', null, false);
 
   expectedResults.forEach((key, value) {
     test('should extract field', () {

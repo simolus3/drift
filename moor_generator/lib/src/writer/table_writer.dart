@@ -24,7 +24,7 @@ class TableWriter {
     // class UsersTable extends Users implements TableInfo<Users, User> {
     buffer
       ..write('class ${table.tableInfoName} extends $tableDslName '
-          'implements TableInfo<$tableDslName, $dataClass> {\n')
+          'with TableInfo<${table.tableInfoName}, $dataClass> {\n')
       // should have a GeneratedDatabase reference that is set in the constructor
       ..write('final GeneratedDatabase _db;\n')
       ..write('final String _alias;\n')
@@ -42,8 +42,11 @@ class TableWriter {
     buffer
       ..write(
           '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
-      ..write('@override\n$tableDslName get asDslTable => this;\n')
-      ..write('@override\nString get \$tableName => \'${table.sqlName}\';\n');
+      ..write('@override\n${table.tableInfoName} get asDslTable => this;\n')
+      ..write(
+          '@override\nString get \$tableName => _alias ?? \'${table.sqlName}\';\n')
+      ..write(
+          '@override\nfinal String actualTableName = \'${table.sqlName}\';\n');
 
     _writeValidityCheckMethod(buffer);
     _writePrimaryKeyOverride(buffer);
@@ -61,8 +64,12 @@ class TableWriter {
     final dataClassName = table.dartTypeName;
 
     buffer
-      ..write('@override\n$dataClassName map(Map<String, dynamic> data) {\n')
-      ..write('return $dataClassName.fromData(data, _db);\n')
+      ..write(
+          '@override\n$dataClassName map(Map<String, dynamic> data, {String tablePrefix}) {\n')
+      ..write(
+          "final effectivePrefix = tablePrefix != null ? '\$tablePrefix.' : null;")
+      ..write(
+          'return $dataClassName.fromData(data, _db, prefix: effectivePrefix);\n')
       ..write('}\n');
   }
 
@@ -111,9 +118,9 @@ class TableWriter {
     expressionBuffer
       ..write("var cName = '${column.name.name}';\n")
       ..write("if (_alias != null) cName = '\$_alias.\$cName';\n")
-      // GeneratedIntColumn('sql_name', isNullable, additionalField: true)
+      // GeneratedIntColumn('sql_name', tableName, isNullable, additionalField: true)
       ..write('return ${column.implColumnTypeName}')
-      ..write('(\'${column.name.name}\', $isNullable, ');
+      ..write("('${column.name.name}', \$tableName, $isNullable, ");
 
     var first = true;
     additionalParams.forEach((name, value) {

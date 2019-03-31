@@ -1,4 +1,3 @@
-
 analyzer:
   strong-mode:
     implicit-casts: false
@@ -9,9 +8,10 @@ analyzer:
     dead_code: error
     override_on_non_overriding_method: error
   exclude:
-    - "**/.g.dart"
+    - "**/*.g.dart"
     # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround
     - ".dart_tool/build/entrypoint/build.dart"
+    - "tool/**"
 linter:
   rules:
     - annotate_overrides

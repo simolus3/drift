@@ -56,7 +56,7 @@ class StreamKey {
   }
 }
 
-/// Keeps track of active streams created from [SelectStatement]s and updates
+/// Keeps track of active streams created from [SimpleSelectStatement]s and updates
 /// them when needed.
 class StreamQueryStore {
   final List<QueryStream> _activeStreamsWithoutKey = [];

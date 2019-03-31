@@ -2,8 +2,8 @@ import 'package:moor/moor.dart';
 import 'package:test_api/test_api.dart';
 
 void main() {
-  final nullable = GeneratedDateTimeColumn('name', true);
-  final nonNull = GeneratedDateTimeColumn('name', false);
+  final nullable = GeneratedDateTimeColumn('name', null, true);
+  final nonNull = GeneratedDateTimeColumn('name', null, false);
 
   test('should write column definition', () {
     final nullableBuff = StringBuffer();

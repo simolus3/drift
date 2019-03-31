@@ -5,7 +5,7 @@ import 'package:moor/moor.dart' as moor;
 import '../data/tables/todos.dart';
 
 void main() {
-  final innerExpression = moor.GeneratedTextColumn('name', true);
+  final innerExpression = moor.GeneratedTextColumn('name', null, true);
 
   test('IS NULL expressions are generated', () {
     final isNull = moor.isNull(innerExpression);

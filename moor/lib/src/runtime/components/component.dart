@@ -12,6 +12,12 @@ abstract class Component {
 
 /// Contains information about a query while it's being constructed.
 class GenerationContext {
+  /// Whether the query obtained by this context operates on multiple tables.
+  ///
+  /// If it does, columns should prefix their table name to avoid ambiguous
+  /// queries.
+  bool hasMultipleTables = false;
+
   final QueryEngine database;
 
   final List<dynamic> _boundVariables = [];

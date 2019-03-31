@@ -60,6 +60,10 @@ abstract class DatabaseConnectionUser {
   /// method should not be used directly.
   Stream<T> createStream<T>(QueryStreamFetcher<T> stmt) =>
       streamQueries.registerStream(stmt);
+
+  T alias<T, D>(TableInfo<T, D> table, String alias) {
+    return table.createAlias(alias).asDslTable;
+  }
 }
 
 /// Mixin for a [DatabaseConnectionUser]. Provides an API to execute both
@@ -86,9 +90,9 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// stream of data
   @protected
   @visibleForTesting
-  SelectStatement<Table, ReturnType> select<Table, ReturnType>(
+  SimpleSelectStatement<Table, ReturnType> select<Table, ReturnType>(
       TableInfo<Table, ReturnType> table) {
-    return SelectStatement<Table, ReturnType>(this, table);
+    return SimpleSelectStatement<Table, ReturnType>(this, table);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.

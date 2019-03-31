@@ -6,6 +6,7 @@ part of 'todos.dart';
 // MoorGenerator
 // **************************************************************************
 
+// ignore_for_file: unnecessary_brace_in_string_interps
 class TodoEntry {
   final int id;
   final String title;
@@ -15,8 +16,8 @@ class TodoEntry {
   TodoEntry(
       {this.id, this.title, this.content, this.targetDate, this.category});
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
@@ -94,7 +95,7 @@ class TodoEntry {
 }
 
 class $TodosTableTable extends TodosTable
-    implements TableInfo<TodosTable, TodoEntry> {
+    with TableInfo<$TodosTableTable, TodoEntry> {
   final GeneratedDatabase _db;
   final String _alias;
   $TodosTableTable(this._db, [this._alias]);
@@ -104,7 +105,7 @@ class $TodosTableTable extends TodosTable
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _title;
@@ -113,7 +114,7 @@ class $TodosTableTable extends TodosTable
   GeneratedTextColumn _constructTitle() {
     var cName = 'title';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedTextColumn('title', true,
+    return GeneratedTextColumn('title', $tableName, true,
         minTextLength: 4, maxTextLength: 16);
   }
 
@@ -125,6 +126,7 @@ class $TodosTableTable extends TodosTable
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'content',
+      $tableName,
       false,
     );
   }
@@ -138,6 +140,7 @@ class $TodosTableTable extends TodosTable
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedDateTimeColumn(
       'target_date',
+      $tableName,
       true,
     );
   }
@@ -150,6 +153,7 @@ class $TodosTableTable extends TodosTable
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'category',
+      $tableName,
       true,
     );
   }
@@ -158,9 +162,11 @@ class $TodosTableTable extends TodosTable
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
   @override
-  TodosTable get asDslTable => this;
+  $TodosTableTable get asDslTable => this;
   @override
-  String get $tableName => 'todos';
+  String get $tableName => _alias ?? 'todos';
+  @override
+  final String actualTableName = 'todos';
   @override
   bool validateIntegrity(TodoEntry instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -171,8 +177,9 @@ class $TodosTableTable extends TodosTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TodoEntry map(Map<String, dynamic> data) {
-    return TodoEntry.fromData(data, _db);
+  TodoEntry map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return TodoEntry.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -207,8 +214,8 @@ class Category {
   final String description;
   Category({this.id, this.description});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
@@ -252,7 +259,7 @@ class Category {
 }
 
 class $CategoriesTable extends Categories
-    implements TableInfo<Categories, Category> {
+    with TableInfo<$CategoriesTable, Category> {
   final GeneratedDatabase _db;
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
@@ -262,7 +269,7 @@ class $CategoriesTable extends Categories
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _description;
@@ -272,16 +279,18 @@ class $CategoriesTable extends Categories
   GeneratedTextColumn _constructDescription() {
     var cName = '`desc`';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedTextColumn('`desc`', false,
+    return GeneratedTextColumn('`desc`', $tableName, false,
         $customConstraints: 'NOT NULL UNIQUE');
   }
 
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
-  Categories get asDslTable => this;
+  $CategoriesTable get asDslTable => this;
   @override
-  String get $tableName => 'categories';
+  String get $tableName => _alias ?? 'categories';
+  @override
+  final String actualTableName = 'categories';
   @override
   bool validateIntegrity(Category instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -289,8 +298,9 @@ class $CategoriesTable extends Categories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Category map(Map<String, dynamic> data) {
-    return Category.fromData(data, _db);
+  Category map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Category.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -318,8 +328,8 @@ class User {
   final Uint8List profilePicture;
   User({this.id, this.name, this.isAwesome, this.profilePicture});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
@@ -383,7 +393,7 @@ class User {
           other.profilePicture == profilePicture);
 }
 
-class $UsersTable extends Users implements TableInfo<Users, User> {
+class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase _db;
   final String _alias;
   $UsersTable(this._db, [this._alias]);
@@ -393,7 +403,7 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _name;
@@ -402,7 +412,7 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   GeneratedTextColumn _constructName() {
     var cName = 'name';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedTextColumn('name', false,
+    return GeneratedTextColumn('name', $tableName, false,
         minTextLength: 6, maxTextLength: 32);
   }
 
@@ -414,6 +424,7 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedBoolColumn(
       'is_awesome',
+      $tableName,
       false,
     );
   }
@@ -427,6 +438,7 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedBlobColumn(
       'profile_picture',
+      $tableName,
       false,
     );
   }
@@ -434,9 +446,11 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   @override
   List<GeneratedColumn> get $columns => [id, name, isAwesome, profilePicture];
   @override
-  Users get asDslTable => this;
+  $UsersTable get asDslTable => this;
   @override
-  String get $tableName => 'users';
+  String get $tableName => _alias ?? 'users';
+  @override
+  final String actualTableName = 'users';
   @override
   bool validateIntegrity(User instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -446,8 +460,9 @@ class $UsersTable extends Users implements TableInfo<Users, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  User map(Map<String, dynamic> data) {
-    return User.fromData(data, _db);
+  User map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return User.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -479,8 +494,8 @@ class SharedTodo {
   final int user;
   SharedTodo({this.todo, this.user});
   factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     return SharedTodo(
       todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo']),
@@ -522,7 +537,7 @@ class SharedTodo {
 }
 
 class $SharedTodosTable extends SharedTodos
-    implements TableInfo<SharedTodos, SharedTodo> {
+    with TableInfo<$SharedTodosTable, SharedTodo> {
   final GeneratedDatabase _db;
   final String _alias;
   $SharedTodosTable(this._db, [this._alias]);
@@ -534,6 +549,7 @@ class $SharedTodosTable extends SharedTodos
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'todo',
+      $tableName,
       false,
     );
   }
@@ -546,6 +562,7 @@ class $SharedTodosTable extends SharedTodos
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'user',
+      $tableName,
       false,
     );
   }
@@ -553,9 +570,11 @@ class $SharedTodosTable extends SharedTodos
   @override
   List<GeneratedColumn> get $columns => [todo, user];
   @override
-  SharedTodos get asDslTable => this;
+  $SharedTodosTable get asDslTable => this;
   @override
-  String get $tableName => 'shared_todos';
+  String get $tableName => _alias ?? 'shared_todos';
+  @override
+  final String actualTableName = 'shared_todos';
   @override
   bool validateIntegrity(SharedTodo instance, bool isInserting) =>
       todo.isAcceptableValue(instance.todo, isInserting) &&
@@ -563,8 +582,9 @@ class $SharedTodosTable extends SharedTodos
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
-  SharedTodo map(Map<String, dynamic> data) {
-    return SharedTodo.fromData(data, _db);
+  SharedTodo map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return SharedTodo.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override

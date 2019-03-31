@@ -5,7 +5,7 @@ import 'package:test_api/test_api.dart';
 import '../data/tables/todos.dart';
 
 void main() {
-  final expression = GeneratedIntColumn('col', false);
+  final expression = GeneratedIntColumn('col', null, false);
   final db = TodoDb(null);
 
   final comparisons = {
@@ -23,7 +23,7 @@ void main() {
   };
 
   group('can compare with other expressions', () {
-    final compare = GeneratedIntColumn('compare', false);
+    final compare = GeneratedIntColumn('compare', null, false);
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {

@@ -70,8 +70,8 @@ class DataClassWriter {
     buffer
       ..write('factory $dataClassName.fromData')
       ..write('(Map<String, dynamic> data, GeneratedDatabase db, ')
-      ..write('{String alias}) {\n')
-      ..write("final effectivePrefix = alias != null ? '\$alias.' : '';");
+      ..write('{String prefix}) {\n')
+      ..write("final effectivePrefix = prefix ?? '';");
 
     final dartTypeToResolver = <String, String>{};
 

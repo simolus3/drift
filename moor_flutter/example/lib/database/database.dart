@@ -23,10 +23,17 @@ class Categories extends Table {
 }
 
 class CategoryWithCount {
+  CategoryWithCount(this.category, this.count);
+
   final Category category;
   final int count; // amount of entries in this category
+}
 
-  CategoryWithCount(this.category, this.count);
+class EntryWithCategory {
+  EntryWithCategory(this.entry, this.category);
+
+  final TodoEntry entry;
+  final Category category;
 }
 
 @UseMoor(tables: [Todos, Categories], daos: [TodosDao])
@@ -60,6 +67,16 @@ class Database extends _$Database {
               Category.fromData(row.data, this), row.readInt('amount')))
           .toList();
     });
+  }
+
+  Future<List<EntryWithCategory>> entriesWithCategories() async {
+    final results = await select(todos).join([
+      leftOuterJoin(categories, categories.id.equalsExp(todos.category))
+    ]).get();
+
+    return results.map((row) {
+      return EntryWithCategory(row.readTable(todos), row.readTable(categories));
+    }).toList();
   }
 
   Stream<List<TodoEntry>> allEntries() {

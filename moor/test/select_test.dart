@@ -44,7 +44,7 @@ void main() {
 
       verify(executor.runSelect(
           'SELECT * FROM users ORDER BY '
-          '(is_awesome = 1) DESC, id ASC;',
+          'is_awesome DESC, id ASC;',
           argThat(isEmpty)));
     });
 
@@ -63,7 +63,15 @@ void main() {
       (db.select(db.users)..where((u) => u.isAwesome)).get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users WHERE (is_awesome = 1);', argThat(isEmpty)));
+          'SELECT * FROM users WHERE is_awesome;', argThat(isEmpty)));
+    });
+
+    test('with aliased tables', () async {
+      final users = db.alias(db.users, 'u');
+      await (db.select(users)..where((u) => u.id.isSmallerThan(Constant(5))))
+          .get();
+
+      verify(executor.runSelect('SELECT * FROM users u WHERE id < 5;', []));
     });
   });
 

@@ -6,13 +6,14 @@ part of 'example.dart';
 // MoorGenerator
 // **************************************************************************
 
+// ignore_for_file: unnecessary_brace_in_string_interps
 class Category {
   final int id;
   final String description;
   Category({this.id, this.description});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
@@ -56,7 +57,7 @@ class Category {
 }
 
 class $CategoriesTable extends Categories
-    implements TableInfo<Categories, Category> {
+    with TableInfo<$CategoriesTable, Category> {
   final GeneratedDatabase _db;
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
@@ -66,7 +67,7 @@ class $CategoriesTable extends Categories
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _description;
@@ -78,6 +79,7 @@ class $CategoriesTable extends Categories
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'description',
+      $tableName,
       true,
     );
   }
@@ -85,9 +87,11 @@ class $CategoriesTable extends Categories
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
-  Categories get asDslTable => this;
+  $CategoriesTable get asDslTable => this;
   @override
-  String get $tableName => 'categories';
+  String get $tableName => _alias ?? 'categories';
+  @override
+  final String actualTableName = 'categories';
   @override
   bool validateIntegrity(Category instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -95,8 +99,9 @@ class $CategoriesTable extends Categories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Category map(Map<String, dynamic> data) {
-    return Category.fromData(data, _db);
+  Category map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Category.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -124,8 +129,8 @@ class Recipe {
   final int category;
   Recipe({this.id, this.title, this.instructions, this.category});
   factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Recipe(
@@ -188,7 +193,7 @@ class Recipe {
           other.category == category);
 }
 
-class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
+class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   final GeneratedDatabase _db;
   final String _alias;
   $RecipesTable(this._db, [this._alias]);
@@ -198,7 +203,7 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _title;
@@ -207,7 +212,7 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   GeneratedTextColumn _constructTitle() {
     var cName = 'title';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedTextColumn('title', false, maxTextLength: 16);
+    return GeneratedTextColumn('title', $tableName, false, maxTextLength: 16);
   }
 
   GeneratedTextColumn _instructions;
@@ -219,6 +224,7 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'instructions',
+      $tableName,
       false,
     );
   }
@@ -231,6 +237,7 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'category',
+      $tableName,
       true,
     );
   }
@@ -238,9 +245,11 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   @override
   List<GeneratedColumn> get $columns => [id, title, instructions, category];
   @override
-  Recipes get asDslTable => this;
+  $RecipesTable get asDslTable => this;
   @override
-  String get $tableName => 'recipes';
+  String get $tableName => _alias ?? 'recipes';
+  @override
+  final String actualTableName = 'recipes';
   @override
   bool validateIntegrity(Recipe instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -250,8 +259,9 @@ class $RecipesTable extends Recipes implements TableInfo<Recipes, Recipe> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Recipe map(Map<String, dynamic> data) {
-    return Recipe.fromData(data, _db);
+  Recipe map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Recipe.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -284,8 +294,8 @@ class Ingredient {
   final int caloriesPer100g;
   Ingredient({this.id, this.name, this.caloriesPer100g});
   factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Ingredient(
@@ -338,7 +348,7 @@ class Ingredient {
 }
 
 class $IngredientsTable extends Ingredients
-    implements TableInfo<Ingredients, Ingredient> {
+    with TableInfo<$IngredientsTable, Ingredient> {
   final GeneratedDatabase _db;
   final String _alias;
   $IngredientsTable(this._db, [this._alias]);
@@ -348,7 +358,7 @@ class $IngredientsTable extends Ingredients
   GeneratedIntColumn _constructId() {
     var cName = 'id';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn('id', false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
   GeneratedTextColumn _name;
@@ -359,6 +369,7 @@ class $IngredientsTable extends Ingredients
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'name',
+      $tableName,
       false,
     );
   }
@@ -372,6 +383,7 @@ class $IngredientsTable extends Ingredients
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'calories',
+      $tableName,
       false,
     );
   }
@@ -379,9 +391,11 @@ class $IngredientsTable extends Ingredients
   @override
   List<GeneratedColumn> get $columns => [id, name, caloriesPer100g];
   @override
-  Ingredients get asDslTable => this;
+  $IngredientsTable get asDslTable => this;
   @override
-  String get $tableName => 'ingredients';
+  String get $tableName => _alias ?? 'ingredients';
+  @override
+  final String actualTableName = 'ingredients';
   @override
   bool validateIntegrity(Ingredient instance, bool isInserting) =>
       id.isAcceptableValue(instance.id, isInserting) &&
@@ -390,8 +404,9 @@ class $IngredientsTable extends Ingredients
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Ingredient map(Map<String, dynamic> data) {
-    return Ingredient.fromData(data, _db);
+  Ingredient map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Ingredient.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -422,8 +437,8 @@ class IngredientInRecipe {
   IngredientInRecipe({this.recipe, this.ingredient, this.amountInGrams});
   factory IngredientInRecipe.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
-      {String alias}) {
-    final effectivePrefix = alias != null ? '$alias.' : '';
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     return IngredientInRecipe(
       recipe: intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe']),
@@ -479,7 +494,7 @@ class IngredientInRecipe {
 }
 
 class $IngredientInRecipesTable extends IngredientInRecipes
-    implements TableInfo<IngredientInRecipes, IngredientInRecipe> {
+    with TableInfo<$IngredientInRecipesTable, IngredientInRecipe> {
   final GeneratedDatabase _db;
   final String _alias;
   $IngredientInRecipesTable(this._db, [this._alias]);
@@ -491,6 +506,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'recipe',
+      $tableName,
       false,
     );
   }
@@ -503,6 +519,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'ingredient',
+      $tableName,
       false,
     );
   }
@@ -516,6 +533,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'amount',
+      $tableName,
       false,
     );
   }
@@ -523,9 +541,11 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   List<GeneratedColumn> get $columns => [recipe, ingredient, amountInGrams];
   @override
-  IngredientInRecipes get asDslTable => this;
+  $IngredientInRecipesTable get asDslTable => this;
   @override
-  String get $tableName => 'recipe_ingredients';
+  String get $tableName => _alias ?? 'recipe_ingredients';
+  @override
+  final String actualTableName = 'recipe_ingredients';
   @override
   bool validateIntegrity(IngredientInRecipe instance, bool isInserting) =>
       recipe.isAcceptableValue(instance.recipe, isInserting) &&
@@ -534,8 +554,9 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override
-  IngredientInRecipe map(Map<String, dynamic> data) {
-    return IngredientInRecipe.fromData(data, _db);
+  IngredientInRecipe map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return IngredientInRecipe.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override

@@ -13,6 +13,9 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
   final String $name;
 
+  /// The name of the table that contains this column
+  final String tableName;
+
   /// Whether null values are allowed for this column.
   final bool $nullable;
 
@@ -21,7 +24,8 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// field is going to be null.
   final String $customConstraints;
 
-  GeneratedColumn(this.$name, this.$nullable, {this.$customConstraints});
+  GeneratedColumn(this.$name, this.tableName, this.$nullable,
+      {this.$customConstraints});
 
   /// Writes the definition of this column, as defined
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
@@ -47,6 +51,9 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
   @override
   void writeInto(GenerationContext context) {
+    if (context.hasMultipleTables) {
+      context.buffer..write(tableName)..write('.');
+    }
     context.buffer.write($name);
   }
 
@@ -67,9 +74,10 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   final int minTextLength;
   final int maxTextLength;
 
-  GeneratedTextColumn(String name, bool nullable,
+  GeneratedTextColumn(String name, String tableName, bool nullable,
       {this.minTextLength, this.maxTextLength, String $customConstraints})
-      : super(name, nullable, $customConstraints: $customConstraints);
+      : super(name, tableName, nullable,
+            $customConstraints: $customConstraints);
 
   @override
   Expression<bool, BoolType> like(String pattern) =>
@@ -93,8 +101,10 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
-  GeneratedBoolColumn(String name, bool nullable, {String $customConstraints})
-      : super(name, nullable, $customConstraints: $customConstraints);
+  GeneratedBoolColumn(String name, String tableName, bool nullable,
+      {String $customConstraints})
+      : super(name, tableName, nullable,
+            $customConstraints: $customConstraints);
 
   @override
   final String typeName = 'BOOLEAN';
@@ -102,13 +112,6 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
   @override
   void writeCustomConstraints(StringBuffer into) {
     into.write(' CHECK (${$name} in (0, 1))');
-  }
-
-  @override
-  void writeInto(GenerationContext context) {
-    context.buffer.write('(');
-    context.buffer.write($name);
-    context.buffer.write(' = 1)');
   }
 }
 
@@ -120,9 +123,10 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   @override
   final String typeName = 'INTEGER';
 
-  GeneratedIntColumn(String name, bool nullable,
+  GeneratedIntColumn(String name, String tableName, bool nullable,
       {this.hasAutoIncrement = false, String $customConstraints})
-      : super(name, nullable, $customConstraints: $customConstraints);
+      : super(name, tableName, nullable,
+            $customConstraints: $customConstraints);
 
   @override
   void writeColumnDefinition(StringBuffer into) {
@@ -140,9 +144,10 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
     implements DateTimeColumn {
-  GeneratedDateTimeColumn(String $name, bool $nullable,
+  GeneratedDateTimeColumn(String $name, String tableName, bool $nullable,
       {String $customConstraints})
-      : super($name, $nullable, $customConstraints: $customConstraints);
+      : super($name, tableName, $nullable,
+            $customConstraints: $customConstraints);
 
   @override
   String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
@@ -150,8 +155,10 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
 
 class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
     implements BlobColumn {
-  GeneratedBlobColumn(String $name, bool $nullable, {String $customConstraints})
-      : super($name, $nullable, $customConstraints: $customConstraints);
+  GeneratedBlobColumn(String $name, String tableName, bool $nullable,
+      {String $customConstraints})
+      : super($name, tableName, $nullable,
+            $customConstraints: $customConstraints);
 
   @override
   final String typeName = 'BLOB';

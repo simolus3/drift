@@ -81,7 +81,9 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     final specifiedDb =
         SpecifiedDatabase(element as ClassElement, tablesForThisDb, daoTypes);
 
-    final buffer = StringBuffer();
+    final buffer = StringBuffer()
+      ..write('// ignore_for_file: unnecessary_brace_in_string_interps\n');
+
     DatabaseWriter(specifiedDb).write(buffer);
 
     return buffer.toString();

@@ -6,7 +6,7 @@ import '../data/tables/todos.dart';
 
 void main() {
   test('in expressions are generated', () {
-    final innerExpression = moor.GeneratedTextColumn('name', true);
+    final innerExpression = moor.GeneratedTextColumn('name', null, true);
     final isInExpression = moor.isIn(innerExpression, ['Max', 'Tobias']);
 
     final context = GenerationContext(TodoDb(null));

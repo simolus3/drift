@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+import 'package:moor/src/runtime/components/join.dart';
 import 'package:moor/src/runtime/components/limit.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
@@ -11,8 +12,87 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
-class SelectStatement<T, D> extends Query<T, D> {
-  SelectStatement(QueryEngine database, TableInfo<T, D> table)
+class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD> {
+  JoinedSelectStatement(
+      QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins)
+      : super(database, table);
+
+  final List<Join> _joins;
+
+  @visibleForOverriding
+  Set<TableInfo> get watchedTables => _tables.toSet();
+
+  // fixed order to make testing easier
+  Iterable<TableInfo> get _tables =>
+      <TableInfo>[table].followedBy(_joins.map((j) => j.table));
+
+  @override
+  void writeStartPart(GenerationContext ctx) {
+    ctx.hasMultipleTables = true;
+    ctx.buffer.write('SELECT ');
+
+    var isFirst = true;
+    for (var table in _tables) {
+      for (var column in table.$columns) {
+        if (!isFirst) {
+          ctx.buffer.write(', ');
+        }
+
+        column.writeInto(ctx);
+
+        isFirst = false;
+      }
+    }
+
+    ctx.buffer.write(' FROM ${table.tableWithAlias}');
+
+    if (_joins.isNotEmpty) {
+      ctx.writeWhitespace();
+
+      for (var i = 0; i < _joins.length; i++) {
+        if (i != 0) ctx.writeWhitespace();
+
+        _joins[i].writeInto(ctx);
+      }
+    }
+  }
+
+  Future<List<TypedResult>> get() async {
+    final ctx = constructQuery();
+    final results = await ctx.database.executor.doWhenOpened((e) async {
+      return await e.runSelect(ctx.sql, ctx.boundVariables);
+    });
+
+    final tables = _tables;
+
+    return results.map((row) {
+      final map = <TableInfo, dynamic>{};
+
+      for (var table in tables) {
+        final prefix = '${table.$tableName}.';
+        // if all columns of this table are null, skip the table
+        if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
+          map[table] = table.map(row, tablePrefix: table.$tableName);
+        } else {
+          map[table] = null;
+        }
+      }
+
+      return TypedResult(map);
+    }).toList();
+  }
+
+  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
+  /// is provided as well, the first [offset] rows will be skipped and not
+  /// included in the result.
+  void limit(int limit, {int offset}) {
+    limitExpr = Limit(limit, offset);
+  }
+}
+
+/// A select statement that doesn't use joins
+class SimpleSelectStatement<T, D> extends Query<T, D> {
+  SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
   @visibleForOverriding
@@ -20,7 +100,7 @@ class SelectStatement<T, D> extends Query<T, D> {
 
   @override
   void writeStartPart(GenerationContext ctx) {
-    ctx.buffer.write('SELECT * FROM ${table.$tableName}');
+    ctx.buffer.write('SELECT * FROM ${table.tableWithAlias}');
   }
 
   /// Loads and returns all results from this select query.
@@ -31,9 +111,13 @@ class SelectStatement<T, D> extends Query<T, D> {
 
   Future<List<D>> _getWithQuery(GenerationContext ctx) async {
     final results = await ctx.database.executor.doWhenOpened((e) async {
-      return await ctx.database.executor.runSelect(ctx.sql, ctx.boundVariables);
+      return await e.runSelect(ctx.sql, ctx.boundVariables);
     });
     return results.map(table.map).toList();
+  }
+
+  JoinedSelectStatement join(List<Join> joins) {
+    return JoinedSelectStatement(database, table, joins);
   }
 
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
@@ -98,6 +182,22 @@ class CustomSelectStatement {
         await db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
 
     return result.map((row) => QueryRow(row, db)).toList();
+  }
+}
+
+/// A result row in a [JoinedSelectStatement] that can consist of multiple
+/// entities.
+class TypedResult {
+  TypedResult(this._data);
+
+  final Map<TableInfo, dynamic> _data;
+
+  D operator []<T, D>(TableInfo<T, D> table) {
+    return _data[table] as D;
+  }
+
+  D readTable<T, D>(TableInfo<T, D> table) {
+    return _data[table] as D;
   }
 }
 
