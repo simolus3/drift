@@ -88,7 +88,8 @@ class StreamQueryStore {
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
   Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    final affectedStreams = _activeStreams
+    final activeStreams = List<QueryStream>.from(_activeStreams);
+    final affectedStreams = activeStreams
         .where((stream) => stream._fetcher.readsFrom.any(tables.contains));
 
     for (var stream in affectedStreams) {
