@@ -9,7 +9,7 @@ import 'package:moor/src/types/sql_types.dart';
 class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   final T value;
 
-  Variable(this.value);
+  const Variable(this.value);
 
   /// Creates a variable that holds the specified boolean.
   static Variable<bool, BoolType> withBool(bool value) {
@@ -60,9 +60,12 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
 /// yet as it can be vulnerable to SQL-injection attacks. Please use [Variable]
 /// instead.
 class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
+  const Constant(this.value);
+
   final T value;
 
-  Constant(this.value);
+  @override
+  final bool isLiteral = true;
 
   @override
   void writeInto(GenerationContext context) {

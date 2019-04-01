@@ -32,7 +32,11 @@ abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 /// be called at runtime. Instead, moor_generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
-class ColumnBuilder<Builder, ResultColumn> {
+class ColumnBuilder<
+    Builder,
+    ResultColumn extends Column<ResultDartType, ResultSqlType>,
+    ResultSqlType extends SqlType<ResultDartType>,
+    ResultDartType> {
   /// By default, the field name will be used as the column name, e.g.
   /// `IntColumn get id = integer()` will have "id" as its associated name.
   /// Columns made up of multiple words are expected to be in camelCase and will
@@ -53,7 +57,7 @@ class ColumnBuilder<Builder, ResultColumn> {
   /// `name TYPE NULLABILITY NATIVE_CONSTRAINTS`. Native constraints are used to
   /// enforce that booleans are either 0 or 1 (e.g.
   /// `field BOOLEAN NOT NULL CHECK (field in (0, 1)`). Auto-Increment
-  /// columns also make use of the native constraints.
+  /// columns also make use of the native constraints, as do default values.
   /// If [customConstraint] has been called, the nullability information and
   /// native constraints will never be written. Instead, they will be replaced
   /// with the [constraint]. For example, if you call
@@ -73,23 +77,36 @@ class ColumnBuilder<Builder, ResultColumn> {
   /// - [GeneratedColumn.writeCustomConstraints]
   Builder customConstraint(String constraint) => null;
 
+  /// The column will use this expression when a row is inserted and no value
+  /// has been specified.
+  ///
+  /// See also:
+  /// - [Constant], which can be used to model literals that appear in CREATE
+  /// TABLE statements.
+  /// - [currentDate] and [currentDateAndTime], which are useful expressions to
+  /// store the current date/time as a default value.
+  Builder withDefault(Expression<ResultDartType, ResultSqlType> e) => null;
+
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your
   /// source code to figure out your table structure.
   ResultColumn call() => null;
 }
 
-class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn> {
+class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
   IntColumnBuilder autoIncrement() => this;
 }
 
-class BoolColumnBuilder extends ColumnBuilder<BoolColumnBuilder, BoolColumn> {}
+class BoolColumnBuilder
+    extends ColumnBuilder<BoolColumnBuilder, BoolColumn, BoolType, bool> {}
 
-class BlobColumnBuilder extends ColumnBuilder<BlobColumnBuilder, BlobColumn> {}
+class BlobColumnBuilder
+    extends ColumnBuilder<BlobColumnBuilder, BlobColumn, BlobType, Uint8List> {}
 
-class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {
+class TextColumnBuilder
+    extends ColumnBuilder<TextColumnBuilder, TextColumn, StringType, String> {
   /// Puts a constraint on the minimum and maximum length of text that can be
   /// stored in this column (will be validated whenever this column is updated
   /// or a value is inserted). If [min] is not null and one tries to write a
@@ -100,4 +117,4 @@ class TextColumnBuilder extends ColumnBuilder<TextColumnBuilder, TextColumn> {
 }
 
 class DateTimeColumnBuilder
-    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn> {}
+    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn, DateTimeType, DateTime> {}

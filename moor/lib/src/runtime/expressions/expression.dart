@@ -7,6 +7,10 @@ import 'package:moor/src/types/sql_types.dart';
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
 abstract class Expression<D, T extends SqlType<D>> implements Component {
+  const Expression();
+
+  bool get isLiteral => false;
+
   /// Whether this expression is equal to the given expression.
   Expression<bool, BoolType> equalsExp(Expression<D, T> compare) =>
       Comparison.equal(this, compare);
@@ -21,7 +25,7 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class InfixOperator<D, T extends SqlType<D>> with Expression<D, T> {
+abstract class InfixOperator<D, T extends SqlType<D>> extends Expression<D, T> {
   Expression get left;
   Expression get right;
   String get operator;

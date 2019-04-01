@@ -1,5 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+import 'package:moor/src/runtime/expressions/custom.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 
 /// Extracts the (UTC) year from the given expression that resolves
@@ -31,6 +32,15 @@ Expression<int, IntType> minute(Expression<DateTime, DateTimeType> date) =>
 /// to a datetime.
 Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%S', date);
+
+/// A sql expression that evaluates to the current date represented as a unix
+/// timestamp. The hour, minute and second fields will be set to 0.
+const Expression<DateTime, DateTimeType> currentDate =
+    CustomExpression("strftime('%s', CURRENT_DATE)");
+/// A sql expression that evaluates to the current date and time, similar to
+/// [DateTime.now]. Timestamps are stored with a second accuracy.
+const Expression<DateTime, DateTimeType> currentDateAndTime =
+    CustomExpression("strftime('%s', CURRENT_TIMESTAMP)");
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.

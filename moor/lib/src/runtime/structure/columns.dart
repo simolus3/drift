@@ -13,7 +13,6 @@ import 'package:moor/sqlite_keywords.dart';
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
   final String $name;
-
   String get escapedName => escapeIfNeeded($name);
 
   /// The name of the table that contains this column
@@ -27,8 +26,12 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// field is going to be null.
   final String $customConstraints;
 
+  /// The default expression to be used during inserts when no value has been
+  /// specified. Can be null if no default value is set.
+  final Expression<T, S> defaultValue;
+
   GeneratedColumn(this.$name, this.tableName, this.$nullable,
-      {this.$customConstraints});
+      {this.$customConstraints, this.defaultValue});
 
   /// Writes the definition of this column, as defined
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
@@ -68,8 +71,10 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// method should check whether the value is valid for an update. Null values
   /// should always be accepted for updates, as the describe a value that should
   /// not be replaced.
-  bool isAcceptableValue(T value, bool duringInsert) =>
-      ($nullable || !duringInsert) || value != null;
+  bool isAcceptableValue(T value, bool duringInsert) {
+    final nullOk = !duringInsert || $nullable || defaultValue != null;
+    return nullOk || value != null;
+  }
 }
 
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
@@ -77,10 +82,16 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   final int minTextLength;
   final int maxTextLength;
 
-  GeneratedTextColumn(String name, String tableName, bool nullable,
-      {this.minTextLength, this.maxTextLength, String $customConstraints})
-      : super(name, tableName, nullable,
-            $customConstraints: $customConstraints);
+  GeneratedTextColumn(
+    String name,
+    String tableName,
+    bool nullable, {
+    this.minTextLength,
+    this.maxTextLength,
+    String $customConstraints,
+    Expression<String, StringType> defaultValue,
+  }) : super(name, tableName, nullable,
+            $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
   Expression<bool, BoolType> like(String pattern) =>
@@ -91,8 +102,8 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
   @override
   bool isAcceptableValue(String value, bool duringInsert) {
-    final nullOk = !duringInsert || $nullable;
-    if (value == null) return nullOk;
+    // handle nullability check in common column
+    if (value == null) return super.isAcceptableValue(null, duringInsert);
 
     final length = value.length;
     if (minTextLength != null && minTextLength > length) return false;
@@ -105,9 +116,9 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
   GeneratedBoolColumn(String name, String tableName, bool nullable,
-      {String $customConstraints})
+      {String $customConstraints, Expression<bool, BoolType> defaultValue})
       : super(name, tableName, nullable,
-            $customConstraints: $customConstraints);
+            $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
   final String typeName = 'BOOLEAN';
@@ -126,10 +137,15 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   @override
   final String typeName = 'INTEGER';
 
-  GeneratedIntColumn(String name, String tableName, bool nullable,
-      {this.hasAutoIncrement = false, String $customConstraints})
-      : super(name, tableName, nullable,
-            $customConstraints: $customConstraints);
+  GeneratedIntColumn(
+    String name,
+    String tableName,
+    bool nullable, {
+    this.hasAutoIncrement = false,
+    String $customConstraints,
+    Expression<int, IntType> defaultValue,
+  }) : super(name, tableName, nullable,
+            $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
   void writeColumnDefinition(StringBuffer into) {
@@ -147,10 +163,14 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
     implements DateTimeColumn {
-  GeneratedDateTimeColumn(String $name, String tableName, bool $nullable,
-      {String $customConstraints})
-      : super($name, tableName, $nullable,
-            $customConstraints: $customConstraints);
+  GeneratedDateTimeColumn(
+    String $name,
+    String tableName,
+    bool $nullable, {
+    String $customConstraints,
+    Expression<DateTime, DateTimeType> defaultValue,
+  }) : super($name, tableName, $nullable,
+            $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
   String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
