@@ -25,6 +25,8 @@ void main() async {
        IntColumn get id => integer().autoIncrement()();
        TextColumn get name => text().named("user_name").withLength(min: 6, max: 32)();
        TextColumn get onlyMax => text().withLength(max: 100)();
+       
+       DateTimeColumn get defaults => dateTime().withDefault(currentDate)();
      }
      
      class CustomPrimaryKey extends Table {
@@ -121,6 +123,13 @@ void main() async {
 
       expect(partB.customConstraints, 'custom');
       expect(partA.customConstraints, isNull);
+    });
+
+    test('parsed default values', () {
+      final table = TableParser(generator).parse(testLib.getType('Users'));
+      final defaultsColumn = table.columns.singleWhere((c) => c.name.name == 'defaults');
+
+      expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });
   });
 

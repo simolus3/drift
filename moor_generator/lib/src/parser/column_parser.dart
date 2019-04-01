@@ -14,15 +14,16 @@ const String startBlob = 'blob';
 final Set<String> starters =
     {startInt, startString, startBool, startDateTime, startBlob};
 
-const String functionNamed = 'named';
-const String functionPrimaryKey = 'primaryKey';
-const String functionReferences = 'references';
-const String functionAutoIncrement = 'autoIncrement';
-const String functionWithLength = 'withLength';
-const String functionNullable = 'nullable';
-const String functionCustomConstraint = 'customConstraint';
+const String _methodNamed = 'named';
+const String _methodPrimaryKey = 'primaryKey';
+const String _methodReferences = 'references';
+const String _methodAutoIncrement = 'autoIncrement';
+const String _methodWithLength = 'withLength';
+const String _methodNullable = 'nullable';
+const String _methodCustomConstraint = 'customConstraint';
+const String _methodDefault = 'withDefault';
 
-const String errorMessage = 'This getter does not create a valid column that '
+const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
     'columns are formed. If you have any questions, feel free to raise an issue.';
 
@@ -44,7 +45,7 @@ class ColumnParser extends ParserBase {
     if (!(expr is FunctionExpressionInvocation)) {
       generator.errors.add(MoorError(
         affectedElement: getter.declaredElement,
-        message: errorMessage,
+        message: _errorMessage,
         critical: true,
       ));
 
@@ -57,9 +58,10 @@ class ColumnParser extends ParserBase {
     String foundStartMethod;
     String foundExplicitName;
     String foundCustomConstraint;
+    Expression foundDefaultExpression;
     var wasDeclaredAsPrimaryKey = false;
     var nullable = false;
-    // todo parse reference
+
     final foundFeatures = <ColumnFeature>[];
 
     while (true) {
@@ -71,7 +73,7 @@ class ColumnParser extends ParserBase {
       }
 
       switch (methodName) {
-        case functionNamed:
+        case _methodNamed:
           if (foundExplicitName != null) {
             generator.errors.add(
               MoorError(
@@ -97,12 +99,12 @@ class ColumnParser extends ParserBase {
             );
           });
           break;
-        case functionPrimaryKey:
+        case _methodPrimaryKey:
           wasDeclaredAsPrimaryKey = true;
           break;
-        case functionReferences:
+        case _methodReferences:
           break;
-        case functionWithLength:
+        case _methodWithLength:
           final args = remainingExpr.argumentList;
           final minArg = findNamedArgument(args, 'min');
           final maxArg = findNamedArgument(args, 'max');
@@ -112,14 +114,14 @@ class ColumnParser extends ParserBase {
             max: readIntLiteral(maxArg, () {}),
           ));
           break;
-        case functionAutoIncrement:
+        case _methodAutoIncrement:
           wasDeclaredAsPrimaryKey = true;
           foundFeatures.add(AutoIncrement());
           break;
-        case functionNullable:
+        case _methodNullable:
           nullable = true;
           break;
-        case functionCustomConstraint:
+        case _methodCustomConstraint:
           foundCustomConstraint =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
             generator.errors.add(
@@ -133,6 +135,10 @@ class ColumnParser extends ParserBase {
             );
           });
           break;
+        case _methodDefault:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+          foundDefaultExpression = expression;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -148,13 +154,15 @@ class ColumnParser extends ParserBase {
     }
 
     return SpecifiedColumn(
-        type: _startMethodToColumnType(foundStartMethod),
-        dartGetterName: getter.name.name,
-        name: name,
-        declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
-        customConstraints: foundCustomConstraint,
-        nullable: nullable,
-        features: foundFeatures);
+      type: _startMethodToColumnType(foundStartMethod),
+      dartGetterName: getter.name.name,
+      name: name,
+      declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
+      customConstraints: foundCustomConstraint,
+      nullable: nullable,
+      features: foundFeatures,
+      defaultArgument: foundDefaultExpression,
+    );
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:built_value/built_value.dart';
 
 part 'specified_column.g.dart';
@@ -58,6 +59,11 @@ class SpecifiedColumn {
   /// default ones.
   final String customConstraints;
 
+  /// If a default expression has been provided as the argument of
+  /// ColumnBuilder.withDefault, contains the Dart code that references that
+  /// expression.
+  final Expression defaultArgument;
+
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName => {
@@ -108,6 +114,7 @@ class SpecifiedColumn {
     this.declaredAsPrimaryKey = false,
     this.nullable = false,
     this.features = const [],
+    this.defaultArgument,
   });
 }
 

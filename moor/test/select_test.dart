@@ -68,7 +68,8 @@ void main() {
 
     test('with aliased tables', () async {
       final users = db.alias(db.users, 'u');
-      await (db.select(users)..where((u) => u.id.isSmallerThan(Constant(5))))
+      await (db.select(users)
+            ..where((u) => u.id.isSmallerThan(const Constant(5))))
           .get();
 
       verify(executor.runSelect('SELECT * FROM users u WHERE id < 5;', []));
