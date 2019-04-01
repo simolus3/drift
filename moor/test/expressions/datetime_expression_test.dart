@@ -9,14 +9,14 @@ typedef Expression<int, IntType> _Extractor(
 /// Tests the top level [year], [month], ..., [second] methods
 void main() {
   final expectedResults = <_Extractor, String>{
-    year: 'CAST(strftime("%Y", column, "unixepoch") AS INTEGER)',
-    month: 'CAST(strftime("%m", column, "unixepoch") AS INTEGER)',
-    day: 'CAST(strftime("%d", column, "unixepoch") AS INTEGER)',
-    hour: 'CAST(strftime("%H", column, "unixepoch") AS INTEGER)',
-    minute: 'CAST(strftime("%M", column, "unixepoch") AS INTEGER)',
-    second: 'CAST(strftime("%S", column, "unixepoch") AS INTEGER)',
+    year: 'CAST(strftime("%Y", val, "unixepoch") AS INTEGER)',
+    month: 'CAST(strftime("%m", val, "unixepoch") AS INTEGER)',
+    day: 'CAST(strftime("%d", val, "unixepoch") AS INTEGER)',
+    hour: 'CAST(strftime("%H", val, "unixepoch") AS INTEGER)',
+    minute: 'CAST(strftime("%M", val, "unixepoch") AS INTEGER)',
+    second: 'CAST(strftime("%S", val, "unixepoch") AS INTEGER)',
   };
-  final column = GeneratedDateTimeColumn('column', null, false);
+  final column = GeneratedDateTimeColumn('val', null, false);
 
   expectedResults.forEach((key, value) {
     test('should extract field', () {

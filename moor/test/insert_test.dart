@@ -55,4 +55,11 @@ void main() {
       throwsA(const TypeMatcher<InvalidDataException>()),
     );
   });
+
+  test('reports auto-increment id', () async {
+    when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(42));
+
+    expect(db.into(db.todosTable).insert(TodoEntry(content: 'Bottom text')),
+        completion(42));
+  });
 }

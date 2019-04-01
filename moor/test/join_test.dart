@@ -13,19 +13,6 @@ void main() {
   });
 
   test('generates join statements', () async {
-    await db.select(db.todosTable).join([
-      leftOuterJoin(
-          db.categories, db.categories.id.equalsExp(db.todosTable.category))
-    ]).get();
-
-    verify(executor.runSelect(
-        'SELECT todos.id, todos.title, todos.content, todos.target_date, '
-        'todos.category, categories.id, categories.`desc` FROM todos '
-        'LEFT OUTER JOIN categories ON categories.id = todos.category;',
-        argThat(isEmpty)));
-  });
-
-  test('generates join statements with table aliases', () async {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
 
@@ -34,9 +21,10 @@ void main() {
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT t.id, t.title, t.content, t.target_date, '
-        't.category, c.id, c.`desc` FROM todos t '
-        'LEFT OUTER JOIN categories c ON c.id = t.category;',
+        'SELECT t.id AS "t.id", t.title AS "t.title", t.content AS "t.content", '
+        't.target_date AS "t.target_date", '
+        't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc" '
+        'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
         argThat(isEmpty)));
   });
 
@@ -54,7 +42,7 @@ void main() {
           't.target_date': date.millisecondsSinceEpoch ~/ 1000,
           't.category': 3,
           'c.id': 3,
-          'c.`desc`': 'description',
+          'c.desc': 'description',
         }
       ]);
     });

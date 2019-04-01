@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:moor_example/database/todos_dao.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
 part 'database.g.dart';
@@ -25,6 +24,7 @@ class Categories extends Table {
 class CategoryWithCount {
   CategoryWithCount(this.category, this.count);
 
+  // can be null, in which case we count how many entries don't have a category
   final Category category;
   final int count; // amount of entries in this category
 }
@@ -36,7 +36,7 @@ class EntryWithCategory {
   final Category category;
 }
 
-@UseMoor(tables: [Todos, Categories], daos: [TodosDao])
+@UseMoor(tables: [Todos, Categories])
 class Database extends _$Database {
   Database()
       : super(FlutterQueryExecutor.inDatabaseFolder(
@@ -46,73 +46,91 @@ class Database extends _$Database {
   int get schemaVersion => 1;
 
   @override
-  MigrationStrategy get migration => MigrationStrategy(onCreate: (Migrator m) {
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) {
         return m.createAllTables();
-      }, onUpgrade: (Migrator m, int from, int to) async {
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
         if (from == 1) {
           await m.addColumn(todos, todos.targetDate);
         }
-      });
+      },
+    );
+  }
 
   Stream<List<CategoryWithCount>> categoriesWithCount() {
     // select all categories and load how many associated entries there are for
     // each category
     return customSelectStream(
-            'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
-            readsFrom: {todos, categories})
-        .map((rows) {
+      'SELECT c.*, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount'
+          ' FROM categories c '
+          'UNION ALL SELECT null, null, '
+          '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
+      readsFrom: {todos, categories},
+    ).map((rows) {
       // when we have the result set, map each row to the data class
-      return rows
-          .map((row) => CategoryWithCount(
-              Category.fromData(row.data, this), row.readInt('amount')))
-          .toList();
+      return rows.map((row) {
+        final hasId = row.data['id'] != null;
+
+        return CategoryWithCount(
+          hasId ? Category.fromData(row.data, this) : null,
+          row.readInt('amount'),
+        );
+      }).toList();
     });
   }
 
-  Future<List<EntryWithCategory>> entriesWithCategories() async {
-    final results = await select(todos).join([
-      leftOuterJoin(categories, categories.id.equalsExp(todos.category))
-    ]).get();
+  /// Watches all entries in the given [category]. If the category is null, all
+  /// entries will be shown instead.
+  Stream<List<EntryWithCategory>> watchEntriesInCategory(Category category) {
+    final query = select(todos).join(
+        [leftOuterJoin(categories, categories.id.equalsExp(todos.category))]);
 
-    return results.map((row) {
-      return EntryWithCategory(row.readTable(todos), row.readTable(categories));
-    }).toList();
+    if (category != null) {
+      query.where(categories.id.equals(category.id));
+    } else {
+      query.where(isNull(categories.id));
+    }
+
+    return query.watch().map((rows) {
+      // read both the entry and the associated category for each row
+      return rows.map((row) {
+        return EntryWithCategory(
+          row.readTable(todos),
+          row.readTable(categories),
+        );
+      }).toList();
+    });
   }
 
-  Stream<List<TodoEntry>> allEntries() {
-    return select(todos).watch();
-  }
-
-  Future addEntry(TodoEntry entry) {
+  Future createEntry(TodoEntry entry) {
     return into(todos).insert(entry);
+  }
+
+  /// Updates the row in the database represents this entry by writing the
+  /// updated data.
+  Future updateEntry(TodoEntry entry) {
+    return update(todos).replace(entry);
   }
 
   Future deleteEntry(TodoEntry entry) {
     return delete(todos).delete(entry);
   }
 
-  Future updateContent(int id, String content) {
-    return (update(todos)..where((t) => t.id.equals(id)))
-        .write(TodoEntry(content: content));
+  Future<int> createCategory(Category category) {
+    return into(categories).insert(category);
   }
 
-  Future updateDate(int id, DateTime dueDate) {
-    return (update(todos)..where((t) => t.id.equals(id)))
-        .write(TodoEntry(targetDate: dueDate));
-  }
-
-  Future testTransaction(TodoEntry entry) {
-    return transaction((t) {
-      final updatedContent = entry.copyWith(
-        content: entry.content.toUpperCase(),
-      );
-      t.update(todos).replace(updatedContent);
-
-      final updatedDate = updatedContent.copyWith(
-        targetDate: DateTime.now(),
+  Future deleteCategory(Category category) {
+    return transaction((t) async {
+      await t.customUpdate(
+        'UPDATE todos SET category = NULL WHERE category = ?',
+        updates: {todos},
+        variables: [Variable.withInt(category.id)],
       );
 
-      t.update(todos).replace(updatedDate);
+      await t.delete(categories).delete(category);
     });
   }
 }

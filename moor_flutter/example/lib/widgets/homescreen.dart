@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart' as f show Column;
 import 'package:moor_example/bloc.dart';
 import 'package:moor_example/database/database.dart';
 import 'package:moor_example/main.dart';
+import 'package:moor_example/widgets/categories_drawer.dart';
 import 'package:moor_example/widgets/todo_card.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 
@@ -28,34 +29,35 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text('Todo list'),
       ),
+      drawer: CategoriesDrawer(),
       // A moorAnimatedList automatically animates incoming and leaving items, we only
       // have to tell it what data to display and how to turn data into widgets.
-      body: MoorAnimatedList<TodoEntry>(
-        stream: bloc
-            .allEntries, // we want to show an updating stream of all entries
+      body: MoorAnimatedList<EntryWithCategory>(
+        // we want to show an updating stream of all relevant entries
+        stream: bloc.homeScreenEntries,
         // consider items equal if their id matches. Otherwise, we'd get an
         // animation of an old item leaving and another one coming in every time
         // the content of an item changed!
-        equals: (a, b) => a.id == b.id,
+        equals: (a, b) => a.entry.id == b.entry.id,
         itemBuilder: (ctx, item, animation) {
           // When a new item arrives, it will expand vertically
           return SizeTransition(
-            key: ObjectKey(item.id),
+            key: ObjectKey(item.entry.id),
             sizeFactor: animation,
             axis: Axis.vertical,
-            child: TodoCard(item),
+            child: TodoCard(item.entry),
           );
         },
         removedItemBuilder: (ctx, item, animation) {
           // and it will leave the same way after being deleted.
           return SizeTransition(
-            key: ObjectKey(item.id),
+            key: ObjectKey(item.entry.id),
             sizeFactor: animation,
             axis: Axis.vertical,
             child: AnimatedBuilder(
                 animation:
                     CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                child: TodoCard(item),
+                child: TodoCard(item.entry),
                 builder: (context, child) {
                   return Opacity(
                     opacity: animation.value,
@@ -102,7 +104,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (controller.text.isNotEmpty) {
       // We write the entry here. Notice how we don't have to call setState()
       // or anything - moor will take care of updating the list automatically.
-      bloc.addEntry(TodoEntry(content: controller.text));
+      bloc.createEntry(controller.text);
       controller.clear();
     }
   }

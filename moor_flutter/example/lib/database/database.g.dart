@@ -191,7 +191,7 @@ class Category {
     return Category(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       description:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}`desc`']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
     );
   }
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -247,10 +247,10 @@ class $CategoriesTable extends Categories
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    var cName = '`desc`';
+    var cName = 'desc';
     if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
-      '`desc`',
+      'desc',
       $tableName,
       false,
     );
@@ -283,7 +283,7 @@ class $CategoriesTable extends Categories
       map['id'] = Variable<int, IntType>(d.id);
     }
     if (d.description != null || includeNulls) {
-      map['`desc`'] = Variable<String, StringType>(d.description);
+      map['desc'] = Variable<String, StringType>(d.description);
     }
     return map;
   }

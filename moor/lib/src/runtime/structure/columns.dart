@@ -7,11 +7,14 @@ import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/runtime/expressions/text.dart';
 import 'package:moor/src/runtime/expressions/variables.dart';
 import 'package:moor/src/types/sql_types.dart';
+import 'package:moor/sqlite_keywords.dart';
 
 /// Base class for the implementation of [Column].
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
   final String $name;
+
+  String get escapedName => escapeIfNeeded($name);
 
   /// The name of the table that contains this column
   final String tableName;
@@ -31,7 +34,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(StringBuffer into) {
-    into.write('${$name} $typeName ');
+    into.write('$escapedName $typeName ');
 
     if ($customConstraints == null) {
       into.write($nullable ? 'NULL' : 'NOT NULL');
@@ -50,11 +53,11 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   String get typeName;
 
   @override
-  void writeInto(GenerationContext context) {
+  void writeInto(GenerationContext context, {bool ignoreEscape = false}) {
     if (context.hasMultipleTables) {
       context.buffer..write(tableName)..write('.');
     }
-    context.buffer.write($name);
+    context.buffer.write(ignoreEscape ? $name : escapedName);
   }
 
   /// Checks whether the given value fits into this column. The default

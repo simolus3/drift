@@ -22,7 +22,10 @@ class InsertStatement<DataClass> {
   /// thrown. An insert will also fail if another row with the same primary key
   /// or unique constraints already exists. If you want to override data in that
   /// case, use [insertOrReplace] instead.
-  Future<void> insert(DataClass entity) async {
+  ///
+  /// If the table contains an auto-increment column, the generated value will
+  /// be returned.
+  Future<int> insert(DataClass entity) async {
     if (!table.validateIntegrity(entity, true)) {
       throw InvalidDataException(
           'Invalid data: $entity cannot be written into ${table.$tableName}');
@@ -54,9 +57,10 @@ class InsertStatement<DataClass> {
 
     ctx.buffer.write(')');
 
-    await database.executor.doWhenOpened((e) async {
-      await database.executor.runInsert(ctx.sql, ctx.boundVariables);
+    return await database.executor.doWhenOpened((e) async {
+      final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
       database.markTablesUpdated({table});
+      return id;
     });
   }
 

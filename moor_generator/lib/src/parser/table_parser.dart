@@ -4,11 +4,11 @@ import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/sqlite_keywords.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/src/moor_generator.dart'; // ignore: implementation_imports
 import 'package:recase/recase.dart';
+import 'package:moor/sqlite_keywords.dart';
 
 class TableParser extends ParserBase {
   TableParser(MoorGenerator generator) : super(generator);

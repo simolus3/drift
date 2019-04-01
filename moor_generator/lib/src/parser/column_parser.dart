@@ -150,7 +150,7 @@ class ColumnParser extends ParserBase {
     return SpecifiedColumn(
         type: _startMethodToColumnType(foundStartMethod),
         dartGetterName: getter.name.name,
-        name: name.escapeIfSqlKeyword(),
+        name: name,
         declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
         customConstraints: foundCustomConstraint,
         nullable: nullable,

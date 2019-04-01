@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:moor_example/database/database.dart';
 import 'package:moor_example/main.dart';
-import 'package:moor_example/widgets/todo_edit_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:moor_example/widgets/todo_edit_dialog.dart';
 
 final DateFormat _format = DateFormat.yMMMd();
 
@@ -18,7 +18,7 @@ class TodoCard extends StatelessWidget {
     if (entry.targetDate == null) {
       dueDate = GestureDetector(
         onTap: () {
-          BlocProvider.provideBloc(context).db.testTransaction(entry);
+          // BlocProvider.provideBloc(context).db.testTransaction(entry);
         },
         child: const Text(
           'No due date set',
@@ -49,30 +49,13 @@ class TodoCard extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.calendar_today),
-              color: Colors.green,
-              onPressed: () async {
-                final dateTime = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2019),
-                    lastDate: DateTime(3038));
-
-                await BlocProvider.provideBloc(context)
-                    .db
-                    .updateDate(entry.id, dateTime);
-              },
-            ),
-            IconButton(
               icon: const Icon(Icons.edit),
               color: Colors.blue,
               onPressed: () {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (ctx) => TodoEditDialog(
-                        entry: entry,
-                      ),
+                  builder: (ctx) => TodoEditDialog(entry: entry),
                 );
               },
             ),
@@ -82,7 +65,7 @@ class TodoCard extends StatelessWidget {
               onPressed: () {
                 // We delete the entry here. Again, notice how we don't have to call setState() or
                 // inform the parent widget. The animated list will take care of this automatically.
-                BlocProvider.provideBloc(context).db.deleteEntry(entry);
+                BlocProvider.provideBloc(context).deleteEntry(entry);
               },
             )
           ],

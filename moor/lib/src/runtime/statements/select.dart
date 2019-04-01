@@ -4,8 +4,10 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/components/join.dart';
+import 'package:moor/src/runtime/components/where.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/runtime/statements/query.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
@@ -38,7 +40,17 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
           ctx.buffer.write(', ');
         }
 
+        // We run into problems when two tables have a column with the same name
+        // as we then wouldn't know which column is which. So, we create a
+        // column alias that matches what is expected by the mapping function
+        // in _getWithQuery by prefixing the table name.
+        // We might switch to parsing via the index of the column in a row in
+        // the future, but that's the solution for now.
+
         column.writeInto(ctx);
+        ctx.buffer.write(' AS "');
+        column.writeInto(ctx, ignoreEscape: true);
+        ctx.buffer.write('"');
 
         isFirst = false;
       }
@@ -57,9 +69,36 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
     }
   }
 
+  void where(Expression<bool, BoolType> predicate) {
+    if (whereExpr == null) {
+      whereExpr = Where(predicate);
+    } else {
+      whereExpr = Where(and(whereExpr.predicate, predicate));
+    }
+  }
+
+  void orderBy(List<OrderingTerm> terms) {
+    orderByExpr = OrderBy(terms);
+  }
+
+  Stream<List<TypedResult>> watch() {
+    final ctx = constructQuery();
+    final fetcher = QueryStreamFetcher<List<TypedResult>>(
+      readsFrom: watchedTables,
+      fetchData: () => _getWithQuery(ctx),
+      key: StreamKey(ctx.sql, ctx.boundVariables, TypedResult),
+    );
+
+    return database.createStream(fetcher);
+  }
+
   /// Executes this statement and returns the result.
   Future<List<TypedResult>> get() async {
     final ctx = constructQuery();
+    return _getWithQuery(ctx);
+  }
+
+  Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
     final results = await ctx.database.executor.doWhenOpened((e) async {
       return await e.runSelect(ctx.sql, ctx.boundVariables);
     });

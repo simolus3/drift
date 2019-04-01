@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   intl:
   cupertino_icons: ^0.1.2
-  rxdart: 0.20.0
+  rxdart: 0.21.0
   moor_flutter: ^1.1.0
 
 dev_dependencies:

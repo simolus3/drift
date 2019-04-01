@@ -1,5 +1,8 @@
+/// Provides utilities around sql keywords, like optional escaping etc.
+library moor.sqlite_keywords;
+
 // https://www.sqlite.org/lang_keywords.html
-const sqliteKeywords = [
+const sqliteKeywords = {
   'ABORT',
   'ACTION',
   'ADD',
@@ -136,7 +139,7 @@ const sqliteKeywords = [
   'WINDOW',
   'WITH',
   'WITHOUT'
-];
+};
 
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 

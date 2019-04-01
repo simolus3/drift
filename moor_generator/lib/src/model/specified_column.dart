@@ -1,5 +1,4 @@
 import 'package:built_value/built_value.dart';
-import 'package:moor_generator/src/sqlite_keywords.dart' show isSqliteKeyword;
 
 part 'specified_column.g.dart';
 
@@ -17,14 +16,6 @@ abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
   String get name;
 
   ColumnName._();
-
-  ColumnName escapeIfSqlKeyword() {
-    if (isSqliteKeyword(name)) {
-      return rebuild((b) => b.name = '`$name`'); // wrap name in backticks
-    } else {
-      return this;
-    }
-  }
 
   factory ColumnName([updates(ColumnNameBuilder b)]) = _$ColumnName;
 
