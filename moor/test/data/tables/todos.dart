@@ -21,6 +21,8 @@ class Users extends Table {
   BoolColumn get isAwesome => boolean()();
 
   BlobColumn get profilePicture => blob()();
+  DateTimeColumn get creationTime =>
+      dateTime().withDefault(currentDateAndTime)();
 }
 
 @DataClassName('Category')

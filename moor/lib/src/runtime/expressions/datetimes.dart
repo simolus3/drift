@@ -37,6 +37,7 @@ Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
 /// timestamp. The hour, minute and second fields will be set to 0.
 const Expression<DateTime, DateTimeType> currentDate =
     CustomExpression("strftime('%s', CURRENT_DATE)");
+
 /// A sql expression that evaluates to the current date and time, similar to
 /// [DateTime.now]. Timestamps are stored with a second accuracy.
 const Expression<DateTime, DateTimeType> currentDateAndTime =

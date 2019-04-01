@@ -114,6 +114,10 @@ class TableWriter {
       additionalParams['\$customConstraints'] = "'${column.customConstraints}'";
     }
 
+    if (column.defaultArgument != null) {
+      additionalParams['defaultValue'] = column.defaultArgument.toSource();
+    }
+
     // Handle aliasing
     expressionBuffer
       ..write("var cName = '${column.name.name}';\n")

@@ -93,7 +93,8 @@ class ColumnBuilder<
   ResultColumn call() => null;
 }
 
-class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
+class IntColumnBuilder
+    extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
   IntColumnBuilder autoIncrement() => this;
@@ -116,5 +117,5 @@ class TextColumnBuilder
   TextColumnBuilder withLength({int min, int max}) => this;
 }
 
-class DateTimeColumnBuilder
-    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn, DateTimeType, DateTime> {}
+class DateTimeColumnBuilder extends ColumnBuilder<DateTimeColumnBuilder,
+    DateTimeColumn, DateTimeType, DateTime> {}

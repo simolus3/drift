@@ -326,7 +326,13 @@ class User {
   final String name;
   final bool isAwesome;
   final Uint8List profilePicture;
-  User({this.id, this.name, this.isAwesome, this.profilePicture});
+  final DateTime creationTime;
+  User(
+      {this.id,
+      this.name,
+      this.isAwesome,
+      this.profilePicture,
+      this.creationTime});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -334,6 +340,7 @@ class User {
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
     final uint8ListType = db.typeSystem.forDartType<Uint8List>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return User(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
@@ -341,6 +348,8 @@ class User {
           .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome']),
       profilePicture: uint8ListType
           .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
+      creationTime: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
     );
   }
   factory User.fromJson(Map<String, dynamic> json) {
@@ -349,6 +358,7 @@ class User {
       name: json['name'] as String,
       isAwesome: json['isAwesome'] as bool,
       profilePicture: json['profilePicture'] as Uint8List,
+      creationTime: json['creationTime'] as DateTime,
     );
   }
   Map<String, dynamic> toJson() {
@@ -357,16 +367,22 @@ class User {
       'name': name,
       'isAwesome': isAwesome,
       'profilePicture': profilePicture,
+      'creationTime': creationTime,
     };
   }
 
   User copyWith(
-          {int id, String name, bool isAwesome, Uint8List profilePicture}) =>
+          {int id,
+          String name,
+          bool isAwesome,
+          Uint8List profilePicture,
+          DateTime creationTime}) =>
       User(
         id: id ?? this.id,
         name: name ?? this.name,
         isAwesome: isAwesome ?? this.isAwesome,
         profilePicture: profilePicture ?? this.profilePicture,
+        creationTime: creationTime ?? this.creationTime,
       );
   @override
   String toString() {
@@ -374,15 +390,18 @@ class User {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('isAwesome: $isAwesome, ')
-          ..write('profilePicture: $profilePicture')
+          ..write('profilePicture: $profilePicture, ')
+          ..write('creationTime: $creationTime')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      (((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode) * 31 +
-      profilePicture.hashCode;
+      ((((id.hashCode) * 31 + name.hashCode) * 31 + isAwesome.hashCode) * 31 +
+              profilePicture.hashCode) *
+          31 +
+      creationTime.hashCode;
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -390,7 +409,8 @@ class User {
           other.id == id &&
           other.name == name &&
           other.isAwesome == isAwesome &&
-          other.profilePicture == profilePicture);
+          other.profilePicture == profilePicture &&
+          other.creationTime == creationTime);
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -443,8 +463,20 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     );
   }
 
+  GeneratedDateTimeColumn _creationTime;
   @override
-  List<GeneratedColumn> get $columns => [id, name, isAwesome, profilePicture];
+  GeneratedDateTimeColumn get creationTime =>
+      _creationTime ??= _constructCreationTime();
+  GeneratedDateTimeColumn _constructCreationTime() {
+    var cName = 'creation_time';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedDateTimeColumn('creation_time', $tableName, false,
+        defaultValue: currentDateAndTime);
+  }
+
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, isAwesome, profilePicture, creationTime];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -456,7 +488,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       id.isAcceptableValue(instance.id, isInserting) &&
       name.isAcceptableValue(instance.name, isInserting) &&
       isAwesome.isAcceptableValue(instance.isAwesome, isInserting) &&
-      profilePicture.isAcceptableValue(instance.profilePicture, isInserting);
+      profilePicture.isAcceptableValue(instance.profilePicture, isInserting) &&
+      creationTime.isAcceptableValue(instance.creationTime, isInserting);
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -479,6 +512,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     }
     if (d.profilePicture != null || includeNulls) {
       map['profile_picture'] = Variable<Uint8List, BlobType>(d.profilePicture);
+    }
+    if (d.creationTime != null || includeNulls) {
+      map['creation_time'] = Variable<DateTime, DateTimeType>(d.creationTime);
     }
     return map;
   }

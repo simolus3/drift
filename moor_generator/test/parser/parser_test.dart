@@ -127,7 +127,8 @@ void main() async {
 
     test('parsed default values', () {
       final table = TableParser(generator).parse(testLib.getType('Users'));
-      final defaultsColumn = table.columns.singleWhere((c) => c.name.name == 'defaults');
+      final defaultsColumn =
+          table.columns.singleWhere((c) => c.name.name == 'defaults');
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
     });

@@ -41,6 +41,22 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
     if ($customConstraints == null) {
       into.write($nullable ? 'NULL' : 'NOT NULL');
+
+      if (defaultValue != null) {
+        into.write(' DEFAULT ');
+
+        final fakeContext = GenerationContext(null);
+        defaultValue.writeInto(fakeContext);
+
+        // we need to write brackets if the default value is not a literal.
+        // see https://www.sqlite.org/syntax/column-constraint.html
+        final writeBrackets = !defaultValue.isLiteral;
+
+        if (writeBrackets) into.write('(');
+        into.write(fakeContext.sql);
+        if (writeBrackets) into.write(')');
+      }
+
       // these custom constraints refer to builtin constraints from moor
       writeCustomConstraints(into);
     } else {
