@@ -70,9 +70,10 @@
           <hr>
           <span class="fs-2">
               Was this page helpful? Please
-              {% assign body= "From documentation site " %}
-              <a href="{{site.github_link}}/issues/new?body={{ body | url_encode }}{{page.path | url_encode}}">report an issue</a>
-              if you have questions or problems.
+              {% assign url = page.url | absolute_url %}
+              {% assign body = 'From documentation URL: ' | append: url %}
+              <a href="{{site.github_link}}/issues/new?body={{body | url_encode}}">report an issue</a>
+              if you have questions or run into problems.
           </span>
         </div>
       </div>

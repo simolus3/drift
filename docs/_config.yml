@@ -24,6 +24,8 @@ github_link: https://github.com/simolus3/moor
 
 search_enabled: true
 
+common_links:
+  getting_started: "/getting-started"
 
 # Build settings
 markdown: kramdown

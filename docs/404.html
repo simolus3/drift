@@ -10,3 +10,22 @@ exclude: true
 <h1>Page not found</h1>
 
 <p>The page you requested could not be found. Try using the navigation {% if site.search_enabled %}or search {% endif %}to find what you're looking for or go to this <a href="{{ site.url }}{{ site.baseurl }}">site's home page</a>.</p>
+
+<h2>Check out these features</h2>
+{% assign posts = site.pages | sort:"nav_order" %}
+<ul>
+    {% for post in posts %}
+        {% if post.layout == "feature" %}
+        <li><a href="{{post.url | absolute_url}}">{{post.title}}</a></li>
+        {% endif %}
+    {% endfor %}
+</ul>
+
+<h2>Or these in-depth guides</h2>
+<ul>
+        {% for post in posts  %}
+            {% if post.layout == "guide" %}
+            <li><a href="{{post.url | absolute_url}}">{{post.title}}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>

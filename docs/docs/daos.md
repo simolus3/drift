@@ -1,12 +1,12 @@
 ---
-layout: post
+layout: guide
 title: Modularity with DAOs
 nav_order: 5
 permalink: /daos/
 ---
 
 # Extracting functionality with DAOs
-When you have a lot of queries, putting them all into one class quickly becomes
+When you have a lot of queries, putting them all into one class might become
 tedious. You can avoid this by extracting some queries into classes that are 
 available from your main database class. Consider the following code:
 ```dart

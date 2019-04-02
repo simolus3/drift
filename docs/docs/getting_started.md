@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: guide
 title: Getting started
 nav_order: 1
 permalink: /getting-started/

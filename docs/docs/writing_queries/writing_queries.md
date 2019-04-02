@@ -1,9 +1,9 @@
 ---
-layout: post
+layout: guide
 title: Writing queries
 nav_order: 2
 has_children: true
-permalink: /writing-queries/
+permalink: /queries/
 ---
 
 __Note__: This assumes that you already have your database class ready. 
@@ -104,4 +104,4 @@ If a column is nullable or has a default value (this includes auto-increments), 
 can be omitted. All other fields must be set and non-null. The `insert` method will throw
 otherwise.
 
-[getting-started]: {{ "/getting-started" | absolute_url }}
+[getting-started]: {{ site.common_links.getting_started | absolute_url }}

@@ -1,6 +1,7 @@
 ---
 layout: home
 title: Home
+description: Moor is an easy to use, reactive persistence library for Flutter apps.
 nav_order: 0
 ---
 
@@ -15,7 +16,7 @@ and more!
 [![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
 [![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
 
-[Get started now]({{site.url}}/getting-started/){: .btn .btn-green .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Get started now]({{ site.common_links.getting_started | absolute_url }}){: .btn .btn-green .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [View on GitHub]({{site.github_link}}){: .btn .btn-outline .fs-5 .mb-4 .mb-md-0 .mr-2 }
 
 ---
@@ -34,7 +35,7 @@ Please note that a workaround for most on this list exists with custom statement
 
 ### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
-let me know by creating an issue!
+let me know by [creating an issue]({{site.github_link}}/issues/new)!
 - Simple `COUNT(*)` operations (group operations will be much more complicated)
 - Support Dart VM apps
 - References

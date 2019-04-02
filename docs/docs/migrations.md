@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: feature
 title: Migrations
 nav_order: 4
 permalink: /migrations/
