@@ -25,7 +25,11 @@ and more!
 {% include content/getting_started.md %}
 
 You can ignore the `schemaVersion` at the moment, the important part is that you can
-now run your queries with fluent Dart code:
+now run your queries with fluent Dart code
+
+## [Writing queries]({{"queries" | absolute_url }})
+
+
 
 ## TODO-List and current limitations
 ### Limitations (at the moment)
