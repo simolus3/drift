@@ -26,3 +26,4 @@ export 'package:moor/src/runtime/database.dart';
 export 'package:moor/src/types/sql_types.dart';
 export 'package:moor/src/runtime/migration.dart';
 export 'package:moor/src/runtime/exceptions.dart';
+export 'package:moor/src/utils/hash.dart';

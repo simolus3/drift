@@ -1,6 +1,9 @@
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:recase/recase.dart';
 
+const _hashCombine = '\$mrjc';
+const _hashFinish = '\$mrjf';
+
 class DataClassWriter {
   final SpecifiedTable table;
 
@@ -37,12 +40,7 @@ class DataClassWriter {
 
     buffer.write('@override\n int get hashCode => ');
 
-    if (table.columns.isEmpty) {
-      buffer.write('identityHashCode(this); \n');
-    } else {
-      final fields = table.columns.map((c) => c.dartGetterName).toList();
-      buffer..write(_calculateHashCode(fields))..write('; \n');
-    }
+    _writeHashCode(buffer);
 
     // override ==
     //    return identical(this, other) || (other is DataClass && other.id == id && ...)
@@ -184,18 +182,31 @@ class DataClassWriter {
     buffer..write("..write(')')).toString();")..write('\}\n');
   }
 
+  void _writeHashCode(StringBuffer buffer) {
+    if (table.columns.isEmpty) {
+      buffer.write('identityHashCode(this); \n');
+    } else {
+      final fields = table.columns.map((c) => c.dartGetterName).toList();
+      buffer
+        ..write('\$moorjf(')
+        ..write(_calculateHashCode(fields))
+        ..write(')')
+        ..write('; \n');
+    }
+  }
+
   /// Recursively creates the implementation for hashCode of the data class,
   /// assuming it has at least one field. When it has one field, we just return
   /// the hash code of that field. Otherwise, we multiply it with 31 and add
   /// the hash code of the next field, and so on.
   String _calculateHashCode(List<String> fields) {
     if (fields.length == 1) {
-      return '${fields.last}.hashCode';
+      return '$_hashCombine(0, ${fields.last}.hashCode)';
     } else {
       final last = fields.removeLast();
       final innerHash = _calculateHashCode(fields);
 
-      return '($innerHash) * 31 + $last.hashCode';
+      return '$_hashFinish($innerHash, $last.hashCode)';
     }
   }
 }

@@ -49,7 +49,8 @@ class Category {
   }
 
   @override
-  int get hashCode => (id.hashCode) * 31 + description.hashCode;
+  int get hashCode =>
+      $moorjf($mrjf($mrjc(0, id.hashCode), description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -179,10 +180,10 @@ class Recipe {
   }
 
   @override
-  int get hashCode =>
-      (((id.hashCode) * 31 + title.hashCode) * 31 + instructions.hashCode) *
-          31 +
-      category.hashCode;
+  int get hashCode => $moorjf($mrjf(
+      $mrjf(
+          $mrjf($mrjc(0, id.hashCode), title.hashCode), instructions.hashCode),
+      category.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -336,8 +337,8 @@ class Ingredient {
   }
 
   @override
-  int get hashCode =>
-      ((id.hashCode) * 31 + name.hashCode) * 31 + caloriesPer100g.hashCode;
+  int get hashCode => $moorjf($mrjf(
+      $mrjf($mrjc(0, id.hashCode), name.hashCode), caloriesPer100g.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -481,9 +482,9 @@ class IngredientInRecipe {
   }
 
   @override
-  int get hashCode =>
-      ((recipe.hashCode) * 31 + ingredient.hashCode) * 31 +
-      amountInGrams.hashCode;
+  int get hashCode => $moorjf($mrjf(
+      $mrjf($mrjc(0, recipe.hashCode), ingredient.hashCode),
+      amountInGrams.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
