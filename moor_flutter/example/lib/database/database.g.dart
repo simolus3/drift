@@ -66,10 +66,10 @@ class TodoEntry {
   }
 
   @override
-  int get hashCode =>
-      (((id.hashCode) * 31 + content.hashCode) * 31 + targetDate.hashCode) *
-          31 +
-      category.hashCode;
+  int get hashCode => $mrjf($mrjc(
+      $mrjc(
+          $mrjc($mrjc(0, id.hashCode), content.hashCode), targetDate.hashCode),
+      category.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -221,7 +221,7 @@ class Category {
   }
 
   @override
-  int get hashCode => (id.hashCode) * 31 + description.hashCode;
+  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -300,8 +300,6 @@ abstract class _$Database extends GeneratedDatabase {
   $TodosTable get todos => _todos ??= $TodosTable(this);
   $CategoriesTable _categories;
   $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
-  TodosDao _todosDao;
-  TodosDao get todosDao => _todosDao ??= TodosDao(this as Database);
   @override
   List<TableInfo> get allTables => [todos, categories];
 }

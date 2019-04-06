@@ -38,8 +38,6 @@ class DataClassWriter {
 
     _writeToString(buffer);
 
-    buffer.write('@override\n int get hashCode => ');
-
     _writeHashCode(buffer);
 
     // override ==
@@ -183,12 +181,14 @@ class DataClassWriter {
   }
 
   void _writeHashCode(StringBuffer buffer) {
+    buffer.write('@override\n int get hashCode => ');
+
     if (table.columns.isEmpty) {
       buffer.write('identityHashCode(this); \n');
     } else {
       final fields = table.columns.map((c) => c.dartGetterName).toList();
       buffer
-        ..write('\$moorjf(')
+        ..write('$_hashFinish(')
         ..write(_calculateHashCode(fields))
         ..write(')')
         ..write('; \n');
@@ -206,7 +206,7 @@ class DataClassWriter {
       final last = fields.removeLast();
       final innerHash = _calculateHashCode(fields);
 
-      return '$_hashFinish($innerHash, $last.hashCode)';
+      return '$_hashCombine($innerHash, $last.hashCode)';
     }
   }
 }
