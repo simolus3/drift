@@ -118,7 +118,7 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
         }
       }
 
-      return TypedResult(map);
+      return TypedResult(map, QueryRow(row, database));
     }).toList();
   }
 }
@@ -262,13 +262,16 @@ class CustomSelectStatement {
 /// entities.
 class TypedResult {
   /// Creates the result from the parsed table data.
-  TypedResult(this._data);
+  TypedResult(this._parsedData, this.rawData);
 
-  final Map<TableInfo, dynamic> _data;
+  final Map<TableInfo, dynamic> _parsedData;
+
+  /// The raw data contained in this row.
+  final QueryRow rawData;
 
   /// Reads all data that belongs to the given [table] from this row.
   D readTable<T, D>(TableInfo<T, D> table) {
-    return _data[table] as D;
+    return _parsedData[table] as D;
   }
 }
 

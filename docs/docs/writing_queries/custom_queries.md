@@ -2,6 +2,7 @@
 layout: feature
 title: Custom queries
 parent: Writing queries
+permalink: /queries/custom
 ---
 
 # Custom statements

@@ -78,9 +78,9 @@ class TodoEntry {
   }
 
   @override
-  int get hashCode => $moorjf($mrjf(
-      $mrjf(
-          $mrjf($mrjf($mrjc(0, id.hashCode), title.hashCode), content.hashCode),
+  int get hashCode => $mrjf($mrjc(
+      $mrjc(
+          $mrjc($mrjc($mrjc(0, id.hashCode), title.hashCode), content.hashCode),
           targetDate.hashCode),
       category.hashCode));
   @override
@@ -251,8 +251,7 @@ class Category {
   }
 
   @override
-  int get hashCode =>
-      $moorjf($mrjf($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -398,10 +397,10 @@ class User {
   }
 
   @override
-  int get hashCode => $moorjf($mrjf(
-      $mrjf(
-          $mrjf(
-              $mrjf($mrjc(0, id.hashCode), name.hashCode), isAwesome.hashCode),
+  int get hashCode => $mrjf($mrjc(
+      $mrjc(
+          $mrjc(
+              $mrjc($mrjc(0, id.hashCode), name.hashCode), isAwesome.hashCode),
           profilePicture.hashCode),
       creationTime.hashCode));
   @override
@@ -567,7 +566,7 @@ class SharedTodo {
   }
 
   @override
-  int get hashCode => $moorjf($mrjf($mrjc(0, todo.hashCode), user.hashCode));
+  int get hashCode => $mrjf($mrjc($mrjc(0, todo.hashCode), user.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||

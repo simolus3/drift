@@ -80,6 +80,11 @@ class ColumnBuilder<
   /// The column will use this expression when a row is inserted and no value
   /// has been specified.
   ///
+  /// Note: Unless most other methods used to declare tables, the parameter
+  /// [e] which denotes the default expression, doesn't have to be constant.
+  /// Particularly, you can use methods like [and], [or] and [not] to form
+  /// expressions here.
+  ///
   /// See also:
   /// - [Constant], which can be used to model literals that appear in CREATE
   /// TABLE statements.
