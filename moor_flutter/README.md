@@ -4,7 +4,7 @@ Moor is an easy to use, reactive persistence library for Flutter apps. Define yo
 enjoy a fluent query API, auto-updating streams and more!
 
 ## Getting started
-For a more detailed guide on using moor, checkout the [documentation](https://simolus3.github.io/moor/).
+For a more detailed guide on using moor, check out the [documentation](https://moor.simonbinder.eu/).
 ### Adding the dependency
 First, add moor to your project's `pubspec.yaml`.
 ```yaml
