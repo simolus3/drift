@@ -10,4 +10,4 @@
 Moor is an easy to use, reactive persistence library for Flutter apps. Define your database tables in pure Dart and 
 enjoy a fluent query API, auto-updating streams and more!
 
-For more information, check out the [docs](https://simolus3.github.io/moor/).
+For more information, check out the [docs](https://moor.simonbinder.eu/).
