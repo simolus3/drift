@@ -10,10 +10,7 @@ environment:
   sdk: '>=2.1.2-dev.0.0 <3.0.0'
 
 dependencies:
-  # for analyzer >=0.36, TableParser._readPrimaryKey needs to be adapted. It already supports SetOrMapLiteral, we just
-  # need to remove the cases for SetLiteral or MapLiteral (which only exist for backwards compatibility)
-  # also, built_value doesn't support it yet and everything depends on built_value
-  analyzer: '>=0.34.0 <0.36.0'
+  analyzer: '>=0.35.2 <0.37.0'
   recase: ^2.0.1
   built_value: '>=6.3.0 <6.5.0'
   source_gen: ^0.9.4
