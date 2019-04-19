@@ -33,8 +33,13 @@ void main() {
           'creation_time INTEGER NOT NULL '
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));"));
 
-      verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS shared_todos '
-          '(todo INTEGER NOT NULL, user INTEGER NOT NULL, PRIMARY KEY (todo, user));'));
+      verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS shared_todos ('
+          'todo INTEGER NOT NULL, '
+          'user INTEGER NOT NULL, '
+          'PRIMARY KEY (todo, user), '
+          'FOREIGN KEY (todo) REFERENCES todos(id), '
+          'FOREIGN KEY (user) REFERENCES users(id)'
+          ');'));
     });
 
     test('creates individual tables', () async {

@@ -85,11 +85,7 @@ class Migrator {
     final constraints = table.asDslTable.customConstraints ?? [];
 
     for (var i = 0; i < constraints.length; i++) {
-      if (i != 0) {
-        sql.write(', ');
-      }
-
-      sql.write(constraints[i]);
+      sql..write(', ')..write(constraints[i]);
     }
 
     sql.write(');');

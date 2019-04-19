@@ -38,6 +38,12 @@ class SharedTodos extends Table {
 
   @override
   Set<Column> get primaryKey => {todo, user};
+
+  @override
+  List<String> get customConstraints => [
+        'FOREIGN KEY (todo) REFERENCES todos(id)',
+        'FOREIGN KEY (user) REFERENCES users(id)'
+      ];
 }
 
 @UseMoor(tables: [TodosTable, Categories, Users, SharedTodos])
