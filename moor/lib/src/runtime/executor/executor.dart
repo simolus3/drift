@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:moor/src/runtime/database.dart';
+import 'package:moor/src/utils/hash.dart';
 
 /// A query executor is responsible for executing statements on a database and
 /// return their results in a raw form.
@@ -36,8 +38,44 @@ abstract class QueryExecutor {
   /// statement will be ignored.
   Future<void> runCustom(String statement);
 
+  /// Prepares the [statements] and then executes each one with all of the
+  /// [BatchedStatement.variables].
+  Future<void> runBatched(List<BatchedStatement> statements);
+
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
+}
+
+/// A statement that should be executed in a batch. Used internally by moor.
+class BatchedStatement {
+  static const _nestedListEquality = ListEquality(ListEquality());
+
+  /// The raw sql that needs to be executed
+  final String sql;
+
+  /// The variables to be used for the statement. Each entry holds a list of
+  /// variables that should be bound to the [sql] statement.
+  final List<List<dynamic>> variables;
+
+  BatchedStatement(this.sql, this.variables);
+
+  @override
+  int get hashCode {
+    return $mrjf($mrjc(sql.hashCode, const ListEquality().hash(variables)));
+  }
+
+  @override
+  bool operator ==(other) {
+    return identical(this, other) ||
+        (other is BatchedStatement &&
+            other.sql == sql &&
+            _nestedListEquality.equals(variables, other.variables));
+  }
+
+  @override
+  String toString() {
+    return 'BatchedStatement($sql, $variables)';
+  }
 }
 
 /// A [QueryExecutor] that runs multiple queries atomically.

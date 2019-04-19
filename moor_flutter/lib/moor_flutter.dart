@@ -57,6 +57,20 @@ abstract class _DatabaseOwner extends QueryExecutor {
     _log(statement, null);
     return db.execute(statement);
   }
+
+  @override
+  Future<void> runBatched(List<BatchedStatement> statements) async {
+    final batch = db.batch();
+
+    for (var statement in statements) {
+      for (var boundVariables in statement.variables) {
+        _log(statement.sql, boundVariables);
+        batch.execute(statement.sql, boundVariables);
+      }
+    }
+
+    await batch.commit(noResult: true);
+  }
 }
 
 /// A query executor that uses sqflite internally.
@@ -115,10 +129,7 @@ class FlutterQueryExecutor extends _DatabaseOwner {
 
   SqlExecutor _migrationExecutor(s.Database db) {
     return (sql) {
-      if (logStatements) {
-        _log(sql);
-      }
-
+      _log(sql);
       db.execute(sql);
     };
   }

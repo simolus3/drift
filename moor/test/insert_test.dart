@@ -35,6 +35,29 @@ void main() {
         [113, 'Done']));
   });
 
+  test('runs bulk inserts', () async {
+    await db.into(db.todosTable).insertAll([
+      TodoEntry(content: 'a'),
+      TodoEntry(title: 'title', content: 'b'),
+      TodoEntry(title: 'title', content: 'c'),
+    ]);
+
+    final insertSimple = 'INSERT INTO todos (content) VALUES (?)';
+    final insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
+
+    verify(executor.runBatched([
+      BatchedStatement(insertSimple, [
+        ['a']
+      ]),
+      BatchedStatement(insertTitle, [
+        ['title', 'b'],
+        ['title', 'c']
+      ]),
+    ]));
+
+    verify(streamQueries.handleTableUpdates({db.todosTable}));
+  });
+
   test('notifies stream queries on inserts', () async {
     await db.into(db.users).insert(User(
           name: 'User McUserface',
@@ -45,7 +68,7 @@ void main() {
     verify(streamQueries.handleTableUpdates({db.users}));
   });
 
-  test('enforces data integrety', () {
+  test('enforces data integrity', () {
     expect(
       db.into(db.todosTable).insert(
             TodoEntry(
