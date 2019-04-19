@@ -32,6 +32,17 @@ void main() {
     verify(executor.runSelect(any, any)).called(2);
   });
 
+  test('streams recognize aliased tables', () {
+    final first = db.alias(db.users, 'one');
+    final second = db.alias(db.users, 'two');
+
+    db.select(first).watch().listen((_) {});
+
+    db.markTablesUpdated({second});
+
+    verify(executor.runSelect(any, any)).called(2);
+  });
+
   test('equal statements yield identical streams', () {
     final firstStream = (db.select(db.users).watch())..listen((_) {});
     final secondStream = (db.select(db.users).watch())..listen((_) {});

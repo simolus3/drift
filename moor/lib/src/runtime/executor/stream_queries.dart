@@ -10,7 +10,7 @@ const _listEquality = ListEquality<dynamic>();
 /// statement is reading its data and how to execute the query.
 class QueryStreamFetcher<T> {
   /// The set of tables this query reads from. If any of these tables changes,
-  /// the stream must fetch its again.
+  /// the stream must fetch its data again.
   final Set<TableInfo> readsFrom;
 
   /// Key that can be used to check whether two fetchers will yield the same
@@ -89,8 +89,13 @@ class StreamQueryStore {
   /// from that table.
   Future<void> handleTableUpdates(Set<TableInfo> tables) async {
     final activeStreams = List<QueryStream>.from(_activeStreams);
-    final affectedStreams = activeStreams
-        .where((stream) => stream._fetcher.readsFrom.any(tables.contains));
+    final updatedNames = tables.map((t) => t.actualTableName).toSet();
+
+    final affectedStreams = activeStreams.where((stream) {
+      return stream._fetcher.readsFrom.any((table) {
+        return updatedNames.contains(table.actualTableName);
+      });
+    });
 
     for (var stream in affectedStreams) {
       await stream.fetchAndEmitData();
