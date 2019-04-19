@@ -21,7 +21,7 @@ abstract class _DatabaseOwner extends QueryExecutor {
 
   final bool logStatements;
 
-  void _log(String sql, List args) {
+  void _log(String sql, [List args]) {
     if (logStatements == true) {
       final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
       print('moor: $sql with $formattedArgs');
@@ -94,12 +94,12 @@ class FlutterQueryExecutor extends _DatabaseOwner {
         onCreate: (db, version) {
       _hadMigration = true;
       return databaseInfo.handleDatabaseCreation(
-        executor: (sql) => db.execute(sql),
+        executor: _migrationExecutor(db),
       );
     }, onUpgrade: (db, from, to) {
       _hadMigration = true;
       return databaseInfo.handleDatabaseVersionChange(
-          executor: (sql) => db.execute(sql), from: from, to: to);
+          executor: _migrationExecutor(db), from: from, to: to);
     }, onOpen: (db) async {
       db = db;
       // the openDatabase future will resolve later, so we can get an instance
@@ -111,6 +111,16 @@ class FlutterQueryExecutor extends _DatabaseOwner {
     });
 
     return true;
+  }
+
+  SqlExecutor _migrationExecutor(s.Database db) {
+    return (sql) {
+      if (logStatements) {
+        _log(sql);
+      }
+
+      db.execute(sql);
+    };
   }
 
   @override
