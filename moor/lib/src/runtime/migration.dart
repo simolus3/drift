@@ -53,19 +53,17 @@ class Migrator {
 
   /// Creates the given table if it doesn't exist
   Future<void> createTable(TableInfo table) async {
-    final sql = StringBuffer();
-
-    // ignore: cascade_invocations
-    sql.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
+    final sql = StringBuffer()
+      ..write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
       final column = table.$columns[i];
 
-      if (column is GeneratedIntColumn && column.hasAutoIncrement)
+      if (column is GeneratedIntColumn && column.hasAutoIncrement) {
         hasAutoIncrement = true;
+      }
 
-      // ignore: cascade_invocations
       column.writeColumnDefinition(sql);
 
       if (i < table.$columns.length - 1) sql.write(', ');
@@ -82,6 +80,16 @@ class Migrator {
         if (i != pkList.length - 1) sql.write(', ');
       }
       sql.write(')');
+    }
+
+    final constraints = table.asDslTable.customConstraints ?? [];
+
+    for (var i = 0; i < constraints.length; i++) {
+      if (i != 0) {
+        sql.write(', ');
+      }
+
+      sql.write(constraints[i]);
     }
 
     sql.write(');');

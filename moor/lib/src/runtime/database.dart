@@ -75,7 +75,7 @@ abstract class DatabaseConnectionUser {
   ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
   /// ]);
   /// ```
-  T alias<T, D>(TableInfo<T, D> table, String alias) {
+  T alias<T extends Table, D>(TableInfo<T, D> table, String alias) {
     return table.createAlias(alias).asDslTable;
   }
 }
@@ -87,7 +87,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
   @visibleForTesting
-  InsertStatement<T> into<T>(TableInfo<dynamic, T> table) =>
+  InsertStatement<T> into<T>(TableInfo<Table, T> table) =>
       InsertStatement<T>(this, table);
 
   /// Starts an [UpdateStatement] for the given table. You can use that
@@ -95,7 +95,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// clause on that table and then use [UpdateStatement.write].
   @protected
   @visibleForTesting
-  UpdateStatement<Tbl, ReturnType> update<Tbl, ReturnType>(
+  UpdateStatement<Tbl, ReturnType> update<Tbl extends Table, ReturnType>(
           TableInfo<Tbl, ReturnType> table) =>
       UpdateStatement(this, table);
 
@@ -104,17 +104,17 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// stream of data
   @protected
   @visibleForTesting
-  SimpleSelectStatement<Table, ReturnType> select<Table, ReturnType>(
-      TableInfo<Table, ReturnType> table) {
-    return SimpleSelectStatement<Table, ReturnType>(this, table);
+  SimpleSelectStatement<T, ReturnType> select<T extends Table, ReturnType>(
+      TableInfo<T, ReturnType> table) {
+    return SimpleSelectStatement<T, ReturnType>(this, table);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   @protected
   @visibleForTesting
-  DeleteStatement<Table, Entity> delete<Table, Entity>(
-      TableInfo<Table, Entity> table) {
-    return DeleteStatement<Table, Entity>(this, table);
+  DeleteStatement<T, Entity> delete<T extends Table, Entity>(
+      TableInfo<T, Entity> table) {
+    return DeleteStatement<T, Entity>(this, table);
   }
 
   /// Executes a custom delete or update statement and returns the amount of

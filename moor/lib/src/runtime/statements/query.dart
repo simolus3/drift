@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:moor/src/dsl/table.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/components/limit.dart';
 import 'package:moor/src/runtime/components/order_by.dart';
@@ -12,10 +13,10 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
-abstract class Query<Table, DataClass> {
+abstract class Query<T extends Table, DataClass> {
   @protected
   QueryEngine database;
-  TableInfo<Table, DataClass> table;
+  TableInfo<T, DataClass> table;
 
   Query(this.database, this.table);
 
@@ -67,8 +68,8 @@ abstract class Query<Table, DataClass> {
   }
 }
 
-mixin SingleTableQueryMixin<Table, DataClass> on Query<Table, DataClass> {
-  void where(Expression<bool, BoolType> filter(Table tbl)) {
+mixin SingleTableQueryMixin<T extends Table, DataClass> on Query<T, DataClass> {
+  void where(Expression<bool, BoolType> filter(T tbl)) {
     final predicate = filter(table.asDslTable);
 
     if (whereExpr == null) {
@@ -119,7 +120,7 @@ mixin SingleTableQueryMixin<Table, DataClass> on Query<Table, DataClass> {
   }
 }
 
-mixin LimitContainerMixin<T, D> on Query<T, D> {
+mixin LimitContainerMixin<T extends Table, D> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.

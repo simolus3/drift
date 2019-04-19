@@ -11,7 +11,9 @@ class Todos extends Table {
 
   DateTimeColumn get targetDate => dateTime().nullable()();
 
-  IntColumn get category => integer().nullable()();
+  IntColumn get category => integer()
+      .nullable()
+      .customConstraint('NULLABLE REFERENCES categories(id)')();
 }
 
 @DataClassName('Category')

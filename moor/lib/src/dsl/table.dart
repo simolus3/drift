@@ -25,8 +25,8 @@ abstract class Table {
   ///  @override
   ///  Set<Column> get primaryKey => {recipe, ingredient};
   ///
-  ///  IntColumn get recipe => integer().autoIncrement()();
-  ///  IntColumn get ingredient => integer().autoIncrement()();
+  ///  IntColumn get recipe => integer()();
+  ///  IntColumn get ingredient => integer()();
   ///
   ///  IntColumn get amountInGrams => integer().named('amount')();
   ///}
@@ -38,6 +38,14 @@ abstract class Table {
   /// Writing such table in sql will throw at runtime.
   @visibleForOverriding
   Set<Column> get primaryKey => null;
+
+  /// Custom table constraints that should be added to the table.
+  ///
+  /// See also:
+  ///  - https://www.sqlite.org/syntax/table-constraint.html, which defines what
+  ///    table constraints are supported.
+  @visibleForOverriding
+  List<String> get customConstraints => [];
 
   /// Use this as the body of a getter to declare a column that holds integers.
   /// Example (inside the body of a table class):

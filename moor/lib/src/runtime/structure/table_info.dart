@@ -4,7 +4,7 @@ import 'package:moor/src/runtime/expressions/variables.dart';
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [DataClass] is the type of the data class
 /// generated from the table.
-mixin TableInfo<TableDsl, DataClass> {
+mixin TableInfo<TableDsl extends Table, DataClass> {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;

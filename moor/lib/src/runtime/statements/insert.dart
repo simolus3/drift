@@ -9,7 +9,7 @@ class InsertStatement<DataClass> {
   @protected
   final QueryEngine database;
   @protected
-  final TableInfo<dynamic, DataClass> table;
+  final TableInfo<Table, DataClass> table;
 
   bool _orReplace = false;
 

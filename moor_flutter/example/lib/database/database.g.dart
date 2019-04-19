@@ -126,11 +126,8 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   GeneratedIntColumn _constructCategory() {
     var cName = 'category';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedIntColumn(
-      'category',
-      $tableName,
-      true,
-    );
+    return GeneratedIntColumn('category', $tableName, true,
+        $customConstraints: 'NULLABLE REFERENCES categories(id)');
   }
 
   @override
