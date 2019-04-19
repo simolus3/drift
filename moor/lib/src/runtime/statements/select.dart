@@ -69,6 +69,21 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
     }
   }
 
+  /// Applies the [predicate] as the where clause, which will be used to filter
+  /// results.
+  ///
+  /// The clause should only refer to columns defined in one of the tables
+  /// specified during [SimpleSelectStatement.join].
+  ///
+  /// With the example of a todos table which refers to categories, we can write
+  /// something like
+  /// ```dart
+  /// final query = select(todos)
+  /// .join([
+  ///   leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
+  /// ])
+  /// ..where(and(todos.name.like("%Important"), categories.name.equals("Work")));
+  /// ```
   void where(Expression<bool, BoolType> predicate) {
     if (whereExpr == null) {
       whereExpr = Where(predicate);
@@ -77,10 +92,13 @@ class JoinedSelectStatement<FirstT, FirstD> extends Query<FirstT, FirstD>
     }
   }
 
+  /// Orders the results of this staemen
   void orderBy(List<OrderingTerm> terms) {
     orderByExpr = OrderBy(terms);
   }
 
+  /// Creates an auto-updating stream of the result that emits new items
+  /// whenever any table of this statement changes.
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher<List<TypedResult>>(
@@ -258,8 +276,8 @@ class CustomSelectStatement {
   }
 }
 
-/// A result row in a [JoinedSelectStatement] that can consist of multiple
-/// entities.
+/// A result row in a [JoinedSelectStatement] that can parse the result of
+/// multiple entities.
 class TypedResult {
   /// Creates the result from the parsed table data.
   TypedResult(this._parsedData, this.rawData);
