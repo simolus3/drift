@@ -29,30 +29,17 @@ now run your queries with fluent Dart code
 
 ## [Writing queries]({{"queries" | absolute_url }})
 
-
-
-## TODO-List and current limitations
+## TODO-List
+There are some sql features like `group by` statements which aren't natively supported by moor yet.
+However, as moor supports [custom sql queries]({{"queries/custom" | absolute_url}}), there are easy
+workarounds for most entries on this list. Custom queries work well together with the regular api,
+as they integrate with stream queries and automatic result parsing.
 ### Limitations (at the moment)
-Please note that a workaround for most on this list exists with custom statements.
-
-- No `group by` or window functions
-
-### Planned for the future
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
 let me know by [creating an issue]({{site.github_link}}/issues/new)!
-- Simple `COUNT(*)` operations (group operations will be much more complicated)
-- Support Dart VM apps
-- References
-  - DSL API
-  - Support in generator
-  - Validations
-- Bulk inserts
+- No `group by`, count, or window functions
+- Support other platforms:
+  - VM apps
+  - Web apps via `AlaSQL` or a different engine?
+- References (can be expressed via custom constraints, see issue [#14](https://github.com/simolus3/moor/issues/14))
 - When inserts / updates fail due to invalid data, explain why that happened
-### Interesting stuff that would be nice to have
-Implementing this will very likely result in backwards-incompatible changes.
-
-- Find a way to hide implementation details from users while still making them
-  accessible for the generated code
-- `GROUP BY` grouping functions 
-- Support for different database engines
-  - Support webapps via `AlaSQL` or a different engine
