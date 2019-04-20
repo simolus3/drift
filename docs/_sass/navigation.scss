@@ -102,6 +102,10 @@
   }
 }
 
+.aux-nav li {
+  display: inline-block;
+}
+
 .navigation-list-toggle {
   position: absolute;
   right: $sp-4;

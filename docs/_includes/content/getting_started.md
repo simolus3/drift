@@ -12,7 +12,7 @@ dev_dependencies:
 ```
 We're going to use the `moor_flutter` library to specify tables and access the database. The
 `moor_generator` library will take care of generating the necessary code so the
-library knows how your table structure looks like.
+library knows what your table structure looks like.
 
 ### Declaring tables
 Using moor, you can model the structure of your tables with simple dart code:
@@ -52,11 +52,11 @@ class MyDatabase {
 
 __⚠️ Note:__ The column definitions, the table name and the primary key must be known at
 compile time. For column definitions and the primary key, the function must use the `=>`
-operator and can't contain anything more than what's included in this `readme` and the
+operator and can't contain anything more than what's included in the documentation and the
 examples. Otherwise, the generator won't be able to know what's going on.
 
 ### Generating the code
-Moor integrates with the dart `build` system, so you can generate all the code needed with 
+Moor integrates with Dart's `build` system, so you can generate all the code needed with 
 `flutter packages pub run build_runner build`. If you want to continously rebuild the generated code
 whever you change your code, run `flutter packages pub run build_runner watch` instead.
 After running either command once, the moor generator will have created a class for your
