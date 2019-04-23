@@ -18,9 +18,11 @@ class InsertStatement<DataClass> {
   ///
   /// All fields in the entity that don't have a default value or auto-increment
   /// must be set and non-null. Otherwise, an [InvalidDataException] will be
-  /// thrown. An insert will also fail if another row with the same primary key
-  /// or unique constraints already exists. If you want to override data in that
-  /// case, use [insertOrReplace] instead.
+  /// thrown.
+  ///
+  /// If [orReplace] is true and a row with the same primary key already exists,
+  /// the columns of that row will be updated and now new row will be written.
+  /// Otherwise, an exception will be thrown.
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned.
@@ -75,6 +77,7 @@ class InsertStatement<DataClass> {
   /// includes setting columns with null values back to null.
   ///
   /// However, if no such row exists, a new row will be written instead.
+  @Deprecated('Use insert with orReplace: true instead')
   Future<void> insertOrReplace(DataClass entity) async {
     return await insert(entity, orReplace: true);
   }

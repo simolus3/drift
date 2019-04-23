@@ -86,8 +86,8 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   /// See also:
   ///  - [write], which doesn't apply a [where] statement itself and ignores
   ///    null values in the entity.
-  ///  - [InsertStatement.insertOrReplace], which behaves similar to this method
-  ///    but creates a new row if none exists.
+  ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
+  ///  similar to this method but creates a new row if none exists.
   Future<bool> replace(D entity) async {
     // We set isInserting to true here although we're in an update. This is
     // because all the fields from the entity will be written (as opposed to a

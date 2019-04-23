@@ -25,10 +25,12 @@ void main() {
   });
 
   test('generates insert or replace statements', () async {
-    await db.into(db.todosTable).insertOrReplace(TodoEntry(
+    await db.into(db.todosTable).insert(
+        TodoEntry(
           id: 113,
           content: 'Done',
-        ));
+        ),
+        orReplace: true);
 
     verify(executor.runInsert(
         'INSERT OR REPLACE INTO todos (id, content) VALUES (?, ?)',
@@ -44,6 +46,30 @@ void main() {
 
     final insertSimple = 'INSERT INTO todos (content) VALUES (?)';
     final insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
+
+    verify(executor.runBatched([
+      BatchedStatement(insertSimple, [
+        ['a']
+      ]),
+      BatchedStatement(insertTitle, [
+        ['title', 'b'],
+        ['title', 'c']
+      ]),
+    ]));
+
+    verify(streamQueries.handleTableUpdates({db.todosTable}));
+  });
+
+  test('runs bulk inserts with OR REPLACE', () async {
+    await db.into(db.todosTable).insertAll([
+      TodoEntry(content: 'a'),
+      TodoEntry(title: 'title', content: 'b'),
+      TodoEntry(title: 'title', content: 'c'),
+    ], orReplace: true);
+
+    final insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
+    final insertTitle =
+        'INSERT OR REPLACE INTO todos (title, content) VALUES (?, ?)';
 
     verify(executor.runBatched([
       BatchedStatement(insertSimple, [
