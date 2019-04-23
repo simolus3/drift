@@ -35,46 +35,6 @@ class InsertStatement<DataClass> {
     });
   }
 
-  GenerationContext _createContext(DataClass entry, bool replace) {
-    final map = table.entityToSql(entry)
-      ..removeWhere((_, value) => value == null);
-
-    final ctx = GenerationContext(database);
-    ctx.buffer
-      ..write('INSERT ')
-      ..write(replace ? 'OR REPLACE ' : '')
-      ..write('INTO ')
-      ..write(table.$tableName)
-      ..write(' (')
-      ..write(map.keys.join(', '))
-      ..write(') ')
-      ..write('VALUES (');
-
-    var first = true;
-    for (var variable in map.values) {
-      if (!first) {
-        ctx.buffer.write(', ');
-      }
-      first = false;
-
-      variable.writeInto(ctx);
-    }
-
-    ctx.buffer.write(')');
-    return ctx;
-  }
-
-  void _validateIntegrity(DataClass d) {
-    if (d == null) {
-      throw InvalidDataException(
-          'Cannot writee null row into ${table.$tableName}');
-    }
-    if (!table.validateIntegrity(d, true)) {
-      throw InvalidDataException(
-          'Invalid data: $d cannot be written into ${table.$tableName}');
-    }
-  }
-
   /// Inserts all [rows] into the table.
   ///
   /// All fields in a row that don't have a default value or auto-increment
@@ -117,5 +77,45 @@ class InsertStatement<DataClass> {
   /// However, if no such row exists, a new row will be written instead.
   Future<void> insertOrReplace(DataClass entity) async {
     return await insert(entity, orReplace: true);
+  }
+
+  GenerationContext _createContext(DataClass entry, bool replace) {
+    final map = table.entityToSql(entry)
+      ..removeWhere((_, value) => value == null);
+
+    final ctx = GenerationContext(database);
+    ctx.buffer
+      ..write('INSERT ')
+      ..write(replace ? 'OR REPLACE ' : '')
+      ..write('INTO ')
+      ..write(table.$tableName)
+      ..write(' (')
+      ..write(map.keys.join(', '))
+      ..write(') ')
+      ..write('VALUES (');
+
+    var first = true;
+    for (var variable in map.values) {
+      if (!first) {
+        ctx.buffer.write(', ');
+      }
+      first = false;
+
+      variable.writeInto(ctx);
+    }
+
+    ctx.buffer.write(')');
+    return ctx;
+  }
+
+  void _validateIntegrity(DataClass d) {
+    if (d == null) {
+      throw InvalidDataException(
+          'Cannot writee null row into ${table.$tableName}');
+    }
+    if (!table.validateIntegrity(d, true)) {
+      throw InvalidDataException(
+          'Invalid data: $d cannot be written into ${table.$tableName}');
+    }
   }
 }
