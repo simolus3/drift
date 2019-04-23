@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+
 import 'update.dart';
 
 class InsertStatement<DataClass> {
@@ -10,8 +11,6 @@ class InsertStatement<DataClass> {
   final QueryEngine database;
   @protected
   final TableInfo<Table, DataClass> table;
-
-  bool _orReplace = false;
 
   InsertStatement(this.database, this.table);
 
@@ -25,55 +24,15 @@ class InsertStatement<DataClass> {
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned.
-  Future<int> insert(DataClass entity) async {
+  Future<int> insert(DataClass entity, {bool orReplace = false}) async {
     _validateIntegrity(entity);
-    final ctx = _createContext(entity, _orReplace);
+    final ctx = _createContext(entity, orReplace);
 
     return await database.executor.doWhenOpened((e) async {
       final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
       database.markTablesUpdated({table});
       return id;
     });
-  }
-
-  GenerationContext _createContext(DataClass entry, bool replace) {
-    final map = table.entityToSql(entry)
-      ..removeWhere((_, value) => value == null);
-
-    final ctx = GenerationContext(database);
-    ctx.buffer
-      ..write('INSERT ')
-      ..write(_orReplace ? 'OR REPLACE ' : '')
-      ..write('INTO ')
-      ..write(table.$tableName)
-      ..write(' (')
-      ..write(map.keys.join(', '))
-      ..write(') ')
-      ..write('VALUES (');
-
-    var first = true;
-    for (var variable in map.values) {
-      if (!first) {
-        ctx.buffer.write(', ');
-      }
-      first = false;
-
-      variable.writeInto(ctx);
-    }
-
-    ctx.buffer.write(')');
-    return ctx;
-  }
-
-  void _validateIntegrity(DataClass d) {
-    if (d == null) {
-      throw InvalidDataException(
-          'Cannot writee null row into ${table.$tableName}');
-    }
-    if (!table.validateIntegrity(d, true)) {
-      throw InvalidDataException(
-          'Invalid data: $d cannot be written into ${table.$tableName}');
-    }
   }
 
   /// Inserts all [rows] into the table.
@@ -84,7 +43,7 @@ class InsertStatement<DataClass> {
   /// When a row with the same primary or unique key already exists in the
   /// database, the insert will fail. Use [orReplace] to replace rows that
   /// already exist.
-  Future<void> insertAll(List<DataClass> rows, {bool orReplace}) async {
+  Future<void> insertAll(List<DataClass> rows, {bool orReplace = false}) async {
     final statements = <String, List<GenerationContext>>{};
 
     // Not every insert has the same sql, as fields which are set to null are
@@ -117,7 +76,46 @@ class InsertStatement<DataClass> {
   ///
   /// However, if no such row exists, a new row will be written instead.
   Future<void> insertOrReplace(DataClass entity) async {
-    _orReplace = true;
-    await insert(entity);
+    return await insert(entity, orReplace: true);
+  }
+
+  GenerationContext _createContext(DataClass entry, bool replace) {
+    final map = table.entityToSql(entry)
+      ..removeWhere((_, value) => value == null);
+
+    final ctx = GenerationContext(database);
+    ctx.buffer
+      ..write('INSERT ')
+      ..write(replace ? 'OR REPLACE ' : '')
+      ..write('INTO ')
+      ..write(table.$tableName)
+      ..write(' (')
+      ..write(map.keys.join(', '))
+      ..write(') ')
+      ..write('VALUES (');
+
+    var first = true;
+    for (var variable in map.values) {
+      if (!first) {
+        ctx.buffer.write(', ');
+      }
+      first = false;
+
+      variable.writeInto(ctx);
+    }
+
+    ctx.buffer.write(')');
+    return ctx;
+  }
+
+  void _validateIntegrity(DataClass d) {
+    if (d == null) {
+      throw InvalidDataException(
+          'Cannot writee null row into ${table.$tableName}');
+    }
+    if (!table.validateIntegrity(d, true)) {
+      throw InvalidDataException(
+          'Invalid data: $d cannot be written into ${table.$tableName}');
+    }
   }
 }
