@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+
 import 'update.dart';
 
 class InsertStatement<DataClass> {
@@ -10,8 +11,6 @@ class InsertStatement<DataClass> {
   final QueryEngine database;
   @protected
   final TableInfo<Table, DataClass> table;
-
-  bool _orReplace = false;
 
   InsertStatement(this.database, this.table);
 
@@ -25,9 +24,9 @@ class InsertStatement<DataClass> {
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned.
-  Future<int> insert(DataClass entity) async {
+  Future<int> insert(DataClass entity, {bool orReplace = false}) async {
     _validateIntegrity(entity);
-    final ctx = _createContext(entity, _orReplace);
+    final ctx = _createContext(entity, orReplace);
 
     return await database.executor.doWhenOpened((e) async {
       final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
@@ -43,7 +42,7 @@ class InsertStatement<DataClass> {
     final ctx = GenerationContext(database);
     ctx.buffer
       ..write('INSERT ')
-      ..write(_orReplace ? 'OR REPLACE ' : '')
+      ..write(replace ? 'OR REPLACE ' : '')
       ..write('INTO ')
       ..write(table.$tableName)
       ..write(' (')
@@ -84,7 +83,7 @@ class InsertStatement<DataClass> {
   /// When a row with the same primary or unique key already exists in the
   /// database, the insert will fail. Use [orReplace] to replace rows that
   /// already exist.
-  Future<void> insertAll(List<DataClass> rows, {bool orReplace}) async {
+  Future<void> insertAll(List<DataClass> rows, {bool orReplace = false}) async {
     final statements = <String, List<GenerationContext>>{};
 
     // Not every insert has the same sql, as fields which are set to null are
@@ -117,7 +116,6 @@ class InsertStatement<DataClass> {
   ///
   /// However, if no such row exists, a new row will be written instead.
   Future<void> insertOrReplace(DataClass entity) async {
-    _orReplace = true;
-    await insert(entity);
+    return await insert(entity, orReplace: true);
   }
 }
