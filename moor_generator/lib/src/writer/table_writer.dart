@@ -175,8 +175,8 @@ class TableWriter {
     // explicitly defined as PK, but with AI this happens implicitly.
     primaryKey ??= table.columns.where((c) => c.hasAI).toSet();
 
-    if (primaryKey == null) {
-      buffer.write('null;');
+    if (primaryKey.isEmpty) {
+      buffer.write('<GeneratedColumn>{};');
       return;
     }
 

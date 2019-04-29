@@ -47,9 +47,7 @@ class SharedTodos extends Table {
 }
 
 class TableWithoutPK extends Table {
-
   IntColumn get notReallyAnId => integer()();
-
 }
 
 @UseMoor(tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK])

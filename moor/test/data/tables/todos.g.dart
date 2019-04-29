@@ -716,7 +716,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   bool validateIntegrity(TableWithoutPKData instance, bool isInserting) =>
       notReallyAnId.isAcceptableValue(instance.notReallyAnId, isInserting);
   @override
-  Set<GeneratedColumn> get $primaryKey => {};
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   TableWithoutPKData map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
