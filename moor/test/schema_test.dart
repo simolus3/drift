@@ -40,6 +40,9 @@ void main() {
           'FOREIGN KEY (todo) REFERENCES todos(id), '
           'FOREIGN KEY (user) REFERENCES users(id)'
           ');'));
+
+      verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS '
+          'table_without_p_k (not_really_an_id INTEGER NOT NULL);'));
     });
 
     test('creates individual tables', () async {

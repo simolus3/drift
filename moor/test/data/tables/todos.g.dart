@@ -642,6 +642,103 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
+class TableWithoutPKData {
+  final int notReallyAnId;
+  TableWithoutPKData({this.notReallyAnId});
+  factory TableWithoutPKData.fromData(
+      Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    return TableWithoutPKData(
+      notReallyAnId: intType
+          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
+    );
+  }
+  factory TableWithoutPKData.fromJson(Map<String, dynamic> json) {
+    return TableWithoutPKData(
+      notReallyAnId: json['notReallyAnId'] as int,
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'notReallyAnId': notReallyAnId,
+    };
+  }
+
+  TableWithoutPKData copyWith({int notReallyAnId}) => TableWithoutPKData(
+        notReallyAnId: notReallyAnId ?? this.notReallyAnId,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TableWithoutPKData(')
+          ..write('notReallyAnId: $notReallyAnId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(0, notReallyAnId.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is TableWithoutPKData && other.notReallyAnId == notReallyAnId);
+}
+
+class $TableWithoutPKTable extends TableWithoutPK
+    with TableInfo<$TableWithoutPKTable, TableWithoutPKData> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $TableWithoutPKTable(this._db, [this._alias]);
+  GeneratedIntColumn _notReallyAnId;
+  @override
+  GeneratedIntColumn get notReallyAnId =>
+      _notReallyAnId ??= _constructNotReallyAnId();
+  GeneratedIntColumn _constructNotReallyAnId() {
+    var cName = 'not_really_an_id';
+    if (_alias != null) cName = '$_alias.$cName';
+    return GeneratedIntColumn(
+      'not_really_an_id',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [notReallyAnId];
+  @override
+  $TableWithoutPKTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'table_without_p_k';
+  @override
+  final String actualTableName = 'table_without_p_k';
+  @override
+  bool validateIntegrity(TableWithoutPKData instance, bool isInserting) =>
+      notReallyAnId.isAcceptableValue(instance.notReallyAnId, isInserting);
+  @override
+  Set<GeneratedColumn> get $primaryKey => {};
+  @override
+  TableWithoutPKData map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return TableWithoutPKData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(TableWithoutPKData d,
+      {bool includeNulls = false}) {
+    final map = <String, Variable>{};
+    if (d.notReallyAnId != null || includeNulls) {
+      map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId);
+    }
+    return map;
+  }
+
+  @override
+  $TableWithoutPKTable createAlias(String alias) {
+    return $TableWithoutPKTable(_db, alias);
+  }
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -652,6 +749,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
   $UsersTable get users => _users ??= $UsersTable(this);
   $SharedTodosTable _sharedTodos;
   $SharedTodosTable get sharedTodos => _sharedTodos ??= $SharedTodosTable(this);
+  $TableWithoutPKTable _tableWithoutPK;
+  $TableWithoutPKTable get tableWithoutPK =>
+      _tableWithoutPK ??= $TableWithoutPKTable(this);
   @override
-  List<TableInfo> get allTables => [todosTable, categories, users, sharedTodos];
+  List<TableInfo> get allTables =>
+      [todosTable, categories, users, sharedTodos, tableWithoutPK];
 }

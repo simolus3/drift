@@ -9,8 +9,8 @@ mixin TableInfo<TableDsl extends Table, DataClass> {
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
 
-  /// The primary key of this table. Can be null if no custom primary key has
-  /// been specified
+  /// The primary key of this table. Can be null or empty if no custom primary
+  /// key has been specified.
   Set<GeneratedColumn> get $primaryKey => null;
 
   /// The table name in the sql table. This can be an alias for the actual table

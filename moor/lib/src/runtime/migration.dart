@@ -69,7 +69,8 @@ class Migrator {
       if (i < table.$columns.length - 1) sql.write(', ');
     }
 
-    if (table.$primaryKey != null && !hasAutoIncrement) {
+    final hasPrimaryKey = table.$primaryKey?.isNotEmpty ?? false;
+    if (hasPrimaryKey && !hasAutoIncrement) {
       sql.write(', PRIMARY KEY (');
       final pkList = table.$primaryKey.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {

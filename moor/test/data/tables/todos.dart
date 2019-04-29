@@ -46,7 +46,13 @@ class SharedTodos extends Table {
       ];
 }
 
-@UseMoor(tables: [TodosTable, Categories, Users, SharedTodos])
+class TableWithoutPK extends Table {
+
+  IntColumn get notReallyAnId => integer()();
+
+}
+
+@UseMoor(tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK])
 class TodoDb extends _$TodoDb {
   TodoDb(QueryExecutor e) : super(e);
 
