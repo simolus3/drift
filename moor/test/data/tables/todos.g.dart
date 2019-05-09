@@ -443,11 +443,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   GeneratedBoolColumn _constructIsAwesome() {
     var cName = 'is_awesome';
     if (_alias != null) cName = '$_alias.$cName';
-    return GeneratedBoolColumn(
-      'is_awesome',
-      $tableName,
-      false,
-    );
+    return GeneratedBoolColumn('is_awesome', $tableName, false,
+        defaultValue: const Constant(true));
   }
 
   GeneratedBlobColumn _profilePicture;
