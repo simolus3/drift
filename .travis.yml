@@ -1,8 +1,8 @@
 language: dart
 
+# todo bring back stable. Seems like coverage hangs on 2.3.0
 dart:
-  - stable
-
+  - "2.2.0"
 env:
   - PKG="moor"
   - PKG="moor_generator"
