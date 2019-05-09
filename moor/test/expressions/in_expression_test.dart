@@ -9,7 +9,7 @@ void main() {
     final innerExpression = moor.GeneratedTextColumn('name', null, true);
     final isInExpression = moor.isIn(innerExpression, ['Max', 'Tobias']);
 
-    final context = GenerationContext(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb(null));
     isInExpression.writeInto(context);
 
     expect(context.sql, 'name IN (?, ?)');

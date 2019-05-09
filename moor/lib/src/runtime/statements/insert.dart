@@ -86,7 +86,7 @@ class InsertStatement<DataClass> {
     final map = table.entityToSql(entry)
       ..removeWhere((_, value) => value == null);
 
-    final ctx = GenerationContext(database);
+    final ctx = GenerationContext.fromDb(database);
     ctx.buffer
       ..write('INSERT ')
       ..write(replace ? 'OR REPLACE ' : '')

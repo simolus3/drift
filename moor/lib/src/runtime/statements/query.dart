@@ -35,7 +35,7 @@ abstract class Query<T extends Table, DataClass> {
   /// Constructs the query that can then be sent to the database executor.
   @protected
   GenerationContext constructQuery() {
-    final ctx = GenerationContext(database);
+    final ctx = GenerationContext.fromDb(database);
     var needsWhitespace = false;
 
     writeStartPart(ctx);

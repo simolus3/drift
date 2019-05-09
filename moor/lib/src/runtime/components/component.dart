@@ -18,7 +18,8 @@ class GenerationContext {
   /// queries.
   bool hasMultipleTables = false;
 
-  final QueryEngine database;
+  final SqlTypeSystem typeSystem;
+  final QueryExecutor executor;
 
   final List<dynamic> _boundVariables = [];
   List<dynamic> get boundVariables => _boundVariables;
@@ -29,7 +30,11 @@ class GenerationContext {
   /// Gets the generated sql statement
   String get sql => buffer.toString();
 
-  GenerationContext(this.database);
+  GenerationContext.fromDb(QueryEngine database)
+      : typeSystem = database.typeSystem,
+        executor = database.executor;
+
+  GenerationContext(this.typeSystem, this.executor);
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

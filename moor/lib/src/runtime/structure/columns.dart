@@ -36,31 +36,28 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// Writes the definition of this column, as defined
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
-  void writeColumnDefinition(StringBuffer into) {
-    into.write('$escapedName $typeName ');
+  void writeColumnDefinition(GenerationContext into) {
+    into.buffer.write('$escapedName $typeName ');
 
     if ($customConstraints == null) {
-      into.write($nullable ? 'NULL' : 'NOT NULL');
+      into.buffer.write($nullable ? 'NULL' : 'NOT NULL');
 
       if (defaultValue != null) {
-        into.write(' DEFAULT ');
-
-        final fakeContext = GenerationContext(null);
-        defaultValue.writeInto(fakeContext);
+        into.buffer.write(' DEFAULT ');
 
         // we need to write brackets if the default value is not a literal.
         // see https://www.sqlite.org/syntax/column-constraint.html
         final writeBrackets = !defaultValue.isLiteral;
 
-        if (writeBrackets) into.write('(');
-        into.write(fakeContext.sql);
-        if (writeBrackets) into.write(')');
+        if (writeBrackets) into.buffer.write('(');
+        defaultValue.writeInto(into);
+        if (writeBrackets) into.buffer.write(')');
       }
 
       // these custom constraints refer to builtin constraints from moor
-      writeCustomConstraints(into);
+      writeCustomConstraints(into.buffer);
     } else {
-      into.write($customConstraints);
+      into.buffer.write($customConstraints);
     }
   }
 
@@ -164,9 +161,10 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
-  void writeColumnDefinition(StringBuffer into) {
+  void writeColumnDefinition(GenerationContext into) {
+    // todo make this work with custom constraints, default values, etc.
     if (hasAutoIncrement) {
-      into.write('${$name} $typeName PRIMARY KEY AUTOINCREMENT');
+      into.buffer.write('${$name} $typeName PRIMARY KEY AUTOINCREMENT');
     } else {
       super.writeColumnDefinition(into);
     }

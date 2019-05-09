@@ -32,7 +32,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
 
   Future<int> _performQuery() async {
     final ctx = constructQuery();
-    final rows = await ctx.database.executor.doWhenOpened((e) async {
+    final rows = await ctx.executor.doWhenOpened((e) async {
       return await e.runUpdate(ctx.sql, ctx.boundVariables);
     });
 

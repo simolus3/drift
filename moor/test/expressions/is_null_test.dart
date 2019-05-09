@@ -10,7 +10,7 @@ void main() {
   test('IS NULL expressions are generated', () {
     final isNull = moor.isNull(innerExpression);
 
-    final context = GenerationContext(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb(null));
     isNull.writeInto(context);
 
     expect(context.sql, 'name IS NULL');
@@ -19,7 +19,7 @@ void main() {
   test('IS NOT NULL expressions are generated', () {
     final isNotNull = moor.isNotNull(innerExpression);
 
-    final context = GenerationContext(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb(null));
     isNotNull.writeInto(context);
 
     expect(context.sql, 'name IS NOT NULL');

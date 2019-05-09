@@ -32,9 +32,8 @@ class DeleteStatement<T extends Table, D> extends Query<T, D>
   Future<int> go() async {
     final ctx = constructQuery();
 
-    return ctx.database.executor.doWhenOpened((e) async {
-      final rows =
-          await ctx.database.executor.runDelete(ctx.sql, ctx.boundVariables);
+    return ctx.executor.doWhenOpened((e) async {
+      final rows = await ctx.executor.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {
         database.markTablesUpdated({table});

@@ -124,7 +124,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// specified there will then issue another query.
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
-    final ctx = GenerationContext(this);
+    final ctx = GenerationContext.fromDb(this);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
     final affectedRows =

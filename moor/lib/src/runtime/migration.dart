@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/structure/columns.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
@@ -51,10 +52,15 @@ class Migrator {
     return Future.wait(_db.allTables.map(createTable));
   }
 
+  GenerationContext _createContext() {
+    return GenerationContext(
+        _db.typeSystem, _SimpleSqlAsQueryExecutor(_executor));
+  }
+
   /// Creates the given table if it doesn't exist
   Future<void> createTable(TableInfo table) async {
-    final sql = StringBuffer()
-      ..write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
+    final context = _createContext();
+    context.buffer.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
@@ -64,34 +70,34 @@ class Migrator {
         hasAutoIncrement = true;
       }
 
-      column.writeColumnDefinition(sql);
+      column.writeColumnDefinition(context);
 
-      if (i < table.$columns.length - 1) sql.write(', ');
+      if (i < table.$columns.length - 1) context.buffer.write(', ');
     }
 
     final hasPrimaryKey = table.$primaryKey?.isNotEmpty ?? false;
     if (hasPrimaryKey && !hasAutoIncrement) {
-      sql.write(', PRIMARY KEY (');
+      context.buffer.write(', PRIMARY KEY (');
       final pkList = table.$primaryKey.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {
         final column = pkList[i];
 
-        sql.write(column.$name);
+        context.buffer.write(column.$name);
 
-        if (i != pkList.length - 1) sql.write(', ');
+        if (i != pkList.length - 1) context.buffer.write(', ');
       }
-      sql.write(')');
+      context.buffer.write(')');
     }
 
     final constraints = table.asDslTable.customConstraints ?? [];
 
     for (var i = 0; i < constraints.length; i++) {
-      sql..write(', ')..write(constraints[i]);
+      context.buffer..write(', ')..write(constraints[i]);
     }
 
-    sql.write(');');
+    context.buffer.write(');');
 
-    return issueCustomQuery(sql.toString());
+    return issueCustomQuery(context.sql);
   }
 
   /// Deletes the table with the given name. Note that this function does not
@@ -102,18 +108,63 @@ class Migrator {
 
   /// Adds the given column to the specified table.
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
-    final sql = StringBuffer();
+    final context = _createContext();
 
-    // ignore: cascade_invocations
-    sql.write('ALTER TABLE ${table.$tableName} ADD COLUMN ');
-    column.writeColumnDefinition(sql);
-    sql.write(';');
+    context.buffer.write('ALTER TABLE ${table.$tableName} ADD COLUMN ');
+    column.writeColumnDefinition(context);
+    context.buffer.write(';');
 
-    return issueCustomQuery(sql.toString());
+    return issueCustomQuery(context.sql);
   }
 
   /// Executes the custom query.
   Future<void> issueCustomQuery(String sql) async {
     return _executor(sql);
+  }
+}
+
+class _SimpleSqlAsQueryExecutor extends QueryExecutor {
+  final SqlExecutor executor;
+
+  _SimpleSqlAsQueryExecutor(this.executor);
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw UnsupportedError('Not supported for migrations');
+  }
+
+  @override
+  Future<bool> ensureOpen() {
+    return Future.value(true);
+  }
+
+  @override
+  Future<void> runBatched(List<BatchedStatement> statements) {
+    throw UnsupportedError('Not supported for migrations');
+  }
+
+  @override
+  Future<void> runCustom(String statement) {
+    return executor(statement);
+  }
+
+  @override
+  Future<int> runDelete(String statement, List args) {
+    throw UnsupportedError('Not supported for migrations');
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    throw UnsupportedError('Not supported for migrations');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+    throw UnsupportedError('Not supported for migrations');
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List args) {
+    throw UnsupportedError('Not supported for migrations');
   }
 }

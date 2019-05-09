@@ -117,7 +117,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
   }
 
   Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.database.executor.doWhenOpened((e) async {
+    final results = await ctx.executor.doWhenOpened((e) async {
       return await e.runSelect(ctx.sql, ctx.boundVariables);
     });
 
@@ -162,7 +162,7 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
   }
 
   Future<List<D>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.database.executor.doWhenOpened((e) async {
+    final results = await ctx.executor.doWhenOpened((e) async {
       return await e.runSelect(ctx.sql, ctx.boundVariables);
     });
     return results.map(table.map).toList();
@@ -263,7 +263,7 @@ class CustomSelectStatement {
   }
 
   List<dynamic> _mapArgs() {
-    final ctx = GenerationContext(_db);
+    final ctx = GenerationContext.fromDb(_db);
     return variables.map((v) => v.mapToSimpleValue(ctx)).toList();
   }
 

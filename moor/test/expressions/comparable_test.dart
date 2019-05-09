@@ -27,7 +27,7 @@ void main() {
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext(db);
+        final ctx = GenerationContext.fromDb(db);
 
         fn(compare).writeInto(ctx);
 
@@ -39,7 +39,7 @@ void main() {
   group('can compare with values', () {
     comparisonsVal.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext(db);
+        final ctx = GenerationContext.fromDb(db);
 
         fn(12).writeInto(ctx);
 

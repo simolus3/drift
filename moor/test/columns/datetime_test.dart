@@ -1,4 +1,5 @@
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:test_api/test_api.dart';
 
 void main() {
@@ -6,12 +7,12 @@ void main() {
   final nonNull = GeneratedDateTimeColumn('name', null, false);
 
   test('should write column definition', () {
-    final nullableBuff = StringBuffer();
-    final nonNullBuff = StringBuffer();
-    nullable.writeColumnDefinition(nullableBuff);
-    nonNull.writeColumnDefinition(nonNullBuff);
+    final nonNullQuery = GenerationContext(null, null);
+    final nullableQuery = GenerationContext(null, null);
+    nonNull.writeColumnDefinition(nonNullQuery);
+    nullable.writeColumnDefinition(nullableQuery);
 
-    expect(nullableBuff.toString(), equals('name INTEGER NULL'));
-    expect(nonNullBuff.toString(), equals('name INTEGER NOT NULL'));
+    expect(nullableQuery.sql, equals('name INTEGER NULL'));
+    expect(nonNullQuery.sql, equals('name INTEGER NOT NULL'));
   });
 }

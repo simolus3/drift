@@ -40,7 +40,7 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.
   dynamic mapToSimpleValue(GenerationContext context) {
-    final type = context.database.typeSystem.forDartType<T>();
+    final type = context.typeSystem.forDartType<T>();
     return type.mapToSqlVariable(value);
   }
 
@@ -69,7 +69,7 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
 
   @override
   void writeInto(GenerationContext context) {
-    final type = context.database.typeSystem.forDartType<T>();
+    final type = context.typeSystem.forDartType<T>();
     context.buffer.write(type.mapToSqlConstant(value));
   }
 }
