@@ -27,6 +27,9 @@ abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
 /// A column that stores arbitrary blobs of data as a [Uint8List].
 abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 
+/// A column that stores floating point numeric values.
+abstract class RealColumn extends Column<num, RealType> {}
+
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, moor_generator will take a look at your
@@ -110,6 +113,9 @@ class BoolColumnBuilder
 
 class BlobColumnBuilder
     extends ColumnBuilder<BlobColumnBuilder, BlobColumn, BlobType, Uint8List> {}
+
+class RealColumnBuilder
+    extends ColumnBuilder<RealColumnBuilder, RealColumn, RealType, num> {}
 
 class TextColumnBuilder
     extends ColumnBuilder<TextColumnBuilder, TextColumn, StringType, String> {

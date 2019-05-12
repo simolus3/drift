@@ -65,8 +65,6 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -75,8 +73,6 @@ class $CategoriesTable extends Categories
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    var cName = 'description';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'description',
       $tableName,
@@ -201,8 +197,6 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -210,8 +204,6 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   GeneratedTextColumn get title => _title ??= _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    var cName = 'title';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn('title', $tableName, false, maxTextLength: 16);
   }
 
@@ -220,8 +212,6 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   GeneratedTextColumn get instructions =>
       _instructions ??= _constructInstructions();
   GeneratedTextColumn _constructInstructions() {
-    var cName = 'instructions';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'instructions',
       $tableName,
@@ -233,8 +223,6 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   GeneratedIntColumn get category => _category ??= _constructCategory();
   GeneratedIntColumn _constructCategory() {
-    var cName = 'category';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'category',
       $tableName,
@@ -356,8 +344,6 @@ class $IngredientsTable extends Ingredients
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -365,8 +351,6 @@ class $IngredientsTable extends Ingredients
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
-    var cName = 'name';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'name',
       $tableName,
@@ -379,8 +363,6 @@ class $IngredientsTable extends Ingredients
   GeneratedIntColumn get caloriesPer100g =>
       _caloriesPer100g ??= _constructCaloriesPer100g();
   GeneratedIntColumn _constructCaloriesPer100g() {
-    var cName = 'calories';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'calories',
       $tableName,
@@ -502,8 +484,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   GeneratedIntColumn get recipe => _recipe ??= _constructRecipe();
   GeneratedIntColumn _constructRecipe() {
-    var cName = 'recipe';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'recipe',
       $tableName,
@@ -515,8 +495,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   GeneratedIntColumn get ingredient => _ingredient ??= _constructIngredient();
   GeneratedIntColumn _constructIngredient() {
-    var cName = 'ingredient';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'ingredient',
       $tableName,
@@ -529,8 +507,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   GeneratedIntColumn get amountInGrams =>
       _amountInGrams ??= _constructAmountInGrams();
   GeneratedIntColumn _constructAmountInGrams() {
-    var cName = 'amount';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'amount',
       $tableName,

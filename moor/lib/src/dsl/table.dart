@@ -83,10 +83,19 @@ abstract class Table {
   /// Use this as the body of a getter to declare a column that holds arbitrary
   /// data blobs, stored as an [Uint8List]. Example:
   /// ```
-  /// BlobColumnBuilder get payload => blob()();
+  /// BlobColumn get payload => blob()();
   /// ```
   @protected
   BlobColumnBuilder blob() => null;
+
+  /// Use this as the body of a getter to declare a column that holds floating
+  /// point numbers. Example
+  /// ```
+  /// RealColumn get averageSpeed => real()();
+  /// ```
+  /// Note
+  @protected
+  RealColumnBuilder real() => null;
 }
 
 /// A class to to be used as an annotation on [Table] classes to customize the

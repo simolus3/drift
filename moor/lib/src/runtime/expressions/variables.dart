@@ -36,6 +36,11 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
     return Variable(value);
   }
 
+  /// Creates a variable that holds the specified floating point value.
+  static Variable<num, RealType> withReal(num value) {
+    return Variable(value);
+  }
+
   /// Maps [value] to something that should be understood by the underlying
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.

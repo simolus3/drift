@@ -3,7 +3,7 @@ import 'package:built_value/built_value.dart';
 
 part 'specified_column.g.dart';
 
-enum ColumnType { integer, text, boolean, datetime, blob }
+enum ColumnType { integer, text, boolean, datetime, blob, real }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -66,44 +66,48 @@ class SpecifiedColumn {
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
-  String get dartTypeName => {
+  String get dartTypeName => const {
         ColumnType.boolean: 'bool',
         ColumnType.text: 'String',
         ColumnType.integer: 'int',
         ColumnType.datetime: 'DateTime',
         ColumnType.blob: 'Uint8List',
+        ColumnType.real: 'num',
       }[type];
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
-  String get dslColumnTypeName => {
+  String get dslColumnTypeName => const {
         ColumnType.boolean: 'BoolColumn',
         ColumnType.text: 'TextColumn',
         ColumnType.integer: 'IntColumn',
         ColumnType.datetime: 'DateTimeColumn',
         ColumnType.blob: 'BlobColumn',
+        ColumnType.real: 'RealColumn',
       }[type];
 
   /// The `GeneratedColumn` class that implements the [dslColumnTypeName].
   /// For instance, if a table has declared an `IntColumn`, the matching
   /// implementation name would be an `GeneratedIntColumn`.
-  String get implColumnTypeName => {
+  String get implColumnTypeName => const {
         ColumnType.boolean: 'GeneratedBoolColumn',
         ColumnType.text: 'GeneratedTextColumn',
         ColumnType.integer: 'GeneratedIntColumn',
         ColumnType.datetime: 'GeneratedDateTimeColumn',
-        ColumnType.blob: 'GeneratedBlobColumn'
+        ColumnType.blob: 'GeneratedBlobColumn',
+        ColumnType.real: 'GeneratedRealColumn',
       }[type];
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
-  String get sqlTypeName => {
+  String get sqlTypeName => const {
         ColumnType.boolean: 'BoolType',
         ColumnType.text: 'StringType',
         ColumnType.integer: 'IntType',
         ColumnType.datetime: 'DateTimeType',
         ColumnType.blob: 'BlobType',
+        ColumnType.real: 'RealType',
       }[type];
 
   const SpecifiedColumn({

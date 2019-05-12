@@ -103,8 +103,6 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -112,8 +110,6 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedTextColumn get title => _title ??= _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    var cName = 'title';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn('title', $tableName, true,
         minTextLength: 4, maxTextLength: 16);
   }
@@ -122,8 +118,6 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedTextColumn get content => _content ??= _constructContent();
   GeneratedTextColumn _constructContent() {
-    var cName = 'content';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'content',
       $tableName,
@@ -136,8 +130,6 @@ class $TodosTableTable extends TodosTable
   GeneratedDateTimeColumn get targetDate =>
       _targetDate ??= _constructTargetDate();
   GeneratedDateTimeColumn _constructTargetDate() {
-    var cName = 'target_date';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedDateTimeColumn(
       'target_date',
       $tableName,
@@ -149,8 +141,6 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedIntColumn get category => _category ??= _constructCategory();
   GeneratedIntColumn _constructCategory() {
-    var cName = 'category';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'category',
       $tableName,
@@ -267,8 +257,6 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -277,8 +265,6 @@ class $CategoriesTable extends Categories
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    var cName = 'desc';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn('desc', $tableName, false,
         $customConstraints: 'NOT NULL UNIQUE');
   }
@@ -422,8 +408,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
@@ -431,8 +415,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
-    var cName = 'name';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn('name', $tableName, false,
         minTextLength: 6, maxTextLength: 32);
   }
@@ -441,8 +423,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedBoolColumn get isAwesome => _isAwesome ??= _constructIsAwesome();
   GeneratedBoolColumn _constructIsAwesome() {
-    var cName = 'is_awesome';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedBoolColumn('is_awesome', $tableName, false,
         defaultValue: const Constant(true));
   }
@@ -452,8 +432,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   GeneratedBlobColumn get profilePicture =>
       _profilePicture ??= _constructProfilePicture();
   GeneratedBlobColumn _constructProfilePicture() {
-    var cName = 'profile_picture';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedBlobColumn(
       'profile_picture',
       $tableName,
@@ -466,8 +444,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   GeneratedDateTimeColumn get creationTime =>
       _creationTime ??= _constructCreationTime();
   GeneratedDateTimeColumn _constructCreationTime() {
-    var cName = 'creation_time';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedDateTimeColumn('creation_time', $tableName, false,
         defaultValue: currentDateAndTime);
   }
@@ -579,8 +555,6 @@ class $SharedTodosTable extends SharedTodos
   @override
   GeneratedIntColumn get todo => _todo ??= _constructTodo();
   GeneratedIntColumn _constructTodo() {
-    var cName = 'todo';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'todo',
       $tableName,
@@ -592,8 +566,6 @@ class $SharedTodosTable extends SharedTodos
   @override
   GeneratedIntColumn get user => _user ??= _constructUser();
   GeneratedIntColumn _constructUser() {
-    var cName = 'user';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'user',
       $tableName,
@@ -641,45 +613,57 @@ class $SharedTodosTable extends SharedTodos
 
 class TableWithoutPKData {
   final int notReallyAnId;
-  TableWithoutPKData({this.notReallyAnId});
+  final num someFloat;
+  TableWithoutPKData({this.notReallyAnId, this.someFloat});
   factory TableWithoutPKData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
+    final numType = db.typeSystem.forDartType<num>();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
+      someFloat:
+          numType.mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
     );
   }
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json) {
     return TableWithoutPKData(
       notReallyAnId: json['notReallyAnId'] as int,
+      someFloat: json['someFloat'] as num,
     );
   }
   Map<String, dynamic> toJson() {
     return {
       'notReallyAnId': notReallyAnId,
+      'someFloat': someFloat,
     };
   }
 
-  TableWithoutPKData copyWith({int notReallyAnId}) => TableWithoutPKData(
+  TableWithoutPKData copyWith({int notReallyAnId, num someFloat}) =>
+      TableWithoutPKData(
         notReallyAnId: notReallyAnId ?? this.notReallyAnId,
+        someFloat: someFloat ?? this.someFloat,
       );
   @override
   String toString() {
     return (StringBuffer('TableWithoutPKData(')
-          ..write('notReallyAnId: $notReallyAnId')
+          ..write('notReallyAnId: $notReallyAnId, ')
+          ..write('someFloat: $someFloat')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(0, notReallyAnId.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc($mrjc(0, notReallyAnId.hashCode), someFloat.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is TableWithoutPKData && other.notReallyAnId == notReallyAnId);
+      (other is TableWithoutPKData &&
+          other.notReallyAnId == notReallyAnId &&
+          other.someFloat == someFloat);
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
@@ -692,8 +676,6 @@ class $TableWithoutPKTable extends TableWithoutPK
   GeneratedIntColumn get notReallyAnId =>
       _notReallyAnId ??= _constructNotReallyAnId();
   GeneratedIntColumn _constructNotReallyAnId() {
-    var cName = 'not_really_an_id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn(
       'not_really_an_id',
       $tableName,
@@ -701,8 +683,19 @@ class $TableWithoutPKTable extends TableWithoutPK
     );
   }
 
+  GeneratedRealColumn _someFloat;
   @override
-  List<GeneratedColumn> get $columns => [notReallyAnId];
+  GeneratedRealColumn get someFloat => _someFloat ??= _constructSomeFloat();
+  GeneratedRealColumn _constructSomeFloat() {
+    return GeneratedRealColumn(
+      'some_float',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat];
   @override
   $TableWithoutPKTable get asDslTable => this;
   @override
@@ -711,7 +704,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   final String actualTableName = 'table_without_p_k';
   @override
   bool validateIntegrity(TableWithoutPKData instance, bool isInserting) =>
-      notReallyAnId.isAcceptableValue(instance.notReallyAnId, isInserting);
+      notReallyAnId.isAcceptableValue(instance.notReallyAnId, isInserting) &&
+      someFloat.isAcceptableValue(instance.someFloat, isInserting);
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
@@ -726,6 +720,9 @@ class $TableWithoutPKTable extends TableWithoutPK
     final map = <String, Variable>{};
     if (d.notReallyAnId != null || includeNulls) {
       map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId);
+    }
+    if (d.someFloat != null || includeNulls) {
+      map['some_float'] = Variable<num, RealType>(d.someFloat);
     }
     return map;
   }

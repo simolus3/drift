@@ -118,10 +118,7 @@ class TableWriter {
       additionalParams['defaultValue'] = column.defaultArgument.toSource();
     }
 
-    // Handle aliasing
     expressionBuffer
-      ..write("var cName = '${column.name.name}';\n")
-      ..write("if (_alias != null) cName = '\$_alias.\$cName';\n")
       // GeneratedIntColumn('sql_name', tableName, isNullable, additionalField: true)
       ..write('return ${column.implColumnTypeName}')
       ..write("('${column.name.name}', \$tableName, $isNullable, ");

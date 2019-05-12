@@ -200,3 +200,12 @@ class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
   @override
   final String typeName = 'BLOB';
 }
+
+class GeneratedRealColumn extends GeneratedColumn<num, RealType>
+    implements RealColumn {
+  GeneratedRealColumn(String $name, String tableName, bool $nullable)
+      : super($name, tableName, $nullable);
+
+  @override
+  String get typeName => 'REAL';
+}

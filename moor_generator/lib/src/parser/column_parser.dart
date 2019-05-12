@@ -10,9 +10,10 @@ const String startString = 'text';
 const String startBool = 'boolean';
 const String startDateTime = 'dateTime';
 const String startBlob = 'blob';
+const String startReal = 'real';
 
 final Set<String> starters =
-    {startInt, startString, startBool, startDateTime, startBlob};
+    {startInt, startString, startBool, startDateTime, startBlob, startReal};
 
 const String _methodNamed = 'named';
 const String _methodPrimaryKey = 'primaryKey';
@@ -172,6 +173,7 @@ class ColumnParser extends ParserBase {
       startInt: ColumnType.integer,
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,
+      startReal: ColumnType.real,
     }[startMethod];
   }
 }
