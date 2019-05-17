@@ -7,7 +7,7 @@ part of 'example.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class Category {
+class Category extends DataClass {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -28,6 +28,7 @@ class Category {
       description: json['description'] as String,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -118,7 +119,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class Recipe {
+class Recipe extends DataClass {
   final int id;
   final String title;
   final String instructions;
@@ -147,6 +148,7 @@ class Recipe {
       category: json['category'] as int,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -276,7 +278,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   }
 }
 
-class Ingredient {
+class Ingredient extends DataClass {
   final int id;
   final String name;
   final int caloriesPer100g;
@@ -300,6 +302,7 @@ class Ingredient {
       caloriesPer100g: json['caloriesPer100g'] as int,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -412,7 +415,7 @@ class $IngredientsTable extends Ingredients
   }
 }
 
-class IngredientInRecipe {
+class IngredientInRecipe extends DataClass {
   final int recipe;
   final int ingredient;
   final int amountInGrams;
@@ -437,6 +440,7 @@ class IngredientInRecipe {
       amountInGrams: json['amountInGrams'] as int,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'recipe': recipe,

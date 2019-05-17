@@ -7,7 +7,7 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry {
+class TodoEntry extends DataClass {
   final int id;
   final String title;
   final String content;
@@ -42,6 +42,7 @@ class TodoEntry {
       category: json['category'] as int,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -199,7 +200,7 @@ class $TodosTableTable extends TodosTable
   }
 }
 
-class Category {
+class Category extends DataClass {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -220,6 +221,7 @@ class Category {
       description: json['description'] as String,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -307,7 +309,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class User {
+class User extends DataClass {
   final int id;
   final String name;
   final bool isAwesome;
@@ -347,6 +349,7 @@ class User {
       creationTime: json['creationTime'] as DateTime,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -499,7 +502,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 }
 
-class SharedTodo {
+class SharedTodo extends DataClass {
   final int todo;
   final int user;
   SharedTodo({this.todo, this.user});
@@ -518,6 +521,7 @@ class SharedTodo {
       user: json['user'] as int,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'todo': todo,
@@ -611,7 +615,7 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData {
+class TableWithoutPKData extends DataClass {
   final int notReallyAnId;
   final num someFloat;
   TableWithoutPKData({this.notReallyAnId, this.someFloat});
@@ -634,6 +638,7 @@ class TableWithoutPKData {
       someFloat: json['someFloat'] as num,
     );
   }
+  @override
   Map<String, dynamic> toJson() {
     return {
       'notReallyAnId': notReallyAnId,

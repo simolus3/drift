@@ -113,6 +113,8 @@ class BlobType extends SqlType<Uint8List> {
 }
 
 class RealType extends SqlType<num> {
+  const RealType();
+
   @override
   num mapFromDatabaseResponse(response) => response as num;
 

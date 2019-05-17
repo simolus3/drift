@@ -13,7 +13,8 @@ class SqlTypeSystem {
           StringType(),
           IntType(),
           DateTimeType(),
-          BlobType()
+          BlobType(),
+          RealType(),
         ]);
 
   /// Returns the appropriate sql type for the dart type provided as the

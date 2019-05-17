@@ -10,7 +10,7 @@ class DataClassWriter {
   DataClassWriter(this.table);
 
   void writeInto(StringBuffer buffer) {
-    buffer.write('class ${table.dartTypeName} {\n');
+    buffer.write('class ${table.dartTypeName} extends DataClass {\n');
 
     // write individual fields
     for (var column in table.columns) {
@@ -115,7 +115,7 @@ class DataClassWriter {
   }
 
   void _writeToJson(StringBuffer buffer) {
-    buffer.write('Map<String, dynamic> toJson() {\n return {');
+    buffer.write('@override Map<String, dynamic> toJson() {\n return {');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;

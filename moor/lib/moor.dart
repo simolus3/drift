@@ -22,6 +22,7 @@ export 'package:moor/src/runtime/statements/insert.dart';
 export 'package:moor/src/runtime/statements/delete.dart';
 export 'package:moor/src/runtime/structure/columns.dart';
 export 'package:moor/src/runtime/structure/table_info.dart';
+export 'package:moor/src/runtime/data_class.dart';
 export 'package:moor/src/runtime/database.dart';
 export 'package:moor/src/types/sql_types.dart';
 export 'package:moor/src/runtime/migration.dart';
