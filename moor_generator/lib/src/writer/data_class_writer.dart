@@ -101,25 +101,34 @@ class DataClassWriter {
     final dataClassName = table.dartTypeName;
 
     buffer
-      ..write('factory $dataClassName.fromJson(Map<String, dynamic> json) {\n')
+      ..write('factory $dataClassName.fromJson('
+          'Map<String, dynamic> json,'
+          '{ValueSerializer serializer = const ValueSerializer.defaults()}'
+          ') {\n')
       ..write('return $dataClassName(');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
       final type = column.dartTypeName;
 
-      buffer.write("$getter: json['$getter'] as $type,");
+      buffer.write("$getter: serializer.fromJson<$type>(json['$getter']),");
     }
 
     buffer.write(');}\n');
   }
 
   void _writeToJson(StringBuffer buffer) {
-    buffer.write('@override Map<String, dynamic> toJson() {\n return {');
+    buffer.write('@override Map<String, dynamic> toJson('
+        '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
+        '\n return {');
 
     for (var column in table.columns) {
-      final getter = column.dartGetterName;
-      buffer.write("'$getter': $getter,");
+      final name = column.dartGetterName;
+      final needsThis = name == 'serializer';
+      final value = needsThis ? 'this.$name' : name;
+
+      buffer
+          .write("'$name': serializer.toJson<${column.dartTypeName}>($value),");
     }
 
     buffer.write('};}');

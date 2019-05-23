@@ -22,17 +22,19 @@ class Category extends DataClass {
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
     );
   }
-  factory Category.fromJson(Map<String, dynamic> json) {
+  factory Category.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Category(
-      id: json['id'] as int,
-      description: json['description'] as String,
+      id: serializer.fromJson<int>(json['id']),
+      description: serializer.fromJson<String>(json['description']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'description': description,
+      'id': serializer.toJson<int>(id),
+      'description': serializer.toJson<String>(description),
     };
   }
 
@@ -140,21 +142,23 @@ class Recipe extends DataClass {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
-  factory Recipe.fromJson(Map<String, dynamic> json) {
+  factory Recipe.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Recipe(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      instructions: json['instructions'] as String,
-      category: json['category'] as int,
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      instructions: serializer.fromJson<String>(json['instructions']),
+      category: serializer.fromJson<int>(json['category']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'title': title,
-      'instructions': instructions,
-      'category': category,
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'instructions': serializer.toJson<String>(instructions),
+      'category': serializer.toJson<int>(category),
     };
   }
 
@@ -295,19 +299,21 @@ class Ingredient extends DataClass {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}calories']),
     );
   }
-  factory Ingredient.fromJson(Map<String, dynamic> json) {
+  factory Ingredient.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Ingredient(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      caloriesPer100g: json['caloriesPer100g'] as int,
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      caloriesPer100g: serializer.fromJson<int>(json['caloriesPer100g']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'name': name,
-      'caloriesPer100g': caloriesPer100g,
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'caloriesPer100g': serializer.toJson<int>(caloriesPer100g),
     };
   }
 
@@ -433,19 +439,21 @@ class IngredientInRecipe extends DataClass {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}amount']),
     );
   }
-  factory IngredientInRecipe.fromJson(Map<String, dynamic> json) {
+  factory IngredientInRecipe.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return IngredientInRecipe(
-      recipe: json['recipe'] as int,
-      ingredient: json['ingredient'] as int,
-      amountInGrams: json['amountInGrams'] as int,
+      recipe: serializer.fromJson<int>(json['recipe']),
+      ingredient: serializer.fromJson<int>(json['ingredient']),
+      amountInGrams: serializer.fromJson<int>(json['amountInGrams']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'recipe': recipe,
-      'ingredient': ingredient,
-      'amountInGrams': amountInGrams,
+      'recipe': serializer.toJson<int>(recipe),
+      'ingredient': serializer.toJson<int>(ingredient),
+      'amountInGrams': serializer.toJson<int>(amountInGrams),
     };
   }
 

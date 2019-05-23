@@ -5,13 +5,14 @@ import 'dart:convert';
 abstract class DataClass {
   const DataClass();
 
-  // todo better docs, explain ValueSerializer
-
   /// Converts this object into a representation that can be encoded with
-  /// [json].
+  /// [json]. The [serializer] can be used to configure how individual values
+  /// will be encoded.
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()});
 
+  /// Converts this object into a json representation. The [serializer] can be
+  /// used to configure how individual values will be encoded.
   String toJsonString(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return json.encode(toJson(serializer: serializer));
@@ -21,9 +22,17 @@ abstract class DataClass {
 /// Serializer responsible for mapping atomic types from and to json.
 abstract class ValueSerializer {
   const ValueSerializer();
+
+  /// The default serializer encodes date times as a unix-timestamp in
+  /// milliseconds.
   const factory ValueSerializer.defaults() = _DefaultValueSerializer;
 
+  /// Converts the [value] to something that can be passed to
+  /// [JsonCodec.encode].
   dynamic toJson<T>(T value);
+
+  /// Inverse of [toJson]: Converts a value obtained from [JsonCodec.decode]
+  /// into a value that can be hold by data classes.
   T fromJson<T>(dynamic json);
 }
 

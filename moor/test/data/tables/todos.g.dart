@@ -33,23 +33,25 @@ class TodoEntry extends DataClass {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
-  factory TodoEntry.fromJson(Map<String, dynamic> json) {
+  factory TodoEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TodoEntry(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      content: json['content'] as String,
-      targetDate: json['targetDate'] as DateTime,
-      category: json['category'] as int,
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      content: serializer.fromJson<String>(json['content']),
+      targetDate: serializer.fromJson<DateTime>(json['targetDate']),
+      category: serializer.fromJson<int>(json['category']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'title': title,
-      'content': content,
-      'targetDate': targetDate,
-      'category': category,
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'content': serializer.toJson<String>(content),
+      'targetDate': serializer.toJson<DateTime>(targetDate),
+      'category': serializer.toJson<int>(category),
     };
   }
 
@@ -215,17 +217,19 @@ class Category extends DataClass {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
     );
   }
-  factory Category.fromJson(Map<String, dynamic> json) {
+  factory Category.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Category(
-      id: json['id'] as int,
-      description: json['description'] as String,
+      id: serializer.fromJson<int>(json['id']),
+      description: serializer.fromJson<String>(json['description']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'description': description,
+      'id': serializer.toJson<int>(id),
+      'description': serializer.toJson<String>(description),
     };
   }
 
@@ -340,23 +344,25 @@ class User extends DataClass {
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
     );
   }
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return User(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      isAwesome: json['isAwesome'] as bool,
-      profilePicture: json['profilePicture'] as Uint8List,
-      creationTime: json['creationTime'] as DateTime,
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      isAwesome: serializer.fromJson<bool>(json['isAwesome']),
+      profilePicture: serializer.fromJson<Uint8List>(json['profilePicture']),
+      creationTime: serializer.fromJson<DateTime>(json['creationTime']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'name': name,
-      'isAwesome': isAwesome,
-      'profilePicture': profilePicture,
-      'creationTime': creationTime,
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'isAwesome': serializer.toJson<bool>(isAwesome),
+      'profilePicture': serializer.toJson<Uint8List>(profilePicture),
+      'creationTime': serializer.toJson<DateTime>(creationTime),
     };
   }
 
@@ -515,17 +521,19 @@ class SharedTodo extends DataClass {
       user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user']),
     );
   }
-  factory SharedTodo.fromJson(Map<String, dynamic> json) {
+  factory SharedTodo.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return SharedTodo(
-      todo: json['todo'] as int,
-      user: json['user'] as int,
+      todo: serializer.fromJson<int>(json['todo']),
+      user: serializer.fromJson<int>(json['user']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'todo': todo,
-      'user': user,
+      'todo': serializer.toJson<int>(todo),
+      'user': serializer.toJson<int>(user),
     };
   }
 
@@ -632,17 +640,19 @@ class TableWithoutPKData extends DataClass {
           numType.mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
     );
   }
-  factory TableWithoutPKData.fromJson(Map<String, dynamic> json) {
+  factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TableWithoutPKData(
-      notReallyAnId: json['notReallyAnId'] as int,
-      someFloat: json['someFloat'] as num,
+      notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
+      someFloat: serializer.fromJson<num>(json['someFloat']),
     );
   }
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'notReallyAnId': notReallyAnId,
-      'someFloat': someFloat,
+      'notReallyAnId': serializer.toJson<int>(notReallyAnId),
+      'someFloat': serializer.toJson<num>(someFloat),
     };
   }
 
