@@ -12,7 +12,7 @@ class _$ColumnName extends ColumnName {
   @override
   final String name;
 
-  factory _$ColumnName([void updates(ColumnNameBuilder b)]) =>
+  factory _$ColumnName([void Function(ColumnNameBuilder) updates]) =>
       (new ColumnNameBuilder()..update(updates)).build();
 
   _$ColumnName._({this.implicit, this.name}) : super._() {
@@ -25,7 +25,7 @@ class _$ColumnName extends ColumnName {
   }
 
   @override
-  ColumnName rebuild(void updates(ColumnNameBuilder b)) =>
+  ColumnName rebuild(void Function(ColumnNameBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
@@ -84,7 +84,7 @@ class ColumnNameBuilder implements Builder<ColumnName, ColumnNameBuilder> {
   }
 
   @override
-  void update(void updates(ColumnNameBuilder b)) {
+  void update(void Function(ColumnNameBuilder) updates) {
     if (updates != null) updates(this);
   }
 
@@ -102,13 +102,15 @@ class _$LimitingTextLength extends LimitingTextLength {
   @override
   final int maxLength;
 
-  factory _$LimitingTextLength([void updates(LimitingTextLengthBuilder b)]) =>
+  factory _$LimitingTextLength(
+          [void Function(LimitingTextLengthBuilder) updates]) =>
       (new LimitingTextLengthBuilder()..update(updates)).build();
 
   _$LimitingTextLength._({this.minLength, this.maxLength}) : super._();
 
   @override
-  LimitingTextLength rebuild(void updates(LimitingTextLengthBuilder b)) =>
+  LimitingTextLength rebuild(
+          void Function(LimitingTextLengthBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
@@ -169,7 +171,7 @@ class LimitingTextLengthBuilder
   }
 
   @override
-  void update(void updates(LimitingTextLengthBuilder b)) {
+  void update(void Function(LimitingTextLengthBuilder) updates) {
     if (updates != null) updates(this);
   }
 
