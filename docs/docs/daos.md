@@ -16,7 +16,7 @@ part 'todos_dao.g.dart';
 // fields for the tables. The <MyDatabase> type annotation is the database class
 // that should use this dao.
 @UseDao(tables: [Todos])
-class TodosDao extends DatabaseAccessor<MyDatabase> with _TodosDaoMixin {
+class TodosDao extends DatabaseAccessor<MyDatabase> with _$TodosDaoMixin {
   // this constructor is required so that the main database can create an instance
   // of this object.
   TodosDao(MyDatabase db) : super(db);
