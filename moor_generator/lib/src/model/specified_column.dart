@@ -42,6 +42,10 @@ class SpecifiedColumn {
   /// The name of this column, as chosen by the user
   final ColumnName name;
 
+  /// An (optional) name to use as a json key instead of the [dartGetterName].
+  final String overriddenJsonName;
+  String get jsonKey => overriddenJsonName ?? dartGetterName;
+
   /// Whether the user has explicitly declared this column to be nullable, the
   /// default is false
   final bool nullable;
@@ -114,6 +118,7 @@ class SpecifiedColumn {
     this.type,
     this.dartGetterName,
     this.name,
+    this.overriddenJsonName,
     this.customConstraints,
     this.declaredAsPrimaryKey = false,
     this.nullable = false,

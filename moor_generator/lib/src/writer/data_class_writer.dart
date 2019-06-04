@@ -109,9 +109,10 @@ class DataClassWriter {
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
+      final jsonKey = column.jsonKey;
       final type = column.dartTypeName;
 
-      buffer.write("$getter: serializer.fromJson<$type>(json['$getter']),");
+      buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
     }
 
     buffer.write(');}\n');
@@ -123,9 +124,10 @@ class DataClassWriter {
         '\n return {');
 
     for (var column in table.columns) {
-      final name = column.dartGetterName;
-      final needsThis = name == 'serializer';
-      final value = needsThis ? 'this.$name' : name;
+      final name = column.jsonKey;
+      final getter = column.dartGetterName;
+      final needsThis = getter == 'serializer';
+      final value = needsThis ? 'this.$getter' : getter;
 
       buffer
           .write("'$name': serializer.toJson<${column.dartTypeName}>($value),");

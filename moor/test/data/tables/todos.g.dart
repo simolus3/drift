@@ -39,7 +39,7 @@ class TodoEntry extends DataClass {
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
-      targetDate: serializer.fromJson<DateTime>(json['targetDate']),
+      targetDate: serializer.fromJson<DateTime>(json['target_date']),
       category: serializer.fromJson<int>(json['category']),
     );
   }
@@ -50,7 +50,7 @@ class TodoEntry extends DataClass {
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
-      'targetDate': serializer.toJson<DateTime>(targetDate),
+      'target_date': serializer.toJson<DateTime>(targetDate),
       'category': serializer.toJson<int>(category),
     };
   }

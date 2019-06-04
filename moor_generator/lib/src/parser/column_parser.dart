@@ -1,8 +1,10 @@
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
 import 'package:moor_generator/src/moor_generator.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 
 const String startInt = 'integer';
@@ -12,8 +14,14 @@ const String startDateTime = 'dateTime';
 const String startBlob = 'blob';
 const String startReal = 'real';
 
-final Set<String> starters =
-    {startInt, startString, startBool, startDateTime, startBlob, startReal};
+final Set<String> starters = {
+  startInt,
+  startString,
+  startBool,
+  startDateTime,
+  startBlob,
+  startReal
+};
 
 const String _methodNamed = 'named';
 const String _methodPrimaryKey = 'primaryKey';
@@ -31,7 +39,7 @@ const String _errorMessage = 'This getter does not create a valid column that '
 class ColumnParser extends ParserBase {
   ColumnParser(MoorGenerator generator) : super(generator);
 
-  SpecifiedColumn parse(MethodDeclaration getter) {
+  SpecifiedColumn parse(MethodDeclaration getter, Element getterElement) {
     /*
       These getters look like this: ... get id => integer().autoIncrement()();
       The last () is a FunctionExpressionInvocation, the entries before that
@@ -158,6 +166,7 @@ class ColumnParser extends ParserBase {
       type: _startMethodToColumnType(foundStartMethod),
       dartGetterName: getter.name.name,
       name: name,
+      overriddenJsonName: _readJsonKey(getterElement),
       declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
       customConstraints: foundCustomConstraint,
       nullable: nullable,
@@ -175,5 +184,17 @@ class ColumnParser extends ParserBase {
       startBlob: ColumnType.blob,
       startReal: ColumnType.real,
     }[startMethod];
+  }
+
+  String _readJsonKey(Element getter) {
+    final annotations = getter.metadata;
+    final object = annotations.singleWhere((e) {
+      final value = e.computeConstantValue();
+      return isFromMoor(value.type) && value.type.name == 'JsonKey';
+    }, orElse: () => null);
+
+    if (object == null) return null;
+
+    return object.constantValue.getField('key').toStringValue();
   }
 }

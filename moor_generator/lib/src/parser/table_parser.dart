@@ -111,20 +111,14 @@ class TableParser extends ParserBase {
     return parsedPrimaryKey;
   }
 
-  Iterable<MethodDeclaration> _findColumnGetters(ClassElement element) {
+  List<SpecifiedColumn> _parseColumns(ClassElement element) {
     return element.fields
         .where((field) => isColumn(field.type) && field.getter != null)
         .map((field) {
-      final node = generator.loadElementDeclaration(field.getter).node;
+      final node = generator.loadElementDeclaration(field.getter).node
+          as MethodDeclaration;
 
-      return node as MethodDeclaration;
-    });
+      return generator.columnParser.parse(node, field.getter);
+    }).toList();
   }
-
-  SpecifiedColumn _parseColumn(MethodDeclaration getter) {
-    return generator.columnParser.parse(getter);
-  }
-
-  List<SpecifiedColumn> _parseColumns(ClassElement element) =>
-      _findColumnGetters(element).map(_parseColumn).toList();
 }

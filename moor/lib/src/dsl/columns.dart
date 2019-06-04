@@ -130,3 +130,27 @@ class TextColumnBuilder
 
 class DateTimeColumnBuilder extends ColumnBuilder<DateTimeColumnBuilder,
     DateTimeColumn, DateTimeType, DateTime> {}
+
+/// Annotation to use on column getters inside of a [Table] to define the name
+/// of the column in the json used by [DataClass.toJson].
+///
+/// Example:
+/// ```dart
+/// class Users extends Table {
+///   IntColumn get id => integer().autoIncrement()();
+///   @JsonKey('user_name')
+///   TextColumn get name => text().nullable()();
+/// }
+/// ```
+/// When calling [DataClass.toJson] on a `User` object, the output will be a map
+/// with the keys "id" and "user_name". The output would be "id" and "name" if
+/// the [JsonKey] annotation was omitted.
+class JsonKey {
+  /// The key in the json map to use for this [Column]. See the documentation
+  /// for [JsonKey] for details.
+  final String key;
+
+  /// An annotation to tell moor how the name of a column should appear in
+  /// generated json. See the documentation for [JsonKey] for details.
+  const JsonKey(this.key);
+}
