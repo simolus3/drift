@@ -66,9 +66,9 @@ class Database extends _$Database {
     // each category
     return customSelectStream(
       'SELECT c.*, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount'
-          ' FROM categories c '
-          'UNION ALL SELECT null, null, '
-          '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
+      ' FROM categories c '
+      'UNION ALL SELECT null, null, '
+      '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
       readsFrom: {todos, categories},
     ).map((rows) {
       // when we have the result set, map each row to the data class
