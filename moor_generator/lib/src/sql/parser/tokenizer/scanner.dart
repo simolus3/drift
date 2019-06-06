@@ -84,11 +84,15 @@ class Scanner {
         if (_match("'")) {
           _string(binary: false);
         } else {
-          // todo probably an identifier if it doesn't start a string literal?
+          _identifier();
         }
         break;
       case "'":
         _string();
+        break;
+      case '"':
+        // todo sqlite also allows string literals with double ticks, we don't
+        _identifier(escapedInQuotes: true);
         break;
       case ' ':
       case '\t':
@@ -99,6 +103,8 @@ class Scanner {
       default:
         if (isDigit(char)) {
           _numeric(char);
+        } else if (canStartColumnName(char)) {
+          _identifier();
         }
         errors.add(TokenizerError(
             'Unexpected character.', SourceLocation(_currentOffset)));
@@ -118,7 +124,9 @@ class Scanner {
 
   bool _match(String expected) {
     if (_isAtEnd) return false;
-    if (source.substring(_currentOffset, 1) != expected) return false;
+    if (source.substring(_currentOffset, _currentOffset + 1) != expected) {
+      return false;
+    }
     _currentOffset++;
     return true;
   }
@@ -150,14 +158,14 @@ class Scanner {
     // We basically have three cases: hexadecimal numbers (starting with 0x),
     // numbers starting with a decimal dot and numbers starting with a digit.
     if (firstChar == '0') {
-      if (!_isAtEnd && _peek() == 'x') {
+      if (!_isAtEnd && (_peek() == 'x' || _peek() == 'X')) {
         _nextChar(); // consume the x
         // advance hexadecimal digits
-        while (isDigit(_peek()) && _isAtEnd) {
+        while (!_isAtEnd && isHexDigit(_peek())) {
           _nextChar();
-          _addToken(TokenType.numberLiteral);
-          return;
         }
+        _addToken(TokenType.numberLiteral);
+        return;
       }
     }
 
@@ -207,7 +215,7 @@ class Scanner {
 
     // ok, we've read the first part of the number. But there's more! If it's
     // not a hexadecimal number, it could be in scientific notation.
-    if (!_isAtEnd && _peek() == 'e' || _peek() == 'E') {
+    if (!_isAtEnd && (_peek() == 'e' || _peek() == 'E')) {
       _nextChar(); // consume e or E
 
       if (_isAtEnd) {
@@ -232,6 +240,33 @@ class Scanner {
               .add(TokenizerError('Expected plus or minus', _currentLocation));
         }
       }
+    } else {
+      // ok, no scientific notation
+      _addToken(TokenType.numberLiteral);
+    }
+  }
+
+  void _identifier({bool escapedInQuotes = false}) {
+    if (escapedInQuotes) {
+      // find the closing quote
+      while (_peek() != '"' && !_isAtEnd) {
+        _nextChar();
+      }
+      // Issue an error if the column name is unterminated
+      if (_isAtEnd) {
+        errors
+            .add(TokenizerError('Unterminated column name', _currentLocation));
+      } else {
+        // consume the closing double quote
+        _nextChar();
+        tokens.add(IdentifierToken(true, _currentSpan));
+      }
+    } else {
+      while (!_isAtEnd && continuesColumnName(_peek())) {
+        _nextChar();
+      }
+
+      tokens.add(IdentifierToken(false, _currentSpan));
     }
   }
 }

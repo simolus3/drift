@@ -17,6 +17,7 @@ enum TokenType {
 
   stringLiteral,
   numberLiteral,
+  identifier,
 
   eof,
 }
@@ -37,6 +38,15 @@ class StringLiteral extends Token {
 
   const StringLiteral(this.value, SourceSpan span, {this.binary = false})
       : super(TokenType.stringLiteral, span);
+}
+
+class IdentifierToken extends Token {
+  /// In sql, identifiers can be put in "double quotes", in which case they are
+  /// always interpreted as an column name.
+  final bool escapedColumnName;
+
+  const IdentifierToken(this.escapedColumnName, SourceSpan span)
+      : super(TokenType.identifier, span);
 }
 
 class TokenizerError {
