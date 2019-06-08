@@ -2,7 +2,10 @@ import 'package:moor/moor.dart';
 import 'expression.dart';
 
 abstract class IntExpression extends Expression<int, IntType>
-    with ComparableExpr {}
+    implements ComparableExpr<int, IntType> {}
+
+abstract class DoubleExpression extends Expression<double, RealType>
+    implements ComparableExpr<double, RealType> {}
 
 mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly bigger

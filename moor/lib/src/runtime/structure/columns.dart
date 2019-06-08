@@ -193,18 +193,25 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
 class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
     implements BlobColumn {
   GeneratedBlobColumn(String $name, String tableName, bool $nullable,
-      {String $customConstraints})
+      {String $customConstraints, Expression<Uint8List, BlobType> defaultValue})
       : super($name, tableName, $nullable,
-            $customConstraints: $customConstraints);
+            $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
   final String typeName = 'BLOB';
 }
 
-class GeneratedRealColumn extends GeneratedColumn<num, RealType>
+class GeneratedRealColumn extends GeneratedColumn<double, RealType>
+    with ComparableExpr
     implements RealColumn {
-  GeneratedRealColumn(String $name, String tableName, bool $nullable)
-      : super($name, tableName, $nullable);
+  GeneratedRealColumn(
+    String $name,
+    String tableName,
+    bool $nullable, {
+    Expression<double, RealType> defaultValue,
+    String $customConstraints,
+  }) : super($name, tableName, $nullable,
+            defaultValue: defaultValue, $customConstraints: $customConstraints);
 
   @override
   String get typeName => 'REAL';

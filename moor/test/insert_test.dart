@@ -24,6 +24,18 @@ void main() {
         ['Implement insert statements']));
   });
 
+  test('can insert floating point values', () async {
+    // regression test for https://github.com/simolus3/moor/issues/30
+    await db
+        .into(db.tableWithoutPK)
+        .insert(TableWithoutPKData(notReallyAnId: 42, someFloat: 3.1415));
+
+    verify(executor.runInsert(
+        'INSERT INTO table_without_p_k '
+        '(not_really_an_id, some_float) VALUES (?, ?)',
+        [42, 3.1415]));
+  });
+
   test('generates insert or replace statements', () async {
     await db.into(db.todosTable).insert(
         TodoEntry(

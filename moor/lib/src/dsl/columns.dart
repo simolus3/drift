@@ -28,7 +28,8 @@ abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
 abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 
 /// A column that stores floating point numeric values.
-abstract class RealColumn extends Column<num, RealType> {}
+abstract class RealColumn extends Column<double, RealType>
+    implements DoubleExpression {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to

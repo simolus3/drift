@@ -76,7 +76,7 @@ class SpecifiedColumn {
         ColumnType.integer: 'int',
         ColumnType.datetime: 'DateTime',
         ColumnType.blob: 'Uint8List',
-        ColumnType.real: 'num',
+        ColumnType.real: 'double',
       }[type];
 
   /// The column type from the dsl library. For instance, if a table has

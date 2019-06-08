@@ -625,26 +625,26 @@ class $SharedTodosTable extends SharedTodos
 
 class TableWithoutPKData extends DataClass {
   final int notReallyAnId;
-  final num someFloat;
+  final double someFloat;
   TableWithoutPKData({this.notReallyAnId, this.someFloat});
   factory TableWithoutPKData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
-    final numType = db.typeSystem.forDartType<num>();
+    final doubleType = db.typeSystem.forDartType<double>();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
-      someFloat:
-          numType.mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
+      someFloat: doubleType
+          .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
     );
   }
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TableWithoutPKData(
       notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
-      someFloat: serializer.fromJson<num>(json['someFloat']),
+      someFloat: serializer.fromJson<double>(json['someFloat']),
     );
   }
   @override
@@ -652,11 +652,11 @@ class TableWithoutPKData extends DataClass {
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
       'notReallyAnId': serializer.toJson<int>(notReallyAnId),
-      'someFloat': serializer.toJson<num>(someFloat),
+      'someFloat': serializer.toJson<double>(someFloat),
     };
   }
 
-  TableWithoutPKData copyWith({int notReallyAnId, num someFloat}) =>
+  TableWithoutPKData copyWith({int notReallyAnId, double someFloat}) =>
       TableWithoutPKData(
         notReallyAnId: notReallyAnId ?? this.notReallyAnId,
         someFloat: someFloat ?? this.someFloat,
@@ -737,7 +737,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId);
     }
     if (d.someFloat != null || includeNulls) {
-      map['some_float'] = Variable<num, RealType>(d.someFloat);
+      map['some_float'] = Variable<double, RealType>(d.someFloat);
     }
     return map;
   }

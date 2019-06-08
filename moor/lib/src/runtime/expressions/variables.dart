@@ -37,7 +37,7 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   }
 
   /// Creates a variable that holds the specified floating point value.
-  static Variable<num, RealType> withReal(num value) {
+  static Variable<double, RealType> withReal(double value) {
     return Variable(value);
   }
 

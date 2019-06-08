@@ -112,11 +112,11 @@ class BlobType extends SqlType<Uint8List> {
   mapToSqlVariable(content) => content;
 }
 
-class RealType extends SqlType<num> {
+class RealType extends SqlType<double> {
   const RealType();
 
   @override
-  num mapFromDatabaseResponse(response) => response as num;
+  double mapFromDatabaseResponse(response) => (response as num).toDouble();
 
   @override
   String mapToSqlConstant(num content) => content.toString();
