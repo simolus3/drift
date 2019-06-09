@@ -1,3 +1,8 @@
+## 1.4.0
+- Added the `RealColumn`, which stores floating point values
+- Better configuration for the serializer with the `JsonKey` annotation and the ability to
+use a custom `ValueSerializer`
+
 ## 1.3.0
 - Moor now supports table joins
   - Added table aliases

@@ -12,11 +12,11 @@ dependencies:
   intl:
   cupertino_icons: ^0.1.2
   rxdart: 0.21.0
-  moor_flutter: ^1.1.0
+  moor_flutter: ^1.4.0
 
 dev_dependencies:
   build_runner:
-  moor_generator: ^1.1.0
+  moor_generator: ^1.4.0
   flutter_test:
     sdk: flutter
 

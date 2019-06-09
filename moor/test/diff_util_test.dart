@@ -8,7 +8,7 @@ List<T> applyEditScript<T>(List<T> a, List<T> b, List<EditAction> actions) {
     if (action.isDelete) {
       final deleteStartIndex = action.index;
       copy.removeRange(deleteStartIndex, deleteStartIndex + action.amount);
-    } else {
+    } else if (action.isInsert) {
       final toAdd = b.getRange(
           action.indexFromOther, action.indexFromOther + action.amount);
       copy.insertAll(action.index, toAdd);
