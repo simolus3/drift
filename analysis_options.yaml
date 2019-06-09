@@ -30,6 +30,7 @@ linter:
     - cascade_invocations
     - comment_references
     - constant_identifier_names
+    - curly_braces_in_flow_control_structures
     - control_flow_in_finally
     - directives_ordering
     - empty_catches

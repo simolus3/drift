@@ -34,10 +34,11 @@ class ParserBase {
       onError();
     } else {
       final value = (expression as StringLiteral).stringValue;
-      if (value == null)
+      if (value == null) {
         onError();
-      else
+      } else {
         return value;
+      }
     }
 
     return null;

@@ -93,10 +93,10 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     // because all the fields from the entity will be written (as opposed to a
     // regular update, where only non-null fields will be written). If isInserted
     // was false, the null fields would not be validated.
-    if (!table.validateIntegrity(entity, true))
+    if (!table.validateIntegrity(entity, true)) {
       throw InvalidDataException('Invalid data: $entity cannot be used to '
           'replace another row as some required fields are null or invalid.');
-
+    }
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'
