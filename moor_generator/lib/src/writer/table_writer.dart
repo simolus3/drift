@@ -1,12 +1,14 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
 import 'package:moor_generator/src/writer/utils.dart';
 
 class TableWriter {
   final SpecifiedTable table;
+  final MoorOptions options;
 
-  TableWriter(this.table);
+  TableWriter(this.table, this.options);
 
   void writeInto(StringBuffer buffer) {
     writeDataClass(buffer);
@@ -14,7 +16,7 @@ class TableWriter {
   }
 
   void writeDataClass(StringBuffer buffer) {
-    DataClassWriter(table).writeInto(buffer);
+    DataClassWriter(table, options).writeInto(buffer);
   }
 
   void writeTableInfoClass(StringBuffer buffer) {

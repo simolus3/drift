@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/options.dart';
 import 'package:recase/recase.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/writer/table_writer.dart';
@@ -5,13 +6,14 @@ import 'utils.dart';
 
 class DatabaseWriter {
   final SpecifiedDatabase db;
+  final MoorOptions options;
 
-  DatabaseWriter(this.db);
+  DatabaseWriter(this.db, this.options);
 
   void write(StringBuffer buffer) {
     // Write referenced tables
     for (final table in db.tables) {
-      TableWriter(table).writeInto(buffer);
+      TableWriter(table, options).writeInto(buffer);
     }
 
     // Write the database class

@@ -7,6 +7,7 @@ import 'package:build/build.dart';
 import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
@@ -15,6 +16,7 @@ import 'package:source_gen/source_gen.dart';
 class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
   //final Map<String, ParsedLibraryResult> _astForLibs = {};
   final ErrorStore errors = ErrorStore();
+  final MoorOptions options;
 
   TableParser tableParser;
   ColumnParser columnParser;
@@ -22,6 +24,8 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
   final tableTypeChecker = const TypeChecker.fromRuntime(Table);
 
   final Map<DartType, SpecifiedTable> _foundTables = {};
+
+  MoorGenerator(this.options);
 
   ElementDeclarationResult loadElementDeclaration(Element element) {
     /*final result = _astForLibs.putIfAbsent(element.library.name, () {
@@ -84,7 +88,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     final buffer = StringBuffer()
       ..write('// ignore_for_file: unnecessary_brace_in_string_interps\n');
 
-    DatabaseWriter(specifiedDb).write(buffer);
+    DatabaseWriter(specifiedDb, options).write(buffer);
 
     return buffer.toString();
   }

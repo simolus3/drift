@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/moor_generator.dart';
@@ -50,7 +51,7 @@ void main() async {
   });
 
   setUp(() {
-    generator = MoorGenerator();
+    generator = MoorGenerator(const MoorOptions.defaults());
     generator
       ..columnParser = ColumnParser(generator)
       ..tableParser = TableParser(generator);

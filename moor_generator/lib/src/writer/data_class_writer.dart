@@ -1,4 +1,5 @@
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/options.dart';
 import 'package:recase/recase.dart';
 
 const _hashCombine = '\$mrjc';
@@ -6,8 +7,9 @@ const _hashFinish = '\$mrjf';
 
 class DataClassWriter {
   final SpecifiedTable table;
+  final MoorOptions options;
 
-  DataClassWriter(this.table);
+  DataClassWriter(this.table, this.options);
 
   void writeInto(StringBuffer buffer) {
     buffer.write('class ${table.dartTypeName} extends DataClass {\n');
@@ -116,6 +118,15 @@ class DataClassWriter {
     }
 
     buffer.write(');}\n');
+
+    if (options.generateFromJsonStringConstructor) {
+      // also generate a constructor that only takes a json string
+      buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
+          '{ValueSerializer serializer = const ValueSerializer.defaults()}) => '
+          '$dataClassName.fromJson('
+          'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
+          'serializer: serializer);');
+    }
   }
 
   void _writeToJson(StringBuffer buffer) {
