@@ -116,10 +116,15 @@ class RealType extends SqlType<double> {
   const RealType();
 
   @override
-  double mapFromDatabaseResponse(response) => (response as num).toDouble();
+  double mapFromDatabaseResponse(response) => (response as num)?.toDouble();
 
   @override
-  String mapToSqlConstant(num content) => content.toString();
+  String mapToSqlConstant(num content) {
+    if (content == null) {
+      return 'NULL';
+    }
+    return content.toString();
+  }
 
   @override
   mapToSqlVariable(num content) => content;
