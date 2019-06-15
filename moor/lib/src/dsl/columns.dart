@@ -89,6 +89,12 @@ class ColumnBuilder<
   /// Particularly, you can use methods like [and], [or] and [not] to form
   /// expressions here.
   ///
+  /// If you need a column that just stores a static default value, you could
+  /// use this method with a [Constant]:
+  /// ```dart
+  /// IntColumn get level => int().withDefault(const Constant(1))();
+  /// ```
+  ///
   /// See also:
   /// - [Constant], which can be used to model literals that appear in CREATE
   /// TABLE statements.
