@@ -6,6 +6,20 @@ import 'package:test_api/test_api.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
+final _dataOfTodoEntry = {
+  'id': 10,
+  'title': 'A todo title',
+  'content': 'Content',
+  'category': 3
+};
+
+final _todoEntry = TodoEntry(
+  id: 10,
+  title: 'A todo title',
+  content: 'Content',
+  category: 3,
+);
+
 void main() {
   TodoDb db;
   MockExecutor executor;
@@ -78,20 +92,10 @@ void main() {
 
   group('SELECT results are parsed', () {
     test('when all fields are non-null', () {
-      final data = [
-        {'id': 10, 'title': 'A todo title', 'content': 'Content', 'category': 3}
-      ];
-      final resolved = TodoEntry(
-        id: 10,
-        title: 'A todo title',
-        content: 'Content',
-        category: 3,
-      );
-
       when(executor.runSelect('SELECT * FROM todos;', any))
-          .thenAnswer((_) => Future.value(data));
+          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
 
-      expect(db.select(db.todosTable).get(), completion([resolved]));
+      expect(db.select(db.todosTable).get(), completion([_todoEntry]));
     });
 
     test('when some fields are null', () {
@@ -114,6 +118,37 @@ void main() {
           .thenAnswer((_) => Future.value(data));
 
       expect(db.select(db.todosTable).get(), completion([resolved]));
+    });
+  });
+
+  group('queries for a single row', () {
+    test('get once', () {
+      when(executor.runSelect('SELECT * FROM todos;', any))
+          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
+
+      expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
+    });
+
+    test('get multiple times', () {
+      final resultRows = <List<Map<String, dynamic>>>[
+        [_dataOfTodoEntry],
+        [],
+        [_dataOfTodoEntry, _dataOfTodoEntry],
+      ];
+      var _currentRow = 0;
+
+      when(executor.runSelect('SELECT * FROM todos;', any)).thenAnswer((_) {
+        return Future.value(resultRows[_currentRow++]);
+      });
+
+      expectLater(
+          db.select(db.todosTable).watchSingle(),
+          emitsInOrder(
+              [_todoEntry, emitsError(anything), emitsError(anything)]));
+
+      db
+        ..markTablesUpdated({db.todosTable})
+        ..markTablesUpdated({db.todosTable});
     });
   });
 }

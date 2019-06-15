@@ -142,8 +142,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// value.
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(query, variables, <TableInfo>{}, this)
-        .execute();
+    return CustomSelectStatement(query, variables, <TableInfo>{}, this).get();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -155,7 +154,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
     final tables = readsFrom ?? <TableInfo>{};
     final statement = CustomSelectStatement(query, variables, tables, this);
-    return createStream(statement.constructFetcher());
+    return statement.watch();
   }
 
   /// Executes [action] in a transaction, which means that all its queries and

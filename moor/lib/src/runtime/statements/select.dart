@@ -14,7 +14,8 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
 class JoinedSelectStatement<FirstT extends Table, FirstD>
-    extends Query<FirstT, FirstD> with LimitContainerMixin {
+    extends Query<FirstT, FirstD>
+    with LimitContainerMixin, Selectable<TypedResult> {
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins)
       : super(database, table);
@@ -97,8 +98,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
     orderByExpr = OrderBy(terms);
   }
 
-  /// Creates an auto-updating stream of the result that emits new items
-  /// whenever any table of this statement changes.
+  @override
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher<List<TypedResult>>(
@@ -110,7 +110,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
     return database.createStream(fetcher);
   }
 
-  /// Executes this statement and returns the result.
+  @override
   Future<List<TypedResult>> get() async {
     final ctx = constructQuery();
     return _getWithQuery(ctx);
@@ -143,7 +143,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
 
 /// A select statement that doesn't use joins
 class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
-    with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D> {
+    with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D> {
   SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
@@ -155,7 +155,7 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
     ctx.buffer.write('SELECT * FROM ${table.tableWithAlias}');
   }
 
-  /// Loads and returns all results from this select query.
+  @override
   Future<List<D>> get() async {
     final ctx = constructQuery();
     return _getWithQuery(ctx);
@@ -212,8 +212,7 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
     orderByExpr = OrderBy(clauses.map((t) => t(table.asDslTable)).toList());
   }
 
-  /// Creates an auto-updating stream that emits new items whenever this table
-  /// changes.
+  @override
   Stream<List<D>> watch() {
     final query = constructQuery();
     final fetcher = QueryStreamFetcher<List<D>>(
@@ -228,7 +227,7 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
 
 /// A select statement that is constructed with a raw sql prepared statement
 /// instead of the high-level moor api.
-class CustomSelectStatement {
+class CustomSelectStatement with Selectable<QueryRow> {
   /// Tables this select statement reads from. When turning this select query
   /// into an auto-updating stream, that stream will emit new items whenever
   /// any of these tables changes.
@@ -242,12 +241,21 @@ class CustomSelectStatement {
   final List<Variable> variables;
   final QueryEngine _db;
 
-  /// Constructs a new
+  /// Constructs a new custom select statement for the query, the variables,
+  /// the affected tables and the database.
   CustomSelectStatement(this.query, this.variables, this.tables, this._db);
 
   /// Constructs a fetcher for this query. The fetcher is responsible for
   /// updating a stream at the right moment.
+  @Deprecated(
+      'There is no need to use this method. Please use watch() directly')
   QueryStreamFetcher<List<QueryRow>> constructFetcher() {
+    return _constructFetcher();
+  }
+
+  /// Constructs a fetcher for this query. The fetcher is responsible for
+  /// updating a stream at the right moment.
+  QueryStreamFetcher<List<QueryRow>> _constructFetcher() {
     final args = _mapArgs();
 
     return QueryStreamFetcher<List<QueryRow>>(
@@ -257,9 +265,20 @@ class CustomSelectStatement {
     );
   }
 
-  /// Executes this query and returns the result.
-  Future<List<QueryRow>> execute() async {
+  @override
+  Future<List<QueryRow>> get() async {
     return _executeWithMappedArgs(_mapArgs());
+  }
+
+  @override
+  Stream<List<QueryRow>> watch() {
+    return _db.createStream(_constructFetcher());
+  }
+
+  /// Executes this query and returns the result.
+  @Deprecated('Use get() instead')
+  Future<List<QueryRow>> execute() async {
+    return get();
   }
 
   List<dynamic> _mapArgs() {

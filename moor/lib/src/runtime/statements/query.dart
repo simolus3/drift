@@ -10,6 +10,7 @@ import 'package:moor/src/runtime/expressions/custom.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/types/sql_types.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
+import 'package:moor/src/utils/single_transformer.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
@@ -65,6 +66,47 @@ abstract class Query<T extends Table, DataClass> {
     ctx.buffer.write(';');
 
     return ctx;
+  }
+}
+
+/// Abstract class for queries which can return one-time values or a stream
+/// of values.
+abstract class Selectable<T> {
+  /// Executes this statement and returns the result.
+  Future<List<T>> get();
+
+  /// Creates an auto-updating stream of the result that emits new items
+  /// whenever any table used in this statement changes.
+  Stream<List<T>> watch();
+
+  /// Executes this statement, like [get], but only returns one value. If the
+  /// result has no or too many values, this method will throw.
+  ///
+  /// Be aware that this operation won't put a limit clause on this statement,
+  /// if that's needed you would have to do that yourself.
+  Future<T> getSingle() async {
+    final list = await get();
+    final iterator = list.iterator;
+
+    if (!iterator.moveNext()) {
+      throw StateError('Expected exactly one result, but actually there were '
+          'none!');
+    }
+    final element = iterator.current;
+    if (iterator.moveNext()) {
+      throw StateError('Expected exactly one result, but found more than one!');
+    }
+
+    return element;
+  }
+
+  /// Creates an auto-updating stream of this statement, similar to [watch].
+  /// However, it is assumed that the query will only emit one result, so
+  /// instead of returning a [Stream<List<T>>], this returns a [Stream<T>]. If
+  /// the query emits more than one row at some point, an error will be emitted
+  /// to the stream instead.
+  Stream<T> watchSingle() {
+    return watch().transform(singleElements());
   }
 }
 
