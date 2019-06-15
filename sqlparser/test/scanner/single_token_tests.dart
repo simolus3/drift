@@ -1,6 +1,6 @@
-import 'package:moor_generator/src/sql/parser/tokenizer/scanner.dart';
-import 'package:moor_generator/src/sql/parser/tokenizer/token.dart';
-import 'package:test_api/test_api.dart';
+import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
+import 'package:test/test.dart';
 
 void expectFullToken(String token, TokenType type) {
   final scanner = Scanner(token);
@@ -41,7 +41,7 @@ Map<String, TokenType> testCases = {
   '.123e-3': TokenType.numberLiteral,
   '0xFF13': TokenType.numberLiteral,
   '0Xf13A': TokenType.numberLiteral,
-  'SELECT': TokenType.identifier,
+  'SELECT': TokenType.select,
   '"UPDATE"': TokenType.identifier,
 };
 

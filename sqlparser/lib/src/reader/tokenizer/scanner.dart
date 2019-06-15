@@ -1,6 +1,6 @@
-import 'package:moor_generator/src/sql/parser/tokenizer/token.dart';
-import 'package:moor_generator/src/sql/parser/tokenizer/utils.dart';
 import 'package:source_span/source_span.dart';
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
+import 'package:sqlparser/src/reader/tokenizer/utils.dart';
 
 class Scanner {
   final String source;
@@ -69,15 +69,41 @@ class Scanner {
       case '/':
         _addToken(TokenType.slash);
         break;
+      case '%':
+        _addToken(TokenType.percent);
+        break;
+      case '&':
+        _addToken(TokenType.ampersand);
+        break;
+      case '|':
+        _addToken(_match('|') ? TokenType.doublePipe : TokenType.pipe);
+        break;
 
       case '<':
-        _addToken(_match('=') ? TokenType.lessEqual : TokenType.less);
+        if (_match('=')) {
+          _addToken(TokenType.lessEqual);
+        } else if (_match('<')) {
+          _addToken(TokenType.shiftLeft);
+        } else if (_match('>')) {
+          _addToken(TokenType.lessMore);
+        } else {
+          _addToken(TokenType.less);
+        }
         break;
       case '>':
-        _addToken(_match('=') ? TokenType.moreEqual : TokenType.more);
+        if (_match('=')) {
+          _addToken(TokenType.moreEqual);
+        } else if (_match('>')) {
+          _addToken(TokenType.shiftRight);
+        } else {
+          _addToken(TokenType.more);
+        }
         break;
       case '=':
-        _addToken(TokenType.equal);
+        _addToken(_match('=') ? TokenType.doubleEqual : TokenType.equal);
+        break;
+      case '~':
+        _addToken(TokenType.tilde);
         break;
 
       case 'x':
@@ -266,7 +292,13 @@ class Scanner {
         _nextChar();
       }
 
-      tokens.add(IdentifierToken(false, _currentSpan));
+      // not escaped, so it could be a keyword
+      final text = _currentSpan.text.toUpperCase();
+      if (keywords.containsKey(text)) {
+        _addToken(keywords[text]);
+      } else {
+        tokens.add(IdentifierToken(false, _currentSpan));
+      }
     }
   }
 }
