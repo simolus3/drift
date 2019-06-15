@@ -98,4 +98,19 @@ void main() {
           content: 'content',
         ));
   });
+
+  test('where and order-by clauses are kept', () async {
+    final todos = db.alias(db.todosTable, 't');
+    final categories = db.alias(db.categories, 'c');
+
+    final normalQuery = db.select(todos)
+      ..where((t) => t.id.isSmallerThanValue(3))
+      ..orderBy([(t) => OrderingTerm(expression: t.title)]);
+
+    await normalQuery.join(
+        [innerJoin(categories, categories.id.equalsExp(todos.category))]).get();
+
+    verify(executor.runSelect(
+        argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
+  });
 }

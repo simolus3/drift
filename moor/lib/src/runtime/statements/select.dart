@@ -93,7 +93,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
     }
   }
 
-  /// Orders the results of this staemen
+  /// Orders the results of this statement by the ordering [terms].
   void orderBy(List<OrderingTerm> terms) {
     orderByExpr = OrderBy(terms);
   }
@@ -191,7 +191,16 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
   ///  - [GeneratedDatabase.alias], which can be used to build statements that
   ///  refer to the same table multiple times.
   JoinedSelectStatement join(List<Join> joins) {
-    return JoinedSelectStatement(database, table, joins);
+    final statement = JoinedSelectStatement(database, table, joins);
+
+    if (whereExpr != null) {
+      statement.where(whereExpr.predicate);
+    }
+    if (orderByExpr != null) {
+      statement.orderBy(orderByExpr.terms);
+    }
+
+    return statement;
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
