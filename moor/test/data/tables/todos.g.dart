@@ -102,6 +102,7 @@ class $TodosTableTable extends TodosTable
   final GeneratedDatabase _db;
   final String _alias;
   $TodosTableTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -109,6 +110,7 @@ class $TodosTableTable extends TodosTable
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _titleMeta = const VerificationMeta('title');
   GeneratedTextColumn _title;
   @override
   GeneratedTextColumn get title => _title ??= _constructTitle();
@@ -117,6 +119,7 @@ class $TodosTableTable extends TodosTable
         minTextLength: 4, maxTextLength: 16);
   }
 
+  final VerificationMeta _contentMeta = const VerificationMeta('content');
   GeneratedTextColumn _content;
   @override
   GeneratedTextColumn get content => _content ??= _constructContent();
@@ -128,6 +131,7 @@ class $TodosTableTable extends TodosTable
     );
   }
 
+  final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
   GeneratedDateTimeColumn _targetDate;
   @override
   GeneratedDateTimeColumn get targetDate =>
@@ -140,6 +144,7 @@ class $TodosTableTable extends TodosTable
     );
   }
 
+  final VerificationMeta _categoryMeta = const VerificationMeta('category');
   GeneratedIntColumn _category;
   @override
   GeneratedIntColumn get category => _category ??= _constructCategory();
@@ -161,12 +166,24 @@ class $TodosTableTable extends TodosTable
   @override
   final String actualTableName = 'todos';
   @override
-  bool validateIntegrity(TodoEntry instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      title.isAcceptableValue(instance.title, isInserting) &&
-      content.isAcceptableValue(instance.content, isInserting) &&
-      targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
-      category.isAcceptableValue(instance.category, isInserting);
+  VerificationContext validateIntegrity(TodoEntry instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(_titleMeta,
+            title.isAcceptableValue(instance.title, isInserting, _titleMeta))
+        ..handle(
+            _contentMeta,
+            content.isAcceptableValue(
+                instance.content, isInserting, _contentMeta))
+        ..handle(
+            _targetDateMeta,
+            targetDate.isAcceptableValue(
+                instance.targetDate, isInserting, _targetDateMeta))
+        ..handle(
+            _categoryMeta,
+            category.isAcceptableValue(
+                instance.category, isInserting, _categoryMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -259,6 +276,7 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase _db;
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -266,6 +284,8 @@ class $CategoriesTable extends Categories
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
   GeneratedTextColumn _description;
   @override
   GeneratedTextColumn get description =>
@@ -284,9 +304,14 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  bool validateIntegrity(Category instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      description.isAcceptableValue(instance.description, isInserting);
+  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(
+            _descriptionMeta,
+            description.isAcceptableValue(
+                instance.description, isInserting, _descriptionMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -413,6 +438,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase _db;
   final String _alias;
   $UsersTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -420,6 +446,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _nameMeta = const VerificationMeta('name');
   GeneratedTextColumn _name;
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
@@ -428,6 +455,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         minTextLength: 6, maxTextLength: 32);
   }
 
+  final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   GeneratedBoolColumn _isAwesome;
   @override
   GeneratedBoolColumn get isAwesome => _isAwesome ??= _constructIsAwesome();
@@ -436,6 +464,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         defaultValue: const Constant(true));
   }
 
+  final VerificationMeta _profilePictureMeta =
+      const VerificationMeta('profilePicture');
   GeneratedBlobColumn _profilePicture;
   @override
   GeneratedBlobColumn get profilePicture =>
@@ -448,6 +478,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     );
   }
 
+  final VerificationMeta _creationTimeMeta =
+      const VerificationMeta('creationTime');
   GeneratedDateTimeColumn _creationTime;
   @override
   GeneratedDateTimeColumn get creationTime =>
@@ -467,12 +499,24 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final String actualTableName = 'users';
   @override
-  bool validateIntegrity(User instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      name.isAcceptableValue(instance.name, isInserting) &&
-      isAwesome.isAcceptableValue(instance.isAwesome, isInserting) &&
-      profilePicture.isAcceptableValue(instance.profilePicture, isInserting) &&
-      creationTime.isAcceptableValue(instance.creationTime, isInserting);
+  VerificationContext validateIntegrity(User instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(_nameMeta,
+            name.isAcceptableValue(instance.name, isInserting, _nameMeta))
+        ..handle(
+            _isAwesomeMeta,
+            isAwesome.isAcceptableValue(
+                instance.isAwesome, isInserting, _isAwesomeMeta))
+        ..handle(
+            _profilePictureMeta,
+            profilePicture.isAcceptableValue(
+                instance.profilePicture, isInserting, _profilePictureMeta))
+        ..handle(
+            _creationTimeMeta,
+            creationTime.isAcceptableValue(
+                instance.creationTime, isInserting, _creationTimeMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -563,6 +607,7 @@ class $SharedTodosTable extends SharedTodos
   final GeneratedDatabase _db;
   final String _alias;
   $SharedTodosTable(this._db, [this._alias]);
+  final VerificationMeta _todoMeta = const VerificationMeta('todo');
   GeneratedIntColumn _todo;
   @override
   GeneratedIntColumn get todo => _todo ??= _constructTodo();
@@ -574,6 +619,7 @@ class $SharedTodosTable extends SharedTodos
     );
   }
 
+  final VerificationMeta _userMeta = const VerificationMeta('user');
   GeneratedIntColumn _user;
   @override
   GeneratedIntColumn get user => _user ??= _constructUser();
@@ -594,9 +640,13 @@ class $SharedTodosTable extends SharedTodos
   @override
   final String actualTableName = 'shared_todos';
   @override
-  bool validateIntegrity(SharedTodo instance, bool isInserting) =>
-      todo.isAcceptableValue(instance.todo, isInserting) &&
-      user.isAcceptableValue(instance.user, isInserting);
+  VerificationContext validateIntegrity(
+          SharedTodo instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(_todoMeta,
+            todo.isAcceptableValue(instance.todo, isInserting, _todoMeta))
+        ..handle(_userMeta,
+            user.isAcceptableValue(instance.user, isInserting, _userMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
@@ -686,6 +736,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   final GeneratedDatabase _db;
   final String _alias;
   $TableWithoutPKTable(this._db, [this._alias]);
+  final VerificationMeta _notReallyAnIdMeta =
+      const VerificationMeta('notReallyAnId');
   GeneratedIntColumn _notReallyAnId;
   @override
   GeneratedIntColumn get notReallyAnId =>
@@ -698,6 +750,7 @@ class $TableWithoutPKTable extends TableWithoutPK
     );
   }
 
+  final VerificationMeta _someFloatMeta = const VerificationMeta('someFloat');
   GeneratedRealColumn _someFloat;
   @override
   GeneratedRealColumn get someFloat => _someFloat ??= _constructSomeFloat();
@@ -718,9 +771,17 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   final String actualTableName = 'table_without_p_k';
   @override
-  bool validateIntegrity(TableWithoutPKData instance, bool isInserting) =>
-      notReallyAnId.isAcceptableValue(instance.notReallyAnId, isInserting) &&
-      someFloat.isAcceptableValue(instance.someFloat, isInserting);
+  VerificationContext validateIntegrity(
+          TableWithoutPKData instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _notReallyAnIdMeta,
+            notReallyAnId.isAcceptableValue(
+                instance.notReallyAnId, isInserting, _notReallyAnIdMeta))
+        ..handle(
+            _someFloatMeta,
+            someFloat.isAcceptableValue(
+                instance.someFloat, isInserting, _someFloatMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override

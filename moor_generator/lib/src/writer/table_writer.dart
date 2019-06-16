@@ -34,6 +34,7 @@ class TableWriter {
 
     // Generate the columns
     for (var column in table.columns) {
+      _writeColumnVerificationMeta(buffer, column);
       _writeColumnGetter(buffer, column);
     }
 
@@ -147,22 +148,42 @@ class TableWriter {
     );
   }
 
+  void _writeColumnVerificationMeta(
+      StringBuffer buffer, SpecifiedColumn column) {
+    // final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
+    buffer
+      ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
+      ..write("const VerificationMeta('${column.dartGetterName}');\n");
+  }
+
   void _writeValidityCheckMethod(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
 
-    buffer.write(
-        '@override\nbool validateIntegrity($dataClass instance, bool isInserting) => ');
+    buffer.write('@override\nVerificationContext validateIntegrity'
+        '($dataClass instance, bool isInserting) => VerificationContext()');
 
-    final validationCode = table.columns.map((column) {
+    /*
+    return VerificationContext()
+      ..handle(
+          _categoryMeta,
+          category.isAcceptableValue(
+              instance.category, isInserting, _categoryMeta));
+     */
+
+    for (var column in table.columns) {
       final getterName = column.dartGetterName;
+      final metaName = _fieldNameForColumnMeta(column);
 
-      // generated columns have a isAcceptableValue(T value, bool duringInsert)
-      // method
+      // ..handle(_meta, c.isAcceptableValue(instance.c, insert, _meta))
+      buffer.write('..handle($metaName, $getterName.isAcceptableValue('
+          'instance.$getterName, isInserting, $metaName))');
+    }
 
-      return '$getterName.isAcceptableValue(instance.$getterName, isInserting)';
-    }).join('&&');
+    buffer.write(';\n');
+  }
 
-    buffer..write(validationCode)..write(';\n');
+  String _fieldNameForColumnMeta(SpecifiedColumn column) {
+    return '_${column.dartGetterName}Meta';
   }
 
   void _writePrimaryKeyOverride(StringBuffer buffer) {

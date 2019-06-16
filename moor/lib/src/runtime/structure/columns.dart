@@ -9,6 +9,12 @@ import 'package:moor/src/runtime/expressions/variables.dart';
 import 'package:moor/src/types/sql_types.dart';
 import 'package:moor/sqlite_keywords.dart';
 
+import 'error_handling.dart';
+
+const VerificationResult _invalidNull = VerificationResult.failure(
+    "This column is not nullable and doesn't have a default value. "
+    "Null fields thus can't be inserted.");
+
 /// Base class for the implementation of [Column].
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
@@ -84,9 +90,14 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// method should check whether the value is valid for an update. Null values
   /// should always be accepted for updates, as the describe a value that should
   /// not be replaced.
-  bool isAcceptableValue(T value, bool duringInsert) {
+  VerificationResult isAcceptableValue(
+      T value, bool duringInsert, VerificationMeta meta) {
     final nullOk = !duringInsert || $nullable || defaultValue != null;
-    return nullOk || value != null;
+    if (!nullOk && value == null) {
+      return _invalidNull;
+    } else {
+      return const VerificationResult.success();
+    }
   }
 }
 
@@ -114,15 +125,22 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   final String typeName = 'VARCHAR';
 
   @override
-  bool isAcceptableValue(String value, bool duringInsert) {
+  VerificationResult isAcceptableValue(
+      String value, bool duringInsert, VerificationMeta meta) {
     // handle nullability check in common column
-    if (value == null) return super.isAcceptableValue(null, duringInsert);
+    if (value == null) return super.isAcceptableValue(null, duringInsert, meta);
 
     final length = value.length;
-    if (minTextLength != null && minTextLength > length) return false;
-    if (maxTextLength != null && maxTextLength < length) return false;
+    if (minTextLength != null && minTextLength > length) {
+      return VerificationResult.failure(
+          'Must at least be $minTextLength characters long.');
+    }
+    if (maxTextLength != null && maxTextLength < length) {
+      return VerificationResult.failure(
+          'Must at most be $maxTextLength characters long.');
+    }
 
-    return true;
+    return const VerificationResult.success();
   }
 }
 
@@ -171,8 +189,13 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   }
 
   @override
-  bool isAcceptableValue(int value, bool duringInsert) =>
-      hasAutoIncrement || super.isAcceptableValue(value, duringInsert);
+  VerificationResult isAcceptableValue(
+      int value, bool duringInsert, VerificationMeta meta) {
+    if (hasAutoIncrement) {
+      return const VerificationResult.success();
+    }
+    return super.isAcceptableValue(value, duringInsert, meta);
+  }
 }
 
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>

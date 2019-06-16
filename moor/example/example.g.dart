@@ -64,6 +64,7 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase _db;
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -71,6 +72,8 @@ class $CategoriesTable extends Categories
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
   GeneratedTextColumn _description;
   @override
   GeneratedTextColumn get description =>
@@ -92,9 +95,14 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  bool validateIntegrity(Category instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      description.isAcceptableValue(instance.description, isInserting);
+  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(
+            _descriptionMeta,
+            description.isAcceptableValue(
+                instance.description, isInserting, _descriptionMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -199,6 +207,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   final GeneratedDatabase _db;
   final String _alias;
   $RecipesTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -206,6 +215,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _titleMeta = const VerificationMeta('title');
   GeneratedTextColumn _title;
   @override
   GeneratedTextColumn get title => _title ??= _constructTitle();
@@ -213,6 +223,8 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     return GeneratedTextColumn('title', $tableName, false, maxTextLength: 16);
   }
 
+  final VerificationMeta _instructionsMeta =
+      const VerificationMeta('instructions');
   GeneratedTextColumn _instructions;
   @override
   GeneratedTextColumn get instructions =>
@@ -225,6 +237,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     );
   }
 
+  final VerificationMeta _categoryMeta = const VerificationMeta('category');
   GeneratedIntColumn _category;
   @override
   GeneratedIntColumn get category => _category ??= _constructCategory();
@@ -245,11 +258,20 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   final String actualTableName = 'recipes';
   @override
-  bool validateIntegrity(Recipe instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      title.isAcceptableValue(instance.title, isInserting) &&
-      instructions.isAcceptableValue(instance.instructions, isInserting) &&
-      category.isAcceptableValue(instance.category, isInserting);
+  VerificationContext validateIntegrity(Recipe instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(_titleMeta,
+            title.isAcceptableValue(instance.title, isInserting, _titleMeta))
+        ..handle(
+            _instructionsMeta,
+            instructions.isAcceptableValue(
+                instance.instructions, isInserting, _instructionsMeta))
+        ..handle(
+            _categoryMeta,
+            category.isAcceptableValue(
+                instance.category, isInserting, _categoryMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -349,6 +371,7 @@ class $IngredientsTable extends Ingredients
   final GeneratedDatabase _db;
   final String _alias;
   $IngredientsTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
@@ -356,6 +379,7 @@ class $IngredientsTable extends Ingredients
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _nameMeta = const VerificationMeta('name');
   GeneratedTextColumn _name;
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
@@ -367,6 +391,8 @@ class $IngredientsTable extends Ingredients
     );
   }
 
+  final VerificationMeta _caloriesPer100gMeta =
+      const VerificationMeta('caloriesPer100g');
   GeneratedIntColumn _caloriesPer100g;
   @override
   GeneratedIntColumn get caloriesPer100g =>
@@ -388,10 +414,17 @@ class $IngredientsTable extends Ingredients
   @override
   final String actualTableName = 'ingredients';
   @override
-  bool validateIntegrity(Ingredient instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      name.isAcceptableValue(instance.name, isInserting) &&
-      caloriesPer100g.isAcceptableValue(instance.caloriesPer100g, isInserting);
+  VerificationContext validateIntegrity(
+          Ingredient instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(_nameMeta,
+            name.isAcceptableValue(instance.name, isInserting, _nameMeta))
+        ..handle(
+            _caloriesPer100gMeta,
+            caloriesPer100g.isAcceptableValue(
+                instance.caloriesPer100g, isInserting, _caloriesPer100gMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -492,6 +525,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   final GeneratedDatabase _db;
   final String _alias;
   $IngredientInRecipesTable(this._db, [this._alias]);
+  final VerificationMeta _recipeMeta = const VerificationMeta('recipe');
   GeneratedIntColumn _recipe;
   @override
   GeneratedIntColumn get recipe => _recipe ??= _constructRecipe();
@@ -503,6 +537,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     );
   }
 
+  final VerificationMeta _ingredientMeta = const VerificationMeta('ingredient');
   GeneratedIntColumn _ingredient;
   @override
   GeneratedIntColumn get ingredient => _ingredient ??= _constructIngredient();
@@ -514,6 +549,8 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     );
   }
 
+  final VerificationMeta _amountInGramsMeta =
+      const VerificationMeta('amountInGrams');
   GeneratedIntColumn _amountInGrams;
   @override
   GeneratedIntColumn get amountInGrams =>
@@ -535,10 +572,19 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   final String actualTableName = 'recipe_ingredients';
   @override
-  bool validateIntegrity(IngredientInRecipe instance, bool isInserting) =>
-      recipe.isAcceptableValue(instance.recipe, isInserting) &&
-      ingredient.isAcceptableValue(instance.ingredient, isInserting) &&
-      amountInGrams.isAcceptableValue(instance.amountInGrams, isInserting);
+  VerificationContext validateIntegrity(
+          IngredientInRecipe instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(_recipeMeta,
+            recipe.isAcceptableValue(instance.recipe, isInserting, _recipeMeta))
+        ..handle(
+            _ingredientMeta,
+            ingredient.isAcceptableValue(
+                instance.ingredient, isInserting, _ingredientMeta))
+        ..handle(
+            _amountInGramsMeta,
+            amountInGrams.isAcceptableValue(
+                instance.amountInGrams, isInserting, _amountInGramsMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override

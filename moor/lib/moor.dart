@@ -21,6 +21,7 @@ export 'package:moor/src/runtime/statements/select.dart';
 export 'package:moor/src/runtime/statements/insert.dart';
 export 'package:moor/src/runtime/statements/delete.dart';
 export 'package:moor/src/runtime/structure/columns.dart';
+export 'package:moor/src/runtime/structure/error_handling.dart';
 export 'package:moor/src/runtime/structure/table_info.dart';
 export 'package:moor/src/runtime/data_class.dart';
 export 'package:moor/src/runtime/database.dart';
