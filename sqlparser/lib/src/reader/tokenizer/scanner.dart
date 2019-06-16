@@ -175,7 +175,7 @@ class Scanner {
     _nextChar();
 
     final value = source.substring(_startOffset + 1, _currentOffset - 1);
-    tokens.add(StringLiteral(value, _currentSpan, binary: binary));
+    tokens.add(StringLiteralToken(value, _currentSpan, binary: binary));
   }
 
   void _numeric(String firstChar) {

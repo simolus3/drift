@@ -36,6 +36,12 @@ enum TokenType {
 
   stringLiteral,
   numberLiteral,
+  $true,
+  $false,
+  $null,
+  currentTime,
+  currentDate,
+  currentTimestamp,
   identifier,
 
   select,
@@ -56,6 +62,12 @@ const Map<String, TokenType> keywords = {
   'MATCH': TokenType.match,
   'REGEXP': TokenType.regexp,
   'NOT': TokenType.not,
+  'TRUE': TokenType.$true,
+  'FALSE': TokenType.$false,
+  'NULL': TokenType.$null,
+  'CURRENT_TIME': TokenType.currentTime,
+  'CURRENT_DATE': TokenType.currentDate,
+  'CURRENT_TIMESTAMP': TokenType.currentTimestamp,
 };
 
 class Token {
@@ -66,13 +78,13 @@ class Token {
   const Token(this.type, this.span);
 }
 
-class StringLiteral extends Token {
+class StringLiteralToken extends Token {
   final String value;
 
   /// sqlite allows binary strings (x'literal') which are interpreted as blobs.
   final bool binary;
 
-  const StringLiteral(this.value, SourceSpan span, {this.binary = false})
+  const StringLiteralToken(this.value, SourceSpan span, {this.binary = false})
       : super(TokenType.stringLiteral, span);
 }
 
