@@ -1,7 +1,4 @@
-import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
-
-import 'expressions.dart';
+part of '../ast.dart';
 
 class UnaryExpression extends Expression {
   final Token operator;

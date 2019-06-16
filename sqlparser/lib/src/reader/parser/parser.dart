@@ -1,7 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:sqlparser/src/ast/expressions/expressions.dart';
-import 'package:sqlparser/src/ast/expressions/literals.dart';
-import 'package:sqlparser/src/ast/expressions/simple.dart';
+import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 const _comparisonOperators = [
@@ -70,6 +68,44 @@ class Parser {
   Token _consume(TokenType type, String message) {
     if (_check(type)) return _advance();
     _error(message);
+  }
+
+  /// Parses a [SelectStatement], or returns null if there is no select token
+  /// after the current position.
+  SelectStatement select() {
+    if (!_match(const [TokenType.select])) return null;
+
+    // todo parse result column
+
+    final where = _where();
+    final limit = _limit();
+
+    return SelectStatement(where: where, limit: limit);
+  }
+
+  /// Parses a where clause if there is one at the current position
+  Expression _where() {
+    if (_match(const [TokenType.where])) {
+      return expression();
+    }
+    return null;
+  }
+
+  /// Parses a [Limit] clause, or returns null if there is no limit token after
+  /// the current position.
+  Limit _limit() {
+    if (!_match(const [TokenType.limit])) return null;
+
+    final count = expression();
+    Token offsetSep;
+    Expression offset;
+
+    if (_match(const [TokenType.comma, TokenType.offset])) {
+      offsetSep = _previous;
+      offset = expression();
+    }
+
+    return Limit(count: count, offsetSeparator: offsetSep, offset: offset);
   }
 
   /* We parse expressions here.

@@ -1,8 +1,4 @@
-import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
-
-import 'expressions.dart';
-
+part of '../ast.dart';
 // https://www.sqlite.org/syntax/literal-value.html
 
 abstract class Literal extends Expression {

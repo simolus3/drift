@@ -45,8 +45,12 @@ enum TokenType {
   identifier,
 
   select,
+
   from,
   where,
+
+  limit,
+  offset,
 
   eof,
 }
@@ -55,6 +59,8 @@ const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
   'FROM': TokenType.from,
   'WHERE': TokenType.where,
+  'LIMIT': TokenType.limit,
+  'OFFSET': TokenType.offset,
   'IS': TokenType.$is,
   'IN': TokenType.$in,
   'LIKE': TokenType.like,

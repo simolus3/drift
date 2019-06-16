@@ -1,5 +1,4 @@
 import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/ast/expressions/simple.dart';
 
 /// Checks whether [a] and [b] are equal. If they aren't, throws an exception.
 void enforceEqual(AstNode a, AstNode b) {

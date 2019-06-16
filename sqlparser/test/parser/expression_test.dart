@@ -1,5 +1,4 @@
-import 'package:sqlparser/src/ast/expressions/literals.dart';
-import 'package:sqlparser/src/ast/expressions/simple.dart';
+import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
