@@ -56,10 +56,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(D entity) async {
-    if (!table.validateIntegrity(entity, false)) {
-      throw InvalidDataException(
-          'Invalid data: $entity cannot be written into ${table.$tableName}');
-    }
+    table.validateIntegrity(entity, false).throwIfInvalid(entity);
 
     _updatedFields = table.entityToSql(entity)
       ..remove((_, value) => value == null);
@@ -93,10 +90,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     // because all the fields from the entity will be written (as opposed to a
     // regular update, where only non-null fields will be written). If isInserted
     // was false, the null fields would not be validated.
-    if (!table.validateIntegrity(entity, true)) {
-      throw InvalidDataException('Invalid data: $entity cannot be used to '
-          'replace another row as some required fields are null or invalid.');
-    }
+    table.validateIntegrity(entity, true).throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'

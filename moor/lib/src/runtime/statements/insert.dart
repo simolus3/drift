@@ -116,9 +116,7 @@ class InsertStatement<DataClass> {
       throw InvalidDataException(
           'Cannot writee null row into ${table.$tableName}');
     }
-    if (!table.validateIntegrity(d, true)) {
-      throw InvalidDataException(
-          'Invalid data: $d cannot be written into ${table.$tableName}');
-    }
+
+    table.validateIntegrity(d, true).throwIfInvalid(d);
   }
 }
