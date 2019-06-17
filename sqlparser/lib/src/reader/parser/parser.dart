@@ -2,6 +2,8 @@ import 'package:meta/meta.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
+part 'num_parser.dart';
+
 const _comparisonOperators = [
   TokenType.less,
   TokenType.lessEqual,
@@ -72,15 +74,61 @@ class Parser {
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
+  ///
+  /// See also:
+  /// https://www.sqlite.org/lang_select.html
   SelectStatement select() {
     if (!_match(const [TokenType.select])) return null;
 
     // todo parse result column
+    final resultColumns = <ResultColumn>[];
+    do {
+      resultColumns.add(_resultColumn());
+    } while (_match(const [TokenType.comma]));
 
     final where = _where();
     final limit = _limit();
 
-    return SelectStatement(where: where, limit: limit);
+    return SelectStatement(where: where, columns: resultColumns, limit: limit);
+  }
+
+  /// Parses a [ResultColumn] or throws if none is found.
+  /// https://www.sqlite.org/syntax/result-column.html
+  ResultColumn _resultColumn() {
+    if (_match(const [TokenType.star])) {
+      return StarResultColumn(null);
+    }
+
+    final positionBefore = _current;
+
+    if (_match(const [TokenType.identifier])) {
+      // two options. the identifier could be followed by ".*", in which case
+      // we have a star result column. If it's followed by anything else, it can
+      // still refer to a column in a table as part of a expression result column
+      final identifier = _previous;
+
+      if (_match(const [TokenType.dot]) && _match(const [TokenType.star])) {
+        return StarResultColumn((identifier as IdentifierToken).identifier);
+      }
+
+      // not a star result column. go back and parse the expression.
+      // todo this is a bit unorthodox. is there a better way to parse the
+      // expression from before?
+      _current = positionBefore;
+    }
+
+    final expr = expression();
+    // todo in sqlite, the as is optional
+    if (_match(const [TokenType.as])) {
+      if (_match(const [TokenType.identifier])) {
+        final identifier = (_previous as IdentifierToken).identifier;
+        return ExpressionResultColumn(expression: expr, as: identifier);
+      } else {
+        throw ParsingError(_peek, 'Expected an identifier as the column name');
+      }
+    }
+
+    return ExpressionResultColumn(expression: expr);
   }
 
   /// Parses a where clause if there is one at the current position
@@ -222,8 +270,7 @@ class Parser {
     final type = token.type;
     switch (type) {
       case TokenType.numberLiteral:
-        // todo get the proper value out of this one
-        return NumericLiteral(42, _peek);
+        return NumericLiteral(_parseNumber(token.lexeme), _peek);
       case TokenType.stringLiteral:
         final token = _peek as StringLiteralToken;
         return StringLiteral(token);

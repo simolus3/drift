@@ -15,12 +15,18 @@ abstract class Literal extends Expression {
 
 class NullLiteral extends Literal {
   NullLiteral(Token token) : super(token);
+
+  @override
+  bool contentEquals(NullLiteral other) => true;
 }
 
 class NumericLiteral extends Literal {
   final num number;
 
   NumericLiteral(this.number, Token token) : super(token);
+
+  @override
+  bool contentEquals(NumericLiteral other) => other.number == number;
 }
 
 class BooleanLiteral extends NumericLiteral {
@@ -36,4 +42,9 @@ class StringLiteral extends Literal {
       : data = token.value,
         isBinary = token.binary,
         super(token);
+
+  @override
+  bool contentEquals(StringLiteral other) {
+    return other.isBinary == isBinary && other.data == data;
+  }
 }

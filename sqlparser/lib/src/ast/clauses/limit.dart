@@ -14,4 +14,9 @@ class Limit extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [count, if (offset != null) offset];
+
+  @override
+  bool contentEquals(Limit other) {
+    return other.offsetSeparator?.type == offsetSeparator?.type;
+  }
 }

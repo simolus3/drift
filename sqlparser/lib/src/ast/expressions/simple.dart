@@ -11,6 +11,11 @@ class UnaryExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [inner];
+
+  @override
+  bool contentEquals(UnaryExpression other) {
+    return other.operator.type == operator.type;
+  }
 }
 
 class BinaryExpression extends Expression {
@@ -25,6 +30,11 @@ class BinaryExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
+
+  @override
+  bool contentEquals(BinaryExpression other) {
+    return other.operator.type == operator.type;
+  }
 }
 
 class IsExpression extends Expression {
@@ -41,6 +51,11 @@ class IsExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
+
+  @override
+  bool contentEquals(IsExpression other) {
+    return other.negated == negated;
+  }
 }
 
 class Parentheses extends Expression {
@@ -57,4 +72,7 @@ class Parentheses extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [expression];
+
+  @override
+  bool contentEquals(Parentheses other) => true;
 }

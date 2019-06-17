@@ -47,6 +47,7 @@ enum TokenType {
   select,
 
   from,
+  as,
   where,
 
   limit,
@@ -58,6 +59,7 @@ enum TokenType {
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
   'FROM': TokenType.from,
+  'AS': TokenType.as,
   'WHERE': TokenType.where,
   'LIMIT': TokenType.limit,
   'OFFSET': TokenType.offset,
@@ -80,6 +82,7 @@ class Token {
   final TokenType type;
 
   final SourceSpan span;
+  String get lexeme => span.text;
 
   const Token(this.type, this.span);
 }
@@ -98,6 +101,8 @@ class IdentifierToken extends Token {
   /// In sql, identifiers can be put in "double quotes", in which case they are
   /// always interpreted as an column name.
   final bool escapedColumnName;
+
+  String get identifier => lexeme;
 
   const IdentifierToken(this.escapedColumnName, SourceSpan span)
       : super(TokenType.identifier, span);

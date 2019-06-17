@@ -31,4 +31,25 @@ void main() {
       ),
     );
   });
+
+  test('parses select statements', () {
+    final scanner = Scanner('SELECT table.*, *, 1 as name');
+    final tokens = scanner.scanTokens();
+    final parser = Parser(tokens);
+
+    final stmt = parser.select();
+    enforceEqual(
+      stmt,
+      SelectStatement(
+        columns: [
+          StarResultColumn('table'),
+          StarResultColumn(null),
+          ExpressionResultColumn(
+            expression: NumericLiteral(1, token(TokenType.numberLiteral)),
+            as: 'name',
+          ),
+        ],
+      ),
+    );
+  });
 }
