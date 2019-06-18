@@ -50,6 +50,11 @@ enum TokenType {
   as,
   where,
 
+  order,
+  by,
+  asc,
+  desc,
+
   limit,
   offset,
 
@@ -61,6 +66,10 @@ const Map<String, TokenType> keywords = {
   'FROM': TokenType.from,
   'AS': TokenType.as,
   'WHERE': TokenType.where,
+  'ORDER': TokenType.order,
+  'BY': TokenType.by,
+  'ASC': TokenType.asc,
+  'DESC': TokenType.desc,
   'LIMIT': TokenType.limit,
   'OFFSET': TokenType.offset,
   'IS': TokenType.$is,

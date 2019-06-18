@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'clauses/limit.dart';
+part 'clauses/ordering.dart';
 
 part 'expressions/expressions.dart';
 part 'expressions/literals.dart';
@@ -24,6 +25,8 @@ abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
   T visitResultColumn(ResultColumn e);
 
+  T visitOrderBy(OrderBy e);
+  T visitOrderingTerm(OrderingTerm e);
   T visitLimit(Limit e);
 
   T visitBinaryExpression(BinaryExpression e);

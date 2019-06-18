@@ -3,9 +3,10 @@ part of '../ast.dart';
 class SelectStatement extends AstNode {
   final Expression where;
   final List<ResultColumn> columns;
+  final OrderBy orderBy;
   final Limit limit;
 
-  SelectStatement({this.where, this.columns, this.limit});
+  SelectStatement({this.where, this.columns, this.orderBy, this.limit});
 
   @override
   T accept<T>(AstVisitor<T> visitor) {
@@ -18,6 +19,7 @@ class SelectStatement extends AstNode {
       if (where != null) where,
       ...columns,
       if (limit != null) limit,
+      if (orderBy != null) orderBy,
     ];
   }
 

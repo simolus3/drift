@@ -22,6 +22,11 @@ class ParsingError implements Exception {
   final String message;
 
   ParsingError(this.token, this.message);
+
+  @override
+  String toString() {
+    return token.span.message('Error: $message}');
+  }
 }
 
 // todo better error handling and synchronisation, like it's done here:
@@ -87,9 +92,11 @@ class Parser {
     } while (_match(const [TokenType.comma]));
 
     final where = _where();
+    final orderBy = _orderBy();
     final limit = _limit();
 
-    return SelectStatement(where: where, columns: resultColumns, limit: limit);
+    return SelectStatement(
+        where: where, columns: resultColumns, orderBy: orderBy, limit: limit);
   }
 
   /// Parses a [ResultColumn] or throws if none is found.
@@ -137,6 +144,30 @@ class Parser {
       return expression();
     }
     return null;
+  }
+
+  OrderBy _orderBy() {
+    if (_match(const [TokenType.order])) {
+      _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
+      final terms = <OrderingTerm>[];
+      do {
+        terms.add(_orderingTerm());
+      } while (_match(const [TokenType.comma]));
+    }
+    return null;
+  }
+
+  OrderingTerm _orderingTerm() {
+    final expr = expression();
+
+    if (_match(const [TokenType.asc, TokenType.desc])) {
+      final mode = _previous.type == TokenType.asc
+          ? OrderingMode.ascending
+          : OrderingMode.descending;
+      return OrderingTerm(expression: expr, orderingMode: mode);
+    }
+
+    return OrderingTerm(expression: expr);
   }
 
   /// Parses a [Limit] clause, or returns null if there is no limit token after
@@ -286,6 +317,18 @@ class Parser {
         final expr = expression();
         _consume(TokenType.rightParen, 'Expected a closing bracket');
         return Parentheses(left, expr, _previous);
+      case TokenType.identifier:
+        final first = _previous as IdentifierToken;
+        if (_match(const [TokenType.dot])) {
+          final second =
+              _consume(TokenType.identifier, 'Expected a column name here')
+                  as IdentifierToken;
+          return Reference(
+              tableName: first.identifier, columnName: second.identifier);
+        } else {
+          return Reference(columnName: first.identifier);
+        }
+        break;
       default:
         break;
     }
