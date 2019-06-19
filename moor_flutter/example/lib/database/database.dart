@@ -41,12 +41,8 @@ class EntryWithCategory {
 @UseMoor(tables: [Todos, Categories])
 class Database extends _$Database {
   Database()
-      : super(
-          FlutterQueryExecutor.inDatabaseFolder(
-            path: 'db.sqlite',
-            logStatements: true,
-          )..doWhenOpened((e) => e.runCustom('PRAGMA foreign_keys = ON')),
-        );
+      : super(FlutterQueryExecutor.inDatabaseFolder(
+            path: 'db.sqlite', logStatements: true));
 
   @override
   int get schemaVersion => 1;
