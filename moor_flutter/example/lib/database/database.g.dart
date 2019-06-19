@@ -7,7 +7,7 @@ part of 'database.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry {
+class TodoEntry extends DataClass {
   final int id;
   final String content;
   final DateTime targetDate;
@@ -29,20 +29,23 @@ class TodoEntry {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
-  factory TodoEntry.fromJson(Map<String, dynamic> json) {
+  factory TodoEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TodoEntry(
-      id: json['id'] as int,
-      content: json['content'] as String,
-      targetDate: json['targetDate'] as DateTime,
-      category: json['category'] as int,
+      id: serializer.fromJson<int>(json['id']),
+      content: serializer.fromJson<String>(json['content']),
+      targetDate: serializer.fromJson<DateTime>(json['targetDate']),
+      category: serializer.fromJson<int>(json['category']),
     );
   }
-  Map<String, dynamic> toJson() {
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'content': content,
-      'targetDate': targetDate,
-      'category': category,
+      'id': serializer.toJson<int>(id),
+      'content': serializer.toJson<String>(content),
+      'targetDate': serializer.toJson<DateTime>(targetDate),
+      'category': serializer.toJson<int>(category),
     };
   }
 
@@ -84,21 +87,19 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   final GeneratedDatabase _db;
   final String _alias;
   $TodosTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _contentMeta = const VerificationMeta('content');
   GeneratedTextColumn _content;
   @override
   GeneratedTextColumn get content => _content ??= _constructContent();
   GeneratedTextColumn _constructContent() {
-    var cName = 'content';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'content',
       $tableName,
@@ -106,13 +107,12 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
     );
   }
 
+  final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
   GeneratedDateTimeColumn _targetDate;
   @override
   GeneratedDateTimeColumn get targetDate =>
       _targetDate ??= _constructTargetDate();
   GeneratedDateTimeColumn _constructTargetDate() {
-    var cName = 'target_date';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedDateTimeColumn(
       'target_date',
       $tableName,
@@ -120,12 +120,11 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
     );
   }
 
+  final VerificationMeta _categoryMeta = const VerificationMeta('category');
   GeneratedIntColumn _category;
   @override
   GeneratedIntColumn get category => _category ??= _constructCategory();
   GeneratedIntColumn _constructCategory() {
-    var cName = 'category';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('category', $tableName, true,
         $customConstraints: 'NULLABLE REFERENCES categories(id)');
   }
@@ -139,11 +138,22 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   @override
   final String actualTableName = 'todos';
   @override
-  bool validateIntegrity(TodoEntry instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      content.isAcceptableValue(instance.content, isInserting) &&
-      targetDate.isAcceptableValue(instance.targetDate, isInserting) &&
-      category.isAcceptableValue(instance.category, isInserting);
+  VerificationContext validateIntegrity(TodoEntry instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(
+            _contentMeta,
+            content.isAcceptableValue(
+                instance.content, isInserting, _contentMeta))
+        ..handle(
+            _targetDateMeta,
+            targetDate.isAcceptableValue(
+                instance.targetDate, isInserting, _targetDateMeta))
+        ..handle(
+            _categoryMeta,
+            category.isAcceptableValue(
+                instance.category, isInserting, _categoryMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -176,7 +186,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   }
 }
 
-class Category {
+class Category extends DataClass {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -191,16 +201,19 @@ class Category {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
     );
   }
-  factory Category.fromJson(Map<String, dynamic> json) {
+  factory Category.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Category(
-      id: json['id'] as int,
-      description: json['description'] as String,
+      id: serializer.fromJson<int>(json['id']),
+      description: serializer.fromJson<String>(json['description']),
     );
   }
-  Map<String, dynamic> toJson() {
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'id': id,
-      'description': description,
+      'id': serializer.toJson<int>(id),
+      'description': serializer.toJson<String>(description),
     };
   }
 
@@ -230,22 +243,21 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase _db;
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    var cName = 'id';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
   }
 
+  final VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
   GeneratedTextColumn _description;
   @override
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    var cName = 'desc';
-    if (_alias != null) cName = '$_alias.$cName';
     return GeneratedTextColumn(
       'desc',
       $tableName,
@@ -262,9 +274,14 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  bool validateIntegrity(Category instance, bool isInserting) =>
-      id.isAcceptableValue(instance.id, isInserting) &&
-      description.isAcceptableValue(instance.description, isInserting);
+  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
+      VerificationContext()
+        ..handle(
+            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
+        ..handle(
+            _descriptionMeta,
+            description.isAcceptableValue(
+                instance.description, isInserting, _descriptionMeta));
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override

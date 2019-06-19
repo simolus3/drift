@@ -41,8 +41,12 @@ class EntryWithCategory {
 @UseMoor(tables: [Todos, Categories])
 class Database extends _$Database {
   Database()
-      : super(FlutterQueryExecutor.inDatabaseFolder(
-            path: 'db.sqlite', logStatements: true));
+      : super(
+          FlutterQueryExecutor.inDatabaseFolder(
+            path: 'db.sqlite',
+            logStatements: true,
+          )..doWhenOpened((e) => e.runCustom('PRAGMA foreign_keys = ON')),
+        );
 
   @override
   int get schemaVersion => 1;
@@ -65,8 +69,9 @@ class Database extends _$Database {
     // select all categories and load how many associated entries there are for
     // each category
     return customSelectStream(
-      'SELECT c.*, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount'
-      ' FROM categories c '
+      'SELECT c.id, c.desc, '
+      '(SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount '
+      'FROM categories c '
       'UNION ALL SELECT null, null, '
       '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
       readsFrom: {todos, categories},
