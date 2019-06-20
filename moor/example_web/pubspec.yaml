@@ -1,0 +1,16 @@
+name: example_web
+description: Experimental usage of moor on the web
+
+environment:
+  sdk: '>=2.2.0 <3.0.0'
+
+dependencies:
+  moor: ^1.4.0
+
+dependency_overrides:
+  moor:
+    path: ../
+
+dev_dependencies:
+  build_runner: ^1.1.2
+  build_web_compilers: ^1.0.0
