@@ -8,4 +8,8 @@ permalink: /getting-started/
 # Getting started
 {% include content/getting_started.md %}
 
-Congrats, you are now ready to fully use moor and [write queries]({{site.url}}/queries/).
+Congratulations, you now have a class which you can use to easily write queries.
+A detailed guide on how to do that is written [here]({{site.url}}/queries/).
+
+PS: You might be asking how you would actually obtain an instance of `MyDatabase` for
+your widgets. If so, [here]({{site.url}}/faq/#using-the-database) is some guidance.

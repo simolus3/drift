@@ -80,7 +80,9 @@ class FlutterQueryExecutor extends _DatabaseOwner {
 
   @override
   s.Database db;
+  Completer<void> _openingCompleter;
   bool _hadMigration = false;
+  int _versionBefore;
 
   FlutterQueryExecutor({@required this.path, bool logStatements})
       : _inDbPath = false,
@@ -93,10 +95,29 @@ class FlutterQueryExecutor extends _DatabaseOwner {
 
   @override
   Future<bool> ensureOpen() async {
+    // mechanism to ensure that _openDatabase is only called once, even if we
+    // have many queries calling ensureOpen() repeatedly. _openingCompleter is
+    // set if we're currently in the process of opening the database.
+    if (_openingCompleter != null) {
+      // already opening, wait for that to finish and don't open the database
+      // again
+      await _openingCompleter.future;
+      return true;
+    }
     if (db != null && db.isOpen) {
+      // database is opened and ready
       return true;
     }
 
+    // alright, opening the database
+    _openingCompleter = Completer();
+    await _openDatabase();
+    _openingCompleter.complete();
+
+    return true;
+  }
+
+  Future _openDatabase() async {
     String resolvedPath;
     if (_inDbPath) {
       resolvedPath = join(await s.getDatabasesPath(), path);
@@ -112,19 +133,17 @@ class FlutterQueryExecutor extends _DatabaseOwner {
       );
     }, onUpgrade: (db, from, to) {
       _hadMigration = true;
+      _versionBefore = from;
       return databaseInfo.handleDatabaseVersionChange(
           executor: _migrationExecutor(db), from: from, to: to);
     }, onOpen: (db) async {
-      db = db;
-      // the openDatabase future will resolve later, so we can get an instance
-      // where we can send the queries from the onFinished operation;
-      final fn = databaseInfo.migration.onFinished;
-      if (fn != null && _hadMigration) {
-        await fn();
-      }
-    });
+      final versionNow = await db.getVersion();
+      final resolvedPrevious = _hadMigration ? _versionBefore : versionNow;
+      final details = OpeningDetails(resolvedPrevious, versionNow);
 
-    return true;
+      await databaseInfo.beforeOpenCallback(
+          _BeforeOpenExecutor(db, logStatements), details);
+    });
   }
 
   SqlExecutor _migrationExecutor(s.Database db) {
@@ -188,4 +207,20 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
     _actionCompleter.complete(null);
     return _sendFuture;
   }
+}
+
+class _BeforeOpenExecutor extends _DatabaseOwner {
+  @override
+  final s.DatabaseExecutor db;
+
+  _BeforeOpenExecutor(this.db, bool logStatements) : super(logStatements);
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw UnsupportedError(
+        "Transactions can't be started in the befoeOpen callback");
+  }
+
+  @override
+  Future<bool> ensureOpen() => Future.value(true);
 }

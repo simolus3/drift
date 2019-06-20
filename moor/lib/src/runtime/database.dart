@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+import 'package:moor/src/runtime/executor/before_open.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/types/type_system.dart';
 import 'package:moor/src/runtime/statements/delete.dart';
@@ -199,6 +200,8 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// changes in your schema, you'll need a custom migration strategy to create
   /// the new tables or change the columns.
   MigrationStrategy get migration => MigrationStrategy();
+  MigrationStrategy _cachedMigration;
+  MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
 
   /// A list of tables specified in this database.
   List<TableInfo> get allTables;
@@ -218,7 +221,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// strategy. This method should not be called by users.
   Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
     final migrator = _createMigrator(executor);
-    return migration.onCreate(migrator);
+    return _resolvedMigration.onCreate(migrator);
   }
 
   /// Handles database updates by delegating the work to the [migration]
@@ -226,6 +229,21 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   Future<void> handleDatabaseVersionChange(
       {@required SqlExecutor executor, int from, int to}) {
     final migrator = _createMigrator(executor);
-    return migration.onUpgrade(migrator, from, to);
+    return _resolvedMigration.onUpgrade(migrator, from, to);
+  }
+
+  /// Handles the before opening callback as set in the [migration]. This method
+  /// is used internally by database implementations and should not be called by
+  /// users.
+  Future<void> beforeOpenCallback(
+      QueryExecutor executor, OpeningDetails details) async {
+    final migration = _resolvedMigration;
+    if (migration.onFinished != null) {
+      await migration.onFinished();
+    }
+    if (migration.beforeOpen != null) {
+      final engine = BeforeOpenEngine(this, executor);
+      await migration.beforeOpen(engine, details);
+    }
   }
 }

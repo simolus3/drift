@@ -72,7 +72,7 @@
           <span class="fs-2">
               Was this page helpful? Please
               {% assign url = page.url | absolute_url %}
-              {% assign body = 'From documentation URL: ' | append: url %}
+              {% assign body = 'Refers to the documentation: ' | append: url %}
               <a href="{{site.github_link}}/issues/new?body={{body | url_encode}}">report an issue</a>
               if you have questions or run into problems.
           </span>

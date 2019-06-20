@@ -45,7 +45,7 @@ class Database extends _$Database {
             path: 'db.sqlite', logStatements: true));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -56,6 +56,27 @@ class Database extends _$Database {
       onUpgrade: (Migrator m, int from, int to) async {
         if (from == 1) {
           await m.addColumn(todos, todos.targetDate);
+        }
+      },
+      beforeOpen: (db, details) async {
+        if (details.wasCreated) {
+          // create default categories and entries
+          final workId =
+              await db.into(categories).insert(Category(description: 'Work'));
+
+          await db.into(todos).insert(TodoEntry(
+                content: 'A first todo entry',
+                category: null,
+                targetDate: DateTime.now(),
+              ));
+
+          await db.into(todos).insert(
+                TodoEntry(
+                  content: 'Rework persistence code',
+                  category: workId,
+                  targetDate: DateTime.now().add(const Duration(days: 4)),
+                ),
+              );
         }
       },
     );

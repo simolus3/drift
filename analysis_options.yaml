@@ -7,6 +7,7 @@ analyzer:
     unused_local_variable: error
     dead_code: error
     override_on_non_overriding_method: error
+    deprecated_member_use_from_same_package: ignore
   exclude:
     - "**/*.g.dart"
     # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround

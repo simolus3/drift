@@ -55,15 +55,16 @@ class HomeScreenState extends State<HomeScreen> {
             sizeFactor: animation,
             axis: Axis.vertical,
             child: AnimatedBuilder(
-                animation:
-                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                child: TodoCard(item.entry),
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: animation.value,
-                    child: child,
-                  );
-                }),
+              animation:
+                  CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: TodoCard(item.entry),
+              builder: (context, child) {
+                return Opacity(
+                  opacity: animation.value,
+                  child: child,
+                );
+              },
+            ),
           );
         },
       ),

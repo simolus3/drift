@@ -42,4 +42,3 @@ let me know by [creating an issue]({{site.github_link}}/issues/new)!
   - VM apps
   - Web apps via `AlaSQL` or a different engine?
 - References (can be expressed via custom constraints, see issue [#14](https://github.com/simolus3/moor/issues/14))
-- When inserts / updates fail due to invalid data, explain why that happened

@@ -10,7 +10,16 @@ typedef Future<void> OnUpgrade(Migrator m, int from, int to);
 
 /// Signature of a function that's called after a migration has finished and the
 /// database is ready to be used. Useful to populate data.
+@deprecated
 typedef Future<void> OnMigrationFinished();
+
+/// Signature of a function that's called before a database is marked opened by
+/// moor, but after migrations took place. This is a suitable callback to to
+/// populate initial data or issue `PRAGMA` statements that you want to use.
+/// All queries must be sent to [db] directly, otherwise your code will hang.
+/// See the discussion at [QueryEngine.transaction] for details.
+typedef OnBeforeOpen = Future<void> Function(
+    QueryEngine db, OpeningDetails details);
 
 Future<void> _defaultOnCreate(Migrator m) => m.createAllTables();
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
@@ -29,12 +38,21 @@ class MigrationStrategy {
   /// Executes after the database is ready and all migrations ran, but before
   /// any other queries will be executed, making this method suitable to
   /// populate data.
+  @Deprecated('Use beforeOpen instead')
   final OnMigrationFinished onFinished;
+
+  /// Executes after the database is ready to be used (ie. it has been opened
+  /// and all migrations ran), but before any other queries will be sent. This
+  /// makes it a suitable place to populate data after the database has been
+  /// created or set sqlite `PRAGMAS` that you need.
+  final OnBeforeOpen beforeOpen;
 
   MigrationStrategy({
     this.onCreate = _defaultOnCreate,
     this.onUpgrade = _defaultOnUpdate,
-    this.onFinished,
+    this.beforeOpen,
+    @Deprecated('This callback is broken. Use beforeOpen instead')
+        this.onFinished,
   });
 }
 
@@ -121,6 +139,25 @@ class Migrator {
   Future<void> issueCustomQuery(String sql) async {
     return _executor(sql);
   }
+}
+
+/// Provides information about whether migrations ran before opening the
+/// database.
+class OpeningDetails {
+  /// The schema version before the database has been opened, or `null` if the
+  /// database has just been created.
+  final int versionBefore;
+
+  /// The schema version after running migrations.
+  final int versionNow;
+
+  /// Whether the database has been created during this session.
+  bool get wasCreated => versionBefore == null;
+
+  /// Whether a schema upgrade was performed while opening the database.
+  bool get hadUpgrade => !wasCreated && versionBefore != versionNow;
+
+  const OpeningDetails(this.versionBefore, this.versionNow);
 }
 
 class _SimpleSqlAsQueryExecutor extends QueryExecutor {
