@@ -7,10 +7,12 @@ import 'data/utils/mocks.dart';
 void main() {
   TodoDb db;
   MockQueryExecutor mockQueryExecutor;
+  QueryExecutor mockExecutor;
 
   setUp(() {
     mockQueryExecutor = MockQueryExecutor();
-    db = TodoDb(null);
+    mockExecutor = MockExecutor();
+    db = TodoDb(mockExecutor);
   });
 
   group('Migrations', () {
@@ -72,5 +74,10 @@ void main() {
       verify(mockQueryExecutor.call('ALTER TABLE users ADD COLUMN '
           'is_awesome BOOLEAN NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1));'));
     });
+  });
+
+  test('custom statements', () async {
+    await db.customStatement('some custom statement');
+    verify(mockExecutor.runCustom('some custom statement'));
   });
 }

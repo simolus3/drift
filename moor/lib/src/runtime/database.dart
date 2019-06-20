@@ -158,6 +158,11 @@ mixin QueryEngine on DatabaseConnectionUser {
     return statement.watch();
   }
 
+  /// Executes the custom sql [statement] on the database.
+  Future<void> customStatement(String statement) {
+    return executor.runCustom(statement);
+  }
+
   /// Executes [action] in a transaction, which means that all its queries and
   /// updates will be called atomically.
   ///
