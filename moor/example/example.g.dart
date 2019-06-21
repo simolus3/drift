@@ -7,7 +7,7 @@ part of 'example.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class Category extends DataClass {
+class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -39,13 +39,13 @@ class Category extends DataClass {
   }
 
   @override
-  CategoriesCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value.use(description),
-    );
+    ) as T;
   }
 
   Category copyWith({int id, String description}) => Category(
@@ -69,7 +69,7 @@ class Category extends DataClass {
       (other is Category && other.id == id && other.description == description);
 }
 
-class CategoriesCompanion implements UpdateCompanion<Category> {
+class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
   const CategoriesCompanion({
@@ -147,13 +147,13 @@ class $CategoriesTable extends Categories
   }
 
   @override
-  Map<String, Variable> entityToSql(Category d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(CategoriesCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.description != null || includeNulls) {
-      map['description'] = Variable<String, StringType>(d.description);
+    if (d.description.present) {
+      map['description'] = Variable<String, StringType>(d.description.value);
     }
     return map;
   }
@@ -164,7 +164,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class Recipe extends DataClass {
+class Recipe extends DataClass implements Insertable<Recipe> {
   final int id;
   final String title;
   final String instructions;
@@ -206,7 +206,7 @@ class Recipe extends DataClass {
   }
 
   @override
-  RecipesCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Recipe>>(bool nullToAbsent) {
     return RecipesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       title: title == null && nullToAbsent
@@ -218,7 +218,7 @@ class Recipe extends DataClass {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value.use(category),
-    );
+    ) as T;
   }
 
   Recipe copyWith({int id, String title, String instructions, int category}) =>
@@ -254,7 +254,7 @@ class Recipe extends DataClass {
           other.category == category);
 }
 
-class RecipesCompanion implements UpdateCompanion<Recipe> {
+class RecipesCompanion extends UpdateCompanion<Recipe> {
   final Value<int> id;
   final Value<String> title;
   final Value<String> instructions;
@@ -369,19 +369,19 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   }
 
   @override
-  Map<String, Variable> entityToSql(Recipe d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(RecipesCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.title != null || includeNulls) {
-      map['title'] = Variable<String, StringType>(d.title);
+    if (d.title.present) {
+      map['title'] = Variable<String, StringType>(d.title.value);
     }
-    if (d.instructions != null || includeNulls) {
-      map['instructions'] = Variable<String, StringType>(d.instructions);
+    if (d.instructions.present) {
+      map['instructions'] = Variable<String, StringType>(d.instructions.value);
     }
-    if (d.category != null || includeNulls) {
-      map['category'] = Variable<int, IntType>(d.category);
+    if (d.category.present) {
+      map['category'] = Variable<int, IntType>(d.category.value);
     }
     return map;
   }
@@ -392,7 +392,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   }
 }
 
-class Ingredient extends DataClass {
+class Ingredient extends DataClass implements Insertable<Ingredient> {
   final int id;
   final String name;
   final int caloriesPer100g;
@@ -428,7 +428,7 @@ class Ingredient extends DataClass {
   }
 
   @override
-  IngredientsCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Ingredient>>(bool nullToAbsent) {
     return IngredientsCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       name:
@@ -436,7 +436,7 @@ class Ingredient extends DataClass {
       caloriesPer100g: caloriesPer100g == null && nullToAbsent
           ? const Value.absent()
           : Value.use(caloriesPer100g),
-    );
+    ) as T;
   }
 
   Ingredient copyWith({int id, String name, int caloriesPer100g}) => Ingredient(
@@ -466,7 +466,7 @@ class Ingredient extends DataClass {
           other.caloriesPer100g == caloriesPer100g);
 }
 
-class IngredientsCompanion implements UpdateCompanion<Ingredient> {
+class IngredientsCompanion extends UpdateCompanion<Ingredient> {
   final Value<int> id;
   final Value<String> name;
   final Value<int> caloriesPer100g;
@@ -566,16 +566,16 @@ class $IngredientsTable extends Ingredients
   }
 
   @override
-  Map<String, Variable> entityToSql(Ingredient d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(IngredientsCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.name != null || includeNulls) {
-      map['name'] = Variable<String, StringType>(d.name);
+    if (d.name.present) {
+      map['name'] = Variable<String, StringType>(d.name.value);
     }
-    if (d.caloriesPer100g != null || includeNulls) {
-      map['calories'] = Variable<int, IntType>(d.caloriesPer100g);
+    if (d.caloriesPer100g.present) {
+      map['calories'] = Variable<int, IntType>(d.caloriesPer100g.value);
     }
     return map;
   }
@@ -586,7 +586,8 @@ class $IngredientsTable extends Ingredients
   }
 }
 
-class IngredientInRecipe extends DataClass {
+class IngredientInRecipe extends DataClass
+    implements Insertable<IngredientInRecipe> {
   final int recipe;
   final int ingredient;
   final int amountInGrams;
@@ -623,7 +624,8 @@ class IngredientInRecipe extends DataClass {
   }
 
   @override
-  IngredientInRecipesCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<IngredientInRecipe>>(
+      bool nullToAbsent) {
     return IngredientInRecipesCompanion(
       recipe: recipe == null && nullToAbsent
           ? const Value.absent()
@@ -634,7 +636,7 @@ class IngredientInRecipe extends DataClass {
       amountInGrams: amountInGrams == null && nullToAbsent
           ? const Value.absent()
           : Value.use(amountInGrams),
-    );
+    ) as T;
   }
 
   IngredientInRecipe copyWith(
@@ -667,8 +669,7 @@ class IngredientInRecipe extends DataClass {
           other.amountInGrams == amountInGrams);
 }
 
-class IngredientInRecipesCompanion
-    implements UpdateCompanion<IngredientInRecipe> {
+class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
   final Value<int> recipe;
   final Value<int> ingredient;
   final Value<int> amountInGrams;
@@ -773,17 +774,16 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 
   @override
-  Map<String, Variable> entityToSql(IngredientInRecipe d,
-      {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(IngredientInRecipesCompanion d) {
     final map = <String, Variable>{};
-    if (d.recipe != null || includeNulls) {
-      map['recipe'] = Variable<int, IntType>(d.recipe);
+    if (d.recipe.present) {
+      map['recipe'] = Variable<int, IntType>(d.recipe.value);
     }
-    if (d.ingredient != null || includeNulls) {
-      map['ingredient'] = Variable<int, IntType>(d.ingredient);
+    if (d.ingredient.present) {
+      map['ingredient'] = Variable<int, IntType>(d.ingredient.value);
     }
-    if (d.amountInGrams != null || includeNulls) {
-      map['amount'] = Variable<int, IntType>(d.amountInGrams);
+    if (d.amountInGrams.present) {
+      map['amount'] = Variable<int, IntType>(d.amountInGrams.value);
     }
     return map;
   }

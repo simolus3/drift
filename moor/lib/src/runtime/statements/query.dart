@@ -120,7 +120,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
 
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
-  void whereSamePrimaryKey(D d) {
+  void whereSamePrimaryKey(Insertable<D> d) {
     assert(
         table.$primaryKey != null && table.$primaryKey.isNotEmpty,
         'When using Query.whereSamePrimaryKey, which is also called from '
@@ -136,7 +136,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
 
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
 
-    final updatedFields = table.entityToSql(d, includeNulls: true);
+    final updatedFields = table.entityToSql(d.createCompanion(false));
     // Extract values of the primary key as they are needed for the where clause
     final primaryKeyValues = Map.fromEntries(updatedFields.entries
         .where((entry) => primaryKeys.contains(entry.key)));

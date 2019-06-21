@@ -38,15 +38,11 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
   /// that it respects all constraints (nullability, text length, etc.).
   VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance);
 
-  /// Maps the given data class to a [Map] that can be inserted into sql. The
-  /// keys should represent the column name in sql, the values the corresponding
-  /// values of the field.
-  ///
-  /// If [includeNulls] is true, fields of the [D] that are null will be
-  /// written as a [Variable] with a value of null. Otherwise, these fields will
-  /// not be written into the map at all.
-  // todo migrate to update companions
-  Map<String, Variable> entityToSql(D instance, {bool includeNulls = false});
+  /// Maps the given update companion to a [Map] that can be inserted into sql.
+  /// The keys should represent the column name in sql, the values the
+  /// corresponding values of the field. All fields of the [instance] which are
+  /// present will be written, absent fields will be omitted.
+  Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance);
 
   /// Maps the given row returned by the database into the fitting data class.
   D map(Map<String, dynamic> data, {String tablePrefix});

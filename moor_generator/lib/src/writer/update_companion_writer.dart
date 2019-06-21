@@ -9,7 +9,7 @@ class UpdateCompanionWriter {
 
   void writeInto(StringBuffer buffer) {
     buffer.write('class ${table.updateCompanionName} '
-        'implements UpdateCompanion<${table.dartTypeName}> {\n');
+        'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields(buffer);
     _writeConstructor(buffer);
     _writeIsPresentOverride(buffer);

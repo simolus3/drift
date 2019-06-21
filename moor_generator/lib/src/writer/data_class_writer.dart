@@ -12,7 +12,8 @@ class DataClassWriter {
   DataClassWriter(this.table, this.options);
 
   void writeInto(StringBuffer buffer) {
-    buffer.write('class ${table.dartTypeName} extends DataClass {\n');
+    buffer.write(
+        'class ${table.dartTypeName} extends DataClass implements Insertable<${table.dartTypeName}> {\n');
 
     // write individual fields
     for (var column in table.columns) {
@@ -218,18 +219,19 @@ class DataClassWriter {
   }
 
   void _writeCompanionOverride(StringBuffer buffer) {
-    // UpdateCompanion<D> createCompanion(bool nullToAbsent);
+    // T createCompanion<T extends UpdateCompanion>(bool nullToAbsent)
+
     final companionClass = table.updateCompanionName;
-    buffer.write('@override\n$companionClass '
-        'createCompanion(bool nullToAbsent) {\n'
-        'return $companionClass(');
+    buffer.write('@override\nT createCompanion<T extends UpdateCompanion'
+        '<${table.dartTypeName}>>('
+        'bool nullToAbsent) {\n return $companionClass(');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
       buffer.write('$getter: $getter == null && nullToAbsent ? '
           'const Value.absent() : Value.use($getter),');
     }
-    buffer.write(');}\n');
+    buffer.write(') as T;}\n');
   }
 
   /// Recursively creates the implementation for hashCode of the data class,

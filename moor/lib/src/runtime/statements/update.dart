@@ -55,11 +55,11 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   ///
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
-  Future<int> write(D entity) async {
+  Future<int> write(Insertable<D> entity) async {
     // todo needs to use entity as update companion here
     table.validateIntegrity(null).throwIfInvalid(entity);
 
-    _updatedFields = table.entityToSql(entity)
+    _updatedFields = table.entityToSql(entity.createCompanion(true))
       ..remove((_, value) => value == null);
 
     if (_updatedFields.isEmpty) {
@@ -86,13 +86,11 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   ///    null values in the entity.
   ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
   ///  similar to this method but creates a new row if none exists.
-  Future<bool> replace(D entity) async {
-    // We set isInserting to true here although we're in an update. This is
-    // because all the fields from the entity will be written (as opposed to a
-    // regular update, where only non-null fields will be written). If isInserted
-    // was false, the null fields would not be validated.
-    // todo needs to use entity as update companion here
-    table.validateIntegrity(null).throwIfInvalid(entity);
+  Future<bool> replace(Insertable<D> entity) async {
+    // We don't turn nulls to absent values here (as opposed to a regular
+    // update, where only non-null fields will be written).
+    final companion = entity.createCompanion(false);
+    table.validateIntegrity(companion).throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'
@@ -100,7 +98,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
 
     whereSamePrimaryKey(entity);
 
-    _updatedFields = table.entityToSql(entity, includeNulls: true);
+    _updatedFields = table.entityToSql(companion);
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
 
     // Don't update the primary key

@@ -7,7 +7,7 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry extends DataClass {
+class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String title;
   final String content;
@@ -56,7 +56,7 @@ class TodoEntry extends DataClass {
   }
 
   @override
-  TodosTableCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
     return TodosTableCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       title: title == null && nullToAbsent
@@ -71,7 +71,7 @@ class TodoEntry extends DataClass {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value.use(category),
-    );
+    ) as T;
   }
 
   TodoEntry copyWith(
@@ -116,7 +116,7 @@ class TodoEntry extends DataClass {
           other.category == category);
 }
 
-class TodosTableCompanion implements UpdateCompanion<TodoEntry> {
+class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   final Value<int> id;
   final Value<String> title;
   final Value<String> content;
@@ -251,22 +251,22 @@ class $TodosTableTable extends TodosTable
   }
 
   @override
-  Map<String, Variable> entityToSql(TodoEntry d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(TodosTableCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.title != null || includeNulls) {
-      map['title'] = Variable<String, StringType>(d.title);
+    if (d.title.present) {
+      map['title'] = Variable<String, StringType>(d.title.value);
     }
-    if (d.content != null || includeNulls) {
-      map['content'] = Variable<String, StringType>(d.content);
+    if (d.content.present) {
+      map['content'] = Variable<String, StringType>(d.content.value);
     }
-    if (d.targetDate != null || includeNulls) {
-      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate);
+    if (d.targetDate.present) {
+      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate.value);
     }
-    if (d.category != null || includeNulls) {
-      map['category'] = Variable<int, IntType>(d.category);
+    if (d.category.present) {
+      map['category'] = Variable<int, IntType>(d.category.value);
     }
     return map;
   }
@@ -277,7 +277,7 @@ class $TodosTableTable extends TodosTable
   }
 }
 
-class Category extends DataClass {
+class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -309,13 +309,13 @@ class Category extends DataClass {
   }
 
   @override
-  CategoriesCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value.use(description),
-    );
+    ) as T;
   }
 
   Category copyWith({int id, String description}) => Category(
@@ -339,7 +339,7 @@ class Category extends DataClass {
       (other is Category && other.id == id && other.description == description);
 }
 
-class CategoriesCompanion implements UpdateCompanion<Category> {
+class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
   const CategoriesCompanion({
@@ -414,13 +414,13 @@ class $CategoriesTable extends Categories
   }
 
   @override
-  Map<String, Variable> entityToSql(Category d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(CategoriesCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.description != null || includeNulls) {
-      map['desc'] = Variable<String, StringType>(d.description);
+    if (d.description.present) {
+      map['desc'] = Variable<String, StringType>(d.description.value);
     }
     return map;
   }
@@ -431,7 +431,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class User extends DataClass {
+class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
   final bool isAwesome;
@@ -485,7 +485,7 @@ class User extends DataClass {
   }
 
   @override
-  UsersCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<User>>(bool nullToAbsent) {
     return UsersCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       name:
@@ -499,7 +499,7 @@ class User extends DataClass {
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
           : Value.use(creationTime),
-    );
+    ) as T;
   }
 
   User copyWith(
@@ -545,7 +545,7 @@ class User extends DataClass {
           other.creationTime == creationTime);
 }
 
-class UsersCompanion implements UpdateCompanion<User> {
+class UsersCompanion extends UpdateCompanion<User> {
   final Value<int> id;
   final Value<String> name;
   final Value<bool> isAwesome;
@@ -680,22 +680,24 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   @override
-  Map<String, Variable> entityToSql(User d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(UsersCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.name != null || includeNulls) {
-      map['name'] = Variable<String, StringType>(d.name);
+    if (d.name.present) {
+      map['name'] = Variable<String, StringType>(d.name.value);
     }
-    if (d.isAwesome != null || includeNulls) {
-      map['is_awesome'] = Variable<bool, BoolType>(d.isAwesome);
+    if (d.isAwesome.present) {
+      map['is_awesome'] = Variable<bool, BoolType>(d.isAwesome.value);
     }
-    if (d.profilePicture != null || includeNulls) {
-      map['profile_picture'] = Variable<Uint8List, BlobType>(d.profilePicture);
+    if (d.profilePicture.present) {
+      map['profile_picture'] =
+          Variable<Uint8List, BlobType>(d.profilePicture.value);
     }
-    if (d.creationTime != null || includeNulls) {
-      map['creation_time'] = Variable<DateTime, DateTimeType>(d.creationTime);
+    if (d.creationTime.present) {
+      map['creation_time'] =
+          Variable<DateTime, DateTimeType>(d.creationTime.value);
     }
     return map;
   }
@@ -706,7 +708,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 }
 
-class SharedTodo extends DataClass {
+class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   final int todo;
   final int user;
   SharedTodo({this.todo, this.user});
@@ -736,13 +738,13 @@ class SharedTodo extends DataClass {
   }
 
   @override
-  SharedTodosCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<SharedTodo>>(bool nullToAbsent) {
     return SharedTodosCompanion(
       todo:
           todo == null && nullToAbsent ? const Value.absent() : Value.use(todo),
       user:
           user == null && nullToAbsent ? const Value.absent() : Value.use(user),
-    );
+    ) as T;
   }
 
   SharedTodo copyWith({int todo, int user}) => SharedTodo(
@@ -766,7 +768,7 @@ class SharedTodo extends DataClass {
       (other is SharedTodo && other.todo == todo && other.user == user);
 }
 
-class SharedTodosCompanion implements UpdateCompanion<SharedTodo> {
+class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   final Value<int> todo;
   final Value<int> user;
   const SharedTodosCompanion({
@@ -847,13 +849,13 @@ class $SharedTodosTable extends SharedTodos
   }
 
   @override
-  Map<String, Variable> entityToSql(SharedTodo d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(SharedTodosCompanion d) {
     final map = <String, Variable>{};
-    if (d.todo != null || includeNulls) {
-      map['todo'] = Variable<int, IntType>(d.todo);
+    if (d.todo.present) {
+      map['todo'] = Variable<int, IntType>(d.todo.value);
     }
-    if (d.user != null || includeNulls) {
-      map['user'] = Variable<int, IntType>(d.user);
+    if (d.user.present) {
+      map['user'] = Variable<int, IntType>(d.user.value);
     }
     return map;
   }
@@ -864,7 +866,8 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData extends DataClass {
+class TableWithoutPKData extends DataClass
+    implements Insertable<TableWithoutPKData> {
   final int notReallyAnId;
   final double someFloat;
   TableWithoutPKData({this.notReallyAnId, this.someFloat});
@@ -898,7 +901,8 @@ class TableWithoutPKData extends DataClass {
   }
 
   @override
-  TableWithoutPKCompanion createCompanion(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<TableWithoutPKData>>(
+      bool nullToAbsent) {
     return TableWithoutPKCompanion(
       notReallyAnId: notReallyAnId == null && nullToAbsent
           ? const Value.absent()
@@ -906,7 +910,7 @@ class TableWithoutPKData extends DataClass {
       someFloat: someFloat == null && nullToAbsent
           ? const Value.absent()
           : Value.use(someFloat),
-    );
+    ) as T;
   }
 
   TableWithoutPKData copyWith({int notReallyAnId, double someFloat}) =>
@@ -934,7 +938,7 @@ class TableWithoutPKData extends DataClass {
           other.someFloat == someFloat);
 }
 
-class TableWithoutPKCompanion implements UpdateCompanion<TableWithoutPKData> {
+class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
   const TableWithoutPKCompanion({
@@ -1019,14 +1023,13 @@ class $TableWithoutPKTable extends TableWithoutPK
   }
 
   @override
-  Map<String, Variable> entityToSql(TableWithoutPKData d,
-      {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(TableWithoutPKCompanion d) {
     final map = <String, Variable>{};
-    if (d.notReallyAnId != null || includeNulls) {
-      map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId);
+    if (d.notReallyAnId.present) {
+      map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId.value);
     }
-    if (d.someFloat != null || includeNulls) {
-      map['some_float'] = Variable<double, RealType>(d.someFloat);
+    if (d.someFloat.present) {
+      map['some_float'] = Variable<double, RealType>(d.someFloat.value);
     }
     return map;
   }

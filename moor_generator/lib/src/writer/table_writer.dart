@@ -79,16 +79,18 @@ class TableWriter {
   }
 
   void _writeReverseMappingMethod(StringBuffer buffer) {
-    // Map<String, Variable> entityToSql(User d, {bool includeNulls = false) {
+    // Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance)
     buffer
       ..write('@override\nMap<String, Variable> entityToSql('
-          '${table.dartTypeName} d, {bool includeNulls = false}) {\n')
+          '${table.updateCompanionName} d) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
       buffer.write('''
-        if (d.${column.dartGetterName} != null || includeNulls) {
-          map['${column.name.name}'] = Variable<${column.dartTypeName}, ${column.sqlTypeName}>(d.${column.dartGetterName});
+        if (d.${column.dartGetterName}.present) {
+          map['${column.name.name}'] = 
+             Variable<${column.dartTypeName}, ${column.sqlTypeName}>(
+                d.${column.dartGetterName}.value);
         }
       ''');
     }

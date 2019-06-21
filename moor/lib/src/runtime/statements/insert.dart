@@ -26,7 +26,7 @@ class InsertStatement<D extends DataClass> {
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned.
-  Future<int> insert(D entity, {bool orReplace = false}) async {
+  Future<int> insert(Insertable<D> entity, {bool orReplace = false}) async {
     _validateIntegrity(entity);
     final ctx = _createContext(entity, orReplace);
 
@@ -45,7 +45,8 @@ class InsertStatement<D extends DataClass> {
   /// When a row with the same primary or unique key already exists in the
   /// database, the insert will fail. Use [orReplace] to replace rows that
   /// already exist.
-  Future<void> insertAll(List<D> rows, {bool orReplace = false}) async {
+  Future<void> insertAll(List<Insertable<D>> rows,
+      {bool orReplace = false}) async {
     final statements = <String, List<GenerationContext>>{};
 
     // Not every insert has the same sql, as fields which are set to null are
@@ -78,12 +79,12 @@ class InsertStatement<D extends DataClass> {
   ///
   /// However, if no such row exists, a new row will be written instead.
   @Deprecated('Use insert with orReplace: true instead')
-  Future<void> insertOrReplace(D entity) async {
+  Future<void> insertOrReplace(Insertable<D> entity) async {
     return await insert(entity, orReplace: true);
   }
 
-  GenerationContext _createContext(D entry, bool replace) {
-    final map = table.entityToSql(entry)
+  GenerationContext _createContext(Insertable<D> entry, bool replace) {
+    final map = table.entityToSql(entry.createCompanion(true))
       ..removeWhere((_, value) => value == null);
 
     final ctx = GenerationContext.fromDb(database);
@@ -111,13 +112,12 @@ class InsertStatement<D extends DataClass> {
     return ctx;
   }
 
-  void _validateIntegrity(D d) {
+  void _validateIntegrity(Insertable<D> d) {
     if (d == null) {
       throw InvalidDataException(
           'Cannot writee null row into ${table.$tableName}');
     }
 
-    // todo needs to use d as update companion here
-    table.validateIntegrity(null).throwIfInvalid(d);
+    table.validateIntegrity(d.createCompanion(true)).throwIfInvalid(d);
   }
 }

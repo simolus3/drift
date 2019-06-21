@@ -7,7 +7,7 @@ part of 'database.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry extends DataClass {
+class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String content;
   final DateTime targetDate;
@@ -49,6 +49,22 @@ class TodoEntry extends DataClass {
     };
   }
 
+  @override
+  T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
+    return TodosCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(content),
+      targetDate: targetDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(targetDate),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(category),
+    ) as T;
+  }
+
   TodoEntry copyWith(
           {int id, String content, DateTime targetDate, int category}) =>
       TodoEntry(
@@ -81,6 +97,35 @@ class TodoEntry extends DataClass {
           other.content == content &&
           other.targetDate == targetDate &&
           other.category == category);
+}
+
+class TodosCompanion extends UpdateCompanion<TodoEntry> {
+  final Value<int> id;
+  final Value<String> content;
+  final Value<DateTime> targetDate;
+  final Value<int> category;
+  const TodosCompanion({
+    this.id = const Value.absent(),
+    this.content = const Value.absent(),
+    this.targetDate = const Value.absent(),
+    this.category = const Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return content.present;
+      case 2:
+        return targetDate.present;
+      case 3:
+        return category.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+  }
 }
 
 class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
@@ -138,22 +183,26 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   @override
   final String actualTableName = 'todos';
   @override
-  VerificationContext validateIntegrity(TodoEntry instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(
-            _contentMeta,
-            content.isAcceptableValue(
-                instance.content, isInserting, _contentMeta))
-        ..handle(
-            _targetDateMeta,
-            targetDate.isAcceptableValue(
-                instance.targetDate, isInserting, _targetDateMeta))
-        ..handle(
-            _categoryMeta,
-            category.isAcceptableValue(
-                instance.category, isInserting, _categoryMeta));
+  VerificationContext validateIntegrity(TodosCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_contentMeta,
+          content.isAcceptableValue(d.content.value, _contentMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(_targetDateMeta,
+          targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
+    }
+    if (d.isValuePresent(3)) {
+      context.handle(_categoryMeta,
+          category.isAcceptableValue(d.category.value, _categoryMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -186,7 +235,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   }
 }
 
-class Category extends DataClass {
+class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -217,6 +266,16 @@ class Category extends DataClass {
     };
   }
 
+  @override
+  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(description),
+    ) as T;
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,
@@ -236,6 +295,27 @@ class Category extends DataClass {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Category && other.id == id && other.description == description);
+}
+
+class CategoriesCompanion extends UpdateCompanion<Category> {
+  final Value<int> id;
+  final Value<String> description;
+  const CategoriesCompanion({
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return description.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -274,14 +354,18 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(
-            _descriptionMeta,
-            description.isAcceptableValue(
-                instance.description, isInserting, _descriptionMeta));
+  VerificationContext validateIntegrity(CategoriesCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_descriptionMeta,
+          description.isAcceptableValue(d.description.value, _descriptionMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
