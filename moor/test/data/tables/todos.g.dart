@@ -129,24 +129,6 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return title.present;
-      case 2:
-        return content.present;
-      case 3:
-        return targetDate.present;
-      case 4:
-        return category.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $TodosTableTable extends TodosTable
@@ -218,26 +200,37 @@ class $TodosTableTable extends TodosTable
   @override
   final String actualTableName = 'todos';
   @override
-  VerificationContext validateIntegrity(TodosTableCompanion d) {
+  VerificationContext validateIntegrity(TodosTableCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
+    } else if (title.isRequired && isInserting) {
+      context.missing(_titleMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.content.present) {
       context.handle(_contentMeta,
           content.isAcceptableValue(d.content.value, _contentMeta));
+    } else if (content.isRequired && isInserting) {
+      context.missing(_contentMeta);
     }
-    if (d.isValuePresent(3)) {
+    if (d.targetDate.present) {
       context.handle(_targetDateMeta,
           targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
+    } else if (targetDate.isRequired && isInserting) {
+      context.missing(_targetDateMeta);
     }
-    if (d.isValuePresent(4)) {
+    if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
+    } else if (category.isRequired && isInserting) {
+      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -346,18 +339,6 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return description.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $CategoriesTable extends Categories
@@ -393,14 +374,19 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(CategoriesCompanion d) {
+  VerificationContext validateIntegrity(CategoriesCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
+    } else if (description.isRequired && isInserting) {
+      context.missing(_descriptionMeta);
     }
     return context;
   }
@@ -558,24 +544,6 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.creationTime = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return name.present;
-      case 2:
-        return isAwesome.present;
-      case 3:
-        return profilePicture.present;
-      case 4:
-        return creationTime.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -643,30 +611,41 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final String actualTableName = 'users';
   @override
-  VerificationContext validateIntegrity(UsersCompanion d) {
+  VerificationContext validateIntegrity(UsersCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+    } else if (name.isRequired && isInserting) {
+      context.missing(_nameMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.isAwesome.present) {
       context.handle(_isAwesomeMeta,
           isAwesome.isAcceptableValue(d.isAwesome.value, _isAwesomeMeta));
+    } else if (isAwesome.isRequired && isInserting) {
+      context.missing(_isAwesomeMeta);
     }
-    if (d.isValuePresent(3)) {
+    if (d.profilePicture.present) {
       context.handle(
           _profilePictureMeta,
           profilePicture.isAcceptableValue(
               d.profilePicture.value, _profilePictureMeta));
+    } else if (profilePicture.isRequired && isInserting) {
+      context.missing(_profilePictureMeta);
     }
-    if (d.isValuePresent(4)) {
+    if (d.creationTime.present) {
       context.handle(
           _creationTimeMeta,
           creationTime.isAcceptableValue(
               d.creationTime.value, _creationTimeMeta));
+    } else if (creationTime.isRequired && isInserting) {
+      context.missing(_creationTimeMeta);
     }
     return context;
   }
@@ -775,18 +754,6 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     this.todo = const Value.absent(),
     this.user = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return todo.present;
-      case 1:
-        return user.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $SharedTodosTable extends SharedTodos
@@ -827,15 +794,20 @@ class $SharedTodosTable extends SharedTodos
   @override
   final String actualTableName = 'shared_todos';
   @override
-  VerificationContext validateIntegrity(SharedTodosCompanion d) {
+  VerificationContext validateIntegrity(SharedTodosCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.todo.present) {
       context.handle(
           _todoMeta, todo.isAcceptableValue(d.todo.value, _todoMeta));
+    } else if (todo.isRequired && isInserting) {
+      context.missing(_todoMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.user.present) {
       context.handle(
           _userMeta, user.isAcceptableValue(d.user.value, _userMeta));
+    } else if (user.isRequired && isInserting) {
+      context.missing(_userMeta);
     }
     return context;
   }
@@ -945,18 +917,6 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.notReallyAnId = const Value.absent(),
     this.someFloat = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return notReallyAnId.present;
-      case 1:
-        return someFloat.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
@@ -999,17 +959,22 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   final String actualTableName = 'table_without_p_k';
   @override
-  VerificationContext validateIntegrity(TableWithoutPKCompanion d) {
+  VerificationContext validateIntegrity(TableWithoutPKCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.notReallyAnId.present) {
       context.handle(
           _notReallyAnIdMeta,
           notReallyAnId.isAcceptableValue(
               d.notReallyAnId.value, _notReallyAnIdMeta));
+    } else if (notReallyAnId.isRequired && isInserting) {
+      context.missing(_notReallyAnIdMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.someFloat.present) {
       context.handle(_someFloatMeta,
           someFloat.isAcceptableValue(d.someFloat.value, _someFloatMeta));
+    } else if (someFloat.isRequired && isInserting) {
+      context.missing(_someFloatMeta);
     }
     return context;
   }

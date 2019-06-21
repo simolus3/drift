@@ -76,18 +76,6 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return description.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $CategoriesTable extends Categories
@@ -126,14 +114,19 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(CategoriesCompanion d) {
+  VerificationContext validateIntegrity(CategoriesCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
+    } else if (description.isRequired && isInserting) {
+      context.missing(_descriptionMeta);
     }
     return context;
   }
@@ -265,22 +258,6 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return title.present;
-      case 2:
-        return instructions.present;
-      case 3:
-        return category.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
@@ -338,24 +315,33 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   final String actualTableName = 'recipes';
   @override
-  VerificationContext validateIntegrity(RecipesCompanion d) {
+  VerificationContext validateIntegrity(RecipesCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
+    } else if (title.isRequired && isInserting) {
+      context.missing(_titleMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.instructions.present) {
       context.handle(
           _instructionsMeta,
           instructions.isAcceptableValue(
               d.instructions.value, _instructionsMeta));
+    } else if (instructions.isRequired && isInserting) {
+      context.missing(_instructionsMeta);
     }
-    if (d.isValuePresent(3)) {
+    if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
+    } else if (category.isRequired && isInserting) {
+      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -475,20 +461,6 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return name.present;
-      case 2:
-        return caloriesPer100g.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $IngredientsTable extends Ingredients
@@ -539,20 +511,27 @@ class $IngredientsTable extends Ingredients
   @override
   final String actualTableName = 'ingredients';
   @override
-  VerificationContext validateIntegrity(IngredientsCompanion d) {
+  VerificationContext validateIntegrity(IngredientsCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+    } else if (name.isRequired && isInserting) {
+      context.missing(_nameMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.caloriesPer100g.present) {
       context.handle(
           _caloriesPer100gMeta,
           caloriesPer100g.isAcceptableValue(
               d.caloriesPer100g.value, _caloriesPer100gMeta));
+    } else if (caloriesPer100g.isRequired && isInserting) {
+      context.missing(_caloriesPer100gMeta);
     }
     return context;
   }
@@ -678,20 +657,6 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return recipe.present;
-      case 1:
-        return ingredient.present;
-      case 2:
-        return amountInGrams.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $IngredientInRecipesTable extends IngredientInRecipes
@@ -746,21 +711,28 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   final String actualTableName = 'recipe_ingredients';
   @override
-  VerificationContext validateIntegrity(IngredientInRecipesCompanion d) {
+  VerificationContext validateIntegrity(IngredientInRecipesCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.recipe.present) {
       context.handle(
           _recipeMeta, recipe.isAcceptableValue(d.recipe.value, _recipeMeta));
+    } else if (recipe.isRequired && isInserting) {
+      context.missing(_recipeMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.ingredient.present) {
       context.handle(_ingredientMeta,
           ingredient.isAcceptableValue(d.ingredient.value, _ingredientMeta));
+    } else if (ingredient.isRequired && isInserting) {
+      context.missing(_ingredientMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.amountInGrams.present) {
       context.handle(
           _amountInGramsMeta,
           amountInGrams.isAcceptableValue(
               d.amountInGrams.value, _amountInGramsMeta));
+    } else if (amountInGrams.isRequired && isInserting) {
+      context.missing(_amountInGramsMeta);
     }
     return context;
   }

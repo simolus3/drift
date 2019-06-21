@@ -12,7 +12,6 @@ class UpdateCompanionWriter {
         'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields(buffer);
     _writeConstructor(buffer);
-    _writeIsPresentOverride(buffer);
 
     buffer.write('}\n');
   }
@@ -32,22 +31,5 @@ class UpdateCompanionWriter {
     }
 
     buffer.write('});\n');
-  }
-
-  void _writeIsPresentOverride(StringBuffer buffer) {
-    buffer
-      ..write('@override\nbool isValuePresent(int index) {\n')
-      ..write('switch (index) {');
-
-    for (var i = 0; i < table.columns.length; i++) {
-      final getterName = table.columns[i].dartGetterName;
-      buffer.write('case $i: return $getterName.present;\n');
-    }
-
-    buffer
-      ..write('default: throw ArgumentError('
-          "'Hit an invalid state while serializing data. Did you run the build "
-          "step?');")
-      ..write('}\n}\n');
   }
 }

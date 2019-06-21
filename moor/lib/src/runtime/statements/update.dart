@@ -56,10 +56,10 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(Insertable<D> entity) async {
-    // todo needs to use entity as update companion here
-    table.validateIntegrity(null).throwIfInvalid(entity);
+    final companion = entity.createCompanion(true);
+    table.validateIntegrity(companion).throwIfInvalid(entity);
 
-    _updatedFields = table.entityToSql(entity.createCompanion(true))
+    _updatedFields = table.entityToSql(companion)
       ..remove((_, value) => value == null);
 
     if (_updatedFields.isEmpty) {
@@ -90,7 +90,9 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
     final companion = entity.createCompanion(false);
-    table.validateIntegrity(companion).throwIfInvalid(entity);
+    table
+        .validateIntegrity(companion, isInserting: true)
+        .throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'

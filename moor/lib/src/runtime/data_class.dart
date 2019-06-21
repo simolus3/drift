@@ -40,20 +40,13 @@ abstract class DataClass {
 /// database using [InsertStatement.insert] or [UpdateStatement.write].
 ///
 /// See also:
+/// - the explanation in the changelog for 1.5
 /// - https://github.com/simolus3/moor/issues/25
-abstract class UpdateCompanion<D extends DataClass> implements Insertable {
+abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
   const UpdateCompanion();
 
-  /// Used internally by moor.
-  ///
-  /// Returns true if the column at the position [index] has been explicitly
-  /// set to a value.
-  // todo this doesn't need to exist anymore, remove before release and adapt
-  // moor_generator
-  bool isValuePresent(int index);
-
   @override
-  T createCompanion<T extends UpdateCompanion>(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<D>>(bool nullToAbsent) {
     return this as T;
   }
 }

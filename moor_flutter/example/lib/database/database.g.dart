@@ -110,22 +110,6 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return content.present;
-      case 2:
-        return targetDate.present;
-      case 3:
-        return category.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
@@ -183,22 +167,31 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   @override
   final String actualTableName = 'todos';
   @override
-  VerificationContext validateIntegrity(TodosCompanion d) {
+  VerificationContext validateIntegrity(TodosCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.content.present) {
       context.handle(_contentMeta,
           content.isAcceptableValue(d.content.value, _contentMeta));
+    } else if (content.isRequired && isInserting) {
+      context.missing(_contentMeta);
     }
-    if (d.isValuePresent(2)) {
+    if (d.targetDate.present) {
       context.handle(_targetDateMeta,
           targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
+    } else if (targetDate.isRequired && isInserting) {
+      context.missing(_targetDateMeta);
     }
-    if (d.isValuePresent(3)) {
+    if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
+    } else if (category.isRequired && isInserting) {
+      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -212,19 +205,19 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   }
 
   @override
-  Map<String, Variable> entityToSql(TodoEntry d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(TodosCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.content != null || includeNulls) {
-      map['content'] = Variable<String, StringType>(d.content);
+    if (d.content.present) {
+      map['content'] = Variable<String, StringType>(d.content.value);
     }
-    if (d.targetDate != null || includeNulls) {
-      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate);
+    if (d.targetDate.present) {
+      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate.value);
     }
-    if (d.category != null || includeNulls) {
-      map['category'] = Variable<int, IntType>(d.category);
+    if (d.category.present) {
+      map['category'] = Variable<int, IntType>(d.category.value);
     }
     return map;
   }
@@ -304,18 +297,6 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
-  @override
-  bool isValuePresent(int index) {
-    switch (index) {
-      case 0:
-        return id.present;
-      case 1:
-        return description.present;
-      default:
-        throw ArgumentError(
-            'Hit an invalid state while serializing data. Did you run the build step?');
-    }
-  }
 }
 
 class $CategoriesTable extends Categories
@@ -354,14 +335,19 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(CategoriesCompanion d) {
+  VerificationContext validateIntegrity(CategoriesCompanion d,
+      {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.isValuePresent(0)) {
+    if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
     }
-    if (d.isValuePresent(1)) {
+    if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
+    } else if (description.isRequired && isInserting) {
+      context.missing(_descriptionMeta);
     }
     return context;
   }
@@ -375,13 +361,13 @@ class $CategoriesTable extends Categories
   }
 
   @override
-  Map<String, Variable> entityToSql(Category d, {bool includeNulls = false}) {
+  Map<String, Variable> entityToSql(CategoriesCompanion d) {
     final map = <String, Variable>{};
-    if (d.id != null || includeNulls) {
-      map['id'] = Variable<int, IntType>(d.id);
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
     }
-    if (d.description != null || includeNulls) {
-      map['desc'] = Variable<String, StringType>(d.description);
+    if (d.description.present) {
+      map['desc'] = Variable<String, StringType>(d.description.value);
     }
     return map;
   }

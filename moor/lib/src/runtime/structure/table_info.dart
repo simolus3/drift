@@ -36,7 +36,8 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
 
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
-  VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance);
+  VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance,
+      {bool isInserting = false});
 
   /// Maps the given update companion to a [Map] that can be inserted into sql.
   /// The keys should represent the column name in sql, the values the

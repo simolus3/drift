@@ -118,6 +118,8 @@ class InsertStatement<D extends DataClass> {
           'Cannot writee null row into ${table.$tableName}');
     }
 
-    table.validateIntegrity(d.createCompanion(true)).throwIfInvalid(d);
+    table
+        .validateIntegrity(d.createCompanion(true), isInserting: true)
+        .throwIfInvalid(d);
   }
 }

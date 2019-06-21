@@ -33,6 +33,11 @@ class VerificationContext {
     }
   }
 
+  void missing(VerificationMeta meta) {
+    _errors[meta] = const VerificationResult.failure(
+        "This value was required, but isn't present");
+  }
+
   void throwIfInvalid(dynamic dataObject) {
     if (dataValid) return;
 

@@ -163,23 +163,22 @@ class TableWriter {
   void _writeValidityCheckMethod(StringBuffer buffer) {
     buffer
       ..write('@override\nVerificationContext validateIntegrity'
-          '(${table.updateCompanionName} d) {\n')
+          '(${table.updateCompanionName} d, {bool isInserting = false}) {\n')
       ..write('final context = VerificationContext();\n');
 
-    for (var i = 0; i < table.columns.length; i++) {
-      final column = table.columns[i];
+    for (var column in table.columns) {
       final getterName = column.dartGetterName;
       final metaName = _fieldNameForColumnMeta(column);
 
       buffer
-        ..write('if (d.isValuePresent($i)) {\n')
+        ..write('if (d.$getterName.present) {\n')
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
+        ..write('} else if ($getterName.isRequired && isInserting) {\n')
+        ..write('context.missing($metaName);\n')
         ..write('}\n');
     }
-
-    // todo verify that all required columns are present
     buffer.write('return context;\n}\n');
   }
 
