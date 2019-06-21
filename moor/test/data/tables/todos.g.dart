@@ -7,7 +7,7 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry extends DataClass {
+class TodoEntry extends DataClass with DelegatingCompanionMixin<TodoEntry> {
   final int id;
   final String title;
   final String content;
@@ -53,6 +53,25 @@ class TodoEntry extends DataClass {
       'target_date': serializer.toJson<DateTime>(targetDate),
       'category': serializer.toJson<int>(category),
     };
+  }
+
+  @override
+  UpdateCompanion<TodoEntry> createCompanion(bool nullToAbsent) {
+    return TodosTableCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(title),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(content),
+      targetDate: targetDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(targetDate),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(category),
+    );
   }
 
   TodoEntry copyWith(
@@ -104,14 +123,14 @@ class TodosTableCompanion implements UpdateCompanion<TodoEntry> {
   final Value<DateTime> targetDate;
   final Value<int> category;
   const TodosTableCompanion({
-    this.id = Value.absent(),
-    this.title = Value.absent(),
-    this.content = Value.absent(),
-    this.targetDate = Value.absent(),
-    this.category = Value.absent(),
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.content = const Value.absent(),
+    this.targetDate = const Value.absent(),
+    this.category = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -253,7 +272,7 @@ class $TodosTableTable extends TodosTable
   }
 }
 
-class Category extends DataClass {
+class Category extends DataClass with DelegatingCompanionMixin<Category> {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -284,6 +303,16 @@ class Category extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<Category> createCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(description),
+    );
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,
@@ -309,11 +338,11 @@ class CategoriesCompanion implements UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
   const CategoriesCompanion({
-    this.id = Value.absent(),
-    this.description = Value.absent(),
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -394,7 +423,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class User extends DataClass {
+class User extends DataClass with DelegatingCompanionMixin<User> {
   final int id;
   final String name;
   final bool isAwesome;
@@ -447,6 +476,24 @@ class User extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<User> createCompanion(bool nullToAbsent) {
+    return UsersCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      name:
+          name == null && nullToAbsent ? const Value.absent() : Value.use(name),
+      isAwesome: isAwesome == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(isAwesome),
+      profilePicture: profilePicture == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(profilePicture),
+      creationTime: creationTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(creationTime),
+    );
+  }
+
   User copyWith(
           {int id,
           String name,
@@ -497,14 +544,14 @@ class UsersCompanion implements UpdateCompanion<User> {
   final Value<Uint8List> profilePicture;
   final Value<DateTime> creationTime;
   const UsersCompanion({
-    this.id = Value.absent(),
-    this.name = Value.absent(),
-    this.isAwesome = Value.absent(),
-    this.profilePicture = Value.absent(),
-    this.creationTime = Value.absent(),
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isAwesome = const Value.absent(),
+    this.profilePicture = const Value.absent(),
+    this.creationTime = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -642,7 +689,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 }
 
-class SharedTodo extends DataClass {
+class SharedTodo extends DataClass with DelegatingCompanionMixin<SharedTodo> {
   final int todo;
   final int user;
   SharedTodo({this.todo, this.user});
@@ -671,6 +718,16 @@ class SharedTodo extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<SharedTodo> createCompanion(bool nullToAbsent) {
+    return SharedTodosCompanion(
+      todo:
+          todo == null && nullToAbsent ? const Value.absent() : Value.use(todo),
+      user:
+          user == null && nullToAbsent ? const Value.absent() : Value.use(user),
+    );
+  }
+
   SharedTodo copyWith({int todo, int user}) => SharedTodo(
         todo: todo ?? this.todo,
         user: user ?? this.user,
@@ -696,11 +753,11 @@ class SharedTodosCompanion implements UpdateCompanion<SharedTodo> {
   final Value<int> todo;
   final Value<int> user;
   const SharedTodosCompanion({
-    this.todo = Value.absent(),
-    this.user = Value.absent(),
+    this.todo = const Value.absent(),
+    this.user = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return todo.present;
@@ -785,7 +842,8 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData extends DataClass {
+class TableWithoutPKData extends DataClass
+    with DelegatingCompanionMixin<TableWithoutPKData> {
   final int notReallyAnId;
   final double someFloat;
   TableWithoutPKData({this.notReallyAnId, this.someFloat});
@@ -818,6 +876,18 @@ class TableWithoutPKData extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<TableWithoutPKData> createCompanion(bool nullToAbsent) {
+    return TableWithoutPKCompanion(
+      notReallyAnId: notReallyAnId == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(notReallyAnId),
+      someFloat: someFloat == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(someFloat),
+    );
+  }
+
   TableWithoutPKData copyWith({int notReallyAnId, double someFloat}) =>
       TableWithoutPKData(
         notReallyAnId: notReallyAnId ?? this.notReallyAnId,
@@ -847,11 +917,11 @@ class TableWithoutPKCompanion implements UpdateCompanion<TableWithoutPKData> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
   const TableWithoutPKCompanion({
-    this.notReallyAnId = Value.absent(),
-    this.someFloat = Value.absent(),
+    this.notReallyAnId = const Value.absent(),
+    this.someFloat = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return notReallyAnId.present;

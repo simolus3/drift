@@ -28,7 +28,7 @@ class UpdateCompanionWriter {
     buffer.write('const ${table.updateCompanionName}({');
 
     for (var column in table.columns) {
-      buffer.write('this.${column.dartGetterName} = Value.absent(),');
+      buffer.write('this.${column.dartGetterName} = const Value.absent(),');
     }
 
     buffer.write('});\n');
@@ -36,7 +36,7 @@ class UpdateCompanionWriter {
 
   void _writeIsPresentOverride(StringBuffer buffer) {
     buffer
-      ..write('@override\nbool isValuePresent(int index) {\n')
+      ..write('@override\nbool isValuePresent(int index, bool _) {\n')
       ..write('switch (index) {');
 
     for (var i = 0; i < table.columns.length; i++) {

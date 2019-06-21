@@ -7,7 +7,7 @@ part of 'example.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class Category extends DataClass {
+class Category extends DataClass with DelegatingCompanionMixin<Category> {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -38,6 +38,16 @@ class Category extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<Category> createCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(description),
+    );
+  }
+
   Category copyWith({int id, String description}) => Category(
         id: id ?? this.id,
         description: description ?? this.description,
@@ -63,11 +73,11 @@ class CategoriesCompanion implements UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
   const CategoriesCompanion({
-    this.id = Value.absent(),
-    this.description = Value.absent(),
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -151,7 +161,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class Recipe extends DataClass {
+class Recipe extends DataClass with DelegatingCompanionMixin<Recipe> {
   final int id;
   final String title;
   final String instructions;
@@ -190,6 +200,22 @@ class Recipe extends DataClass {
       'instructions': serializer.toJson<String>(instructions),
       'category': serializer.toJson<int>(category),
     };
+  }
+
+  @override
+  UpdateCompanion<Recipe> createCompanion(bool nullToAbsent) {
+    return RecipesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      title: title == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(title),
+      instructions: instructions == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(instructions),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(category),
+    );
   }
 
   Recipe copyWith({int id, String title, String instructions, int category}) =>
@@ -231,13 +257,13 @@ class RecipesCompanion implements UpdateCompanion<Recipe> {
   final Value<String> instructions;
   final Value<int> category;
   const RecipesCompanion({
-    this.id = Value.absent(),
-    this.title = Value.absent(),
-    this.instructions = Value.absent(),
-    this.category = Value.absent(),
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.instructions = const Value.absent(),
+    this.category = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -356,7 +382,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   }
 }
 
-class Ingredient extends DataClass {
+class Ingredient extends DataClass with DelegatingCompanionMixin<Ingredient> {
   final int id;
   final String name;
   final int caloriesPer100g;
@@ -391,6 +417,18 @@ class Ingredient extends DataClass {
     };
   }
 
+  @override
+  UpdateCompanion<Ingredient> createCompanion(bool nullToAbsent) {
+    return IngredientsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      name:
+          name == null && nullToAbsent ? const Value.absent() : Value.use(name),
+      caloriesPer100g: caloriesPer100g == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(caloriesPer100g),
+    );
+  }
+
   Ingredient copyWith({int id, String name, int caloriesPer100g}) => Ingredient(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -423,12 +461,12 @@ class IngredientsCompanion implements UpdateCompanion<Ingredient> {
   final Value<String> name;
   final Value<int> caloriesPer100g;
   const IngredientsCompanion({
-    this.id = Value.absent(),
-    this.name = Value.absent(),
-    this.caloriesPer100g = Value.absent(),
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.caloriesPer100g = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return id.present;
@@ -532,7 +570,8 @@ class $IngredientsTable extends Ingredients
   }
 }
 
-class IngredientInRecipe extends DataClass {
+class IngredientInRecipe extends DataClass
+    with DelegatingCompanionMixin<IngredientInRecipe> {
   final int recipe;
   final int ingredient;
   final int amountInGrams;
@@ -566,6 +605,21 @@ class IngredientInRecipe extends DataClass {
       'ingredient': serializer.toJson<int>(ingredient),
       'amountInGrams': serializer.toJson<int>(amountInGrams),
     };
+  }
+
+  @override
+  UpdateCompanion<IngredientInRecipe> createCompanion(bool nullToAbsent) {
+    return IngredientInRecipesCompanion(
+      recipe: recipe == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(recipe),
+      ingredient: ingredient == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(ingredient),
+      amountInGrams: amountInGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value.use(amountInGrams),
+    );
   }
 
   IngredientInRecipe copyWith(
@@ -604,12 +658,12 @@ class IngredientInRecipesCompanion
   final Value<int> ingredient;
   final Value<int> amountInGrams;
   const IngredientInRecipesCompanion({
-    this.recipe = Value.absent(),
-    this.ingredient = Value.absent(),
-    this.amountInGrams = Value.absent(),
+    this.recipe = const Value.absent(),
+    this.ingredient = const Value.absent(),
+    this.amountInGrams = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index) {
+  bool isValuePresent(int index, bool _) {
     switch (index) {
       case 0:
         return recipe.present;

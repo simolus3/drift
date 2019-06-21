@@ -12,7 +12,8 @@ class DataClassWriter {
   DataClassWriter(this.table, this.options);
 
   void writeInto(StringBuffer buffer) {
-    buffer.write('class ${table.dartTypeName} extends DataClass {\n');
+    buffer.write('class ${table.dartTypeName} extends DataClass '
+        'with DelegatingCompanionMixin<${table.dartTypeName}> {\n');
 
     // write individual fields
     for (var column in table.columns) {
@@ -34,12 +35,12 @@ class DataClassWriter {
     // And a serializer and deserializer method
     _writeFromJson(buffer);
     _writeToJson(buffer);
+    _writeCompanionOverride(buffer);
 
     // And a convenience method to copy data from this class.
     _writeCopyWith(buffer);
 
     _writeToString(buffer);
-
     _writeHashCode(buffer);
 
     // override ==
@@ -215,6 +216,20 @@ class DataClassWriter {
         ..write(')')
         ..write('; \n');
     }
+  }
+
+  void _writeCompanionOverride(StringBuffer buffer) {
+    // UpdateCompanion<D> createCompanion(bool nullToAbsent);
+    buffer.write('@override\nUpdateCompanion<${table.dartTypeName}> '
+        'createCompanion(bool nullToAbsent) {\n'
+        'return ${table.updateCompanionName}(');
+
+    for (var column in table.columns) {
+      final getter = column.dartGetterName;
+      buffer.write('$getter: $getter == null && nullToAbsent ? '
+          'const Value.absent() : Value.use($getter),');
+    }
+    buffer.write(');}\n');
   }
 
   /// Recursively creates the implementation for hashCode of the data class,
