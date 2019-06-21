@@ -5,7 +5,7 @@ import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/statements/query.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
-class DeleteStatement<T extends Table, D> extends Query<T, D>
+class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// This constructor should be called by [GeneratedDatabase.delete] for you.
   DeleteStatement(QueryEngine database, TableInfo<T, D> table)

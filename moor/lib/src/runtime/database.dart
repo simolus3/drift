@@ -76,7 +76,8 @@ abstract class DatabaseConnectionUser {
   ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
   /// ]);
   /// ```
-  T alias<T extends Table, D>(TableInfo<T, D> table, String alias) {
+  T alias<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, String alias) {
     return table.createAlias(alias).asDslTable;
   }
 }
@@ -96,8 +97,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// clause on that table and then use [UpdateStatement.write].
   @protected
   @visibleForTesting
-  UpdateStatement<Tbl, ReturnType> update<Tbl extends Table, ReturnType>(
-          TableInfo<Tbl, ReturnType> table) =>
+  UpdateStatement<Tbl, R> update<Tbl extends Table, R extends DataClass>(
+          TableInfo<Tbl, R> table) =>
       UpdateStatement(this, table);
 
   /// Starts a query on the given table. Queries can be limited with an limit
@@ -105,17 +106,17 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// stream of data
   @protected
   @visibleForTesting
-  SimpleSelectStatement<T, ReturnType> select<T extends Table, ReturnType>(
-      TableInfo<T, ReturnType> table) {
-    return SimpleSelectStatement<T, ReturnType>(this, table);
+  SimpleSelectStatement<T, R> select<T extends Table, R extends DataClass>(
+      TableInfo<T, R> table) {
+    return SimpleSelectStatement<T, R>(this, table);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   @protected
   @visibleForTesting
-  DeleteStatement<T, Entity> delete<T extends Table, Entity>(
-      TableInfo<T, Entity> table) {
-    return DeleteStatement<T, Entity>(this, table);
+  DeleteStatement<T, D> delete<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table) {
+    return DeleteStatement<T, D>(this, table);
   }
 
   /// Executes a custom delete or update statement and returns the amount of

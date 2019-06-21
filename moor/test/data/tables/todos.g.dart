@@ -7,7 +7,7 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry extends DataClass with DelegatingCompanionMixin<TodoEntry> {
+class TodoEntry extends DataClass {
   final int id;
   final String title;
   final String content;
@@ -56,7 +56,7 @@ class TodoEntry extends DataClass with DelegatingCompanionMixin<TodoEntry> {
   }
 
   @override
-  UpdateCompanion<TodoEntry> createCompanion(bool nullToAbsent) {
+  TodosTableCompanion createCompanion(bool nullToAbsent) {
     return TodosTableCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       title: title == null && nullToAbsent
@@ -130,7 +130,7 @@ class TodosTableCompanion implements UpdateCompanion<TodoEntry> {
     this.category = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index, bool _) {
+  bool isValuePresent(int index) {
     switch (index) {
       case 0:
         return id.present;
@@ -271,7 +271,7 @@ class $TodosTableTable extends TodosTable
   }
 }
 
-class Category extends DataClass with DelegatingCompanionMixin<Category> {
+class Category extends DataClass {
   final int id;
   final String description;
   Category({this.id, this.description});
@@ -303,7 +303,7 @@ class Category extends DataClass with DelegatingCompanionMixin<Category> {
   }
 
   @override
-  UpdateCompanion<Category> createCompanion(bool nullToAbsent) {
+  CategoriesCompanion createCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       description: description == null && nullToAbsent
@@ -341,7 +341,7 @@ class CategoriesCompanion implements UpdateCompanion<Category> {
     this.description = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index, bool _) {
+  bool isValuePresent(int index) {
     switch (index) {
       case 0:
         return id.present;
@@ -421,7 +421,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class User extends DataClass with DelegatingCompanionMixin<User> {
+class User extends DataClass {
   final int id;
   final String name;
   final bool isAwesome;
@@ -475,7 +475,7 @@ class User extends DataClass with DelegatingCompanionMixin<User> {
   }
 
   @override
-  UpdateCompanion<User> createCompanion(bool nullToAbsent) {
+  UsersCompanion createCompanion(bool nullToAbsent) {
     return UsersCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
       name:
@@ -549,7 +549,7 @@ class UsersCompanion implements UpdateCompanion<User> {
     this.creationTime = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index, bool _) {
+  bool isValuePresent(int index) {
     switch (index) {
       case 0:
         return id.present;
@@ -686,7 +686,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 }
 
-class SharedTodo extends DataClass with DelegatingCompanionMixin<SharedTodo> {
+class SharedTodo extends DataClass {
   final int todo;
   final int user;
   SharedTodo({this.todo, this.user});
@@ -716,7 +716,7 @@ class SharedTodo extends DataClass with DelegatingCompanionMixin<SharedTodo> {
   }
 
   @override
-  UpdateCompanion<SharedTodo> createCompanion(bool nullToAbsent) {
+  SharedTodosCompanion createCompanion(bool nullToAbsent) {
     return SharedTodosCompanion(
       todo:
           todo == null && nullToAbsent ? const Value.absent() : Value.use(todo),
@@ -754,7 +754,7 @@ class SharedTodosCompanion implements UpdateCompanion<SharedTodo> {
     this.user = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index, bool _) {
+  bool isValuePresent(int index) {
     switch (index) {
       case 0:
         return todo.present;
@@ -838,8 +838,7 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData extends DataClass
-    with DelegatingCompanionMixin<TableWithoutPKData> {
+class TableWithoutPKData extends DataClass {
   final int notReallyAnId;
   final double someFloat;
   TableWithoutPKData({this.notReallyAnId, this.someFloat});
@@ -873,7 +872,7 @@ class TableWithoutPKData extends DataClass
   }
 
   @override
-  UpdateCompanion<TableWithoutPKData> createCompanion(bool nullToAbsent) {
+  TableWithoutPKCompanion createCompanion(bool nullToAbsent) {
     return TableWithoutPKCompanion(
       notReallyAnId: notReallyAnId == null && nullToAbsent
           ? const Value.absent()
@@ -917,7 +916,7 @@ class TableWithoutPKCompanion implements UpdateCompanion<TableWithoutPKData> {
     this.someFloat = const Value.absent(),
   });
   @override
-  bool isValuePresent(int index, bool _) {
+  bool isValuePresent(int index) {
     switch (index) {
       case 0:
         return notReallyAnId.present;

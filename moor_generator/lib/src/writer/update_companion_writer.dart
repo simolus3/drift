@@ -36,7 +36,7 @@ class UpdateCompanionWriter {
 
   void _writeIsPresentOverride(StringBuffer buffer) {
     buffer
-      ..write('@override\nbool isValuePresent(int index, bool _) {\n')
+      ..write('@override\nbool isValuePresent(int index) {\n')
       ..write('switch (index) {');
 
     for (var i = 0; i < table.columns.length; i++) {

@@ -1,23 +1,19 @@
 import 'package:meta/meta.dart';
-import 'package:moor/src/dsl/table.dart';
+import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/components/limit.dart';
 import 'package:moor/src/runtime/components/order_by.dart';
 import 'package:moor/src/runtime/components/where.dart';
-import 'package:moor/src/runtime/database.dart';
-import 'package:moor/src/runtime/expressions/bools.dart';
 import 'package:moor/src/runtime/expressions/custom.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/types/sql_types.dart';
-import 'package:moor/src/runtime/structure/table_info.dart';
 import 'package:moor/src/utils/single_transformer.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
-abstract class Query<T extends Table, DataClass> {
+abstract class Query<T extends Table, D extends DataClass> {
   @protected
   QueryEngine database;
-  TableInfo<T, DataClass> table;
+  TableInfo<T, D> table;
 
   Query(this.database, this.table);
 
@@ -110,7 +106,8 @@ abstract class Selectable<T> {
   }
 }
 
-mixin SingleTableQueryMixin<T extends Table, DataClass> on Query<T, DataClass> {
+mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
+    on Query<T, D> {
   void where(Expression<bool, BoolType> filter(T tbl)) {
     final predicate = filter(table.asDslTable);
 
@@ -123,7 +120,7 @@ mixin SingleTableQueryMixin<T extends Table, DataClass> on Query<T, DataClass> {
 
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
-  void whereSamePrimaryKey(DataClass d) {
+  void whereSamePrimaryKey(D d) {
     assert(
         table.$primaryKey != null && table.$primaryKey.isNotEmpty,
         'When using Query.whereSamePrimaryKey, which is also called from '
@@ -162,7 +159,7 @@ mixin SingleTableQueryMixin<T extends Table, DataClass> on Query<T, DataClass> {
   }
 }
 
-mixin LimitContainerMixin<T extends Table, D> on Query<T, D> {
+mixin LimitContainerMixin<T extends Table, D extends DataClass> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.

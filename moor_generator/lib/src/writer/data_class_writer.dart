@@ -12,8 +12,7 @@ class DataClassWriter {
   DataClassWriter(this.table, this.options);
 
   void writeInto(StringBuffer buffer) {
-    buffer.write('class ${table.dartTypeName} extends DataClass '
-        'with DelegatingCompanionMixin<${table.dartTypeName}> {\n');
+    buffer.write('class ${table.dartTypeName} extends DataClass {\n');
 
     // write individual fields
     for (var column in table.columns) {
@@ -220,9 +219,10 @@ class DataClassWriter {
 
   void _writeCompanionOverride(StringBuffer buffer) {
     // UpdateCompanion<D> createCompanion(bool nullToAbsent);
-    buffer.write('@override\nUpdateCompanion<${table.dartTypeName}> '
+    final companionClass = table.updateCompanionName;
+    buffer.write('@override\n$companionClass '
         'createCompanion(bool nullToAbsent) {\n'
-        'return ${table.updateCompanionName}(');
+        'return $companionClass(');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;

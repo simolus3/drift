@@ -83,21 +83,28 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   }
 
   /// Checks whether the given value fits into this column. The default
-  /// implementation checks whether the value is not null, as null values are
-  /// only allowed for updates or if the column is nullable.
-  /// If [duringInsert] is true, the method should check whether the value is
-  /// suitable for a new row that is being inserted. If it's false, we the
-  /// method should check whether the value is valid for an update. Null values
-  /// should always be accepted for updates, as the describe a value that should
-  /// not be replaced.
-  VerificationResult isAcceptableValue(
-      T value, bool duringInsert, VerificationMeta meta) {
-    final nullOk = !duringInsert || $nullable || defaultValue != null;
+  /// implementation only checks for nullability, but subclasses might enforce
+  /// additional checks. For instance, the [GeneratedTextColumn] can verify
+  /// that a text has a certain length.
+  ///
+  /// Note: The behavior of this method was changed in moor 1.5. Before, null
+  /// values were interpreted as an absent value during updates or if the
+  /// [defaultValue] is set. Verification was skipped for absent values.
+  /// This is no longer the case, all null values are assumed to be an sql
+  /// `NULL`.
+  VerificationResult isAcceptableValue(T value, VerificationMeta meta) {
+    final nullOk = $nullable;
     if (!nullOk && value == null) {
       return _invalidNull;
     } else {
       return const VerificationResult.success();
     }
+  }
+
+  /// Returns true if this column needs to be set when writing a new row into
+  /// a table.
+  bool get isRequired {
+    return !$nullable && defaultValue == null;
   }
 }
 
@@ -125,10 +132,9 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   final String typeName = 'VARCHAR';
 
   @override
-  VerificationResult isAcceptableValue(
-      String value, bool duringInsert, VerificationMeta meta) {
+  VerificationResult isAcceptableValue(String value, VerificationMeta meta) {
     // handle nullability check in common column
-    if (value == null) return super.isAcceptableValue(null, duringInsert, meta);
+    if (value == null) return super.isAcceptableValue(null, meta);
 
     final length = value.length;
     if (minTextLength != null && minTextLength > length) {
@@ -189,12 +195,8 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   }
 
   @override
-  VerificationResult isAcceptableValue(
-      int value, bool duringInsert, VerificationMeta meta) {
-    if (hasAutoIncrement) {
-      return const VerificationResult.success();
-    }
-    return super.isAcceptableValue(value, duringInsert, meta);
+  bool get isRequired {
+    return !hasAutoIncrement && super.isRequired;
   }
 }
 

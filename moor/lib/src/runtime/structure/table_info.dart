@@ -2,9 +2,9 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/expressions/variables.dart';
 
 /// Base class for generated classes. [TableDsl] is the type specified by the
-/// user that extends [Table], [DataClass] is the type of the data class
+/// user that extends [Table], [D] is the type of the data class
 /// generated from the table.
-mixin TableInfo<TableDsl extends Table, DataClass> {
+mixin TableInfo<TableDsl extends Table, D extends DataClass> {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
@@ -36,22 +36,23 @@ mixin TableInfo<TableDsl extends Table, DataClass> {
 
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
-  /// During insertion mode, fields that have a default value or are
-  /// auto-incrementing are allowed to be null as they will be set by sqlite.
-  VerificationContext validateIntegrity(DataClass instance, bool isInserting);
+  ///
+  /// The [nullsAreAbsent] parameter exists for backwards-compatibility. See the
+  /// discussion in the changelog at version 1.5 for details.
+  VerificationContext validateIntegrity(
+      UpdateCompanion<D> instance, bool nullsAreAbsent);
 
   /// Maps the given data class to a [Map] that can be inserted into sql. The
   /// keys should represent the column name in sql, the values the corresponding
   /// values of the field.
   ///
-  /// If [includeNulls] is true, fields of the [DataClass] that are null will be
+  /// If [includeNulls] is true, fields of the [D] that are null will be
   /// written as a [Variable] with a value of null. Otherwise, these fields will
   /// not be written into the map at all.
-  Map<String, Variable> entityToSql(DataClass instance,
-      {bool includeNulls = false});
+  Map<String, Variable> entityToSql(D instance, {bool includeNulls = false});
 
   /// Maps the given row returned by the database into the fitting data class.
-  DataClass map(Map<String, dynamic> data, {String tablePrefix});
+  D map(Map<String, dynamic> data, {String tablePrefix});
 
-  TableInfo<TableDsl, DataClass> createAlias(String alias);
+  TableInfo<TableDsl, D> createAlias(String alias);
 }

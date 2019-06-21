@@ -10,7 +10,7 @@ const Map<JoinType, String> _joinKeywords = {
   JoinType.cross: 'CROSS',
 };
 
-class Join<T extends Table, D> extends Component {
+class Join<T extends Table, D extends DataClass> extends Component {
   final JoinType type;
   final TableInfo<T, D> table;
   final Expression<bool, BoolType> on;
@@ -35,7 +35,7 @@ class Join<T extends Table, D> extends Component {
 ///
 /// See also:
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin<T extends Table, D>(
+Join innerJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool, BoolType> on) {
   return Join(JoinType.inner, other, on);
 }
@@ -45,7 +45,7 @@ Join innerJoin<T extends Table, D>(
 ///
 /// See also:
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin<T extends Table, D>(
+Join leftOuterJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool, BoolType> on) {
   return Join(JoinType.leftOuter, other, on);
 }

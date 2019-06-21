@@ -13,7 +13,7 @@ import 'package:moor/src/runtime/structure/table_info.dart';
 
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
-class JoinedSelectStatement<FirstT extends Table, FirstD>
+class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult> {
   JoinedSelectStatement(
@@ -142,7 +142,8 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
 }
 
 /// A select statement that doesn't use joins
-class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
+class SimpleSelectStatement<T extends Table, D extends DataClass>
+    extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D> {
   SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
@@ -316,7 +317,7 @@ class TypedResult {
   final QueryRow rawData;
 
   /// Reads all data that belongs to the given [table] from this row.
-  D readTable<T extends Table, D>(TableInfo<T, D> table) {
+  D readTable<T extends Table, D extends DataClass>(TableInfo<T, D> table) {
     return _parsedData[table] as D;
   }
 }

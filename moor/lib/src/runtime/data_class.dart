@@ -26,6 +26,9 @@ abstract class DataClass {
   static dynamic parseJson(String jsonString) {
     return json.decode(jsonString);
   }
+
+  /// Used internally by moor.
+  UpdateCompanion createCompanion(bool nullToAbsent);
 }
 
 /// An update companion for a [DataClass] which is used to write data into a
@@ -37,37 +40,8 @@ abstract class UpdateCompanion<D extends DataClass> {
   /// Used internally by moor.
   ///
   /// Returns true if the column at the position [index] has been explicitly
-  /// set to a value. The [assumeNullAsAbsent] parameter exists for backwards
-  /// compatibility reasons, as [DataClass] implements [UpdateCompanion] but
-  /// doesn't have value fields.
-  bool isValuePresent(int index, bool assumeNullAsAbsent);
-}
-
-/// Used internally by moor for generated code.
-///
-/// Exists for backwards compatibility so that a [DataClass] can implement
-/// [UpdateCompanion].
-mixin DelegatingCompanionMixin<D extends DataClass>
-    implements UpdateCompanion<D> {
-  UpdateCompanion<D> _absent;
-  UpdateCompanion<D> _present;
-
-  @visibleForOverriding
-  UpdateCompanion<D> createCompanion(bool nullToAbsent);
-
-  UpdateCompanion<D> _resolveDelegate(bool nullToAbsent) {
-    if (nullToAbsent) {
-      return _absent ??= createCompanion(true);
-    } else {
-      return _present ??= createCompanion(false);
-    }
-  }
-
-  @override
-  bool isValuePresent(int index, bool assumeNullAsAbsent) {
-    final delegate = _resolveDelegate(assumeNullAsAbsent);
-    return delegate.isValuePresent(index, assumeNullAsAbsent);
-  }
+  /// set to a value.
+  bool isValuePresent(int index);
 }
 
 /// A wrapper around arbitrary data [T] to indicate presence or absence

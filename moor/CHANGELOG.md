@@ -1,3 +1,7 @@
+## 1.5.0
+- More consistent and reliable migration and opening callbacks
+- TODO: Explain new companions
+
 ## 1.4.0
 - Added the `RealColumn`, which stores floating point values
 - Better configuration for the serializer with the `JsonKey` annotation and the ability to
