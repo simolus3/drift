@@ -233,7 +233,7 @@ class DataClassWriter {
     for (var column in table.columns) {
       final getter = column.dartGetterName;
       buffer.write('$getter: $getter == null && nullToAbsent ? '
-          'const Value.absent() : Value.use($getter),');
+          'const Value.absent() : Value($getter),');
     }
     buffer.write(') as T;}\n');
   }
