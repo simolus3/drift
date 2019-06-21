@@ -57,7 +57,7 @@ class Value<T> {
   final bool present;
   final T value;
 
-  const Value.use(this.value) : present = true;
+  const Value(this.value) : present = true;
   const Value.absent()
       : value = null,
         present = false;

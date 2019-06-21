@@ -52,16 +52,16 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
     return TodosCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       content: content == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(content),
+          : Value(content),
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(targetDate),
+          : Value(targetDate),
       category: category == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(category),
+          : Value(category),
     ) as T;
   }
 
@@ -262,10 +262,10 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(description),
+          : Value(description),
     ) as T;
   }
 

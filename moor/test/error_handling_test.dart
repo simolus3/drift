@@ -6,13 +6,16 @@ import 'data/utils/mocks.dart';
 
 // the content is set to non-null and the title must be between 4 and 16 chars
 // long
-final nullContent = const TodosTableCompanion(
-    title: Value.use('Test'), content: Value.use(null));
-final absentContent = const TodosTableCompanion(
-    title: Value.use('Test'), content: Value.absent());
-final shortTitle = TodoEntry(title: 'A', content: 'content');
-final longTitle = TodoEntry(title: 'A ${'very' * 5} long title', content: 'hi');
-final valid = TodoEntry(title: 'Test', content: 'Some content');
+const nullContent =
+    TodosTableCompanion(title: Value('Test'), content: Value(null));
+const absentContent =
+    TodosTableCompanion(title: Value('Test'), content: Value.absent());
+final shortTitle =
+    const TodosTableCompanion(title: Value('A'), content: Value('content'));
+final longTitle = TodosTableCompanion(
+    title: Value('A ${'very' * 5} long title'), content: const Value('hi'));
+const valid =
+    TodosTableCompanion(title: Value('Test'), content: Value('Some content'));
 
 void main() {
   TodoDb db;

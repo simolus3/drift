@@ -10,7 +10,7 @@ part of 'example.dart';
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
-  Category({this.id, this.description});
+  Category({@required this.id, this.description});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -41,10 +41,10 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(description),
+          : Value(description),
     ) as T;
   }
 
@@ -162,7 +162,11 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   final String title;
   final String instructions;
   final int category;
-  Recipe({this.id, this.title, this.instructions, this.category});
+  Recipe(
+      {@required this.id,
+      @required this.title,
+      @required this.instructions,
+      this.category});
   factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -201,16 +205,15 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   @override
   T createCompanion<T extends UpdateCompanion<Recipe>>(bool nullToAbsent) {
     return RecipesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
-      title: title == null && nullToAbsent
-          ? const Value.absent()
-          : Value.use(title),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
       instructions: instructions == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(instructions),
+          : Value(instructions),
       category: category == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(category),
+          : Value(category),
     ) as T;
   }
 
@@ -382,7 +385,8 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   final int id;
   final String name;
   final int caloriesPer100g;
-  Ingredient({this.id, this.name, this.caloriesPer100g});
+  Ingredient(
+      {@required this.id, @required this.name, @required this.caloriesPer100g});
   factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -416,12 +420,11 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   @override
   T createCompanion<T extends UpdateCompanion<Ingredient>>(bool nullToAbsent) {
     return IngredientsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
-      name:
-          name == null && nullToAbsent ? const Value.absent() : Value.use(name),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       caloriesPer100g: caloriesPer100g == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(caloriesPer100g),
+          : Value(caloriesPer100g),
     ) as T;
   }
 
@@ -570,7 +573,10 @@ class IngredientInRecipe extends DataClass
   final int recipe;
   final int ingredient;
   final int amountInGrams;
-  IngredientInRecipe({this.recipe, this.ingredient, this.amountInGrams});
+  IngredientInRecipe(
+      {@required this.recipe,
+      @required this.ingredient,
+      @required this.amountInGrams});
   factory IngredientInRecipe.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -606,15 +612,14 @@ class IngredientInRecipe extends DataClass
   T createCompanion<T extends UpdateCompanion<IngredientInRecipe>>(
       bool nullToAbsent) {
     return IngredientInRecipesCompanion(
-      recipe: recipe == null && nullToAbsent
-          ? const Value.absent()
-          : Value.use(recipe),
+      recipe:
+          recipe == null && nullToAbsent ? const Value.absent() : Value(recipe),
       ingredient: ingredient == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(ingredient),
+          : Value(ingredient),
       amountInGrams: amountInGrams == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(amountInGrams),
+          : Value(amountInGrams),
     ) as T;
   }
 

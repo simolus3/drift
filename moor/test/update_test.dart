@@ -19,9 +19,10 @@ void main() {
 
   group('generates update statements', () {
     test('for entire table', () async {
-      await db
-          .update(db.todosTable)
-          .write(TodoEntry(title: 'Updated title', category: 3));
+      await db.update(db.todosTable).write(const TodosTableCompanion(
+            title: Value('Updated title'),
+            category: Value(3),
+          ));
 
       verify(executor.runUpdate(
           'UPDATE todos SET title = ?, category = ?;', ['Updated title', 3]));
@@ -30,7 +31,7 @@ void main() {
     test('with a WHERE clause', () async {
       await (db.update(db.todosTable)
             ..where((t) => t.id.isSmallerThanValue(50)))
-          .write(TodoEntry(title: 'Changed title'));
+          .write(const TodosTableCompanion(title: Value('Changed title')));
 
       verify(executor.runUpdate(
           'UPDATE todos SET title = ? WHERE id < ?;', ['Changed title', 50]));
@@ -55,7 +56,9 @@ void main() {
     // The length of a title must be between 4 and 16 chars
 
     expect(() async {
-      await db.update(db.todosTable).write(TodoEntry(title: 'lol'));
+      await db
+          .update(db.todosTable)
+          .write(const TodosTableCompanion(title: Value('lol')));
     }, throwsA(const TypeMatcher<InvalidDataException>()));
   });
 
@@ -63,8 +66,8 @@ void main() {
     test('are issued when data was changed', () async {
       when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
 
-      await db.update(db.todosTable).write(TodoEntry(
-            content: 'Updated content',
+      await db.update(db.todosTable).write(const TodosTableCompanion(
+            content: Value('Updated content'),
           ));
 
       verify(streamQueries.handleTableUpdates({db.todosTable}));
@@ -73,7 +76,7 @@ void main() {
     test('are not issued when no data was changed', () async {
       when(executor.runDelete(any, any)).thenAnswer((_) => Future.value(0));
 
-      await db.update(db.todosTable).write(TodoEntry());
+      await db.update(db.todosTable).write(const TodosTableCompanion());
 
       verifyNever(streamQueries.handleTableUpdates(any));
     });

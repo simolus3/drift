@@ -24,9 +24,13 @@ class DataClassWriter {
     buffer
       ..write(table.dartTypeName)
       ..write('({')
-      ..write(table.columns
-          .map((column) => 'this.${column.dartGetterName}')
-          .join(', '))
+      ..write(table.columns.map((column) {
+        if (column.nullable) {
+          return 'this.${column.dartGetterName}';
+        } else {
+          return '@required this.${column.dartGetterName}';
+        }
+      }).join(', '))
       ..write('});');
 
     // Also write parsing factory

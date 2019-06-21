@@ -3,6 +3,9 @@ library moor;
 // needed for the generated code that generates data classes with an Uint8List
 // field.
 export 'dart:typed_data' show Uint8List;
+// needed for generated code which provides an @required parameter hint where
+// appropriate
+export 'package:meta/meta.dart' show required;
 
 export 'package:moor/src/dsl/table.dart';
 export 'package:moor/src/dsl/columns.dart';

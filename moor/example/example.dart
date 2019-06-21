@@ -45,8 +45,10 @@ class Database extends _$Database {
   int get schemaVersion => 1;
 
   @override
+  // todo migrate
   MigrationStrategy get migration => MigrationStrategy(onFinished: () async {
         // populate data
-        await into(categories).insert(Category(description: 'Sweets'));
+        await into(categories)
+            .insert(const CategoriesCompanion(description: Value('Sweets')));
       });
 }

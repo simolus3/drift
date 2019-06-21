@@ -1,4 +1,5 @@
 import 'package:test_api/test_api.dart';
+import 'package:moor/moor.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
@@ -39,7 +40,9 @@ void main() {
         .thenAnswer((_) => Future.value(2));
 
     await db.transaction((t) async {
-      await t.update(db.users).write(User(name: 'Updated name'));
+      await t
+          .update(db.users)
+          .write(const UsersCompanion(name: Value('Updated name')));
 
       // Even though we just wrote to users, this only happened inside the
       // transaction, so the top level stream queries should not be updated.

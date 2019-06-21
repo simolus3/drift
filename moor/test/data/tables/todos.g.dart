@@ -14,7 +14,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final DateTime targetDate;
   final int category;
   TodoEntry(
-      {this.id, this.title, this.content, this.targetDate, this.category});
+      {@required this.id,
+      this.title,
+      @required this.content,
+      this.targetDate,
+      this.category});
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -58,19 +62,18 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
     return TodosTableCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
-      title: title == null && nullToAbsent
-          ? const Value.absent()
-          : Value.use(title),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
       content: content == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(content),
+          : Value(content),
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(targetDate),
+          : Value(targetDate),
       category: category == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(category),
+          : Value(category),
     ) as T;
   }
 
@@ -273,7 +276,7 @@ class $TodosTableTable extends TodosTable
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
-  Category({this.id, this.description});
+  Category({@required this.id, @required this.description});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -304,10 +307,10 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(description),
+          : Value(description),
     ) as T;
   }
 
@@ -424,11 +427,11 @@ class User extends DataClass implements Insertable<User> {
   final Uint8List profilePicture;
   final DateTime creationTime;
   User(
-      {this.id,
-      this.name,
-      this.isAwesome,
-      this.profilePicture,
-      this.creationTime});
+      {@required this.id,
+      @required this.name,
+      @required this.isAwesome,
+      @required this.profilePicture,
+      @required this.creationTime});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -473,18 +476,17 @@ class User extends DataClass implements Insertable<User> {
   @override
   T createCompanion<T extends UpdateCompanion<User>>(bool nullToAbsent) {
     return UsersCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value.use(id),
-      name:
-          name == null && nullToAbsent ? const Value.absent() : Value.use(name),
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       isAwesome: isAwesome == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(isAwesome),
+          : Value(isAwesome),
       profilePicture: profilePicture == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(profilePicture),
+          : Value(profilePicture),
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(creationTime),
+          : Value(creationTime),
     ) as T;
   }
 
@@ -690,7 +692,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   final int todo;
   final int user;
-  SharedTodo({this.todo, this.user});
+  SharedTodo({@required this.todo, @required this.user});
   factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -719,10 +721,8 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   T createCompanion<T extends UpdateCompanion<SharedTodo>>(bool nullToAbsent) {
     return SharedTodosCompanion(
-      todo:
-          todo == null && nullToAbsent ? const Value.absent() : Value.use(todo),
-      user:
-          user == null && nullToAbsent ? const Value.absent() : Value.use(user),
+      todo: todo == null && nullToAbsent ? const Value.absent() : Value(todo),
+      user: user == null && nullToAbsent ? const Value.absent() : Value(user),
     ) as T;
   }
 
@@ -842,7 +842,7 @@ class TableWithoutPKData extends DataClass
     implements Insertable<TableWithoutPKData> {
   final int notReallyAnId;
   final double someFloat;
-  TableWithoutPKData({this.notReallyAnId, this.someFloat});
+  TableWithoutPKData({@required this.notReallyAnId, @required this.someFloat});
   factory TableWithoutPKData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -878,10 +878,10 @@ class TableWithoutPKData extends DataClass
     return TableWithoutPKCompanion(
       notReallyAnId: notReallyAnId == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(notReallyAnId),
+          : Value(notReallyAnId),
       someFloat: someFloat == null && nullToAbsent
           ? const Value.absent()
-          : Value.use(someFloat),
+          : Value(someFloat),
     ) as T;
   }
 

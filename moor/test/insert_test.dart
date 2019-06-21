@@ -16,8 +16,8 @@ void main() {
   });
 
   test('generates insert statements', () async {
-    await db.into(db.todosTable).insert(TodoEntry(
-          content: 'Implement insert statements',
+    await db.into(db.todosTable).insert(const TodosTableCompanion(
+          content: Value('Implement insert statements'),
         ));
 
     verify(executor.runInsert('INSERT INTO todos (content) VALUES (?)',
@@ -50,10 +50,10 @@ void main() {
   });
 
   test('runs bulk inserts', () async {
-    await db.into(db.todosTable).insertAll([
-      TodoEntry(content: 'a'),
-      TodoEntry(title: 'title', content: 'b'),
-      TodoEntry(title: 'title', content: 'c'),
+    await db.into(db.todosTable).insertAll(const [
+      TodosTableCompanion(content: Value('a')),
+      TodosTableCompanion(title: Value('title'), content: Value('b')),
+      TodosTableCompanion(title: Value('title'), content: Value('c')),
     ]);
 
     final insertSimple = 'INSERT INTO todos (content) VALUES (?)';
@@ -73,10 +73,10 @@ void main() {
   });
 
   test('runs bulk inserts with OR REPLACE', () async {
-    await db.into(db.todosTable).insertAll([
-      TodoEntry(content: 'a'),
-      TodoEntry(title: 'title', content: 'b'),
-      TodoEntry(title: 'title', content: 'c'),
+    await db.into(db.todosTable).insertAll(const [
+      TodosTableCompanion(content: Value('a')),
+      TodosTableCompanion(title: Value('title'), content: Value('b')),
+      TodosTableCompanion(title: Value('title'), content: Value('c')),
     ], orReplace: true);
 
     final insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
@@ -97,10 +97,10 @@ void main() {
   });
 
   test('notifies stream queries on inserts', () async {
-    await db.into(db.users).insert(User(
-          name: 'User McUserface',
-          isAwesome: true,
-          profilePicture: Uint8List(0),
+    await db.into(db.users).insert(UsersCompanion(
+          name: const Value('User McUserface'),
+          isAwesome: const Value(true),
+          profilePicture: Value(Uint8List(0)),
         ));
 
     verify(streamQueries.handleTableUpdates({db.users}));
@@ -109,8 +109,9 @@ void main() {
   test('enforces data integrity', () {
     expect(
       db.into(db.todosTable).insert(
-            TodoEntry(
-              content: null, // not declared as nullable in table definition
+            const TodosTableCompanion(
+              // not declared as nullable in table definition
+              content: Value(null),
             ),
           ),
       throwsA(const TypeMatcher<InvalidDataException>()),
@@ -120,7 +121,11 @@ void main() {
   test('reports auto-increment id', () async {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(42));
 
-    expect(db.into(db.todosTable).insert(TodoEntry(content: 'Bottom text')),
-        completion(42));
+    expect(
+      db
+          .into(db.todosTable)
+          .insert(const TodosTableCompanion(content: Value('Bottom text'))),
+      completion(42),
+    );
   });
 }
