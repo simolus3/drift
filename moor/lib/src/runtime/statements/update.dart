@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 
-class UpdateStatement<T extends Table, D> extends Query<T, D>
+class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
@@ -56,7 +56,8 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(D entity) async {
-    table.validateIntegrity(entity, false).throwIfInvalid(entity);
+    // todo needs to use entity as update companion here
+    table.validateIntegrity(null).throwIfInvalid(entity);
 
     _updatedFields = table.entityToSql(entity)
       ..remove((_, value) => value == null);
@@ -90,7 +91,8 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     // because all the fields from the entity will be written (as opposed to a
     // regular update, where only non-null fields will be written). If isInserted
     // was false, the null fields would not be validated.
-    table.validateIntegrity(entity, true).throwIfInvalid(entity);
+    // todo needs to use entity as update companion here
+    table.validateIntegrity(null).throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'

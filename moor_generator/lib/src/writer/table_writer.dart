@@ -159,29 +159,26 @@ class TableWriter {
   }
 
   void _writeValidityCheckMethod(StringBuffer buffer) {
-    final dataClass = table.dartTypeName;
+    buffer
+      ..write('@override\nVerificationContext validateIntegrity'
+          '(${table.updateCompanionName} d) {\n')
+      ..write('final context = VerificationContext();\n');
 
-    buffer.write('@override\nVerificationContext validateIntegrity'
-        '($dataClass instance, bool isInserting) => VerificationContext()');
-
-    /*
-    return VerificationContext()
-      ..handle(
-          _categoryMeta,
-          category.isAcceptableValue(
-              instance.category, isInserting, _categoryMeta));
-     */
-
-    for (var column in table.columns) {
+    for (var i = 0; i < table.columns.length; i++) {
+      final column = table.columns[i];
       final getterName = column.dartGetterName;
       final metaName = _fieldNameForColumnMeta(column);
 
-      // ..handle(_meta, c.isAcceptableValue(instance.c, insert, _meta))
-      buffer.write('..handle($metaName, $getterName.isAcceptableValue('
-          'instance.$getterName, isInserting, $metaName))');
+      buffer
+        ..write('if (d.isValuePresent($i)) {\n')
+        ..write('context.handle('
+            '$metaName, '
+            '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
+        ..write('}\n');
     }
 
-    buffer.write(';\n');
+    // todo verify that all required columns are present
+    buffer.write('return context;\n}\n');
   }
 
   String _fieldNameForColumnMeta(SpecifiedColumn column) {

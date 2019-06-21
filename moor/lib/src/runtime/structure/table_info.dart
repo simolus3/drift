@@ -36,11 +36,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
 
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
-  ///
-  /// The [nullsAreAbsent] parameter exists for backwards-compatibility. See the
-  /// discussion in the changelog at version 1.5 for details.
-  VerificationContext validateIntegrity(
-      UpdateCompanion<D> instance, bool nullsAreAbsent);
+  VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance);
 
   /// Maps the given data class to a [Map] that can be inserted into sql. The
   /// keys should represent the column name in sql, the values the corresponding
@@ -49,6 +45,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
   /// If [includeNulls] is true, fields of the [D] that are null will be
   /// written as a [Variable] with a value of null. Otherwise, these fields will
   /// not be written into the map at all.
+  // todo migrate to update companions
   Map<String, Variable> entityToSql(D instance, {bool includeNulls = false});
 
   /// Maps the given row returned by the database into the fitting data class.

@@ -117,6 +117,7 @@ class InsertStatement<D extends DataClass> {
           'Cannot writee null row into ${table.$tableName}');
     }
 
-    table.validateIntegrity(d, true).throwIfInvalid(d);
+    // todo needs to use d as update companion here
+    table.validateIntegrity(null).throwIfInvalid(d);
   }
 }

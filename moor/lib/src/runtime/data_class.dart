@@ -41,6 +41,8 @@ abstract class UpdateCompanion<D extends DataClass> {
   ///
   /// Returns true if the column at the position [index] has been explicitly
   /// set to a value.
+  // todo this doesn't need to exist anymore, remove before release and adapt
+  // moor_generator
   bool isValuePresent(int index);
 }
 

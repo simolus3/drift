@@ -218,24 +218,30 @@ class $TodosTableTable extends TodosTable
   @override
   final String actualTableName = 'todos';
   @override
-  VerificationContext validateIntegrity(TodoEntry instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(_titleMeta,
-            title.isAcceptableValue(instance.title, isInserting, _titleMeta))
-        ..handle(
-            _contentMeta,
-            content.isAcceptableValue(
-                instance.content, isInserting, _contentMeta))
-        ..handle(
-            _targetDateMeta,
-            targetDate.isAcceptableValue(
-                instance.targetDate, isInserting, _targetDateMeta))
-        ..handle(
-            _categoryMeta,
-            category.isAcceptableValue(
-                instance.category, isInserting, _categoryMeta));
+  VerificationContext validateIntegrity(TodosTableCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(
+          _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(_contentMeta,
+          content.isAcceptableValue(d.content.value, _contentMeta));
+    }
+    if (d.isValuePresent(3)) {
+      context.handle(_targetDateMeta,
+          targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
+    }
+    if (d.isValuePresent(4)) {
+      context.handle(_categoryMeta,
+          category.isAcceptableValue(d.category.value, _categoryMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -387,14 +393,18 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(
-            _descriptionMeta,
-            description.isAcceptableValue(
-                instance.description, isInserting, _descriptionMeta));
+  VerificationContext validateIntegrity(CategoriesCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_descriptionMeta,
+          description.isAcceptableValue(d.description.value, _descriptionMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -633,24 +643,34 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final String actualTableName = 'users';
   @override
-  VerificationContext validateIntegrity(User instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(_nameMeta,
-            name.isAcceptableValue(instance.name, isInserting, _nameMeta))
-        ..handle(
-            _isAwesomeMeta,
-            isAwesome.isAcceptableValue(
-                instance.isAwesome, isInserting, _isAwesomeMeta))
-        ..handle(
-            _profilePictureMeta,
-            profilePicture.isAcceptableValue(
-                instance.profilePicture, isInserting, _profilePictureMeta))
-        ..handle(
-            _creationTimeMeta,
-            creationTime.isAcceptableValue(
-                instance.creationTime, isInserting, _creationTimeMeta));
+  VerificationContext validateIntegrity(UsersCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(
+          _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(_isAwesomeMeta,
+          isAwesome.isAcceptableValue(d.isAwesome.value, _isAwesomeMeta));
+    }
+    if (d.isValuePresent(3)) {
+      context.handle(
+          _profilePictureMeta,
+          profilePicture.isAcceptableValue(
+              d.profilePicture.value, _profilePictureMeta));
+    }
+    if (d.isValuePresent(4)) {
+      context.handle(
+          _creationTimeMeta,
+          creationTime.isAcceptableValue(
+              d.creationTime.value, _creationTimeMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -805,13 +825,19 @@ class $SharedTodosTable extends SharedTodos
   @override
   final String actualTableName = 'shared_todos';
   @override
-  VerificationContext validateIntegrity(
-          SharedTodo instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(_todoMeta,
-            todo.isAcceptableValue(instance.todo, isInserting, _todoMeta))
-        ..handle(_userMeta,
-            user.isAcceptableValue(instance.user, isInserting, _userMeta));
+  VerificationContext validateIntegrity(SharedTodosCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(
+          _todoMeta, todo.isAcceptableValue(d.todo.value, _todoMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(
+          _userMeta, user.isAcceptableValue(d.user.value, _userMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
@@ -969,17 +995,21 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   final String actualTableName = 'table_without_p_k';
   @override
-  VerificationContext validateIntegrity(
-          TableWithoutPKData instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _notReallyAnIdMeta,
-            notReallyAnId.isAcceptableValue(
-                instance.notReallyAnId, isInserting, _notReallyAnIdMeta))
-        ..handle(
-            _someFloatMeta,
-            someFloat.isAcceptableValue(
-                instance.someFloat, isInserting, _someFloatMeta));
+  VerificationContext validateIntegrity(TableWithoutPKCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(
+          _notReallyAnIdMeta,
+          notReallyAnId.isAcceptableValue(
+              d.notReallyAnId.value, _notReallyAnIdMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_someFloatMeta,
+          someFloat.isAcceptableValue(d.someFloat.value, _someFloatMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override

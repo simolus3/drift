@@ -126,14 +126,18 @@ class $CategoriesTable extends Categories
   @override
   final String actualTableName = 'categories';
   @override
-  VerificationContext validateIntegrity(Category instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(
-            _descriptionMeta,
-            description.isAcceptableValue(
-                instance.description, isInserting, _descriptionMeta));
+  VerificationContext validateIntegrity(CategoriesCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_descriptionMeta,
+          description.isAcceptableValue(d.description.value, _descriptionMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -334,20 +338,28 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   final String actualTableName = 'recipes';
   @override
-  VerificationContext validateIntegrity(Recipe instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(_titleMeta,
-            title.isAcceptableValue(instance.title, isInserting, _titleMeta))
-        ..handle(
-            _instructionsMeta,
-            instructions.isAcceptableValue(
-                instance.instructions, isInserting, _instructionsMeta))
-        ..handle(
-            _categoryMeta,
-            category.isAcceptableValue(
-                instance.category, isInserting, _categoryMeta));
+  VerificationContext validateIntegrity(RecipesCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(
+          _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(
+          _instructionsMeta,
+          instructions.isAcceptableValue(
+              d.instructions.value, _instructionsMeta));
+    }
+    if (d.isValuePresent(3)) {
+      context.handle(_categoryMeta,
+          category.isAcceptableValue(d.category.value, _categoryMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -527,17 +539,24 @@ class $IngredientsTable extends Ingredients
   @override
   final String actualTableName = 'ingredients';
   @override
-  VerificationContext validateIntegrity(
-          Ingredient instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(
-            _idMeta, id.isAcceptableValue(instance.id, isInserting, _idMeta))
-        ..handle(_nameMeta,
-            name.isAcceptableValue(instance.name, isInserting, _nameMeta))
-        ..handle(
-            _caloriesPer100gMeta,
-            caloriesPer100g.isAcceptableValue(
-                instance.caloriesPer100g, isInserting, _caloriesPer100gMeta));
+  VerificationContext validateIntegrity(IngredientsCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(
+          _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(
+          _caloriesPer100gMeta,
+          caloriesPer100g.isAcceptableValue(
+              d.caloriesPer100g.value, _caloriesPer100gMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -726,19 +745,25 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   final String actualTableName = 'recipe_ingredients';
   @override
-  VerificationContext validateIntegrity(
-          IngredientInRecipe instance, bool isInserting) =>
-      VerificationContext()
-        ..handle(_recipeMeta,
-            recipe.isAcceptableValue(instance.recipe, isInserting, _recipeMeta))
-        ..handle(
-            _ingredientMeta,
-            ingredient.isAcceptableValue(
-                instance.ingredient, isInserting, _ingredientMeta))
-        ..handle(
-            _amountInGramsMeta,
-            amountInGrams.isAcceptableValue(
-                instance.amountInGrams, isInserting, _amountInGramsMeta));
+  VerificationContext validateIntegrity(IngredientInRecipesCompanion d) {
+    final context = VerificationContext();
+    if (d.isValuePresent(0)) {
+      context.handle(
+          _recipeMeta, recipe.isAcceptableValue(d.recipe.value, _recipeMeta));
+    }
+    if (d.isValuePresent(1)) {
+      context.handle(_ingredientMeta,
+          ingredient.isAcceptableValue(d.ingredient.value, _ingredientMeta));
+    }
+    if (d.isValuePresent(2)) {
+      context.handle(
+          _amountInGramsMeta,
+          amountInGrams.isAcceptableValue(
+              d.amountInGrams.value, _amountInGramsMeta));
+    }
+    return context;
+  }
+
   @override
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override
