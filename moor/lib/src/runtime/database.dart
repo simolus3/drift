@@ -88,7 +88,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
   @visibleForTesting
-  InsertStatement<T> into<T>(TableInfo<Table, T> table) =>
+  InsertStatement<T> into<T extends DataClass>(TableInfo<Table, T> table) =>
       InsertStatement<T>(this, table);
 
   /// Starts an [UpdateStatement] for the given table. You can use that

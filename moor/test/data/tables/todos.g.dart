@@ -97,6 +97,40 @@ class TodoEntry extends DataClass {
           other.category == category);
 }
 
+class TodosTableCompanion implements UpdateCompanion<TodoEntry> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<String> content;
+  final Value<DateTime> targetDate;
+  final Value<int> category;
+  const TodosTableCompanion({
+    this.id = Value.absent(),
+    this.title = Value.absent(),
+    this.content = Value.absent(),
+    this.targetDate = Value.absent(),
+    this.category = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return title.present;
+      case 2:
+        return content.present;
+      case 3:
+        return targetDate.present;
+      case 4:
+        return category.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
+}
+
 class $TodosTableTable extends TodosTable
     with TableInfo<$TodosTableTable, TodoEntry> {
   final GeneratedDatabase _db;
@@ -271,6 +305,28 @@ class Category extends DataClass {
       (other is Category && other.id == id && other.description == description);
 }
 
+class CategoriesCompanion implements UpdateCompanion<Category> {
+  final Value<int> id;
+  final Value<String> description;
+  const CategoriesCompanion({
+    this.id = Value.absent(),
+    this.description = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return description.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
+}
+
 class $CategoriesTable extends Categories
     with TableInfo<$CategoriesTable, Category> {
   final GeneratedDatabase _db;
@@ -432,6 +488,40 @@ class User extends DataClass {
           other.isAwesome == isAwesome &&
           other.profilePicture == profilePicture &&
           other.creationTime == creationTime);
+}
+
+class UsersCompanion implements UpdateCompanion<User> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<bool> isAwesome;
+  final Value<Uint8List> profilePicture;
+  final Value<DateTime> creationTime;
+  const UsersCompanion({
+    this.id = Value.absent(),
+    this.name = Value.absent(),
+    this.isAwesome = Value.absent(),
+    this.profilePicture = Value.absent(),
+    this.creationTime = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return name.present;
+      case 2:
+        return isAwesome.present;
+      case 3:
+        return profilePicture.present;
+      case 4:
+        return creationTime.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -602,6 +692,28 @@ class SharedTodo extends DataClass {
       (other is SharedTodo && other.todo == todo && other.user == user);
 }
 
+class SharedTodosCompanion implements UpdateCompanion<SharedTodo> {
+  final Value<int> todo;
+  final Value<int> user;
+  const SharedTodosCompanion({
+    this.todo = Value.absent(),
+    this.user = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return todo.present;
+      case 1:
+        return user.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
+}
+
 class $SharedTodosTable extends SharedTodos
     with TableInfo<$SharedTodosTable, SharedTodo> {
   final GeneratedDatabase _db;
@@ -729,6 +841,28 @@ class TableWithoutPKData extends DataClass {
       (other is TableWithoutPKData &&
           other.notReallyAnId == notReallyAnId &&
           other.someFloat == someFloat);
+}
+
+class TableWithoutPKCompanion implements UpdateCompanion<TableWithoutPKData> {
+  final Value<int> notReallyAnId;
+  final Value<double> someFloat;
+  const TableWithoutPKCompanion({
+    this.notReallyAnId = Value.absent(),
+    this.someFloat = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return notReallyAnId.present;
+      case 1:
+        return someFloat.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
 }
 
 class $TableWithoutPKTable extends TableWithoutPK

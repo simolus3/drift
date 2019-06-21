@@ -18,6 +18,7 @@ export 'package:moor/src/runtime/expressions/user_api.dart';
 export 'package:moor/src/runtime/executor/transactions.dart';
 export 'package:moor/src/runtime/statements/query.dart';
 export 'package:moor/src/runtime/statements/select.dart';
+export 'package:moor/src/runtime/statements/update.dart';
 export 'package:moor/src/runtime/statements/insert.dart';
 export 'package:moor/src/runtime/statements/delete.dart';
 export 'package:moor/src/runtime/structure/columns.dart';

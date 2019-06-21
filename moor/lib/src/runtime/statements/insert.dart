@@ -6,11 +6,11 @@ import 'package:moor/src/runtime/components/component.dart';
 
 import 'update.dart';
 
-class InsertStatement<DataClass> {
+class InsertStatement<D extends DataClass> {
   @protected
   final QueryEngine database;
   @protected
-  final TableInfo<Table, DataClass> table;
+  final TableInfo<Table, D> table;
 
   InsertStatement(this.database, this.table);
 
@@ -26,7 +26,7 @@ class InsertStatement<DataClass> {
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned.
-  Future<int> insert(DataClass entity, {bool orReplace = false}) async {
+  Future<int> insert(D entity, {bool orReplace = false}) async {
     _validateIntegrity(entity);
     final ctx = _createContext(entity, orReplace);
 
@@ -45,7 +45,7 @@ class InsertStatement<DataClass> {
   /// When a row with the same primary or unique key already exists in the
   /// database, the insert will fail. Use [orReplace] to replace rows that
   /// already exist.
-  Future<void> insertAll(List<DataClass> rows, {bool orReplace = false}) async {
+  Future<void> insertAll(List<D> rows, {bool orReplace = false}) async {
     final statements = <String, List<GenerationContext>>{};
 
     // Not every insert has the same sql, as fields which are set to null are
@@ -78,11 +78,11 @@ class InsertStatement<DataClass> {
   ///
   /// However, if no such row exists, a new row will be written instead.
   @Deprecated('Use insert with orReplace: true instead')
-  Future<void> insertOrReplace(DataClass entity) async {
+  Future<void> insertOrReplace(D entity) async {
     return await insert(entity, orReplace: true);
   }
 
-  GenerationContext _createContext(DataClass entry, bool replace) {
+  GenerationContext _createContext(D entry, bool replace) {
     final map = table.entityToSql(entry)
       ..removeWhere((_, value) => value == null);
 
@@ -111,7 +111,7 @@ class InsertStatement<DataClass> {
     return ctx;
   }
 
-  void _validateIntegrity(DataClass d) {
+  void _validateIntegrity(D d) {
     if (d == null) {
       throw InvalidDataException(
           'Cannot writee null row into ${table.$tableName}');

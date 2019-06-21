@@ -2,6 +2,7 @@ import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
+import 'package:moor_generator/src/writer/update_companion_writer.dart';
 import 'package:moor_generator/src/writer/utils.dart';
 
 class TableWriter {
@@ -17,6 +18,7 @@ class TableWriter {
 
   void writeDataClass(StringBuffer buffer) {
     DataClassWriter(table, options).writeInto(buffer);
+    UpdateCompanionWriter(table, options).writeInto(buffer);
   }
 
   void writeTableInfoClass(StringBuffer buffer) {

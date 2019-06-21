@@ -59,6 +59,28 @@ class Category extends DataClass {
       (other is Category && other.id == id && other.description == description);
 }
 
+class CategoriesCompanion implements UpdateCompanion<Category> {
+  final Value<int> id;
+  final Value<String> description;
+  const CategoriesCompanion({
+    this.id = Value.absent(),
+    this.description = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return description.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
+}
+
 class $CategoriesTable extends Categories
     with TableInfo<$CategoriesTable, Category> {
   final GeneratedDatabase _db;
@@ -201,6 +223,36 @@ class Recipe extends DataClass {
           other.title == title &&
           other.instructions == instructions &&
           other.category == category);
+}
+
+class RecipesCompanion implements UpdateCompanion<Recipe> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<String> instructions;
+  final Value<int> category;
+  const RecipesCompanion({
+    this.id = Value.absent(),
+    this.title = Value.absent(),
+    this.instructions = Value.absent(),
+    this.category = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return title.present;
+      case 2:
+        return instructions.present;
+      case 3:
+        return category.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
 }
 
 class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
@@ -366,6 +418,32 @@ class Ingredient extends DataClass {
           other.caloriesPer100g == caloriesPer100g);
 }
 
+class IngredientsCompanion implements UpdateCompanion<Ingredient> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<int> caloriesPer100g;
+  const IngredientsCompanion({
+    this.id = Value.absent(),
+    this.name = Value.absent(),
+    this.caloriesPer100g = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return id.present;
+      case 1:
+        return name.present;
+      case 2:
+        return caloriesPer100g.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
+}
+
 class $IngredientsTable extends Ingredients
     with TableInfo<$IngredientsTable, Ingredient> {
   final GeneratedDatabase _db;
@@ -518,6 +596,33 @@ class IngredientInRecipe extends DataClass {
           other.recipe == recipe &&
           other.ingredient == ingredient &&
           other.amountInGrams == amountInGrams);
+}
+
+class IngredientInRecipesCompanion
+    implements UpdateCompanion<IngredientInRecipe> {
+  final Value<int> recipe;
+  final Value<int> ingredient;
+  final Value<int> amountInGrams;
+  const IngredientInRecipesCompanion({
+    this.recipe = Value.absent(),
+    this.ingredient = Value.absent(),
+    this.amountInGrams = Value.absent(),
+  });
+  @override
+  bool isValuePresent(int index) {
+    switch (index) {
+      case 0:
+        return recipe.present;
+      case 1:
+        return ingredient.present;
+      case 2:
+        return amountInGrams.present;
+      default:
+        throw ArgumentError(
+            'Hit an invalid state while serializing data. Did you run the build step?');
+    }
+    ;
+  }
 }
 
 class $IngredientInRecipesTable extends IngredientInRecipes

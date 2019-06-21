@@ -10,6 +10,7 @@ class SpecifiedTable {
   final String dartTypeName;
 
   String get tableInfoName => tableInfoNameForTableClass(fromClass);
+  String get updateCompanionName => _updateCompanionName(fromClass);
 
   /// The set of primary keys, if they have been explicitly defined by
   /// overriding `primaryKey` in the table class. `null` if the primary key has
@@ -26,3 +27,6 @@ class SpecifiedTable {
 
 String tableInfoNameForTableClass(ClassElement fromClass) =>
     '\$${fromClass.name}Table';
+
+String _updateCompanionName(ClassElement fromClass) =>
+    '${fromClass.name}Companion';
