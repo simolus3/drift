@@ -87,7 +87,6 @@ class CategoriesCompanion implements UpdateCompanion<Category> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -277,7 +276,6 @@ class RecipesCompanion implements UpdateCompanion<Recipe> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -478,7 +476,6 @@ class IngredientsCompanion implements UpdateCompanion<Ingredient> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -675,7 +672,6 @@ class IngredientInRecipesCompanion
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 

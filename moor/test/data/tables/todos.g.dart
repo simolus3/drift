@@ -146,7 +146,6 @@ class TodosTableCompanion implements UpdateCompanion<TodoEntry> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -352,7 +351,6 @@ class CategoriesCompanion implements UpdateCompanion<Category> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -567,7 +565,6 @@ class UsersCompanion implements UpdateCompanion<User> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -767,7 +764,6 @@ class SharedTodosCompanion implements UpdateCompanion<SharedTodo> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 
@@ -931,7 +927,6 @@ class TableWithoutPKCompanion implements UpdateCompanion<TableWithoutPKData> {
         throw ArgumentError(
             'Hit an invalid state while serializing data. Did you run the build step?');
     }
-    ;
   }
 }
 

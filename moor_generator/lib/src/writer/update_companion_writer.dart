@@ -48,6 +48,6 @@ class UpdateCompanionWriter {
       ..write('default: throw ArgumentError('
           "'Hit an invalid state while serializing data. Did you run the build "
           "step?');")
-      ..write('};}\n');
+      ..write('}\n}\n');
   }
 }
