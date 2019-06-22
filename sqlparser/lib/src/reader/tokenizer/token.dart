@@ -45,10 +45,18 @@ enum TokenType {
   identifier,
 
   select,
-
   from,
   as,
   where,
+
+  natural,
+  left,
+  outer,
+  inner,
+  cross,
+  join,
+  on,
+  using,
 
   order,
   by,
@@ -64,6 +72,14 @@ enum TokenType {
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
   'FROM': TokenType.from,
+  'NATURAL': TokenType.natural,
+  'LEFT': TokenType.leftParen,
+  'OUTER': TokenType.outer,
+  'INNER': TokenType.inner,
+  'CROSS': TokenType.cross,
+  'JOIN': TokenType.join,
+  'ON': TokenType.on,
+  'USING': TokenType.using,
   'AS': TokenType.as,
   'WHERE': TokenType.where,
   'ORDER': TokenType.order,

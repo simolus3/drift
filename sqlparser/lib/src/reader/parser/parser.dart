@@ -17,6 +17,13 @@ const _binaryOperators = const [
   TokenType.pipe,
 ];
 
+final _startOperators = const [
+  TokenType.natural,
+  TokenType.left,
+  TokenType.inner,
+  TokenType.cross
+];
+
 class ParsingError implements Exception {
   final Token token;
   final String message;
@@ -53,6 +60,14 @@ class Parser {
     return false;
   }
 
+  bool _matchOne(TokenType type) {
+    if (_check(type)) {
+      _advance();
+      return true;
+    }
+    return false;
+  }
+
   bool _check(TokenType type) {
     if (_isAtEnd) return false;
     return _peek.type == type;
@@ -85,18 +100,24 @@ class Parser {
   SelectStatement select() {
     if (!_match(const [TokenType.select])) return null;
 
-    // todo parse result column
     final resultColumns = <ResultColumn>[];
     do {
       resultColumns.add(_resultColumn());
     } while (_match(const [TokenType.comma]));
+
+    final from = _from();
 
     final where = _where();
     final orderBy = _orderBy();
     final limit = _limit();
 
     return SelectStatement(
-        where: where, columns: resultColumns, orderBy: orderBy, limit: limit);
+      columns: resultColumns,
+      from: from,
+      where: where,
+      orderBy: orderBy,
+      limit: limit,
+    );
   }
 
   /// Parses a [ResultColumn] or throws if none is found.
@@ -125,17 +146,148 @@ class Parser {
     }
 
     final expr = expression();
-    // todo in sqlite, the as is optional
+    final as = _as();
+
+    return ExpressionResultColumn(expression: expr, as: as?.identifier);
+  }
+
+  /// Returns an identifier followed after an optional "AS" token in sql.
+  /// Returns null if there is
+  IdentifierToken _as() {
     if (_match(const [TokenType.as])) {
-      if (_match(const [TokenType.identifier])) {
-        final identifier = (_previous as IdentifierToken).identifier;
-        return ExpressionResultColumn(expression: expr, as: identifier);
+      return _consume(TokenType.identifier, 'Expected an identifier')
+          as IdentifierToken;
+    } else if (_match(const [TokenType.identifier])) {
+      return _previous as IdentifierToken;
+    } else {
+      return null;
+    }
+  }
+
+  List<Queryable> _from() {
+    if (!_matchOne(TokenType.from)) return [];
+
+    // Can either be a list of <TableOrSubquery> or a join. Joins also start
+    // with a TableOrSubquery, so let's first parse that.
+    final start = _tableOrSubquery();
+    // parse join, if it is one
+    final join = _joinClause(start);
+    if (join != null) {
+      return [join];
+    }
+
+    // not a join. Keep the TableOrSubqueries coming!
+    final queries = [start];
+    while (_matchOne(TokenType.comma)) {
+      queries.add(_tableOrSubquery());
+    }
+
+    return queries;
+  }
+
+  TableOrSubquery _tableOrSubquery() {
+    //  this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
+    // we currently only support regular tables and nested selects
+    if (_matchOne(TokenType.identifier)) {
+      // ignore the schema name, it's not supported. Besides that, we're on the
+      // first branch in the diagram here
+      final tableName = (_previous as IdentifierToken).identifier;
+      final alias = _as();
+      return TableReference(tableName, alias?.identifier);
+    } else if (_matchOne(TokenType.leftParen)) {
+      final innerStmt = select();
+      _consume(TokenType.rightParen,
+          'Expected a right bracket to terminate the inner select');
+
+      final alias = _as();
+      return SelectStatementAsSource(
+          statement: innerStmt, as: alias?.identifier);
+    }
+
+    _error('Expected a table name or a nested select statement');
+  }
+
+  JoinClause _joinClause(TableOrSubquery start) {
+    var operator = _parseJoinOperatorNoComma();
+    if (operator == null) {
+      return null;
+    }
+
+    final joins = <Join>[];
+
+    while (operator != null) {
+      final subquery = _tableOrSubquery();
+      final constraint = _joinConstraint();
+      JoinOperator resolvedOperator;
+      if (operator.contains(TokenType.left)) {
+        resolvedOperator = operator.contains(TokenType.outer)
+            ? JoinOperator.leftOuter
+            : JoinOperator.left;
+      } else if (operator.contains(TokenType.inner)) {
+        resolvedOperator = JoinOperator.inner;
+      } else if (operator.contains(TokenType.cross)) {
+        resolvedOperator = JoinOperator.cross;
+      } else if (operator.contains(TokenType.comma)) {
+        resolvedOperator = JoinOperator.comma;
+      }
+
+      joins.add(Join(
+        natural: operator.contains(TokenType.natural),
+        operator: resolvedOperator,
+        query: subquery,
+        constraint: constraint,
+      ));
+
+      // parse the next operator, if there is more than one join
+      if (_matchOne(TokenType.comma)) {
+        operator = [TokenType.comma];
       } else {
-        throw ParsingError(_peek, 'Expected an identifier as the column name');
+        operator = _parseJoinOperatorNoComma();
       }
     }
 
-    return ExpressionResultColumn(expression: expr);
+    return JoinClause(primary: start, joins: joins);
+  }
+
+  /// Parses https://www.sqlite.org/syntax/join-operator.html, minus the comma.
+  List<TokenType> _parseJoinOperatorNoComma() {
+    if (_match(_startOperators)) {
+      final operators = [_previous.type];
+      // natural is a prefix, another operator can follow.
+      if (_previous.type == TokenType.natural) {
+        if (_match([TokenType.left, TokenType.inner, TokenType.cross])) {
+          operators.add(_previous.type);
+        }
+      }
+      if (_previous.type == TokenType.left && _matchOne(TokenType.outer)) {
+        operators.add(_previous.type);
+      }
+
+      _consume(TokenType.join, 'Expected to see a join keyword here');
+      return operators;
+    }
+    return null;
+  }
+
+  /// Parses https://www.sqlite.org/syntax/join-constraint.html
+  JoinConstraint _joinConstraint() {
+    if (_matchOne(TokenType.on)) {
+      return OnConstraint(expression: expression());
+    } else if (_matchOne(TokenType.using)) {
+      _consume(TokenType.leftParen, 'Expected an opening paranthesis');
+
+      final columnNames = <String>[];
+      do {
+        final identifier =
+            _consume(TokenType.identifier, 'Expected a column name');
+        columnNames.add((identifier as IdentifierToken).identifier);
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen, 'Expected an closing paranthesis');
+
+      return UsingConstraint(columnNames: columnNames);
+    }
+    _error('Expected a constraint with ON or USING');
   }
 
   /// Parses a where clause if there is one at the current position
