@@ -62,4 +62,19 @@ void main() {
       ),
     );
   });
+
+  test('pars', () {
+    final scanner = Scanner('''
+SELECT f.* FROM frameworks f
+  INNER JOIN uses_language ul ON ul.framework = f.id
+  INNER JOIN languages l ON l.id = ul.language
+WHERE l.name = 'Dart'
+ORDER BY f.name ASC, f.popularity DESC
+LIMIT 5 OFFSET 5 * 3
+    ''');
+    final tokens = scanner.scanTokens();
+    final parser = Parser(tokens);
+    final stmt = parser.select();
+    print(stmt);
+  });
 }

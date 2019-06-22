@@ -304,7 +304,8 @@ class Parser {
       final terms = <OrderingTerm>[];
       do {
         terms.add(_orderingTerm());
-      } while (_match(const [TokenType.comma]));
+      } while (_matchOne(TokenType.comma));
+      return OrderBy(terms: terms);
     }
     return null;
   }
@@ -453,19 +454,18 @@ class Parser {
     final type = token.type;
     switch (type) {
       case TokenType.numberLiteral:
-        return NumericLiteral(_parseNumber(token.lexeme), _peek);
+        return NumericLiteral(_parseNumber(token.lexeme), token);
       case TokenType.stringLiteral:
-        final token = _peek as StringLiteralToken;
-        return StringLiteral(token);
+        return StringLiteral(token as StringLiteralToken);
       case TokenType.$null:
-        return NullLiteral(_peek);
+        return NullLiteral(token);
       case TokenType.$true:
-        return BooleanLiteral.withTrue(_peek);
+        return BooleanLiteral.withTrue(token);
       case TokenType.$false:
-        return BooleanLiteral.withFalse(_peek);
+        return BooleanLiteral.withFalse(token);
       // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
       case TokenType.leftParen:
-        final left = _previous;
+        final left = token;
         final expr = expression();
         _consume(TokenType.rightParen, 'Expected a closing bracket');
         return Parentheses(left, expr, _previous);

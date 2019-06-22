@@ -11,3 +11,9 @@ Moor is an easy to use, reactive persistence library for Flutter apps. Define yo
 enjoy a fluent query API, auto-updating streams and more!
 
 For more information, check out the [docs](https://moor.simonbinder.eu/).
+
+-----
+
+The `sqlparser` directory contains an sql parser and static analyzer, written in pure Dart.
+At the moment, it can only parse a small subset of sqlite, but most select statements are 
+supported. It hasn't been published yet as it's very experimental.

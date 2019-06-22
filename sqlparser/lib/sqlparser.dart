@@ -2,3 +2,6 @@
 ///
 /// More dartdocs go here.
 library sqlparser;
+
+export 'src/ast/ast.dart';
+export 'src/engine/sql_engine.dart';
