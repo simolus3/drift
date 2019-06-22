@@ -1,0 +1,13 @@
+name: sqlparser
+description: Parsing and analysis for sql queries
+version: 0.1.0
+repository: https://github.com/simolus3/moor
+#homepage: https://moor.simonbinder.eu/
+issue_tracker: https://github.com/simolus3/moor/issues
+author: Simon Binder <oss@simonbinder.eu>
+
+environment:
+  sdk: '>=2.2.2 <3.0.0'
+
+dev_dependencies:
+  test: ^1.0.0

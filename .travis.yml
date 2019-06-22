@@ -5,6 +5,7 @@ dart:
 env:
   - PKG="moor"
   - PKG="moor_generator"
+  - PKG="sqlparser"
 
 script: ./tool/mono_repo_wrapper.sh
 after_success: ./tool/upload_coverage.sh

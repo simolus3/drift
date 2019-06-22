@@ -25,9 +25,21 @@ class UseMoor {
   /// For instructions on how to write a dao, see the documentation of [UseDao]
   final List<Type> daos;
 
+  /// Optionally, a list of queries. Moor will generate matching methods for the
+  /// variables and return types.
+  // todo better documentation
+  final List<Sql> queries;
+
   /// Use this class as an annotation to inform moor_generator that a database
   /// class should be generated using the specified [UseMoor.tables].
-  const UseMoor({@required this.tables, this.daos = const []});
+  const UseMoor({@required this.tables, this.daos = const [], this.queries});
+}
+
+class Sql {
+  final String name;
+  final String query;
+
+  const Sql(this.name, this.query);
 }
 
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specifies
@@ -51,6 +63,8 @@ class UseMoor {
 class UseDao {
   /// The tables accessed by this DAO.
   final List<Type> tables;
+  // todo better documentation
+  final List<Sql> queries;
 
-  const UseDao({@required this.tables});
+  const UseDao({@required this.tables, this.queries});
 }
