@@ -4,6 +4,9 @@ import 'package:sqlparser/src/reader/tokenizer/token.dart';
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
 
+part 'common/queryables.dart';
+part 'common/renamable.dart';
+
 part 'expressions/expressions.dart';
 part 'expressions/literals.dart';
 part 'expressions/reference.dart';
@@ -28,6 +31,8 @@ abstract class AstVisitor<T> {
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
   T visitLimit(Limit e);
+  T visitQueryable(Queryable e);
+  T visitJoin(Join e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitUnaryExpression(UnaryExpression e);

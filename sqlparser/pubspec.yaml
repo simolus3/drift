@@ -8,6 +8,7 @@ author: Simon Binder <oss@simonbinder.eu>
 
 environment:
   sdk: '>=2.2.2 <3.0.0'
+  meta: ^1.1.7
 
 dev_dependencies:
   test: ^1.0.0

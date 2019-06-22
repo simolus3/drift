@@ -3,10 +3,12 @@ part of '../ast.dart';
 class SelectStatement extends AstNode {
   final Expression where;
   final List<ResultColumn> columns;
+  final List<Queryable> from;
   final OrderBy orderBy;
   final Limit limit;
 
-  SelectStatement({this.where, this.columns, this.orderBy, this.limit});
+  SelectStatement(
+      {this.where, this.columns, this.from, this.orderBy, this.limit});
 
   @override
   T accept<T>(AstVisitor<T> visitor) {
@@ -50,8 +52,9 @@ class StarResultColumn extends ResultColumn {
   }
 }
 
-class ExpressionResultColumn extends ResultColumn {
+class ExpressionResultColumn extends ResultColumn implements Renamable {
   final Expression expression;
+  @override
   final String as;
 
   ExpressionResultColumn({@required this.expression, this.as});
