@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class SelectStatement extends AstNode {
+class SelectStatement extends AstNode with ResultSet {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;
@@ -38,6 +38,12 @@ class SelectStatement extends AstNode {
   @override
   bool contentEquals(SelectStatement other) {
     return other.distinct == distinct;
+  }
+
+  @override
+  List<Column> get resolvedColumns {
+    throw UnimplementedError(
+        'todo: implement column resolution for select statement');
   }
 }
 

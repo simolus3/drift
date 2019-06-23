@@ -1,8 +1,27 @@
 part of '../analysis.dart';
 
-class Table with Referencable {
-  final String name;
-  final List<Column> columns;
+/// Something that will resolve to a result set.
+abstract class ResolvesToResultSet with Referencable {
+  ResultSet get resultSet;
+}
 
-  Table({@required this.name, @required this.columns});
+abstract class ResultSet implements ResolvesToResultSet {
+  List<Column> get resolvedColumns;
+
+  @override
+  ResultSet get resultSet => this;
+
+  Column findColumn(String name) {
+    return resolvedColumns.firstWhere((c) => c.name == name,
+        orElse: () => null);
+  }
+}
+
+class Table with ResultSet implements ResolvesToResultSet {
+  final String name;
+
+  @override
+  final List<Column> resolvedColumns;
+
+  Table({@required this.name, this.resolvedColumns});
 }

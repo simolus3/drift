@@ -1,7 +1,10 @@
 part of '../analysis.dart';
 
 /// Mixin for classes which represent a reference.
-mixin ReferenceOwner {}
+mixin ReferenceOwner {
+  /// The resolved reference, or null if it hasn't been resolved yet.
+  Referencable resolved;
+}
 
 /// Mixin for classes which can be referenced by a [ReferenceOwner].
 mixin Referencable {}
@@ -10,7 +13,8 @@ mixin Referencable {}
 /// query.
 class ReferenceScope {
   final ReferenceScope parent;
-  final Map<String, Referencable> _references = {};
+
+  final Map<String, List<Referencable>> _references = {};
 
   ReferenceScope(this.parent);
 
@@ -19,20 +23,37 @@ class ReferenceScope {
   }
 
   void register(String identifier, Referencable ref) {
-    _references[identifier.toUpperCase()] = ref;
+    _references.putIfAbsent(identifier, () => []).add(ref);
   }
 
-  Referencable resolve(String name) {
+  /// Resolves to a [Referencable] with the given [name] and of the type [T].
+  T resolve<T extends Referencable>(String name) {
     var scope = this;
     final upper = name.toUpperCase();
 
     while (scope != null) {
       if (scope._references.containsKey(upper)) {
-        return scope._references[upper];
+        final candidates = scope._references[upper];
+        final resolved = candidates.whereType<T>();
+        if (resolved.isNotEmpty) {
+          return resolved.first;
+        }
       }
       scope = scope.parent;
     }
 
     return null; // not found in any parent scope
+  }
+
+  /// Returns everything that is in scope and a subtype of [T].
+  List<T> allOf<T>() {
+    var scope = this;
+    final collected = <T>[];
+
+    while (scope != null) {
+      collected.addAll(scope._references.values.whereType<T>());
+      scope = scope.parent;
+    }
+    return collected;
   }
 }

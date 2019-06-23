@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 /// Expression that refers to an individual column.
-class Reference extends Expression {
+class Reference extends Expression with ReferenceOwner {
   final String tableName;
   final String columnName;
 

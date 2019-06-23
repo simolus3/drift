@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class FunctionExpression extends Expression {
+class FunctionExpression extends Expression with ReferenceOwner {
   final String name;
   final FunctionParameters parameters;
 

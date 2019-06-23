@@ -29,7 +29,12 @@ abstract class Queryable extends AstNode {
 abstract class TableOrSubquery extends Queryable {}
 
 /// A table. The first path in https://www.sqlite.org/syntax/table-or-subquery.html
-class TableReference extends TableOrSubquery implements Renamable {
+///
+/// This is both referencable (if we have SELECT * FROM table t), other parts
+/// of the select statement can access "t") and a reference owner (the table).
+class TableReference extends TableOrSubquery
+    with ReferenceOwner
+    implements Renamable, ResolvesToResultSet {
   final String tableName;
   @override
   final String as;
@@ -42,6 +47,11 @@ class TableReference extends TableOrSubquery implements Renamable {
   @override
   bool contentEquals(TableReference other) {
     return other.tableName == tableName && other.as == as;
+  }
+
+  @override
+  ResultSet get resultSet {
+    return resolved as ResultSet;
   }
 }
 

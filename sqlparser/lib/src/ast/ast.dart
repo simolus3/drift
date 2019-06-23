@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
+import 'package:sqlparser/src/analysis/analysis.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
@@ -36,7 +37,7 @@ abstract class AstVisitor<T> {
   T visitLimit(Limit e);
   T visitQueryable(Queryable e);
   T visitJoin(Join e);
-  T visitGroupBy(GroupBy groupBy);
+  T visitGroupBy(GroupBy e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitUnaryExpression(UnaryExpression e);
@@ -47,4 +48,62 @@ abstract class AstVisitor<T> {
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
+}
+
+class NoopVisitor<T> extends AstVisitor<T> {
+  @override
+  T visitBinaryExpression(BinaryExpression e) => visitChildren(e);
+
+  @override
+  T visitFunction(FunctionExpression e) => visitChildren(e);
+
+  @override
+  T visitGroupBy(GroupBy e) => visitChildren(e);
+
+  @override
+  T visitIsExpression(IsExpression e) => visitChildren(e);
+
+  @override
+  T visitJoin(Join e) => visitChildren(e);
+
+  @override
+  T visitLimit(Limit e) => visitChildren(e);
+
+  @override
+  T visitLiteral(Literal e) => visitChildren(e);
+
+  @override
+  T visitNamedVariable(ColonNamedVariable e) => visitChildren(e);
+
+  @override
+  T visitNumberedVariable(NumberedVariable e) => visitChildren(e);
+
+  @override
+  T visitOrderBy(OrderBy e) => visitChildren(e);
+
+  @override
+  T visitOrderingTerm(OrderingTerm e) => visitChildren(e);
+
+  @override
+  T visitQueryable(Queryable e) => visitChildren(e);
+
+  @override
+  T visitReference(Reference e) => visitChildren(e);
+
+  @override
+  T visitResultColumn(ResultColumn e) => visitChildren(e);
+
+  @override
+  T visitSelectStatement(SelectStatement e) => visitChildren(e);
+
+  @override
+  T visitUnaryExpression(UnaryExpression e) => visitChildren(e);
+
+  @protected
+  T visitChildren(AstNode e) {
+    for (var child in e.childNodes) {
+      child.accept(this);
+    }
+    return null;
+  }
 }
