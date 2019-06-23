@@ -31,4 +31,29 @@ void main() {
       ),
     );
   });
+
+  test('variables', () {
+    final scanner = Scanner('? * ?3 + ?2 == :test');
+    final tokens = scanner.scanTokens();
+    final parser = Parser(tokens);
+
+    final expression = parser.expression();
+
+    enforceEqual(
+      expression,
+      BinaryExpression(
+        BinaryExpression(
+          BinaryExpression(
+            NumberedVariable(token(TokenType.questionMark), null),
+            token(TokenType.star),
+            NumberedVariable(token(TokenType.questionMark), 3),
+          ),
+          token(TokenType.plus),
+          NumberedVariable(token(TokenType.questionMark), 2),
+        ),
+        token(TokenType.doubleEqual),
+        ColonNamedVariable(':test'),
+      ),
+    );
+  });
 }

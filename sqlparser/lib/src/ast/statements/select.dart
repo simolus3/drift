@@ -1,6 +1,7 @@
 part of '../ast.dart';
 
 class SelectStatement extends AstNode {
+  final bool distinct;
   final Expression where;
   final List<ResultColumn> columns;
   final List<Queryable> from;
@@ -8,7 +9,12 @@ class SelectStatement extends AstNode {
   final Limit limit;
 
   SelectStatement(
-      {this.where, this.columns, this.from, this.orderBy, this.limit});
+      {this.distinct,
+      this.where,
+      this.columns,
+      this.from,
+      this.orderBy,
+      this.limit});
 
   @override
   T accept<T>(AstVisitor<T> visitor) {

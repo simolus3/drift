@@ -106,6 +106,13 @@ class Scanner {
         _addToken(TokenType.tilde);
         break;
 
+      case '?':
+        _addToken(TokenType.questionMark);
+        break;
+      case ':':
+        _addToken(TokenType.colon);
+        break;
+
       case 'x':
         if (_match("'")) {
           _string(binary: false);

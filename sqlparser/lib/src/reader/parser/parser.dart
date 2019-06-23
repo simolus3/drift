@@ -100,6 +100,13 @@ class Parser {
   SelectStatement select() {
     if (!_match(const [TokenType.select])) return null;
 
+    var distinct = false;
+    if (_matchOne(TokenType.distinct)) {
+      distinct = true;
+    } else if (_matchOne(TokenType.all)) {
+      distinct = false;
+    }
+
     final resultColumns = <ResultColumn>[];
     do {
       resultColumns.add(_resultColumn());
@@ -112,6 +119,7 @@ class Parser {
     final limit = _limit();
 
     return SelectStatement(
+      distinct: distinct,
       columns: resultColumns,
       from: from,
       where: where,
@@ -446,6 +454,11 @@ class Parser {
       return UnaryExpression(operator, expression);
     }
 
+    return _postfix();
+  }
+
+  Expression _postfix() {
+    // todo parse ISNULL, NOTNULL, NOT NULL, etc.
     return _primary();
   }
 
@@ -481,6 +494,21 @@ class Parser {
           return Reference(columnName: first.identifier);
         }
         break;
+      case TokenType.questionMark:
+        final mark = _previous;
+
+        if (_matchOne(TokenType.numberLiteral)) {
+          return NumberedVariable(mark, _parseNumber(_previous.lexeme).toInt());
+        } else {
+          return NumberedVariable(mark, null);
+        }
+        break;
+      case TokenType.colon:
+        final identifier = _consume(TokenType.identifier,
+            'Expected an identifier for the named variable') as IdentifierToken;
+        final content = identifier.identifier;
+
+        return ColonNamedVariable(':$content');
       default:
         break;
     }

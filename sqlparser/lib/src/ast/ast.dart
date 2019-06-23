@@ -12,6 +12,7 @@ part 'expressions/expressions.dart';
 part 'expressions/literals.dart';
 part 'expressions/reference.dart';
 part 'expressions/simple.dart';
+part 'expressions/variables.dart';
 
 part 'statements/select.dart';
 
@@ -40,4 +41,7 @@ abstract class AstVisitor<T> {
   T visitIsExpression(IsExpression e);
   T visitLiteral(Literal e);
   T visitReference(Reference e);
+
+  T visitNumberedVariable(NumberedVariable e);
+  T visitNamedVariable(ColonNamedVariable e);
 }

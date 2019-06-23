@@ -34,6 +34,12 @@ enum TokenType {
   or,
   tilde,
 
+  questionMark,
+  colon,
+  // todo at and dollarSign are currently not used
+  at,
+  dollarSign,
+
   stringLiteral,
   numberLiteral,
   $true,
@@ -45,6 +51,8 @@ enum TokenType {
   identifier,
 
   select,
+  distinct,
+  all,
   from,
   as,
   where,
@@ -71,6 +79,8 @@ enum TokenType {
 
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
+  'DISTINCT': TokenType.distinct,
+  'ALL': TokenType.all,
   'FROM': TokenType.from,
   'NATURAL': TokenType.natural,
   'LEFT': TokenType.leftParen,
