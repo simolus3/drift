@@ -9,6 +9,7 @@ part 'common/queryables.dart';
 part 'common/renamable.dart';
 
 part 'expressions/expressions.dart';
+part 'expressions/function.dart';
 part 'expressions/literals.dart';
 part 'expressions/reference.dart';
 part 'expressions/simple.dart';
@@ -41,6 +42,7 @@ abstract class AstVisitor<T> {
   T visitIsExpression(IsExpression e);
   T visitLiteral(Literal e);
   T visitReference(Reference e);
+  T visitFunction(FunctionExpression e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);

@@ -483,13 +483,21 @@ class Parser {
         _consume(TokenType.rightParen, 'Expected a closing bracket');
         return Parentheses(left, expr, _previous);
       case TokenType.identifier:
+        // could be table.column, function(...) or just column
         final first = _previous as IdentifierToken;
-        if (_match(const [TokenType.dot])) {
+
+        if (_matchOne(TokenType.dot)) {
           final second =
               _consume(TokenType.identifier, 'Expected a column name here')
                   as IdentifierToken;
           return Reference(
               tableName: first.identifier, columnName: second.identifier);
+        } else if (_matchOne(TokenType.leftParen)) {
+          final parameters = _functionParameters();
+          _consume(TokenType.rightParen,
+              'Expected closing bracket after argument list');
+          return FunctionExpression(
+              name: first.identifier, parameters: parameters);
         } else {
           return Reference(columnName: first.identifier);
         }
@@ -507,7 +515,6 @@ class Parser {
         final identifier = _consume(TokenType.identifier,
             'Expected an identifier for the named variable') as IdentifierToken;
         final content = identifier.identifier;
-
         return ColonNamedVariable(':$content');
       default:
         break;
@@ -515,5 +522,18 @@ class Parser {
 
     // nothing found -> issue error
     _error('Could not parse this expression');
+  }
+
+  FunctionParameters _functionParameters() {
+    if (_matchOne(TokenType.star)) {
+      return const StarFunctionParameter();
+    }
+
+    final distinct = _matchOne(TokenType.distinct);
+    final parameters = <Expression>[];
+    while (_peek.type != TokenType.rightParen) {
+      parameters.add(expression());
+    }
+    return ExprFunctionParameters(distinct: distinct, parameters: parameters);
   }
 }

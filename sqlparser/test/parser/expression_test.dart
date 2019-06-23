@@ -9,7 +9,7 @@ import 'utils.dart';
 
 void main() {
   test('parses simple expressions', () {
-    final scanner = Scanner('3 * 4 + 5 == 17');
+    final scanner = Scanner('3 * 4 + 5 == COUNT(*)');
     final tokens = scanner.scanTokens();
     final parser = Parser(tokens);
 
@@ -27,7 +27,10 @@ void main() {
           NumericLiteral(5, token(TokenType.numberLiteral)),
         ),
         token(TokenType.doubleEqual),
-        NumericLiteral(17, token(TokenType.numberLiteral)),
+        FunctionExpression(
+          name: 'COUNT',
+          parameters: const StarFunctionParameter(),
+        ),
       ),
     );
   });
