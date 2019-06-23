@@ -43,6 +43,9 @@ class StringLiteral extends Literal {
         isBinary = token.binary,
         super(token);
 
+  StringLiteral.from(Token token, this.data, {this.isBinary = false})
+      : super(token);
+
   @override
   bool contentEquals(StringLiteral other) {
     return other.isBinary == isBinary && other.data == data;

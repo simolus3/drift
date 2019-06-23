@@ -36,6 +36,7 @@ abstract class AstVisitor<T> {
   T visitLimit(Limit e);
   T visitQueryable(Queryable e);
   T visitJoin(Join e);
+  T visitGroupBy(GroupBy groupBy);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitUnaryExpression(UnaryExpression e);

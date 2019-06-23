@@ -115,6 +115,7 @@ class Parser {
     final from = _from();
 
     final where = _where();
+    final groupBy = _groupBy();
     final orderBy = _orderBy();
     final limit = _limit();
 
@@ -123,6 +124,7 @@ class Parser {
       columns: resultColumns,
       from: from,
       where: where,
+      groupBy: groupBy,
       orderBy: orderBy,
       limit: limit,
     );
@@ -306,6 +308,25 @@ class Parser {
     return null;
   }
 
+  GroupBy _groupBy() {
+    if (_matchOne(TokenType.group)) {
+      _consume(TokenType.by, 'Expected a "BY"');
+      final by = <Expression>[];
+      Expression having;
+
+      do {
+        by.add(expression());
+      } while (_matchOne(TokenType.comma));
+
+      if (_matchOne(TokenType.having)) {
+        having = expression();
+      }
+
+      return GroupBy(by: by, having: having);
+    }
+    return null;
+  }
+
   OrderBy _orderBy() {
     if (_match(const [TokenType.order])) {
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
@@ -459,6 +480,8 @@ class Parser {
 
   Expression _postfix() {
     // todo parse ISNULL, NOTNULL, NOT NULL, etc.
+    // I don't even know the precedence ¯\_(ツ)_/¯ (probably not higher than
+    // unary)
     return _primary();
   }
 

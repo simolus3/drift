@@ -2,17 +2,21 @@ part of '../ast.dart';
 
 class SelectStatement extends AstNode {
   final bool distinct;
-  final Expression where;
   final List<ResultColumn> columns;
   final List<Queryable> from;
+
+  final Expression where;
+  final GroupBy groupBy;
+
   final OrderBy orderBy;
   final Limit limit;
 
   SelectStatement(
-      {this.distinct,
-      this.where,
+      {this.distinct = false,
       this.columns,
       this.from,
+      this.where,
+      this.groupBy,
       this.orderBy,
       this.limit});
 
@@ -33,7 +37,7 @@ class SelectStatement extends AstNode {
 
   @override
   bool contentEquals(SelectStatement other) {
-    return true;
+    return other.distinct == distinct;
   }
 }
 
@@ -71,5 +75,24 @@ class ExpressionResultColumn extends ResultColumn implements Renamable {
   @override
   bool contentEquals(ExpressionResultColumn other) {
     return other.as == as;
+  }
+}
+
+class GroupBy extends AstNode {
+  /// The list of expressions that form the partition
+  final List<Expression> by;
+  final Expression having;
+
+  GroupBy({@required this.by, this.having});
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitGroupBy(this);
+
+  @override
+  Iterable<AstNode> get childNodes => [...by, if (having != null) having];
+
+  @override
+  bool contentEquals(GroupBy other) {
+    return true; // Defined via child nodes
   }
 }

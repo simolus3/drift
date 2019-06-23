@@ -66,10 +66,12 @@ enum TokenType {
   on,
   using,
 
+  group,
   order,
   by,
   asc,
   desc,
+  having,
 
   limit,
   offset,
@@ -93,6 +95,8 @@ const Map<String, TokenType> keywords = {
   'AS': TokenType.as,
   'WHERE': TokenType.where,
   'ORDER': TokenType.order,
+  'GROUP': TokenType.group,
+  'HAVING': TokenType.having,
   'BY': TokenType.by,
   'ASC': TokenType.asc,
   'DESC': TokenType.desc,
