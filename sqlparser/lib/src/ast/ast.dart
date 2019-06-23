@@ -19,6 +19,43 @@ part 'expressions/variables.dart';
 part 'statements/select.dart';
 
 abstract class AstNode {
+  /// The parent of this node, or null if this is the root node. Will be set
+  /// by the analyzer after the tree has been parsed.
+  AstNode parent;
+
+  Iterable<AstNode> get parents sync* {
+    var node = parent;
+    while (node != null) {
+      yield node;
+      node = node.parent;
+    }
+  }
+
+  final Map<Type, dynamic> _metadata = {};
+  T meta<T>() {
+    return _metadata[T] as T;
+  }
+
+  void setMeta<T>(T value) {
+    _metadata[T] = value;
+  }
+
+  ReferenceScope get scope {
+    var node = this;
+
+    while (node != null) {
+      final scope = node.meta<ReferenceScope>();
+      if (scope != null) return scope;
+      node = node.parent;
+    }
+
+    throw StateError('No reference scope found in this or any parent node');
+  }
+
+  set scope(ReferenceScope scope) {
+    setMeta<ReferenceScope>(scope);
+  }
+
   Iterable<AstNode> get childNodes;
   T accept<T>(AstVisitor<T> visitor);
 
@@ -50,7 +87,8 @@ abstract class AstVisitor<T> {
   T visitNamedVariable(ColonNamedVariable e);
 }
 
-class NoopVisitor<T> extends AstVisitor<T> {
+/// Visitor that walks down the entire tree, visiting all children in order.
+class RecursiveVisitor<T> extends AstVisitor<T> {
   @override
   T visitBinaryExpression(BinaryExpression e) => visitChildren(e);
 

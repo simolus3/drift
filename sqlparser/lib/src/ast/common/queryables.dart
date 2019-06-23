@@ -96,7 +96,7 @@ enum JoinOperator {
   cross,
 }
 
-class Join implements AstNode {
+class Join extends AstNode {
   final bool natural;
   final JoinOperator operator;
   final TableOrSubquery query;

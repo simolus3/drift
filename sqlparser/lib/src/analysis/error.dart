@@ -12,4 +12,6 @@ enum AnalysisErrorType {
   referencedUnknownTable,
   referencedUnknownColumn,
   ambiguousReference,
+
+  unknownFunction,
 }

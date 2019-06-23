@@ -27,7 +27,7 @@ class ReferenceScope {
   }
 
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
-  T resolve<T extends Referencable>(String name) {
+  T resolve<T extends Referencable>(String name, {Function() orElse}) {
     var scope = this;
     final upper = name.toUpperCase();
 
@@ -42,6 +42,7 @@ class ReferenceScope {
       scope = scope.parent;
     }
 
+    if (orElse != null) orElse();
     return null; // not found in any parent scope
   }
 

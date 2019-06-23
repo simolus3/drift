@@ -5,3 +5,12 @@ class SqlFunction with Referencable {
 
   SqlFunction(this.name);
 }
+
+class StaticTypeFunction extends SqlFunction {
+  final List<SqlType> inputs;
+  final SqlType output;
+
+  StaticTypeFunction(
+      {@required String name, @required this.inputs, @required this.output})
+      : super(name);
+}

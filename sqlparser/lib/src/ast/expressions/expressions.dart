@@ -1,5 +1,3 @@
 part of '../ast.dart';
 
-abstract class Expression implements AstNode {
-  const Expression();
-}
+abstract class Expression extends AstNode {}

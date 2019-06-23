@@ -5,9 +5,11 @@ abstract class SqlType {}
 
 class NullType extends SqlType {}
 
-class IntegerType extends SqlType {}
+class NumericType extends SqlType {}
 
-class RealType extends SqlType {}
+class IntegerType extends NumericType {}
+
+class RealType extends NumericType {}
 
 class TextType extends SqlType {}
 

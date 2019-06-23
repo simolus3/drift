@@ -42,10 +42,13 @@ class SqlEngine {
 
   AnalysisContext analyze(String sql) {
     final node = parse(sql);
+    const SetParentVisitor().startAtRoot(node);
+
     final context = AnalysisContext(node);
     final scope = _constructRootScope();
 
-    node.accept(ReferenceResolver(scope, context));
+    ReferenceFinder(globalScope: scope).start(node);
+    node.accept(ReferenceResolver(context));
 
     return context;
   }
