@@ -121,7 +121,8 @@ class Join implements AstNode {
       }
       final typedOther = other.constraint as UsingConstraint;
 
-      return typedConstraint.columnNames == typedOther.columnNames;
+      return const ListEquality()
+          .equals(typedConstraint.columnNames, typedOther.columnNames);
     }
     return true;
   }

@@ -123,13 +123,18 @@ class StringLiteralToken extends Token {
 }
 
 class IdentifierToken extends Token {
-  /// In sql, identifiers can be put in "double quotes", in which case they are
-  /// always interpreted as an column name.
-  final bool escapedColumnName;
+  /// Whether this identifier was escaped by putting it in "double ticks".
+  final bool escaped;
 
-  String get identifier => lexeme;
+  String get identifier {
+    if (escaped) {
+      return lexeme.substring(1, lexeme.length - 1);
+    } else {
+      return lexeme;
+    }
+  }
 
-  const IdentifierToken(this.escapedColumnName, SourceSpan span)
+  const IdentifierToken(this.escaped, SourceSpan span)
       : super(TokenType.identifier, span);
 }
 

@@ -13,8 +13,8 @@ class Scanner {
   bool get _isAtEnd => _currentOffset >= source.length;
 
   SourceSpan get _currentSpan {
-    return SourceSpan(_startLocation, _currentLocation,
-        source.substring(_startOffset, _currentOffset));
+    return SourceSpanWithContext(_startLocation, _currentLocation,
+        source.substring(_startOffset, _currentOffset), source);
   }
 
   SourceLocation get _startLocation {

@@ -5,3 +5,4 @@ library sqlparser;
 
 export 'src/ast/ast.dart';
 export 'src/engine/sql_engine.dart';
+export 'src/reader/tokenizer/token.dart';

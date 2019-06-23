@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
