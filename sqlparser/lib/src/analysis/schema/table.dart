@@ -17,7 +17,7 @@ abstract class ResultSet implements ResolvesToResultSet {
   }
 }
 
-class Table with ResultSet implements ResolvesToResultSet {
+class Table with ResultSet {
   final String name;
 
   @override

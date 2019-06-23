@@ -7,6 +7,28 @@ class SqlEngine {
   final List<Table> knownTables = [];
   final List<SqlFunction> knownFunctions = [];
 
+  SqlEngine({bool includeDefaults = true}) {
+    if (includeDefaults) {
+      knownFunctions.addAll(coreFunctions);
+    }
+  }
+
+  void registerTable(Table table) {
+    knownTables.add(table);
+  }
+
+  ReferenceScope _constructRootScope() {
+    final scope = ReferenceScope(null);
+    for (var table in knownTables) {
+      scope.register(table.name, table);
+    }
+    for (var function in knownFunctions) {
+      scope.register(function.name, function);
+    }
+
+    return scope;
+  }
+
   /// Parses the [sql] statement. At the moment, only SELECT statements are
   /// supported.
   AstNode parse(String sql) {
@@ -16,5 +38,15 @@ class SqlEngine {
 
     final parser = Parser(tokens);
     return parser.select();
+  }
+
+  AnalysisContext analyze(String sql) {
+    final node = parse(sql);
+    final context = AnalysisContext(node);
+    final scope = _constructRootScope();
+
+    node.accept(ReferenceResolver(scope, context));
+
+    return context;
   }
 }

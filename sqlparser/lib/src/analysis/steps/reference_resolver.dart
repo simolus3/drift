@@ -39,7 +39,7 @@ class ReferenceResolver extends NoopVisitor<void> {
       final columns = tables
           .map((t) => t.resultSet.findColumn(e.columnName))
           .where((c) => c != null)
-          .toList();
+          .toSet();
 
       if (columns.isEmpty) {
         context.reportError(AnalysisError(

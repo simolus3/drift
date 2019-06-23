@@ -23,7 +23,7 @@ class ReferenceScope {
   }
 
   void register(String identifier, Referencable ref) {
-    _references.putIfAbsent(identifier, () => []).add(ref);
+    _references.putIfAbsent(identifier.toUpperCase(), () => []).add(ref);
   }
 
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
@@ -51,7 +51,8 @@ class ReferenceScope {
     final collected = <T>[];
 
     while (scope != null) {
-      collected.addAll(scope._references.values.whereType<T>());
+      collected.addAll(
+          scope._references.values.expand((list) => list).whereType<T>());
       scope = scope.parent;
     }
     return collected;
