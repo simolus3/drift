@@ -7,10 +7,13 @@ environment:
 dependencies:
   moor: ^1.4.0
 
+dev_dependencies:
+  moor_generator:
+  build_runner: ^1.1.2
+  build_web_compilers: ^1.0.0
+
 dependency_overrides:
   moor:
     path: ../
-
-dev_dependencies:
-  build_runner: ^1.1.2
-  build_web_compilers: ^1.0.0
+  moor_generator:
+    path: ../../moor_generator

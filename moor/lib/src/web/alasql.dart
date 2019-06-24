@@ -11,6 +11,8 @@ class AlaSqlDatabase extends QueryExecutor {
   Completer<bool> _opening;
 
   AlaSqlDatabase(this.name, {this.logStatements = false}) {
+    _registerFunctions();
+
     if (_alasql == null) {
       throw UnsupportedError('Could not access the alasql javascript library. '
           'The moor documentation contains instructions on how to setup moor '
@@ -22,7 +24,8 @@ class AlaSqlDatabase extends QueryExecutor {
 
   @override
   TransactionExecutor beginTransaction() {
-    throw StateError('Transactions are not currently supported with AlaSQL');
+    throw StateError(
+        'Transactions are not currently supported with the AlaSQL backend');
   }
 
   @override

@@ -19,3 +19,4 @@ import 'moor.dart';
 export 'moor.dart';
 
 part 'src/web/alasql.dart';
+part 'src/web/functions.dart';
