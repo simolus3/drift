@@ -1,6 +1,7 @@
 part of 'package:moor/moor_web.dart';
 
 JsObject _alasql = context['alasql'] as JsObject;
+JsFunction _jsonStringify = context['JSON']['stringify'] as JsFunction;
 
 class AlaSqlDatabase extends QueryExecutor {
   JsObject _database;
@@ -38,10 +39,40 @@ class AlaSqlDatabase extends QueryExecutor {
   }
 
   Future<void> _openInternal() async {
+    // AlaSQL doesn't give us any information about the schema version, so we
+    // first need to access the database without AlaSQL to find that out
+    if (!IdbFactory.supported) {
+      throw UnsupportedError("This browser doesn't support IndexedDb");
+    }
+
+    int version;
+    var upgradeNeeded = false;
+
+    final db = await window.indexedDB.open(
+      name,
+      version: databaseInfo.schemaVersion,
+      onUpgradeNeeded: (event) {
+        upgradeNeeded = true;
+        version = event.oldVersion;
+      },
+    );
+    db.close();
+
     // todo handle possible injection vulnerability of $name
     await _run('CREATE INDEXEDDB DATABASE IF NOT EXISTS `$name`;', const []);
     await _run('ATTACH INDEXEDDB DATABASE `$name`;', const []);
     await _run('USE `$name`;', const []);
+
+    if (upgradeNeeded) {
+      if (version == null || version < 1) {
+        await databaseInfo.handleDatabaseCreation(executor: _runWithoutArgs);
+      } else {
+        await databaseInfo.handleDatabaseVersionChange(
+            executor: _runWithoutArgs,
+            from: version,
+            to: databaseInfo.schemaVersion);
+      }
+    }
   }
 
   @override
@@ -50,21 +81,33 @@ class AlaSqlDatabase extends QueryExecutor {
         'Batched statements are not currently supported with AlaSQL');
   }
 
-  Future<dynamic> _run(String query, List variables) {
-    JsObject promise;
-    if (variables.isEmpty) {
-      promise = _database.callMethod('promise', [query]) as JsObject;
-    } else {
-      promise = _database
-          .callMethod('promise', [query, JsArray.from(variables)]) as JsObject;
-    }
+  Future<dynamic> _runWithoutArgs(String query) {
+    return _run(query, const []);
+  }
 
-    return promiseToFuture(promise);
+  Future<dynamic> _run(String query, List variables) {
+    final completer = Completer<dynamic>();
+
+    final args = [
+      query,
+      JsArray.from(variables),
+      allowInterop((data, error) {
+        if (error != null) {
+          completer.completeError(error);
+        } else {
+          completer.complete(data);
+        }
+      })
+    ];
+
+    _database.callMethod('exec', args);
+
+    return completer.future;
   }
 
   @override
   Future<void> runCustom(String statement) {
-    _run(statement, const []);
+    _runWithoutArgs(statement);
     return Future.value();
   }
 
@@ -83,9 +126,19 @@ class AlaSqlDatabase extends QueryExecutor {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
-    // TODO: implement runSelect
-    return null;
+  Future<List<Map<String, dynamic>>> runSelect(
+      String statement, List args) async {
+    final result = await _run(statement, args) as JsArray;
+
+    return result.map((row) {
+      final jsRow = row as JsObject;
+      // todo this is a desperate attempt at converting the JsObject to a Map.
+      // Surely, there must be a better way to do this?
+      final objJson = _jsonStringify.apply([jsRow]) as String;
+      final dartMap = json.decode(objJson);
+
+      return dartMap as Map<String, dynamic>;
+    }).toList();
   }
 
   @override
