@@ -30,7 +30,7 @@ class SelectStatement extends AstNode with ResultSet {
     return [
       if (where != null) where,
       ...columns,
-      ...from,
+      if (from != null) ...from,
       if (limit != null) limit,
       if (orderBy != null) orderBy,
     ];
