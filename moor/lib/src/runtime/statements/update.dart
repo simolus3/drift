@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
+import 'package:moor/src/runtime/expressions/expression.dart';
 
 class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
-  Map<String, Variable> _updatedFields;
+  Map<String, Expression> _updatedFields;
 
   @override
   void writeStartPart(GenerationContext ctx) {
@@ -75,9 +76,11 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   /// [where] clause to rows with the same primary key as [entity], so that only
   /// the row representing outdated data will be replaced.
   ///
-  /// If [entity] has fields with null as value, data in the row will be set
-  /// back to null. This behavior is different to that of [write], which ignores
-  /// null fields.
+  /// If [entity] has absent values (set to null on the [DataClass] or
+  /// explicitly to absent on the [UpdateCompanion]), and a default value for
+  /// the field exists, that default value will be used. Otherwise, the field
+  /// will be reset to null. This behavior is different to [write], which simply
+  /// ignores such fields without changing them in the database.
   ///
   /// Returns true if a row was affected by this operation.
   ///
@@ -100,8 +103,23 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
 
     whereSamePrimaryKey(entity);
 
-    _updatedFields = table.entityToSql(companion);
+    // copying to work around type issues - Map<String, Variable> extends
+    // Map<String, Expression> but crashes when adding anything that is not
+    // a Variable.
+    _updatedFields = <String, Expression>{}
+      ..addAll(table.entityToSql(companion));
+
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
+
+    // entityToSql doesn't include absent values, so we might have to apply the
+    // default value here
+    for (var column in table.$columns) {
+      // if a default value exists and no value is set, apply the default
+      if (column.defaultValue != null &&
+          !_updatedFields.containsKey(column.$name)) {
+        _updatedFields[column.$name] = column.defaultValue;
+      }
+    }
 
     // Don't update the primary key
     _updatedFields.removeWhere((key, _) => primaryKeys.contains(key));

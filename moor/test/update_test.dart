@@ -38,18 +38,35 @@ void main() {
     });
   });
 
-  test('generates replace statements', () async {
-    await db.update(db.todosTable).replace(TodoEntry(
-          id: 3,
-          title: 'Title',
-          content: 'Updated content',
-          // category and targetDate are null
-        ));
+  group('generates replace statements', () {
+    test('regular', () async {
+      await db.update(db.todosTable).replace(TodoEntry(
+            id: 3,
+            title: 'Title',
+            content: 'Updated content',
+            // category and targetDate are null
+          ));
 
-    verify(executor.runUpdate(
-        'UPDATE todos SET title = ?, content = ?, '
-        'target_date = NULL, category = NULL WHERE id = ?;',
-        ['Title', 'Updated content', 3]));
+      verify(executor.runUpdate(
+          'UPDATE todos SET title = ?, content = ?, '
+          'target_date = NULL, category = NULL WHERE id = ?;',
+          ['Title', 'Updated content', 3]));
+    });
+
+    test('applies default values', () async {
+      await db.update(db.users).replace(
+            UsersCompanion(
+              id: const Value(3),
+              name: const Value('Hummingbird'),
+              profilePicture: Value(Uint8List(0)),
+            ),
+          );
+
+      verify(executor.runUpdate(
+          'UPDATE users SET name = ?, profile_picture = ?, is_awesome = 1, '
+          'creation_time = strftime(\'%s\', CURRENT_TIMESTAMP) WHERE id = ?;',
+          ['Hummingbird', Uint8List(0), 3]));
+    });
   });
 
   test('does not update with invalid data', () {
