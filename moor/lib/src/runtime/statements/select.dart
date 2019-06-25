@@ -118,7 +118,18 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
   Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
     final results = await ctx.executor.doWhenOpened((e) async {
-      return await e.runSelect(ctx.sql, ctx.boundVariables);
+      try {
+        return await e.runSelect(ctx.sql, ctx.boundVariables);
+      } catch (e, s) {
+        final foundTables = <String>{};
+        for (var table in _tables) {
+          if (!foundTables.add(table.$tableName)) {
+            _warnAboutDuplicate(e, s, table);
+          }
+        }
+
+        rethrow;
+      }
     });
 
     final tables = _tables;
@@ -138,6 +149,20 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
       return TypedResult(map, QueryRow(row, database));
     }).toList();
+  }
+
+  @alwaysThrows
+  void _warnAboutDuplicate(dynamic cause, StackTrace trace, TableInfo table) {
+    throw MoorWrappedException(
+      message:
+          'This query contained the table ${table.actualTableName} more than '
+          'once. Is this a typo? \n'
+          'If you need a join that includes the same table more than once, you '
+          'need to alias() at least one table. See https://moor.simonbinder.eu/queries/joins#aliases '
+          'for an example.',
+      cause: cause,
+      trace: trace,
+    );
   }
 }
 
