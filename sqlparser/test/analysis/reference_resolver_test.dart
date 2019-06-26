@@ -11,9 +11,9 @@ void main() {
     expect((column.expression as FunctionExpression).resolved, abs);
   });
 
-  test('resolves table names and aliases', () {
-    final id = Column('id');
-    final content = Column('content');
+  test('correctly resolves return columns', () {
+    final id = TableColumn('id');
+    final content = TableColumn('content');
 
     final demoTable = Table(
       name: 'demo',
@@ -21,9 +21,14 @@ void main() {
     );
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine.analyze('SELECT id, d.content FROM demo AS d');
+    final context = engine.analyze('SELECT id, d.content, * FROM demo AS d');
 
     final select = context.root as SelectStatement;
+    final resolvedColumns = select.resolvedColumns;
+
+    expect(
+        resolvedColumns.map((c) => c.name), ['id', 'content', 'id', 'content']);
+
     final firstColumn = select.columns[0] as ExpressionResultColumn;
     final secondColumn = select.columns[1] as ExpressionResultColumn;
     final from = select.from[0] as TableReference;

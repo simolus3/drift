@@ -11,6 +11,11 @@ class SelectStatement extends AstNode with ResultSet {
   final OrderBy orderBy;
   final Limit limit;
 
+  /// The resolved list of columns returned by this select statements. Not
+  /// available from the parse tree, will be set later by the analyzer.
+  @override
+  List<Column> resolvedColumns;
+
   SelectStatement(
       {this.distinct = false,
       this.columns,
@@ -39,12 +44,6 @@ class SelectStatement extends AstNode with ResultSet {
   @override
   bool contentEquals(SelectStatement other) {
     return other.distinct == distinct;
-  }
-
-  @override
-  List<Column> get resolvedColumns {
-    throw UnimplementedError(
-        'todo: implement column resolution for select statement');
   }
 }
 

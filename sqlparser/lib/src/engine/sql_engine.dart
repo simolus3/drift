@@ -48,7 +48,7 @@ class SqlEngine {
     final scope = _constructRootScope();
 
     ReferenceFinder(globalScope: scope).start(node);
-    node.accept(ReferenceResolver(context));
+    node..accept(ColumnResolver(context))..accept(ReferenceResolver(context));
 
     return context;
   }

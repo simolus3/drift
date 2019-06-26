@@ -7,12 +7,11 @@ class ReferenceResolver extends RecursiveVisitor<void> {
 
   @override
   void visitFunction(FunctionExpression e) {
-    final scope = e.scope;
-    e.resolved = scope.resolve<SqlFunction>(e.name, orElse: () {
+    e.resolved = e.scope.resolve<SqlFunction>(e.name, orElse: () {
       context.reportError(AnalysisError(
         type: AnalysisErrorType.unknownFunction,
-        relevantNode: e,
         message: 'Unknown function: ${e.name}',
+        relevantNode: e,
       ));
     });
     visitChildren(e);
@@ -32,7 +31,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
           relevantNode: e,
         ));
       });
-      final resultSet = _resolve(tableResolver, scope);
+      final resultSet = tableResolver.resultSet;
 
       if (resultSet == null) {
         context.reportError(AnalysisError(
@@ -55,7 +54,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
       // todo special case for USING (...) in joins?
       final tables = scope.allOf<ResolvesToResultSet>();
       final columns = tables
-          .map((t) => _resolve(t, scope)?.findColumn(e.columnName))
+          .map((t) => t.resultSet.findColumn(e.columnName))
           .where((c) => c != null)
           .toSet();
 
@@ -71,45 +70,6 @@ class ReferenceResolver extends RecursiveVisitor<void> {
         e.resolved = columns.first;
       }
     }
-
-    visitChildren(e);
-  }
-
-  ResultSet _resolve(ResolvesToResultSet resolver, ReferenceScope scope,
-      {Function orElse()}) {
-    // already resolved? don't do the same work twice!
-    if (resolver.resultSet != null) {
-      return resolver.resultSet;
-    }
-
-    if (resolver is ResultSet) {
-      return resolver;
-    } else if (resolver is TableReference) {
-      final table = resolver;
-      final resolvedTable = scope.resolve<Table>(table.tableName, orElse: () {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.referencedUnknownTable,
-          relevantNode: table,
-          message: 'The table ${table.tableName} could not be found',
-        ));
-      });
-      table.resolved = resolvedTable;
-      return resolvedTable;
-    }
-
-    throw ArgumentError('Resolving not yet implemented for $resolver');
-  }
-
-  @override
-  void visitQueryable(Queryable e) {
-    final scope = e.scope;
-    e.when(
-      isTable: (table) {
-        _resolve(table, scope);
-      },
-      isSelect: (select) {},
-      isJoin: (join) {},
-    );
 
     visitChildren(e);
   }

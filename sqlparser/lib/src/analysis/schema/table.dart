@@ -21,7 +21,7 @@ class Table with ResultSet, VisibleToChildren {
   final String name;
 
   @override
-  final List<Column> resolvedColumns;
+  final List<TableColumn> resolvedColumns;
 
   Table({@required this.name, this.resolvedColumns});
 }

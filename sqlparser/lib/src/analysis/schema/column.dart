@@ -1,7 +1,20 @@
 part of '../analysis.dart';
 
-class Column with Referencable, Typeable {
+abstract class Column with Referencable, Typeable {
+  String get name;
+}
+
+class TableColumn extends Column {
+  @override
   final String name;
 
-  Column(this.name);
+  TableColumn(this.name);
+}
+
+class ExpressionColumn extends Column {
+  @override
+  final String name;
+  final Expression expression;
+
+  ExpressionColumn({@required this.name, this.expression});
 }

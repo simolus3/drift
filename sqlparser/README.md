@@ -1,7 +1,6 @@
 # sqlparser
 
-An sql parser and static analyzer, written in pure Dart. Currently in development and
-not really suitable for any use.
+An sql parser and static analyzer, written in pure Dart. Currently in development.
 
 ## Using this library
 
@@ -20,3 +19,18 @@ LIMIT 5 OFFSET 5 * 3
 // ???
 profit();
 ```
+
+## Features
+Not all features are available yet, put parsing select statements (even complex ones!) and
+performing analysis on them works!
+
+### AST Parsing
+Can parse the abstract syntax tree of any sqlite statement with `SqlEngine.parse`.
+
+### Static analysis
+
+Given information about all tables and a sql statement, this library can:
+
+1. determine which result rows a query is going to have
+2. Determine the static type of variables included in the query
+3. issue some basic warnings on queries that are syntactically valid but won't run
