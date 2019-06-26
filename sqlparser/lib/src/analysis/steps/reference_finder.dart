@@ -3,8 +3,8 @@ part of '../analysis.dart';
 /// Walks the AST and
 /// - attaches the global scope containing table names and builtin functions
 /// - creates [ReferenceScope] for sub-queries
-/// - in each scope, registers everything that can be referenced to the local
-///   [ReferenceScope].
+/// - in each scope, registers every table or subquery that can be referenced to
+///   the local [ReferenceScope].
 class ReferenceFinder extends RecursiveVisitor<void> {
   final ReferenceScope globalScope;
 
@@ -19,11 +19,36 @@ class ReferenceFinder extends RecursiveVisitor<void> {
   @override
   void visitSelectStatement(SelectStatement e) {
     // a select statement can appear as a sub query which has its own scope, so
-    // we need to fork the scope here.
+    // we need to fork the scope here. There is one special case though:
+    // Select statements that appear as a query source can't depend on data
+    // defined in the outer scope. This is different from select statements
+    // that work as expressions.
+    // For instance, if you go to sqliteonline.com and issue the following
+    // query: "SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
+    // it won't work.
+    final isInFROM = e.parent is Queryable;
     final scope = e.scope;
-    final forked = scope.createChild();
-    e.scope = forked;
+
+    if (isInFROM) {
+      final forked = scope.effectiveRoot.createChild();
+      e.scope = forked;
+    } else {
+      final forked = scope.createChild();
+      e.scope = forked;
+    }
+
     visitChildren(e);
+  }
+
+  @override
+  void visitResultColumn(ResultColumn e) {
+    if (e is StarResultColumn) {
+      // doesn't need special treatment, star expressions can't be referenced
+    } else if (e is ExpressionResultColumn) {
+      if (e.as != null) {
+        e.scope.register(e.as, e);
+      }
+    }
   }
 
   @override
@@ -39,7 +64,6 @@ class ReferenceFinder extends RecursiveVisitor<void> {
         }
       },
       isSelect: (select) {
-        // the same goes for select statements
         if (select.as != null) {
           scope.register(select.as, select.statement);
         }

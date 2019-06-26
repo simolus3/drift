@@ -9,17 +9,31 @@ mixin ReferenceOwner {
 /// Mixin for classes which can be referenced by a [ReferenceOwner].
 mixin Referencable {}
 
+/// A referencable which is still visible in child scopes. This doesn't apply to
+/// many things, basically only tables.
+///
+/// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id) FROM demo AS out;"
+/// is a valid sql query when the demo table as an id column. However,
+/// "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = d) FROM demo AS out;" is
+/// not, the "d" referencable is not visible for the child select statement.
+mixin VisibleToChildren on Referencable {}
+
 /// Class which keeps track of references tables, columns and functions in a
 /// query.
 class ReferenceScope {
   final ReferenceScope parent;
+  final ReferenceScope root;
+
+  /// Gets the effective root scope. If no [root] scope has been set, this
+  /// scope is assumed to be the root scope.
+  ReferenceScope get effectiveRoot => root ?? this;
 
   final Map<String, List<Referencable>> _references = {};
 
-  ReferenceScope(this.parent);
+  ReferenceScope(this.parent, {this.root});
 
   ReferenceScope createChild() {
-    return ReferenceScope(this);
+    return ReferenceScope(this, root: effectiveRoot);
   }
 
   void register(String identifier, Referencable ref) {
@@ -29,17 +43,22 @@ class ReferenceScope {
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
   T resolve<T extends Referencable>(String name, {Function() orElse}) {
     var scope = this;
+    var isAtParent = false;
     final upper = name.toUpperCase();
 
     while (scope != null) {
       if (scope._references.containsKey(upper)) {
         final candidates = scope._references[upper];
-        final resolved = candidates.whereType<T>();
+        final resolved = candidates.whereType<T>().where((x) {
+          return x is VisibleToChildren || !isAtParent;
+        });
         if (resolved.isNotEmpty) {
           return resolved.first;
         }
       }
+
       scope = scope.parent;
+      isAtParent = true;
     }
 
     if (orElse != null) orElse();

@@ -14,6 +14,7 @@ part 'expressions/function.dart';
 part 'expressions/literals.dart';
 part 'expressions/reference.dart';
 part 'expressions/simple.dart';
+part 'expressions/subquery.dart';
 part 'expressions/variables.dart';
 
 part 'statements/select.dart';
@@ -82,6 +83,7 @@ abstract class AstVisitor<T> {
   T visitLiteral(Literal e);
   T visitReference(Reference e);
   T visitFunction(FunctionExpression e);
+  T visitSubQuery(SubQuery e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
@@ -100,6 +102,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitIsExpression(IsExpression e) => visitChildren(e);
+
+  @override
+  T visitSubQuery(SubQuery e) => visitChildren(e);
 
   @override
   T visitJoin(Join e) => visitChildren(e);

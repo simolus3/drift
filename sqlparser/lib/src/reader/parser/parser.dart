@@ -502,9 +502,16 @@ class Parser {
       // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
       case TokenType.leftParen:
         final left = token;
-        final expr = expression();
-        _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return Parentheses(left, expr, _previous);
+        if (_peek.type == TokenType.select) {
+          final stmt = select();
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return SubQuery(select: stmt);
+        } else {
+          final expr = expression();
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return Parentheses(left, expr, _previous);
+        }
+        break;
       case TokenType.identifier:
         // could be table.column, function(...) or just column
         final first = _previous as IdentifierToken;

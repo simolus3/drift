@@ -38,4 +38,29 @@ void main() {
       ),
     );
   });
+
+  test('supports subqueries', () {
+    final scanner =
+        Scanner('SELECT table.*, (SELECT * FROM table2) FROM table');
+    final tokens = scanner.scanTokens();
+    final parser = Parser(tokens);
+
+    final stmt = parser.select();
+    enforceEqual(
+      stmt,
+      SelectStatement(columns: [
+        StarResultColumn('table'),
+        ExpressionResultColumn(
+          expression: SubQuery(
+            select: SelectStatement(
+              columns: [StarResultColumn(null)],
+              from: [TableReference('table2', null)],
+            ),
+          ),
+        ),
+      ], from: [
+        TableReference('table', null),
+      ]),
+    );
+  });
 }

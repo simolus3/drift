@@ -69,7 +69,8 @@ class StarResultColumn extends ResultColumn {
   }
 }
 
-class ExpressionResultColumn extends ResultColumn implements Renamable {
+class ExpressionResultColumn extends ResultColumn
+    implements Renamable, Referencable {
   final Expression expression;
   @override
   final String as;

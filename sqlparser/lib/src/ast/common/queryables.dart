@@ -34,7 +34,7 @@ abstract class TableOrSubquery extends Queryable {}
 /// of the select statement can access "t") and a reference owner (the table).
 class TableReference extends TableOrSubquery
     with ReferenceOwner
-    implements Renamable, ResolvesToResultSet {
+    implements Renamable, ResolvesToResultSet, VisibleToChildren {
   final String tableName;
   @override
   final String as;
@@ -55,7 +55,8 @@ class TableReference extends TableOrSubquery
   }
 }
 
-/// A nested select statement.
+/// A nested select statement that appears after a FROM clause. This is
+/// different from nested select expressions, which can only return one value.
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
   final String as;
