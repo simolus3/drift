@@ -15,7 +15,7 @@ part 'steps/set_parent_visitor.dart';
 part 'steps/type_resolver.dart';
 
 part 'types/data.dart';
-part 'types/resolution.dart';
+part 'types/resolver.dart';
 
 part 'types/typeable.dart';
 

@@ -1,6 +1,6 @@
 part of '../analysis.dart';
 
-abstract class Column with Referencable, Typeable {
+abstract class Column with Referencable implements Typeable {
   String get name;
 }
 

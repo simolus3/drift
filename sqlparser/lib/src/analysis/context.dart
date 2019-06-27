@@ -4,6 +4,7 @@ class AnalysisContext {
   final List<AnalysisError> errors = [];
   final AstNode root;
   final String sql;
+  final TypeResolver types = TypeResolver();
 
   AnalysisContext(this.root, this.sql);
 

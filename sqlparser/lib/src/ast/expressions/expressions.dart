@@ -1,3 +1,3 @@
 part of '../ast.dart';
 
-abstract class Expression extends AstNode {}
+abstract class Expression extends AstNode implements Typeable {}
