@@ -18,6 +18,7 @@ void main() {
     expect(() async {
       await db.transaction((t) {
         t.select(db.users).watch();
+        return Future.value(null); // analysis warning in travis otherwise
       });
     }, throwsStateError);
 
