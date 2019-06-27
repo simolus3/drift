@@ -44,7 +44,7 @@ class SqlEngine {
     final node = parse(sql);
     const SetParentVisitor().startAtRoot(node);
 
-    final context = AnalysisContext(node);
+    final context = AnalysisContext(node, sql);
     final scope = _constructRootScope();
 
     ReferenceFinder(globalScope: scope).start(node);

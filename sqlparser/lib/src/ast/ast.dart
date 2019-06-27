@@ -24,6 +24,20 @@ abstract class AstNode {
   /// by the analyzer after the tree has been parsed.
   AstNode parent;
 
+  Token first;
+  Token last;
+
+  /// The first index in the source that belongs to this node
+  int get firstPosition => first.span.start.offset;
+
+  /// The last position that belongs to node, exclusive
+  int get lastPosition => last.span.end.offset;
+
+  void setSpan(Token first, Token last) {
+    this.first = first;
+    this.last = last;
+  }
+
   Iterable<AstNode> get parents sync* {
     var node = parent;
     while (node != null) {

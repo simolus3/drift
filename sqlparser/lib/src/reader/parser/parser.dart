@@ -99,6 +99,7 @@ class Parser {
   /// https://www.sqlite.org/lang_select.html
   SelectStatement select() {
     if (!_match(const [TokenType.select])) return null;
+    final selectToken = _previous;
 
     var distinct = false;
     if (_matchOne(TokenType.distinct)) {
@@ -127,14 +128,14 @@ class Parser {
       groupBy: groupBy,
       orderBy: orderBy,
       limit: limit,
-    );
+    )..setSpan(selectToken, _previous);
   }
 
   /// Parses a [ResultColumn] or throws if none is found.
   /// https://www.sqlite.org/syntax/result-column.html
   ResultColumn _resultColumn() {
     if (_match(const [TokenType.star])) {
-      return StarResultColumn(null);
+      return StarResultColumn(null)..setSpan(_previous, _previous);
     }
 
     final positionBefore = _current;
@@ -146,7 +147,8 @@ class Parser {
       final identifier = _previous;
 
       if (_match(const [TokenType.dot]) && _match(const [TokenType.star])) {
-        return StarResultColumn((identifier as IdentifierToken).identifier);
+        return StarResultColumn((identifier as IdentifierToken).identifier)
+          ..setSpan(identifier, _previous);
       }
 
       // not a star result column. go back and parse the expression.
@@ -155,10 +157,13 @@ class Parser {
       _current = positionBefore;
     }
 
+    final tokenBefore = _peek;
+
     final expr = expression();
     final as = _as();
 
-    return ExpressionResultColumn(expression: expr, as: as?.identifier);
+    return ExpressionResultColumn(expression: expr, as: as?.identifier)
+      ..setSpan(tokenBefore, _previous);
   }
 
   /// Returns an identifier followed after an optional "AS" token in sql.

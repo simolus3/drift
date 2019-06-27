@@ -75,8 +75,12 @@ class ColumnResolver extends RecursiveVisitor<void> {
       return (c.expression as Reference).columnName;
     }
 
-    // todo I think in this case it's just the literal lexeme?
-    return 'TODO';
+    // in this case it's just the literal expression. So for instance,
+    // "SELECT 3+  5" has a result column called "3+ 5" (consecutive whitespace
+    // is removed).
+    final span = context.sql.substring(c.firstPosition, c.lastPosition);
+    // todo remove consecutive whitespace
+    return span;
   }
 
   void _resolveTableReference(TableReference r) {

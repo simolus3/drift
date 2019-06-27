@@ -21,13 +21,14 @@ void main() {
     );
     final engine = SqlEngine()..registerTable(demoTable);
 
-    final context = engine.analyze('SELECT id, d.content, * FROM demo AS d');
+    final context =
+        engine.analyze('SELECT id, d.content, *, 3 + 4 FROM demo AS d');
 
     final select = context.root as SelectStatement;
     final resolvedColumns = select.resolvedColumns;
 
-    expect(
-        resolvedColumns.map((c) => c.name), ['id', 'content', 'id', 'content']);
+    expect(resolvedColumns.map((c) => c.name),
+        ['id', 'content', 'id', 'content', '3 + 4']);
 
     final firstColumn = select.columns[0] as ExpressionResultColumn;
     final secondColumn = select.columns[1] as ExpressionResultColumn;
