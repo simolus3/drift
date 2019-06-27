@@ -54,6 +54,12 @@ class CustomSerializer extends ValueSerializer {
 }
 
 void main() {
+  test('default serializer', () {
+    final serializer = const ValueSerializer.defaults();
+    expect(serializer.toJson<DateTime>(null), null);
+    expect(serializer.fromJson<DateTime>(null), null);
+  });
+
   group('serialization', () {
     test('with defaults', () {
       expect(someTodoEntry.toJson(), equals(regularSerialized));
