@@ -50,7 +50,11 @@ class _DefaultValueSerializer extends ValueSerializer {
   @override
   T fromJson<T>(json) {
     if (T == DateTime) {
-      return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
+      if (json == null) {
+        return null;
+      } else {
+        return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
+      }
     }
 
     return json as T;
