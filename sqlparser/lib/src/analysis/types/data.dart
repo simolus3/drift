@@ -21,6 +21,20 @@ class ResolvedType {
   ResolvedType withNullable(bool nullable) {
     return ResolvedType(type: type, hint: hint, nullable: nullable);
   }
+
+  @override
+  bool operator ==(other) {
+    return identical(this, other) ||
+        other is ResolvedType &&
+            other.type == type &&
+            other.hint == hint &&
+            other.nullable == nullable;
+  }
+
+  @override
+  int get hashCode {
+    return type.hashCode + hint.hashCode + nullable.hashCode;
+  }
 }
 
 /// Provides more precise hints than the [BasicType]. For instance, booleans are

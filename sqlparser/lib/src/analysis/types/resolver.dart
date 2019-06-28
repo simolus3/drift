@@ -101,6 +101,36 @@ class TypeResolver {
     return const ResolveResult.unknown();
   }
 
+  ResolveResult inferType(Expression e) {
+    return _cache<Expression>((e) {
+      final parent = e.parent;
+      if (parent is Expression) {
+        final result = _argumentType(parent, e);
+        if (result.needsContext) {
+          return inferType(parent);
+        } else {
+          return result;
+        }
+      } else if (parent is Limit) {
+        return const ResolveResult(ResolvedType(type: BasicType.int));
+      }
+
+      return const ResolveResult.unknown();
+    }, e);
+  }
+
+  ResolveResult _argumentType(Expression parent, Expression argument) {
+    if (parent is IsExpression || parent is BinaryExpression) {
+      final relevant = parent.childNodes
+          .lastWhere((node) => node is Expression && node != argument);
+      return resolveExpression(relevant as Expression);
+    } else if (parent is Parentheses || parent is UnaryExpression) {
+      return const ResolveResult.needsContext();
+    }
+
+    throw StateError('Cannot infer argument type: $parent');
+  }
+
   /// Returns the type of an expression in [expressions] that has the highest
   /// order in [types].
   ResolvedType _encapsulate(
@@ -131,4 +161,16 @@ class ResolveResult {
       : type = null,
         needsContext = false,
         unknown = true;
+
+  @override
+  bool operator ==(other) {
+    return identical(this, other) ||
+        other is ResolveResult &&
+            other.type == type &&
+            other.needsContext == needsContext &&
+            other.unknown == unknown;
+  }
+
+  @override
+  int get hashCode => type.hashCode + needsContext.hashCode + unknown.hashCode;
 }

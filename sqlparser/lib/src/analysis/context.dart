@@ -15,6 +15,8 @@ class AnalysisContext {
   ResolveResult typeOf(Typeable t) {
     if (t is Column) {
       return types.resolveColumn(t);
+    } else if (t is Variable) {
+      return types.inferType(t);
     } else if (t is Expression) {
       return types.resolveExpression(t);
     }

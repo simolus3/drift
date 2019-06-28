@@ -46,6 +46,13 @@ abstract class AstNode {
     }
   }
 
+  Iterable<AstNode> get allDescendants sync* {
+    for (var child in childNodes) {
+      yield child;
+      yield* child.allDescendants;
+    }
+  }
+
   final Map<Type, dynamic> _metadata = {};
   T meta<T>() {
     return _metadata[T] as T;
