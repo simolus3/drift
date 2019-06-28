@@ -12,9 +12,9 @@ void main() {
   });
 
   test('correctly resolves return columns', () {
-    final id = const TableColumn('id', ResolvedType(type: BasicType.int));
+    final id = TableColumn('id', const ResolvedType(type: BasicType.int));
     final content =
-        const TableColumn('content', ResolvedType(type: BasicType.text));
+        TableColumn('content', const ResolvedType(type: BasicType.text));
 
     final demoTable = Table(
       name: 'demo',

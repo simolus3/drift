@@ -37,7 +37,7 @@ class SqlEngine {
     // todo error handling from scanner
 
     final parser = Parser(tokens);
-    return parser.select();
+    return parser.statement();
   }
 
   AnalysisContext analyze(String sql) {

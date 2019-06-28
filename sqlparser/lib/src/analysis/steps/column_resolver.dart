@@ -23,6 +23,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
         availableColumns.addAll(select.statement.resolvedColumns);
       },
       isJoin: (join) {
+        _handle(join.primary, availableColumns);
         for (var query in join.joins.map((j) => j.query)) {
           _handle(query, availableColumns);
         }
@@ -52,6 +53,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
               relevantNode: resultColumn,
             ));
           });
+
           usedColumns.addAll(tableResolver.resultSet.resolvedColumns);
         } else {
           // we have a * column, that would be all available columns

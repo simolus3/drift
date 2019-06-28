@@ -112,6 +112,9 @@ class Scanner {
       case ':':
         _addToken(TokenType.colon);
         break;
+      case ';':
+        _addToken(TokenType.semicolon);
+        break;
 
       case 'x':
         if (_match("'")) {

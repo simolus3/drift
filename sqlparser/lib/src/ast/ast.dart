@@ -18,6 +18,7 @@ part 'expressions/subquery.dart';
 part 'expressions/variables.dart';
 
 part 'statements/select.dart';
+part 'statements/statement.dart';
 
 abstract class AstNode {
   /// The parent of this node, or null if this is the root node. Will be set

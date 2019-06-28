@@ -76,6 +76,7 @@ enum TokenType {
   limit,
   offset,
 
+  semicolon,
   eof,
 }
 

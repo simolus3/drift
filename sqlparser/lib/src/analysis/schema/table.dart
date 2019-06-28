@@ -23,5 +23,9 @@ class Table with ResultSet, VisibleToChildren {
   @override
   final List<TableColumn> resolvedColumns;
 
-  Table({@required this.name, this.resolvedColumns});
+  Table({@required this.name, this.resolvedColumns}) {
+    for (var column in resolvedColumns) {
+      column.table = this;
+    }
+  }
 }

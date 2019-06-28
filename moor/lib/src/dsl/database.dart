@@ -28,6 +28,7 @@ class UseMoor {
   /// Optionally, a list of queries. Moor will generate matching methods for the
   /// variables and return types.
   // todo better documentation
+  @experimental
   final List<Sql> queries;
 
   /// Use this class as an annotation to inform moor_generator that a database
@@ -64,6 +65,7 @@ class UseDao {
   /// The tables accessed by this DAO.
   final List<Type> tables;
   // todo better documentation
+  @experimental
   final List<Sql> queries;
 
   const UseDao({@required this.tables, this.queries});

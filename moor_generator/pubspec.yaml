@@ -21,7 +21,8 @@ dependencies:
   build_config: '>=0.3.1 <1.0.0'
   moor: ^1.4.0
   meta: '>= 1.0.0 <2.0.0'
-
+  sqlparser:
+    path: ../sqlparser
 dev_dependencies:
   test: ^1.6.0
   test_api: ^0.2.0

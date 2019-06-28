@@ -52,7 +52,15 @@ class TableWithoutPK extends Table {
   RealColumn get someFloat => real()();
 }
 
-@UseMoor(tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK])
+@UseMoor(
+  tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK],
+  queries: [
+    Sql(
+        'allTodosWithCategory',
+        'SELECT t.*, c.id as catId, c."desc" as catDesc '
+            'FROM todos t INNER JOIN categories c ON c.id = t.category'),
+  ],
+)
 class TodoDb extends _$TodoDb {
   TodoDb(QueryExecutor e) : super(e);
 

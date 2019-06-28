@@ -13,6 +13,9 @@ import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
+import 'model/sql_query.dart';
+import 'parser/sql/sql_parser.dart';
+
 class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
   //final Map<String, ParsedLibraryResult> _astForLibs = {};
   final ErrorStore errors = ErrorStore();
@@ -47,11 +50,13 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
         .listValue
         .map((obj) => obj.toTypeValue())
         .toList();
+    final queries = annotation.peek('queries')?.listValue ?? [];
 
     tableParser ??= TableParser(this);
     columnParser ??= ColumnParser(this);
 
     final tablesForThisDb = <SpecifiedTable>[];
+    var resolvedQueries = <SqlQuery>[];
 
     for (var table in tableTypes) {
       if (!tableTypeChecker.isAssignableFrom(table.element)) {
@@ -67,7 +72,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     }
 
     if (errors.errors.isNotEmpty) {
-      print('Warning: There were some errors whily running moor_generator:');
+      print('Warning: There were some errors while running moor_generator:');
 
       for (var error in errors.errors) {
         print(error.message);
@@ -80,10 +85,17 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
       errors.errors.clear();
     }
 
+    if (queries.isNotEmpty) {
+      final parser = SqlParser(options, tablesForThisDb, queries)..parse();
+      errors.errors.addAll(parser.errors);
+
+      resolvedQueries = parser.foundQueries;
+    }
+
     if (_foundTables.isEmpty) return '';
 
-    final specifiedDb =
-        SpecifiedDatabase(element as ClassElement, tablesForThisDb, daoTypes);
+    final specifiedDb = SpecifiedDatabase(
+        element as ClassElement, tablesForThisDb, daoTypes, resolvedQueries);
 
     final buffer = StringBuffer()
       ..write('// ignore_for_file: unnecessary_brace_in_string_interps\n');

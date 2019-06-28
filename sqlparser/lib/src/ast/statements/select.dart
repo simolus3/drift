@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class SelectStatement extends AstNode with ResultSet {
+class SelectStatement extends Statement with ResultSet {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;

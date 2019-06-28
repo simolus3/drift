@@ -11,7 +11,9 @@ class TableColumn extends Column {
   final String name;
   final ResolvedType type;
 
-  const TableColumn(this.name, this.type);
+  Table table;
+
+  TableColumn(this.name, this.type);
 }
 
 class ExpressionColumn extends Column {

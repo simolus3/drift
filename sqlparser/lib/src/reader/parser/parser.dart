@@ -92,6 +92,12 @@ class Parser {
     _error(message);
   }
 
+  Statement statement() {
+    final stmt = select();
+    _matchOne(TokenType.semicolon);
+    return stmt;
+  }
+
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
   ///
