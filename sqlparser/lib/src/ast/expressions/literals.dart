@@ -23,6 +23,8 @@ class NullLiteral extends Literal {
 class NumericLiteral extends Literal {
   final num number;
 
+  bool get isInt => number.toInt() == number;
+
   NumericLiteral(this.number, Token token) : super(token);
 
   @override

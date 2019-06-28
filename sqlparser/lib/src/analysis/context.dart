@@ -11,4 +11,14 @@ class AnalysisContext {
   void reportError(AnalysisError error) {
     errors.add(error);
   }
+
+  ResolveResult typeOf(Typeable t) {
+    if (t is Column) {
+      return types.resolveColumn(t);
+    } else if (t is Expression) {
+      return types.resolveExpression(t);
+    }
+
+    throw StateError('Unknown typeable $t');
+  }
 }

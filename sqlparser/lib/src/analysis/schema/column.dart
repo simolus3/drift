@@ -2,13 +2,16 @@ part of '../analysis.dart';
 
 abstract class Column with Referencable implements Typeable {
   String get name;
+
+  const Column();
 }
 
 class TableColumn extends Column {
   @override
   final String name;
+  final ResolvedType type;
 
-  TableColumn(this.name);
+  const TableColumn(this.name, this.type);
 }
 
 class ExpressionColumn extends Column {

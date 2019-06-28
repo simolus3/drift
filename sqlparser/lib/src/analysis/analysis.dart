@@ -16,7 +16,6 @@ part 'steps/type_resolver.dart';
 
 part 'types/data.dart';
 part 'types/resolver.dart';
-
 part 'types/typeable.dart';
 
 part 'error.dart';

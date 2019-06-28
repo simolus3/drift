@@ -1,62 +1,29 @@
 part of '../analysis.dart';
 
 /// A type that sql expressions can have at runtime.
-abstract class SqlType {
-  const SqlType();
-  const factory SqlType.nullType() = NullType._;
-  const factory SqlType.int() = IntegerType._;
-  const factory SqlType.real() = RealType._;
-  const factory SqlType.text() = TextType._;
-  const factory SqlType.blob() = BlobType._;
-
-  bool isSubTypeOf(SqlType other);
+enum BasicType {
+  nullType,
+  int,
+  real,
+  text,
+  blob,
 }
 
-class NullType extends SqlType {
-  const NullType._();
+class ResolvedType {
+  final BasicType type;
+  final TypeHint hint;
+  final bool nullable;
 
-  @override
-  bool isSubTypeOf(SqlType other) => true;
-}
+  const ResolvedType({this.type, this.hint, this.nullable = false});
+  const ResolvedType.bool()
+      : this(type: BasicType.int, hint: const IsBoolean());
 
-class IntegerType extends SqlType {
-  const IntegerType._();
-
-  @override
-  bool isSubTypeOf(SqlType other) => other is IntegerType;
-}
-
-class RealType extends SqlType {
-  const RealType._();
-
-  @override
-  bool isSubTypeOf(SqlType other) => other is RealType;
-}
-
-class TextType extends SqlType {
-  const TextType._();
-
-  @override
-  bool isSubTypeOf(SqlType other) => other is TextType;
-}
-
-class BlobType extends SqlType {
-  const BlobType._();
-
-  @override
-  bool isSubTypeOf(SqlType other) => other is BlobType;
-}
-
-class AnyNumericType extends SqlType {
-  const AnyNumericType();
-
-  @override
-  bool isSubTypeOf(SqlType other) {
-    return other is RealType || other is IntegerType;
+  ResolvedType withNullable(bool nullable) {
+    return ResolvedType(type: type, hint: hint, nullable: nullable);
   }
 }
 
-/// Provides more precise hints than the [SqlType]. For instance, booleans are
+/// Provides more precise hints than the [BasicType]. For instance, booleans are
 /// stored as ints in sqlite, but it might be desirable to know whether an
 /// expression will actually be a boolean.
 abstract class TypeHint {

@@ -12,8 +12,9 @@ void main() {
   });
 
   test('correctly resolves return columns', () {
-    final id = TableColumn('id');
-    final content = TableColumn('content');
+    final id = const TableColumn('id', ResolvedType(type: BasicType.int));
+    final content =
+        const TableColumn('content', ResolvedType(type: BasicType.text));
 
     final demoTable = Table(
       name: 'demo',
@@ -29,6 +30,14 @@ void main() {
 
     expect(resolvedColumns.map((c) => c.name),
         ['id', 'content', 'id', 'content', '3 + 4']);
+
+    expect(resolvedColumns.map((c) => context.typeOf(c).type.type), [
+      BasicType.int,
+      BasicType.text,
+      BasicType.int,
+      BasicType.text,
+      BasicType.int,
+    ]);
 
     final firstColumn = select.columns[0] as ExpressionResultColumn;
     final secondColumn = select.columns[1] as ExpressionResultColumn;
