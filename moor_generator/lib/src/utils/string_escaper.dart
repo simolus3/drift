@@ -1,3 +1,4 @@
 String asDartLiteral(String value) {
-  return "'$value'"; // todo proper escaping
+  final escaped = value.replaceAll("'", "\\'").replaceAll('\n', '\\n');
+  return "'$escaped'";
 }
