@@ -30,6 +30,10 @@ class ReferenceScope {
 
   final Map<String, List<Referencable>> _references = {};
 
+  /// All columns that would be available in this scope. Can be used to resolve
+  /// a '*' expression for function calls or result columns
+  List<Column> availableColumns;
+
   ReferenceScope(this.parent, {this.root});
 
   ReferenceScope createChild() {

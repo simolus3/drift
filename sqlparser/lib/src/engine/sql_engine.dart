@@ -7,14 +7,7 @@ class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
 
-  /// All functions (like COUNT, SUM, etc.) which are available in sql.
-  final List<SqlFunction> knownFunctions = [];
-
-  SqlEngine({bool includeDefaults = true}) {
-    if (includeDefaults) {
-      knownFunctions.addAll(coreFunctions);
-    }
-  }
+  SqlEngine();
 
   /// Registers the [table], which means that it can later be used in sql
   /// statements.
@@ -26,9 +19,6 @@ class SqlEngine {
     final scope = ReferenceScope(null);
     for (var table in knownTables) {
       scope.register(table.name, table);
-    }
-    for (var function in knownFunctions) {
-      scope.register(function.name, function);
     }
 
     return scope;

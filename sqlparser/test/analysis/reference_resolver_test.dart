@@ -4,15 +4,6 @@ import 'package:sqlparser/sqlparser.dart';
 import 'data.dart';
 
 void main() {
-  test('resolves simple functions', () {
-    final context = SqlEngine().analyze('SELECT ABS(-3)');
-
-    final select = context.root as SelectStatement;
-    final column = select.columns.single as ExpressionResultColumn;
-
-    expect((column.expression as FunctionExpression).resolved, abs);
-  });
-
   test('correctly resolves return columns', () {
     final engine = SqlEngine()..registerTable(demoTable);
 

@@ -3,9 +3,6 @@ import 'dart:math';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-part 'functions/core.dart';
-part 'functions/function.dart';
-
 part 'schema/column.dart';
 part 'schema/references.dart';
 part 'schema/table.dart';

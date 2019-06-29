@@ -6,18 +6,6 @@ class ReferenceResolver extends RecursiveVisitor<void> {
   ReferenceResolver(this.context);
 
   @override
-  void visitFunction(FunctionExpression e) {
-    e.resolved = e.scope.resolve<SqlFunction>(e.name, orElse: () {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.unknownFunction,
-        message: 'Unknown function: ${e.name}',
-        relevantNode: e,
-      ));
-    });
-    visitChildren(e);
-  }
-
-  @override
   void visitReference(Reference e) {
     final scope = e.scope;
 

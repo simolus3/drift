@@ -7,7 +7,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
   @override
   void visitSelectStatement(SelectStatement e) {
-    _resolveSelect(e, []);
+    _resolveSelect(e);
   }
 
   void _handle(Queryable queryable, List<Column> availableColumns) {
@@ -18,8 +18,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
-        // the outer statements.
-        _resolveSelect(select.statement, []);
+        // the outer statements, so we don't
+        _resolveSelect(select.statement);
         availableColumns.addAll(select.statement.resolvedColumns);
       },
       isJoin: (join) {
@@ -31,7 +31,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
     );
   }
 
-  void _resolveSelect(SelectStatement s, List<Column> availableColumns) {
+  void _resolveSelect(SelectStatement s) {
     final availableColumns = <Column>[];
     for (var queryable in s.from) {
       _handle(queryable, availableColumns);
@@ -68,6 +68,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
     }
 
     s.resolvedColumns = usedColumns;
+    s.scope.availableColumns = availableColumns;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {
