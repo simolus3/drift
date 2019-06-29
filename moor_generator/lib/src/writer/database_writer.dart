@@ -21,7 +21,7 @@ class DatabaseWriter {
 
     // Write additional classes to hold the result of custom queries
     for (final query in db.queries) {
-      if (query is SqlSelectQuery) {
+      if (query is SqlSelectQuery && query.resultSet.matchingTable == null) {
         ResultSetWriter(query).write(buffer);
       }
     }
