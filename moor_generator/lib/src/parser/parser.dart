@@ -18,7 +18,7 @@ class ParserBase {
     final body = method.body;
 
     if (!(body is ExpressionFunctionBody)) {
-      generator.errors.add(MoorError(
+      generator.state.errors.add(MoorError(
           affectedElement: method.declaredElement,
           critical: true,
           message:

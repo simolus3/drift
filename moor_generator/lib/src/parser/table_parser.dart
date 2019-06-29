@@ -58,7 +58,7 @@ class TableParser extends ParserBase {
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = readStringLiteral(returnExpr, () {
-      generator.errors.add(MoorError(
+      generator.state.errors.add(MoorError(
           critical: true,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -79,7 +79,7 @@ class TableParser extends ParserBase {
         as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      generator.errors.add(MoorError(
+      generator.state.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -103,7 +103,7 @@ class TableParser extends ParserBase {
         }
       }
     } else {
-      generator.errors.add(MoorError(
+      generator.state.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
     }
@@ -118,7 +118,7 @@ class TableParser extends ParserBase {
       final node = generator.loadElementDeclaration(field.getter).node
           as MethodDeclaration;
 
-      return generator.columnParser.parse(node, field.getter);
+      return generator.state.columnParser.parse(node, field.getter);
     }).toList();
   }
 }

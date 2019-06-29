@@ -1024,21 +1024,6 @@ class AllTodosWithCategoryResult {
   });
 }
 
-class TodosForUserResult {
-  final int id;
-  final String title;
-  final String content;
-  final DateTime targetDate;
-  final int category;
-  TodosForUserResult({
-    this.id,
-    this.title,
-    this.content,
-    this.targetDate,
-    this.category,
-  });
-}
-
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1052,6 +1037,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
   $TableWithoutPKTable _tableWithoutPK;
   $TableWithoutPKTable get tableWithoutPK =>
       _tableWithoutPK ??= $TableWithoutPKTable(this);
+  SomeDao _someDao;
+  SomeDao get someDao => _someDao ??= SomeDao(this as TodoDb);
   AllTodosWithCategoryResult _rowToAllTodosWithCategoryResult(QueryRow row) {
     return AllTodosWithCategoryResult(
       id: row.readInt('id'),
@@ -1081,38 +1068,17 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
   }
 
-  TodosForUserResult _rowToTodosForUserResult(QueryRow row) {
-    return TodosForUserResult(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-    );
-  }
-
-  Future<List<TodosForUserResult>> todosForUser(int user) {
-    return customSelect(
-        'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [
-          Variable.withInt(user),
-        ]).then((rows) => rows.map(_rowToTodosForUserResult).toList());
-  }
-
-  Stream<List<TodosForUserResult>> watchTodosForUser(int user) {
-    return customSelectStream(
-        'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [
-          Variable.withInt(user),
-        ],
-        readsFrom: {
-          users,
-          todosTable,
-          sharedTodos
-        }).map((rows) => rows.map(_rowToTodosForUserResult).toList());
-  }
-
   @override
   List<TableInfo> get allTables =>
       [todosTable, categories, users, sharedTodos, tableWithoutPK];
+}
+
+// **************************************************************************
+// DaoGenerator
+// **************************************************************************
+
+mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
+  $UsersTable get users => db.users;
+  $SharedTodosTable get sharedTodos => db.sharedTodos;
+  $TodosTableTable get todosTable => db.todosTable;
 }

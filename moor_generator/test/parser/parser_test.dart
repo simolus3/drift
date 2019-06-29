@@ -4,12 +4,14 @@ import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/moor_generator.dart';
+import 'package:moor_generator/src/shared_state.dart';
 import 'package:test_api/test_api.dart';
 import 'package:build_test/build_test.dart';
 
 void main() async {
   LibraryElement testLib;
   MoorGenerator generator;
+  SharedState state;
 
   setUpAll(() async {
     testLib = await resolveSource(r''' 
@@ -51,8 +53,9 @@ void main() async {
   });
 
   setUp(() {
-    generator = MoorGenerator(const MoorOptions.defaults());
-    generator
+    state = SharedState(const MoorOptions.defaults());
+    generator = MoorGenerator(state);
+    state
       ..columnParser = ColumnParser(generator)
       ..tableParser = TableParser(generator);
   });
@@ -74,7 +77,7 @@ void main() async {
     test('should not parse for complex methods', () async {
       TableParser(generator).parse(testLib.getType('WrongName'));
 
-      expect(generator.errors.errors, isNotEmpty);
+      expect(state.errors.errors, isNotEmpty);
     });
   });
 

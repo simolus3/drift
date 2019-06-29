@@ -54,18 +54,13 @@ class TableWithoutPK extends Table {
 
 @UseMoor(
   tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK],
+  daos: [SomeDao],
   queries: [
     Sql(
       'allTodosWithCategory',
       'SELECT t.*, c.id as catId, c."desc" as catDesc '
           'FROM todos t INNER JOIN categories c ON c.id = t.category',
     ),
-    Sql(
-        'todosForUser',
-        'SELECT t.* FROM todos t '
-            'INNER JOIN shared_todos st ON st.todo = t.id '
-            'INNER JOIN users u ON u.id = st.user '
-            'WHERE u.id = :user'),
   ],
 )
 class TodoDb extends _$TodoDb {
@@ -76,4 +71,19 @@ class TodoDb extends _$TodoDb {
 
   @override
   int get schemaVersion => 1;
+}
+
+@UseDao(
+  tables: [Users, SharedTodos, TodosTable],
+  queries: [
+    Sql(
+        'todosForUser',
+        'SELECT t.* FROM todos t '
+            'INNER JOIN shared_todos st ON st.todo = t.id '
+            'INNER JOIN users u ON u.id = st.user '
+            'WHERE u.id = :user'),
+  ],
+)
+class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
+  SomeDao(TodoDb db) : super(db);
 }

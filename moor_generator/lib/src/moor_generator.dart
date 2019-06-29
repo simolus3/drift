@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/element/type.dart';
 import 'package:moor/moor.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/src/dart/analysis/results.dart'; // ignore: implementation_imports
@@ -10,6 +9,7 @@ import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
+import 'package:moor_generator/src/shared_state.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -17,18 +17,10 @@ import 'model/sql_query.dart';
 import 'parser/sql/sql_parser.dart';
 
 class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
-  //final Map<String, ParsedLibraryResult> _astForLibs = {};
-  final ErrorStore errors = ErrorStore();
-  final MoorOptions options;
+  final SharedState state;
+  MoorOptions get options => state.options;
 
-  TableParser tableParser;
-  ColumnParser columnParser;
-
-  final tableTypeChecker = const TypeChecker.fromRuntime(Table);
-
-  final Map<DartType, SpecifiedTable> _foundTables = {};
-
-  MoorGenerator(this.options);
+  MoorGenerator(this.state);
 
   ElementDeclarationResult loadElementDeclaration(Element element) {
     /*final result = _astForLibs.putIfAbsent(element.library.name, () {
@@ -52,29 +44,30 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
         .toList();
     final queries = annotation.peek('queries')?.listValue ?? [];
 
-    tableParser ??= TableParser(this);
-    columnParser ??= ColumnParser(this);
+    state.tableParser ??= TableParser(this);
+    state.columnParser ??= ColumnParser(this);
 
     final tablesForThisDb = <SpecifiedTable>[];
     var resolvedQueries = <SqlQuery>[];
 
     for (var table in tableTypes) {
-      if (!tableTypeChecker.isAssignableFrom(table.element)) {
-        errors.add(MoorError(
+      if (!state.tableTypeChecker.isAssignableFrom(table.element)) {
+        state.errors.add(MoorError(
             critical: true,
             message: 'The type $table is not a moor table',
             affectedElement: element));
       } else {
-        final specifiedTable = tableParser.parse(table.element as ClassElement);
-        _foundTables[table] = specifiedTable;
+        final specifiedTable =
+            state.tableParser.parse(table.element as ClassElement);
+        state.foundTables[table] = specifiedTable;
         tablesForThisDb.add(specifiedTable);
       }
     }
 
-    if (errors.errors.isNotEmpty) {
+    if (state.errors.errors.isNotEmpty) {
       print('Warning: There were some errors while running moor_generator:');
 
-      for (var error in errors.errors) {
+      for (var error in state.errors.errors) {
         print(error.message);
 
         if (error.affectedElement != null) {
@@ -82,17 +75,17 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
           print('${span.start.toolString}\n${span.highlight()}');
         }
       }
-      errors.errors.clear();
+      state.errors.errors.clear();
     }
 
     if (queries.isNotEmpty) {
       final parser = SqlParser(options, tablesForThisDb, queries)..parse();
-      errors.errors.addAll(parser.errors);
+      state.errors.errors.addAll(parser.errors);
 
       resolvedQueries = parser.foundQueries;
     }
 
-    if (_foundTables.isEmpty) return '';
+    if (tablesForThisDb.isEmpty) return '';
 
     final specifiedDb = SpecifiedDatabase(
         element as ClassElement, tablesForThisDb, daoTypes, resolvedQueries);

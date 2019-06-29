@@ -52,7 +52,7 @@ class ColumnParser extends ParserBase {
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      generator.errors.add(MoorError(
+      generator.state.errors.add(MoorError(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
         critical: true,
@@ -84,7 +84,7 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case _methodNamed:
           if (foundExplicitName != null) {
-            generator.errors.add(
+            generator.state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -97,7 +97,7 @@ class ColumnParser extends ParserBase {
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.errors.add(
+            generator.state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -133,7 +133,7 @@ class ColumnParser extends ParserBase {
         case _methodCustomConstraint:
           foundCustomConstraint =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.errors.add(
+            generator.state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
