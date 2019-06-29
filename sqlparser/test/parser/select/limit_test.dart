@@ -8,8 +8,9 @@ import '../utils.dart';
 void main() {
   group('limit clauses', () {
     test('with just a limit', () {
-      final select = SqlEngine().parse('SELECT * FROM test LIMIT 5 * 3')
-          as SelectStatement;
+      final select = SqlEngine()
+          .parse('SELECT * FROM test LIMIT 5 * 3')
+          .rootNode as SelectStatement;
 
       enforceEqual(
         select.limit,
@@ -24,8 +25,9 @@ void main() {
     });
 
     test('with offset', () {
-      final select = SqlEngine().parse('SELECT * FROM test LIMIT 10 OFFSET 2')
-          as SelectStatement;
+      final select = SqlEngine()
+          .parse('SELECT * FROM test LIMIT 10 OFFSET 2')
+          .rootNode as SelectStatement;
 
       enforceEqual(
         select.limit,
@@ -38,8 +40,9 @@ void main() {
     });
 
     test('with offset as comma', () {
-      final select = SqlEngine().parse('SELECT * FROM test LIMIT 10, 2')
-          as SelectStatement;
+      final select = SqlEngine()
+          .parse('SELECT * FROM test LIMIT 10, 2')
+          .rootNode as SelectStatement;
 
       enforceEqual(
         select.limit,

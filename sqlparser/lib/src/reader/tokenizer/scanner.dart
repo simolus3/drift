@@ -141,9 +141,10 @@ class Scanner {
           _numeric(char);
         } else if (canStartColumnName(char)) {
           _identifier();
+        } else {
+          errors.add(TokenizerError(
+              'Unexpected character.', SourceLocation(_currentOffset)));
         }
-        errors.add(TokenizerError(
-            'Unexpected character.', SourceLocation(_currentOffset)));
         break;
     }
   }

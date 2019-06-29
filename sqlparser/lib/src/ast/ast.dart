@@ -18,6 +18,7 @@ part 'expressions/simple.dart';
 part 'expressions/subquery.dart';
 part 'expressions/variables.dart';
 
+part 'statements/delete.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 
@@ -122,6 +123,7 @@ abstract class AstNode {
 abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
   T visitResultColumn(ResultColumn e);
+  T visitDeleteStatement(DeleteStatement e);
 
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
@@ -203,6 +205,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitSelectStatement(SelectStatement e) => visitChildren(e);
+
+  @override
+  T visitDeleteStatement(DeleteStatement e) => visitChildren(e);
 
   @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);

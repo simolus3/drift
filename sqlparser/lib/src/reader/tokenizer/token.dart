@@ -52,6 +52,7 @@ enum TokenType {
   identifier,
 
   select,
+  delete,
   distinct,
   all,
   from,
@@ -94,6 +95,7 @@ const Map<String, TokenType> keywords = {
   'AND': TokenType.and,
   'OR': TokenType.or,
   'BETWEEN': TokenType.between,
+  'DELETE': TokenType.delete,
   'FROM': TokenType.from,
   'NATURAL': TokenType.natural,
   'LEFT': TokenType.leftParen,

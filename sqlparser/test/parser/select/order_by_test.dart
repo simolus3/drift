@@ -7,8 +7,9 @@ import '../utils.dart';
 
 void main() {
   test('parses order by clauses', () {
-    final parsed = SqlEngine().parse('SELECT * FROM table ORDER BY -a, b DESC')
-        as SelectStatement;
+    final parsed = SqlEngine()
+        .parse('SELECT * FROM table ORDER BY -a, b DESC')
+        .rootNode as SelectStatement;
 
     enforceEqual(
       parsed.orderBy,

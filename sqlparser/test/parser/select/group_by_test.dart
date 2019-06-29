@@ -7,9 +7,9 @@ import '../utils.dart';
 
 void main() {
   test('parses group by statements', () {
-    final stmt = SqlEngine().parse(
-            "SELECT * FROM test GROUP BY country HAVING country LIKE '%G%'")
-        as SelectStatement;
+    final stmt = SqlEngine()
+        .parse("SELECT * FROM test GROUP BY country HAVING country LIKE '%G%'")
+        .rootNode as SelectStatement;
 
     return enforceEqual(
       stmt.groupBy,

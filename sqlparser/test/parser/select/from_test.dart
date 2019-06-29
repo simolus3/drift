@@ -16,14 +16,16 @@ void _enforceFrom(SelectStatement stmt, List<Queryable> expected) {
 void main() {
   group('from', () {
     test('a simple table', () {
-      final stmt = SqlEngine().parse('SELECT * FROM table') as SelectStatement;
+      final stmt =
+          SqlEngine().parse('SELECT * FROM table').rootNode as SelectStatement;
 
       enforceEqual(stmt.from.single, TableReference('table', null));
     });
 
     test('from more than one table', () {
-      final stmt = SqlEngine().parse('SELECT * FROM table AS test, table2')
-          as SelectStatement;
+      final stmt = SqlEngine()
+          .parse('SELECT * FROM table AS test, table2')
+          .rootNode as SelectStatement;
 
       _enforceFrom(
         stmt,
@@ -35,9 +37,10 @@ void main() {
     });
 
     test('from inner select statements', () {
-      final stmt = SqlEngine().parse(
+      final stmt = SqlEngine()
+          .parse(
               'SELECT * FROM table1, (SELECT * FROM table2 WHERE a) as "inner"')
-          as SelectStatement;
+          .rootNode as SelectStatement;
 
       _enforceFrom(
         stmt,
@@ -56,9 +59,11 @@ void main() {
     });
 
     test('from a join', () {
-      final stmt = SqlEngine().parse('SELECT * FROM table1 '
-          'INNER JOIN table2 USING (test) '
-          'LEFT OUTER JOIN table3 ON TRUE') as SelectStatement;
+      final stmt = SqlEngine()
+          .parse('SELECT * FROM table1 '
+              'INNER JOIN table2 USING (test) '
+              'LEFT OUTER JOIN table3 ON TRUE')
+          .rootNode as SelectStatement;
 
       _enforceFrom(stmt, [
         JoinClause(

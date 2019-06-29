@@ -102,7 +102,8 @@ class Parser {
   }
 
   Statement statement() {
-    final stmt = select();
+    final stmt = select() ?? _deleteStmt();
+
     _matchOne(TokenType.semicolon);
     return stmt;
   }
@@ -218,12 +219,9 @@ class Parser {
   TableOrSubquery _tableOrSubquery() {
     //  this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
     // we currently only support regular tables and nested selects
-    if (_matchOne(TokenType.identifier)) {
-      // ignore the schema name, it's not supported. Besides that, we're on the
-      // first branch in the diagram here
-      final tableName = (_previous as IdentifierToken).identifier;
-      final alias = _as();
-      return TableReference(tableName, alias?.identifier);
+    final tableRef = _tableReference();
+    if (tableRef != null) {
+      return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final innerStmt = select();
       _consume(TokenType.rightParen,
@@ -235,6 +233,17 @@ class Parser {
     }
 
     _error('Expected a table name or a nested select statement');
+  }
+
+  TableReference _tableReference() {
+    if (_matchOne(TokenType.identifier)) {
+      // ignore the schema name, it's not supported. Besides that, we're on the
+      // first branch in the diagram here
+      final tableName = (_previous as IdentifierToken).identifier;
+      final alias = _as();
+      return TableReference(tableName, alias?.identifier);
+    }
+    return null;
   }
 
   JoinClause _joinClause(TableOrSubquery start) {
@@ -375,7 +384,7 @@ class Parser {
   /// Parses a [Limit] clause, or returns null if there is no limit token after
   /// the current position.
   Limit _limit() {
-    if (!_match(const [TokenType.limit])) return null;
+    if (!_matchOne(TokenType.limit)) return null;
 
     final count = expression();
     Token offsetSep;
@@ -387,6 +396,23 @@ class Parser {
     }
 
     return Limit(count: count, offsetSeparator: offsetSep, offset: offset);
+  }
+
+  DeleteStatement _deleteStmt() {
+    if (!_matchOne(TokenType.delete)) return null;
+    _consume(TokenType.from, 'Expected a FROM here');
+
+    final table = _tableReference();
+    Expression where;
+    if (table == null) {
+      _error('Expected a table reference');
+    }
+
+    if (_matchOne(TokenType.where)) {
+      where = expression();
+    }
+
+    return DeleteStatement(from: table, where: where);
   }
 
   /* We parse expressions here.
