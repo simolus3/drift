@@ -375,6 +375,9 @@ class QueryRow {
   /// Reads a int from the column named [key].
   int readInt(String key) => read<int>(key);
 
+  /// Reads a double from the column named [key].
+  double readDouble(String key) => read<double>(key);
+
   /// Reads a [DateTime] from the column named [key].
   DateTime readDateTime(String key) => read<DateTime>(key);
 

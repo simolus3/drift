@@ -29,6 +29,26 @@ abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
     ..name = name);
 }
 
+const Map<ColumnType, String> dartTypeNames = {
+  ColumnType.boolean: 'bool',
+  ColumnType.text: 'String',
+  ColumnType.integer: 'int',
+  ColumnType.datetime: 'DateTime',
+  ColumnType.blob: 'Uint8List',
+  ColumnType.real: 'double',
+};
+
+/// Maps to the method name of a "QueryRow" from moor to extract a column type
+/// of a result row.
+const Map<ColumnType, String> readFromMethods = {
+  ColumnType.boolean: 'readBool',
+  ColumnType.text: 'readString',
+  ColumnType.integer: 'readInt',
+  ColumnType.datetime: 'readDateTime',
+  ColumnType.blob: 'readBlob',
+  ColumnType.real: 'readDouble',
+};
+
 /// A column, as specified by a getter in a table.
 class SpecifiedColumn {
   /// The getter name of this column in the table class. It will also be used
@@ -70,14 +90,7 @@ class SpecifiedColumn {
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
-  String get dartTypeName => const {
-        ColumnType.boolean: 'bool',
-        ColumnType.text: 'String',
-        ColumnType.integer: 'int',
-        ColumnType.datetime: 'DateTime',
-        ColumnType.blob: 'Uint8List',
-        ColumnType.real: 'double',
-      }[type];
+  String get dartTypeName => dartTypeNames[type];
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an

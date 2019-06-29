@@ -121,6 +121,7 @@ class SqlParser {
     }
 
     final resultSet = InferredResultSet(null, moorColumns);
-    foundQueries.add(SqlSelectQuery(queryName, moorTables.toList(), resultSet));
+    foundQueries.add(
+        SqlSelectQuery(queryName, ctx.sql, moorTables.toList(), resultSet));
   }
 }

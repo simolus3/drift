@@ -1,4 +1,7 @@
+import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/writer/query_writer.dart';
+import 'package:moor_generator/src/writer/result_set_writer.dart';
 import 'package:recase/recase.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/writer/table_writer.dart';
@@ -14,6 +17,13 @@ class DatabaseWriter {
     // Write referenced tables
     for (final table in db.tables) {
       TableWriter(table, options).writeInto(buffer);
+    }
+
+    // Write additional classes to hold the result of custom queries
+    for (final query in db.queries) {
+      if (query is SqlSelectQuery) {
+        ResultSetWriter(query).write(buffer);
+      }
     }
 
     // Write the database class
@@ -48,6 +58,11 @@ class DatabaseWriter {
         returnType: typeName,
         code: '$typeName(this as $databaseImplName)',
       );
+    }
+
+    // Write implementation for query methods
+    for (var query in db.queries) {
+      QueryWriter(query).writeInto(buffer);
     }
 
     // Write List of tables, close bracket for class
