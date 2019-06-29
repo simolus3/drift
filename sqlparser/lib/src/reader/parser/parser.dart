@@ -407,6 +407,30 @@ class Parser {
   * */
 
   Expression expression() {
+    return _case();
+  }
+
+  Expression _case() {
+    if (_matchOne(TokenType.$case)) {
+      final base = _check(TokenType.when) ? null : _or();
+      final whens = <WhenComponent>[];
+      Expression $else;
+
+      while (_matchOne(TokenType.when)) {
+        final whenExpr = _or();
+        _consume(TokenType.then, 'Expected THEN');
+        final then = _or();
+        whens.add(WhenComponent(when: whenExpr, then: then));
+      }
+
+      if (_matchOne(TokenType.$else)) {
+        $else = _or();
+      }
+
+      _consume(TokenType.end, 'Expected END to finish the case operator');
+      return CaseExpression(whens: whens, base: base, elseExpr: $else);
+    }
+
     return _or();
   }
 

@@ -9,6 +9,7 @@ part 'clauses/ordering.dart';
 part 'common/queryables.dart';
 part 'common/renamable.dart';
 
+part 'expressions/case.dart';
 part 'expressions/expressions.dart';
 part 'expressions/function.dart';
 part 'expressions/literals.dart';
@@ -109,6 +110,8 @@ abstract class AstVisitor<T> {
   T visitReference(Reference e);
   T visitFunction(FunctionExpression e);
   T visitSubQuery(SubQuery e);
+  T visitCaseExpression(CaseExpression e);
+  T visitWhen(WhenComponent e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
@@ -130,6 +133,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitBetweenExpression(BetweenExpression e) => visitChildren(e);
+
+  @override
+  T visitCaseExpression(CaseExpression e) => visitChildren(e);
+
+  @override
+  T visitWhen(WhenComponent e) => visitChildren(e);
 
   @override
   T visitSubQuery(SubQuery e) => visitChildren(e);

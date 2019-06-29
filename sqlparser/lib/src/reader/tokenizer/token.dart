@@ -77,6 +77,12 @@ enum TokenType {
   limit,
   offset,
 
+  $case,
+  when,
+  then,
+  $else,
+  end,
+
   semicolon,
   eof,
 }
@@ -120,6 +126,11 @@ const Map<String, TokenType> keywords = {
   'CURRENT_TIME': TokenType.currentTime,
   'CURRENT_DATE': TokenType.currentDate,
   'CURRENT_TIMESTAMP': TokenType.currentTimestamp,
+  'CASE': TokenType.$case,
+  'WHEN': TokenType.when,
+  'THEN': TokenType.then,
+  'ELSE': TokenType.$else,
+  'END': TokenType.end,
 };
 
 class Token {
