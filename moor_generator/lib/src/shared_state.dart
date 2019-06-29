@@ -34,4 +34,18 @@ class SharedState {
     final result = ParsedLibraryResultImpl.tmp(element.library);
     return result.getElementDeclaration(element);
   }
+
+  SpecifiedTable parseType(DartType type, Element initializedBy) {
+    return foundTables.putIfAbsent(type, () {
+      if (!tableTypeChecker.isAssignableFrom(type.element)) {
+        errors.add(MoorError(
+          critical: true,
+          message: 'The type $type is not a moor table',
+          affectedElement: initializedBy,
+        ));
+      } else {
+        return tableParser.parse(type.element as ClassElement);
+      }
+    });
+  }
 }

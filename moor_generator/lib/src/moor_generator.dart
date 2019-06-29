@@ -1,7 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
@@ -34,17 +33,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     var resolvedQueries = <SqlQuery>[];
 
     for (var table in tableTypes) {
-      if (!state.tableTypeChecker.isAssignableFrom(table.element)) {
-        state.errors.add(MoorError(
-            critical: true,
-            message: 'The type $table is not a moor table',
-            affectedElement: element));
-      } else {
-        final specifiedTable =
-            state.tableParser.parse(table.element as ClassElement);
-        state.foundTables[table] = specifiedTable;
-        tablesForThisDb.add(specifiedTable);
-      }
+      tablesForThisDb.add(state.parseType(table, element));
     }
 
     if (state.errors.errors.isNotEmpty) {

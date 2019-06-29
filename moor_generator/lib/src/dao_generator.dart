@@ -1,9 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/shared_state.dart';
-import 'package:recase/recase.dart';
 import 'package:moor/moor.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:source_gen/source_gen.dart';
 
 class DaoGenerator extends GeneratorForAnnotation<UseDao> {
@@ -16,6 +14,8 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
       Element element, ConstantReader annotation, BuildStep buildStep) {
     final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
+    final parsedTables =
+        tableTypes.map((type) => state.parseType(type, element));
 
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
@@ -49,11 +49,9 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     buffer.write('mixin _\$${daoName}Mixin on '
         'DatabaseAccessor<${dbImpl.displayName}> {\n');
 
-    for (var table in tableTypes) {
-      final infoType =
-          tableInfoNameForTableClass(table.element as ClassElement);
-      final getterName = ReCase(table.name).camelCase;
-
+    for (var table in parsedTables) {
+      final infoType = table.tableInfoName;
+      final getterName = table.tableFieldName;
       buffer.write('$infoType get $getterName => db.$getterName;\n');
     }
 
