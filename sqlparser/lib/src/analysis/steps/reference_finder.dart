@@ -5,8 +5,11 @@ part of '../analysis.dart';
 /// - creates [ReferenceScope] for sub-queries
 /// - in each scope, registers every table or subquery that can be referenced to
 ///   the local [ReferenceScope].
+/// - determines the [Variable.resolvedIndex] for each [Variable] in this
+///   statement.
 class ReferenceFinder extends RecursiveVisitor<void> {
   final ReferenceScope globalScope;
+  final List<Variable> _foundVariables = [];
 
   ReferenceFinder({@required this.globalScope});
 
@@ -14,6 +17,8 @@ class ReferenceFinder extends RecursiveVisitor<void> {
     root
       ..scope = globalScope
       ..accept(this);
+
+    _resolveIndexOfVariables();
   }
 
   @override
@@ -49,6 +54,7 @@ class ReferenceFinder extends RecursiveVisitor<void> {
         e.scope.register(e.as, e);
       }
     }
+    visitChildren(e);
   }
 
   @override
@@ -76,5 +82,51 @@ class ReferenceFinder extends RecursiveVisitor<void> {
     );
 
     visitChildren(e);
+  }
+
+  @override
+  void visitNumberedVariable(NumberedVariable e) {
+    _foundVariables.add(e);
+    visitChildren(e);
+  }
+
+  @override
+  void visitNamedVariable(ColonNamedVariable e) {
+    _foundVariables.add(e);
+    visitChildren(e);
+  }
+
+  void _resolveIndexOfVariables() {
+    // sort variables by the order in which they appear inside the statement.
+    _foundVariables.sort((a, b) {
+      return a.firstPosition.compareTo(b.firstPosition);
+    });
+    // Assigning rules are explained at https://www.sqlite.org/lang_expr.html#varparam
+    var largestAssigned = 0;
+    final resolvedNames = <String, int>{};
+
+    for (var variable in _foundVariables) {
+      if (variable is NumberedVariable) {
+        // if the variable has an explicit index (e.g ?123), then 123 is the
+        // resolved index and the next variable will have index 124. Otherwise,
+        // just assigned the current largest assigned index plus one.
+        if (variable.explicitIndex != null) {
+          variable.resolvedIndex = variable.explicitIndex;
+          largestAssigned = max(largestAssigned, variable.resolvedIndex);
+        } else {
+          variable.resolvedIndex = largestAssigned + 1;
+          largestAssigned++;
+        }
+      } else if (variable is ColonNamedVariable) {
+        // named variables behave just like numbered vars without an explicit
+        // index, but of course two variables with the same name must have the
+        // same index.
+        final index = resolvedNames.putIfAbsent(variable.name, () {
+          largestAssigned++;
+          return largestAssigned;
+        });
+        variable.resolvedIndex = index;
+      }
+    }
   }
 }

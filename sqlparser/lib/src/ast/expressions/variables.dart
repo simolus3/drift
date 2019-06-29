@@ -1,6 +1,8 @@
 part of '../ast.dart';
 
-mixin Variable on Expression {}
+mixin Variable on Expression {
+  int resolvedIndex;
+}
 
 /// A "?" or "?123" variable placeholder
 class NumberedVariable extends Expression with Variable {

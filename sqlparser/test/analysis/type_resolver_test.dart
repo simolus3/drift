@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'data.dart';
+
 Map<String, ResolveResult> _types = {
   'SELECT * FROM demo WHERE id = ?':
       const ResolveResult(ResolvedType(type: BasicType.int)),
@@ -11,15 +13,6 @@ Map<String, ResolveResult> _types = {
 };
 
 void main() {
-  final id = TableColumn('id', const ResolvedType(type: BasicType.int));
-  final content =
-      TableColumn('content', const ResolvedType(type: BasicType.text));
-
-  final demoTable = Table(
-    name: 'demo',
-    resolvedColumns: [id, content],
-  );
-
   _types.forEach((sql, resolvedType) {
     test('types: resolves in $sql', () {
       final engine = SqlEngine()..registerTable(demoTable);

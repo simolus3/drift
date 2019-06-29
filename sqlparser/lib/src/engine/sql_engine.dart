@@ -4,7 +4,10 @@ import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 
 class SqlEngine {
+  /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
+
+  /// All functions (like COUNT, SUM, etc.) which are available in sql.
   final List<SqlFunction> knownFunctions = [];
 
   SqlEngine({bool includeDefaults = true}) {
@@ -13,6 +16,8 @@ class SqlEngine {
     }
   }
 
+  /// Registers the [table], which means that it can later be used in sql
+  /// statements.
   void registerTable(Table table) {
     knownTables.add(table);
   }
@@ -40,6 +45,13 @@ class SqlEngine {
     return parser.statement();
   }
 
+  /// Parses and analyzes the [sql] statement, which at the moment has to be a
+  /// select statement. The [AnalysisContext] returned contains all information
+  /// about type hints, errors, and the parsed AST.
+  ///
+  /// The analyzer needs to know all the available tables to resolve references
+  /// and result columns, so all known tables should be registered using
+  /// [registerTable] before calling this method.
   AnalysisContext analyze(String sql) {
     final node = parse(sql);
     const SetParentVisitor().startAtRoot(node);

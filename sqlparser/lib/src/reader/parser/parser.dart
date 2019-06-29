@@ -544,19 +544,22 @@ class Parser {
         }
         break;
       case TokenType.questionMark:
-        final mark = _previous;
+        final mark = token;
 
         if (_matchOne(TokenType.numberLiteral)) {
-          return NumberedVariable(mark, _parseNumber(_previous.lexeme).toInt());
+          final number = _previous;
+          return NumberedVariable(mark, _parseNumber(number.lexeme).toInt())
+            ..setSpan(mark, number);
         } else {
-          return NumberedVariable(mark, null);
+          return NumberedVariable(mark, null)..setSpan(mark, mark);
         }
         break;
       case TokenType.colon:
+        final colon = token;
         final identifier = _consume(TokenType.identifier,
             'Expected an identifier for the named variable') as IdentifierToken;
         final content = identifier.identifier;
-        return ColonNamedVariable(':$content');
+        return ColonNamedVariable(':$content')..setSpan(colon, identifier);
       default:
         break;
     }

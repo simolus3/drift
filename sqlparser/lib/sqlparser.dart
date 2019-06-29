@@ -1,6 +1,4 @@
-/// Sql parser and analyzer, written in pure dart.
-///
-/// More dartdocs go here.
+/// An sql parser and analyzer for Dart.
 library sqlparser;
 
 export 'src/analysis/analysis.dart';

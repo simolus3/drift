@@ -1,5 +1,6 @@
 part of '../analysis.dart';
 
+/// Sets the [AstNode.parent] property for each node in a tree.
 class SetParentVisitor {
   const SetParentVisitor();
 

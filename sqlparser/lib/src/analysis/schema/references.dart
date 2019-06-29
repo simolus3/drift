@@ -18,7 +18,7 @@ mixin Referencable {}
 /// not, the "d" referencable is not visible for the child select statement.
 mixin VisibleToChildren on Referencable {}
 
-/// Class which keeps track of references tables, columns and functions in a
+/// Class which keeps track of references for tables, columns and functions in a
 /// query.
 class ReferenceScope {
   final ReferenceScope parent;
@@ -33,6 +33,10 @@ class ReferenceScope {
   ReferenceScope(this.parent, {this.root});
 
   ReferenceScope createChild() {
+    // wonder why we're creating a linked list of reference scopes instead of
+    // just passing down a copy of [_references]? In sql, some variables can be
+    // used before they're defined, even in child scopes:
+    // SELECT *, (SELECT * FROM table2 WHERE id = t1.a) FROM table2 t1
     return ReferenceScope(this, root: effectiveRoot);
   }
 
@@ -41,6 +45,8 @@ class ReferenceScope {
   }
 
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
+  /// If the reference couldn't be found, null is returned and [orElse] will be
+  /// called.
   T resolve<T extends Referencable>(String name, {Function() orElse}) {
     var scope = this;
     var isAtParent = false;

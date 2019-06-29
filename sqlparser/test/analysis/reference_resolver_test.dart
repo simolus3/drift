@@ -1,6 +1,8 @@
 import 'package:test/test.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import 'data.dart';
+
 void main() {
   test('resolves simple functions', () {
     final context = SqlEngine().analyze('SELECT ABS(-3)');
@@ -12,14 +14,6 @@ void main() {
   });
 
   test('correctly resolves return columns', () {
-    final id = TableColumn('id', const ResolvedType(type: BasicType.int));
-    final content =
-        TableColumn('content', const ResolvedType(type: BasicType.text));
-
-    final demoTable = Table(
-      name: 'demo',
-      resolvedColumns: [id, content],
-    );
     final engine = SqlEngine()..registerTable(demoTable);
 
     final context =

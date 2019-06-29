@@ -63,6 +63,8 @@ abstract class AstNode {
     _metadata[T] = value;
   }
 
+  /// The [ReferenceScope], which contains available tables, column references
+  /// and functions for this node.
   ReferenceScope get scope {
     var node = this;
 
