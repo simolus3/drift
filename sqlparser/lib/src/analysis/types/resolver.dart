@@ -91,6 +91,8 @@ class TypeResolver {
         }
       } else if (expr is BetweenExpression) {
         return const ResolveResult(ResolvedType.bool());
+      } else if (expr is CaseExpression) {
+        return resolveExpression(expr.whens.first.then);
       } else if (expr is SubQuery) {
         // todo
       }
@@ -247,7 +249,8 @@ class TypeResolver {
   ResolveResult _argumentType(Expression parent, Expression argument) {
     if (parent is IsExpression ||
         parent is BinaryExpression ||
-        parent is BetweenExpression) {
+        parent is BetweenExpression ||
+        parent is CaseExpression) {
       final relevant = parent.childNodes
           .lastWhere((node) => node is Expression && node != argument);
       return resolveExpression(relevant as Expression);
