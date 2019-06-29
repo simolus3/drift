@@ -12,6 +12,8 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.int)),
   'SELECT 1 FROM demo GROUP BY id HAVING COUNT(*) = ?':
       const ResolveResult(ResolvedType(type: BasicType.int)),
+  'SELECT 1 FROM demo WHERE id BETWEEN 3 AND ?':
+      const ResolveResult(ResolvedType(type: BasicType.int)),
 };
 
 void main() {
