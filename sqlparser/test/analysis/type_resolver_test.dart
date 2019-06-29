@@ -10,6 +10,8 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.text)),
   'SELECT * FROM demo LIMIT ?':
       const ResolveResult(ResolvedType(type: BasicType.int)),
+  'SELECT 1 FROM demo GROUP BY id HAVING COUNT(*) = ?':
+      const ResolveResult(ResolvedType(type: BasicType.int)),
 };
 
 void main() {

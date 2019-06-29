@@ -12,15 +12,5 @@ class AnalysisContext {
     errors.add(error);
   }
 
-  ResolveResult typeOf(Typeable t) {
-    if (t is Column) {
-      return types.resolveColumn(t);
-    } else if (t is Variable) {
-      return types.inferType(t);
-    } else if (t is Expression) {
-      return types.resolveExpression(t);
-    }
-
-    throw StateError('Unknown typeable $t');
-  }
+  ResolveResult typeOf(Typeable t) => types.resolveOrInfer(t);
 }

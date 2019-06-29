@@ -36,6 +36,7 @@ class SelectStatement extends Statement with ResultSet {
       if (where != null) where,
       ...columns,
       if (from != null) ...from,
+      if (groupBy != null) groupBy,
       if (limit != null) limit,
       if (orderBy != null) orderBy,
     ];
