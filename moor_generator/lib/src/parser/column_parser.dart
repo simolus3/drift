@@ -3,7 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/moor_generator.dart';
+import 'package:moor_generator/src/shared_state.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 
@@ -37,7 +37,7 @@ const String _errorMessage = 'This getter does not create a valid column that '
     'columns are formed. If you have any questions, feel free to raise an issue.';
 
 class ColumnParser extends ParserBase {
-  ColumnParser(MoorGenerator generator) : super(generator);
+  ColumnParser(SharedState state) : super(state);
 
   SpecifiedColumn parse(MethodDeclaration getter, Element getterElement) {
     /*
@@ -52,7 +52,7 @@ class ColumnParser extends ParserBase {
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      generator.state.errors.add(MoorError(
+      state.errors.add(MoorError(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
         critical: true,
@@ -84,7 +84,7 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case _methodNamed:
           if (foundExplicitName != null) {
-            generator.state.errors.add(
+            state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -97,7 +97,7 @@ class ColumnParser extends ParserBase {
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.state.errors.add(
+            state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -133,7 +133,7 @@ class ColumnParser extends ParserBase {
         case _methodCustomConstraint:
           foundCustomConstraint =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            generator.state.errors.add(
+            state.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,

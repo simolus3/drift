@@ -1,4 +1,7 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/src/dart/analysis/results.dart'; // ignore: implementation_imports
 import 'package:moor/moor.dart' show Table;
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
@@ -21,5 +24,14 @@ class SharedState {
 
   final Map<DartType, SpecifiedTable> foundTables = {};
 
-  SharedState(this.options);
+  SharedState(this.options) {
+    tableParser = TableParser(this);
+    columnParser = ColumnParser(this);
+  }
+
+  ElementDeclarationResult loadElementDeclaration(Element element) {
+    // ignore: deprecated_member_use
+    final result = ParsedLibraryResultImpl.tmp(element.library);
+    return result.getElementDeclaration(element);
+  }
 }

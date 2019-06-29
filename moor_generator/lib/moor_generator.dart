@@ -11,5 +11,5 @@ Builder moorBuilder(BuilderOptions options) {
   final parsedOptions = MoorOptions(writeFromString);
   final state = SharedState(parsedOptions);
 
-  return SharedPartBuilder([MoorGenerator(state), DaoGenerator()], 'moor');
+  return SharedPartBuilder([MoorGenerator(state), DaoGenerator(state)], 'moor');
 }

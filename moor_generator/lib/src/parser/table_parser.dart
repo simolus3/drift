@@ -4,14 +4,14 @@ import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/parser/parser.dart';
+import 'package:moor_generator/src/shared_state.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
-import 'package:moor_generator/src/moor_generator.dart'; // ignore: implementation_imports
 import 'package:recase/recase.dart';
 import 'package:moor/sqlite_keywords.dart';
 
 class TableParser extends ParserBase {
-  TableParser(MoorGenerator generator) : super(generator);
+  TableParser(SharedState state) : super(state);
 
   SpecifiedTable parse(ClassElement element) {
     final sqlName = _parseTableName(element);
@@ -52,13 +52,12 @@ class TableParser extends ParserBase {
 
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
-    final tableNameDeclaration =
-        generator.loadElementDeclaration(tableNameGetter);
+    final tableNameDeclaration = state.loadElementDeclaration(tableNameGetter);
     final returnExpr = returnExpressionOfMethod(
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = readStringLiteral(returnExpr, () {
-      generator.state.errors.add(MoorError(
+      state.errors.add(MoorError(
           critical: true,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -75,11 +74,11 @@ class TableParser extends ParserBase {
       return null;
     }
 
-    final ast = generator.loadElementDeclaration(primaryKeyGetter).node
+    final ast = state.loadElementDeclaration(primaryKeyGetter).node
         as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      generator.state.errors.add(MoorError(
+      state.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -103,7 +102,7 @@ class TableParser extends ParserBase {
         }
       }
     } else {
-      generator.state.errors.add(MoorError(
+      state.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
     }
@@ -115,10 +114,10 @@ class TableParser extends ParserBase {
     return element.fields
         .where((field) => isColumn(field.type) && field.getter != null)
         .map((field) {
-      final node = generator.loadElementDeclaration(field.getter).node
-          as MethodDeclaration;
+      final node =
+          state.loadElementDeclaration(field.getter).node as MethodDeclaration;
 
-      return generator.state.columnParser.parse(node, field.getter);
+      return state.columnParser.parse(node, field.getter);
     }).toList();
   }
 }

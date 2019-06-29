@@ -1,14 +1,10 @@
 import 'package:moor/moor.dart';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/src/dart/analysis/results.dart'; // ignore: implementation_imports
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
-import 'package:moor_generator/src/parser/column_parser.dart';
-import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/shared_state.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
@@ -22,16 +18,6 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
 
   MoorGenerator(this.state);
 
-  ElementDeclarationResult loadElementDeclaration(Element element) {
-    /*final result = _astForLibs.putIfAbsent(element.library.name, () {
-      // ignore: deprecated_member_use
-      return ParsedLibraryResultImpl.tmp(element.library);
-    });*/
-    // ignore: deprecated_member_use
-    final result = ParsedLibraryResultImpl.tmp(element.library);
-    return result.getElementDeclaration(element);
-  }
-
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
@@ -43,9 +29,6 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
         .map((obj) => obj.toTypeValue())
         .toList();
     final queries = annotation.peek('queries')?.listValue ?? [];
-
-    state.tableParser ??= TableParser(this);
-    state.columnParser ??= ColumnParser(this);
 
     final tablesForThisDb = <SpecifiedTable>[];
     var resolvedQueries = <SqlQuery>[];

@@ -1,11 +1,16 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:moor_generator/src/shared_state.dart';
 import 'package:recase/recase.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:source_gen/source_gen.dart';
 
 class DaoGenerator extends GeneratorForAnnotation<UseDao> {
+  final SharedState state;
+
+  DaoGenerator(this.state);
+
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
