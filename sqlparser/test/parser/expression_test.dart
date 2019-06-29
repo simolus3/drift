@@ -7,7 +7,36 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
+final Map<String, Expression> _testCases = {
+  '3 * 7 + 1 NOT BETWEEN 31 AND 74': BetweenExpression(
+    not: true,
+    check: BinaryExpression(
+      BinaryExpression(
+        NumericLiteral(3, token(TokenType.numberLiteral)),
+        token(TokenType.star),
+        NumericLiteral(7, token(TokenType.numberLiteral)),
+      ),
+      token(TokenType.plus),
+      NumericLiteral(1, token(TokenType.numberLiteral)),
+    ),
+    lower: NumericLiteral(31, token(TokenType.numberLiteral)),
+    upper: NumericLiteral(74, token(TokenType.numberLiteral)),
+  ),
+};
+
 void main() {
+  group('expresssion test cases', () {
+    _testCases.forEach((sql, expected) {
+      test(sql, () {
+        final scanner = Scanner(sql);
+        final tokens = scanner.scanTokens();
+        final parser = Parser(tokens);
+        final expression = parser.expression();
+        enforceEqual(expression, expected);
+      });
+    });
+  });
+
   test('parses simple expressions', () {
     final scanner = Scanner('3 * 4 + 5 == COUNT(*)');
     final tokens = scanner.scanTokens();

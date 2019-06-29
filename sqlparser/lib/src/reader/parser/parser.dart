@@ -48,6 +48,7 @@ class Parser {
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
+  Token get _peekNext => tokens[_current + 1];
   Token get _previous => tokens[_current - 1];
 
   bool _match(List<TokenType> types) {
@@ -65,6 +66,14 @@ class Parser {
       _advance();
       return true;
     }
+    return false;
+  }
+
+  /// Returns true if the next token is [type] or if the next two tokens are
+  /// "NOT" followed by [type]. Does not consume any tokens.
+  bool _checkWithNot(TokenType type) {
+    if (_check(type)) return true;
+    if (_check(TokenType.not) && _peekNext.type == type) return true;
     return false;
   }
 
@@ -434,16 +443,31 @@ class Parser {
       TokenType.regexp,
     ];
 
-    while (_match(ops)) {
-      final operator = _previous;
-      if (operator.type == TokenType.$is) {
-        final not = _match(const [TokenType.not]);
-        // special case: is not expression
-        expression = IsExpression(not, expression, _comparison());
+    while (true) {
+      if (_checkWithNot(TokenType.between)) {
+        final not = _matchOne(TokenType.not);
+        _consume(TokenType.between, 'expected a BETWEEN');
+
+        final lower = _comparison();
+        _consume(TokenType.and, 'expected AND');
+        final upper = _comparison();
+
+        expression = BetweenExpression(
+            not: not, check: expression, lower: lower, upper: upper);
+      } else if (_match(ops)) {
+        final operator = _previous;
+        if (operator.type == TokenType.$is) {
+          final not = _match(const [TokenType.not]);
+          // special case: is not expression
+          expression = IsExpression(not, expression, _comparison());
+        } else {
+          expression = BinaryExpression(expression, operator, _comparison());
+        }
       } else {
-        expression = BinaryExpression(expression, operator, _comparison());
+        break; // no matching operator with this precedence was found
       }
     }
+
     return expression;
   }
 

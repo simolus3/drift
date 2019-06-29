@@ -58,6 +58,24 @@ class IsExpression extends Expression {
   }
 }
 
+class BetweenExpression extends Expression {
+  final bool not;
+  final Expression check;
+  final Expression lower;
+  final Expression upper;
+
+  BetweenExpression({this.not = false, this.check, this.lower, this.upper});
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitBetweenExpression(this);
+
+  @override
+  Iterable<AstNode> get childNodes => [check, lower, upper];
+
+  @override
+  bool contentEquals(BetweenExpression other) => other.not == not;
+}
+
 class Parentheses extends Expression {
   final Token openingLeft;
   final Expression expression;

@@ -33,6 +33,7 @@ enum TokenType {
   and,
   or,
   tilde,
+  between,
 
   questionMark,
   colon,
@@ -84,6 +85,9 @@ const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
   'DISTINCT': TokenType.distinct,
   'ALL': TokenType.all,
+  'AND': TokenType.and,
+  'OR': TokenType.or,
+  'BETWEEN': TokenType.between,
   'FROM': TokenType.from,
   'NATURAL': TokenType.natural,
   'LEFT': TokenType.leftParen,

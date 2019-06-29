@@ -104,6 +104,7 @@ abstract class AstVisitor<T> {
   T visitBinaryExpression(BinaryExpression e);
   T visitUnaryExpression(UnaryExpression e);
   T visitIsExpression(IsExpression e);
+  T visitBetweenExpression(BetweenExpression e);
   T visitLiteral(Literal e);
   T visitReference(Reference e);
   T visitFunction(FunctionExpression e);
@@ -126,6 +127,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitIsExpression(IsExpression e) => visitChildren(e);
+
+  @override
+  T visitBetweenExpression(BetweenExpression e) => visitChildren(e);
 
   @override
   T visitSubQuery(SubQuery e) => visitChildren(e);
