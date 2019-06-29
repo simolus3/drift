@@ -66,7 +66,11 @@ class QueryWriter {
     buffer
       ..write(') {\n')
       ..write('return customSelectStream(${asDartLiteral(query.sql)},');
+
     _writeVariables(buffer);
+    buffer.write(',');
+    _writeReadsFrom(buffer);
+
     buffer
       ..write(')')
       ..write('.map((rows) => rows.map(${_nameOfMappingMethod()}).toList());\n')
@@ -91,5 +95,10 @@ class QueryWriter {
     }
 
     buffer..write(']');
+  }
+
+  void _writeReadsFrom(StringBuffer buffer) {
+    final from = _select.readsFrom.map((t) => t.tableFieldName).join(', ');
+    buffer..write('readsFrom: {')..write(from)..write('}');
   }
 }

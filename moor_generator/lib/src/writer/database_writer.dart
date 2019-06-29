@@ -34,13 +34,12 @@ class DatabaseWriter {
     final tableGetters = <String>[];
 
     for (var table in db.tables) {
-      final tableFieldName = ReCase(table.fromClass.name).camelCase;
-      tableGetters.add(tableFieldName);
+      tableGetters.add(table.tableFieldName);
       final tableClassName = table.tableInfoName;
 
       writeMemoizedGetter(
         buffer: buffer,
-        getterName: tableFieldName,
+        getterName: table.tableFieldName,
         returnType: tableClassName,
         code: '$tableClassName(this)',
       );

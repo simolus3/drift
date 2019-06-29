@@ -1073,9 +1073,12 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
     return customSelectStream(
-            'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
-            variables: [])
-        .map((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
+        'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
+        variables: [],
+        readsFrom: {
+          categories,
+          todosTable
+        }).map((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
   }
 
   TodosForUserResult _rowToTodosForUserResult(QueryRow row) {
@@ -1101,7 +1104,12 @@ abstract class _$TodoDb extends GeneratedDatabase {
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [
           Variable.withInt(user),
-        ]).map((rows) => rows.map(_rowToTodosForUserResult).toList());
+        ],
+        readsFrom: {
+          users,
+          todosTable,
+          sharedTodos
+        }).map((rows) => rows.map(_rowToTodosForUserResult).toList());
   }
 
   @override

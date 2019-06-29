@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:recase/recase.dart';
 
 class SpecifiedTable {
   final ClassElement fromClass;
@@ -9,6 +10,7 @@ class SpecifiedTable {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
+  String get tableFieldName => ReCase(fromClass.name).camelCase;
   String get tableInfoName => tableInfoNameForTableClass(fromClass);
   String get updateCompanionName => _updateCompanionName(fromClass);
 
