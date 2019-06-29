@@ -11,6 +11,10 @@ enum BasicType {
 
 class ResolvedType {
   final BasicType type;
+
+  /// We set hints for additional information that might be useful for
+  /// applications but aren't covered by just exposing a [BasicType]. See the
+  /// comment on [TypeHint] for examples.
   final TypeHint hint;
   final bool nullable;
 
@@ -39,15 +43,18 @@ class ResolvedType {
 
 /// Provides more precise hints than the [BasicType]. For instance, booleans are
 /// stored as ints in sqlite, but it might be desirable to know whether an
-/// expression will actually be a boolean.
+/// expression will actually be a boolean, so we could set the
+/// [ResolvedType.hint] to [IsBoolean].
 abstract class TypeHint {
   const TypeHint();
 }
 
+/// Type hint to mark that this type will contain a boolean value.
 class IsBoolean extends TypeHint {
   const IsBoolean();
 }
 
+/// Type hint to mark that this type will contain a date time value.
 class IsDateTime extends TypeHint {
   const IsDateTime();
 }

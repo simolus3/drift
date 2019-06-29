@@ -1,6 +1,6 @@
 part of '../analysis.dart';
 
-const comparisonOperators = [
+const _comparisonOperators = [
   TokenType.equal,
   TokenType.doubleEqual,
   TokenType.exclamationEqual,
@@ -82,7 +82,7 @@ class TypeResolver {
         return const ResolveResult(ResolvedType.bool());
       } else if (expr is BinaryExpression) {
         final operator = expr.operator.type;
-        if (comparisonOperators.contains(operator)) {
+        if (_comparisonOperators.contains(operator)) {
           return const ResolveResult(ResolvedType.bool());
         } else {
           final type = _encapsulate(expr.childNodes.cast(),
@@ -277,9 +277,22 @@ class TypeResolver {
   }
 }
 
+/// Result of resolving a type. This can either have the resolved [type] set,
+/// or it can inform the called that it [needsContext] to resolve the type
+/// properly. Failure to resolve the type will have the [unknown] flag set.
+///
+/// When you see a [ResolveResult] that is unknown or needs context in the
+/// final AST returned by [SqlEngine.analyze], assume that the type cannot be
+/// determined.
 class ResolveResult {
+  /// The resolved type.
   final ResolvedType type;
+
+  /// Whether more context is needed to resolve the type. Used internally by the
+  /// analyze.
   final bool needsContext;
+
+  /// Whether type resolution failed.
   final bool unknown;
 
   const ResolveResult(this.type)
@@ -296,6 +309,9 @@ class ResolveResult {
 
   bool get nullable => type?.nullable ?? true;
 
+  /// Copies the result with the [nullable] information, if there is one. If
+  /// there isn't, the failure state will be copied into the new
+  /// [ResolveResult].
   ResolveResult withNullable(bool nullable) {
     if (type != null) {
       return ResolveResult(type.withNullable(nullable));

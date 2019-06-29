@@ -1,5 +1,9 @@
 part of '../analysis.dart';
 
+/// Walks the AST and, for each select statement it sees, finds out which
+/// columns are returned and which columns are available. For instance, when
+/// we have a table "t" with two columns "a" and "b", the select statement
+/// "SELECT a FROM t" has one result column but two columns available.
 class ColumnResolver extends RecursiveVisitor<void> {
   final AnalysisContext context;
 

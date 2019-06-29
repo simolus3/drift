@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'schema/column.dart';
 part 'schema/references.dart';

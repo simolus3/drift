@@ -2,6 +2,7 @@ import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 class SqlEngine {
   /// All tables registered with [registerTable].
@@ -26,13 +27,17 @@ class SqlEngine {
 
   /// Parses the [sql] statement. At the moment, only SELECT statements are
   /// supported.
-  AstNode parse(String sql) {
+  ParseResult parse(String sql) {
     final scanner = Scanner(sql);
     final tokens = scanner.scanTokens();
-    // todo error handling from scanner
+
+    if (scanner.errors.isNotEmpty) {
+      throw CumulatedTokenizerException(scanner.errors);
+    }
 
     final parser = Parser(tokens);
-    return parser.statement();
+    final stmt = parser.statement();
+    return ParseResult._(stmt, parser.errors);
   }
 
   /// Parses and analyzes the [sql] statement, which at the moment has to be a
@@ -43,7 +48,8 @@ class SqlEngine {
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
   AnalysisContext analyze(String sql) {
-    final node = parse(sql);
+    final result = parse(sql);
+    final node = result.rootNode;
     const SetParentVisitor().startAtRoot(node);
 
     final context = AnalysisContext(node, sql);
@@ -57,4 +63,18 @@ class SqlEngine {
 
     return context;
   }
+}
+
+/// The result of parsing an sql query. Contains the root of the AST and all
+/// errors that might have occurred during parsing.
+class ParseResult {
+  /// The topmost node in the sql AST that was parsed.
+  final AstNode rootNode;
+
+  /// A list of all errors that occurred during parsing. [ParsingError.toString]
+  /// returns a helpful description of what went wrong, along with the position
+  /// where the error occurred.
+  final List<ParsingError> errors;
+
+  ParseResult._(this.rootNode, this.errors);
 }

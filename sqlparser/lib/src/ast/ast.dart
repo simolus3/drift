@@ -21,25 +21,35 @@ part 'expressions/variables.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 
+/// A node in the abstract syntax tree of an SQL statement.
 abstract class AstNode {
   /// The parent of this node, or null if this is the root node. Will be set
   /// by the analyzer after the tree has been parsed.
   AstNode parent;
 
+  /// The first token that appears in this node. This information is not set for
+  /// all nodes.
   Token first;
+
+  /// The last token that appears in this node. This information is not set for
+  /// all nodes.
   Token last;
 
-  /// The first index in the source that belongs to this node
+  /// The first index in the source that belongs to this node. Not set for all
+  /// nodes.
   int get firstPosition => first.span.start.offset;
 
-  /// The last position that belongs to node, exclusive
+  /// The last position that belongs to node, exclusive. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
 
+  /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {
     this.first = first;
     this.last = last;
   }
 
+  /// Returns all parents of this node up to the root. If this node is the root,
+  /// the iterable will be empty.
   Iterable<AstNode> get parents sync* {
     var node = parent;
     while (node != null) {
@@ -48,6 +58,8 @@ abstract class AstNode {
     }
   }
 
+  /// Recursively returns all descendants of this node, e.g. its children, their
+  /// children and so on. The tree will be pre-order traversed.
   Iterable<AstNode> get allDescendants sync* {
     for (var child in childNodes) {
       yield child;
@@ -56,10 +68,20 @@ abstract class AstNode {
   }
 
   final Map<Type, dynamic> _metadata = {};
+
+  /// Returns the metadata of type [T] that might have been set on this node, or
+  /// null if none was found.
+  /// Nodes can have arbitrary annotations on them set via [setMeta] and
+  /// obtained via [meta]. This mechanism is used to, for instance, attach
+  /// variable scopes to a subtree.
   T meta<T>() {
     return _metadata[T] as T;
   }
 
+  /// Sets the metadata of type [T] to the specified [value].
+  /// Nodes can have arbitrary annotations on them set via [setMeta] and
+  /// obtained via [meta]. This mechanism is used to, for instance, attach
+  /// variable scopes to a subtree.
   void setMeta<T>(T value) {
     _metadata[T] = value;
   }
@@ -78,11 +100,17 @@ abstract class AstNode {
     throw StateError('No reference scope found in this or any parent node');
   }
 
+  /// Applies a [ReferenceScope] to this node. Variables declared in [scope]
+  /// will be visible to this node and to [allDescendants].
   set scope(ReferenceScope scope) {
     setMeta<ReferenceScope>(scope);
   }
 
+  /// All direct children of this node.
   Iterable<AstNode> get childNodes;
+
+  /// Calls the appropriate method on the [visitor] to make it recognize this
+  /// node.
   T accept<T>(AstVisitor<T> visitor);
 
   /// Whether the content of this node is equal to the [other] node of the same

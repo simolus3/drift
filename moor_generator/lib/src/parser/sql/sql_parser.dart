@@ -60,6 +60,10 @@ class SqlParser {
   }
 
   ColumnType _resolvedToMoor(ResolvedType type) {
+    if (type == null) {
+      return ColumnType.text;
+    }
+
     switch (type.type) {
       case BasicType.nullType:
         return ColumnType.text;
@@ -87,7 +91,14 @@ class SqlParser {
       final name = query.getField('name').toStringValue();
       final sql = query.getField('query').toStringValue();
 
-      final context = _engine.analyze(sql);
+      AnalysisContext context;
+      try {
+        context = _engine.analyze(sql);
+      } catch (e, s) {
+        errors.add(MoorError(
+            critical: true,
+            message: 'Error while trying to parse $sql: $e, $s'));
+      }
 
       for (var error in context.errors) {
         errors.add(MoorError(
@@ -99,7 +110,7 @@ class SqlParser {
       if (root is SelectStatement) {
         _handleSelect(name, root, context);
       } else {
-        throw StateError('Unexpected sql');
+        throw StateError('Unexpected sql, expected a select statement');
       }
     }
   }

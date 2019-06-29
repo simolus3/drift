@@ -1,5 +1,6 @@
 part of '../analysis.dart';
 
+/// Resolves any open [Reference] it finds in the AST.
 class ReferenceResolver extends RecursiveVisitor<void> {
   final AnalysisContext context;
 

@@ -174,3 +174,16 @@ class TokenizerError {
 
   TokenizerError(this.message, this.location);
 }
+
+/// Thrown by the sql engine when a sql statement can't be tokenized.
+class CumulatedTokenizerException implements Exception {
+  final List<TokenizerError> errors;
+  CumulatedTokenizerException(this.errors);
+
+  @override
+  String toString() {
+    final explanation =
+        errors.map((e) => '${e.message} at ${e.location}').join(', ');
+    return 'Malformed sql: $explanation';
+  }
+}

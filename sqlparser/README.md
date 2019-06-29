@@ -13,7 +13,7 @@ You can parse the abstract syntax tree of sqlite statements with `SqlEngine.pars
 import 'package:sqlparser/sqlparser.dart';
 
 final engine = SqlEngine();
-final stmt = engine.parse('''
+final result = engine.parse('''
 SELECT f.* FROM frameworks f
   INNER JOIN uses_language ul ON ul.framework = f.id
   INNER JOIN languages l ON l.id = ul.language
@@ -21,6 +21,7 @@ WHERE l.name = 'Dart'
 ORDER BY f.name ASC, f.popularity DESC
 LIMIT 5 OFFSET 5 * 3
   ''');
+// result.rootNode contains the select statement in tree form
 ```
 
 ### Analysis
@@ -55,8 +56,15 @@ resolvedColumns.map((c) => c.name)); // id, content, id, content, 3 + 4
 resolvedColumns.map((c) => context.typeOf(c).type.type) // int, text, int, text, int, int
 ```
 
+## Limitations
+- For now, only `SELECT` and `DELETE` expressions are implemented, `UPDATE` and `INSERT` will follow
+  soon.
+- Windowing is not supported yet
+- Common table expressions and compound select statements `UNION` / `INTERSECT` are not supported
+  and probably won't be in the near future.
+
 ## Thanks
 - To [Bob Nystrom](https://github.com/munificent) for his amazing ["Crafting Interpreters"](https://craftinginterpreters.com/)
   book, which was incredibly helpful when writing the parser.
-- All authors of [SQLDelight](https://github.com/square/sqldelight). This library uses their algorithm
+- To the authors of [SQLDelight](https://github.com/square/sqldelight). This library uses their algorithm
   for type inference.
