@@ -8,8 +8,9 @@ final _leadingDigits = RegExp(r'^\d*');
 abstract class SqlQuery {
   final String name;
   final String sql;
+  final List<FoundVariable> variables;
 
-  SqlQuery(this.name, this.sql);
+  SqlQuery(this.name, this.sql, this.variables);
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -18,8 +19,9 @@ class SqlSelectQuery extends SqlQuery {
 
   String get resultClassName => '${ReCase(name).pascalCase}Result';
 
-  SqlSelectQuery(String name, String sql, this.readsFrom, this.resultSet)
-      : super(name, sql);
+  SqlSelectQuery(String name, String sql, List<FoundVariable> variables,
+      this.readsFrom, this.resultSet)
+      : super(name, sql, variables);
 }
 
 class InferredResultSet {
@@ -69,4 +71,15 @@ class ResultColumn {
   final bool nullable;
 
   ResultColumn(this.name, this.type, this.nullable);
+}
+
+class FoundVariable {
+  int index;
+  String name;
+  final ColumnType type;
+
+  FoundVariable(this.index, this.name, this.type);
+
+  String get dartParameterName =>
+      name?.replaceAll(_illegalChars, '') ?? 'var$index';
 }

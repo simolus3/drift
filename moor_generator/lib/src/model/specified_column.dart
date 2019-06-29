@@ -49,6 +49,17 @@ const Map<ColumnType, String> readFromMethods = {
   ColumnType.real: 'readDouble',
 };
 
+/// Maps from a column type to code that can be used to create a variable of the
+/// respective type.
+const Map<ColumnType, String> createVariable = {
+  ColumnType.boolean: 'Variable.withBool',
+  ColumnType.text: 'Variable.withString',
+  ColumnType.integer: 'Variable.withInt',
+  ColumnType.datetime: 'Variable.withDateTime',
+  ColumnType.blob: 'Variable.withBlob',
+  ColumnType.real: 'Variable.withReal',
+};
+
 /// A column, as specified by a getter in a table.
 class SpecifiedColumn {
   /// The getter name of this column in the table class. It will also be used

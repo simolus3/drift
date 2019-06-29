@@ -121,7 +121,33 @@ class SqlParser {
     }
 
     final resultSet = InferredResultSet(null, moorColumns);
-    foundQueries.add(
-        SqlSelectQuery(queryName, ctx.sql, moorTables.toList(), resultSet));
+    final foundVars = _extractVariables(ctx);
+    foundQueries.add(SqlSelectQuery(
+        queryName, ctx.sql, foundVars, moorTables.toList(), resultSet));
+  }
+
+  List<FoundVariable> _extractVariables(AnalysisContext ctx) {
+    // this contains variable references. For instance, SELECT :a = :a would
+    // contain two entries, both referring to the same variable. To do that,
+    // we use the fact that each variable has a unique index.
+    final usedVars = ctx.root.allDescendants.whereType<Variable>().toList()
+      ..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+
+    final foundVariables = <FoundVariable>[];
+    var currentIndex = 0;
+
+    for (var used in usedVars) {
+      if (used.resolvedIndex == currentIndex) {
+        continue; // already handled
+      }
+
+      currentIndex++;
+      final name = (used is ColonNamedVariable) ? used.name : null;
+      final type = _resolvedToMoor(ctx.typeOf(used).type);
+
+      foundVariables.add(FoundVariable(currentIndex, name, type));
+    }
+
+    return foundVariables;
   }
 }

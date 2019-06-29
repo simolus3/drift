@@ -11,24 +11,6 @@ class QueryWriter {
 
   QueryWriter(this.query);
 
-  /* The generated code will look like:
-    Future<List<AllTodosWithCategoryResult>> allTodosWithCategory() {
-    return customSelect('', variables: [])
-        .then((rows) => rows.map(_rowToAllT).toList());
-  }
-
-  Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
-    return customSelectStream('', variables: [])
-        .map((rows) => rows.map(_rowToAllT).toList());
-  }
-
-  AllTodosWithCategoryResult _rowToAllT(QueryRow row) {
-    return AllTodosWithCategoryResult(
-      id: row.readInt('id'),
-    );
-  }
-   */
-
   void writeInto(StringBuffer buffer) {
     if (query is SqlSelectQuery) {
       _writeSelect(buffer);
@@ -63,9 +45,14 @@ class QueryWriter {
   }
 
   void _writeOneTimeReader(StringBuffer buffer) {
+    buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
+    _writeParameters(buffer);
     buffer
-      ..write('Future<List<${_select.resultClassName}>> ${query.name}() {\n')
-      ..write('return customSelect(${asDartLiteral(query.sql)})')
+      ..write(') {\n')
+      ..write('return customSelect(${asDartLiteral(query.sql)},');
+    _writeVariables(buffer);
+    buffer
+      ..write(')')
       ..write(
           '.then((rows) => rows.map(${_nameOfMappingMethod()}).toList());\n')
       ..write('\n}\n');
@@ -73,11 +60,36 @@ class QueryWriter {
 
   void _writeStreamReader(StringBuffer buffer) {
     final upperQueryName = ReCase(query.name).pascalCase;
+    buffer.write(
+        'Stream<List<${_select.resultClassName}>> watch$upperQueryName(');
+    _writeParameters(buffer);
     buffer
-      ..write('Stream<List<${_select.resultClassName}>> watch$upperQueryName')
-      ..write('() {\n')
-      ..write('return customSelectStream(${asDartLiteral(query.sql)})')
+      ..write(') {\n')
+      ..write('return customSelectStream(${asDartLiteral(query.sql)},');
+    _writeVariables(buffer);
+    buffer
+      ..write(')')
       ..write('.map((rows) => rows.map(${_nameOfMappingMethod()}).toList());\n')
       ..write('\n}\n');
+  }
+
+  void _writeParameters(StringBuffer buffer) {
+    final paramList = query.variables
+        .map((v) => '${dartTypeNames[v.type]} ${v.dartParameterName}')
+        .join(', ');
+
+    buffer.write(paramList);
+  }
+
+  void _writeVariables(StringBuffer buffer) {
+    buffer..write('variables: [');
+
+    for (var variable in query.variables) {
+      buffer
+        ..write(createVariable[variable.type])
+        ..write('(${variable.dartParameterName}),');
+    }
+
+    buffer..write(']');
   }
 }
