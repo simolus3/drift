@@ -38,7 +38,9 @@ class MigrationStrategy {
   /// Executes after the database is ready and all migrations ran, but before
   /// any other queries will be executed, making this method suitable to
   /// populate data.
-  @Deprecated('Use beforeOpen instead')
+  @Deprecated(
+      'This callback is broken and only exists for backwards compatibility. '
+      'Use beforeOpen instead')
   final OnMigrationFinished onFinished;
 
   /// Executes after the database is ready to be used (ie. it has been opened

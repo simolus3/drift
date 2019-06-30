@@ -17,7 +17,12 @@ class SqlSelectQuery extends SqlQuery {
   final List<SpecifiedTable> readsFrom;
   final InferredResultSet resultSet;
 
-  String get resultClassName => '${ReCase(name).pascalCase}Result';
+  String get resultClassName {
+    if (resultSet.matchingTable != null) {
+      return resultSet.matchingTable.dartTypeName;
+    }
+    return '${ReCase(name).pascalCase}Result';
+  }
 
   SqlSelectQuery(String name, String sql, List<FoundVariable> variables,
       this.readsFrom, this.resultSet)
@@ -34,6 +39,12 @@ class InferredResultSet {
   final Map<ResultColumn, String> _dartNames = {};
 
   InferredResultSet(this.matchingTable, this.columns);
+
+  void forceDartNames(Map<ResultColumn, String> names) {
+    _dartNames
+      ..clear()
+      ..addAll(names);
+  }
 
   /// Suggests an appropriate name that can be used as a dart field.
   String dartNameFor(ResultColumn column) {

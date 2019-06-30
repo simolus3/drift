@@ -51,8 +51,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     }
 
     if (queries.isNotEmpty) {
-      final parser = SqlParser(options, tablesForThisDb, queries)..parse();
-      state.errors.errors.addAll(parser.errors);
+      final parser = SqlParser(state, tablesForThisDb, queries)..parse();
 
       resolvedQueries = parser.foundQueries;
     }

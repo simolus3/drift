@@ -49,8 +49,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     }
 
     if (queries.isNotEmpty) {
-      final parser = SqlParser(state.options, parsedTables, queries)..parse();
-      state.errors.errors.addAll(parser.errors);
+      final parser = SqlParser(state, parsedTables, queries)..parse();
 
       resolvedQueries = parser.foundQueries;
     }

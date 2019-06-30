@@ -10,6 +10,7 @@ environment:
   sdk: '>=2.2.2 <3.0.0'
   meta: ^1.1.7
   collection: ^1.14.11
+  source_span: ^1.5.5
 
 dev_dependencies:
   test: ^1.0.0

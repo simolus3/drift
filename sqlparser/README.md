@@ -1,7 +1,7 @@
 # sqlparser
 
-An sql parser and static analyzer, written in pure Dart. At the moment, only `SELECT` statements
-are supported.
+An sql parser and static analyzer, written in pure Dart. At the moment, only `SELECT` and `DELETE`
+statements are supported. Further, this library only targets the sqlite dialect at the time being.
 
 ## Features
 Not all features are available yet, put parsing select statements (even complex ones!) and
@@ -55,6 +55,10 @@ final resolvedColumns = select.resolvedColumns;
 resolvedColumns.map((c) => c.name)); // id, content, id, content, 3 + 4
 resolvedColumns.map((c) => context.typeOf(c).type.type) // int, text, int, text, int, int
 ```
+
+## But why?
+[Moor](https://pub.dev/packages/moor_flutter), a persistence library for Flutter apps, uses this
+package to generate type-safe methods from sql.
 
 ## Limitations
 - For now, only `SELECT` and `DELETE` expressions are implemented, `UPDATE` and `INSERT` will follow

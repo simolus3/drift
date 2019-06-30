@@ -7,7 +7,7 @@ class AffectedTablesVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitReference(Reference e) {
-    final column = e.resolved as Column;
+    final column = e.resolved;
     if (column is TableColumn) {
       foundTables.add(column.table);
     }
@@ -18,7 +18,10 @@ class AffectedTablesVisitor extends RecursiveVisitor<void> {
   @override
   void visitQueryable(Queryable e) {
     if (e is TableReference) {
-      foundTables.add(e.resolved as Table);
+      final table = e.resolved as Table;
+      if (table != null) {
+        foundTables.add(table);
+      }
     }
 
     visitChildren(e);
