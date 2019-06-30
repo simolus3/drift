@@ -58,6 +58,7 @@ class TableWithoutPK extends Table {
   queries: {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',
+    'deleteTodoById': 'DELETE FROM todos WHERE id = ?'
   },
 )
 class TodoDb extends _$TodoDb {

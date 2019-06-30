@@ -1068,6 +1068,13 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
   }
 
+  Future<int> deleteTodoById(int var1, {QueryEngine operateOn}) {
+    return (operateOn ?? this)
+        .customUpdate('DELETE FROM todos WHERE id = ?', variables: [
+      Variable.withInt(var1),
+    ], updates: {});
+  }
+
   @override
   List<TableInfo> get allTables =>
       [todosTable, categories, users, sharedTodos, tableWithoutPK];

@@ -22,14 +22,25 @@ class QueryHandler {
 
     if (root is SelectStatement) {
       return _handleSelect();
+    } else if (root is UpdateStatement || root is DeleteStatement) {
+      return _handleUpdate();
     } else {
       throw StateError(
           'Unexpected sql: Got $root, expected a select statement');
     }
   }
 
+  UpdatingQuery _handleUpdate() {
+    final updatedFinder = UpdatedTablesVisitor();
+    context.root.accept(updatedFinder);
+    _foundTables = updatedFinder.foundTables;
+
+    return UpdatingQuery(name, context.sql, _foundVariables,
+        _foundTables.map(mapper.tableToMoor).toList());
+  }
+
   SqlSelectQuery _handleSelect() {
-    final tableFinder = AffectedTablesVisitor();
+    final tableFinder = ReferencedTablesVisitor();
     _select.accept(tableFinder);
     _foundTables = tableFinder.foundTables;
     final moorTables = _foundTables.map(mapper.tableToMoor).toList();

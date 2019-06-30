@@ -29,6 +29,14 @@ class SqlSelectQuery extends SqlQuery {
       : super(name, sql, variables);
 }
 
+class UpdatingQuery extends SqlQuery {
+  final List<SpecifiedTable> updates;
+
+  UpdatingQuery(
+      String name, String sql, List<FoundVariable> variables, this.updates)
+      : super(name, sql, variables);
+}
+
 class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have

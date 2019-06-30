@@ -2,7 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 /// An AST-visitor that walks sql statements and finds all tables referenced in
 /// them.
-class AffectedTablesVisitor extends RecursiveVisitor<void> {
+class ReferencedTablesVisitor extends RecursiveVisitor<void> {
   final Set<Table> foundTables = {};
 
   @override
@@ -24,6 +24,32 @@ class AffectedTablesVisitor extends RecursiveVisitor<void> {
       }
     }
 
+    visitChildren(e);
+  }
+}
+
+/// Finds all tables that could be affected when executing a query. In
+/// contrast to [ReferencedTablesVisitor], which finds all references, this
+/// visitor only collects tables a query writes to.
+class UpdatedTablesVisitor extends RecursiveVisitor<void> {
+  final Set<Table> foundTables = {};
+
+  void _addIfResolved(ResolvesToResultSet r) {
+    final resolved = r.resultSet;
+    if (resolved is Table) {
+      foundTables.add(resolved);
+    }
+  }
+
+  @override
+  void visitDeleteStatement(DeleteStatement e) {
+    _addIfResolved(e.from);
+    visitChildren(e);
+  }
+
+  @override
+  void visitUpdateStatement(UpdateStatement e) {
+    _addIfResolved(e.table);
     visitChildren(e);
   }
 }

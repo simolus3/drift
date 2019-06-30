@@ -43,6 +43,7 @@ class SharedState {
           message: 'The type $type is not a moor table',
           affectedElement: initializedBy,
         ));
+        return null;
       } else {
         return tableParser.parse(type.element as ClassElement);
       }

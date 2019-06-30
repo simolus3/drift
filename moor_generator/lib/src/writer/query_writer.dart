@@ -8,12 +8,15 @@ import 'package:recase/recase.dart';
 class QueryWriter {
   final SqlQuery query;
   SqlSelectQuery get _select => query as SqlSelectQuery;
+  UpdatingQuery get _update => query as UpdatingQuery;
 
   QueryWriter(this.query);
 
   void writeInto(StringBuffer buffer) {
     if (query is SqlSelectQuery) {
       _writeSelect(buffer);
+    } else if (query is UpdatingQuery) {
+      _writeUpdatingQuery(buffer);
     }
   }
 
@@ -81,6 +84,26 @@ class QueryWriter {
       ..write('\n}\n');
   }
 
+  void _writeUpdatingQuery(StringBuffer buffer) {
+    /*
+      Future<int> test() {
+    return customUpdate('', variables: [], updates: {});
+  }
+     */
+    buffer.write('Future<int> ${query.name}(');
+    _writeParameters(buffer);
+    buffer
+      ..write(') {\n')
+      ..write('return (operateOn ?? this).')
+      ..write('customUpdate(${asDartLiteral(query.sql)},');
+
+    _writeVariables(buffer);
+    buffer.write(',');
+    _writeUpdates(buffer);
+
+    buffer..write(');\n}\n');
+  }
+
   void _writeParameters(StringBuffer buffer,
       {bool dontOverrideEngine = false}) {
     final paramList = query.variables
@@ -112,5 +135,10 @@ class QueryWriter {
   void _writeReadsFrom(StringBuffer buffer) {
     final from = _select.readsFrom.map((t) => t.tableFieldName).join(', ');
     buffer..write('readsFrom: {')..write(from)..write('}');
+  }
+
+  void _writeUpdates(StringBuffer buffer) {
+    final from = _update.updates.map((t) => t.tableFieldName).join(', ');
+    buffer..write('updates: {')..write(from)..write('}');
   }
 }
