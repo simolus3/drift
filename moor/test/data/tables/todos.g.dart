@@ -1051,11 +1051,11 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory() {
-    return customSelect(
-            'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
-            variables: [])
-        .then((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
+  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory(
+      {QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
+        variables: []).then((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
   }
 
   Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
@@ -1091,8 +1091,8 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
     );
   }
 
-  Future<List<TodoEntry>> todosForUser(int user) {
-    return customSelect(
+  Future<List<TodoEntry>> todosForUser(int user, {QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [
           Variable.withInt(user),

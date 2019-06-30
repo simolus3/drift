@@ -49,7 +49,8 @@ class QueryWriter {
     _writeParameters(buffer);
     buffer
       ..write(') {\n')
-      ..write('return customSelect(${asDartLiteral(query.sql)},');
+      ..write('return (operateOn ?? this).') // use custom engine, if set
+      ..write('customSelect(${asDartLiteral(query.sql)},');
     _writeVariables(buffer);
     buffer
       ..write(')')
@@ -62,7 +63,10 @@ class QueryWriter {
     final upperQueryName = ReCase(query.name).pascalCase;
     buffer.write(
         'Stream<List<${_select.resultClassName}>> watch$upperQueryName(');
-    _writeParameters(buffer);
+    // don't supply an engine override parameter because select streams cannot
+    // be used in transaction or similar context, only on the main database
+    // engine.
+    _writeParameters(buffer, dontOverrideEngine: true);
     buffer
       ..write(') {\n')
       ..write('return customSelectStream(${asDartLiteral(query.sql)},');
@@ -77,12 +81,20 @@ class QueryWriter {
       ..write('\n}\n');
   }
 
-  void _writeParameters(StringBuffer buffer) {
+  void _writeParameters(StringBuffer buffer,
+      {bool dontOverrideEngine = false}) {
     final paramList = query.variables
         .map((v) => '${dartTypeNames[v.type]} ${v.dartParameterName}')
         .join(', ');
 
     buffer.write(paramList);
+
+    // write named optional parameter to configure the query engine used to
+    // execute the statement,
+    if (!dontOverrideEngine) {
+      if (query.variables.isNotEmpty) buffer.write(', ');
+      buffer.write('{QueryEngine operateOn}');
+    }
   }
 
   void _writeVariables(StringBuffer buffer) {
