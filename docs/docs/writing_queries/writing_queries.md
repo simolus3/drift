@@ -51,17 +51,17 @@ Future<List<TodoEntry>> sortEntriesAlphabetically() {
 You can also reverse the order by setting the `mode` property of the `OrderingTerm` to
 `OrderingMode.desc`.
 ## Updates and deletes
-You can use the generated `row` class to update individual fields of any row:
+You can use the generated classes to update individual fields of any row:
 ```dart
 Future moveImportantTasksIntoCategory(Category target) {
-  // use update(...).write when you have a custom where clause and want to update
-  // only the columns that you specify (here, only "category" will be updated, the
-  // title and description of the rows affected will be left unchanged).
-  // Notice that you can't set fields back to null with this method.
+  // for updates, we use the "companion" version of a generated class. This wraps the
+  // fields in a "Value" type which can be set to be absent using "Value.absent()". This
+  // allows us to separate between "SET category = NULL" (`category: Value(null)`) and not
+  // updating the category at all: `category: Value.absent()`.
   return (update(todos)
       ..where((t) => t.title.like('%Important%'))
-    ).write(TodoEntry(
-      category: target.id
+    ).write(TodosCompanion(
+      category: Value(target.id),
     ),
   );
 }
@@ -70,13 +70,13 @@ Future update(TodoEntry entry) {
   // using replace will update all fields from the entry that are not marked as a primary key.
   // it will also make sure that only the entry with the same primary key will be updated.
   // Here, this means that the row that has the same id as entry will be updated to reflect
-  // the entry's title, content and category. Unlike write, this supports setting columns back
-  // to null. As it set's its where clause automatically, it can not be used together with where.
+  // the entry's title, content and category. As it set's its where clause automatically, it
+  // can not be used together with where.
   return update(todos).replace(entry);
 }
 
 Future feelingLazy() {
-  // delete the oldest nine entries
+  // delete the oldest nine tasks
   return (delete(todos)..where((t) => t.id.isSmallerThanValue(10))).go();
 }
 ```

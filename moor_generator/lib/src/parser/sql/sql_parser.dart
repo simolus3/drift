@@ -38,6 +38,7 @@ class SqlParser {
         state.errors.add(MoorError(
             critical: true,
             message: 'Error while trying to parse $sql: $e, $s'));
+        return;
       }
 
       for (var error in context.errors) {

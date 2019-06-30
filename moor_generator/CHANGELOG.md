@@ -1,3 +1,10 @@
+## 1.5.0
+- Parse custom queries and write generated mapping code.
+- Refactorings and minor improvements in the generator
+
+For more details on the new features, check out changelog of the 
+[moor](https://pub.dev/packages/moor#-changelog-tab-) package.
+
 ## 1.4.0
 - Added the `RealColumn`, which stores floating point values
 - Better configuration for the serializer with the `JsonKey` annotation and the ability to

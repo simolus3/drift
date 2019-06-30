@@ -94,7 +94,13 @@ class TypeResolver {
       } else if (expr is CaseExpression) {
         return resolveExpression(expr.whens.first.then);
       } else if (expr is SubQuery) {
-        // todo
+        final columns = expr.select.resultSet.resolvedColumns;
+        if (columns.length != 1) {
+          // select queries _must_ have exactly one column
+          return const ResolveResult.unknown();
+        } else {
+          return justResolve(columns.single);
+        }
       }
 
       throw StateError('Unknown expression $expr');

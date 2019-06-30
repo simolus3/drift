@@ -12,6 +12,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
   @override
   void visitSelectStatement(SelectStatement e) {
     _resolveSelect(e);
+    visitChildren(e);
   }
 
   void _handle(Queryable queryable, List<Column> availableColumns) {

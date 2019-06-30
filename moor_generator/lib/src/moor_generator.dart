@@ -36,8 +36,15 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
       tablesForThisDb.add(state.parseType(table, element));
     }
 
+    if (queries.isNotEmpty) {
+      final parser = SqlParser(state, tablesForThisDb, queries)..parse();
+
+      resolvedQueries = parser.foundQueries;
+    }
+
     if (state.errors.errors.isNotEmpty) {
-      print('Warning: There were some errors while running moor_generator:');
+      print('Warning: There were some errors while running '
+          'moor_generator on ${buildStep.inputId.path}:');
 
       for (var error in state.errors.errors) {
         print(error.message);
@@ -48,12 +55,6 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
         }
       }
       state.errors.errors.clear();
-    }
-
-    if (queries.isNotEmpty) {
-      final parser = SqlParser(state, tablesForThisDb, queries)..parse();
-
-      resolvedQueries = parser.foundQueries;
     }
 
     if (tablesForThisDb.isEmpty) return '';
