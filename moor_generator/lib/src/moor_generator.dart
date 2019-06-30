@@ -27,7 +27,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
         .listValue
         .map((obj) => obj.toTypeValue())
         .toList();
-    final queries = annotation.peek('queries')?.listValue ?? [];
+    final queries = annotation.peek('queries')?.mapValue ?? {};
 
     final tablesForThisDb = <SpecifiedTable>[];
     var resolvedQueries = <SqlQuery>[];

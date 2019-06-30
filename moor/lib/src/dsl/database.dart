@@ -25,22 +25,33 @@ class UseMoor {
   /// For instructions on how to write a dao, see the documentation of [UseDao]
   final List<Type> daos;
 
-  /// Optionally, a list of queries. Moor will generate matching methods for the
-  /// variables and return types.
-  // todo better documentation
+  /// {@template moor_compile_queries_param}
+  /// Optionally, a list of named sql queries. During a build, moor will look at
+  /// the defined sql, figure out what they do, and write appropriate
+  /// methods in your generated database.
+  ///
+  /// For instance, when using
+  /// ```dart
+  /// @UseMoor(
+  ///   tables: [Users],
+  ///   queries: {
+  ///     'userById': 'SELECT * FROM users WHERE id = ?',
+  ///   },
+  /// )
+  /// ```
+  /// Moor will generate two methods for you: `userById(int id)` and
+  /// `watchUserById(int id)`.
+  /// {@endtemplate}
   @experimental
-  final List<Sql> queries;
+  final Map<String, String> queries;
 
   /// Use this class as an annotation to inform moor_generator that a database
   /// class should be generated using the specified [UseMoor.tables].
-  const UseMoor({@required this.tables, this.daos = const [], this.queries});
-}
-
-class Sql {
-  final String name;
-  final String query;
-
-  const Sql(this.name, this.query);
+  const UseMoor({
+    @required this.tables,
+    this.daos = const [],
+    @experimental this.queries = const {},
+  });
 }
 
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specifies
@@ -61,12 +72,16 @@ class Sql {
 /// you're ready to make queries inside your dao. You can obtain an instance of
 /// that dao by using the getter that will be generated inside your database
 /// class.
+///
+/// See also:
+/// - https://moor.simonbinder.eu/daos/
 class UseDao {
   /// The tables accessed by this DAO.
   final List<Type> tables;
-  // todo better documentation
-  @experimental
-  final List<Sql> queries;
 
-  const UseDao({@required this.tables, this.queries});
+  /// {@macro moor_compile_queries_param}
+  @experimental
+  final Map<String, String> queries;
+
+  const UseDao({@required this.tables, @experimental this.queries = const {}});
 }

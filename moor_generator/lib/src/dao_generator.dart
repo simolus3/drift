@@ -21,7 +21,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
     final parsedTables =
         tableTypes.map((type) => state.parseType(type, element)).toList();
-    final queries = annotation.peek('queries')?.listValue ?? [];
+    final queries = annotation.peek('queries')?.mapValue ?? {};
 
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(

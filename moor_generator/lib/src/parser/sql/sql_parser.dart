@@ -10,7 +10,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 class SqlParser {
   final List<SpecifiedTable> tables;
   final SharedState state;
-  final List<DartObject> definedQueries;
+  final Map<DartObject, DartObject> definedQueries;
 
   final TypeMapper _mapper = TypeMapper();
   SqlEngine _engine;
@@ -27,9 +27,9 @@ class SqlParser {
   void parse() {
     _spawnEngine();
 
-    for (var query in definedQueries) {
-      final name = query.getField('name').toStringValue();
-      final sql = query.getField('query').toStringValue();
+    definedQueries.forEach((key, value) {
+      final name = key.toStringValue();
+      final sql = value.toStringValue();
 
       AnalysisContext context;
       try {
@@ -47,6 +47,6 @@ class SqlParser {
       }
 
       foundQueries.add(QueryHandler(name, context, _mapper).handle());
-    }
+    });
   }
 }
