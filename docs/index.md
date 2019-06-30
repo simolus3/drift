@@ -33,10 +33,14 @@ now run your queries with fluent Dart code
 There are some sql features like `group by` statements which aren't natively supported by moor yet.
 However, as moor supports [custom sql queries]({{"queries/custom" | absolute_url}}), there are easy
 workarounds for most entries on this list. Custom queries work well together with the regular api,
-as they integrate with stream queries and automatic result parsing.
+as they integrate with stream queries and automatic result parsing. Starting from version 1.5, moor
+also has a custom sql parser that can infer types for variables and result columns. It can generate
+typesafe APIs for sql queries.
 ### Limitations (at the moment)
 These aren't sorted by priority. If you have more ideas or want some features happening soon,
-let me know by [creating an issue]({{site.github_link}}/issues/new)!
+let me know by [creating an issue]({{site.github_link}}/issues/new)! Again, note that these only
+apply to the Dart api - all of these can be expressed using custom queries which nicely integrates
+with the rest of the library.
 - No `group by`, count, or window functions
 - Support other platforms:
   - VM apps

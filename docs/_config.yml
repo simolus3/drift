@@ -17,7 +17,7 @@ title: Moor
 #email: your-email@example.com
 description: >- # this means to ignore newlines until "baseurl:"
   Moor is an easy to use, reactive, typesafe persistence library for Flutter apps.
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/" # the subpath of your site, e.g. /blog
 url: "https://moor.simonbinder.eu" # the base hostname & protocol for your site, e.g. http://example.com
 #twitter_username: jekyllrb
 github_link: https://github.com/simolus3/moor
@@ -32,6 +32,7 @@ markdown: kramdown
 theme: just-the-docs
 plugins:
   - jekyll-feed
+  - jekyll-sitemap
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
