@@ -141,10 +141,8 @@ void main() {
         return Future.value(resultRows[_currentRow++]);
       });
 
-      expectLater(
-          db.select(db.todosTable).watchSingle(),
-          emitsInOrder(
-              [_todoEntry, emitsError(anything), emitsError(anything)]));
+      expectLater(db.select(db.todosTable).watchSingle(),
+          emitsInOrder([_todoEntry, null, emitsError(anything)]));
 
       db
         ..markTablesUpdated({db.todosTable})

@@ -76,7 +76,8 @@ abstract class Selectable<T> {
   Stream<List<T>> watch();
 
   /// Executes this statement, like [get], but only returns one value. If the
-  /// result has no or too many values, this method will throw.
+  /// result too many values, this method will throw. If no row is returned,
+  /// `null` will be returned instead.
   ///
   /// Be aware that this operation won't put a limit clause on this statement,
   /// if that's needed you would have to do that yourself.
@@ -85,8 +86,7 @@ abstract class Selectable<T> {
     final iterator = list.iterator;
 
     if (!iterator.moveNext()) {
-      throw StateError('Expected exactly one result, but actually there were '
-          'none!');
+      return null;
     }
     final element = iterator.current;
     if (iterator.moveNext()) {

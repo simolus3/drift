@@ -17,8 +17,7 @@ void main() {
     final controller = StreamController<List<int>>();
     final stream = controller.stream.transform(singleElements());
 
-    expectLater(stream,
-        emitsInOrder([1, emitsError(anything), 2, emitsError(anything)]));
+    expectLater(stream, emitsInOrder([1, emitsError(anything), 2, null]));
 
     controller..add([1])..add([2, 3])..add([2])..add([]);
   });

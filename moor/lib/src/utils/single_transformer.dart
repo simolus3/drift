@@ -5,7 +5,11 @@ import 'dart:async';
 StreamTransformer<List<T>, T> singleElements<T>() {
   return StreamTransformer.fromHandlers(handleData: (data, sink) {
     try {
-      sink.add(data.single);
+      if (data.isEmpty) {
+        sink.add(null);
+      } else {
+        sink.add(data.single);
+      }
     } catch (e) {
       sink.addError(
           StateError('Expected exactly one element, but got ${data.length}'));
