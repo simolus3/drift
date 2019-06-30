@@ -240,6 +240,8 @@ class TypeResolver {
         }
       } else if (parent is Limit) {
         return const ResolveResult(ResolvedType(type: BasicType.int));
+      } else if (parent is SetComponent) {
+        return resolveColumn(parent.column.resolved as Column);
       }
 
       return const ResolveResult.unknown();
@@ -333,4 +335,13 @@ class ResolveResult {
 
   @override
   int get hashCode => type.hashCode + needsContext.hashCode + unknown.hashCode;
+
+  @override
+  String toString() {
+    if (type != null) {
+      return 'ResolveResult: $type';
+    } else {
+      return 'ResolveResult(needsContext: $needsContext, unknown: $unknown)';
+    }
+  }
 }

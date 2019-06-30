@@ -21,6 +21,7 @@ part 'expressions/variables.dart';
 part 'statements/delete.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
+part 'statements/update.dart';
 
 /// A node in the abstract syntax tree of an SQL statement.
 abstract class AstNode {
@@ -124,6 +125,7 @@ abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
   T visitResultColumn(ResultColumn e);
   T visitDeleteStatement(DeleteStatement e);
+  T visitUpdateStatement(UpdateStatement e);
 
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
@@ -131,6 +133,8 @@ abstract class AstVisitor<T> {
   T visitQueryable(Queryable e);
   T visitJoin(Join e);
   T visitGroupBy(GroupBy e);
+
+  T visitSetComponent(SetComponent e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitUnaryExpression(UnaryExpression e);
@@ -174,6 +178,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitSubQuery(SubQuery e) => visitChildren(e);
 
   @override
+  T visitSetComponent(SetComponent e) => visitChildren(e);
+
+  @override
   T visitJoin(Join e) => visitChildren(e);
 
   @override
@@ -208,6 +215,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitDeleteStatement(DeleteStatement e) => visitChildren(e);
+
+  @override
+  T visitUpdateStatement(UpdateStatement e) => visitChildren(e);
 
   @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);

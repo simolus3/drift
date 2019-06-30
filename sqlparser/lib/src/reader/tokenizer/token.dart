@@ -53,6 +53,7 @@ enum TokenType {
 
   select,
   delete,
+  update,
   distinct,
   all,
   from,
@@ -84,6 +85,13 @@ enum TokenType {
   $else,
   end,
 
+  rollback,
+  abort,
+  replace,
+  fail,
+  ignore,
+  set,
+
   semicolon,
   eof,
 }
@@ -91,6 +99,7 @@ enum TokenType {
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
   'DISTINCT': TokenType.distinct,
+  'UPDATE': TokenType.update,
   'ALL': TokenType.all,
   'AND': TokenType.and,
   'OR': TokenType.or,
@@ -115,6 +124,7 @@ const Map<String, TokenType> keywords = {
   'DESC': TokenType.desc,
   'LIMIT': TokenType.limit,
   'OFFSET': TokenType.offset,
+  'SET': TokenType.set,
   'IS': TokenType.$is,
   'IN': TokenType.$in,
   'LIKE': TokenType.like,
@@ -133,6 +143,11 @@ const Map<String, TokenType> keywords = {
   'THEN': TokenType.then,
   'ELSE': TokenType.$else,
   'END': TokenType.end,
+  'ABORT': TokenType.abort,
+  'ROLLBACK': TokenType.rollback,
+  'REPLACE': TokenType.replace,
+  'FAIL': TokenType.fail,
+  'IGNORE': TokenType.ignore,
 };
 
 class Token {
@@ -142,6 +157,11 @@ class Token {
   String get lexeme => span.text;
 
   const Token(this.type, this.span);
+
+  @override
+  String toString() {
+    return '$type: $lexeme';
+  }
 }
 
 class StringLiteralToken extends Token {

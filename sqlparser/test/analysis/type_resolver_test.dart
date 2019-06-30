@@ -14,6 +14,8 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.int)),
   'SELECT 1 FROM demo WHERE id BETWEEN 3 AND ?':
       const ResolveResult(ResolvedType(type: BasicType.int)),
+  'UPDATE demo SET content = ? WHERE id = 3':
+      const ResolveResult(ResolvedType(type: BasicType.text)),
 };
 
 void main() {

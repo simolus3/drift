@@ -39,6 +39,11 @@ class ResolvedType {
   int get hashCode {
     return type.hashCode + hint.hashCode + nullable.hashCode;
   }
+
+  @override
+  String toString() {
+    return 'ResolvedType($type, hint: $hint, nullable: $nullable)';
+  }
 }
 
 /// Provides more precise hints than the [BasicType]. For instance, booleans are

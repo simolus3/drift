@@ -102,7 +102,7 @@ class Parser {
   }
 
   Statement statement() {
-    final stmt = select() ?? _deleteStmt();
+    final stmt = select() ?? _deleteStmt() ?? _update();
 
     _matchOne(TokenType.semicolon);
     return stmt;
@@ -415,6 +415,30 @@ class Parser {
     return DeleteStatement(from: table, where: where);
   }
 
+  UpdateStatement _update() {
+    if (!_matchOne(TokenType.update)) return null;
+    FailureMode failureMode;
+    if (_matchOne(TokenType.or)) {
+      failureMode = UpdateStatement.failureModeFromToken(_advance().type);
+    }
+
+    final table = _tableReference();
+    _consume(TokenType.set, 'Expected SET after the table name');
+
+    final set = <SetComponent>[];
+    do {
+      final reference = _primary() as Reference;
+      _consume(TokenType.equal, 'Expected = after the column name');
+      final expr = expression();
+
+      set.add(SetComponent(column: reference, expression: expr));
+    } while (_matchOne(TokenType.comma));
+
+    final where = _where();
+    return UpdateStatement(
+        or: failureMode, table: table, set: set, where: where);
+  }
+
   /* We parse expressions here.
   * Operators have the following precedence:
   *  - + ~ NOT (unary)
@@ -594,12 +618,12 @@ class Parser {
         } else {
           final expr = expression();
           _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return Parentheses(left, expr, _previous);
+          return Parentheses(left, expr, token);
         }
         break;
       case TokenType.identifier:
         // could be table.column, function(...) or just column
-        final first = _previous as IdentifierToken;
+        final first = token as IdentifierToken;
 
         if (_matchOne(TokenType.dot)) {
           final second =
