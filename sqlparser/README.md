@@ -1,12 +1,11 @@
 # sqlparser
 
-An sql parser and static analyzer, written in pure Dart. At the moment, only `SELECT` and `DELETE`
-statements are supported. Further, this library only targets the sqlite dialect at the time being.
+An sql parser and static analyzer, written in pure Dart. At the moment, this library only targets
+the sqlite dialect and some advanced features aren't supported yet.
 
 ## Features
-Not all features are available yet, put parsing select statements (even complex ones!) and
-performing analysis on them works!
-
+This library can parse most statements and perform type analysis for parameters and returned
+columns. It supports joins, `group by`, nested sql statements, updates and deletes and more.
 ### Just parsing
 You can parse the abstract syntax tree of sqlite statements with `SqlEngine.parse`.
 ```dart
@@ -29,13 +28,15 @@ Given information about all tables and a sql statement, this library can:
 
 1. Determine which result columns a query is going to have, including types and nullability
 2. Make an educated guess about what type the variables in the query should have (it's not really
-   possible to be 100% accurate about this because sqlite is very flexible at types)
-3. Issue warnings about queries that are syntactically valid but won't run
+   possible to be 100% accurate about this because sqlite is very flexible at types, but this library
+   gets it mostly right)
+3. Issue warnings about queries that are syntactically valid but won't run (references unknown
+   tables / columns, uses undefined functions, etc.)
 
 To use the analyzer, first register all known tables via `SqlEngine.registerTable`. Then,
-`SqlEngine.analyze(sql)` gives you a `AnalysisContext` which contains an annotated ast and information
+`SqlEngine.analyze(sql)` gives you an `AnalysisContext` which contains an annotated ast and information
 about errors. The type of result columns and expressions can be inferred by using 
-`AnalysisContext.typeOf()`. Here's an example.
+`AnalysisContext.typeOf()`. Here's an example:
 
 ```dart 
 final id = TableColumn('id', const ResolvedType(type: BasicType.int));
@@ -57,15 +58,20 @@ resolvedColumns.map((c) => context.typeOf(c).type.type) // int, text, int, text,
 ```
 
 ## But why?
-[Moor](https://pub.dev/packages/moor_flutter), a persistence library for Flutter apps, uses this
+[Moor](https://pub.dev/packages/moor_flutter), a persistence library for Dart apps, uses this
 package to generate type-safe methods from sql.
 
 ## Limitations
-- For now, only `SELECT` and `DELETE` expressions are implemented, `UPDATE` and `INSERT` will follow
-  soon.
+Most on this list is just not supported yet because I didn't found a use case for 
+them yet. If you need them, just leave an issue and I'll try to implement them soon.
+
+- For now, only `INSERT` statements are not supported, but they will be soon
 - Windowing is not supported yet
-- Common table expressions and compound select statements `UNION` / `INTERSECT` are not supported
-  and probably won't be in the near future.
+- Compound select statements (`UNION` / `INTERSECT`) are not supported yet
+- Common table expressions are not supported
+- Some advanced expressions, like `COLLATE` or `CAST`s aren't supported yet.
+
+If you run into parsing errors with what you think is valid sql, please create an issue.
 
 ## Thanks
 - To [Bob Nystrom](https://github.com/munificent) for his amazing ["Crafting Interpreters"](https://craftinginterpreters.com/)
