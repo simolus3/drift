@@ -16,6 +16,10 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.int)),
   'UPDATE demo SET content = ? WHERE id = 3':
       const ResolveResult(ResolvedType(type: BasicType.text)),
+  'SELECT * FROM demo WHERE content LIKE ?':
+      const ResolveResult(ResolvedType(type: BasicType.text)),
+  "SELECT * FROM demo WHERE content LIKE '%e' ESCAPE ?":
+      const ResolveResult(ResolvedType(type: BasicType.text)),
 };
 
 void main() {

@@ -89,6 +89,8 @@ class TypeResolver {
               [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]);
           return ResolveResult(type);
         }
+      } else if (expr is StringComparisonExpression) {
+        return const ResolveResult(ResolvedType.bool());
       } else if (expr is BetweenExpression) {
         return const ResolveResult(ResolvedType.bool());
       } else if (expr is CaseExpression) {
@@ -262,6 +264,14 @@ class TypeResolver {
       final relevant = parent.childNodes
           .lastWhere((node) => node is Expression && node != argument);
       return resolveExpression(relevant as Expression);
+    } else if (parent is StringComparisonExpression) {
+      if (argument == parent.escape) {
+        return const ResolveResult(ResolvedType(type: BasicType.text));
+      } else {
+        final otherNode = parent.childNodes
+            .firstWhere((node) => node is Expression && node != argument);
+        return resolveExpression(otherNode as Expression);
+      }
     } else if (parent is Parentheses || parent is UnaryExpression) {
       return const ResolveResult.needsContext();
     } else if (parent is FunctionExpression) {
