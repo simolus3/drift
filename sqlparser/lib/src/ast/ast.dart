@@ -137,6 +137,7 @@ abstract class AstVisitor<T> {
   T visitSetComponent(SetComponent e);
 
   T visitBinaryExpression(BinaryExpression e);
+  T visitStringComparison(StringComparisonExpression e);
   T visitUnaryExpression(UnaryExpression e);
   T visitIsExpression(IsExpression e);
   T visitBetweenExpression(BetweenExpression e);
@@ -155,6 +156,9 @@ abstract class AstVisitor<T> {
 class RecursiveVisitor<T> extends AstVisitor<T> {
   @override
   T visitBinaryExpression(BinaryExpression e) => visitChildren(e);
+
+  @override
+  T visitStringComparison(StringComparisonExpression e) => visitChildren(e);
 
   @override
   T visitFunction(FunctionExpression e) => visitChildren(e);

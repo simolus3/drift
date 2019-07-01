@@ -15,10 +15,10 @@ void main() {
       stmt.groupBy,
       GroupBy(
         by: [Reference(columnName: 'country')],
-        having: BinaryExpression(
-          Reference(columnName: 'country'),
-          token(TokenType.like),
-          StringLiteral.from(token(TokenType.stringLiteral), '%G%'),
+        having: StringComparisonExpression(
+          left: Reference(columnName: 'country'),
+          operator: token(TokenType.like),
+          right: StringLiteral.from(token(TokenType.stringLiteral), '%G%'),
         ),
       ),
     );

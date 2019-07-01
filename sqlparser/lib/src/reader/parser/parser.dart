@@ -77,6 +77,13 @@ class Parser {
     return false;
   }
 
+  /// Like [_checkWithNot], but with more than one token type.
+  bool _checkAnyWithNot(List<TokenType> types) {
+    if (types.any(_check)) return true;
+    if (_check(TokenType.not) && types.contains(_peekNext.type)) return true;
+    return false;
+  }
+
   bool _check(TokenType type) {
     if (_isAtEnd) return false;
     return _peek.type == type;
@@ -502,8 +509,12 @@ class Parser {
   Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
   Expression _and() => _parseSimpleBinary(const [TokenType.and], _equals);
 
+  /// Parses expressions with the "equals" precedence. This contains
+  /// comparisons, "IS (NOT) IN" expressions, between expressions and "like"
+  /// expressions.
   Expression _equals() {
     var expression = _comparison();
+
     final ops = const [
       TokenType.equal,
       TokenType.doubleEqual,
@@ -511,6 +522,8 @@ class Parser {
       TokenType.lessMore,
       TokenType.$is,
       TokenType.$in,
+    ];
+    final stringOps = const [
       TokenType.like,
       TokenType.glob,
       TokenType.match,
@@ -537,6 +550,23 @@ class Parser {
         } else {
           expression = BinaryExpression(expression, operator, _comparison());
         }
+      } else if (_checkAnyWithNot(stringOps)) {
+        final not = _matchOne(TokenType.not);
+        _match(stringOps); // will consume, existence was verified with check
+        final operator = _previous;
+
+        final right = _comparison();
+        Expression escape;
+        if (_matchOne(TokenType.escape)) {
+          escape = _comparison();
+        }
+
+        expression = StringComparisonExpression(
+            not: not,
+            left: expression,
+            operator: operator,
+            right: right,
+            escape: escape);
       } else {
         break; // no matching operator with this precedence was found
       }

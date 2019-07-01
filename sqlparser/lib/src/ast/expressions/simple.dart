@@ -37,6 +37,30 @@ class BinaryExpression extends Expression {
   }
 }
 
+class StringComparisonExpression extends Expression {
+  final bool not;
+  final Token operator;
+  final Expression left;
+  final Expression right;
+  final Expression escape;
+
+  StringComparisonExpression(
+      {this.not = false,
+      @required this.left,
+      @required this.operator,
+      @required this.right,
+      this.escape});
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitStringComparison(this);
+
+  @override
+  Iterable<AstNode> get childNodes => [left, right, if (escape != null) escape];
+
+  @override
+  bool contentEquals(StringComparisonExpression other) => other.not == not;
+}
+
 class IsExpression extends Expression {
   final bool negated;
   final Expression left;

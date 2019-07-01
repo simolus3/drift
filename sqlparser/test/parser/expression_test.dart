@@ -65,6 +65,13 @@ final Map<String, Expression> _testCases = {
     ],
     elseExpr: Reference(columnName: 'e'),
   ),
+  "x NOT LIKE '%A%\$' ESCAPE '\$'": StringComparisonExpression(
+    not: true,
+    left: Reference(columnName: 'x'),
+    operator: token(TokenType.like),
+    right: StringLiteral.from(token(TokenType.stringLiteral), '%A%\$'),
+    escape: StringLiteral.from(token(TokenType.stringLiteral), '\$'),
+  ),
 };
 
 void main() {
