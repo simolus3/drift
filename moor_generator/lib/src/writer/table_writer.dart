@@ -1,6 +1,7 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
 import 'package:moor_generator/src/writer/update_companion_writer.dart';
 import 'package:moor_generator/src/writer/utils.dart';
@@ -117,8 +118,8 @@ class TableWriter {
     }
 
     if (column.customConstraints != null) {
-      // todo should we worry about escaping this string?
-      additionalParams['\$customConstraints'] = "'${column.customConstraints}'";
+      additionalParams['\$customConstraints'] =
+          asDartLiteral(column.customConstraints);
     }
 
     if (column.defaultArgument != null) {

@@ -62,7 +62,8 @@ class SqlEngine {
         ..accept(ReferenceResolver(context))
         ..accept(TypeResolvingVisitor(context));
     } catch (e) {
-      // todo should we do now? Mostly, everything
+      // todo should we do now? AFAIK, everything that causes an exception
+      // is added as an error contained in the context.
     }
 
     return context;

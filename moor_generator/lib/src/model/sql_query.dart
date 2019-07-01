@@ -41,7 +41,6 @@ class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  // todo implement this check
   final SpecifiedTable matchingTable;
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};

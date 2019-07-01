@@ -1113,9 +1113,9 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           Variable.withInt(user),
         ],
         readsFrom: {
-          users,
           todosTable,
-          sharedTodos
+          sharedTodos,
+          users
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
   }
 }
