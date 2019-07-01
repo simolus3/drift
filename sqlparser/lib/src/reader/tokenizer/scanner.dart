@@ -4,6 +4,7 @@ import 'package:sqlparser/src/reader/tokenizer/utils.dart';
 
 class Scanner {
   final String source;
+  final SourceFile _file;
 
   final List<Token> tokens = [];
   final List<TokenizerError> errors = [];
@@ -12,20 +13,15 @@ class Scanner {
   int _currentOffset = 0;
   bool get _isAtEnd => _currentOffset >= source.length;
 
-  SourceSpan get _currentSpan {
-    return SourceSpanWithContext(_startLocation, _currentLocation,
-        source.substring(_startOffset, _currentOffset), source);
-  }
-
-  SourceLocation get _startLocation {
-    return SourceLocation(_startOffset);
+  FileSpan get _currentSpan {
+    return _file.span(_startOffset, _currentOffset);
   }
 
   SourceLocation get _currentLocation {
-    return SourceLocation(_currentOffset);
+    return _file.location(_currentOffset);
   }
 
-  Scanner(this.source);
+  Scanner(this.source) : _file = SourceFile.fromString(source);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {
@@ -33,8 +29,8 @@ class Scanner {
       _scanToken();
     }
 
-    final endLoc = SourceLocation(source.length);
-    tokens.add(Token(TokenType.eof, SourceSpan(endLoc, endLoc, '')));
+    final endSpan = _file.span(source.length);
+    tokens.add(Token(TokenType.eof, endSpan));
     return tokens;
   }
 

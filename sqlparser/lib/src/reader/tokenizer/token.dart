@@ -157,7 +157,7 @@ const Map<String, TokenType> keywords = {
 class Token {
   final TokenType type;
 
-  final SourceSpan span;
+  final FileSpan span;
   String get lexeme => span.text;
 
   const Token(this.type, this.span);
@@ -174,7 +174,7 @@ class StringLiteralToken extends Token {
   /// sqlite allows binary strings (x'literal') which are interpreted as blobs.
   final bool binary;
 
-  const StringLiteralToken(this.value, SourceSpan span, {this.binary = false})
+  const StringLiteralToken(this.value, FileSpan span, {this.binary = false})
       : super(TokenType.stringLiteral, span);
 }
 
@@ -190,7 +190,7 @@ class IdentifierToken extends Token {
     }
   }
 
-  const IdentifierToken(this.escaped, SourceSpan span)
+  const IdentifierToken(this.escaped, FileSpan span)
       : super(TokenType.identifier, span);
 }
 

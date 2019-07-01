@@ -141,3 +141,6 @@ now run your queries with fluent Dart code:
   }
 }
 ```
+
+Visit the detailed [documentation](https://moor.simonbinder.eu/) to learn about advanced
+features like transactions, DAOs, custom queries and more.

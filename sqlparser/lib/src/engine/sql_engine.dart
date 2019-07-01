@@ -55,11 +55,15 @@ class SqlEngine {
     final context = AnalysisContext(node, sql);
     final scope = _constructRootScope();
 
-    ReferenceFinder(globalScope: scope).start(node);
-    node
-      ..accept(ColumnResolver(context))
-      ..accept(ReferenceResolver(context))
-      ..accept(TypeResolvingVisitor(context));
+    try {
+      ReferenceFinder(globalScope: scope).start(node);
+      node
+        ..accept(ColumnResolver(context))
+        ..accept(ReferenceResolver(context))
+        ..accept(TypeResolvingVisitor(context));
+    } catch (e) {
+      // todo should we do now? Mostly, everything
+    }
 
     return context;
   }

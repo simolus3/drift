@@ -667,15 +667,18 @@ class Parser {
               _consume(TokenType.identifier, 'Expected a column name here')
                   as IdentifierToken;
           return Reference(
-              tableName: first.identifier, columnName: second.identifier);
+              tableName: first.identifier, columnName: second.identifier)
+            ..setSpan(first, second);
         } else if (_matchOne(TokenType.leftParen)) {
           final parameters = _functionParameters();
-          _consume(TokenType.rightParen,
+          final rightParen = _consume(TokenType.rightParen,
               'Expected closing bracket after argument list');
+
           return FunctionExpression(
-              name: first.identifier, parameters: parameters);
+              name: first.identifier, parameters: parameters)
+            ..setSpan(first, rightParen);
         } else {
-          return Reference(columnName: first.identifier);
+          return Reference(columnName: first.identifier)..setSpan(first, first);
         }
         break;
       case TokenType.questionMark:

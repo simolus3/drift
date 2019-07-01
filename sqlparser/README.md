@@ -5,7 +5,7 @@ the sqlite dialect and some advanced features aren't supported yet.
 
 ## Features
 This library can parse most statements and perform type analysis for parameters and returned
-columns. It supports joins, `group by`, nested sql statements, updates and deletes and more.
+columns. It supports joins, `group by`, nested sql statements, updates and deletes, and more.
 ### Just parsing
 You can parse the abstract syntax tree of sqlite statements with `SqlEngine.parse`.
 ```dart
@@ -30,7 +30,7 @@ Given information about all tables and a sql statement, this library can:
 2. Make an educated guess about what type the variables in the query should have (it's not really
    possible to be 100% accurate about this because sqlite is very flexible at types, but this library
    gets it mostly right)
-3. Issue warnings about queries that are syntactically valid but won't run (references unknown
+3. Issue basic warnings about queries that are syntactically valid but won't run (references unknown
    tables / columns, uses undefined functions, etc.)
 
 To use the analyzer, first register all known tables via `SqlEngine.registerTable`. Then,

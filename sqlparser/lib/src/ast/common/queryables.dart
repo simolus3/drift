@@ -2,7 +2,6 @@ part of '../ast.dart';
 
 /// Marker interface for something that can appear after a "FROM" in a select
 /// statement.
-@sealed
 abstract class Queryable extends AstNode {
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitQueryable(this);
@@ -143,7 +142,6 @@ class Join extends AstNode {
 }
 
 /// https://www.sqlite.org/syntax/join-constraint.html
-@sealed
 abstract class JoinConstraint {}
 
 class OnConstraint extends JoinConstraint {
