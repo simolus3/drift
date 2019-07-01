@@ -33,9 +33,9 @@ class SelectStatement extends Statement with ResultSet {
   @override
   Iterable<AstNode> get childNodes {
     return [
-      if (where != null) where,
       ...columns,
       if (from != null) ...from,
+      if (where != null) where,
       if (groupBy != null) groupBy,
       if (limit != null) limit,
       if (orderBy != null) orderBy,

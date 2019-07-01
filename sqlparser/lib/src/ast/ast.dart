@@ -145,6 +145,7 @@ abstract class AstVisitor<T> {
   T visitReference(Reference e);
   T visitFunction(FunctionExpression e);
   T visitSubQuery(SubQuery e);
+  T visitExists(ExistsExpression e);
   T visitCaseExpression(CaseExpression e);
   T visitWhen(WhenComponent e);
 
@@ -180,6 +181,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitSubQuery(SubQuery e) => visitChildren(e);
+
+  @override
+  T visitExists(ExistsExpression e) => visitChildren(e);
 
   @override
   T visitSetComponent(SetComponent e) => visitChildren(e);

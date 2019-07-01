@@ -612,6 +612,13 @@ class Parser {
       final operator = _previous;
       final expression = _unary();
       return UnaryExpression(operator, expression);
+    } else if (_matchOne(TokenType.exists)) {
+      _consume(
+          TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
+      final selectStmt = select();
+      _consume(TokenType.rightParen,
+          'Expected closing paranthesis to finish EXISTS expression');
+      return ExistsExpression(select: selectStmt);
     }
 
     return _postfix();

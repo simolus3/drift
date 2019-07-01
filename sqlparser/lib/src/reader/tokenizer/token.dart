@@ -35,6 +35,7 @@ enum TokenType {
   or,
   tilde,
   between,
+  exists,
 
   questionMark,
   colon,
@@ -104,6 +105,7 @@ const Map<String, TokenType> keywords = {
   'ALL': TokenType.all,
   'AND': TokenType.and,
   'OR': TokenType.or,
+  'EXISTS': TokenType.exists,
   'BETWEEN': TokenType.between,
   'DELETE': TokenType.delete,
   'FROM': TokenType.from,

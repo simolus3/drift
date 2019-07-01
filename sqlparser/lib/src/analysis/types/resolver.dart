@@ -78,7 +78,10 @@ class TypeResolver {
         return resolveColumn(expr.resolved as Column);
       } else if (expr is FunctionExpression) {
         return resolveFunctionCall(expr);
-      } else if (expr is IsExpression) {
+      } else if (expr is IsExpression ||
+          expr is StringComparisonExpression ||
+          expr is BetweenExpression ||
+          expr is ExistsExpression) {
         return const ResolveResult(ResolvedType.bool());
       } else if (expr is BinaryExpression) {
         final operator = expr.operator.type;
@@ -89,10 +92,6 @@ class TypeResolver {
               [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]);
           return ResolveResult(type);
         }
-      } else if (expr is StringComparisonExpression) {
-        return const ResolveResult(ResolvedType.bool());
-      } else if (expr is BetweenExpression) {
-        return const ResolveResult(ResolvedType.bool());
       } else if (expr is CaseExpression) {
         return resolveExpression(expr.whens.first.then);
       } else if (expr is SubQuery) {

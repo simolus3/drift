@@ -16,3 +16,18 @@ class SubQuery extends Expression {
   @override
   bool contentEquals(SubQuery other) => true;
 }
+
+class ExistsExpression extends Expression {
+  final SelectStatement select;
+
+  ExistsExpression({@required this.select});
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitExists(this);
+
+  @override
+  Iterable<AstNode> get childNodes => [select];
+
+  @override
+  bool contentEquals(ExistsExpression other) => true;
+}

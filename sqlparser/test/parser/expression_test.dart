@@ -72,6 +72,17 @@ final Map<String, Expression> _testCases = {
     right: StringLiteral.from(token(TokenType.stringLiteral), '%A%\$'),
     escape: StringLiteral.from(token(TokenType.stringLiteral), '\$'),
   ),
+  'NOT EXISTS (SELECT * FROM demo)': UnaryExpression(
+    token(TokenType.not),
+    ExistsExpression(
+      select: SelectStatement(
+        columns: [StarResultColumn(null)],
+        from: [
+          TableReference('demo', null),
+        ],
+      ),
+    ),
+  ),
 };
 
 void main() {
