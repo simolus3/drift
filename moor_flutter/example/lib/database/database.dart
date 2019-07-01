@@ -38,7 +38,12 @@ class EntryWithCategory {
   final Category category;
 }
 
-@UseMoor(tables: [Todos, Categories])
+@UseMoor(
+  tables: [Todos, Categories],
+  queries: {
+    '_resetCategory': 'UPDATE todos SET category = NULL WHERE category = ?',
+  },
+)
 class Database extends _$Database {
   Database()
       : super(FlutterQueryExecutor.inDatabaseFolder(
@@ -61,20 +66,22 @@ class Database extends _$Database {
       beforeOpen: (db, details) async {
         if (details.wasCreated) {
           // create default categories and entries
-          final workId =
-              await db.into(categories).insert(Category(description: 'Work'));
+          final workId = await db
+              .into(categories)
+              .insert(const CategoriesCompanion(description: Value('Work')));
 
-          await db.into(todos).insert(TodoEntry(
-                content: 'A first todo entry',
-                category: null,
-                targetDate: DateTime.now(),
+          await db.into(todos).insert(TodosCompanion(
+                content: const Value('A first todo entry'),
+                targetDate: Value(DateTime.now()),
               ));
 
           await db.into(todos).insert(
-                TodoEntry(
-                  content: 'Rework persistence code',
-                  category: workId,
-                  targetDate: DateTime.now().add(const Duration(days: 4)),
+                TodosCompanion(
+                  content: const Value('Rework persistence code'),
+                  category: Value(workId),
+                  targetDate: Value(
+                    DateTime.now().add(const Duration(days: 4)),
+                  ),
                 ),
               );
         }
@@ -128,7 +135,7 @@ class Database extends _$Database {
     });
   }
 
-  Future createEntry(TodoEntry entry) {
+  Future createEntry(TodosCompanion entry) {
     return into(todos).insert(entry);
   }
 
@@ -142,18 +149,14 @@ class Database extends _$Database {
     return delete(todos).delete(entry);
   }
 
-  Future<int> createCategory(Category category) {
-    return into(categories).insert(category);
+  Future<int> createCategory(String description) {
+    return into(categories)
+        .insert(CategoriesCompanion(description: Value(description)));
   }
 
   Future deleteCategory(Category category) {
     return transaction((t) async {
-      await t.customUpdate(
-        'UPDATE todos SET category = NULL WHERE category = ?',
-        updates: {todos},
-        variables: [Variable.withInt(category.id)],
-      );
-
+      await _resetCategory(category.id, operateOn: t);
       await t.delete(categories).delete(category);
     });
   }

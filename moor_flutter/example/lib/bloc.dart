@@ -1,4 +1,5 @@
 import 'package:moor_example/database/database.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Class that keeps information about a category and whether it's selected at
@@ -53,16 +54,15 @@ class TodoAppBloc {
   }
 
   void addCategory(String description) async {
-    final category = Category(description: description);
-    final id = await db.createCategory(category);
+    final id = await db.createCategory(description);
 
-    showCategory(category.copyWith(id: id));
+    showCategory(Category(id: id, description: description));
   }
 
   void createEntry(String content) {
-    db.createEntry(TodoEntry(
-      content: content,
-      category: _activeCategory.value?.id,
+    db.createEntry(TodosCompanion(
+      content: Value(content),
+      category: Value(_activeCategory.value?.id),
     ));
   }
 

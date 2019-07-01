@@ -12,7 +12,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final String content;
   final DateTime targetDate;
   final int category;
-  TodoEntry({this.id, this.content, this.targetDate, this.category});
+  TodoEntry(
+      {@required this.id,
+      @required this.content,
+      this.targetDate,
+      this.category});
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -231,7 +235,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
-  Category({this.id, this.description});
+  Category({@required this.id, @required this.description});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -384,6 +388,15 @@ abstract class _$Database extends GeneratedDatabase {
   $TodosTable get todos => _todos ??= $TodosTable(this);
   $CategoriesTable _categories;
   $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
+  Future<int> _resetCategory(int var1, {QueryEngine operateOn}) {
+    return (operateOn ?? this).customUpdate(
+        'UPDATE todos SET category = NULL WHERE category = ?',
+        variables: [
+          Variable.withInt(var1),
+        ],
+        updates: {});
+  }
+
   @override
   List<TableInfo> get allTables => [todos, categories];
 }
