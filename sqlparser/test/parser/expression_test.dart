@@ -83,6 +83,12 @@ final Map<String, Expression> _testCases = {
       ),
     ),
   ),
+  '(1, 2, 3)': TupleExpression(
+    expressions: [
+      for (var i = 1; i <= 3; i++)
+        NumericLiteral(i, token(TokenType.numberLiteral)),
+    ],
+  ),
 };
 
 void main() {

@@ -647,6 +647,9 @@ class Parser {
         return BooleanLiteral.withFalse(token);
       // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
       case TokenType.leftParen:
+        // Opening brackets could be three things: An inner select statement
+        // (SELECT ...), a parenthesised expression, or a tuple of expressions
+        // (a, b, c).
         final left = token;
         if (_peek.type == TokenType.select) {
           final stmt = select();
@@ -654,8 +657,22 @@ class Parser {
           return SubQuery(select: stmt);
         } else {
           final expr = expression();
-          _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return Parentheses(left, expr, token);
+
+          // Are we witnessing a tuple?
+          if (_check(TokenType.comma)) {
+            // we are, add expressions as long as we see commas
+            final exprs = [expr];
+            while (_matchOne(TokenType.comma)) {
+              exprs.add(expression());
+            }
+
+            _consume(TokenType.rightParen, 'Expected a closing bracket');
+            return TupleExpression(expressions: exprs);
+          } else {
+            // we aren't, so that'll just be parentheses.
+            _consume(TokenType.rightParen, 'Expected a closing bracket');
+            return Parentheses(left, expr, token);
+          }
         }
         break;
       case TokenType.identifier:

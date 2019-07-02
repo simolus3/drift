@@ -16,6 +16,7 @@ part 'expressions/literals.dart';
 part 'expressions/reference.dart';
 part 'expressions/simple.dart';
 part 'expressions/subquery.dart';
+part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
 
 part 'statements/delete.dart';
@@ -148,6 +149,7 @@ abstract class AstVisitor<T> {
   T visitExists(ExistsExpression e);
   T visitCaseExpression(CaseExpression e);
   T visitWhen(WhenComponent e);
+  T visitTuple(TupleExpression e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
@@ -178,6 +180,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitWhen(WhenComponent e) => visitChildren(e);
+
+  @override
+  T visitTuple(TupleExpression e) => visitChildren(e);
 
   @override
   T visitSubQuery(SubQuery e) => visitChildren(e);
