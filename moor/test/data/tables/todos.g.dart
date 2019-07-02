@@ -1072,7 +1072,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return (operateOn ?? this)
         .customUpdate('DELETE FROM todos WHERE id = ?', variables: [
       Variable.withInt(var1),
-    ], updates: {});
+    ], updates: {
+      todosTable
+    });
   }
 
   @override

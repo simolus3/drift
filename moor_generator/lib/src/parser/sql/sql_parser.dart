@@ -43,7 +43,7 @@ class SqlParser {
 
       for (var error in context.errors) {
         state.errors.add(MoorError(
-          message: 'The sql query $sql is invalid: ${error.message}',
+          message: 'The sql query $sql is invalid: $error',
         ));
       }
 

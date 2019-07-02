@@ -13,6 +13,8 @@ void main() {
     final select = context.root as SelectStatement;
     final resolvedColumns = select.resolvedColumns;
 
+    expect(context.errors, isEmpty);
+
     expect(resolvedColumns.map((c) => c.name),
         ['id', 'content', 'id', 'content', '3 + 4']);
 

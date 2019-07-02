@@ -41,11 +41,8 @@ class ReferenceResolver extends RecursiveVisitor<void> {
     } else {
       // find any column with the referenced name.
       // todo special case for USING (...) in joins?
-      final tables = scope.allOf<ResolvesToResultSet>();
-      final columns = tables
-          .map((t) => t.resultSet.findColumn(e.columnName))
-          .where((c) => c != null)
-          .toSet();
+      final columns =
+          scope.availableColumns.where((c) => c?.name == e.columnName).toSet();
 
       if (columns.isEmpty) {
         context.reportError(AnalysisError(
@@ -53,7 +50,10 @@ class ReferenceResolver extends RecursiveVisitor<void> {
       } else {
         if (columns.length > 1) {
           context.reportError(AnalysisError(
-              type: AnalysisErrorType.ambiguousReference, relevantNode: e));
+            type: AnalysisErrorType.ambiguousReference,
+            relevantNode: e,
+            message: 'Could refer to any in ${columns.join(', ')}',
+          ));
         }
 
         e.resolved = columns.first;

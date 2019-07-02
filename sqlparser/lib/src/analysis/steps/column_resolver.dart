@@ -15,6 +15,20 @@ class ColumnResolver extends RecursiveVisitor<void> {
     visitChildren(e);
   }
 
+  @override
+  void visitUpdateStatement(UpdateStatement e) {
+    final table = _resolveTableReference(e.table);
+    e.scope.availableColumns = table.resolvedColumns;
+    visitChildren(e);
+  }
+
+  @override
+  void visitDeleteStatement(DeleteStatement e) {
+    final table = _resolveTableReference(e.from);
+    e.scope.availableColumns = table.resolvedColumns;
+    visitChildren(e);
+  }
+
   void _handle(Queryable queryable, List<Column> availableColumns) {
     queryable.when(
       isTable: (table) {
@@ -91,7 +105,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
     return span;
   }
 
-  void _resolveTableReference(TableReference r) {
+  Table _resolveTableReference(TableReference r) {
     final scope = r.scope;
     final resolvedTable = scope.resolve<Table>(r.tableName, orElse: () {
       context.reportError(AnalysisError(
@@ -100,6 +114,6 @@ class ColumnResolver extends RecursiveVisitor<void> {
         message: 'The table ${r.tableName} could not be found',
       ));
     });
-    r.resolved = resolvedTable;
+    return r.resolved = resolvedTable;
   }
 }

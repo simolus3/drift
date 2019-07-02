@@ -29,6 +29,8 @@ dev_dependencies:
 dependency_overrides:
   moor_generator:
     path: ../moor_generator
+  sqlparser:
+    path: ../sqlparser
   # Temporarily use my fork because it can collect coverage when running tests with the test runner
   coverage:
     git: https://github.com/simolus3/coverage.git

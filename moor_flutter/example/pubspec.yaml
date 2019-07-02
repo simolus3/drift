@@ -27,6 +27,8 @@ dependency_overrides:
     path: ../../moor_generator
   moor:
     path: ../../moor
+  sqlparser:
+    path: ../../sqlparser
 
 flutter:
   uses-material-design: true

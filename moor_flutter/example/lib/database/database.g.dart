@@ -394,7 +394,9 @@ abstract class _$Database extends GeneratedDatabase {
         variables: [
           Variable.withInt(var1),
         ],
-        updates: {});
+        updates: {
+          todos
+        });
   }
 
   @override
