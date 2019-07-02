@@ -1,3 +1,6 @@
+## 1.5.1
+- Fixed an issue where streams would behave inconsistently when transformed.
+
 ## 1.5.0
 This version introduces some new concepts and features, which are explained in more detail below. 
 Here is a quick overview of the new features:

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
+import 'package:moor/src/utils/start_with_value_transformer.dart';
 
 const _listEquality = ListEquality<dynamic>();
 
@@ -120,16 +121,23 @@ class QueryStream<T> {
   // caching the stream so that the stream getter always returns the same stream
   Stream<T> _stream;
 
+  T _lastData;
+
   Stream<T> get stream {
     _controller ??= StreamController.broadcast(
       onListen: _onListen,
       onCancel: _onCancel,
     );
 
-    return _stream ??= _controller.stream;
+    return _stream ??=
+        _controller.stream.transform(StartWithValueTransformer(_cachedData));
   }
 
   QueryStream(this._fetcher, this._store);
+
+  /// Called when we have a new listener, makes the stream query behave similar
+  /// to an `BehaviorSubject` from rxdart.
+  T _cachedData() => _lastData;
 
   void _onListen() {
     // first listener added, fetch query
@@ -151,6 +159,7 @@ class QueryStream<T> {
     if (!_controller.hasListener) return;
 
     final data = await _fetcher.fetchData();
+    _lastData = data;
 
     if (!_controller.isClosed) {
       _controller.add(data);
