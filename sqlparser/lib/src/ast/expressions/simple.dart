@@ -128,7 +128,9 @@ class Parentheses extends Expression {
   final Expression expression;
   final Token closingRight;
 
-  Parentheses(this.openingLeft, this.expression, this.closingRight);
+  Parentheses(this.openingLeft, this.expression, this.closingRight) {
+    setSpan(openingLeft, closingRight);
+  }
 
   @override
   T accept<T>(AstVisitor<T> visitor) {

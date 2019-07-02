@@ -687,6 +687,12 @@ class Parser {
           _consume(TokenType.rightParen, 'Expected a closing bracket');
           return SubQuery(select: stmt);
         } else {
+          // alright, it's either a tuple or just parenthesis. A tuple can be
+          // empty, so if the next statement is the closing bracket we're done
+          if (_matchOne(TokenType.rightParen)) {
+            return TupleExpression(expressions: [])..setSpan(left, _previous);
+          }
+
           final expr = expression();
 
           // Are we witnessing a tuple?
