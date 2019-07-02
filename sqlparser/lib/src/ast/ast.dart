@@ -150,6 +150,7 @@ abstract class AstVisitor<T> {
   T visitCaseExpression(CaseExpression e);
   T visitWhen(WhenComponent e);
   T visitTuple(TupleExpression e);
+  T visitInExpression(InExpression e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
@@ -183,6 +184,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitTuple(TupleExpression e) => visitChildren(e);
+
+  @override
+  T visitInExpression(InExpression e) => visitChildren(e);
 
   @override
   T visitSubQuery(SubQuery e) => visitChildren(e);

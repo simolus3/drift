@@ -61,6 +61,7 @@ class StringComparisonExpression extends Expression {
   bool contentEquals(StringComparisonExpression other) => other.not == not;
 }
 
+/// `(NOT)? $left IS $right`
 class IsExpression extends Expression {
   final bool negated;
   final Expression left;
@@ -82,6 +83,7 @@ class IsExpression extends Expression {
   }
 }
 
+/// `$check BETWEEN $lower AND $upper`
 class BetweenExpression extends Expression {
   final bool not;
   final Expression check;
@@ -100,6 +102,27 @@ class BetweenExpression extends Expression {
   bool contentEquals(BetweenExpression other) => other.not == not;
 }
 
+/// `$left$ IN $inside`
+class InExpression extends Expression {
+  final bool not;
+  final Expression left;
+  final Expression inside;
+
+  InExpression({this.not = false, @required this.left, @required this.inside});
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);
+
+  @override
+  Iterable<AstNode> get childNodes => [left, inside];
+
+  @override
+  bool contentEquals(InExpression other) => other.not == not;
+}
+
+// todo we might be able to remove a hack in the parser at _in() if we make
+// parentheses a subclass of tuples
+
 class Parentheses extends Expression {
   final Token openingLeft;
   final Expression expression;
@@ -117,4 +140,8 @@ class Parentheses extends Expression {
 
   @override
   bool contentEquals(Parentheses other) => true;
+
+  TupleExpression get asTuple {
+    return TupleExpression(expressions: [expression]);
+  }
 }

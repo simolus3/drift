@@ -20,6 +20,10 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.text)),
   "SELECT * FROM demo WHERE content LIKE '%e' ESCAPE ?":
       const ResolveResult(ResolvedType(type: BasicType.text)),
+  'SELECT * FROM demo WHERE content IN ?':
+      const ResolveResult(ResolvedType(type: BasicType.text, isArray: true)),
+  'SELECT * FROM demo WHERE content IN (?)':
+      const ResolveResult(ResolvedType(type: BasicType.text, isArray: false)),
 };
 
 void main() {

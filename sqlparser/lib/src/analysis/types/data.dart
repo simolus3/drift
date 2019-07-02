@@ -18,12 +18,22 @@ class ResolvedType {
   final TypeHint hint;
   final bool nullable;
 
-  const ResolvedType({this.type, this.hint, this.nullable = false});
+  /// Whether this type is an array.
+  final bool isArray;
+
+  const ResolvedType(
+      {this.type, this.hint, this.nullable = false, this.isArray = false});
   const ResolvedType.bool()
       : this(type: BasicType.int, hint: const IsBoolean());
 
   ResolvedType withNullable(bool nullable) {
-    return ResolvedType(type: type, hint: hint, nullable: nullable);
+    return ResolvedType(
+        type: type, hint: hint, nullable: nullable, isArray: isArray);
+  }
+
+  ResolvedType toArray(bool array) {
+    return ResolvedType(
+        type: type, hint: hint, nullable: nullable, isArray: array);
   }
 
   @override
@@ -32,7 +42,8 @@ class ResolvedType {
         other is ResolvedType &&
             other.type == type &&
             other.hint == hint &&
-            other.nullable == nullable;
+            other.nullable == nullable &&
+            other.isArray == isArray;
   }
 
   @override
@@ -42,7 +53,7 @@ class ResolvedType {
 
   @override
   String toString() {
-    return 'ResolvedType($type, hint: $hint, nullable: $nullable)';
+    return 'ResolvedType($type, hint: $hint, nullable: $nullable, array: $isArray)';
   }
 }
 

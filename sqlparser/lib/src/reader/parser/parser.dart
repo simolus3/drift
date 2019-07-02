@@ -507,7 +507,27 @@ class Parser {
   }
 
   Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
-  Expression _and() => _parseSimpleBinary(const [TokenType.and], _equals);
+  Expression _and() => _parseSimpleBinary(const [TokenType.and], _in);
+
+  Expression _in() {
+    final left = _equals();
+
+    if (_checkWithNot(TokenType.$in)) {
+      final not = _matchOne(TokenType.not);
+      _matchOne(TokenType.$in);
+
+      var inside = _equals();
+      if (inside is Parentheses) {
+        // if we have something like x IN (3), then (3) is a tuple and not a
+        // parenthesis. We can only know this from the context unfortunately
+        inside = (inside as Parentheses).asTuple;
+      }
+
+      return InExpression(left: left, inside: inside, not: not);
+    }
+
+    return left;
+  }
 
   /// Parses expressions with the "equals" precedence. This contains
   /// comparisons, "IS (NOT) IN" expressions, between expressions and "like"
@@ -521,7 +541,6 @@ class Parser {
       TokenType.exclamationEqual,
       TokenType.lessMore,
       TokenType.$is,
-      TokenType.$in,
     ];
     final stringOps = const [
       TokenType.like,

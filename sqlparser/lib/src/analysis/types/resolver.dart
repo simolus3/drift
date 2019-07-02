@@ -10,7 +10,7 @@ const _comparisonOperators = [
   TokenType.less,
   TokenType.lessEqual,
   TokenType.more,
-  TokenType.moreEqual
+  TokenType.moreEqual,
 ];
 
 class TypeResolver {
@@ -79,6 +79,7 @@ class TypeResolver {
       } else if (expr is FunctionExpression) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
+          expr is InExpression ||
           expr is StringComparisonExpression ||
           expr is BetweenExpression ||
           expr is ExistsExpression) {
@@ -240,11 +241,15 @@ class TypeResolver {
       final parent = e.parent;
       if (parent is Expression) {
         final result = _argumentType(parent, e);
-        if (result.needsContext) {
-          return inferType(parent);
-        } else {
-          return result;
+        // while more context is needed, look at the parent
+        final inferredType = result.needsContext ? inferType(parent) : result;
+
+        // If this appears in a tuple, e.g. test IN (?). The "(?)" will be an
+        // array. Of course, the individual entry is not, so reset that state.
+        if (parent is TupleExpression) {
+          return inferredType.mapResult((r) => r.toArray(false));
         }
+        return inferredType;
       } else if (parent is Limit) {
         return const ResolveResult(ResolvedType(type: BasicType.int));
       } else if (parent is SetComponent) {
@@ -257,12 +262,20 @@ class TypeResolver {
 
   ResolveResult _argumentType(Expression parent, Expression argument) {
     if (parent is IsExpression ||
+        parent is InExpression ||
         parent is BinaryExpression ||
         parent is BetweenExpression ||
         parent is CaseExpression) {
       final relevant = parent.childNodes
           .lastWhere((node) => node is Expression && node != argument);
-      return resolveExpression(relevant as Expression);
+      final resolved = resolveExpression(relevant as Expression);
+
+      // if we have "a x IN argument" expression, the argument will be an array
+      if (parent is InExpression && argument == parent.inside) {
+        return resolved.mapResult((r) => r.toArray(true));
+      }
+
+      return resolved;
     } else if (parent is StringComparisonExpression) {
       if (argument == parent.escape) {
         return const ResolveResult(ResolvedType(type: BasicType.text));
@@ -271,7 +284,9 @@ class TypeResolver {
             .firstWhere((node) => node is Expression && node != argument);
         return resolveExpression(otherNode as Expression);
       }
-    } else if (parent is Parentheses || parent is UnaryExpression) {
+    } else if (parent is Parentheses ||
+        parent is TupleExpression ||
+        parent is UnaryExpression) {
       return const ResolveResult.needsContext();
     } else if (parent is FunctionExpression) {
       return resolveFunctionCall(parent);
@@ -326,17 +341,21 @@ class ResolveResult {
 
   bool get nullable => type?.nullable ?? true;
 
-  /// Copies the result with the [nullable] information, if there is one. If
-  /// there isn't, the failure state will be copied into the new
-  /// [ResolveResult].
-  ResolveResult withNullable(bool nullable) {
+  ResolveResult mapResult(ResolvedType Function(ResolvedType) map) {
     if (type != null) {
-      return ResolveResult(type.withNullable(nullable));
+      return ResolveResult(map(type));
     } else if (needsContext != null) {
       return const ResolveResult.needsContext();
     } else {
       return const ResolveResult.unknown();
     }
+  }
+
+  /// Copies the result with the [nullable] information, if there is one. If
+  /// there isn't, the failure state will be copied into the new
+  /// [ResolveResult].
+  ResolveResult withNullable(bool nullable) {
+    return mapResult((r) => r.withNullable(nullable));
   }
 
   @override
