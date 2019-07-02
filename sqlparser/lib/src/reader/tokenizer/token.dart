@@ -110,7 +110,7 @@ const Map<String, TokenType> keywords = {
   'DELETE': TokenType.delete,
   'FROM': TokenType.from,
   'NATURAL': TokenType.natural,
-  'LEFT': TokenType.leftParen,
+  'LEFT': TokenType.left,
   'OUTER': TokenType.outer,
   'INNER': TokenType.inner,
   'CROSS': TokenType.cross,

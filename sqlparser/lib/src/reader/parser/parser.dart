@@ -113,6 +113,9 @@ class Parser {
     final stmt = select() ?? _deleteStmt() ?? _update();
 
     _matchOne(TokenType.semicolon);
+    if (!_isAtEnd) {
+      _error('Expected the statement to finish here');
+    }
     return stmt;
   }
 
