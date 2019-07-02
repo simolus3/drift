@@ -1005,6 +1005,150 @@ class $TableWithoutPKTable extends TableWithoutPK
   }
 }
 
+class PureDefault extends DataClass implements Insertable<PureDefault> {
+  final int id;
+  final String txt;
+  PureDefault({@required this.id, this.txt});
+  factory PureDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return PureDefault(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}txt']),
+    );
+  }
+  factory PureDefault.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return PureDefault(
+      id: serializer.fromJson<int>(json['id']),
+      txt: serializer.fromJson<String>(json['txt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return {
+      'id': serializer.toJson<int>(id),
+      'txt': serializer.toJson<String>(txt),
+    };
+  }
+
+  @override
+  T createCompanion<T extends UpdateCompanion<PureDefault>>(bool nullToAbsent) {
+    return PureDefaultsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      txt: txt == null && nullToAbsent ? const Value.absent() : Value(txt),
+    ) as T;
+  }
+
+  PureDefault copyWith({int id, String txt}) => PureDefault(
+        id: id ?? this.id,
+        txt: txt ?? this.txt,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('PureDefault(')
+          ..write('id: $id, ')
+          ..write('txt: $txt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), txt.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is PureDefault && other.id == id && other.txt == txt);
+}
+
+class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
+  final Value<int> id;
+  final Value<String> txt;
+  const PureDefaultsCompanion({
+    this.id = const Value.absent(),
+    this.txt = const Value.absent(),
+  });
+}
+
+class $PureDefaultsTable extends PureDefaults
+    with TableInfo<$PureDefaultsTable, PureDefault> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $PureDefaultsTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+  }
+
+  final VerificationMeta _txtMeta = const VerificationMeta('txt');
+  GeneratedTextColumn _txt;
+  @override
+  GeneratedTextColumn get txt => _txt ??= _constructTxt();
+  GeneratedTextColumn _constructTxt() {
+    return GeneratedTextColumn(
+      'txt',
+      $tableName,
+      true,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, txt];
+  @override
+  $PureDefaultsTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'pure_defaults';
+  @override
+  final String actualTableName = 'pure_defaults';
+  @override
+  VerificationContext validateIntegrity(PureDefaultsCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.id.present) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
+    }
+    if (d.txt.present) {
+      context.handle(_txtMeta, txt.isAcceptableValue(d.txt.value, _txtMeta));
+    } else if (txt.isRequired && isInserting) {
+      context.missing(_txtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PureDefault map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return PureDefault.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(PureDefaultsCompanion d) {
+    final map = <String, Variable>{};
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
+    }
+    if (d.txt.present) {
+      map['txt'] = Variable<String, StringType>(d.txt.value);
+    }
+    return map;
+  }
+
+  @override
+  $PureDefaultsTable createAlias(String alias) {
+    return $PureDefaultsTable(_db, alias);
+  }
+}
+
 class AllTodosWithCategoryResult {
   final int id;
   final String title;
@@ -1037,6 +1181,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
   $TableWithoutPKTable _tableWithoutPK;
   $TableWithoutPKTable get tableWithoutPK =>
       _tableWithoutPK ??= $TableWithoutPKTable(this);
+  $PureDefaultsTable _pureDefaults;
+  $PureDefaultsTable get pureDefaults =>
+      _pureDefaults ??= $PureDefaultsTable(this);
   SomeDao _someDao;
   SomeDao get someDao => _someDao ??= SomeDao(this as TodoDb);
   AllTodosWithCategoryResult _rowToAllTodosWithCategoryResult(QueryRow row) {
@@ -1078,8 +1225,14 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables =>
-      [todosTable, categories, users, sharedTodos, tableWithoutPK];
+  List<TableInfo> get allTables => [
+        todosTable,
+        categories,
+        users,
+        sharedTodos,
+        tableWithoutPK,
+        pureDefaults
+      ];
 }
 
 // **************************************************************************

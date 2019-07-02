@@ -52,8 +52,20 @@ class TableWithoutPK extends Table {
   RealColumn get someFloat => real()();
 }
 
+class PureDefaults extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get txt => text().nullable()();
+}
+
 @UseMoor(
-  tables: [TodosTable, Categories, Users, SharedTodos, TableWithoutPK],
+  tables: [
+    TodosTable,
+    Categories,
+    Users,
+    SharedTodos,
+    TableWithoutPK,
+    PureDefaults,
+  ],
   daos: [SomeDao],
   queries: {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '

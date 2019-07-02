@@ -49,6 +49,12 @@ void main() {
         [113, 'Done']));
   });
 
+  test('generates DEFAULT VALUES statement when otherwise empty', () async {
+    await db.into(db.pureDefaults).insert(const PureDefaultsCompanion());
+
+    verify(executor.runInsert('INSERT INTO pure_defaults DEFAULT VALUES', []));
+  });
+
   test('runs bulk inserts', () async {
     await db.into(db.todosTable).insertAll(const [
       TodosTableCompanion(content: Value('a')),

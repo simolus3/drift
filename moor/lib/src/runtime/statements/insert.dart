@@ -93,29 +93,37 @@ class InsertStatement<D extends DataClass> {
       ..write(replace ? 'OR REPLACE ' : '')
       ..write('INTO ')
       ..write(table.$tableName)
-      ..write(' (')
-      ..write(map.keys.join(', '))
-      ..write(') ')
-      ..write('VALUES (');
+      ..write(' ');
 
-    var first = true;
-    for (var variable in map.values) {
-      if (!first) {
-        ctx.buffer.write(', ');
+    if (map.isEmpty) {
+      ctx.buffer.write('DEFAULT VALUES');
+    } else {
+      ctx.buffer
+        ..write('(')
+        ..write(map.keys.join(', '))
+        ..write(') ')
+        ..write('VALUES (');
+
+      var first = true;
+      for (var variable in map.values) {
+        if (!first) {
+          ctx.buffer.write(', ');
+        }
+        first = false;
+
+        variable.writeInto(ctx);
       }
-      first = false;
 
-      variable.writeInto(ctx);
+      ctx.buffer.write(')');
     }
 
-    ctx.buffer.write(')');
     return ctx;
   }
 
   void _validateIntegrity(Insertable<D> d) {
     if (d == null) {
       throw InvalidDataException(
-          'Cannot writee null row into ${table.$tableName}');
+          'Cannot write null row into ${table.$tableName}');
     }
 
     table
