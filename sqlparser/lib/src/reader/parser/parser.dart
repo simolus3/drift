@@ -21,7 +21,8 @@ final _startOperators = const [
   TokenType.natural,
   TokenType.left,
   TokenType.inner,
-  TokenType.cross
+  TokenType.cross,
+  TokenType.join,
 ];
 
 class ParsingError implements Exception {
@@ -275,6 +276,8 @@ class Parser {
         resolvedOperator = JoinOperator.cross;
       } else if (operator.contains(TokenType.comma)) {
         resolvedOperator = JoinOperator.comma;
+      } else {
+        resolvedOperator = JoinOperator.none;
       }
 
       joins.add(Join(
@@ -299,18 +302,24 @@ class Parser {
   List<TokenType> _parseJoinOperatorNoComma() {
     if (_match(_startOperators)) {
       final operators = [_previous.type];
-      // natural is a prefix, another operator can follow.
-      if (_previous.type == TokenType.natural) {
-        if (_match([TokenType.left, TokenType.inner, TokenType.cross])) {
+
+      if (_previous.type == TokenType.join) {
+        // just join, without any specific operators
+        return operators;
+      } else {
+        // natural is a prefix, another operator can follow.
+        if (_previous.type == TokenType.natural) {
+          if (_match([TokenType.left, TokenType.inner, TokenType.cross])) {
+            operators.add(_previous.type);
+          }
+        }
+        if (_previous.type == TokenType.left && _matchOne(TokenType.outer)) {
           operators.add(_previous.type);
         }
-      }
-      if (_previous.type == TokenType.left && _matchOne(TokenType.outer)) {
-        operators.add(_previous.type);
-      }
 
-      _consume(TokenType.join, 'Expected to see a join keyword here');
-      return operators;
+        _consume(TokenType.join, 'Expected to see a join keyword here');
+        return operators;
+      }
     }
     return null;
   }

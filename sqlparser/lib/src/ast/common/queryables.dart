@@ -89,6 +89,7 @@ class JoinClause extends Queryable {
 }
 
 enum JoinOperator {
+  none, // just JOIN, no other keywords
   comma,
   left,
   leftOuter,

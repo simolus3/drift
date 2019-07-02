@@ -24,12 +24,17 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.text, isArray: true)),
   'SELECT * FROM demo WHERE content IN (?)':
       const ResolveResult(ResolvedType(type: BasicType.text, isArray: false)),
+  'SELECT * FROM demo JOIN table ON demo.id = table.id WHERE date = ?':
+      const ResolveResult(
+          ResolvedType(type: BasicType.int, hint: IsDateTime())),
 };
 
 void main() {
   _types.forEach((sql, resolvedType) {
     test('types: resolves in $sql', () {
-      final engine = SqlEngine()..registerTable(demoTable);
+      final engine = SqlEngine()
+        ..registerTable(demoTable)
+        ..registerTable(anotherTable);
       final content = engine.analyze(sql);
 
       final variable = content.root.allDescendants
