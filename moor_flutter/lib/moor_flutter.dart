@@ -149,7 +149,7 @@ class FlutterQueryExecutor extends _DatabaseOwner {
   SqlExecutor _migrationExecutor(s.Database db) {
     return (sql) {
       _log(sql);
-      db.execute(sql);
+      return db.execute(sql);
     };
   }
 

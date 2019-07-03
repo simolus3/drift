@@ -1,5 +1,7 @@
 ## 1.5.1
-- Fixed an issue where streams would behave inconsistently when transformed.
+- Fixed an issue where transformed streams would not always update
+- Emit a `INSERT INTO table DEFAULT VALUES` when appropriate. Moor used to generate invalid sql
+before.
 
 ## 1.5.0
 This version introduces some new concepts and features, which are explained in more detail below. 
