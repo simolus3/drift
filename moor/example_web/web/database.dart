@@ -23,6 +23,7 @@ class Database extends _$Database {
   }
 
   void insert(String text) async {
+    print('inserting with $text');
     await into(todoEntries).insert(TodoEntriesCompanion(content: Value(text)));
   }
 }

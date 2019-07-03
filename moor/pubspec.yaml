@@ -9,7 +9,7 @@ authors:
 maintainer: Simon Binder (@simolus3)
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.2.2 <3.0.0'
 
 dependencies:
   meta: '>= 1.0.0 <2.0.0'

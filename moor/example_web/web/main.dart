@@ -5,15 +5,14 @@ import 'package:moor/moor_web.dart';
 import 'database.dart';
 
 void main() async {
-  final db = Database(AlaSqlDatabase('database'));
+  final db = Database(WebDatabase('database', logStatements: true));
   db.watchEntries().listen(print);
 
-  final content = querySelector('#description');
-
   (querySelector('#add_todo_form') as FormElement).onSubmit.listen((e) {
+    final content = querySelector('#description') as InputElement;
     e.preventDefault();
 
-    db.insert(content.text);
-    content.text = '';
+    db.insert(content.value);
+    content.value = '';
   });
 }
