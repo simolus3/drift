@@ -5,6 +5,7 @@
 library moor_web;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html';
 import 'dart:indexed_db';
 import 'dart:js';
@@ -17,3 +18,4 @@ import 'moor.dart';
 export 'moor.dart';
 
 part 'src/web/sql_js.dart';
+part 'src/web/binary_string_conversion.dart';

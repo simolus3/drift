@@ -79,8 +79,10 @@ class WebDatabase extends QueryExecutor {
     db.close();
 
     final sql = await _initializedWasm.future;
+    final restored = _restoreDb();
     // var db = new SQL.Database()
-    _database = JsObject(sql['Database'] as JsFunction);
+    _database = JsObject(sql['Database'] as JsFunction,
+        restored != null ? [restored] : const []);
     assert(() {
       // set the window.db variable to make debugging easier
       context['db'] = _database;
@@ -97,6 +99,24 @@ class WebDatabase extends QueryExecutor {
             to: databaseInfo.schemaVersion);
       }
     }
+  }
+
+  String get _persistenceKey => 'moor_db_str_$name';
+
+  // todo base64 works, but is very slow. Figure out why bin2str is broken
+
+  Uint8List _restoreDb() {
+    final raw = window.localStorage[_persistenceKey];
+    if (raw != null) {
+      return base64.decode(raw);
+    }
+    return null;
+  }
+
+  void _storeDb() {
+    final data = _database.callMethod('export') as Uint8List;
+    final binStr = base64.encode(data);
+    window.localStorage[_persistenceKey] = binStr;
   }
 
   @override
@@ -141,21 +161,29 @@ class WebDatabase extends QueryExecutor {
   @override
   Future<int> runDelete(String statement, List args) {
     _runSimple(statement, args);
-    return Future.value(_getModifiedRows());
-  }
-
-  @override
-  Future<int> runInsert(String statement, List args) {
-    // todo get last insert id
-//    _runSimple("INSERT INTO todo_entries (content) VALUES ('test')", const []);
-    _runSimple(statement, args);
-    return Future.value(42);
+    return _handlePotentialUpdate();
   }
 
   @override
   Future<int> runUpdate(String statement, List args) {
     _runSimple(statement, args);
-    return Future.value(_getModifiedRows());
+    return _handlePotentialUpdate();
+  }
+
+  Future<int> _handlePotentialUpdate() {
+    final modified = _getModifiedRows();
+    if (modified > 0) {
+      _storeDb();
+    }
+    return Future.value(modified);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    // todo get last insert id
+    _runSimple(statement, args);
+    _handlePotentialUpdate();
+    return Future.value(42);
   }
 
   @override
