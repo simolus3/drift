@@ -8,14 +8,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 import 'dart:indexed_db';
-import 'dart:js';
 
 import 'package:meta/meta.dart';
 import 'package:meta/dart2js.dart';
 
 import 'moor.dart';
+import 'src/web/sql_js.dart';
 
 export 'moor.dart';
 
-part 'src/web/sql_js.dart';
 part 'src/web/binary_string_conversion.dart';
+part 'src/web/web_db.dart';

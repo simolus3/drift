@@ -1,221 +1,127 @@
-part of 'package:moor/moor_web.dart';
+import 'dart:async';
+import 'dart:js';
 
-const _initSqlJs = 'initSqlJs';
+import 'dart:typed_data';
 
-// ignore_for_file: cascade_invocations
+// We write our own mapping code to js instead of depending on package:js
+// This way, projects using moor can run on flutter as long as they don't import
+// this file.
 
-/// Experimental moor backend for the web. To use this platform, you need to
-/// include the latest version of `sql.js` in your html.
-class WebDatabase extends QueryExecutor {
-  final bool logStatements;
-  final String name;
+Completer<SqlJsModule> _moduleCompleter;
 
-  Completer<bool> _opening;
-  JsObject _database;
-
-  // resolves to the SQL module. See the `initSqlJs` call in https://github.com/kripken/sql.js#example-html-file
-  // This completer resolves to the `SQL` variable in that example.
-  static Completer<JsObject> _initializedWasm;
-
-  WebDatabase(this.name, {this.logStatements = false}) {
-    if (context.hasProperty(_initSqlJs) == null) {
-      throw UnsupportedError('Could not access the sql.js javascript library. '
-          'The moor documentation contains instructions on how to setup moor '
-          'the web, which might help you fix this.');
-    }
-    _loadWasmIfNeeded();
+Future<SqlJsModule> initSqlJs() {
+  if (_moduleCompleter != null) {
+    return _moduleCompleter.future;
   }
 
-  void _loadWasmIfNeeded() {
-    if (_initializedWasm != null) return;
-
-    _initializedWasm = Completer();
-    // initSqlJs().then((sql) => _initialitedWasm.complete(sql));
-    final promise = context.callMethod(_initSqlJs) as JsObject;
-    promise.callMethod('then', [
-      allowInterop((JsObject data) {
-        _initializedWasm.complete(data);
-      })
-    ]);
+  _moduleCompleter = Completer();
+  if (!context.hasProperty('initSqlJs')) {
+    return Future.error(
+        UnsupportedError('Could not access the sql.js javascript library. '
+            'The moor documentation contains instructions on how to setup moor '
+            'the web, which might help you fix this.'));
   }
 
-  @override
-  TransactionExecutor beginTransaction() {
-    throw StateError(
-        'Transactions are not currently supported with the sql.js backend');
-  }
+  (context.callMethod('initSqlJs') as JsObject).callMethod('then', [
+    allowInterop((sqlModule) {
+      _moduleCompleter.complete(SqlJsModule._(sqlModule as JsObject));
+    })
+  ]);
 
-  @override
-  Future<bool> ensureOpen() async {
-    if (_opening == null) {
-      _opening = Completer();
-      await _openInternal();
-      _opening.complete();
-    } else {
-      await _opening.future;
-    }
+  return _moduleCompleter.future;
+}
 
-    return true;
-  }
+class SqlJsModule {
+  final JsObject _obj;
+  SqlJsModule._(this._obj);
 
-  Future<void> _openInternal() async {
-    // We don't get information about the database version from sql.js, so we
-    // create another database just to manage versions.
-    if (!IdbFactory.supported) {
-      throw UnsupportedError("This browser doesn't support IndexedDb");
-    }
-
-    int version;
-    var upgradeNeeded = false;
-
-    final db = await window.indexedDB.open(
-      name,
-      version: databaseInfo.schemaVersion,
-      onUpgradeNeeded: (event) {
-        upgradeNeeded = true;
-        version = event.oldVersion;
-      },
-    );
-    db.close();
-
-    final sql = await _initializedWasm.future;
-    final restored = _restoreDb();
-    // var db = new SQL.Database()
-    _database = JsObject(sql['Database'] as JsFunction,
-        restored != null ? [restored] : const []);
+  SqlJsDatabase createDatabase([Uint8List data]) {
+    final dbObj = _createInternally(data);
     assert(() {
       // set the window.db variable to make debugging easier
-      context['db'] = _database;
+      context['db'] = dbObj;
       return true;
     }());
 
-    if (upgradeNeeded) {
-      if (version == null || version < 1) {
-        await databaseInfo.handleDatabaseCreation(executor: _runWithoutArgs);
-      } else {
-        await databaseInfo.handleDatabaseVersionChange(
-            executor: _runWithoutArgs,
-            from: version,
-            to: databaseInfo.schemaVersion);
-      }
-    }
+    return SqlJsDatabase._(dbObj);
   }
 
-  String get _persistenceKey => 'moor_db_str_$name';
+  JsObject _createInternally(Uint8List data) {
+    final constructor = _obj['Database'] as JsFunction;
 
-  // todo base64 works, but is very slow. Figure out why bin2str is broken
-
-  Uint8List _restoreDb() {
-    final raw = window.localStorage[_persistenceKey];
-    if (raw != null) {
-      return base64.decode(raw);
-    }
-    return null;
-  }
-
-  void _storeDb() {
-    final data = _database.callMethod('export') as Uint8List;
-    final binStr = base64.encode(data);
-    window.localStorage[_persistenceKey] = binStr;
-  }
-
-  @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
-    throw StateError(
-        'Batched statements are not currently supported with the web backend');
-  }
-
-  @tryInline
-  void _log(String sql, List<dynamic> variables) {
-    if (logStatements) {
-      print('[moor_web]: Running $sql with bound args: $variables');
-    }
-  }
-
-  /// Executes [sql] with the bound [variables], and ignores the result.
-  void _runSimple(String sql, List<dynamic> variables) {
-    _log(sql, variables);
-    if (variables.isEmpty) {
-      _database.callMethod('run', [sql]);
+    if (data != null) {
+      return JsObject(constructor, [data]);
     } else {
-      final ar = JsArray.from(variables);
-      _database.callMethod('run', [sql, ar]);
+      return JsObject(constructor);
     }
   }
+}
 
-  Future<void> _runWithoutArgs(String query) {
-    _runSimple(query, const []);
-    return Future.value(null);
+class SqlJsDatabase {
+  final JsObject _obj;
+  SqlJsDatabase._(this._obj);
+
+  PreparedStatement prepare(String sql) {
+    final obj = _obj.callMethod('prepare', [sql]) as JsObject;
+    return PreparedStatement._(obj);
+  }
+
+  void run(String sql) {
+    _obj.callMethod('run', [sql]);
+  }
+
+  void runWithArgs(String sql, List<dynamic> args) {
+    final ar = JsArray.from(args);
+    _obj.callMethod('run', [sql, ar]);
   }
 
   /// Returns the amount of rows affected by the most recent INSERT, UPDATE or
   /// DELETE statement.
-  int _getModifiedRows() {
-    return _database.callMethod('getRowsModified') as int;
+  int lastModifiedRows() {
+    return _obj.callMethod('getRowsModified') as int;
   }
 
-  @override
-  Future<void> runCustom(String statement) {
-    return _runWithoutArgs(statement);
-  }
-
-  @override
-  Future<int> runDelete(String statement, List args) {
-    _runSimple(statement, args);
-    return _handlePotentialUpdate();
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List args) {
-    _runSimple(statement, args);
-    return _handlePotentialUpdate();
-  }
-
-  /// Saves the database if the last statement changed rows. As a side-effect,
-  /// saving the database resets the `last_insert_id` counter in sqlite.
-  Future<int> _handlePotentialUpdate() {
-    final modified = _getModifiedRows();
-    if (modified > 0) {
-      _storeDb();
-    }
-    return Future.value(modified);
-  }
-
-  @override
-  Future<int> runInsert(String statement, List args) async {
-    _runSimple(statement, args);
-
+  /// The row id of the last inserted row. This counter is reset when calling
+  /// [export].
+  int lastInsertId() {
     // load insert id. Will return [{columns: [...], values: [[id]]}]
-    final results = _database
+    final results = _obj
         .callMethod('exec', const ['SELECT last_insert_rowid();']) as JsArray;
     final row = results.first as JsObject;
     final data = (row['values'] as JsArray).first as JsArray;
 
-    await _handlePotentialUpdate();
-
-    return Future.value(data.first as int);
+    return data.first as int;
   }
 
-  @override
-  Future<List<Map<String, dynamic>>> runSelect(
-      String statement, List args) async {
-    _log(statement, args);
-    // todo at least for stream queries we should cache prepared statements.
-    final stmt = _database.callMethod('prepare', [statement]) as JsObject;
-    stmt.callMethod('bind', [args]);
+  Uint8List export() {
+    return _obj.callMethod('export') as Uint8List;
+  }
+}
 
-    List<String> columnNames;
-    final rows = <Map<String, dynamic>>[];
+class PreparedStatement {
+  final JsObject _obj;
+  PreparedStatement._(this._obj);
 
-    while (stmt.callMethod('step') as bool) {
-      columnNames ??=
-          (stmt.callMethod('getColumnNames') as JsArray).cast<String>();
+  /// Executes this statement with the bound [args].
+  void executeWith(List<dynamic> args) {
+    _obj.callMethod('bind', [JsArray.from(args)]);
+  }
 
-      final row = stmt.callMethod('get') as JsArray;
-      rows.add({for (var i = 0; i < row.length; i++) columnNames[i]: row[i]});
-    }
+  bool step() {
+    return _obj.callMethod('step') as bool;
+  }
 
-    stmt.callMethod('free');
-    return rows;
+  List<dynamic> currentRow() {
+    return _obj.callMethod('get') as JsArray;
+  }
+
+  /// The columns returned by this statement. This will only be available after
+  /// [step] has been called once.
+  List<String> columnNames() {
+    return (_obj.callMethod('getColumnNames') as JsArray).cast<String>();
+  }
+
+  void free() {
+    _obj.callMethod('free');
   }
 }
