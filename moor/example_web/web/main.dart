@@ -12,7 +12,7 @@ void main() async {
     final content = querySelector('#description') as InputElement;
     e.preventDefault();
 
-    db.insert(content.value);
+    db.insert(content.value).then((insertId) => print('inserted #$insertId'));
     content.value = '';
   });
 }

@@ -22,8 +22,7 @@ class Database extends _$Database {
     return select(todoEntries).watch();
   }
 
-  void insert(String text) async {
-    print('inserting with $text');
-    await into(todoEntries).insert(TodoEntriesCompanion(content: Value(text)));
+  Future<int> insert(String text) {
+    return into(todoEntries).insert(TodoEntriesCompanion(content: Value(text)));
   }
 }

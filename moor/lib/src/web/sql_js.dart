@@ -138,7 +138,8 @@ class WebDatabase extends QueryExecutor {
     if (variables.isEmpty) {
       _database.callMethod('run', [sql]);
     } else {
-      _database.callMethod('run', [sql, JsArray.from(variables)]);
+      final ar = JsArray.from(variables);
+      _database.callMethod('run', [sql, ar]);
     }
   }
 
@@ -170,6 +171,8 @@ class WebDatabase extends QueryExecutor {
     return _handlePotentialUpdate();
   }
 
+  /// Saves the database if the last statement changed rows. As a side-effect,
+  /// saving the database resets the `last_insert_id` counter in sqlite.
   Future<int> _handlePotentialUpdate() {
     final modified = _getModifiedRows();
     if (modified > 0) {
@@ -179,11 +182,18 @@ class WebDatabase extends QueryExecutor {
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
-    // todo get last insert id
+  Future<int> runInsert(String statement, List args) async {
     _runSimple(statement, args);
-    _handlePotentialUpdate();
-    return Future.value(42);
+
+    // load insert id. Will return [{columns: [...], values: [[id]]}]
+    final results = _database
+        .callMethod('exec', const ['SELECT last_insert_rowid();']) as JsArray;
+    final row = results.first as JsObject;
+    final data = (row['values'] as JsArray).first as JsArray;
+
+    await _handlePotentialUpdate();
+
+    return Future.value(data.first as int);
   }
 
   @override
