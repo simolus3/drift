@@ -59,7 +59,7 @@ packages:
       path: "../moor"
       relative: true
     source: path
-    version: "1.5.1"
+    version: "1.5.1+1"
   path:
     dependency: "direct main"
     description:
@@ -99,7 +99,7 @@ packages:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.6+1"
   stack_trace:
     dependency: transitive
     description:
@@ -127,7 +127,7 @@ packages:
       name: synchronized
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.5.3+2"
+    version: "2.1.0+1"
   term_glyph:
     dependency: transitive
     description:
@@ -158,3 +158,4 @@ packages:
     version: "2.0.8"
 sdks:
   dart: ">=2.2.0 <3.0.0"
+  flutter: ">=1.2.1 <2.0.0"

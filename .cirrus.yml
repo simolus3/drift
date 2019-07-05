@@ -1,0 +1,14 @@
+# Run tasks with the dart SDK installed by default
+container:
+  image: "google/dart:latest"
+
+task:
+  pub_cache:
+    folder: $HOME/.pub-cache
+  matrix:
+    - name: pub_get
+      test_script: tool/pub_get.sh
+    - name: analyze
+      depends_on:
+        - pub_get
+      test_script: tool/analyze.sh
