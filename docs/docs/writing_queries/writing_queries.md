@@ -87,7 +87,7 @@ the statement will affect all rows in the table!
 You can very easily insert any valid object into tables:
 ```dart
 // returns the generated id
-Future<int> addTodoEntry(Todo entry) {
+Future<int> addTodoEntry(TodosCompanion entry) {
   return into(todos).insert(entry);
 }
 ```
