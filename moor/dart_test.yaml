@@ -1,0 +1,11 @@
+# https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#configuring-tags
+
+platforms:
+  - vm
+#  - firefox
+#  - chrome
+
+override_platforms:
+  firefox:
+    settings:
+      arguments: -headless
