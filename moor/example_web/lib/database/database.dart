@@ -24,6 +24,22 @@ class Database extends _$Database {
   @override
   final int schemaVersion = 1;
 
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (m) async => await m.createAllTables(),
+      beforeOpen: (engine, details) async {
+        if (details.wasCreated) {
+          // populate default data
+          await createTodoEntry('A simple todo list using moor web',
+              engine: engine);
+          await createTodoEntry('It even supports prepopulated data!',
+              engine: engine);
+        }
+      },
+    );
+  }
+
   Stream<List<Entry>> incompleteEntries() {
     return (select(todoEntries)..where((e) => not(e.done))).watch();
   }
@@ -37,11 +53,14 @@ class Database extends _$Database {
         .watch();
   }
 
-  Future createTodoEntry(String desc) {
-    return into(todoEntries).insert(TodoEntriesCompanion(content: Value(desc)));
+  Future createTodoEntry(String desc, {QueryEngine engine}) {
+    final resolved = engine ?? this;
+    return resolved
+        .into(todoEntries)
+        .insert(TodoEntriesCompanion(content: Value(desc)));
   }
 
   Future setCompleted(Entry entry, bool done) {
-    return update(todoEntries).write(entry.copyWith(done: done));
+    return update(todoEntries).replace(entry.copyWith(done: done));
   }
 }

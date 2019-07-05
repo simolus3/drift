@@ -204,12 +204,19 @@ class WebDatabase extends _DatabaseUser {
     );
     db.close();
 
+    if (version < 1) {
+      // assume version code 0 (default) to be null. Other parts of moor
+      // interpret a null version code as "the database was just created", so it
+      // fits.
+      version = null;
+    }
+
     final module = await initSqlJs();
     final restored = _restoreDb();
     _state.db = module.createDatabase(restored);
 
     if (upgradeNeeded) {
-      if (version == null || version < 1) {
+      if (version == null) {
         await databaseInfo.handleDatabaseCreation(executor: _runWithoutArgs);
       } else {
         await databaseInfo.handleDatabaseVersionChange(

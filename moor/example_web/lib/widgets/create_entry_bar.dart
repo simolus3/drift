@@ -23,6 +23,7 @@ class _CreateEntryBarState extends State<CreateEntryBar> {
         Expanded(
           child: TextField(
             controller: _controller,
+            onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
               border: OutlineInputBorder(),
             ),
@@ -30,14 +31,18 @@ class _CreateEntryBarState extends State<CreateEntryBar> {
         ),
         IconButton(
           icon: Icon(Icons.add),
-          onPressed: () {
-            final text = _controller.text;
-            _controller.clear();
-
-            DatabaseProvider.provide(context).createTodoEntry(text);
-          },
+          onPressed: _submit,
         ),
       ],
     );
+  }
+
+  void _submit() {
+    final text = _controller.text.trim();
+    _controller.clear();
+
+    if (text.isNotEmpty) {
+      DatabaseProvider.provide(context).createTodoEntry(text);
+    }
   }
 }

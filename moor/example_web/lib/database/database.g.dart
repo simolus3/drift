@@ -123,7 +123,7 @@ class $TodoEntriesTable extends TodoEntries
   GeneratedBoolColumn get done => _done ??= _constructDone();
   GeneratedBoolColumn _constructDone() {
     return GeneratedBoolColumn('done', $tableName, false,
-        defaultValue: const Constant(true));
+        defaultValue: const Constant(false));
   }
 
   @override
