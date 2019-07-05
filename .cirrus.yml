@@ -5,10 +5,6 @@ container:
 task:
   pub_cache:
     folder: $HOME/.pub-cache
-  matrix:
-    - name: pub_get
-      test_script: tool/pub_get.sh
-    - name: analyze
-      depends_on:
-        - pub_get
-      test_script: tool/analyze.sh
+  pub_get_script: tool/pub_get.sh
+  analyze_script: tool/analyze.sh
+  test_moor_script: tool/test_moor.sh
