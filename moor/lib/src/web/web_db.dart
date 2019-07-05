@@ -223,6 +223,11 @@ class WebDatabase extends _DatabaseUser {
       return databaseInfo.beforeOpenCallback(_BeforeOpenExecutor(_state),
           OpeningDetails(version, databaseInfo.schemaVersion));
     });
+
+    if (upgradeNeeded) {
+      // assume that a schema version was written in an upgrade => save db
+      _storeDb();
+    }
   }
 }
 

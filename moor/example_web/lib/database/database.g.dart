@@ -7,32 +7,30 @@ part of 'database.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps
-class TodoEntry extends DataClass implements Insertable<TodoEntry> {
+class Entry extends DataClass implements Insertable<Entry> {
   final int id;
   final String content;
-  final DateTime creationDate;
-  TodoEntry(
-      {@required this.id, @required this.content, @required this.creationDate});
-  factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+  final bool done;
+  Entry({@required this.id, @required this.content, @required this.done});
+  factory Entry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
-    return TodoEntry(
+    final boolType = db.typeSystem.forDartType<bool>();
+    return Entry(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       content:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      creationDate: dateTimeType
-          .mapFromDatabaseResponse(data['${effectivePrefix}creation_date']),
+      done: boolType.mapFromDatabaseResponse(data['${effectivePrefix}done']),
     );
   }
-  factory TodoEntry.fromJson(Map<String, dynamic> json,
+  factory Entry.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return TodoEntry(
+    return Entry(
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
-      creationDate: serializer.fromJson<DateTime>(json['creationDate']),
+      done: serializer.fromJson<bool>(json['done']),
     );
   }
   @override
@@ -41,64 +39,61 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     return {
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
-      'creationDate': serializer.toJson<DateTime>(creationDate),
+      'done': serializer.toJson<bool>(done),
     };
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Entry>>(bool nullToAbsent) {
     return TodoEntriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       content: content == null && nullToAbsent
           ? const Value.absent()
           : Value(content),
-      creationDate: creationDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(creationDate),
+      done: done == null && nullToAbsent ? const Value.absent() : Value(done),
     ) as T;
   }
 
-  TodoEntry copyWith({int id, String content, DateTime creationDate}) =>
-      TodoEntry(
+  Entry copyWith({int id, String content, bool done}) => Entry(
         id: id ?? this.id,
         content: content ?? this.content,
-        creationDate: creationDate ?? this.creationDate,
+        done: done ?? this.done,
       );
   @override
   String toString() {
-    return (StringBuffer('TodoEntry(')
+    return (StringBuffer('Entry(')
           ..write('id: $id, ')
           ..write('content: $content, ')
-          ..write('creationDate: $creationDate')
+          ..write('done: $done')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, id.hashCode), content.hashCode), creationDate.hashCode));
+  int get hashCode => $mrjf(
+      $mrjc($mrjc($mrjc(0, id.hashCode), content.hashCode), done.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is TodoEntry &&
+      (other is Entry &&
           other.id == id &&
           other.content == content &&
-          other.creationDate == creationDate);
+          other.done == done);
 }
 
-class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
+class TodoEntriesCompanion extends UpdateCompanion<Entry> {
   final Value<int> id;
   final Value<String> content;
-  final Value<DateTime> creationDate;
+  final Value<bool> done;
   const TodoEntriesCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
-    this.creationDate = const Value.absent(),
+    this.done = const Value.absent(),
   });
 }
 
 class $TodoEntriesTable extends TodoEntries
-    with TableInfo<$TodoEntriesTable, TodoEntry> {
+    with TableInfo<$TodoEntriesTable, Entry> {
   final GeneratedDatabase _db;
   final String _alias;
   $TodoEntriesTable(this._db, [this._alias]);
@@ -122,19 +117,17 @@ class $TodoEntriesTable extends TodoEntries
     );
   }
 
-  final VerificationMeta _creationDateMeta =
-      const VerificationMeta('creationDate');
-  GeneratedDateTimeColumn _creationDate;
+  final VerificationMeta _doneMeta = const VerificationMeta('done');
+  GeneratedBoolColumn _done;
   @override
-  GeneratedDateTimeColumn get creationDate =>
-      _creationDate ??= _constructCreationDate();
-  GeneratedDateTimeColumn _constructCreationDate() {
-    return GeneratedDateTimeColumn('creation_date', $tableName, false,
-        defaultValue: currentDateAndTime);
+  GeneratedBoolColumn get done => _done ??= _constructDone();
+  GeneratedBoolColumn _constructDone() {
+    return GeneratedBoolColumn('done', $tableName, false,
+        defaultValue: const Constant(true));
   }
 
   @override
-  List<GeneratedColumn> get $columns => [id, content, creationDate];
+  List<GeneratedColumn> get $columns => [id, content, done];
   @override
   $TodoEntriesTable get asDslTable => this;
   @override
@@ -156,13 +149,11 @@ class $TodoEntriesTable extends TodoEntries
     } else if (content.isRequired && isInserting) {
       context.missing(_contentMeta);
     }
-    if (d.creationDate.present) {
+    if (d.done.present) {
       context.handle(
-          _creationDateMeta,
-          creationDate.isAcceptableValue(
-              d.creationDate.value, _creationDateMeta));
-    } else if (creationDate.isRequired && isInserting) {
-      context.missing(_creationDateMeta);
+          _doneMeta, done.isAcceptableValue(d.done.value, _doneMeta));
+    } else if (done.isRequired && isInserting) {
+      context.missing(_doneMeta);
     }
     return context;
   }
@@ -170,9 +161,9 @@ class $TodoEntriesTable extends TodoEntries
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TodoEntry map(Map<String, dynamic> data, {String tablePrefix}) {
+  Entry map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TodoEntry.fromData(data, _db, prefix: effectivePrefix);
+    return Entry.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -184,9 +175,8 @@ class $TodoEntriesTable extends TodoEntries
     if (d.content.present) {
       map['content'] = Variable<String, StringType>(d.content.value);
     }
-    if (d.creationDate.present) {
-      map['creation_date'] =
-          Variable<DateTime, DateTimeType>(d.creationDate.value);
+    if (d.done.present) {
+      map['done'] = Variable<bool, BoolType>(d.done.value);
     }
     return map;
   }
@@ -197,10 +187,38 @@ class $TodoEntriesTable extends TodoEntries
   }
 }
 
+class HiddenEntryCountResult {
+  final int entries;
+  HiddenEntryCountResult({
+    this.entries,
+  });
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodoEntriesTable _todoEntries;
   $TodoEntriesTable get todoEntries => _todoEntries ??= $TodoEntriesTable(this);
+  HiddenEntryCountResult _rowToHiddenEntryCountResult(QueryRow row) {
+    return HiddenEntryCountResult(
+      entries: row.readInt('entries'),
+    );
+  }
+
+  Future<List<HiddenEntryCountResult>> hiddenEntryCount(
+      {QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT COUNT(*) - 20 AS entries FROM todo_entries WHERE done',
+        variables: []).then((rows) => rows.map(_rowToHiddenEntryCountResult).toList());
+  }
+
+  Stream<List<HiddenEntryCountResult>> watchHiddenEntryCount() {
+    return customSelectStream(
+            'SELECT COUNT(*) - 20 AS entries FROM todo_entries WHERE done',
+            variables: [],
+            readsFrom: {todoEntries})
+        .map((rows) => rows.map(_rowToHiddenEntryCountResult).toList());
+  }
+
   @override
   List<TableInfo> get allTables => [todoEntries];
 }

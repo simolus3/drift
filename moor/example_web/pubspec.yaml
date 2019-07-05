@@ -6,6 +6,7 @@ environment:
 
 dependencies:
   moor: ^1.4.0
+  flutter_web: any
 
 dev_dependencies:
   moor_generator:
@@ -17,3 +18,12 @@ dependency_overrides:
     path: ../
   moor_generator:
     path: ../../moor_generator
+
+  flutter_web_ui:
+    git:
+      url: https://github.com/flutter/flutter_web.git
+      path: packages/flutter_web_ui
+  flutter_web:
+    git:
+      url: https://github.com/flutter/flutter_web.git
+      path: packages/flutter_web
