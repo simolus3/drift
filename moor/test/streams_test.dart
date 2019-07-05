@@ -43,11 +43,18 @@ void main() {
     verify(executor.runSelect(any, any)).called(2);
   });
 
-  test('equal statements yield identical streams', () {
-    final firstStream = (db.select(db.users).watch())..listen((_) {});
-    final secondStream = (db.select(db.users).watch())..listen((_) {});
+  test('streams emit cached data when a new listener attaches', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
-    expect(identical(firstStream, secondStream), true);
+    final first = (db.select(db.users).watch());
+    expect(first, emits(isEmpty));
+
+    clearInteractions(executor);
+
+    final second = (db.select(db.users).watch());
+    expect(second, emits(isEmpty));
+
+    verifyZeroInteractions(executor);
   });
 
   group('stream keys', () {

@@ -118,8 +118,6 @@ class QueryStream<T> {
   final StreamQueryStore _store;
 
   StreamController<T> _controller;
-  // caching the stream so that the stream getter always returns the same stream
-  Stream<T> _stream;
 
   T _lastData;
 
@@ -129,8 +127,7 @@ class QueryStream<T> {
       onCancel: _onCancel,
     );
 
-    return _stream ??=
-        _controller.stream.transform(StartWithValueTransformer(_cachedData));
+    return _controller.stream.transform(StartWithValueTransformer(_cachedData));
   }
 
   QueryStream(this._fetcher, this._store);
