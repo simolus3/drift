@@ -201,6 +201,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 }
 
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
+    with ComparableExpr
     implements DateTimeColumn {
   GeneratedDateTimeColumn(
     String $name,

@@ -15,4 +15,11 @@ void main() {
     expect(nullableQuery.sql, equals('name INTEGER NULL'));
     expect(nonNullQuery.sql, equals('name INTEGER NOT NULL'));
   });
+
+  test('can compare', () {
+    final ctx = GenerationContext(null, null);
+    nonNull.isSmallerThan(currentDateAndTime).writeInto(ctx);
+
+    expect(ctx.sql, 'name < strftime(\'%s\', CURRENT_TIMESTAMP)');
+  });
 }

@@ -22,7 +22,8 @@ abstract class TextColumn extends Column<String, StringType> {
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
+abstract class DateTimeColumn extends Column<DateTime, DateTimeType>
+    implements DateTimeExpression {}
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
 abstract class BlobColumn extends Column<Uint8List, BlobType> {}

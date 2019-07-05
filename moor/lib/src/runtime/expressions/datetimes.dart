@@ -35,13 +35,19 @@ Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
 
 /// A sql expression that evaluates to the current date represented as a unix
 /// timestamp. The hour, minute and second fields will be set to 0.
-const Expression<DateTime, DateTimeType> currentDate =
-    CustomExpression("strftime('%s', CURRENT_DATE)");
+const DateTimeExpression currentDate =
+    _CustomDateTimeExpression("strftime('%s', CURRENT_DATE)");
 
 /// A sql expression that evaluates to the current date and time, similar to
 /// [DateTime.now]. Timestamps are stored with a second accuracy.
-const Expression<DateTime, DateTimeType> currentDateAndTime =
-    CustomExpression("strftime('%s', CURRENT_TIMESTAMP)");
+const DateTimeExpression currentDateAndTime =
+    _CustomDateTimeExpression("strftime('%s', CURRENT_TIMESTAMP)");
+
+class _CustomDateTimeExpression extends CustomExpression<DateTime, DateTimeType>
+    with ComparableExpr
+    implements DateTimeExpression {
+  const _CustomDateTimeExpression(String content) : super(content);
+}
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.

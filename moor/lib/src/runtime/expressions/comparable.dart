@@ -7,6 +7,9 @@ abstract class IntExpression extends Expression<int, IntType>
 abstract class DoubleExpression extends Expression<double, RealType>
     implements ComparableExpr<double, RealType> {}
 
+abstract class DateTimeExpression extends Expression<DateTime, DateTimeType>
+    implements ComparableExpr<DateTime, DateTimeType> {}
+
 mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
