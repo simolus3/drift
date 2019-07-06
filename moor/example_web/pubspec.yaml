@@ -1,0 +1,29 @@
+name: example_web
+description: Experimental usage of moor on the web
+
+environment:
+  sdk: '>=2.2.0 <3.0.0'
+
+dependencies:
+  moor: ^1.4.0
+  flutter_web: any
+
+dev_dependencies:
+  moor_generator:
+  build_runner: ^1.1.2
+  build_web_compilers: ^1.0.0
+
+dependency_overrides:
+  moor:
+    path: ../
+  moor_generator:
+    path: ../../moor_generator
+
+  flutter_web_ui:
+    git:
+      url: https://github.com/flutter/flutter_web.git
+      path: packages/flutter_web_ui
+  flutter_web:
+    git:
+      url: https://github.com/flutter/flutter_web.git
+      path: packages/flutter_web

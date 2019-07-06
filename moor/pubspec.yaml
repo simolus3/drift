@@ -9,11 +9,12 @@ authors:
 maintainer: Simon Binder (@simolus3)
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.2.2 <3.0.0'
 
 dependencies:
   meta: '>= 1.0.0 <2.0.0'
   collection: '>= 1.0.0 <2.0.0'
+  synchronized: ^2.1.0
 
 dev_dependencies:
   moor_generator: ^1.5.0

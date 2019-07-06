@@ -1,3 +1,19 @@
+@TestOn('!browser') // todo: Figure out why this doesn't run in js
+
+/*
+These tests don't work when compiled to js:
+
+NoSuchMethodError: method not found: 'beginTransaction$0' (executor.beginTransaction$0 is not a function)
+package:moor/src/runtime/database.dart 185:45                                 <fn>
+org-dartlang-sdk:///sdk/lib/_internal/js_runtime/lib/async_patch.dart 313:19  _wrapJsFunctionForAsync.closure.$protected
+org-dartlang-sdk:///sdk/lib/_internal/js_runtime/lib/async_patch.dart 338:23  _wrapJsFunctionForAsync.<fn>
+package:stack_trace                                                           StackZoneSpecification._registerBinaryCallback.<fn>
+org-dartlang-sdk:///sdk/lib/_internal/js_runtime/lib/async_patch.dart 242:3   Object._asyncStartSync
+package:moor/src/runtime/database.dart 185:13                                 QueryEngine.transaction.<fn>
+test/data/utils/mocks.dart 22:20                                              MockExecutor.<fn>
+package:mockito/src/mock.dart 128:22                                          MockExecutor.noSuchMethod
+ */
+
 import 'package:test_api/test_api.dart';
 import 'package:moor/moor.dart';
 

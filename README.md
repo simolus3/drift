@@ -3,12 +3,13 @@
 [![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
 
 
-| Core API      | Flutter           | Generator  |
+| Core          | Flutter           | Generator  |
 |:-------------:|:-------------:|:-----:|
 | [![Generator version](https://img.shields.io/pub/v/moor.svg)](https://pub.dev/packages/moor) | [![Flutter version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dev/packages/moor_flutter) | [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dev/packages/moor_generator) |
 
-Moor is an easy to use, reactive persistence library for Flutter apps. Define your database tables in pure Dart and 
-enjoy a fluent query API, auto-updating streams and more!
+Moor is an easy to use, reactive persistence library for Flutter and Dart web apps.
+Define your database tables in pure Dart and  enjoy a fluent query API, auto-updating
+streams and more!
 
 For more information, check out the [docs](https://moor.simonbinder.eu/).
 
