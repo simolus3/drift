@@ -1,0 +1,77 @@
+---
+layout: feature
+title: Web support
+nav_order: 7
+since: 1.6
+permalink: /web
+---
+
+# Web support
+Starting from moor `1.6`, you can experimentally use moor in Dart webapps. Moor web supports 
+Flutter Web, AngularDart, plain `dart:html` or any other web framework.
+
+## Getting started
+Instead of depending on `moor_flutter`, you need to depend on on `moor` directly. Apart from that, you can
+follow the [getting started guide]({{ site.common_links.getting_started | absolute_url }}).
+Also, instead of using a `FlutterQueryExecutor` in your database classes, you can use a `WebDatabase` executor:
+```dart
+import 'package:moor/moor_web.dart';
+
+@UseMoor(tables: [Todos, Categories])
+class MyDatabase extends _$MyDatabase {
+  // here, "app" is the name of the database - you can choose any name you want
+  MyDatabase() : super(WebDatabase('app'));
+```
+
+Moor web is built on top of the [sql.js](https://github.com/kripken/sql.js/) library, which you need to include:
+```html
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script defer src="sql-wasm.js"></script>
+    <script defer src="main.dart.js" type="application/javascript"></script>
+</head>
+<body></body>
+</html>
+```
+You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](https://github.com/kripken/sql.js/tree/master/dist)
+and copy them into your `web` folder.
+
+## Sharing code between native apps and web
+If you want to share your database code between native applications and webapps, just import the
+basic `moor` library and make the `QueryExecutor` configurable:
+```dart
+// don't import moor_web.dart or moor_flutter/moor_flutter.dart in shared code
+import 'package:moor/moor.dart';
+
+@UseMoor(/* ... */)
+class SharedDatabase extends _$MyDatabase {
+    SharedDatabase(QueryExecutor e): super(e);
+}
+```
+With native Flutter, you can create an instance of your database with
+```dart
+import 'package:moor_flutter/moor_flutter.dart';
+SharedDatabase constructDb() {
+    return SharedDatabase(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
+}
+```
+On the web, you can use
+```dart
+import 'package:moor/moor_web.dart';
+SharedDatabase constructDb() {
+    return SharedDatabase(WebDatabse('db'));
+}
+```
+
+## Debugging
+You can see all queries sent from moor to the underlying database engine by enabling the `logStatements`
+parameter on the `WebDatabase` - they will appear in the console.
+When you have assertions enabled (e.g. in debug mode), moor will expose the underlying 
+[database](http://kripken.github.io/sql.js/documentation/#http://kripken.github.io/sql.js/documentation/class/Database.html)
+object via `window.db`. If you need to quickly run a query to check the state of the database, you can use
+`db.exec(sql)`.
+If you need to delete your databases, there stored using local storage. You can clear all your data with `localStorage.clear()`.
+
+Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/moor/issues/new) you find.
