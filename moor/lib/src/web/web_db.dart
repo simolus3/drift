@@ -20,6 +20,7 @@ abstract class _DatabaseUser extends QueryExecutor {
   bool get _bypassLock => false;
 
   String get _persistenceKey => 'moor_db_str_$name';
+  String get _versionKey => 'moor_db_version_$name';
 
   _DatabaseUser(this._state);
 
@@ -186,29 +187,22 @@ class WebDatabase extends _DatabaseUser {
 
   Future<void> _openInternal() async {
     // We don't get information about the database version from sql.js, so we
-    // create another database just to manage versions.
-    if (!IdbFactory.supported) {
-      throw UnsupportedError("This browser doesn't support IndexedDb");
-    }
+    // store the database version using local storage.
+    int oldVersion;
+    final dbVersion = databaseInfo.schemaVersion;
+    assert(dbVersion >= 1, 'Database schema version needs to be at least 1');
 
-    int version;
     var upgradeNeeded = false;
 
-    final db = await window.indexedDB.open(
-      name,
-      version: databaseInfo.schemaVersion,
-      onUpgradeNeeded: (event) {
-        upgradeNeeded = true;
-        version = event.oldVersion;
-      },
-    );
-    db.close();
+    if (window.localStorage.containsKey(_versionKey)) {
+      final versionStr = window.localStorage[_versionKey];
+      oldVersion = int.parse(versionStr);
+      if (oldVersion < 1) oldVersion = null;
+    }
 
-    if (version < 1) {
-      // assume version code 0 (default) to be null. Other parts of moor
-      // interpret a null version code as "the database was just created", so it
-      // fits.
-      version = null;
+    if (oldVersion == null || oldVersion < dbVersion) {
+      upgradeNeeded = true;
+      window.localStorage[_versionKey] = dbVersion.toString();
     }
 
     final module = await initSqlJs();
@@ -216,19 +210,17 @@ class WebDatabase extends _DatabaseUser {
     _state.db = module.createDatabase(restored);
 
     if (upgradeNeeded) {
-      if (version == null) {
+      if (oldVersion == null) {
         await databaseInfo.handleDatabaseCreation(executor: _runWithoutArgs);
       } else {
         await databaseInfo.handleDatabaseVersionChange(
-            executor: _runWithoutArgs,
-            from: version,
-            to: databaseInfo.schemaVersion);
+            executor: _runWithoutArgs, from: oldVersion, to: dbVersion);
       }
     }
 
     await _synchronized(() {
       return databaseInfo.beforeOpenCallback(_BeforeOpenExecutor(_state),
-          OpeningDetails(version, databaseInfo.schemaVersion));
+          OpeningDetails(oldVersion, databaseInfo.schemaVersion));
     });
 
     if (upgradeNeeded) {

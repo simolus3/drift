@@ -7,7 +7,6 @@ library moor_web;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
-import 'dart:indexed_db';
 
 import 'package:meta/meta.dart';
 import 'package:meta/dart2js.dart';

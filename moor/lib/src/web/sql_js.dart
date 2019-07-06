@@ -22,13 +22,18 @@ Future<SqlJsModule> initSqlJs() {
             'the web, which might help you fix this.'));
   }
 
-  (context.callMethod('initSqlJs') as JsObject).callMethod('then', [
-    allowInterop((sqlModule) {
-      _moduleCompleter.complete(SqlJsModule._(sqlModule as JsObject));
-    })
-  ]);
+  (context.callMethod('initSqlJs') as JsObject)
+      .callMethod('then', [_handleModuleResolved]);
 
   return _moduleCompleter.future;
+}
+
+// We're extracting this into its own method so that we don't have to call
+// [allowInterop] on this method or a lambda.
+// todo figure out why dart2js generates invalid js when wrapping this in
+// allowInterop
+void _handleModuleResolved(dynamic module) {
+  _moduleCompleter.complete(SqlJsModule._(module as JsObject));
 }
 
 class SqlJsModule {
