@@ -3,6 +3,7 @@
 - Date time columns are now comparable
 - Make transactions easier to use: Thanks to some Dart async magic, methods called on your
   database object in a transaction callback will automatically be called on the transaction object.
+- Support list parameters in compiled custom queries (`SELECT * FROM entries WHERE id IN ?`)
 
 ## 1.5.1
 - Fixed an issue where transformed streams would not always update

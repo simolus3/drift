@@ -74,6 +74,11 @@ class TypeMapper {
       ..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
 
     final foundVariables = <FoundVariable>[];
+    // we don't allow variables with an explicit index after an array. For
+    // instance: SELECT * FROM t WHERE id IN ? OR id = ?2. The reason this is
+    // not allowed is that we expand the first arg into multiple vars at runtime
+    // which would break the index.
+    var maxIndex = 999;
     var currentIndex = 0;
 
     for (var used in usedVars) {
@@ -83,9 +88,30 @@ class TypeMapper {
 
       currentIndex++;
       final name = (used is ColonNamedVariable) ? used.name : null;
-      final type = resolvedToMoor(ctx.typeOf(used).type);
+      final explicitIndex =
+          (used is NumberedVariable) ? used.explicitIndex : null;
+      final internalType = ctx.typeOf(used);
+      final type = resolvedToMoor(internalType.type);
+      final isArray = internalType.type?.isArray ?? false;
 
-      foundVariables.add(FoundVariable(currentIndex, name, type));
+      if (explicitIndex != null && currentIndex >= maxIndex) {
+        throw ArgumentError(
+            'Cannot have a variable with an index lower than that of an array '
+            'appearing after an array!');
+      }
+
+      foundVariables
+          .add(FoundVariable(currentIndex, name, type, used, isArray));
+
+      // arrays cannot be indexed explicitly because they're expanded into
+      // multiple variables when executor
+      if (isArray && explicitIndex != null) {
+        throw ArgumentError(
+            'Cannot use an array variable with an explicit index');
+      }
+      if (isArray) {
+        maxIndex = used.resolvedIndex;
+      }
     }
 
     return foundVariables;

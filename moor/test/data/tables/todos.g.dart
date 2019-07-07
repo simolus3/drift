@@ -1216,12 +1216,50 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Future<int> deleteTodoById(int var1, {QueryEngine operateOn}) {
-    return (operateOn ?? this)
-        .customUpdate('DELETE FROM todos WHERE id = ?', variables: [
-      Variable.withInt(var1),
-    ], updates: {
-      todosTable
-    });
+    return (operateOn ?? this).customUpdate(
+      'DELETE FROM todos WHERE id = ?',
+      variables: [
+        Variable.withInt(var1),
+      ],
+      updates: {todosTable},
+    );
+  }
+
+  TodoEntry _rowToTodoEntry(QueryRow row) {
+    return TodoEntry(
+      id: row.readInt('id'),
+      title: row.readString('title'),
+      content: row.readString('content'),
+      targetDate: row.readDateTime('target_date'),
+      category: row.readInt('category'),
+    );
+  }
+
+  Future<List<TodoEntry>> withIn(String var1, String var2, List<int> var3,
+      {QueryEngine operateOn}) {
+    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    return (operateOn ?? this).customSelect(
+        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+        variables: [
+          Variable.withString(var1),
+          Variable.withString(var2),
+          for (var $ in var3) Variable.withInt($),
+        ]).then((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
+  Stream<List<TodoEntry>> watchWithIn(
+      String var1, String var2, List<int> var3) {
+    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    return customSelectStream(
+        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+        variables: [
+          Variable.withString(var1),
+          Variable.withString(var2),
+          for (var $ in var3) Variable.withInt($),
+        ],
+        readsFrom: {
+          todosTable
+        }).map((rows) => rows.map(_rowToTodoEntry).toList());
   }
 
   @override

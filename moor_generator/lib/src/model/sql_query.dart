@@ -1,16 +1,18 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
 
 abstract class SqlQuery {
   final String name;
-  final String sql;
+  final AnalysisContext fromContext;
+  String get sql => fromContext.sql;
   final List<FoundVariable> variables;
 
-  SqlQuery(this.name, this.sql, this.variables);
+  SqlQuery(this.name, this.fromContext, this.variables);
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -24,17 +26,17 @@ class SqlSelectQuery extends SqlQuery {
     return '${ReCase(name).pascalCase}Result';
   }
 
-  SqlSelectQuery(String name, String sql, List<FoundVariable> variables,
-      this.readsFrom, this.resultSet)
-      : super(name, sql, variables);
+  SqlSelectQuery(String name, AnalysisContext fromContext,
+      List<FoundVariable> variables, this.readsFrom, this.resultSet)
+      : super(name, fromContext, variables);
 }
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
 
-  UpdatingQuery(
-      String name, String sql, List<FoundVariable> variables, this.updates)
-      : super(name, sql, variables);
+  UpdatingQuery(String name, AnalysisContext fromContext,
+      List<FoundVariable> variables, this.updates)
+      : super(name, fromContext, variables);
 }
 
 class InferredResultSet {
@@ -95,9 +97,21 @@ class FoundVariable {
   int index;
   String name;
   final ColumnType type;
+  final Variable variable;
 
-  FoundVariable(this.index, this.name, this.type);
+  /// Whether this variable is an array, which will be expanded into multiple
+  /// variables at runtime. We only accept queries where no explicitly numbered
+  /// vars appear after an array. This means that we can expand array variables
+  /// without having to look at other variables.
+  final bool isArray;
 
-  String get dartParameterName =>
-      name?.replaceAll(_illegalChars, '') ?? 'var$index';
+  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray);
+
+  String get dartParameterName {
+    if (name != null) {
+      return name.replaceAll(_illegalChars, '');
+    } else {
+      return 'var${variable.resolvedIndex}';
+    }
+  }
 }

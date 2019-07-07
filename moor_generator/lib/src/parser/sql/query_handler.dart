@@ -35,7 +35,7 @@ class QueryHandler {
     context.root.accept(updatedFinder);
     _foundTables = updatedFinder.foundTables;
 
-    return UpdatingQuery(name, context.sql, _foundVariables,
+    return UpdatingQuery(name, context, _foundVariables,
         _foundTables.map(mapper.tableToMoor).toList());
   }
 
@@ -46,7 +46,7 @@ class QueryHandler {
     final moorTables = _foundTables.map(mapper.tableToMoor).toList();
 
     return SqlSelectQuery(
-        name, context.sql, _foundVariables, moorTables, _inferResultSet());
+        name, context, _foundVariables, moorTables, _inferResultSet());
   }
 
   InferredResultSet _inferResultSet() {

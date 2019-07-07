@@ -47,7 +47,11 @@ class SqlParser {
         ));
       }
 
-      foundQueries.add(QueryHandler(name, context, _mapper).handle());
+      try {
+        foundQueries.add(QueryHandler(name, context, _mapper).handle());
+      } catch (e) {
+        print('Error while generating APIs for ${context.sql}: $e');
+      }
     });
   }
 }
