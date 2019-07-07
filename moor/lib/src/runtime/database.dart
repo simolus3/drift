@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
@@ -8,6 +10,8 @@ import 'package:moor/src/runtime/statements/delete.dart';
 import 'package:moor/src/runtime/statements/select.dart';
 import 'package:moor/src/runtime/statements/update.dart';
 
+const _zoneRootUserKey = #DatabaseConnectionUser;
+
 /// Class that runs queries to a subset of all available queries in a database.
 ///
 /// This comes in handy to structure large amounts of database code better: The
@@ -16,14 +20,17 @@ import 'package:moor/src/runtime/statements/update.dart';
 /// For details on how to write a dao, see [UseDao].
 abstract class DatabaseAccessor<T extends GeneratedDatabase>
     extends DatabaseConnectionUser with QueryEngine {
+  @override
+  final bool topLevel = true;
+
   @protected
   final T db;
 
   DatabaseAccessor(this.db) : super.delegate(db);
 }
 
-/// Mediocre class name for something that manages a typesystem to map between
-/// Dart types and SQL types and can run sql queries.
+/// Manages a [QueryExecutor] and optionally an own [SqlTypeSystem] or
+/// [StreamQueryStore] to send queries to the database.
 abstract class DatabaseConnectionUser {
   /// The type system to use with this database. The type system is responsible
   /// for mapping Dart objects into sql expressions and vice-versa.
@@ -85,12 +92,50 @@ abstract class DatabaseConnectionUser {
 /// Mixin for a [DatabaseConnectionUser]. Provides an API to execute both
 /// high-level and custom queries and fetch their results.
 mixin QueryEngine on DatabaseConnectionUser {
+  /// Whether this connection user is "top level", e.g. there is no parent
+  /// connection user. We consider a [GeneratedDatabase] and a
+  /// [DatabaseAccessor] to be top-level, while a [Transaction] or a
+  /// [BeforeOpenEngine] aren't.
+  ///
+  /// If any query method is called on a [topLevel] database user, we check if
+  /// it could instead be delegated to a child executor. For instance, consider
+  /// this code, assuming its part of a subclass of [GeneratedDatabase]:
+  /// ```dart
+  /// void example() {
+  ///  transaction((t) async {
+  ///   await update(table).write(/*...*/)
+  ///  });
+  /// }
+  /// ```
+  /// Here, the `update` method would be called on the [GeneratedDatabase]
+  /// although it is very likely that the user meant to call it on the
+  /// [Transaction] t. We can detect this by calling the function passed to
+  /// `transaction` in a forked [Zone] storing the transaction in
+  bool get topLevel => false;
+
+  /// We can detect when a user called methods on the wrong [QueryEngine]
+  /// (e.g. calling [GeneratedDatabase.into] in a transaction, where
+  /// [Transaction.into] should have been called instead). See the documentation
+  /// of [topLevel] on how this works.
+  QueryEngine get _resolvedEngine {
+    if (!topLevel) {
+      // called directly in a transaction / other child callback, so use this
+      // instance directly
+      return this;
+    } else {
+      // if an overridden executor has been specified for this zone (this will
+      // happen for transactions), use that one.
+      final resolved = Zone.current[_zoneRootUserKey];
+      return (resolved as QueryEngine) ?? this;
+    }
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
   @visibleForTesting
   InsertStatement<T> into<T extends DataClass>(TableInfo<Table, T> table) =>
-      InsertStatement<T>(this, table);
+      InsertStatement<T>(_resolvedEngine, table);
 
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where
@@ -99,7 +144,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   UpdateStatement<Tbl, R> update<Tbl extends Table, R extends DataClass>(
           TableInfo<Tbl, R> table) =>
-      UpdateStatement(this, table);
+      UpdateStatement(_resolvedEngine, table);
 
   /// Starts a query on the given table. Queries can be limited with an limit
   /// or a where clause and can either return a current snapshot or a continuous
@@ -108,7 +153,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   SimpleSelectStatement<T, R> select<T extends Table, R extends DataClass>(
       TableInfo<T, R> table) {
-    return SimpleSelectStatement<T, R>(this, table);
+    return SimpleSelectStatement<T, R>(_resolvedEngine, table);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
@@ -116,7 +161,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   DeleteStatement<T, D> delete<T extends Table, D extends DataClass>(
       TableInfo<T, D> table) {
-    return DeleteStatement<T, D>(this, table);
+    return DeleteStatement<T, D>(_resolvedEngine, table);
   }
 
   /// Executes a custom delete or update statement and returns the amount of
@@ -126,14 +171,17 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// specified there will then issue another query.
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
-    final ctx = GenerationContext.fromDb(this);
+    final engine = _resolvedEngine;
+    final executor = engine.executor;
+
+    final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
     final affectedRows =
         executor.doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
 
     if (updates != null) {
-      await streamQueries.handleTableUpdates(updates);
+      await engine.streamQueries.handleTableUpdates(updates);
     }
 
     return affectedRows;
@@ -144,7 +192,9 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// value.
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(query, variables, <TableInfo>{}, this).get();
+    return CustomSelectStatement(
+            query, variables, <TableInfo>{}, _resolvedEngine)
+        .get();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -155,13 +205,14 @@ mixin QueryEngine on DatabaseConnectionUser {
   Stream<List<QueryRow>> customSelectStream(String query,
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
     final tables = readsFrom ?? <TableInfo>{};
-    final statement = CustomSelectStatement(query, variables, tables, this);
+    final statement =
+        CustomSelectStatement(query, variables, tables, _resolvedEngine);
     return statement.watch();
   }
 
   /// Executes the custom sql [statement] on the database.
   Future<void> customStatement(String statement) {
-    return executor.runCustom(statement);
+    return _resolvedEngine.executor.runCustom(statement);
   }
 
   /// Executes [action] in a transaction, which means that all its queries and
@@ -173,29 +224,45 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     stream might have a longer lifespan than a transaction, but it still
   ///     needs to know about the transaction because the data in a transaction
   ///     might be different than that of the "global" database instance.
-  ///  2. Nested transactions are not supported. Calling
-  ///     [GeneratedDatabase.transaction] on the [QueryEngine] passed to the [action]
-  ///     will throw.
-  ///  3. The code inside [action] must not call any method of this
-  ///     [GeneratedDatabase]. Doing so will cause a dead-lock. Instead, all
-  ///     queries and updates must be sent to the [QueryEngine] passed to the
-  ///     [action] function.
+  ///  2. Nested transactions are not supported. Creating another transaction
+  ///     inside a transaction returns the parent transaction.
   Future transaction(Future Function(QueryEngine transaction) action) async {
-    await executor.doWhenOpened((executor) async {
+    final resolved = _resolvedEngine;
+    if (resolved is Transaction) {
+      return action(resolved);
+    }
+
+    final executor = resolved.executor;
+    await executor.doWhenOpened((executor) {
       final transaction = Transaction(this, executor.beginTransaction());
 
-      try {
-        await action(transaction);
-      } finally {
-        await transaction.complete();
-      }
+      return _runEngineZoned(transaction, () async {
+        try {
+          await action(transaction);
+        } finally {
+          await transaction.complete();
+        }
+      });
     });
+  }
+
+  /// Runs [calculation] in a forked [Zone] that has its [_resolvedEngine] set
+  /// to the [engine].
+  ///
+  /// For details, see the documentation at [topLevel].
+  @protected
+  Future<T> _runEngineZoned<T>(
+      QueryEngine engine, Future<T> Function() calculation) {
+    return runZoned(calculation, zoneValues: {_zoneRootUserKey: engine});
   }
 }
 
 /// A base class for all generated databases.
 abstract class GeneratedDatabase extends DatabaseConnectionUser
     with QueryEngine {
+  @override
+  final bool topLevel = true;
+
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
   int get schemaVersion;
@@ -249,7 +316,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     }
     if (migration.beforeOpen != null) {
       final engine = BeforeOpenEngine(this, executor);
-      await migration.beforeOpen(engine, details);
+      await _runEngineZoned(engine, () {
+        return migration.beforeOpen(engine, details);
+      });
     }
   }
 }

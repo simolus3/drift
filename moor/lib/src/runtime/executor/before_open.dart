@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
@@ -9,6 +10,12 @@ class BeforeOpenEngine extends DatabaseConnectionUser with QueryEngine {
           executor: executor,
           streamQueries: _IgnoreStreamQueries(),
         );
+
+  @override
+  @alwaysThrows
+  Future transaction(Function action) {
+    throw UnsupportedError("Transactions can't be started inside beforeOpen");
+  }
 }
 
 class _IgnoreStreamQueries extends StreamQueryStore {

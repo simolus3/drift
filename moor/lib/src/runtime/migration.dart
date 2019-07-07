@@ -16,8 +16,6 @@ typedef Future<void> OnMigrationFinished();
 /// Signature of a function that's called before a database is marked opened by
 /// moor, but after migrations took place. This is a suitable callback to to
 /// populate initial data or issue `PRAGMA` statements that you want to use.
-/// All queries must be sent to [db] directly, otherwise your code will hang.
-/// See the discussion at [QueryEngine.transaction] for details.
 typedef OnBeforeOpen = Future<void> Function(
     QueryEngine db, OpeningDetails details);
 

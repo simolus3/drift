@@ -15,12 +15,6 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 
     await streams.dispatchUpdates();
   }
-
-  @override
-  Future transaction(Function action) async {
-    throw StateError('Tried to call transaction() in a transaction. This is'
-        'not supported');
-  }
 }
 
 /// Stream query store that doesn't allow creating new streams and dispatches

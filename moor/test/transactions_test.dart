@@ -42,14 +42,28 @@ void main() {
     verify(executor.transactions.send());
   });
 
-  test('transactions cannot be nested', () {
-    expect(() async {
-      await db.transaction((t) async {
-        await t.transaction((t2) {
-          fail('nested transactions were allowed');
-        });
+  test('nested transactions use the outer transaction', () async {
+    await db.transaction((t) async {
+      await t.transaction((t2) async {
+        expect(t2, equals(t));
       });
-    }, throwsStateError);
+
+      // the outer callback has not completed yet, so shouldn't send
+      verifyNever(executor.transactions.send());
+    });
+
+    verify(executor.transactions.send());
+  });
+
+  test('code in callback uses transaction', () async {
+    // notice how we call .select on the database, but it should be called on
+    // transaction executor.
+    await db.transaction((_) async {
+      await db.select(db.users).get();
+    });
+
+    verifyNever(executor.runSelect(any, any));
+    verify(executor.transactions.runSelect(any, any));
   });
 
   test('transactions notify about table udpates after completing', () async {
