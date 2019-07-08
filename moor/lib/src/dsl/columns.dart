@@ -18,6 +18,10 @@ abstract class TextColumn extends Column<String, StringType> {
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
   Expression<bool, BoolType> like(String regex);
+
+  /// Uses the given [collate] sequence when comparing this column to other
+  /// values.
+  Expression<String, StringType> collate(Collate collate);
 }
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp

@@ -129,6 +129,11 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
       LikeOperator(this, Variable<String, StringType>(pattern));
 
   @override
+  Expression<String, StringType> collate(Collate collate) {
+    return CollateOperator(this, collate);
+  }
+
+  @override
   final String typeName = 'VARCHAR';
 
   @override
