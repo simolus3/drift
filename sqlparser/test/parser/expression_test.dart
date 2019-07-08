@@ -89,6 +89,15 @@ final Map<String, Expression> _testCases = {
         NumericLiteral(i, token(TokenType.numberLiteral)),
     ],
   ),
+  "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
+    StringLiteral.from(token(TokenType.stringLiteral), 'hello'),
+    token(TokenType.doublePipe),
+    CollateExpression(
+      operator: token(TokenType.collate),
+      inner: StringLiteral.from(token(TokenType.stringLiteral), 'world'),
+      collateFunction: token(TokenType.identifier),
+    ),
+  ),
 };
 
 void main() {

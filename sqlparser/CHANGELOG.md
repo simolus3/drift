@@ -1,3 +1,6 @@
+## unreleased
+- parse `COLLATE` expressions
+
 ## 0.1.1
 Attempt to recognize when a bound variable should be an array (eg. in `WHERE x IN ?`).
 Also fixes a number of parsing bugs:

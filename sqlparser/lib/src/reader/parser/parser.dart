@@ -638,7 +638,7 @@ class Parser {
       TokenType.minus,
       TokenType.plus,
       TokenType.tilde,
-      TokenType.not
+      TokenType.not,
     ])) {
       final operator = _previous;
       final expression = _unary();
@@ -659,7 +659,21 @@ class Parser {
     // todo parse ISNULL, NOTNULL, NOT NULL, etc.
     // I don't even know the precedence ¯\_(ツ)_/¯ (probably not higher than
     // unary)
-    return _primary();
+    var expression = _primary();
+
+    while (_matchOne(TokenType.collate)) {
+      final collateOp = _previous;
+      final collateFun =
+          _consume(TokenType.identifier, 'Expected a collating sequence')
+              as IdentifierToken;
+      expression = CollateExpression(
+        inner: expression,
+        operator: collateOp,
+        collateFunction: collateFun,
+      )..setSpan(expression.first, collateFun);
+    }
+
+    return expression;
   }
 
   Expression _primary() {

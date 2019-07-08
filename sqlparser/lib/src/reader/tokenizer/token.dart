@@ -36,6 +36,7 @@ enum TokenType {
   tilde,
   between,
   exists,
+  collate,
 
   questionMark,
   colon,
@@ -100,6 +101,7 @@ enum TokenType {
 
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
+  'COLLATE': TokenType.collate,
   'DISTINCT': TokenType.distinct,
   'UPDATE': TokenType.update,
   'ALL': TokenType.all,

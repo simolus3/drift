@@ -18,6 +18,22 @@ class UnaryExpression extends Expression {
   }
 }
 
+class CollateExpression extends UnaryExpression {
+  final Token collateFunction;
+
+  CollateExpression(
+      {@required Token operator,
+      @required Expression inner,
+      @required this.collateFunction})
+      : super(operator, inner);
+
+  @override
+  bool contentEquals(CollateExpression other) {
+    return super.contentEquals(other) &&
+        other.collateFunction.type == collateFunction.type;
+  }
+}
+
 class BinaryExpression extends Expression {
   final Token operator;
   final Expression left;
