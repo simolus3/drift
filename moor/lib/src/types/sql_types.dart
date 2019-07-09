@@ -42,7 +42,7 @@ class StringType extends SqlType<String> {
   const StringType();
 
   @override
-  String mapFromDatabaseResponse(response) => response as String;
+  String mapFromDatabaseResponse(response) => response?.toString();
 
   @override
   String mapToSqlConstant(String content) {
