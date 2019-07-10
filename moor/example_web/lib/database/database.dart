@@ -31,10 +31,12 @@ class Database extends _$Database {
       beforeOpen: (engine, details) async {
         if (details.wasCreated) {
           // populate default data
-          await createTodoEntry('A simple todo list using moor web',
-              engine: engine);
-          await createTodoEntry('It even supports prepopulated data!',
-              engine: engine);
+          await createTodoEntry(
+            'A simple todo list using moor web',
+          );
+          await createTodoEntry(
+            'It even supports prepopulated data!',
+          );
         }
       },
     );
@@ -53,11 +55,8 @@ class Database extends _$Database {
         .watch();
   }
 
-  Future createTodoEntry(String desc, {QueryEngine engine}) {
-    final resolved = engine ?? this;
-    return resolved
-        .into(todoEntries)
-        .insert(TodoEntriesCompanion(content: Value(desc)));
+  Future createTodoEntry(String desc) {
+    return into(todoEntries).insert(TodoEntriesCompanion(content: Value(desc)));
   }
 
   Future setCompleted(Entry entry, bool done) {
