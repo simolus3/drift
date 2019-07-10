@@ -33,19 +33,17 @@ abstract class _DatabaseUser extends QueryExecutor {
     return await lock.synchronized(computation);
   }
 
-  // todo base64 works, but is very slow. Figure out why bin2str is broken
-
   Uint8List _restoreDb() {
     final raw = window.localStorage[_persistenceKey];
     if (raw != null) {
-      return base64.decode(raw);
+      return bin2str.decode(raw);
     }
     return null;
   }
 
   void _storeDb() {
     final data = _db.export();
-    final binStr = base64.encode(data);
+    final binStr = bin2str.encode(data);
     window.localStorage[_persistenceKey] = binStr;
   }
 

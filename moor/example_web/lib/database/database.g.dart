@@ -187,10 +187,39 @@ class $TodoEntriesTable extends TodoEntries
   }
 }
 
+class HiddenEntryCountResult {
+  final int entries;
+  HiddenEntryCountResult({
+    this.entries,
+  });
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodoEntriesTable _todoEntries;
   $TodoEntriesTable get todoEntries => _todoEntries ??= $TodoEntriesTable(this);
+  HiddenEntryCountResult _rowToHiddenEntryCountResult(QueryRow row) {
+    return HiddenEntryCountResult(
+      entries: row.readInt('entries'),
+    );
+  }
+
+  Future<List<HiddenEntryCountResult>> hiddenEntryCount(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT COUNT(*) - 20 AS entries FROM todo_entries WHERE done',
+        variables: []).then((rows) => rows.map(_rowToHiddenEntryCountResult).toList());
+  }
+
+  Stream<List<HiddenEntryCountResult>> watchHiddenEntryCount() {
+    return customSelectStream(
+            'SELECT COUNT(*) - 20 AS entries FROM todo_entries WHERE done',
+            variables: [],
+            readsFrom: {todoEntries})
+        .map((rows) => rows.map(_rowToHiddenEntryCountResult).toList());
+  }
+
   @override
   List<TableInfo> get allTables => [todoEntries];
 }

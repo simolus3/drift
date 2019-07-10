@@ -1,18 +1,19 @@
-part of 'package:moor/moor_web.dart';
-/*
-const _bin2str = _BinaryStringConversion();
+import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:typed_data';
 
-class _BinaryStringConversion extends Encoding {
+/// Converts [Uint8List]s to binary strings. Used internally by moor to store
+/// a database inside `window.localStorage`.
+const bin2str = _BinaryStringConversion();
+
+class _BinaryStringConversion extends Codec<Uint8List, String> {
   const _BinaryStringConversion();
 
   @override
-  Converter<List<int>, String> get decoder => const _Bin2String();
+  Converter<String, Uint8List> get decoder => const _String2Bin();
 
   @override
-  Converter<String, List<int>> get encoder => const _String2Bin();
-
-  @override
-  String get name => 'bin';
+  Converter<Uint8List, String> get encoder => const _Bin2String();
 }
 
 class _String2Bin extends Converter<String, Uint8List> {
@@ -24,22 +25,28 @@ class _String2Bin extends Converter<String, Uint8List> {
     final list = Uint8List(codeUnits.length);
 
     for (var i = 0; i < codeUnits.length; i++) {
-      list[i] = i;
+      list[i] = codeUnits[i];
     }
     return list;
   }
 }
 
-class _Bin2String extends Converter<List<int>, String> {
+class _Bin2String extends Converter<Uint8List, String> {
   const _Bin2String();
 
+  // There is a browser limit on the amount of chars one can give to
+  // String.fromCharCodes https://github.com/kripken/sql.js/wiki/Persisting-a-Modified-Database#save-a-database-to-a-string
+  final int _chunkSize = 0xffff;
+
   @override
-  String convert(List<int> input) {
+  String convert(Uint8List input) {
     final buffer = StringBuffer();
-    for (var byte in input) {
-      buffer.writeCharCode(byte);
+
+    for (var pos = 0; pos < input.length; pos += _chunkSize) {
+      final endPos = math.min(pos + _chunkSize, input.length);
+      buffer.write(String.fromCharCodes(input.sublist(pos, endPos)));
     }
+
     return buffer.toString();
   }
 }
-*/
