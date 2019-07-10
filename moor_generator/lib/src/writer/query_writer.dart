@@ -4,6 +4,9 @@ import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+const queryEngineWarningDesc =
+    'No longer needed with Moor 1.6 - see the changelog for details';
+
 /// Writes the handling code for a query. The code emitted will be a method that
 /// should be included in a generated database or dao class.
 class QueryWriter {
@@ -137,7 +140,8 @@ class QueryWriter {
     // execute the statement,
     if (!dontOverrideEngine) {
       if (query.variables.isNotEmpty) buffer.write(', ');
-      buffer.write('{QueryEngine operateOn}');
+      buffer.write('{@Deprecated(${asDartLiteral(queryEngineWarningDesc)}) '
+          'QueryEngine operateOn}');
     }
   }
 

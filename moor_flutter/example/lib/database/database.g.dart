@@ -388,15 +388,17 @@ abstract class _$Database extends GeneratedDatabase {
   $TodosTable get todos => _todos ??= $TodosTable(this);
   $CategoriesTable _categories;
   $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
-  Future<int> _resetCategory(int var1, {QueryEngine operateOn}) {
+  Future<int> _resetCategory(
+      int var1,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
     return (operateOn ?? this).customUpdate(
-        'UPDATE todos SET category = NULL WHERE category = ?',
-        variables: [
-          Variable.withInt(var1),
-        ],
-        updates: {
-          todos
-        });
+      'UPDATE todos SET category = NULL WHERE category = ?',
+      variables: [
+        Variable.withInt(var1),
+      ],
+      updates: {todos},
+    );
   }
 
   @override

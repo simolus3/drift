@@ -66,24 +66,23 @@ class Database extends _$Database {
       beforeOpen: (db, details) async {
         if (details.wasCreated) {
           // create default categories and entries
-          final workId = await db
-              .into(categories)
+          final workId = await into(categories)
               .insert(const CategoriesCompanion(description: Value('Work')));
 
-          await db.into(todos).insert(TodosCompanion(
-                content: const Value('A first todo entry'),
-                targetDate: Value(DateTime.now()),
-              ));
+          await into(todos).insert(TodosCompanion(
+            content: const Value('A first todo entry'),
+            targetDate: Value(DateTime.now()),
+          ));
 
-          await db.into(todos).insert(
-                TodosCompanion(
-                  content: const Value('Rework persistence code'),
-                  category: Value(workId),
-                  targetDate: Value(
-                    DateTime.now().add(const Duration(days: 4)),
-                  ),
-                ),
-              );
+          await into(todos).insert(
+            TodosCompanion(
+              content: const Value('Rework persistence code'),
+              category: Value(workId),
+              targetDate: Value(
+                DateTime.now().add(const Duration(days: 4)),
+              ),
+            ),
+          );
         }
       },
     );
@@ -156,8 +155,8 @@ class Database extends _$Database {
 
   Future deleteCategory(Category category) {
     return transaction((t) async {
-      await _resetCategory(category.id, operateOn: t);
-      await t.delete(categories).delete(category);
+      await _resetCategory(category.id);
+      await delete(categories).delete(category);
     });
   }
 }
