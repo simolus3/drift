@@ -71,7 +71,9 @@ class PureDefaults extends Table {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',
     'deleteTodoById': 'DELETE FROM todos WHERE id = ?',
-    'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1'
+    'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
+    'search':
+        'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
   },
 )
 class TodoDb extends _$TodoDb {

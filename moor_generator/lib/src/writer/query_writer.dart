@@ -195,7 +195,8 @@ class QueryWriter {
     var lastIndex = 0;
 
     for (var sqlVar in vars) {
-      final moorVar = query.variables.singleWhere((f) => f.variable == sqlVar);
+      final moorVar = query.variables
+          .singleWhere((f) => f.variable.resolvedIndex == sqlVar.resolvedIndex);
       if (!moorVar.isArray) continue;
 
       // write everything that comes before this var into the buffer

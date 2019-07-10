@@ -1270,6 +1270,38 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
   }
 
+  TodoEntry _rowToTodoEntry(QueryRow row) {
+    return TodoEntry(
+      id: row.readInt('id'),
+      title: row.readString('title'),
+      content: row.readString('content'),
+      targetDate: row.readDateTime('target_date'),
+      category: row.readInt('category'),
+    );
+  }
+
+  Future<List<TodoEntry>> search(
+      int id,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
+        variables: [
+          Variable.withInt(id),
+        ]).then((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
+  Stream<List<TodoEntry>> watchSearch(int id) {
+    return customSelectStream(
+        'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
+        variables: [
+          Variable.withInt(id),
+        ],
+        readsFrom: {
+          todosTable
+        }).map((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
   @override
   List<TableInfo> get allTables => [
         todosTable,
