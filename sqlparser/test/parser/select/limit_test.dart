@@ -40,6 +40,8 @@ void main() {
     });
 
     test('with offset as comma', () {
+      // with the comma notation, the offset comes first.
+      // https://www.sqlite.org/lang_select.html#limitoffset
       final select = SqlEngine()
           .parse('SELECT * FROM test LIMIT 10, 2')
           .rootNode as SelectStatement;
@@ -47,9 +49,9 @@ void main() {
       enforceEqual(
         select.limit,
         Limit(
-          count: NumericLiteral(10, token(TokenType.numberLiteral)),
+          count: NumericLiteral(2, token(TokenType.numberLiteral)),
           offsetSeparator: token(TokenType.comma),
-          offset: NumericLiteral(2, token(TokenType.numberLiteral)),
+          offset: NumericLiteral(10, token(TokenType.numberLiteral)),
         ),
       );
     });

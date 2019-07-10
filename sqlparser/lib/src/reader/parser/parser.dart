@@ -405,16 +405,21 @@ class Parser {
   Limit _limit() {
     if (!_matchOne(TokenType.limit)) return null;
 
-    final count = expression();
-    Token offsetSep;
-    Expression offset;
+    // Unintuitive, it's "$amount OFFSET $offset", but "$offset, $amount"
+    // the order changes between the separator tokens.
+    final first = expression();
 
-    if (_match(const [TokenType.comma, TokenType.offset])) {
-      offsetSep = _previous;
-      offset = expression();
+    if (_matchOne(TokenType.comma)) {
+      final separator = _previous;
+      final count = expression();
+      return Limit(count: count, offsetSeparator: separator, offset: first);
+    } else if (_matchOne(TokenType.offset)) {
+      final separator = _previous;
+      final offset = expression();
+      return Limit(count: first, offsetSeparator: separator, offset: offset);
+    } else {
+      return Limit(count: first);
     }
-
-    return Limit(count: count, offsetSeparator: offsetSep, offset: offset);
   }
 
   DeleteStatement _deleteStmt() {

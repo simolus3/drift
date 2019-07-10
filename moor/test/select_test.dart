@@ -36,9 +36,9 @@ void main() {
     });
 
     test('with limit statements', () {
-      (db.select(db.users)..limit(10)).get();
+      (db.select(db.users)..limit(10, offset: 0)).get();
       verify(executor.runSelect(
-          'SELECT * FROM users LIMIT 10;', argThat(isEmpty)));
+          'SELECT * FROM users LIMIT 10 OFFSET 0;', argThat(isEmpty)));
     });
 
     test('with like expressions', () {

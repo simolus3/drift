@@ -14,7 +14,7 @@ class Limit extends Component {
   @override
   void writeInto(GenerationContext context) {
     if (offset != null) {
-      context.buffer.write('LIMIT $amount, $offset');
+      context.buffer.write('LIMIT $amount OFFSET $offset');
     } else {
       context.buffer.write('LIMIT $amount');
     }
