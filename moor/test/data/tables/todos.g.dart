@@ -1270,16 +1270,6 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
   }
 
-  TodoEntry _rowToTodoEntry(QueryRow row) {
-    return TodoEntry(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-    );
-  }
-
   Future<List<TodoEntry>> search(
       int id,
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')

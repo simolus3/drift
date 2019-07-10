@@ -68,8 +68,9 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
       buffer.write('$infoType get $getterName => db.$getterName;\n');
     }
 
+    final writtenMappingMethods = <String>{};
     for (var query in resolvedQueries) {
-      QueryWriter(query).writeInto(buffer);
+      QueryWriter(query, writtenMappingMethods).writeInto(buffer);
     }
 
     buffer.write('}');

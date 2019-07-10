@@ -14,7 +14,9 @@ class QueryWriter {
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
-  QueryWriter(this.query);
+  final Set<String> _writtenMappingMethods;
+
+  QueryWriter(this.query, this._writtenMappingMethods);
 
   /// The expanded sql that we insert into queries whenever an array variable
   /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
@@ -49,18 +51,23 @@ class QueryWriter {
   /// Writes a mapping method that turns a "QueryRow" into the desired custom
   /// return type.
   void _writeMapping(StringBuffer buffer) {
-    buffer
-      ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
-      ..write('(QueryRow row) {\n')
-      ..write('return ${_select.resultClassName}(');
+    // avoid writing mapping methods twice if the same result class is written
+    // more than once.
+    if (!_writtenMappingMethods.contains(_nameOfMappingMethod())) {
+      buffer
+        ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
+        ..write('(QueryRow row) {\n')
+        ..write('return ${_select.resultClassName}(');
 
-    for (var column in _select.resultSet.columns) {
-      final fieldName = _select.resultSet.dartNameFor(column);
-      final readMethod = readFromMethods[column.type];
-      buffer.write("$fieldName: row.$readMethod('${column.name}'),");
+      for (var column in _select.resultSet.columns) {
+        final fieldName = _select.resultSet.dartNameFor(column);
+        final readMethod = readFromMethods[column.type];
+        buffer.write("$fieldName: row.$readMethod('${column.name}'),");
+      }
+
+      buffer.write(');\n}\n');
+      _writtenMappingMethods.add(_nameOfMappingMethod());
     }
-
-    buffer.write(');\n}\n');
   }
 
   void _writeOneTimeReader(StringBuffer buffer) {
