@@ -49,4 +49,16 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
   D map(Map<String, dynamic> data, {String tablePrefix});
 
   TableInfo<TableDsl, D> createAlias(String alias);
+
+  @override
+  bool operator ==(other) {
+    // tables are singleton instances except for aliases
+    if (other is TableInfo) {
+      return other.runtimeType == runtimeType && other.$tableName == $tableName;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(runtimeType.hashCode, $tableName.hashCode));
 }
