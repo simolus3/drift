@@ -1,11 +1,12 @@
 ---
 layout: home
 title: Home
-description: Moor is an easy to use, reactive persistence library for Flutter apps.
+meta_title: Moor - Reactive persistence library for Dart
+description: Moor is an easy to use, typesafe and reactive persistence library for Flutter and webapps written in Dart.
 nav_order: 0
 ---
 
-# Moor
+# Moor - persistence library for Dart
 {: .fs-9 }
 
 Moor is an easy to use, reactive persistence library for Flutter apps. Define your
@@ -20,9 +21,6 @@ and more!
 [View on GitHub]({{site.github_link}}){: .btn .btn-outline .fs-5 .mb-4 .mb-md-0 .mr-2 }
 
 ---
-
-# Features
-Moor contains a whole set of features that makes working with persistence much easier and safer.
 
 ## Declarative tables
 With moor, you can declare your tables in pure dart without having to miss out on advanced sqlite
