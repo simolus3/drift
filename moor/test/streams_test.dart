@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:test_api/test_api.dart';
@@ -23,22 +24,24 @@ void main() {
     verify(executor.runSelect(any, any)).called(1);
   });
 
-  test('streams fetch when the underlying data changes', () {
+  test('streams fetch when the underlying data changes', () async {
     db.select(db.users).watch().listen((_) {});
 
     db.markTablesUpdated({db.users});
+    await pumpEventQueue(times: 1);
 
     // twice: Once because the listener attached, once because the data changed
     verify(executor.runSelect(any, any)).called(2);
   });
 
-  test('streams recognize aliased tables', () {
+  test('streams recognize aliased tables', () async {
     final first = db.alias(db.users, 'one');
     final second = db.alias(db.users, 'two');
 
     db.select(first).watch().listen((_) {});
 
     db.markTablesUpdated({second});
+    await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(2);
   });
@@ -54,7 +57,25 @@ void main() {
     final second = (db.select(db.users).watch());
     expect(second, emits(isEmpty));
 
+    await pumpEventQueue(times: 1);
     verifyZeroInteractions(executor);
+  });
+
+  test('every stream instance can be listened to', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final first = db.select(db.users).watch();
+    final second = db.select(db.users).watch();
+
+    await first.first; // will listen to stream, then cancel
+    await pumpEventQueue(times: 1); // give cancel event time to propagate
+
+    final checkEmits = expectLater(second, emitsInOrder([[], []]));
+
+    db.markTablesUpdated({db.users});
+    await pumpEventQueue(times: 1);
+
+    await checkEmits;
   });
 
   group('stream keys', () {

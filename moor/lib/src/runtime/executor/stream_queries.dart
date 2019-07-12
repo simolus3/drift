@@ -60,55 +60,54 @@ class StreamKey {
 /// Keeps track of active streams created from [SimpleSelectStatement]s and updates
 /// them when needed.
 class StreamQueryStore {
-  final List<QueryStream> _activeStreamsWithoutKey = [];
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
+  final StreamController<Set<String>> _updatedTableNames =
+      StreamController.broadcast();
 
   StreamQueryStore();
-
-  Iterable<QueryStream> get _activeStreams {
-    return _activeKeyStreams.values.followedBy(_activeStreamsWithoutKey);
-  }
 
   /// Creates a new stream from the select statement.
   Stream<T> registerStream<T>(QueryStreamFetcher<T> fetcher) {
     final key = fetcher.key;
 
-    if (key == null) {
-      final stream = QueryStream(fetcher, this);
-      _activeStreamsWithoutKey.add(stream);
-      return stream.stream;
-    } else {
-      final stream = _activeKeyStreams.putIfAbsent(key, () {
-        return QueryStream<T>(fetcher, this);
-      });
-
-      return (stream as QueryStream<T>).stream;
+    if (key != null) {
+      final cached = _activeKeyStreams[key];
+      if (cached != null) {
+        return (cached as QueryStream<T>).stream;
+      }
     }
+
+    // no cached instance found, create a new stream and register it so later
+    // requests with the same key can be cached.
+    final stream = QueryStream<T>(fetcher, this);
+    // todo this adds the stream to a map, where it will only be removed when
+    // somebody listens to it and later calls .cancel(). Failing to do so will
+    // cause a memory leak. Is there any way we can work around it? Perhaps a
+    // weak reference with an Expando could help.
+    markAsOpened(stream);
+
+    return stream.stream;
   }
 
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
   Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    final activeStreams = List<QueryStream>.from(_activeStreams);
-    final updatedNames = tables.map((t) => t.actualTableName).toSet();
-
-    final affectedStreams = activeStreams.where((stream) {
-      return stream._fetcher.readsFrom.any((table) {
-        return updatedNames.contains(table.actualTableName);
-      });
-    });
-
-    for (var stream in affectedStreams) {
-      await stream.fetchAndEmitData();
-    }
+    _updatedTableNames.add(tables.map((t) => t.actualTableName).toSet());
   }
 
   void markAsClosed(QueryStream stream) {
     final key = stream._fetcher.key;
-    if (key == null) {
-      _activeStreamsWithoutKey.remove(stream);
-    } else {
+    scheduleMicrotask(() {
+      // if no other subscriber was found during this event iteration, remove
+      // the stream from the cache.
       _activeKeyStreams.remove(key);
+    });
+  }
+
+  void markAsOpened(QueryStream stream) {
+    final key = stream._fetcher.key;
+    if (key != null) {
+      _activeKeyStreams[key] = stream;
     }
   }
 }
@@ -117,7 +116,12 @@ class QueryStream<T> {
   final QueryStreamFetcher<T> _fetcher;
   final StreamQueryStore _store;
 
+  // todo this controller is not disposed because it can be listened to at any
+  // time, so we have to rely on GC to clean this up.
+  // In a future release, we should implement a dispose method and encourage
+  // users to call it. See the comment at registerStream and https://github.com/simolus3/moor/issues/75
   StreamController<T> _controller;
+  StreamSubscription _tablesChangedSubscription;
 
   T _lastData;
 
@@ -139,15 +143,22 @@ class QueryStream<T> {
   void _onListen() {
     // first listener added, fetch query
     fetchAndEmitData();
+    _store.markAsOpened(this);
+
+    // fetch new data whenever any table referenced in this stream changes its
+    // name
+    assert(_tablesChangedSubscription == null);
+    final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
+    _tablesChangedSubscription = _store._updatedTableNames.stream
+        .where((changed) => changed.any(names.contains))
+        .listen((_) => fetchAndEmitData());
   }
 
   void _onCancel() {
     // last listener gone, dispose
-    _controller.close();
-    // todo this removes the stream from the list so that it can be garbage
-    // collected. When a stream is never listened to, we have a memory leak as
-    // this will never be called. Maybe an Expando (which uses weak references)
-    // can save us here?
+    _tablesChangedSubscription?.cancel();
+    _tablesChangedSubscription = null;
+
     _store.markAsClosed(this);
   }
 
