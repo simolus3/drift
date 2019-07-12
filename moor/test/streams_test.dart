@@ -78,6 +78,29 @@ void main() {
     await checkEmits;
   });
 
+  test('streams can be reused after a listener detaches', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final stream = db.select(db.users).watch();
+
+    await stream.first; // listen to stream, then cancel
+    await stream.first; // listen again
+
+    verify(executor.runSelect(any, any)).called(1); // cached, only called once
+  });
+
+  test('streams are disposed when not listening for a while', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final stream = db.select(db.users).watch();
+
+    await stream.first; // listen to stream, then cancel
+    await pumpEventQueue(); // should remove the stream from the cache
+    await stream.first; // listen again
+
+    verify(executor.runSelect(any, any)).called(2);
+  });
+
   group('stream keys', () {
     final keyA = StreamKey('SELECT * FROM users;', [], User);
     final keyB = StreamKey('SELECT * FROM users;', [], User);
