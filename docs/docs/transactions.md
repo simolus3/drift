@@ -33,30 +33,15 @@ There are a couple of things that should be kept in mind when working with trans
 1. __Await all calls__: All queries inside the transaction must be `await`-ed. The transaction
   will complete when the inner method completes. Without `await`, some queries might be operating
   on the transaction after it has been closed!
-2. __Don't run calls on your database__: Inside a transaction function, all queries must
-  be on the transaction itself.
-  ```dart
-await transaction((t) async {
-  // BAD - this will run on the database itself!
-  await delete(categories).delete(category);
-});
-await transaction((t) async {
-  // GOOD!
-  await t.delete(categories).delete(category);
-});
-  ```
-  The reason behind this is that no calls can operate on the database while it's in a transaction,
-  they will run after the transaction has completed. When the completion of the transaction can only
-  happen after a call to the database completes, as in the fist example, the database will reach a
-  dead lock!
+2. __No select streams in transactions__: Inside a `transaction` callback, select statements can't
+be `.watch()`ed. The reasons behind this is that it's unclear how a stream should behave when a
+transaction completes. Should the stream complete as well? Update to data changes made outside of the
+transaction? Both seem inconsistent, so moor forbids this.
 
 ## Transactions and query streams
 Query streams that have been created outside a transaction work nicely together with
 updates made in a transaction: All changes to tables will only be reported after the
 transaction completes. Updates inside a transaction don't have an immediate effect on
-streams.
+streams, so your data will always be consistent.
 
-However, streams cannot be created inside transactions! The reason behind that decision
-is that it's unclear what should happen to the stream after the transaction completes.
-Should the stream complete as well? Begin to the updated data outside the transaction?
-To not make things confusing here, this is forbidden.
+However, as mentioned above, note that streams can't be created inside a `transaction` block.
