@@ -1,3 +1,6 @@
+## 1.6.0
+- Generate code to expand array variables
+
 ## 1.5.0
 - Parse custom queries and write generated mapping code.
 - Refactorings and minor improvements in the generator

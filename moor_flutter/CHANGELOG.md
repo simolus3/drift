@@ -1,3 +1,32 @@
+## 1.6.0
+- Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.
+- Make transactions easier to use: Thanks to some Dart async magic, you no longer need to run
+  queries on the transaction explicitly. This
+  ```dart
+  Future deleteCategory(Category category) {
+    return transaction((t) async {
+      await t.delete(categories).delete(category);
+    });
+  }
+  ```
+  is now the same as this (notice how we don't have to use the `t.` in front of the delete)
+  ```dart
+    Future deleteCategory(Category category) {
+      return transaction((t) async {
+        await delete(categories).delete(category);
+      });
+    }
+    ```
+  This makes it much easier to compose operations by extracting them into methods, as you don't
+  have to worry about not using the `t` parameter.
+- Moor now provides syntax sugar for list parameters in compiled custom queries
+ (`SELECT * FROM entries WHERE id IN ?`)
+- Support `COLLATE` expressions.
+- Date time columns are now comparable
+- The `StringType` now supports arbitrary data from sqlite ([#70](https://github.com/simolus3/moor/pull/70)).
+  Thanks, [knaeckeKami](https://github.com/knaeckeKami)!
+- Bugfixes related to stream queries and `LIMIT` clauses.
+
 ## 1.5.0
 This version introduces some new concepts and features, which are explained in more detail below. 
 Here is a quick overview of the new features:

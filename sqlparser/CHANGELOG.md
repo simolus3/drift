@@ -1,5 +1,6 @@
-## unreleased
+## 0.1.2
 - parse `COLLATE` expressions
+- fix wrong order in parsed `LIMIT` clauses
 
 ## 0.1.1
 Attempt to recognize when a bound variable should be an array (eg. in `WHERE x IN ?`).

@@ -1,4 +1,4 @@
-## 1.6 (unreleased)
+## 1.6.0
 - Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.
 - Make transactions easier to use: Thanks to some Dart async magic, you no longer need to run
   queries on the transaction explicitly. This
@@ -25,6 +25,7 @@
 - Date time columns are now comparable
 - The `StringType` now supports arbitrary data from sqlite ([#70](https://github.com/simolus3/moor/pull/70)).
   Thanks, [knaeckeKami](https://github.com/knaeckeKami)!
+- Bugfixes related to stream queries and `LIMIT` clauses.
 
 ## 1.5.1
 - Fixed an issue where transformed streams would not always update
