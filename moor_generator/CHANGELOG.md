@@ -1,4 +1,4 @@
-## 1.6.0
+## 1.6.0+1
 - Generate code to expand array variables
 
 ## 1.5.0
