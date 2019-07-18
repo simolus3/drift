@@ -109,6 +109,40 @@ class ColumnBuilder<
 
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.
+  ///
+  /// An example might look like this:
+  /// ```dart
+  ///  // this is the custom object with we want to store in a column. It
+  ///  // can be as complex as you want it to be
+  ///  class MyCustomObject {
+  ///   final String data;
+  ///   MyCustomObject(this.data);
+  /// }
+  ///
+  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
+  ///   // this class is responsible for turning a custom object into a string.
+  ///   // this is easy here, but more complex objects could be serialized using
+  ///   // json or any other method of your choice.
+  ///   const CustomConverter();
+  ///   @override
+  ///   MyCustomObject mapToDart(String fromDb) {
+  ///     return fromDb == null ? null : MyCustomObject(fromDb);
+  ///   }
+  ///
+  ///   @override
+  ///   String mapToSql(MyCustomObject value) {
+  ///     return value?.data;
+  ///   }
+  /// }
+  ///
+  /// ```
+  ///
+  /// In that case, you could have a table with this column
+  /// ```dart
+  /// TextColumn get custom => text().map(const CustomConverter())();
+  /// ```
+  /// The generated row class will then use a `MyFancyClass` instead of a
+  /// `String`, which would usually be used for [Table.text] columns.
   Builder map<T>(TypeConverter<T, ResultDartType> converter) => null;
 
   /// Turns this column builder into a column. This method won't actually be

@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
 import 'package:recase/recase.dart';
@@ -77,8 +78,9 @@ class DataClassWriter {
       ..write("final effectivePrefix = prefix ?? '';");
 
     final dartTypeToResolver = <String, String>{};
+    final columnToTypeMapper = <SpecifiedColumn, String>{};
 
-    final types = table.columns.map((c) => c.dartTypeName).toSet();
+    final types = table.columns.map((c) => c.variableTypeName).toSet();
     for (var usedType in types) {
       // final intType = db.typeSystem.forDartType<int>();
       final resolver = '${ReCase(usedType).camelCase}Type';
@@ -88,17 +90,30 @@ class DataClassWriter {
           .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
     }
 
+    for (var column in table.columns.where((c) => c.typeConverter != null)) {
+      final name = '${column.dartGetterName}Converter';
+      columnToTypeMapper[column] = name;
+
+      buffer.write('final $name = ${column.typeConverter.toSource()};');
+    }
+
     // finally, the mighty constructor invocation:
     buffer.write('return $dataClassName(');
 
     for (var column in table.columns) {
       // id: intType.mapFromDatabaseResponse(data["id])
       final getter = column.dartGetterName;
-      final resolver = dartTypeToResolver[column.dartTypeName];
+      final resolver = dartTypeToResolver[column.variableTypeName];
       final columnName = "'\${effectivePrefix}${column.name.name}'";
-      final typeParser = '$resolver.mapFromDatabaseResponse(data[$columnName])';
 
-      buffer.write('$getter: $typeParser,');
+      var loadType = '$resolver.mapFromDatabaseResponse(data[$columnName])';
+
+      if (columnToTypeMapper.containsKey(column)) {
+        final converter = columnToTypeMapper[column];
+        loadType = '$converter.mapToDart($loadType)';
+      }
+
+      buffer.write('$getter: $loadType,');
     }
 
     buffer.write(');}\n');

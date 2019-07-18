@@ -853,16 +853,18 @@ class TableWithoutPKData extends DataClass
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final doubleType = db.typeSystem.forDartType<double>();
-    final myCustomObjectType = db.typeSystem.forDartType<MyCustomObject>();
+    final stringType = db.typeSystem.forDartType<String>();
+    final customConverter = const CustomConverter();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
       someFloat: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
-      custom: myCustomObjectType
-          .mapFromDatabaseResponse(data['${effectivePrefix}custom']),
+      custom: customConverter.mapToDart(
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
     );
   }
+
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TableWithoutPKData(
