@@ -119,8 +119,12 @@ class SpecifiedColumn {
     if (overriddenDartType != null) {
       return overriddenDartType.name;
     }
-    return dartTypeNames[type];
+    return variableTypeName;
   }
+
+  /// the Dart type of this column that can be handled by moors type mapping.
+  /// Basically the same as [dartTypeName], minus custom types.
+  String get variableTypeName => dartTypeNames[type];
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an

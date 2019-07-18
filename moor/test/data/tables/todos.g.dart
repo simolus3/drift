@@ -1006,12 +1006,7 @@ class $TableWithoutPKTable extends TableWithoutPK
     } else if (someFloat.isRequired && isInserting) {
       context.missing(_someFloatMeta);
     }
-    if (d.custom.present) {
-      context.handle(
-          _customMeta, custom.isAcceptableValue(d.custom.value, _customMeta));
-    } else if (custom.isRequired && isInserting) {
-      context.missing(_customMeta);
-    }
+    context.handle(_customMeta, const VerificationResult.success());
     return context;
   }
 
@@ -1033,7 +1028,9 @@ class $TableWithoutPKTable extends TableWithoutPK
       map['some_float'] = Variable<double, RealType>(d.someFloat.value);
     }
     if (d.custom.present) {
-      map['custom'] = Variable<MyCustomObject, StringType>(d.custom.value);
+      final converter = const CustomConverter();
+      map['custom'] =
+          Variable<String, StringType>(converter.mapToSql(d.custom.value));
     }
     return map;
   }

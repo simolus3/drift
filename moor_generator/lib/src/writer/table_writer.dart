@@ -87,13 +87,28 @@ class TableWriter {
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
-      buffer.write('''
-        if (d.${column.dartGetterName}.present) {
-          map['${column.name.name}'] = 
-             Variable<${column.dartTypeName}, ${column.sqlTypeName}>(
-                d.${column.dartGetterName}.value);
-        }
-      ''');
+      buffer.write('if (d.${column.dartGetterName}.present) {');
+      final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
+          'Variable<${column.variableTypeName}, ${column.sqlTypeName}>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        // todo instead of creating the converter every time, can we cache its
+        // instance in the generated table class?
+        buffer
+          ..write('final converter = ${column.typeConverter.toSource()};\n')
+          ..write(mapSetter)
+          ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
+      } else {
+        // no type converter. Write variable directly
+        buffer
+          ..write(mapSetter)
+          ..write('(')
+          ..write('d.${column.dartGetterName}.value')
+          ..write(');');
+      }
+
+      buffer.write('}');
     }
 
     buffer.write('return map; \n}\n');
@@ -170,6 +185,15 @@ class TableWriter {
     for (var column in table.columns) {
       final getterName = column.dartGetterName;
       final metaName = _fieldNameForColumnMeta(column);
+
+      if (column.typeConverter != null) {
+        // dont't verify custom columns, we assume that the user knows what
+        // they're doing
+        buffer
+          ..write(
+              'context.handle($metaName, const VerificationResult.success());');
+        continue;
+      }
 
       buffer
         ..write('if (d.$getterName.present) {\n')
