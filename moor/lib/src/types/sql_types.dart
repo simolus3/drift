@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+part 'custom_type.dart';
+
 /// A type that can be mapped from Dart to sql. The generic type parameter here
 /// denotes the resolved dart type.
 abstract class SqlType<T> {

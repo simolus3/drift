@@ -16,11 +16,12 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
 
   @override
   generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) {
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
     final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
-    final parsedTables =
-        tableTypes.map((type) => state.parseType(type, element)).toList();
+    final parsedTables = await Stream.fromIterable(tableTypes)
+        .asyncMap((type) => state.parseType(type, element))
+        .toList();
     final queries = annotation.peek('queries')?.mapValue ?? {};
 
     if (element is! ClassElement) {

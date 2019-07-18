@@ -107,6 +107,10 @@ class ColumnBuilder<
   /// store the current date/time as a default value.
   Builder withDefault(Expression<ResultDartType, ResultSqlType> e) => null;
 
+  /// Uses a custom [converter] to store custom Dart objects in a single column
+  /// and automatically mapping them from and to sql.
+  Builder map<T>(TypeConverter<T, ResultDartType> converter) => null;
+
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your
   /// source code to figure out your table structure.

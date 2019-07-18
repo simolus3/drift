@@ -19,7 +19,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
 
   @override
   generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) {
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
     final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
     final daoTypes = annotation
@@ -33,7 +33,7 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     var resolvedQueries = <SqlQuery>[];
 
     for (var table in tableTypes) {
-      tablesForThisDb.add(state.parseType(table, element));
+      tablesForThisDb.add(await state.parseType(table, element));
     }
 
     if (queries.isNotEmpty) {

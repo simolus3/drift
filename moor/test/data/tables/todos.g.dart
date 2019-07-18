@@ -842,18 +842,25 @@ class TableWithoutPKData extends DataClass
     implements Insertable<TableWithoutPKData> {
   final int notReallyAnId;
   final double someFloat;
-  TableWithoutPKData({@required this.notReallyAnId, @required this.someFloat});
+  final MyCustomObject custom;
+  TableWithoutPKData(
+      {@required this.notReallyAnId,
+      @required this.someFloat,
+      @required this.custom});
   factory TableWithoutPKData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final doubleType = db.typeSystem.forDartType<double>();
+    final myCustomObjectType = db.typeSystem.forDartType<MyCustomObject>();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
       someFloat: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
+      custom: myCustomObjectType
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom']),
     );
   }
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
@@ -861,6 +868,7 @@ class TableWithoutPKData extends DataClass
     return TableWithoutPKData(
       notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
       someFloat: serializer.fromJson<double>(json['someFloat']),
+      custom: serializer.fromJson<MyCustomObject>(json['custom']),
     );
   }
   @override
@@ -869,6 +877,7 @@ class TableWithoutPKData extends DataClass
     return {
       'notReallyAnId': serializer.toJson<int>(notReallyAnId),
       'someFloat': serializer.toJson<double>(someFloat),
+      'custom': serializer.toJson<MyCustomObject>(custom),
     };
   }
 
@@ -882,40 +891,49 @@ class TableWithoutPKData extends DataClass
       someFloat: someFloat == null && nullToAbsent
           ? const Value.absent()
           : Value(someFloat),
+      custom:
+          custom == null && nullToAbsent ? const Value.absent() : Value(custom),
     ) as T;
   }
 
-  TableWithoutPKData copyWith({int notReallyAnId, double someFloat}) =>
+  TableWithoutPKData copyWith(
+          {int notReallyAnId, double someFloat, MyCustomObject custom}) =>
       TableWithoutPKData(
         notReallyAnId: notReallyAnId ?? this.notReallyAnId,
         someFloat: someFloat ?? this.someFloat,
+        custom: custom ?? this.custom,
       );
   @override
   String toString() {
     return (StringBuffer('TableWithoutPKData(')
           ..write('notReallyAnId: $notReallyAnId, ')
-          ..write('someFloat: $someFloat')
+          ..write('someFloat: $someFloat, ')
+          ..write('custom: $custom')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc($mrjc(0, notReallyAnId.hashCode), someFloat.hashCode));
+  int get hashCode => $mrjf($mrjc(
+      $mrjc($mrjc(0, notReallyAnId.hashCode), someFloat.hashCode),
+      custom.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TableWithoutPKData &&
           other.notReallyAnId == notReallyAnId &&
-          other.someFloat == someFloat);
+          other.someFloat == someFloat &&
+          other.custom == custom);
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
+  final Value<MyCustomObject> custom;
   const TableWithoutPKCompanion({
     this.notReallyAnId = const Value.absent(),
     this.someFloat = const Value.absent(),
+    this.custom = const Value.absent(),
   });
 }
 
@@ -950,8 +968,20 @@ class $TableWithoutPKTable extends TableWithoutPK
     );
   }
 
+  final VerificationMeta _customMeta = const VerificationMeta('custom');
+  GeneratedTextColumn _custom;
   @override
-  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat];
+  GeneratedTextColumn get custom => _custom ??= _constructCustom();
+  GeneratedTextColumn _constructCustom() {
+    return GeneratedTextColumn(
+      'custom',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat, custom];
   @override
   $TableWithoutPKTable get asDslTable => this;
   @override
@@ -976,6 +1006,12 @@ class $TableWithoutPKTable extends TableWithoutPK
     } else if (someFloat.isRequired && isInserting) {
       context.missing(_someFloatMeta);
     }
+    if (d.custom.present) {
+      context.handle(
+          _customMeta, custom.isAcceptableValue(d.custom.value, _customMeta));
+    } else if (custom.isRequired && isInserting) {
+      context.missing(_customMeta);
+    }
     return context;
   }
 
@@ -995,6 +1031,9 @@ class $TableWithoutPKTable extends TableWithoutPK
     }
     if (d.someFloat.present) {
       map['some_float'] = Variable<double, RealType>(d.someFloat.value);
+    }
+    if (d.custom.present) {
+      map['custom'] = Variable<MyCustomObject, StringType>(d.custom.value);
     }
     return map;
   }

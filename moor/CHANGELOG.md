@@ -1,3 +1,6 @@
+## unreleased
+- Support custom columns
+
 ## 1.6.0
 - Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.
 - Make transactions easier to use: Thanks to some Dart async magic, you no longer need to run

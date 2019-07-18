@@ -13,18 +13,18 @@ import 'package:moor/sqlite_keywords.dart';
 class TableParser extends ParserBase {
   TableParser(SharedState state) : super(state);
 
-  SpecifiedTable parse(ClassElement element) {
-    final sqlName = _parseTableName(element);
+  Future<SpecifiedTable> parse(ClassElement element) async {
+    final sqlName = await _parseTableName(element);
     if (sqlName == null) return null;
 
-    final columns = _parseColumns(element);
+    final columns = await _parseColumns(element);
 
     return SpecifiedTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
-      primaryKey: _readPrimaryKey(element, columns),
+      primaryKey: await _readPrimaryKey(element, columns),
     );
   }
 
@@ -40,7 +40,7 @@ class TableParser extends ParserBase {
     }
   }
 
-  String _parseTableName(ClassElement element) {
+  Future<String> _parseTableName(ClassElement element) async {
     // todo allow override via a field (final String tableName = '') as well
 
     final tableNameGetter = element.getGetter('tableName');
@@ -52,7 +52,8 @@ class TableParser extends ParserBase {
 
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
-    final tableNameDeclaration = state.loadElementDeclaration(tableNameGetter);
+    final tableNameDeclaration =
+        await state.loadElementDeclaration(tableNameGetter);
     final returnExpr = returnExpressionOfMethod(
         tableNameDeclaration.node as MethodDeclaration);
 
@@ -67,15 +68,15 @@ class TableParser extends ParserBase {
     return tableName;
   }
 
-  Set<SpecifiedColumn> _readPrimaryKey(
-      ClassElement element, List<SpecifiedColumn> columns) {
+  Future<Set<SpecifiedColumn>> _readPrimaryKey(
+      ClassElement element, List<SpecifiedColumn> columns) async {
     final primaryKeyGetter = element.getGetter('primaryKey');
     if (primaryKeyGetter == null) {
       return null;
     }
 
-    final ast = state.loadElementDeclaration(primaryKeyGetter).node
-        as MethodDeclaration;
+    final resolved = await state.loadElementDeclaration(primaryKeyGetter);
+    final ast = resolved.node as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
       state.errors.add(MoorError(
@@ -110,12 +111,12 @@ class TableParser extends ParserBase {
     return parsedPrimaryKey;
   }
 
-  List<SpecifiedColumn> _parseColumns(ClassElement element) {
-    return element.fields
+  Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
+    return Stream.fromIterable(element.fields)
         .where((field) => isColumn(field.type) && field.getter != null)
-        .map((field) {
-      final node =
-          state.loadElementDeclaration(field.getter).node as MethodDeclaration;
+        .asyncMap((field) async {
+      final resolved = await state.loadElementDeclaration(field.getter);
+      final node = resolved.node as MethodDeclaration;
 
       return state.columnParser.parse(node, field.getter);
     }).toList();

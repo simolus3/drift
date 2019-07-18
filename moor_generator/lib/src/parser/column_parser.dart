@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
@@ -20,7 +21,7 @@ final Set<String> starters = {
   startBool,
   startDateTime,
   startBlob,
-  startReal
+  startReal,
 };
 
 const String _methodNamed = 'named';
@@ -31,6 +32,7 @@ const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
+const String _methodMap = 'map';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -49,6 +51,7 @@ class ColumnParser extends ParserBase {
       we can extract what it means for the column (name, auto increment, PK,
       constraints...).
      */
+
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
@@ -68,6 +71,8 @@ class ColumnParser extends ParserBase {
     String foundExplicitName;
     String foundCustomConstraint;
     Expression foundDefaultExpression;
+    Expression foundTypeConverter;
+    DartType overrideDartType;
     var wasDeclaredAsPrimaryKey = false;
     var nullable = false;
 
@@ -148,6 +153,18 @@ class ColumnParser extends ParserBase {
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
           foundDefaultExpression = expression;
+          break;
+        case _methodMap:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+
+          // the map method has a parameter type that resolved to the runtime
+          // type of the custom object
+          final type = remainingExpr.typeArgumentTypes.single;
+
+          foundTypeConverter = expression;
+          overrideDartType = type;
+          break;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -172,6 +189,8 @@ class ColumnParser extends ParserBase {
       nullable: nullable,
       features: foundFeatures,
       defaultArgument: foundDefaultExpression,
+      typeConverter: foundTypeConverter,
+      overriddenDartType: overrideDartType,
     );
   }
 

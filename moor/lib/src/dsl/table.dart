@@ -93,7 +93,6 @@ abstract class Table {
   /// ```
   /// RealColumn get averageSpeed => real()();
   /// ```
-  /// Note
   @protected
   RealColumnBuilder real() => null;
 }

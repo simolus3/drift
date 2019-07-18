@@ -21,21 +21,23 @@ class SharedState {
 
   final tableTypeChecker = const TypeChecker.fromRuntime(Table);
 
-  final Map<DartType, SpecifiedTable> foundTables = {};
+  final Map<DartType, Future<SpecifiedTable>> _foundTables = {};
 
   SharedState(this.options) {
     tableParser = TableParser(this);
     columnParser = ColumnParser(this);
   }
 
-  ElementDeclarationResult loadElementDeclaration(Element element) {
-    final result =
-        element.library.session.getParsedLibraryByElement(element.library);
-    return result.getElementDeclaration(element);
+  Future<ElementDeclarationResult> loadElementDeclaration(
+      Element element) async {
+    final resolvedLibrary = await element.library.session
+        .getResolvedLibraryByElement(element.library);
+
+    return resolvedLibrary.getElementDeclaration(element);
   }
 
-  SpecifiedTable parseType(DartType type, Element initializedBy) {
-    return foundTables.putIfAbsent(type, () {
+  Future<SpecifiedTable> parseType(DartType type, Element initializedBy) {
+    return _foundTables.putIfAbsent(type, () {
       if (!tableTypeChecker.isAssignableFrom(type.element)) {
         errors.add(MoorError(
           critical: true,

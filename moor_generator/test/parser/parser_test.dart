@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/options.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
@@ -56,46 +57,47 @@ void main() async {
       ..tableParser = TableParser(state);
   });
 
+  Future<SpecifiedTable> parse(String name) {
+    return TableParser(state).parse(testLib.getType(name));
+  }
+
   group('SQL table name', () {
-    test('should parse correctly when valid', () {
-      expect(
-          TableParser(state)
-              .parse(testLib.getType('TableWithCustomName'))
-              .sqlName,
-          equals('my-fancy-table'));
+    test('should parse correctly when valid', () async {
+      final parsed = await parse('TableWithCustomName');
+      expect(parsed.sqlName, equals('my-fancy-table'));
     });
 
-    test('should use class name if table name is not specified', () {
-      expect(TableParser(state).parse(testLib.getType('Users')).sqlName,
-          equals('users'));
+    test('should use class name if table name is not specified', () async {
+      final parsed = await parse('Users');
+      expect(parsed.sqlName, equals('users'));
     });
 
     test('should not parse for complex methods', () async {
-      TableParser(state).parse(testLib.getType('WrongName'));
+      await TableParser(state).parse(testLib.getType('WrongName'));
 
       expect(state.errors.errors, isNotEmpty);
     });
   });
 
   group('Columns', () {
-    test('should use field name if no name has been set explicitely', () {
-      final table = TableParser(state).parse(testLib.getType('Users'));
+    test('should use field name if no name has been set explicitely', () async {
+      final table = await parse('Users');
       final idColumn =
           table.columns.singleWhere((col) => col.name.name == 'id');
 
       expect(idColumn.name, equals(ColumnName.implicitly('id')));
     });
 
-    test('should use explicit name, if it exists', () {
-      final table = TableParser(state).parse(testLib.getType('Users'));
+    test('should use explicit name, if it exists', () async {
+      final table = await parse('Users');
       final idColumn =
           table.columns.singleWhere((col) => col.name.name == 'user_name');
 
       expect(idColumn.name, equals(ColumnName.explicitly('user_name')));
     });
 
-    test('should parse min and max length for text columns', () {
-      final table = TableParser(state).parse(testLib.getType('Users'));
+    test('should parse min and max length for text columns', () async {
+      final table = await parse('Users');
       final idColumn =
           table.columns.singleWhere((col) => col.name.name == 'user_name');
 
@@ -103,8 +105,8 @@ void main() async {
           contains(LimitingTextLength.withLength(min: 6, max: 32)));
     });
 
-    test('should only parse max length when relevant', () {
-      final table = TableParser(state).parse(testLib.getType('Users'));
+    test('should only parse max length when relevant', () async {
+      final table = await parse('Users');
       final idColumn =
           table.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
 
@@ -112,9 +114,8 @@ void main() async {
           idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
     });
 
-    test('parses custom constraints', () {
-      final table =
-          TableParser(state).parse(testLib.getType('CustomPrimaryKey'));
+    test('parses custom constraints', () async {
+      final table = await parse('CustomPrimaryKey');
 
       final partA =
           table.columns.singleWhere((c) => c.dartGetterName == 'partA');
@@ -125,8 +126,8 @@ void main() async {
       expect(partA.customConstraints, isNull);
     });
 
-    test('parsed default values', () {
-      final table = TableParser(state).parse(testLib.getType('Users'));
+    test('parsed default values', () async {
+      final table = await parse('Users');
       final defaultsColumn =
           table.columns.singleWhere((c) => c.name.name == 'defaults');
 
@@ -134,8 +135,8 @@ void main() async {
     });
   });
 
-  test('parses custom primary keys', () {
-    final table = TableParser(state).parse(testLib.getType('CustomPrimaryKey'));
+  test('parses custom primary keys', () async {
+    final table = await parse('CustomPrimaryKey');
 
     expect(table.primaryKey, containsAll(table.columns));
     expect(table.columns.any((column) => column.hasAI), isFalse);
