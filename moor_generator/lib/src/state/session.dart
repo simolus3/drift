@@ -1,12 +1,18 @@
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
+import 'package:moor_generator/src/parser/sql/sql_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
+import 'package:moor_generator/src/parser/use_moor_parser.dart';
+import 'package:source_gen/source_gen.dart';
 
 import 'errors.dart';
 import 'generator_state.dart';
@@ -35,6 +41,14 @@ class GeneratorSession {
     return resolvedLibrary.getElementDeclaration(element);
   }
 
+  /// Parses a [SpecifiedDatabase] from the [ClassElement] which was annotated
+  /// with `@UseMoor` and the [annotation] reader that reads the `@UseMoor`
+  /// annotation.
+  Future<SpecifiedDatabase> parseDatabase(
+      ClassElement element, ConstantReader annotation) {
+    return UseMoorParser(this).parseDatabase(element, annotation);
+  }
+
   /// Resolves a [SpecifiedTable] for the class of each [DartType] in [types].
   /// The [initializedBy] element should be the piece of code that caused the
   /// parsing (e.g. the database class that is annotated with `@UseMoor`). This
@@ -55,7 +69,20 @@ class GeneratorSession {
     }));
   }
 
+  /// Parses a column from a getter [e] declared inside a table class and its
+  /// resolved AST node [m].
   Future<SpecifiedColumn> parseColumn(MethodDeclaration m, Element e) {
     return Future.value(_columnParser.parse(m, e));
+  }
+
+  Future<List<SqlQuery>> parseQueries(
+      Map<DartObject, DartObject> fromAnnotation,
+      List<SpecifiedTable> availableTables) {
+    // no queries declared, so there is no point in starting a sql engine
+    if (fromAnnotation.isEmpty) return Future.value([]);
+
+    final parser = SqlParser(this, availableTables, fromAnnotation)..parse();
+
+    return Future.value(parser.foundQueries);
   }
 }

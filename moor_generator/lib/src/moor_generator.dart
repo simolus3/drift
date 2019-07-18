@@ -1,14 +1,11 @@
 import 'package:moor/moor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:moor_generator/src/model/specified_database.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/state/generator_state.dart';
 import 'package:moor_generator/src/state/options.dart';
 import 'package:moor_generator/src/writer/database_writer.dart';
 import 'package:source_gen/source_gen.dart';
-
-import 'model/sql_query.dart';
-import 'parser/sql/sql_parser.dart';
 
 class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
   final MoorOptions options;
@@ -20,23 +17,16 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
     final state = useState(() => GeneratorState(options));
     final session = state.startSession(buildStep);
 
-    final tableTypes =
-        annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
-    final daoTypes = annotation
-        .peek('daos')
-        .listValue
-        .map((obj) => obj.toTypeValue())
-        .toList();
-    final queries = annotation.peek('queries')?.mapValue ?? {};
-
-    final tablesForThisDb = await session.parseTables(tableTypes, element);
-    var resolvedQueries = <SqlQuery>[];
-
-    if (queries.isNotEmpty) {
-      final parser = SqlParser(session, tablesForThisDb, queries)..parse();
-
-      resolvedQueries = parser.foundQueries;
+    if (element is! ClassElement) {
+      session.errors.add(MoorError(
+        critical: true,
+        message: 'This annotation can only be used on classes',
+        affectedElement: element,
+      ));
     }
+
+    final database =
+        await session.parseDatabase(element as ClassElement, annotation);
 
     if (session.errors.errors.isNotEmpty) {
       print('Warning: There were some errors while running '
@@ -52,15 +42,12 @@ class MoorGenerator extends GeneratorForAnnotation<UseMoor> {
       }
     }
 
-    if (tablesForThisDb.isEmpty) return '';
-
-    final specifiedDb = SpecifiedDatabase(
-        element as ClassElement, tablesForThisDb, daoTypes, resolvedQueries);
+    if (database.tables.isEmpty) return '';
 
     final buffer = StringBuffer()
       ..write('// ignore_for_file: unnecessary_brace_in_string_interps\n');
 
-    DatabaseWriter(specifiedDb, options).write(buffer);
+    DatabaseWriter(database, options).write(buffer);
 
     return buffer.toString();
   }
