@@ -1,17 +1,17 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:moor_generator/src/errors.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:moor/sqlite_keywords.dart';
 
 class TableParser extends ParserBase {
-  TableParser(SharedState state) : super(state);
+  TableParser(GeneratorSession session) : super(session);
 
   Future<SpecifiedTable> parse(ClassElement element) async {
     final sqlName = await _parseTableName(element);
@@ -53,12 +53,12 @@ class TableParser extends ParserBase {
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
     final tableNameDeclaration =
-        await state.loadElementDeclaration(tableNameGetter);
+        await session.loadElementDeclaration(tableNameGetter);
     final returnExpr = returnExpressionOfMethod(
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = readStringLiteral(returnExpr, () {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           critical: true,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -75,11 +75,11 @@ class TableParser extends ParserBase {
       return null;
     }
 
-    final resolved = await state.loadElementDeclaration(primaryKeyGetter);
+    final resolved = await session.loadElementDeclaration(primaryKeyGetter);
     final ast = resolved.node as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -103,7 +103,7 @@ class TableParser extends ParserBase {
         }
       }
     } else {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
     }
@@ -112,13 +112,14 @@ class TableParser extends ParserBase {
   }
 
   Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
-    return Stream.fromIterable(element.fields)
-        .where((field) => isColumn(field.type) && field.getter != null)
-        .asyncMap((field) async {
-      final resolved = await state.loadElementDeclaration(field.getter);
+    final columns = element.fields
+        .where((field) => isColumn(field.type) && field.getter != null);
+
+    return Future.wait(columns.map((field) async {
+      final resolved = await session.loadElementDeclaration(field.getter);
       final node = resolved.node as MethodDeclaration;
 
-      return state.columnParser.parse(node, field.getter);
-    }).toList();
+      return await session.parseColumn(node, field.getter);
+    }));
   }
 }

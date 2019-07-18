@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:moor_generator/src/errors.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 
 class Parser {
   List<SpecifiedTable> specifiedTables;
@@ -10,15 +10,15 @@ class Parser {
 }
 
 class ParserBase {
-  final SharedState state;
+  final GeneratorSession session;
 
-  ParserBase(this.state);
+  ParserBase(this.session);
 
   Expression returnExpressionOfMethod(MethodDeclaration method) {
     final body = method.body;
 
     if (!(body is ExpressionFunctionBody)) {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           affectedElement: method.declaredElement,
           critical: true,
           message:

@@ -1,16 +1,17 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/options.dart';
-import 'package:moor_generator/src/parser/column_parser.dart';
+import 'package:moor_generator/src/state/generator_state.dart';
+import 'package:moor_generator/src/state/options.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:test_api/test_api.dart';
 import 'package:build_test/build_test.dart';
 
 void main() async {
   LibraryElement testLib;
-  SharedState state;
+  GeneratorState state;
+  GeneratorSession session;
 
   setUpAll(() async {
     testLib = await resolveSource(r''' 
@@ -52,13 +53,12 @@ void main() async {
   });
 
   setUp(() {
-    state = SharedState(const MoorOptions.defaults())
-      ..columnParser = ColumnParser(state)
-      ..tableParser = TableParser(state);
+    state = useState(() => GeneratorState(const MoorOptions.defaults()));
+    session = state.startSession(null);
   });
 
   Future<SpecifiedTable> parse(String name) {
-    return TableParser(state).parse(testLib.getType(name));
+    return TableParser(session).parse(testLib.getType(name));
   }
 
   group('SQL table name', () {
@@ -73,9 +73,9 @@ void main() async {
     });
 
     test('should not parse for complex methods', () async {
-      await TableParser(state).parse(testLib.getType('WrongName'));
+      await TableParser(session).parse(testLib.getType('WrongName'));
 
-      expect(state.errors.errors, isNotEmpty);
+      expect(session.errors.errors, isNotEmpty);
     });
   });
 

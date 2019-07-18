@@ -2,9 +2,16 @@ import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:recase/recase.dart';
 
+/// A parsed table, declared in code by extending `Table` and referencing that
+/// table in `@UseMoor` or `@UseDao`.
 class SpecifiedTable {
+  /// The [ClassElement] for the class that declares this table.
   final ClassElement fromClass;
+
+  /// The columns declared in this table.
   final List<SpecifiedColumn> columns;
+
+  /// The name of this table when stored in the database
   final String sqlName;
 
   /// The name for the data class associated with this table

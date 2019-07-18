@@ -1,6 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/state/options.dart';
 import 'package:recase/recase.dart';
 
 const _hashCombine = '\$mrjc';

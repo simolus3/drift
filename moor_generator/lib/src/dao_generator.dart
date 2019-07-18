@@ -1,8 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/parser/sql/sql_parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
 import 'package:moor/moor.dart';
+import 'package:moor_generator/src/state/generator_state.dart';
+import 'package:moor_generator/src/state/options.dart';
 import 'package:moor_generator/src/writer/query_writer.dart';
 import 'package:moor_generator/src/writer/result_set_writer.dart';
 import 'package:source_gen/source_gen.dart';
@@ -10,18 +11,19 @@ import 'package:source_gen/source_gen.dart';
 import 'model/sql_query.dart';
 
 class DaoGenerator extends GeneratorForAnnotation<UseDao> {
-  final SharedState state;
+  final MoorOptions options;
 
-  DaoGenerator(this.state);
+  DaoGenerator(this.options);
 
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
+    final state = useState(() => GeneratorState(options));
+    final session = state.startSession(buildStep);
+
     final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
-    final parsedTables = await Stream.fromIterable(tableTypes)
-        .asyncMap((type) => state.parseType(type, element))
-        .toList();
+    final parsedTables = await session.parseTables(tableTypes, element);
     final queries = annotation.peek('queries')?.mapValue ?? {};
 
     if (element is! ClassElement) {
@@ -50,7 +52,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     }
 
     if (queries.isNotEmpty) {
-      final parser = SqlParser(state, parsedTables, queries)..parse();
+      final parser = SqlParser(session, parsedTables, queries)..parse();
 
       resolvedQueries = parser.foundQueries;
     }

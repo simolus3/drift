@@ -864,7 +864,6 @@ class TableWithoutPKData extends DataClass
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
     );
   }
-
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return TableWithoutPKData(

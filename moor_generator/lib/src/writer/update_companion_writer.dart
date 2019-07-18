@@ -1,5 +1,5 @@
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/state/options.dart';
 
 class UpdateCompanionWriter {
   final SpecifiedTable table;

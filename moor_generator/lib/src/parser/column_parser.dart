@@ -1,10 +1,10 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:moor_generator/src/errors.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 
@@ -39,7 +39,7 @@ const String _errorMessage = 'This getter does not create a valid column that '
     'columns are formed. If you have any questions, feel free to raise an issue.';
 
 class ColumnParser extends ParserBase {
-  ColumnParser(SharedState state) : super(state);
+  ColumnParser(GeneratorSession session) : super(session);
 
   SpecifiedColumn parse(MethodDeclaration getter, Element getterElement) {
     /*
@@ -55,7 +55,7 @@ class ColumnParser extends ParserBase {
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
         critical: true,
@@ -89,7 +89,7 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case _methodNamed:
           if (foundExplicitName != null) {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -102,7 +102,7 @@ class ColumnParser extends ParserBase {
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -138,7 +138,7 @@ class ColumnParser extends ParserBase {
         case _methodCustomConstraint:
           foundCustomConstraint =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
