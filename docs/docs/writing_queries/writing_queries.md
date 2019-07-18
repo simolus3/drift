@@ -84,7 +84,9 @@ __⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or d
 the statement will affect all rows in the table!
 
 ## Inserts
-You can very easily insert any valid object into tables:
+You can very easily insert any valid object into tables. As some values can be absent
+(like default values that we don't have to set explicitly), we again use the 
+companion version.
 ```dart
 // returns the generated id
 Future<int> addTodoEntry(TodosCompanion entry) {
@@ -94,9 +96,9 @@ Future<int> addTodoEntry(TodosCompanion entry) {
 All row classes generated will have a constructor that can be used to create objects:
 ```dart
 addTodoEntry(
-  Todo(
-    title: 'Important task',
-    content: 'Refactor persistence code',
+  TodosCompanion(
+    title: Value('Important task'),
+    content: Value('Refactor persistence code'),
   ),
 );
 ```
