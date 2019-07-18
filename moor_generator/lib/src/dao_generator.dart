@@ -1,6 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:moor_generator/src/parser/sql/sql_parser.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_generator/src/state/generator_state.dart';
 import 'package:moor_generator/src/state/options.dart';
@@ -21,21 +20,16 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     final state = useState(() => GeneratorState(options));
     final session = state.startSession(buildStep);
 
-    final tableTypes =
-        annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
-    final parsedTables = await session.parseTables(tableTypes, element);
-    final queries = annotation.peek('queries')?.mapValue ?? {};
-
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
           'This annotation can only be used on classes',
           element: element);
     }
 
-    final enclosingClass = element as ClassElement;
-    var resolvedQueries = <SqlQuery>[];
+    final targetClass = element as ClassElement;
+    final parsedDao = await session.parseDao(targetClass, annotation);
 
-    final dbType = enclosingClass.supertype;
+    final dbType = targetClass.supertype;
     if (dbType.name != 'DatabaseAccessor') {
       throw InvalidGenerationSourceError(
           'This class must directly inherit from DatabaseAccessor',
@@ -51,35 +45,29 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
           element: element);
     }
 
-    if (queries.isNotEmpty) {
-      final parser = SqlParser(session, parsedTables, queries)..parse();
-
-      resolvedQueries = parser.foundQueries;
-    }
-
     // finally, we can write the mixin
     final buffer = StringBuffer();
 
-    final daoName = enclosingClass.displayName;
+    final daoName = targetClass.displayName;
 
     buffer.write('mixin _\$${daoName}Mixin on '
         'DatabaseAccessor<${dbImpl.displayName}> {\n');
 
-    for (var table in parsedTables) {
+    for (var table in parsedDao.tables) {
       final infoType = table.tableInfoName;
       final getterName = table.tableFieldName;
       buffer.write('$infoType get $getterName => db.$getterName;\n');
     }
 
     final writtenMappingMethods = <String>{};
-    for (var query in resolvedQueries) {
+    for (var query in parsedDao.queries) {
       QueryWriter(query, writtenMappingMethods).writeInto(buffer);
     }
 
     buffer.write('}');
 
     // if the queries introduced additional classes, also write those
-    for (final query in resolvedQueries) {
+    for (final query in parsedDao.queries) {
       if (query is SqlSelectQuery && query.resultSet.matchingTable == null) {
         ResultSetWriter(query).write(buffer);
       }

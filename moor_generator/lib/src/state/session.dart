@@ -5,12 +5,14 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/model/specified_dao.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
 import 'package:moor_generator/src/parser/sql/sql_parser.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
+import 'package:moor_generator/src/parser/use_dao_parser.dart';
 import 'package:moor_generator/src/parser/use_moor_parser.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -47,6 +49,13 @@ class GeneratorSession {
   Future<SpecifiedDatabase> parseDatabase(
       ClassElement element, ConstantReader annotation) {
     return UseMoorParser(this).parseDatabase(element, annotation);
+  }
+
+  /// Parses a [SpecifiedDao] from a class declaration that has a `UseDao`
+  /// [annotation].
+  Future<SpecifiedDao> parseDao(
+      ClassElement element, ConstantReader annotation) {
+    return UseDaoParser(this).parseDao(element, annotation);
   }
 
   /// Resolves a [SpecifiedTable] for the class of each [DartType] in [types].
