@@ -46,7 +46,8 @@ void main() {
       verify(mockQueryExecutor.call('CREATE TABLE IF NOT EXISTS '
           'table_without_p_k ('
           'not_really_an_id INTEGER NOT NULL, '
-          'some_float REAL NOT NULL'
+          'some_float REAL NOT NULL, '
+          'custom VARCHAR NOT NULL'
           ');'));
     });
 
