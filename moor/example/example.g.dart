@@ -62,7 +62,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -236,10 +236,8 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc(
-          $mrjc($mrjc(0, id.hashCode), title.hashCode), instructions.hashCode),
-      category.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode,
+      $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -444,8 +442,8 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, id.hashCode), name.hashCode), caloriesPer100g.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -642,8 +640,7 @@ class IngredientInRecipe extends DataClass
 
   @override
   int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, recipe.hashCode), ingredient.hashCode),
-      amountInGrams.hashCode));
+      recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||

@@ -104,10 +104,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
 
   @override
   int get hashCode => $mrjf($mrjc(
+      id.hashCode,
       $mrjc(
-          $mrjc($mrjc($mrjc(0, id.hashCode), title.hashCode), content.hashCode),
-          targetDate.hashCode),
-      category.hashCode));
+          title.hashCode,
+          $mrjc(content.hashCode,
+              $mrjc(targetDate.hashCode, category.hashCode)))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -328,7 +329,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -517,11 +518,11 @@ class User extends DataClass implements Insertable<User> {
 
   @override
   int get hashCode => $mrjf($mrjc(
+      id.hashCode,
       $mrjc(
-          $mrjc(
-              $mrjc($mrjc(0, id.hashCode), name.hashCode), isAwesome.hashCode),
-          profilePicture.hashCode),
-      creationTime.hashCode));
+          name.hashCode,
+          $mrjc(isAwesome.hashCode,
+              $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -740,7 +741,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, todo.hashCode), user.hashCode));
+  int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -916,8 +917,7 @@ class TableWithoutPKData extends DataClass
 
   @override
   int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, notReallyAnId.hashCode), someFloat.hashCode),
-      custom.hashCode));
+      notReallyAnId.hashCode, $mrjc(someFloat.hashCode, custom.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -1094,7 +1094,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), txt.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, txt.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||

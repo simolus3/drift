@@ -19,11 +19,14 @@ import 'package:source_gen/source_gen.dart';
 import 'errors.dart';
 import 'generator_state.dart';
 import 'options.dart';
+import 'writer.dart';
 
 class GeneratorSession {
   final GeneratorState state;
   final ErrorStore errors = ErrorStore();
   final BuildStep step;
+
+  final Writer writer = Writer();
 
   TableParser _tableParser;
   ColumnParser _columnParser;

@@ -1,16 +1,14 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/state/options.dart';
+import 'package:moor_generator/src/state/session.dart';
+import 'package:moor_generator/src/writer/utils/hash_code.dart';
 import 'package:recase/recase.dart';
-
-const _hashCombine = '\$mrjc';
-const _hashFinish = '\$mrjf';
 
 class DataClassWriter {
   final SpecifiedTable table;
-  final MoorOptions options;
+  final GeneratorSession session;
 
-  DataClassWriter(this.table, this.options);
+  DataClassWriter(this.table, this.session);
 
   void writeInto(StringBuffer buffer) {
     buffer.write(
@@ -139,7 +137,7 @@ class DataClassWriter {
 
     buffer.write(');}\n');
 
-    if (options.generateFromJsonStringConstructor) {
+    if (session.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
       buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
           '{ValueSerializer serializer = const ValueSerializer.defaults()}) => '
@@ -225,16 +223,9 @@ class DataClassWriter {
   void _writeHashCode(StringBuffer buffer) {
     buffer.write('@override\n int get hashCode => ');
 
-    if (table.columns.isEmpty) {
-      buffer.write('identityHashCode(this); \n');
-    } else {
-      final fields = table.columns.map((c) => c.dartGetterName).toList();
-      buffer
-        ..write('$_hashFinish(')
-        ..write(_calculateHashCode(fields))
-        ..write(')')
-        ..write('; \n');
-    }
+    final fields = table.columns.map((c) => c.dartGetterName).toList();
+    HashCodeWriter().writeHashCode(fields, buffer);
+    buffer.write(';');
   }
 
   void _writeCompanionOverride(StringBuffer buffer) {
@@ -251,20 +242,5 @@ class DataClassWriter {
           'const Value.absent() : Value($getter),');
     }
     buffer.write(') as T;}\n');
-  }
-
-  /// Recursively creates the implementation for hashCode of the data class,
-  /// assuming it has at least one field. When it has one field, we just return
-  /// the hash code of that field. Otherwise, we multiply it with 31 and add
-  /// the hash code of the next field, and so on.
-  String _calculateHashCode(List<String> fields) {
-    if (fields.length == 1) {
-      return '$_hashCombine(0, ${fields.last}.hashCode)';
-    } else {
-      final last = fields.removeLast();
-      final innerHash = _calculateHashCode(fields);
-
-      return '$_hashCombine($innerHash, $last.hashCode)';
-    }
   }
 }

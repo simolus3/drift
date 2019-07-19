@@ -1,11 +1,11 @@
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/state/options.dart';
+import 'package:moor_generator/src/state/session.dart';
 
 class UpdateCompanionWriter {
   final SpecifiedTable table;
-  final MoorOptions options;
+  final GeneratorSession session;
 
-  UpdateCompanionWriter(this.table, this.options);
+  UpdateCompanionWriter(this.table, this.session);
 
   void writeInto(StringBuffer buffer) {
     buffer.write('class ${table.updateCompanionName} '
