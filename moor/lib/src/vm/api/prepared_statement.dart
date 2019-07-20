@@ -12,6 +12,7 @@ class PreparedStatement {
 
   void close() {
     if (!_closed) {
+      _reset();
       bindings.sqlite3_finalize(_stmt);
       _db._handleStmtFinalized(this);
     }
@@ -28,6 +29,7 @@ class PreparedStatement {
   /// will be returned.
   Result select([List<dynamic> params]) {
     _ensureNotFinalized();
+    _reset();
     _bindParams(params);
 
     final columnCount = bindings.sqlite3_column_count(_stmt);
@@ -44,8 +46,6 @@ class PreparedStatement {
     while (_step() == Errors.SQLITE_ROW) {
       rows.add([for (var i = 0; i < columnCount; i++) _readValue(i)]);
     }
-
-    _reset();
 
     return Result(names, rows);
   }
@@ -73,12 +73,12 @@ class PreparedStatement {
   /// Executes this prepared statement.
   void execute([List<dynamic> params]) {
     _ensureNotFinalized();
+    _reset();
     _bindParams(params);
 
     final result = _step();
-    _reset();
 
-    if (result != Errors.SQLITE_OK || result != Errors.SQLITE_DONE) {
+    if (result != Errors.SQLITE_OK && result != Errors.SQLITE_DONE) {
       throw SqliteException._fromErrorCode(_db._db, result);
     }
   }
@@ -110,12 +110,15 @@ class PreparedStatement {
           final ptr = CString.allocate(param);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_text(_stmt, i, ptr);
+          bindings.sqlite3_bind_text(_stmt, i, ptr, -1, fromAddress(0));
         } else if (param is Uint8List) {
+          // todo we just have a null pointer param.isEmpty. I guess we have
+          // to use sqlite3_bind_zeroblob for that?
           final ptr = CBlob.allocate(param);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length);
+          bindings.sqlite3_bind_blob(
+              _stmt, i, ptr, param.length, fromAddress(0));
         }
       }
     }

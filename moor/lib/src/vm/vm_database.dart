@@ -15,21 +15,6 @@ abstract class _DatabaseUser extends QueryExecutor {
   }
 
   @override
-  Future<bool> ensureOpen() {
-    _db ??= _openInternal();
-
-    return Future.value(true);
-  }
-
-  Database _openInternal() {
-    if (dbFile == null) {
-      return Database.memory();
-    } else {
-      return Database.openFile(dbFile);
-    }
-  }
-
-  @override
   Future<void> runCustom(String statement) {
     _logStmt(statement, const []);
     _db.execute(statement);
@@ -72,6 +57,7 @@ abstract class _DatabaseUser extends QueryExecutor {
   @override
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List<dynamic> args) {
+    _logStmt(statement, args);
     final stmt = _db.prepare(statement);
     final result = stmt.select(args);
     stmt.close();
@@ -93,13 +79,53 @@ class VMDatabase extends _DatabaseUser {
   VMDatabase.memory({bool logStatements = false}) : super(logStatements, null);
 
   @override
+  Future<bool> ensureOpen() async {
+    if (_db == null) {
+      _db = _openInternal();
+      await _runMigrations();
+    }
+    return true;
+  }
+
+  Database _openInternal() {
+    if (dbFile == null) {
+      return Database.memory();
+    } else {
+      return Database.openFile(dbFile);
+    }
+  }
+
+  Future _runMigrations() async {
+    final current = _db.userVersion;
+    final target = databaseInfo.schemaVersion;
+
+    if (current == 0) {
+      await databaseInfo.handleDatabaseCreation(executor: runCustom);
+    } else if (current < target) {
+      await databaseInfo.handleDatabaseVersionChange(
+          executor: null, from: current, to: target);
+    }
+
+    _db.userVersion = target;
+  }
+
+  @override
   TransactionExecutor beginTransaction() {
     throw UnsupportedError('Transactions are not yet supported on the Dart VM');
   }
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) {
-    throw UnsupportedError(
-        'Batched inserts are not yet supported on the Dart VM');
+    for (var stmt in statements) {
+      final prepared = _db.prepare(stmt.sql);
+
+      for (var boundVars in stmt.variables) {
+        prepared.execute(boundVars);
+      }
+
+      prepared.close();
+    }
+
+    return Future.value();
   }
 }

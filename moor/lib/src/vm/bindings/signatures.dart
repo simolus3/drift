@@ -77,9 +77,9 @@ typedef sqlite3_bind_double_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, Double value);
 typedef sqlite3_bind_int_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, Int32 value);
-typedef sqlite3_bind_text_native = Int32 Function(
-    StatementPointer statement, Int32 columnIndex, CString value);
-typedef sqlite3_bind_blob_native = Int32 Function(
-    StatementPointer statement, Int32 columnIndex, CBlob value, Int32 length);
+typedef sqlite3_bind_text_native = Int32 Function(StatementPointer statement,
+    Int32 columnIndex, CString value, Int32 length, Pointer<Void> callback);
+typedef sqlite3_bind_blob_native = Int32 Function(StatementPointer statement,
+    Int32 columnIndex, CBlob value, Int32 length, Pointer<Void> callback);
 typedef sqlite3_bind_null_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex);

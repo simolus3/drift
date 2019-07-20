@@ -7,6 +7,10 @@ import 'dart:typed_data';
 class CBlob extends Pointer<Uint8> {
   /// Allocate a [CBlob] not managed in and populates it with [dartBlob].
   factory CBlob.allocate(Uint8List dartBlob) {
+    if (dartBlob.isEmpty) {
+      return fromAddress(0);
+    }
+
     final ptr = allocate<Int8>(count: dartBlob.length);
     for (var i = 0; i < dartBlob.length; ++i) {
       ptr.elementAt(i).store(dartBlob[i]);

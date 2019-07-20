@@ -76,11 +76,10 @@ class _SQLiteBindings {
       sqlite3_bind_double;
   int Function(StatementPointer statement, int columnIndex, int value)
       sqlite3_bind_int;
-  int Function(StatementPointer statement, int columnIndex, CString value)
-      sqlite3_bind_text;
-  int Function(
-          StatementPointer statement, int columnIndex, CBlob value, int length)
-      sqlite3_bind_blob;
+  int Function(StatementPointer statement, int columnIndex, CString value,
+      int minusOne, Pointer<Void> disposeCb) sqlite3_bind_text;
+  int Function(StatementPointer statement, int columnIndex, CBlob value,
+      int length, Pointer<Void> disposeCb) sqlite3_bind_blob;
   int Function(StatementPointer statement, int columnIndex) sqlite3_bind_null;
 
   _SQLiteBindings() {
