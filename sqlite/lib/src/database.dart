@@ -5,12 +5,14 @@
 import "dart:collection";
 import 'dart:convert';
 import "dart:ffi";
+import 'dart:typed_data';
 
 import "bindings/bindings.dart";
 import "bindings/types.dart";
 import "bindings/constants.dart";
 import "collections/closable_iterator.dart";
 import "ffi/cstring.dart";
+import 'ffi/blob.dart';
 
 /// [Database] represents an open connection to a SQLite database.
 ///
@@ -80,6 +82,11 @@ class Database {
           bindings.sqlite3_bind_text(statement, i + 1, text);
           text.free();
         }
+        if (params[i].runtimeType.toString() == 'Uint8List') {
+          Uint8List param = params[i];
+          final blob = CBlob.allocate(param);
+          bindings.sqlite3_bind_blob(statement, i + 1, blob, param.length);
+        }
       }
     }
     statementOut.free();
@@ -92,6 +99,16 @@ class Database {
     if (resultCode != Errors.SQLITE_DONE) {
       throw _loadError(resultCode);
     }
+  }
+
+  /// Returns the number of rows modified by the most recently completed
+  /// INSERT, UPDATE or DELETE statement.
+  int changes() {
+    return bindings.sqlite3_changes(_database);
+  }
+
+  int lastInsertId() {
+    return bindings.sqlite3_last_insert_rowid(_database);
   }
 
   /// Evaluate a query and return the resulting rows as an iterable.

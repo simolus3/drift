@@ -5,6 +5,7 @@
 import "dart:ffi";
 
 import "../ffi/cstring.dart";
+import "../ffi/blob.dart";
 
 import "types.dart";
 
@@ -54,9 +55,15 @@ typedef sqlite3_column_int_native_t = Int32 Function(
 typedef sqlite3_column_text_native_t = CString Function(
     StatementPointer statement, Int32 columnIndex);
 
+typedef sqlite3_changes_native = Int32 Function(DatabasePointer database);
+typedef sqlite3_last_insert_rowid_native = Int64 Function(
+    DatabasePointer database);
+
 typedef sqlite3_bind_double_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, Double value);
 typedef sqlite3_bind_int_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, Int32 value);
 typedef sqlite3_bind_text_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, CString value);
+typedef sqlite3_bind_blob_native = Int32 Function(
+    StatementPointer statement, Int32 columnIndex, CBlob value, Int32 length);

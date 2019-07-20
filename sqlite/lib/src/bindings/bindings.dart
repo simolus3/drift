@@ -5,6 +5,7 @@
 import "dart:ffi";
 
 import "../ffi/cstring.dart";
+import '../ffi/blob.dart';
 import "../ffi/dylib_utils.dart";
 
 import "signatures.dart";
@@ -187,6 +188,13 @@ class _SQLiteBindings {
   /// ^The [sqlite3_reset] interface does not change the values
   int Function(StatementPointer statement) sqlite3_reset;
 
+  /// Returns the number of rows modified, inserted or deleted by the most
+  /// recently completed INSERT, UPDATE or DELETE statement on the database
+  /// connection [db].
+  int Function(DatabasePointer db) sqlite3_changes;
+
+  int Function(DatabasePointer db) sqlite3_last_insert_rowid;
+
   /// Destroy A Prepared Statement Object
   ///
   /// ^The sqlite3_finalize() function is called to delete a prepared statement.
@@ -332,6 +340,9 @@ class _SQLiteBindings {
       sqlite3_bind_int;
   int Function(StatementPointer statement, int columnIndex, CString value)
       sqlite3_bind_text;
+  int Function(
+          StatementPointer statement, int columnIndex, CBlob value, int length)
+      sqlite3_bind_blob;
 
   _SQLiteBindings() {
     sqlite = dlopenPlatformSpecific("sqlite3");
@@ -346,7 +357,9 @@ class _SQLiteBindings {
     sqlite3_bind_text = sqlite
         .lookup<NativeFunction<sqlite3_bind_text_native>>("sqlite3_bind_text")
         .asFunction();
-
+    sqlite3_bind_blob = sqlite
+        .lookup<NativeFunction<sqlite3_bind_blob_native>>("sqlite3_bind_blob")
+        .asFunction();
     sqlite3_open_v2 = sqlite
         .lookup<NativeFunction<sqlite3_open_v2_native_t>>("sqlite3_open_v2")
         .asFunction();
@@ -362,6 +375,13 @@ class _SQLiteBindings {
         .asFunction();
     sqlite3_reset = sqlite
         .lookup<NativeFunction<sqlite3_reset_native_t>>("sqlite3_reset")
+        .asFunction();
+    sqlite3_changes = sqlite
+        .lookup<NativeFunction<sqlite3_changes_native>>("sqlite3_changes")
+        .asFunction();
+    sqlite3_last_insert_rowid = sqlite
+        .lookup<NativeFunction<sqlite3_last_insert_rowid_native>>(
+            "sqlite3_last_insert_rowid")
         .asFunction();
     sqlite3_finalize = sqlite
         .lookup<NativeFunction<sqlite3_finalize_native_t>>("sqlite3_finalize")

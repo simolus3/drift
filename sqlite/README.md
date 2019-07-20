@@ -1,3 +1,9 @@
+This was taken from [putraxor/sqlite3_ffi](https://github.com/putraxor/sqlite3_ffi),
+which in turn was taken from the sqlite example in the Dart sdk repo. Moor made the following
+changes:
+- Support binding `Uint8List`
+- Bindings for `sqlite3_changes`
+
 # SQLite3 wrapper for dart:ffi
 
 This is an illustrative sample for how to use `dart:ffi`.

@@ -1,0 +1,12 @@
+/// A version of moor that runs on the Dart VM by integrating sqlite3 with
+/// ffi.
+@experimental
+library moor_vm;
+
+import 'dart:io';
+
+import 'package:meta/meta.dart';
+import 'package:sqlite3_ffi/sqlite.dart';
+import 'moor.dart';
+
+part 'src/vm/vm_database.dart';
