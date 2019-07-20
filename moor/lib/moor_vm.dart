@@ -3,9 +3,11 @@
 @experimental
 library moor_vm;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
+import 'package:synchronized/synchronized.dart';
 import 'moor.dart';
 
 import 'src/vm/api/database.dart';

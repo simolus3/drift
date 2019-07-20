@@ -228,24 +228,14 @@ class WebDatabase extends _DatabaseUser {
   }
 }
 
-class _BeforeOpenExecutor extends _DatabaseUser {
+class _BeforeOpenExecutor extends _DatabaseUser with BeforeOpenMixin {
   _BeforeOpenExecutor(_DbState state) : super(state);
 
   @override
   final bool _bypassLock = true;
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError(
-        "Transactions aren't supported in the before open callback");
-  }
-
-  @override
-  Future<bool> ensureOpen() => Future.value(true);
 }
 
-class _TransactionExecutor extends _DatabaseUser
-    implements TransactionExecutor {
+class _TransactionExecutor extends _DatabaseUser with TransactionExecutor {
   _TransactionExecutor(_DbState state, this._openingFuture) : super(state);
 
   @override
@@ -262,11 +252,6 @@ class _TransactionExecutor extends _DatabaseUser
   void _storeDb() {
     // no-op inside a transaction. Store the database when we it's done!
     _needsSave = true;
-  }
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError('Cannot have nested transactions');
   }
 
   @override

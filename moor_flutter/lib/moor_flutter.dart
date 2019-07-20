@@ -160,7 +160,7 @@ class FlutterQueryExecutor extends _DatabaseOwner {
 }
 
 class _SqfliteTransactionExecutor extends _DatabaseOwner
-    implements TransactionExecutor {
+    with TransactionExecutor {
   @override
   s.Transaction db;
 
@@ -195,11 +195,6 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
   }
 
   @override
-  TransactionExecutor beginTransaction() {
-    throw StateError('Transactions cannot create another transaction!');
-  }
-
-  @override
   Future<bool> ensureOpen() => _open.then((_) => true);
 
   @override
@@ -209,18 +204,9 @@ class _SqfliteTransactionExecutor extends _DatabaseOwner
   }
 }
 
-class _BeforeOpenExecutor extends _DatabaseOwner {
+class _BeforeOpenExecutor extends _DatabaseOwner with BeforeOpenMixin {
   @override
   final s.DatabaseExecutor db;
 
   _BeforeOpenExecutor(this.db, bool logStatements) : super(logStatements);
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError(
-        "Transactions can't be started in the befoeOpen callback");
-  }
-
-  @override
-  Future<bool> ensureOpen() => Future.value(true);
 }
