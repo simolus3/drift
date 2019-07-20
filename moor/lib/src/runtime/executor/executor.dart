@@ -44,6 +44,12 @@ abstract class QueryExecutor {
 
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
+
+  /// Closes this database connection. After this future completes, all further
+  /// calls to this executor should fail.
+  Future<void> close() {
+    return Future.value();
+  }
 }
 
 /// A statement that should be executed in a batch. Used internally by moor.

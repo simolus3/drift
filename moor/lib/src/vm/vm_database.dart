@@ -16,8 +16,17 @@ abstract class _DatabaseUser extends QueryExecutor {
 
   @override
   Future<bool> ensureOpen() {
-    _db ??= Database(dbFile.absolute.path);
+    _db ??= _openInternal();
+
     return Future.value(true);
+  }
+
+  Database _openInternal() {
+    if (dbFile == null) {
+      return Database.memory();
+    } else {
+      return Database.openFile(dbFile);
+    }
   }
 
   @override
@@ -27,40 +36,53 @@ abstract class _DatabaseUser extends QueryExecutor {
     return Future.value();
   }
 
-  Future<int> _executeWithArgs(String statement, List<dynamic> args) {
+  void _runWithArgs(String statement, List<dynamic> args) {
     _logStmt(statement, args);
-    _db.execute(statement, params: args);
-    return Future.value(_db.changes());
+
+    if (args.isEmpty) {
+      _db.execute(statement);
+    } else {
+      _db.prepare(statement)
+        ..execute(args)
+        ..close();
+    }
+  }
+
+  Future<int> _runAndReturnAffected(String statement, List<dynamic> args) {
+    _runWithArgs(statement, args);
+    return Future.value(_db.updatedRows);
   }
 
   @override
   Future<int> runDelete(String statement, List<dynamic> args) {
-    return _executeWithArgs(statement, args);
+    return _runAndReturnAffected(statement, args);
   }
 
   @override
   Future<int> runUpdate(String statement, List<dynamic> args) {
-    return _executeWithArgs(statement, args);
+    return _runAndReturnAffected(statement, args);
   }
 
   @override
   Future<int> runInsert(String statement, List<dynamic> args) {
-    _logStmt(statement, args);
-    _db.execute(statement, params: args);
-    return Future.value(_db.lastInsertId());
+    _runWithArgs(statement, args);
+    return Future.value(_db.lastInsertId);
   }
 
   @override
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List<dynamic> args) {
-    if (args.isNotEmpty) {
-      throw UnsupportedError(
-          'Select statements with variables are not yet supported.');
-    }
-    _logStmt(statement, args);
-    _db.query(statement);
-    // todo parse rows
-    return Future.value([]);
+    final stmt = _db.prepare(statement);
+    final result = stmt.select(args);
+    stmt.close();
+
+    return Future.value(result.toList());
+  }
+
+  @override
+  Future<void> close() {
+    _db?.close();
+    return Future.value();
   }
 }
 

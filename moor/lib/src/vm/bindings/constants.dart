@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: constant_identifier_names
+
 /// Result Codes
 ///
 /// Many SQLite functions return an integer result code from the set shown
@@ -110,7 +112,7 @@ class Errors {
 ///
 /// These bit values are intended for use in the
 /// 3rd parameter to the [sqlite3_open_v2()] interface and
-/// in the 4th parameter to the [sqlite3_vfs.xOpen] method.
+/// in the 4th parameter to the `sqlite3_vfs.xOpen` method.
 class Flags {
   /// Ok for sqlite3_open_v2()
   static const int SQLITE_OPEN_READONLY = 0x00000001;

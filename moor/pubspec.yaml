@@ -15,9 +15,6 @@ dependencies:
   meta: '>= 1.0.0 <2.0.0'
   collection: '>= 1.0.0 <2.0.0'
   synchronized: ^2.1.0
-  # experimental ffi bindings for sqlite
-  sqlite3_ffi:
-    path: ../sqlite
 
 dev_dependencies:
   moor_generator: ^1.6.0

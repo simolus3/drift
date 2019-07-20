@@ -2,17 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import "dart:ffi";
+import 'dart:ffi';
 
-import "../ffi/cstring.dart";
-import "../ffi/blob.dart";
+import '../ffi/blob.dart';
 
-import "types.dart";
+import 'types.dart';
 
 typedef sqlite3_open_v2_native_t = Int32 Function(
     CString filename, Pointer<DatabasePointer> ppDb, Int32 flags, CString vfs);
 
 typedef sqlite3_close_v2_native_t = Int32 Function(DatabasePointer database);
+
+typedef sqlite3_free_native = Function(Pointer<Void> pointer);
 
 typedef sqlite3_prepare_v2_native_t = Int32 Function(
     DatabasePointer database,
@@ -20,6 +21,13 @@ typedef sqlite3_prepare_v2_native_t = Int32 Function(
     Int32 nbytes,
     Pointer<StatementPointer> statementOut,
     Pointer<CString> tail);
+
+typedef sqlite3_exec_native = Int32 Function(
+    DatabasePointer database,
+    CString query,
+    Pointer callback,
+    Pointer firstCbArg,
+    Pointer<CString> errorOut);
 
 typedef sqlite3_step_native_t = Int32 Function(StatementPointer statement);
 
@@ -55,6 +63,12 @@ typedef sqlite3_column_int_native_t = Int32 Function(
 typedef sqlite3_column_text_native_t = CString Function(
     StatementPointer statement, Int32 columnIndex);
 
+typedef sqlite3_column_blob_native_t = CBlob Function(
+    StatementPointer statement, Int32 columnIndex);
+
+typedef sqlite3_column_bytes_native_t = Int32 Function(
+    StatementPointer statement, Int32 columnIndex);
+
 typedef sqlite3_changes_native = Int32 Function(DatabasePointer database);
 typedef sqlite3_last_insert_rowid_native = Int64 Function(
     DatabasePointer database);
@@ -67,3 +81,5 @@ typedef sqlite3_bind_text_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, CString value);
 typedef sqlite3_bind_blob_native = Int32 Function(
     StatementPointer statement, Int32 columnIndex, CBlob value, Int32 length);
+typedef sqlite3_bind_null_native = Int32 Function(
+    StatementPointer statement, Int32 columnIndex);
