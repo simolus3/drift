@@ -90,6 +90,8 @@ class VMDatabase extends _DatabaseUser {
   VMDatabase(File file, {bool logStatements = false})
       : super(logStatements, file);
 
+  VMDatabase.memory({bool logStatements = false}) : super(logStatements, null);
+
   @override
   TransactionExecutor beginTransaction() {
     throw UnsupportedError('Transactions are not yet supported on the Dart VM');

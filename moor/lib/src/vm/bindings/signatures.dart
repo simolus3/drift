@@ -13,7 +13,7 @@ typedef sqlite3_open_v2_native_t = Int32 Function(
 
 typedef sqlite3_close_v2_native_t = Int32 Function(DatabasePointer database);
 
-typedef sqlite3_free_native = Function(Pointer<Void> pointer);
+typedef sqlite3_free_native = Void Function(Pointer<Void> pointer);
 
 typedef sqlite3_prepare_v2_native_t = Int32 Function(
     DatabasePointer database,
@@ -25,8 +25,8 @@ typedef sqlite3_prepare_v2_native_t = Int32 Function(
 typedef sqlite3_exec_native = Int32 Function(
     DatabasePointer database,
     CString query,
-    Pointer callback,
-    Pointer firstCbArg,
+    Pointer<Void> callback,
+    Pointer<Void> firstCbArg,
     Pointer<CString> errorOut);
 
 typedef sqlite3_step_native_t = Int32 Function(StatementPointer statement);

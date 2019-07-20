@@ -31,9 +31,9 @@ class _SQLiteBindings {
   int Function(
     DatabasePointer database,
     CString query,
-    Pointer callback,
-    Pointer cbFirstArg,
-    Pointer errorMsgOut,
+    Pointer<Void> callback,
+    Pointer<Void> cbFirstArg,
+    Pointer<CString> errorMsgOut,
   ) sqlite3_exec;
 
   int Function(StatementPointer statement) sqlite3_step;

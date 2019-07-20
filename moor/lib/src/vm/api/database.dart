@@ -15,12 +15,10 @@ part 'result.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
 
-final _nullPtr = fromAddress(0);
-
 class Database {
   final DatabasePointer _db;
   final List<PreparedStatement> _preparedStmt = [];
-  bool _isClosed;
+  bool _isClosed = false;
 
   Database._(this._db);
 
@@ -37,7 +35,7 @@ class Database {
     final pathC = CString.allocate(fileName);
 
     final resultCode =
-        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, _nullPtr.cast());
+        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, fromAddress(0));
     final dbPointer = dbOut.load<DatabasePointer>();
 
     dbOut.free();
@@ -91,15 +89,15 @@ class Database {
     final errorOut = allocate<CString>();
 
     final result = bindings.sqlite3_exec(
-        _db, sqlPtr, _nullPtr.cast(), _nullPtr.cast(), errorOut);
+        _db, sqlPtr, fromAddress(0), fromAddress(0), errorOut);
 
     sqlPtr.free();
 
-    final errorPtr = errorOut.load<Pointer>();
+    final errorPtr = errorOut.load<CString>();
     errorOut.free();
 
     String errorMsg;
-    if (errorPtr.address != 0) {
+    if (errorPtr != null) {
       errorMsg = CString.fromC(errorPtr.cast());
       // the message was allocated from sqlite, we need to free it
       bindings.sqlite3_free(errorPtr.cast());
@@ -118,7 +116,7 @@ class Database {
     final sqlPtr = CString.allocate(sql);
 
     final resultCode =
-        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, _nullPtr.cast());
+        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, fromAddress(0));
     sqlPtr.free();
 
     final stmt = stmtOut.load<StatementPointer>();
@@ -126,7 +124,7 @@ class Database {
 
     if (resultCode != Errors.SQLITE_OK) {
       // we don't need to worry about freeing the statement. If preparing the
-      // statement was unsuccessful, stmtOut.load() will be the null pointer
+      // statement was unsuccessful, stmtOut.load() will be null
       throw SqliteException._fromErrorCode(_db, resultCode);
     }
 
