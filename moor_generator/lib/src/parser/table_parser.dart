@@ -88,18 +88,13 @@ class TableParser extends ParserBase {
     final parsedPrimaryKey = <SpecifiedColumn>{};
 
     if (expression is SetOrMapLiteral) {
-      // todo replace with just "elements" when dropping support for analyzer
-      // 0.35.0
-      // ignore: deprecated_member_use
-      for (var entry in expression.elements2) {
+      for (var entry in expression.elements) {
         if (entry is Identifier) {
           final column = columns
               .singleWhere((column) => column.dartGetterName == entry.name);
           parsedPrimaryKey.add(column);
         } else {
-          // Don't add an error, these features aren't on a stable dart release
-          // yet.
-          print('Unexpected entry in expression.elements2: $entry');
+          print('Unexpected entry in expression.elements: $entry');
         }
       }
     } else {
