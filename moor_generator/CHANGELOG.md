@@ -1,5 +1,8 @@
-## 1.6.0+1
+## 1.6.0+2
 - Generate code to expand array variables
+
+_The +1 release has no changes to 1.6.0, there were issues while uploading to pub. +2
+tightens the analyzer dependency to avoid compilation errors_
 
 ## 1.5.0
 - Parse custom queries and write generated mapping code.
