@@ -228,14 +228,23 @@ class WebDatabase extends _DatabaseUser {
   }
 }
 
-class _BeforeOpenExecutor extends _DatabaseUser with BeforeOpenMixin {
+class _BeforeOpenExecutor extends _DatabaseUser {
   _BeforeOpenExecutor(_DbState state) : super(state);
 
   @override
   final bool _bypassLock = true;
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw Error();
+  }
+
+  @override
+  Future<bool> ensureOpen() => Future.value(true);
 }
 
-class _TransactionExecutor extends _DatabaseUser with TransactionExecutor {
+class _TransactionExecutor extends _DatabaseUser
+    implements TransactionExecutor {
   _TransactionExecutor(_DbState state, this._openingFuture) : super(state);
 
   @override
@@ -269,5 +278,10 @@ class _TransactionExecutor extends _DatabaseUser with TransactionExecutor {
     _db.run('COMMIT TRANSACTION;');
     _completer.complete();
     return Future.value();
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw Error();
   }
 }

@@ -321,4 +321,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       });
     }
   }
+
+  /// Closes this database instance and released the resources associated with
+  /// it.
+  void close() {
+    executor.close();
+  }
 }

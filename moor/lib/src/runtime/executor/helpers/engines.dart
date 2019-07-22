@@ -217,6 +217,12 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
     final alreadyOpen = await delegate.isOpen;
     if (alreadyOpen) return true;
 
+    // could have changed already, see https://github.com/dart-lang/linter/issues/1384
+    // ignore: invariant_booleans
+    if (_openingCompleter != null) {
+      return _openingCompleter.future;
+    }
+
     // not already open or opening. Open the database now!
     _openingCompleter = Completer();
     await delegate.open(databaseInfo);

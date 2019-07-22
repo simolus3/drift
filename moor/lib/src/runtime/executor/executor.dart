@@ -89,28 +89,8 @@ class BatchedStatement {
 }
 
 /// A [QueryExecutor] that runs multiple queries atomically.
-mixin TransactionExecutor on QueryExecutor {
+abstract class TransactionExecutor extends QueryExecutor {
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
   Future<void> send();
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError(
-        'Transactions cannot be created inside a transaction');
-  }
-}
-
-/// Used internally by moor. Responsible for executing the `beforeOpen`
-/// callback.
-mixin BeforeOpenMixin on QueryExecutor {
-  @override
-  Future<bool> ensureOpen() {
-    return Future.value(true);
-  }
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError('Transactions cannot be created inside beforeOpen!');
-  }
 }

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:moor/moor.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test_api/test_api.dart';
 import 'package:moor/moor_vm.dart';
 
@@ -31,6 +34,29 @@ void main() {
         .write(const TodosTableCompanion(content: Value('Updated content')));
     final readUpdated = await db.select(db.todosTable).getSingle();
     expect(readUpdated.content, 'Updated content');
+  });
+
+  test('Transactions test', () async {
+    db = TodoDb(VMDatabase.memory(logStatements: false));
+
+    final completedOperations = StreamController<String>();
+
+    unawaited(db.transaction((_) async {
+      await insertCategory();
+      completedOperations.add('transaction');
+      await pumpEventQueue();
+    }));
+
+    unawaited(insertUser().then((_) {
+      completedOperations.add('regular');
+    }));
+
+    await expectLater(
+        completedOperations.stream, emitsInOrder(['transaction', 'regular']));
+
+    // call .getSingle to verify both rows have been written
+    await db.select(db.users).getSingle();
+    await db.select(db.categories).getSingle();
   });
 }
 
