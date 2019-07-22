@@ -70,8 +70,8 @@ class Entry extends DataClass implements Insertable<Entry> {
   }
 
   @override
-  int get hashCode => $mrjf(
-      $mrjc($mrjc($mrjc(0, id.hashCode), content.hashCode), done.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(content.hashCode, done.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
