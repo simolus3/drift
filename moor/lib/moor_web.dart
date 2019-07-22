@@ -9,9 +9,8 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:meta/meta.dart';
-import 'package:meta/dart2js.dart';
-import 'package:synchronized/synchronized.dart';
 
+import 'backends.dart';
 import 'moor.dart';
 import 'src/web/binary_string_conversion.dart';
 import 'src/web/sql_js.dart';

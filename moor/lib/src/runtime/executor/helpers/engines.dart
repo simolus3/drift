@@ -217,6 +217,11 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
     final alreadyOpen = await delegate.isOpen;
     if (alreadyOpen) return true;
 
+    // ignore: invariant_booleans
+    if (_openingCompleter != null) {
+      return _openingCompleter.future;
+    }
+
     // not already open or opening. Open the database now!
     _openingCompleter = Completer();
     await delegate.open(databaseInfo);
