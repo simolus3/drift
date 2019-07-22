@@ -6,6 +6,10 @@ import 'package:moor/src/utils/hash.dart';
 
 /// A query executor is responsible for executing statements on a database and
 /// return their results in a raw form.
+///
+/// This is an internal api of moor, which can break often. If you want to
+/// implement custom database backends, consider using a delegate as described
+/// [here](https://moor.simonbinder.eu/custom_backend)
 abstract class QueryExecutor {
   GeneratedDatabase databaseInfo;
 
