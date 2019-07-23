@@ -42,6 +42,12 @@ abstract class DatabaseDelegate implements QueryDelegate {
   /// [UseMoor]. It might be useful to read the [GeneratedDatabase.schemaVersion]
   /// if that information is required while opening the database.
   Future<void> open([GeneratedDatabase db]);
+
+  /// Closes this database. When the future completes, all resources used
+  /// by this database should have been disposed.
+  Future<void> close() async {
+    // default no-op implementation
+  }
 }
 
 /// An interface which can execute sql statements.
