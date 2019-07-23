@@ -33,13 +33,10 @@ void main() {
 
   test("transactions don't allow creating streams", () {
     expect(() async {
-      await db.transaction((t) {
+      await db.transaction((t) async {
         t.select(db.users).watch();
-        return Future.value(null); // analysis warning in travis otherwise
       });
     }, throwsStateError);
-
-    verify(executor.transactions.send());
   });
 
   test('nested transactions use the outer transaction', () async {
@@ -64,6 +61,18 @@ void main() {
 
     verifyNever(executor.runSelect(any, any));
     verify(executor.transactions.runSelect(any, any));
+  });
+
+  test('transactions rollback after errors', () async {
+    final exception = Exception('oh no');
+    final future = db.transaction((_) async {
+      throw exception;
+    });
+
+    await expectLater(future, throwsA(exception));
+
+    verifyNever(executor.transactions.send());
+    verify(executor.transactions.rollback());
   });
 
   test('transactions notify about table udpates after completing', () async {

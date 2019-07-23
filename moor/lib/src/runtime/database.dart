@@ -234,13 +234,23 @@ mixin QueryEngine on DatabaseConnectionUser {
 
     final executor = resolved.executor;
     await executor.doWhenOpened((executor) {
-      final transaction = Transaction(this, executor.beginTransaction());
+      final transactionExecutor = executor.beginTransaction();
+      final transaction = Transaction(this, transactionExecutor);
 
       return _runEngineZoned(transaction, () async {
+        var success = false;
         try {
           await action(transaction);
+          success = true;
+        } catch (e) {
+          await transactionExecutor.rollback();
+          // pass the exception on to the one who called transaction()
+          rethrow;
         } finally {
-          await transaction.complete();
+          if (success) {
+            // calling complete will also take care of committing the transaction
+            await transaction.complete();
+          }
         }
       });
     });

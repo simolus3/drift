@@ -39,6 +39,7 @@ class MockTransactionExecutor extends Mock implements TransactionExecutor {
     });
 
     when(send()).thenAnswer((_) => Future.value(null));
+    when(rollback()).thenAnswer((_) => Future.value(null));
   }
 }
 

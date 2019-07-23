@@ -93,4 +93,8 @@ abstract class TransactionExecutor extends QueryExecutor {
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
   Future<void> send();
+
+  /// Cancels this transaction. No further queries may be sent ot this
+  /// [QueryExecutor] after this method was called.
+  Future<void> rollback();
 }

@@ -106,8 +106,15 @@ class NoTransactionDelegate extends TransactionDelegate {
   /// The statement that commits a transaction on this database engine.
   final String commit;
 
-  const NoTransactionDelegate(
-      {this.start = 'BEGIN TRANSACTION', this.commit = 'COMMIT TRANSACTION'});
+  /// The statement that will perform a rollback of a transaction on this
+  /// database engine.
+  final String rollback;
+
+  const NoTransactionDelegate({
+    this.start = 'BEGIN TRANSACTION',
+    this.commit = 'COMMIT TRANSACTION',
+    this.rollback = 'ROLLBACK TRANSACTION',
+  });
 }
 
 /// A [TransactionDelegate] for database APIs which do support creating and
