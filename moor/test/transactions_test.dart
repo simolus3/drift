@@ -66,6 +66,18 @@ void main() {
     verify(executor.transactions.runSelect(any, any));
   });
 
+  test('transactions rollback after errors', () async {
+    final exception = Exception('oh no');
+    final future = db.transaction((_) async {
+      throw exception;
+    });
+
+    await expectLater(future, throwsA(exception));
+
+    verifyNever(executor.transactions.send());
+    verify(executor.transactions.rollback());
+  });
+
   test('transactions notify about table udpates after completing', () async {
     when(executor.transactions.runUpdate(any, any))
         .thenAnswer((_) => Future.value(2));
