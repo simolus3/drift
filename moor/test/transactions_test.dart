@@ -33,13 +33,10 @@ void main() {
 
   test("transactions don't allow creating streams", () {
     expect(() async {
-      await db.transaction((t) {
+      await db.transaction((t) async {
         t.select(db.users).watch();
-        return Future.value(null); // analysis warning in travis otherwise
       });
     }, throwsStateError);
-
-    verify(executor.transactions.send());
   });
 
   test('nested transactions use the outer transaction', () async {
