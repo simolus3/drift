@@ -98,6 +98,7 @@ class _TransactionExecutor extends TransactionExecutor
   Completer<bool> _openingCompleter;
 
   String _sendOnCommit;
+  String _sendOnRollback;
 
   Future get completed => _sendCalled.future;
 
@@ -130,6 +131,7 @@ class _TransactionExecutor extends TransactionExecutor
         impl = _db.delegate;
         await impl.runCustom(transactionManager.start, const []);
         _sendOnCommit = transactionManager.commit;
+        _sendOnRollback = transactionManager.rollback;
 
         transactionStarted.complete();
 
@@ -161,6 +163,16 @@ class _TransactionExecutor extends TransactionExecutor
     }
 
     _sendCalled.complete();
+  }
+
+  @override
+  Future<void> rollback() async {
+    if (_sendOnRollback != null) {
+      await impl.runCustom(_sendOnRollback, const []);
+    }
+
+    _sendCalled.completeError(
+        Exception('artificial exception to rollback the transaction'));
   }
 }
 
