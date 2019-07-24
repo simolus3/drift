@@ -1,7 +1,12 @@
+/// Experimental support to run moor on a mysql backend.
+library moor_mysql;
+
 import 'package:moor/backends.dart';
 import 'package:moor/moor.dart';
 import 'package:sqljocky5/connection/connection.dart';
 import 'package:sqljocky5/sqljocky.dart';
+
+export 'package:sqljocky5/sqljocky.dart' show ConnectionSettings;
 
 class MySqlBackend extends DelegatedDatabase {
   MySqlBackend(ConnectionSettings settings)

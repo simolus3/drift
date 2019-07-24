@@ -1,0 +1,16 @@
+name: moor_mysql
+description: MySQL support for moor
+
+environment:
+  sdk: '>=2.4.0 <3.0.0'
+
+dependencies:
+  moor: ^1.6.0
+  sqljocky5: ^2.2.0
+
+dev_dependencies:
+  test: ^1.6.0
+
+dependency_overrides:
+  moor:
+    path: ../../moor
