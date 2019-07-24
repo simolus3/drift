@@ -40,7 +40,9 @@ class _WebDelegate extends DatabaseDelegate {
       final prepared = _db.prepare(stmt.sql);
 
       for (var args in stmt.variables) {
-        prepared.executeWith(args);
+        prepared
+          ..executeWith(args)
+          ..step();
       }
     }
     return _handlePotentialUpdate();
