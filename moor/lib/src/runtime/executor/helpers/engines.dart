@@ -208,7 +208,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   Completer<bool> _openingCompleter;
 
   @override
-  final bool logStatements;
+  bool logStatements;
   @override
   final bool isSequential;
 
@@ -216,7 +216,10 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   QueryDelegate get impl => delegate;
 
   DelegatedDatabase(this.delegate,
-      {this.logStatements = false, this.isSequential = false});
+      {this.logStatements, this.isSequential = false}) {
+    // not using default value because it's commonly set to null
+    logStatements ??= false;
+  }
 
   @override
   Future<bool> ensureOpen() async {
