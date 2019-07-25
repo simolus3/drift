@@ -58,4 +58,13 @@ void main() {
       ),
     );
   });
+
+  test('resolves sub-queries', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine.analyze(
+        'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;');
+
+    expect(context.errors, isEmpty);
+  });
 }

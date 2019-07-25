@@ -83,8 +83,12 @@ class ColumnResolver extends RecursiveVisitor<void> {
         final column =
             ExpressionColumn(name: name, expression: resultColumn.expression);
 
-        availableColumns.add(column);
         usedColumns.add(column);
+
+        // make this column available if there is no other with the same name
+        if (!availableColumns.any((c) => c.name == name)) {
+          availableColumns.add(column);
+        }
       }
     }
 
