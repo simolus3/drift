@@ -331,4 +331,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       });
     }
   }
+
+  /// Closes this database and releases associated resources.
+  Future<void> close() async {
+    await executor.close();
+  }
 }

@@ -87,6 +87,13 @@ class _WebDelegate extends DatabaseDelegate {
     return _handlePotentialUpdate();
   }
 
+  @override
+  Future<void> close() {
+    _storeDb();
+    _db?.close();
+    return Future.value();
+  }
+
   /// Saves the database if the last statement changed rows. As a side-effect,
   /// saving the database resets the `last_insert_id` counter in sqlite.
   Future<int> _handlePotentialUpdate() {

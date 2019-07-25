@@ -121,6 +121,10 @@ class Database extends _$Database {
     return (select(users)..where((u) => u.id.equals(id))).watchSingle();
   }
 
+  Future<int> writeUser(Insertable<User> user) {
+    return into(users).insert(user);
+  }
+
   Future<void> makeFriends(User a, User b, {bool goodFriends}) async {
     var friendsValue = const Value<bool>.absent();
     if (goodFriends != null) {

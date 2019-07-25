@@ -48,6 +48,13 @@ abstract class QueryExecutor {
 
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
+
+  /// Closes this database connection and releases all resources associated with
+  /// it. Implementations should also handle [close] calls in a state where the
+  /// database isn't open.
+  Future<void> close() async {
+    // no-op per default for backwards compatibility
+  }
 }
 
 /// A statement that should be executed in a batch. Used internally by moor.
