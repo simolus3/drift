@@ -17,5 +17,7 @@ communicates with an app to verify behavior of widgets. As we want to run the wh
 on a device, we instead put the test files into `flutter_db/lib` and run them with
 `flutter run`. That works, but we don't get an output format that is machine readable.
 Please create an issue if you know a better way, thanks!
+TODO: https://github.com/tomaszpolanski/flutter-presentations/blob/master/lib/test_driver/test_runner.dart
+looks promising
 
 That is also why these tests are not running automatically.

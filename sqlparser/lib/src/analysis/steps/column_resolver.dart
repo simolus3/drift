@@ -80,14 +80,16 @@ class ColumnResolver extends RecursiveVisitor<void> {
         }
       } else if (resultColumn is ExpressionResultColumn) {
         final name = _nameOfResultColumn(resultColumn);
-        usedColumns.add(
-          ExpressionColumn(name: name, expression: resultColumn.expression),
-        );
+        final column =
+            ExpressionColumn(name: name, expression: resultColumn.expression);
+
+        availableColumns.add(column);
+        usedColumns.add(column);
       }
     }
 
     s.resolvedColumns = usedColumns;
-    s.scope.availableColumns = availableColumns;
+    scope.availableColumns = availableColumns;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {
