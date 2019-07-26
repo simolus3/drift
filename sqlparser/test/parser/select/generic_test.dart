@@ -2,10 +2,10 @@ import 'package:sqlparser/src/ast/ast.dart';
 import '../utils.dart';
 
 final Map<String, AstNode> testCases = {
-  'SELECT table.*, *, 1 as name WHERE 1 ORDER BY name LIMIT 3 OFFSET 5':
+  'SELECT tbl.*, *, 1 as name WHERE 1 ORDER BY name ASC LIMIT 3 OFFSET 5':
       SelectStatement(
     columns: [
-      StarResultColumn('table'),
+      StarResultColumn('tbl'),
       StarResultColumn(null),
       ExpressionResultColumn(
         expression: NumericLiteral(1, token(TokenType.numberLiteral)),
@@ -14,7 +14,10 @@ final Map<String, AstNode> testCases = {
     ],
     where: NumericLiteral(1, token(TokenType.numberLiteral)),
     orderBy: OrderBy(terms: [
-      OrderingTerm(expression: Reference(columnName: 'name')),
+      OrderingTerm(
+        expression: Reference(columnName: 'name'),
+        orderingMode: OrderingMode.ascending,
+      ),
     ]),
     limit: Limit(
       count: NumericLiteral(3, token(TokenType.numberLiteral)),
@@ -22,9 +25,9 @@ final Map<String, AstNode> testCases = {
       offset: NumericLiteral(5, token(TokenType.numberLiteral)),
     ),
   ),
-  'SELECT table.*, (SELECT * FROM table2) FROM table': SelectStatement(
+  'SELECT tbl.*, (SELECT * FROM table2) FROM tbl': SelectStatement(
     columns: [
-      StarResultColumn('table'),
+      StarResultColumn('tbl'),
       ExpressionResultColumn(
         expression: SubQuery(
           select: SelectStatement(
@@ -35,12 +38,12 @@ final Map<String, AstNode> testCases = {
       ),
     ],
     from: [
-      TableReference('table', null),
+      TableReference('tbl', null),
     ],
   ),
-  'SELECT * FROM table WHERE id IN ()': SelectStatement(
+  'SELECT * FROM tbl WHERE id IN ()': SelectStatement(
     columns: [StarResultColumn(null)],
-    from: [TableReference('table', null)],
+    from: [TableReference('tbl', null)],
     where: InExpression(
       left: Reference(columnName: 'id'),
       inside: TupleExpression(expressions: []),

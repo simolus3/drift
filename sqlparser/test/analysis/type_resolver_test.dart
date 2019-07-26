@@ -24,7 +24,7 @@ Map<String, ResolveResult> _types = {
       const ResolveResult(ResolvedType(type: BasicType.text, isArray: true)),
   'SELECT * FROM demo WHERE content IN (?)':
       const ResolveResult(ResolvedType(type: BasicType.text, isArray: false)),
-  'SELECT * FROM demo JOIN table ON demo.id = table.id WHERE date = ?':
+  'SELECT * FROM demo JOIN tbl ON demo.id = tbl.id WHERE date = ?':
       const ResolveResult(
           ResolvedType(type: BasicType.int, hint: IsDateTime())),
 };

@@ -3,9 +3,9 @@ import 'package:sqlparser/sqlparser.dart';
 import 'utils.dart';
 
 final testCases = {
-  'UPDATE OR ROLLBACK table SET a = NULL, b = c WHERE d': UpdateStatement(
+  'UPDATE OR ROLLBACK tbl SET a = NULL, b = c WHERE d': UpdateStatement(
     or: FailureMode.rollback,
-    table: TableReference('table', null),
+    table: TableReference('tbl', null),
     set: [
       SetComponent(
         column: Reference(columnName: 'a'),

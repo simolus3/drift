@@ -14,6 +14,6 @@ final dateTime = TableColumn(
     'date', const ResolvedType(type: BasicType.int, hint: IsDateTime()));
 
 final anotherTable = Table(
-  name: 'table',
+  name: 'tbl',
   resolvedColumns: [anotherId, dateTime],
 );
