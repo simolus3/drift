@@ -95,6 +95,12 @@ enum TokenType {
   ignore,
   set,
 
+  create,
+  table,
+  $if,
+  without,
+  rowid,
+
   semicolon,
   eof,
 }
@@ -154,6 +160,11 @@ const Map<String, TokenType> keywords = {
   'REPLACE': TokenType.replace,
   'FAIL': TokenType.fail,
   'IGNORE': TokenType.ignore,
+  'CREATE': TokenType.create,
+  'TABLE': TokenType.table,
+  'IF': TokenType.$if,
+  'WITHOUT': TokenType.without,
+  'ROWID': TokenType.rowid,
 };
 
 class Token {

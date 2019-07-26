@@ -19,6 +19,9 @@ part 'expressions/subquery.dart';
 part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
 
+part 'schema/column_definition.dart';
+
+part 'statements/create_table.dart';
 part 'statements/delete.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
@@ -127,6 +130,7 @@ abstract class AstVisitor<T> {
   T visitResultColumn(ResultColumn e);
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
+  T visitCreateTableStatement(CreateTableStatement e);
 
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
@@ -136,6 +140,9 @@ abstract class AstVisitor<T> {
   T visitGroupBy(GroupBy e);
 
   T visitSetComponent(SetComponent e);
+
+  T visitColumnDefinition(ColumnDefinition e);
+  T visitColumnConstraint(ColumnConstraint e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitStringComparison(StringComparisonExpression e);
@@ -237,7 +244,16 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitUpdateStatement(UpdateStatement e) => visitChildren(e);
 
   @override
+  T visitCreateTableStatement(CreateTableStatement e) => visitChildren(e);
+
+  @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);
+
+  @override
+  T visitColumnDefinition(ColumnDefinition e) => visitChildren(e);
+
+  @override
+  T visitColumnConstraint(ColumnConstraint e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {
