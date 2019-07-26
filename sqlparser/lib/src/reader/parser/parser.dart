@@ -52,7 +52,7 @@ class Parser {
   Token get _peekNext => tokens[_current + 1];
   Token get _previous => tokens[_current - 1];
 
-  bool _match(List<TokenType> types) {
+  bool _match(Iterable<TokenType> types) {
     for (var type in types) {
       if (_check(type)) {
         _advance();
@@ -110,7 +110,7 @@ class Parser {
   }
 
   Statement statement() {
-    final stmt = select() ?? _deleteStmt() ?? _update();
+    final stmt = select() ?? _deleteStmt() ?? _update() ?? _createTable();
 
     _matchOne(TokenType.semicolon);
     if (!_isAtEnd) {
@@ -390,14 +390,17 @@ class Parser {
   OrderingTerm _orderingTerm() {
     final expr = expression();
 
+    return OrderingTerm(expression: expr, orderingMode: _orderingModeOrNull());
+  }
+
+  OrderingMode _orderingModeOrNull() {
     if (_match(const [TokenType.asc, TokenType.desc])) {
       final mode = _previous.type == TokenType.asc
           ? OrderingMode.ascending
           : OrderingMode.descending;
-      return OrderingTerm(expression: expr, orderingMode: mode);
+      return mode;
     }
-
-    return OrderingTerm(expression: expr);
+    return null;
   }
 
   /// Parses a [Limit] clause, or returns null if there is no limit token after
@@ -461,6 +464,177 @@ class Parser {
     final where = _where();
     return UpdateStatement(
         or: failureMode, table: table, set: set, where: where);
+  }
+
+  CreateTableStatement _createTable() {
+    if (!_matchOne(TokenType.create)) return null;
+    final first = _previous;
+
+    _consume(TokenType.table, 'Expected TABLE keyword here');
+
+    var ifNotExists = false;
+
+    if (_matchOne(TokenType.$if)) {
+      _consume(TokenType.not, 'Expected IF to be followed by NOT EXISTS');
+      _consume(TokenType.exists, 'Expected IF NOT to be followed by EXISTS');
+      ifNotExists = true;
+    }
+
+    final tableIdentifier =
+        _consume(TokenType.identifier, 'Expected a table name')
+            as IdentifierToken;
+
+    // we don't currently support CREATE TABLE x AS SELECT ... statements
+    _consume(
+        TokenType.leftParen, 'Expected opening parenthesis to list columns');
+
+    final columns = <ColumnDefinition>[];
+    do {
+      columns.add(_columnDefinition());
+    } while (_matchOne(TokenType.comma));
+    // todo parse table constraints
+
+    _consume(TokenType.rightParen, 'Expected closing parenthesis');
+
+    var withoutRowId = false;
+    if (_matchOne(TokenType.without)) {
+      _consume(
+          TokenType.rowid, 'Expected ROWID to complete the WITHOUT ROWID part');
+      withoutRowId = true;
+    }
+
+    return CreateTableStatement(
+      ifNotExists: ifNotExists,
+      tableName: tableIdentifier.identifier,
+      withoutRowId: withoutRowId,
+      columns: columns,
+    )..setSpan(first, _previous);
+  }
+
+  ColumnDefinition _columnDefinition() {
+    final name = _consume(TokenType.identifier, 'Expected a column name')
+        as IdentifierToken;
+    IdentifierToken typeName;
+
+    if (_matchOne(TokenType.identifier)) {
+      typeName = _previous as IdentifierToken;
+    }
+
+    final constraints = <ColumnConstraint>[];
+    ColumnConstraint constraint;
+    while ((constraint = _columnConstraint(orNull: true)) != null) {
+      constraints.add(constraint);
+    }
+
+    return ColumnDefinition(
+      columnName: name.identifier,
+      typeName: typeName?.identifier,
+      constraints: constraints,
+    )..setSpan(name, _previous);
+  }
+
+  ColumnConstraint _columnConstraint({bool orNull = false}) {
+    Token first;
+    IdentifierToken name;
+    if (_matchOne(TokenType.constraint)) {
+      first = _previous;
+      name = _consume(
+              TokenType.identifier, 'Expect a name for the constraint here')
+          as IdentifierToken;
+    }
+
+    final resolvedName = name?.identifier;
+
+    if (_matchOne(TokenType.primary)) {
+      // set reference to first token in this constraint if not set because of
+      // the CONSTRAINT token
+      first ??= _previous;
+      _consume(TokenType.key, 'Expected KEY to complete PRIMARY KEY clause');
+
+      final mode = _orderingModeOrNull();
+      final conflict = _conflictClauseOrNull();
+      final hasAutoInc = _matchOne(TokenType.autoincrement);
+
+      return PrimaryKey(resolvedName,
+          autoIncrement: hasAutoInc, mode: mode, onConflict: conflict)
+        ..setSpan(first, _previous);
+    }
+    if (_matchOne(TokenType.not)) {
+      first ??= _previous;
+      _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
+
+      return NotNull(resolvedName, onConflict: _conflictClauseOrNull())
+        ..setSpan(first, _previous);
+    }
+    if (_matchOne(TokenType.unique)) {
+      first ??= _previous;
+      return Unique(resolvedName, _conflictClauseOrNull())
+        ..setSpan(first, _previous);
+    }
+    if (_matchOne(TokenType.check)) {
+      first ??= _previous;
+      _consume(TokenType.leftParen, 'Expected opening parenthesis');
+      final expr = expression();
+      _consume(TokenType.rightParen, 'Expected closing parenthesis');
+
+      return Check(resolvedName, expr)..setSpan(first, _previous);
+    }
+    if (_matchOne(TokenType.$default)) {
+      first ??= _previous;
+      Expression expr = _literalOrNull();
+
+      if (expr == null) {
+        // no literal, expect (expression)
+        _consume(TokenType.leftParen,
+            'Expected opening parenthesis before expression');
+        expr = expression();
+        _consume(TokenType.rightParen, 'Expected closing parenthesis');
+      }
+
+      return Default(resolvedName, expr);
+    }
+    if (_matchOne(TokenType.collate)) {
+      first ??= _previous;
+      final collation =
+          _consume(TokenType.identifier, 'Expected the collation name')
+              as IdentifierToken;
+
+      return CollateConstraint(resolvedName, collation.identifier)
+        ..setSpan(first, _previous);
+    }
+
+    // todo foreign key clauses
+
+    // no known column constraint matched. If orNull is set and we're not
+    // guaranteed to be in a constraint clause (started with CONSTRAINT), we
+    // can return null
+    if (orNull && name == null) {
+      return null;
+    }
+    _error('Expected a constraint (primary key, nullability, etc.)');
+  }
+
+  ConflictClause _conflictClauseOrNull() {
+    if (_matchOne(TokenType.on)) {
+      _consume(TokenType.conflict,
+          'Expected CONFLICT to complete ON CONFLICT clause');
+
+      const modes = {
+        TokenType.rollback: ConflictClause.rollback,
+        TokenType.abort: ConflictClause.abort,
+        TokenType.fail: ConflictClause.fail,
+        TokenType.ignore: ConflictClause.ignore,
+        TokenType.replace: ConflictClause.replace,
+      };
+
+      if (_match(modes.keys)) {
+        return modes[_previous.type];
+      } else {
+        _error('Expected a conflict handler (rollback, abort, etc.) here');
+      }
+    }
+
+    return null;
   }
 
   /* We parse expressions here.
@@ -681,21 +855,41 @@ class Parser {
     return expression;
   }
 
+  Literal _literalOrNull() {
+    final token = _peek;
+
+    Literal _parseInner() {
+      if (_matchOne(TokenType.numberLiteral)) {
+        return NumericLiteral(_parseNumber(token.lexeme), token);
+      }
+      if (_matchOne(TokenType.stringLiteral)) {
+        return StringLiteral(token as StringLiteralToken);
+      }
+      if (_matchOne(TokenType.$null)) {
+        return NullLiteral(token);
+      }
+      if (_matchOne(TokenType.$true)) {
+        return BooleanLiteral.withTrue(token);
+      }
+      if (_matchOne(TokenType.$false)) {
+        return BooleanLiteral.withFalse(token);
+      }
+      // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
+      return null;
+    }
+
+    final literal = _parseInner();
+    literal?.setSpan(token, token);
+    return literal;
+  }
+
   Expression _primary() {
+    final literal = _literalOrNull();
+    if (literal != null) return literal;
+
     final token = _advance();
     final type = token.type;
     switch (type) {
-      case TokenType.numberLiteral:
-        return NumericLiteral(_parseNumber(token.lexeme), token);
-      case TokenType.stringLiteral:
-        return StringLiteral(token as StringLiteralToken);
-      case TokenType.$null:
-        return NullLiteral(token);
-      case TokenType.$true:
-        return BooleanLiteral.withTrue(token);
-      case TokenType.$false:
-        return BooleanLiteral.withFalse(token);
-      // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
       case TokenType.leftParen:
         // Opening brackets could be three things: An inner select statement
         // (SELECT ...), a parenthesised expression, or a tuple of expressions

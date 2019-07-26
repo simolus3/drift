@@ -100,6 +100,14 @@ enum TokenType {
   $if,
   without,
   rowid,
+  constraint,
+  autoincrement,
+  primary,
+  key,
+  unique,
+  check,
+  $default,
+  conflict,
 
   semicolon,
   eof,
@@ -165,6 +173,14 @@ const Map<String, TokenType> keywords = {
   'IF': TokenType.$if,
   'WITHOUT': TokenType.without,
   'ROWID': TokenType.rowid,
+  'CONSTRAINT': TokenType.constraint,
+  'AUTOINCREMENT': TokenType.autoincrement,
+  'PRIMARY': TokenType.primary,
+  'KEY': TokenType.key,
+  'UNIQUE': TokenType.unique,
+  'CHECK': TokenType.check,
+  'DEFAULT': TokenType.$default,
+  'CONFLICT': TokenType.conflict,
 };
 
 class Token {

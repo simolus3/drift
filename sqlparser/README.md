@@ -65,11 +65,11 @@ package to generate type-safe methods from sql.
 Most on this list is just not supported yet because I didn't found a use case for 
 them yet. If you need them, just leave an issue and I'll try to implement them soon.
 
-- For now, only `INSERT` statements are not supported, but they will be soon
+- For now, `INSERT` statements are not supported, but they will be soon.
 - Windowing is not supported yet
 - Compound select statements (`UNION` / `INTERSECT`) are not supported yet
 - Common table expressions are not supported
-- Some advanced expressions, like `COLLATE` or `CAST`s aren't supported yet.
+- Some advanced expressions, like `CAST`s aren't supported yet.
 
 If you run into parsing errors with what you think is valid sql, please create an issue.
 

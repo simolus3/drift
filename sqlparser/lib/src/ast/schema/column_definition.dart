@@ -27,6 +27,10 @@ class ColumnDefinition extends AstNode {
 abstract class ColumnConstraint extends AstNode {
   // todo foreign key clause
 
+  final String name;
+
+  ColumnConstraint(this.name);
+
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitColumnConstraint(this);
 
@@ -54,43 +58,60 @@ abstract class ColumnConstraint extends AstNode {
       throw Exception('Did not expect $runtimeType as a ColumnConstraint');
     }
   }
+
+  @visibleForOverriding
+  bool _equalToConstraint(covariant ColumnConstraint other);
+
+  @override
+  bool contentEquals(ColumnConstraint other) {
+    return other.name == name && _equalToConstraint(other);
+  }
 }
 
 enum ConflictClause { rollback, abort, fail, ignore, replace }
 
 class NotNull extends ColumnConstraint {
+  final ConflictClause onConflict;
+
+  NotNull(String name, {this.onConflict}) : super(name);
+
   @override
   final Iterable<AstNode> childNodes = const [];
 
   @override
-  bool contentEquals(NotNull other) => true;
+  bool _equalToConstraint(NotNull other) => onConflict == other.onConflict;
 }
 
 class PrimaryKey extends ColumnConstraint {
   final bool autoIncrement;
+  final ConflictClause onConflict;
   final OrderingMode mode;
 
-  PrimaryKey(this.autoIncrement, this.mode);
+  PrimaryKey(String name,
+      {this.autoIncrement = false, this.mode, this.onConflict})
+      : super(name);
 
   @override
-  Iterable<AstNode> get childNodes => null;
+  Iterable<AstNode> get childNodes => const [];
 
   @override
-  bool contentEquals(PrimaryKey other) {
-    return other.autoIncrement == autoIncrement && other.mode == mode;
+  bool _equalToConstraint(PrimaryKey other) {
+    return other.autoIncrement == autoIncrement &&
+        other.mode == mode &&
+        other.onConflict == onConflict;
   }
 }
 
 class Unique extends ColumnConstraint {
   final ConflictClause onConflict;
 
-  Unique(this.onConflict);
+  Unique(String name, this.onConflict) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => const [];
 
   @override
-  bool contentEquals(Unique other) {
+  bool _equalToConstraint(Unique other) {
     return other.onConflict == onConflict;
   }
 }
@@ -98,35 +119,35 @@ class Unique extends ColumnConstraint {
 class Check extends ColumnConstraint {
   final Expression expression;
 
-  Check(this.expression);
+  Check(String name, this.expression) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
 
   @override
-  bool contentEquals(Check other) => true;
+  bool _equalToConstraint(Check other) => true;
 }
 
 class Default extends ColumnConstraint {
   final Expression expression;
 
-  Default(this.expression);
+  Default(String name, this.expression) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
 
   @override
-  bool contentEquals(Default other) => true;
+  bool _equalToConstraint(Default other) => true;
 }
 
 class CollateConstraint extends ColumnConstraint {
   final String collation;
 
-  CollateConstraint(this.collation);
+  CollateConstraint(String name, this.collation) : super(name);
 
   @override
   final Iterable<AstNode> childNodes = const [];
 
   @override
-  bool contentEquals(CollateConstraint other) => true;
+  bool _equalToConstraint(CollateConstraint other) => true;
 }
