@@ -40,7 +40,7 @@ abstract class QueryExecutor {
 
   /// Runs a custom SQL statement without any variables. The result of that
   /// statement will be ignored.
-  Future<void> runCustom(String statement);
+  Future<void> runCustom(String statement, [List<dynamic> args]);
 
   /// Prepares the [statements] and then executes each one with all of the
   /// [BatchedStatement.variables].

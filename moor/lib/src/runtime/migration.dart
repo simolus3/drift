@@ -57,7 +57,7 @@ class MigrationStrategy {
 }
 
 /// A function that executes queries and ignores what they return.
-typedef Future<void> SqlExecutor(String sql);
+typedef Future<void> SqlExecutor(String sql, [List<dynamic> args]);
 
 class Migrator {
   final GeneratedDatabase _db;
@@ -72,7 +72,9 @@ class Migrator {
 
   GenerationContext _createContext() {
     return GenerationContext(
-        _db.typeSystem, _SimpleSqlAsQueryExecutor(_executor));
+      _db.typeSystem,
+      _SimpleSqlAsQueryExecutor(_executor),
+    );
   }
 
   /// Creates the given table if it doesn't exist
@@ -115,7 +117,7 @@ class Migrator {
 
     context.buffer.write(');');
 
-    return issueCustomQuery(context.sql);
+    return issueCustomQuery(context.sql, context.boundVariables);
   }
 
   /// Deletes the table with the given name. Note that this function does not
@@ -136,8 +138,8 @@ class Migrator {
   }
 
   /// Executes the custom query.
-  Future<void> issueCustomQuery(String sql) async {
-    return _executor(sql);
+  Future<void> issueCustomQuery(String sql, [List<dynamic> args]) async {
+    return _executor(sql, args);
   }
 }
 
@@ -181,8 +183,8 @@ class _SimpleSqlAsQueryExecutor extends QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement) {
-    return executor(statement);
+  Future<void> runCustom(String statement, [List<dynamic> args]) {
+    return executor(statement, args);
   }
 
   @override

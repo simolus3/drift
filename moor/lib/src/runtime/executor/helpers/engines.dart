@@ -63,10 +63,11 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement) {
+  Future<void> runCustom(String statement, [List<dynamic> args]) {
     return _synchronized(() {
-      _log(statement, const []);
-      return impl.runCustom(statement, const []);
+      final resolvedArgs = args ?? const [];
+      _log(statement, resolvedArgs);
+      return impl.runCustom(statement, resolvedArgs);
     });
   }
 
