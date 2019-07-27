@@ -13,13 +13,6 @@ class TableWriter {
   TableWriter(this.table, this.session);
 
   void writeInto(StringBuffer buffer) {
-    // set the indices of all type converters, they're needed when writing the
-    // data classes
-    var i = 0;
-    for (var converter in table.converters) {
-      converter.index = i++;
-    }
-
     writeDataClass(buffer);
     writeTableInfoClass(buffer);
   }

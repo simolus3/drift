@@ -19,13 +19,22 @@ class TableParser extends ParserBase {
 
     final columns = await _parseColumns(element);
 
-    return SpecifiedTable(
+    final table = SpecifiedTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
       primaryKey: await _readPrimaryKey(element, columns),
     );
+
+    var index = 0;
+    for (var converter in table.converters) {
+      converter
+        ..index = index++
+        ..table = table;
+    }
+
+    return table;
   }
 
   String _readDartTypeName(ClassElement element) {

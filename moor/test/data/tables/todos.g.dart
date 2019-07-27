@@ -1206,6 +1206,13 @@ class AllTodosWithCategoryResult {
   });
 }
 
+class FindCustomResult {
+  final MyCustomObject custom;
+  FindCustomResult({
+    this.custom,
+  });
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1328,6 +1335,29 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           todosTable
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
+  FindCustomResult _rowToFindCustomResult(QueryRow row) {
+    return FindCustomResult(
+      custom:
+          $TableWithoutPKTable.$converter0.mapToDart(row.readString('custom')),
+    );
+  }
+
+  Future<List<FindCustomResult>> findCustom(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+        variables: []).then((rows) => rows.map(_rowToFindCustomResult).toList());
+  }
+
+  Stream<List<FindCustomResult>> watchFindCustom() {
+    return customSelectStream(
+            'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+            variables: [],
+            readsFrom: {tableWithoutPK})
+        .map((rows) => rows.map(_rowToFindCustomResult).toList());
   }
 
   @override

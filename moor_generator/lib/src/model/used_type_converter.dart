@@ -2,10 +2,12 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/model/specified_table.dart';
 
 class UsedTypeConverter {
   /// Index of this converter in the table in which it has been created.
   int index;
+  SpecifiedTable table;
 
   /// The [Expression] that will construct the type converter at runtime. The
   /// type converter constructed will map a [mappedType] to the [sqlType] and

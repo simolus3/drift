@@ -1,5 +1,7 @@
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/parser/sql/type_mapping.dart';
+import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'affected_tables_visitor.dart';
@@ -57,8 +59,13 @@ class QueryHandler {
     for (var column in rawColumns) {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
+      UsedTypeConverter converter;
+      if (type.hint is TypeConverterHint) {
+        converter = (type.hint as TypeConverterHint).converter;
+      }
 
-      columns.add(ResultColumn(column.name, moorType, type.nullable));
+      columns.add(ResultColumn(column.name, moorType, type.nullable,
+          converter: converter));
 
       final table = _tableOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != table);
