@@ -855,13 +855,12 @@ class TableWithoutPKData extends DataClass
     final intType = db.typeSystem.forDartType<int>();
     final doubleType = db.typeSystem.forDartType<double>();
     final stringType = db.typeSystem.forDartType<String>();
-    final customConverter = const CustomConverter();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
       someFloat: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
-      custom: customConverter.mapToDart(
+      custom: $TableWithoutPKTable.$converter0.mapToDart(
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
     );
   }
@@ -1029,7 +1028,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       map['some_float'] = Variable<double, RealType>(d.someFloat.value);
     }
     if (d.custom.present) {
-      final converter = const CustomConverter();
+      final converter = $TableWithoutPKTable.$converter0;
       map['custom'] =
           Variable<String, StringType>(converter.mapToSql(d.custom.value));
     }
@@ -1040,6 +1039,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable createAlias(String alias) {
     return $TableWithoutPKTable(_db, alias);
   }
+
+  static CustomConverter $converter0 = const CustomConverter();
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {

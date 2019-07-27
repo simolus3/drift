@@ -13,6 +13,13 @@ class TableWriter {
   TableWriter(this.table, this.session);
 
   void writeInto(StringBuffer buffer) {
+    // set the indices of all type converters, they're needed when writing the
+    // data classes
+    var i = 0;
+    for (var converter in table.converters) {
+      converter.index = i++;
+    }
+
     writeDataClass(buffer);
     writeTableInfoClass(buffer);
   }
@@ -62,8 +69,18 @@ class TableWriter {
 
     _writeAliasGenerator(buffer);
 
+    _writeConvertersAsStaticFields(buffer);
+
     // close class
     buffer.write('}');
+  }
+
+  void _writeConvertersAsStaticFields(StringBuffer buffer) {
+    for (var converter in table.converters) {
+      final typeName = converter.typeOfConverter.displayName;
+      final code = converter.expression.toSource();
+      buffer..write('static $typeName ${converter.fieldName} = $code;');
+    }
   }
 
   void _writeMappingMethod(StringBuffer buffer) {
@@ -93,10 +110,10 @@ class TableWriter {
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
-        // todo instead of creating the converter every time, can we cache its
-        // instance in the generated table class?
+        final converter = column.typeConverter;
+        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
         buffer
-          ..write('final converter = ${column.typeConverter.toSource()};\n')
+          ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
           ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
       } else {

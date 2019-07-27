@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
@@ -32,6 +33,10 @@ class SpecifiedTable {
       this.sqlName,
       this.dartTypeName,
       this.primaryKey});
+
+  /// Finds all type converters used in this tables.
+  Iterable<UsedTypeConverter> get converters =>
+      columns.map((c) => c.typeConverter).where((t) => t != null);
 }
 
 String tableInfoNameForTableClass(ClassElement fromClass) =>

@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
@@ -71,8 +72,8 @@ class ColumnParser extends ParserBase {
     String foundExplicitName;
     String foundCustomConstraint;
     Expression foundDefaultExpression;
-    Expression foundTypeConverter;
-    DartType overrideDartType;
+    Expression createdTypeConverter;
+    DartType typeConverterRuntime;
     var wasDeclaredAsPrimaryKey = false;
     var nullable = false;
 
@@ -162,8 +163,8 @@ class ColumnParser extends ParserBase {
           // type of the custom object
           final type = remainingExpr.typeArgumentTypes.single;
 
-          foundTypeConverter = expression;
-          overrideDartType = type;
+          createdTypeConverter = expression;
+          typeConverterRuntime = type;
           break;
       }
 
@@ -179,19 +180,27 @@ class ColumnParser extends ParserBase {
       name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
     }
 
+    final columnType = _startMethodToColumnType(foundStartMethod);
+
+    UsedTypeConverter converter;
+    if (createdTypeConverter != null && typeConverterRuntime != null) {
+      converter = UsedTypeConverter(
+          expression: createdTypeConverter,
+          mappedType: typeConverterRuntime,
+          sqlType: columnType);
+    }
+
     return SpecifiedColumn(
-      type: _startMethodToColumnType(foundStartMethod),
-      dartGetterName: getter.name.name,
-      name: name,
-      overriddenJsonName: _readJsonKey(getterElement),
-      declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
-      customConstraints: foundCustomConstraint,
-      nullable: nullable,
-      features: foundFeatures,
-      defaultArgument: foundDefaultExpression,
-      typeConverter: foundTypeConverter,
-      overriddenDartType: overrideDartType,
-    );
+        type: columnType,
+        dartGetterName: getter.name.name,
+        name: name,
+        overriddenJsonName: _readJsonKey(getterElement),
+        declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
+        customConstraints: foundCustomConstraint,
+        nullable: nullable,
+        features: foundFeatures,
+        defaultArgument: foundDefaultExpression,
+        typeConverter: converter);
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

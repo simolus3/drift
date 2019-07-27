@@ -1,4 +1,3 @@
-import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/writer/utils/hash_code.dart';
@@ -76,7 +75,6 @@ class DataClassWriter {
       ..write("final effectivePrefix = prefix ?? '';");
 
     final dartTypeToResolver = <String, String>{};
-    final columnToTypeMapper = <SpecifiedColumn, String>{};
 
     final types = table.columns.map((c) => c.variableTypeName).toSet();
     for (var usedType in types) {
@@ -86,13 +84,6 @@ class DataClassWriter {
 
       buffer
           .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
-    }
-
-    for (var column in table.columns.where((c) => c.typeConverter != null)) {
-      final name = '${column.dartGetterName}Converter';
-      columnToTypeMapper[column] = name;
-
-      buffer.write('final $name = ${column.typeConverter.toSource()};');
     }
 
     // finally, the mighty constructor invocation:
@@ -106,9 +97,13 @@ class DataClassWriter {
 
       var loadType = '$resolver.mapFromDatabaseResponse(data[$columnName])';
 
-      if (columnToTypeMapper.containsKey(column)) {
-        final converter = columnToTypeMapper[column];
-        loadType = '$converter.mapToDart($loadType)';
+      // run the loaded expression though the custom converter for the final
+      // result.
+      if (column.typeConverter != null) {
+        // stored as a static field
+        final converter = column.typeConverter;
+        final loaded = '${table.tableInfoName}.${converter.fieldName}';
+        loadType = '$loaded.mapToDart($loadType)';
       }
 
       buffer.write('$getter: $loadType,');

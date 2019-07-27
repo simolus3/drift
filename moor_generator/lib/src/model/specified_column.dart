@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:built_value/built_value.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';
 
@@ -100,24 +100,14 @@ class SpecifiedColumn {
   /// expression.
   final Expression defaultArgument;
 
-  /// If a type converter has been specified as the argument of
-  /// ColumnBuilder.map, this contains the Dart code that references that type
-  /// converter.
-  final Expression typeConverter;
-
-  /// If the type of this column has been overridden, contains the actual Dart
-  /// type. Otherwise null.
-  ///
-  /// Column types can be overridden with type converters. For instance, if
-  /// `C` was a type converter that converts `D` to `num`s, the column generated
-  /// by `real().map(const C())()` would have type `D` instead of `num`.
-  final DartType overriddenDartType;
+  /// The [UsedTypeConverter], if one has been set on this column.
+  final UsedTypeConverter typeConverter;
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName {
-    if (overriddenDartType != null) {
-      return overriddenDartType.name;
+    if (typeConverter != null) {
+      return typeConverter.mappedType?.name;
     }
     return variableTypeName;
   }
@@ -172,7 +162,6 @@ class SpecifiedColumn {
     this.features = const [],
     this.defaultArgument,
     this.typeConverter,
-    this.overriddenDartType,
   });
 }
 
