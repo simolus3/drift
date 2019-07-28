@@ -47,6 +47,7 @@ class DiffInput<T> {
   }
 }
 
+@Deprecated('Will be removed in moor 2.0')
 List<Snake> calculateDiff(DiffInput input) {
   final oldSize = input.from.length;
   final newSize = input.to.length;
