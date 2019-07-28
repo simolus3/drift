@@ -1,5 +1,6 @@
 import 'dart:typed_data' show Uint8List;
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/executor/helpers/results.dart';
 
 /// An interface that supports sending database queries. Used as a backend for
@@ -48,6 +49,9 @@ abstract class DatabaseDelegate implements QueryDelegate {
   Future<void> close() async {
     // default no-op implementation
   }
+
+  /// The [SqlDialect] understood by this database engine.
+  SqlDialect get dialect => SqlDialect.sqlite;
 }
 
 /// An interface which can execute sql statements.

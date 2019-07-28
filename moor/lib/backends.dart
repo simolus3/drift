@@ -2,6 +2,7 @@
 /// with moor.
 library backends;
 
+export 'src/runtime/components/component.dart' show SqlDialect;
 export 'src/runtime/executor/executor.dart';
 export 'src/runtime/executor/helpers/delegates.dart';
 export 'src/runtime/executor/helpers/engines.dart';

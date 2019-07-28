@@ -20,7 +20,7 @@ You'll need to import `package:moor_mysql/moor_mysql.dart`.
 ## Limitations
 We're currently experimenting with other database engines - Moor was mainly designed for
 sqlite and supporting advanced features of MySQL is not a priority right now.
-- No migrations
+- No migrations - you'll need to create your tables manually
 - Some statements don't work
 - Compiled custom queries don't work - we can only parse sqlite. Of course, runtime custom
 queries with `customSelect` and `customUpdate` will work as expected.

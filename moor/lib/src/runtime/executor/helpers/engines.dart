@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -204,6 +205,8 @@ class _BeforeOpeningExecutor extends QueryExecutor
   }
 }
 
+/// A database engine (implements [QueryExecutor]) that delegated the relevant
+/// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   final DatabaseDelegate delegate;
   Completer<bool> _openingCompleter;
@@ -215,6 +218,9 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   QueryDelegate get impl => delegate;
+
+  @override
+  SqlDialect get dialect => delegate.dialect;
 
   DelegatedDatabase(this.delegate,
       {this.logStatements, this.isSequential = false}) {

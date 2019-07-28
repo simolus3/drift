@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/utils/hash.dart';
 
@@ -8,10 +9,16 @@ import 'package:moor/src/utils/hash.dart';
 /// return their results in a raw form.
 ///
 /// This is an internal api of moor, which can break often. If you want to
-/// implement custom database backends, consider using a delegate as described
-/// [here](https://moor.simonbinder.eu/custom_backend)
+/// implement custom database backends, consider using the new `backends` API.
+/// The [moor_flutter implementation](https://github.com/simolus3/moor/blob/develop/moor_flutter/lib/moor_flutter.dart)
+/// might be useful as a reference. If you want to write your own database
+/// engine to use with moor and run into issues, please consider creating an
+/// issue.
 abstract class QueryExecutor {
   GeneratedDatabase databaseInfo;
+
+  /// The [SqlDialect] to use for this database engine.
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   /// Performs the async [fn] after this executor is ready, or directly if it's
   /// already ready.
