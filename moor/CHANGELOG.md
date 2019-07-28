@@ -1,5 +1,9 @@
 ## unreleased
-- Support custom columns
+- Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)
+for details on how to use this feature.
+- New `backends` api, making it easier to write database drivers that work with moor. Apart from
+`moor_flutter`, new experimental backends can be checked out from git:
+  1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/moor/tree/develop/extras/encryption
 
 ## 1.6.0
 - Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.

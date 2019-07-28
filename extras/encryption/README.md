@@ -15,5 +15,7 @@ dependencies:
     path: extras/encryption 
 ```
 
-Then, instead using a `FlutterQueryExecutor`, 
-`import 'package:encrypted_moor/encrypted_moor.dart'` and use the `EncryptedExecutor`.
+To use this, you can stop depending on `moor_flutter`. Then, instead of using 
+a `FlutterQueryExecutor`, import `package:moor/moor.dart` and `package:encrypted_moor/encrypted_moor.dart`.
+
+You can then replace the `FlutterQueryExecutor` with an `EncryptedExecutor`.
