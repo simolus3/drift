@@ -3,15 +3,10 @@ container:
   image: "google/dart:latest"
 
 task:
-  name: Analysis and Tests
   pub_cache:
     folder: $HOME/.pub-cache
   pub_get_script: tool/pub_get.sh
   analyze_script: tool/analyze.sh
   test_moor_script: tool/test_moor.sh
   test_sqlparser_script: tool/test_sqlparser.sh
-
-upload_coverage_task:
-  name: Upload coverage
-  depends_on: [task]
   format_coverage_script: tool/upload_coverage.sh

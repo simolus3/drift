@@ -9,16 +9,10 @@ Future main() async {
     packagesPath: 'moor/.packages',
   );
 
-  final potentialFiles = [
+  final coverage = await parseCoverage([
     File('moor/coverage.json'),
     File('sqlparser/coverage.json'),
-  ];
-
-  final existingFiles = [
-    for (var file in potentialFiles) if (file.existsSync()) file
-  ];
-
-  final coverage = await parseCoverage(existingFiles, 1);
+  ], 1);
 
   // report coverage for the moor and moor_generator package
   final lcov = await LcovFormatter(
