@@ -34,8 +34,8 @@ abstract class ColumnConstraint extends AstNode {
 
   T when<T>({
     T Function(NotNull n) notNull,
-    T Function(PrimaryKey) primaryKey,
-    T Function(Unique) unique,
+    T Function(PrimaryKeyColumn) primaryKey,
+    T Function(UniqueColumn) unique,
     T Function(CheckColumn) check,
     T Function(Default) isDefault,
     T Function(CollateConstraint) collate,
@@ -43,10 +43,10 @@ abstract class ColumnConstraint extends AstNode {
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
-    } else if (this is PrimaryKey) {
-      return primaryKey?.call(this as PrimaryKey);
-    } else if (this is Unique) {
-      return unique?.call(this as Unique);
+    } else if (this is PrimaryKeyColumn) {
+      return primaryKey?.call(this as PrimaryKeyColumn);
+    } else if (this is UniqueColumn) {
+      return unique?.call(this as UniqueColumn);
     } else if (this is CheckColumn) {
       return check?.call(this as CheckColumn);
     } else if (this is Default) {
@@ -83,12 +83,12 @@ class NotNull extends ColumnConstraint {
   bool _equalToConstraint(NotNull other) => onConflict == other.onConflict;
 }
 
-class PrimaryKey extends ColumnConstraint {
+class PrimaryKeyColumn extends ColumnConstraint {
   final bool autoIncrement;
   final ConflictClause onConflict;
   final OrderingMode mode;
 
-  PrimaryKey(String name,
+  PrimaryKeyColumn(String name,
       {this.autoIncrement = false, this.mode, this.onConflict})
       : super(name);
 
@@ -96,23 +96,23 @@ class PrimaryKey extends ColumnConstraint {
   Iterable<AstNode> get childNodes => const [];
 
   @override
-  bool _equalToConstraint(PrimaryKey other) {
+  bool _equalToConstraint(PrimaryKeyColumn other) {
     return other.autoIncrement == autoIncrement &&
         other.mode == mode &&
         other.onConflict == onConflict;
   }
 }
 
-class Unique extends ColumnConstraint {
+class UniqueColumn extends ColumnConstraint {
   final ConflictClause onConflict;
 
-  Unique(String name, this.onConflict) : super(name);
+  UniqueColumn(String name, this.onConflict) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => const [];
 
   @override
-  bool _equalToConstraint(Unique other) {
+  bool _equalToConstraint(UniqueColumn other) {
     return other.onConflict == onConflict;
   }
 }

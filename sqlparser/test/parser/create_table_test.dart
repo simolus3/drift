@@ -8,7 +8,11 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR NOT NULL UNIQUE ON CONFLICT ABORT,
   score INT CONSTRAINT "score set" NOT NULL DEFAULT 420 CHECK (score > 0),
   display_name VARCHAR COLLATE BINARY 
-     REFERENCES some(thing) ON UPDATE CASCADE ON DELETE SET NULL
+     REFERENCES some(thing) ON UPDATE CASCADE ON DELETE SET NULL,
+  
+  UNIQUE (score, display_name) ON CONFLICT ABORT,
+  FOREIGN KEY (id, email) REFERENCES another (a, b)
+     ON DELETE NO ACTION ON UPDATE RESTRICT
 )
 ''';
 
@@ -25,7 +29,7 @@ void main() {
           typeName: 'INT',
           constraints: [
             NotNull(null),
-            PrimaryKey(
+            PrimaryKeyColumn(
               null,
               autoIncrement: true,
               onConflict: ConflictClause.rollback,
@@ -38,7 +42,7 @@ void main() {
           typeName: 'VARCHAR',
           constraints: [
             NotNull(null),
-            Unique(null, ConflictClause.abort),
+            UniqueColumn(null, ConflictClause.abort),
           ],
         ),
         ColumnDefinition(
@@ -78,6 +82,33 @@ void main() {
               ),
             ),
           ],
+        )
+      ],
+      tableConstraints: [
+        KeyClause(
+          null,
+          isPrimaryKey: false,
+          indexedColumns: [
+            Reference(columnName: 'score'),
+            Reference(columnName: 'display_name'),
+          ],
+          onConflict: ConflictClause.abort,
+        ),
+        ForeignKeyTableConstraint(
+          null,
+          columns: [
+            Reference(columnName: 'id'),
+            Reference(columnName: 'email'),
+          ],
+          clause: ForeignKeyClause(
+            foreignTable: TableReference('another', null),
+            columnNames: [
+              Reference(columnName: 'a'),
+              Reference(columnName: 'b'),
+            ],
+            onDelete: ReferenceAction.noAction,
+            onUpdate: ReferenceAction.restrict,
+          ),
         )
       ],
     ),
