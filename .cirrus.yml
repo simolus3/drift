@@ -14,4 +14,4 @@ task:
 upload_coverage_task:
   name: Upload coverage
   depends_on: [task]
-  format_coverage_task: tool/upload_coverage.sh
+  format_coverage_script: tool/upload_coverage.sh
