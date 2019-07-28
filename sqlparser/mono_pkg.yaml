@@ -6,5 +6,4 @@ stages:
       - dartanalyzer: --fatal-infos --fatal-warnings lib/ test/
       - dartfmt
   - unit_test:
-      - command: pub run build_runner build -v --delete-conflicting-outputs
       - test
