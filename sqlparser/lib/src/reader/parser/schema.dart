@@ -112,7 +112,7 @@ mixin SchemaParser on ParserBase {
       final expr = expression();
       _consume(TokenType.rightParen, 'Expected closing parenthesis');
 
-      return Check(resolvedName, expr)..setSpan(first, _previous);
+      return CheckColumn(resolvedName, expr)..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.$default)) {
       first ??= _previous;
@@ -130,15 +130,17 @@ mixin SchemaParser on ParserBase {
     }
     if (_matchOne(TokenType.collate)) {
       first ??= _previous;
-      final collation =
-          _consume(TokenType.identifier, 'Expected the collation name')
-              as IdentifierToken;
+      final collation = _consumeIdentifier('Expected the collation name');
 
       return CollateConstraint(resolvedName, collation.identifier)
         ..setSpan(first, _previous);
     }
-
-    // todo foreign key clauses
+    if (_peek.type == TokenType.references) {
+      first ??= _peek;
+      final clause = _foreignKeyClause();
+      return ForeignKeyColumnConstraint(resolvedName, clause)
+        ..setSpan(first, _previous);
+    }
 
     // no known column constraint matched. If orNull is set and we're not
     // guaranteed to be in a constraint clause (started with CONSTRAINT), we
@@ -170,5 +172,68 @@ mixin SchemaParser on ParserBase {
     }
 
     return null;
+  }
+
+  ForeignKeyClause _foreignKeyClause() {
+    // https://www.sqlite.org/syntax/foreign-key-clause.html
+    _consume(TokenType.references, 'Expected REFERENCES');
+    final firstToken = _previous;
+
+    final foreignTable = _consumeIdentifier('Expected a table name');
+    final foreignTableName = TableReference(foreignTable.identifier, null)
+      ..setSpan(foreignTable, foreignTable);
+
+    final columnNames = <Reference>[];
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final referenceId = _consumeIdentifier('Expected a column name');
+        final reference = Reference(columnName: referenceId.identifier)
+          ..setSpan(referenceId, referenceId);
+        columnNames.add(reference);
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen,
+          'Expected closing paranthesis after column names');
+    }
+
+    ReferenceAction onDelete, onUpdate;
+
+    while (_matchOne(TokenType.on)) {
+      if (_matchOne(TokenType.delete)) {
+        onDelete = _referenceAction();
+      } else if (_matchOne(TokenType.update)) {
+        onUpdate = _referenceAction();
+      } else {
+        _error('Expected either DELETE or UPDATE');
+      }
+    }
+
+    return ForeignKeyClause(
+      foreignTable: foreignTableName,
+      columnNames: columnNames,
+      onUpdate: onUpdate,
+      onDelete: onDelete,
+    )..setSpan(firstToken, _previous);
+  }
+
+  ReferenceAction _referenceAction() {
+    if (_matchOne(TokenType.cascade)) {
+      return ReferenceAction.cascade;
+    } else if (_matchOne(TokenType.restrict)) {
+      return ReferenceAction.restrict;
+    } else if (_matchOne(TokenType.no)) {
+      _consume(TokenType.action, 'Expect ACTION to complete NO ACTION clause');
+      return ReferenceAction.noAction;
+    } else if (_matchOne(TokenType.set)) {
+      if (_matchOne(TokenType.$null)) {
+        return ReferenceAction.setNull;
+      } else if (_matchOne(TokenType.$default)) {
+        return ReferenceAction.setDefault;
+      } else {
+        _error('Expected either NULL or DEFAULT as set action here');
+      }
+    } else {
+      _error('Not a valid action, expected CASCADE, SET NULL, etc..');
+    }
   }
 }

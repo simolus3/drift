@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
   id INT NOT NULL PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT,
   email VARCHAR NOT NULL UNIQUE ON CONFLICT ABORT,
   score INT CONSTRAINT "score set" NOT NULL DEFAULT 420 CHECK (score > 0),
-  display_name VARCHAR COLLATE BINARY
+  display_name VARCHAR COLLATE BINARY 
+     REFERENCES some(thing) ON UPDATE CASCADE ON DELETE SET NULL
 )
 ''';
 
@@ -46,7 +47,7 @@ void main() {
           constraints: [
             NotNull('score set'),
             Default(null, NumericLiteral(420, token(TokenType.numberLiteral))),
-            Check(
+            CheckColumn(
               null,
               BinaryExpression(
                 Reference(columnName: 'score'),
@@ -66,6 +67,15 @@ void main() {
             CollateConstraint(
               null,
               'BINARY',
+            ),
+            ForeignKeyColumnConstraint(
+              null,
+              ForeignKeyClause(
+                foreignTable: TableReference('some', null),
+                columnNames: [Reference(columnName: 'thing')],
+                onUpdate: ReferenceAction.cascade,
+                onDelete: ReferenceAction.setNull,
+              ),
             ),
           ],
         )

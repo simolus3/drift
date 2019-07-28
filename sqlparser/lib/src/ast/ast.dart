@@ -20,6 +20,7 @@ part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
 
 part 'schema/column_definition.dart';
+part 'schema/table_definitions.dart';
 
 part 'statements/create_table.dart';
 part 'statements/delete.dart';
@@ -143,6 +144,7 @@ abstract class AstVisitor<T> {
 
   T visitColumnDefinition(ColumnDefinition e);
   T visitColumnConstraint(ColumnConstraint e);
+  T visitForeignKeyClause(ForeignKeyClause e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitStringComparison(StringComparisonExpression e);
@@ -254,6 +256,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitColumnConstraint(ColumnConstraint e) => visitChildren(e);
+
+  @override
+  T visitForeignKeyClause(ForeignKeyClause e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {

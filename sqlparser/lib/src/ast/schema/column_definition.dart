@@ -25,8 +25,6 @@ class ColumnDefinition extends AstNode {
 
 /// https://www.sqlite.org/syntax/column-constraint.html
 abstract class ColumnConstraint extends AstNode {
-  // todo foreign key clause
-
   final String name;
 
   ColumnConstraint(this.name);
@@ -38,9 +36,10 @@ abstract class ColumnConstraint extends AstNode {
     T Function(NotNull n) notNull,
     T Function(PrimaryKey) primaryKey,
     T Function(Unique) unique,
-    T Function(Check) check,
+    T Function(CheckColumn) check,
     T Function(Default) isDefault,
     T Function(CollateConstraint) collate,
+    T Function(ForeignKeyColumnConstraint) foreignKey,
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
@@ -48,12 +47,14 @@ abstract class ColumnConstraint extends AstNode {
       return primaryKey?.call(this as PrimaryKey);
     } else if (this is Unique) {
       return unique?.call(this as Unique);
-    } else if (this is Check) {
-      return check?.call(this as Check);
+    } else if (this is CheckColumn) {
+      return check?.call(this as CheckColumn);
     } else if (this is Default) {
       return isDefault?.call(this as Default);
     } else if (this is CollateConstraint) {
       return collate?.call(this as CollateConstraint);
+    } else if (this is ForeignKeyColumnConstraint) {
+      return foreignKey?.call(this as ForeignKeyColumnConstraint);
     } else {
       throw Exception('Did not expect $runtimeType as a ColumnConstraint');
     }
@@ -116,16 +117,16 @@ class Unique extends ColumnConstraint {
   }
 }
 
-class Check extends ColumnConstraint {
+class CheckColumn extends ColumnConstraint {
   final Expression expression;
 
-  Check(String name, this.expression) : super(name);
+  CheckColumn(String name, this.expression) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
 
   @override
-  bool _equalToConstraint(Check other) => true;
+  bool _equalToConstraint(CheckColumn other) => true;
 }
 
 class Default extends ColumnConstraint {
@@ -150,4 +151,16 @@ class CollateConstraint extends ColumnConstraint {
 
   @override
   bool _equalToConstraint(CollateConstraint other) => true;
+}
+
+class ForeignKeyColumnConstraint extends ColumnConstraint {
+  final ForeignKeyClause clause;
+
+  ForeignKeyColumnConstraint(String name, this.clause) : super(name);
+
+  @override
+  bool _equalToConstraint(ForeignKeyColumnConstraint other) => true;
+
+  @override
+  Iterable<AstNode> get childNodes => [clause];
 }

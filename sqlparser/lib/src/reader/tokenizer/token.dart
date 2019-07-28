@@ -108,6 +108,11 @@ enum TokenType {
   check,
   $default,
   conflict,
+  references,
+  cascade,
+  restrict,
+  no,
+  action,
 
   semicolon,
   eof,
@@ -181,6 +186,11 @@ const Map<String, TokenType> keywords = {
   'CHECK': TokenType.check,
   'DEFAULT': TokenType.$default,
   'CONFLICT': TokenType.conflict,
+  'REFERENCES': TokenType.references,
+  'CASCADE': TokenType.cascade,
+  'RESTRICT': TokenType.restrict,
+  'NO': TokenType.no,
+  'ACTION': TokenType.action,
 };
 
 class Token {

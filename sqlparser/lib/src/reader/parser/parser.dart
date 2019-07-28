@@ -109,6 +109,10 @@ abstract class ParserBase {
     _error(message);
   }
 
+  IdentifierToken _consumeIdentifier(String message) {
+    return _consume(TokenType.identifier, message) as IdentifierToken;
+  }
+
   // Common operations that we are referenced very often
   Expression expression();
 
