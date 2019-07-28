@@ -1,5 +1,12 @@
 part of 'parser.dart';
 
+const _tokensInTypename = [
+  TokenType.identifier,
+  TokenType.leftParen,
+  TokenType.rightParen,
+  TokenType.numberLiteral,
+];
+
 mixin SchemaParser on ParserBase {
   CreateTableStatement _createTable() {
     if (!_matchOne(TokenType.create)) return null;
@@ -62,11 +69,14 @@ mixin SchemaParser on ParserBase {
   ColumnDefinition _columnDefinition() {
     final name = _consume(TokenType.identifier, 'Expected a column name')
         as IdentifierToken;
-    IdentifierToken typeName;
 
-    if (_matchOne(TokenType.identifier)) {
-      typeName = _previous as IdentifierToken;
+    final typeNameBuilder = StringBuffer();
+    while (_match(_tokensInTypename)) {
+      typeNameBuilder.write(_previous.lexeme);
     }
+
+    final typeName =
+        typeNameBuilder.isEmpty ? null : typeNameBuilder.toString();
 
     final constraints = <ColumnConstraint>[];
     ColumnConstraint constraint;
@@ -76,7 +86,7 @@ mixin SchemaParser on ParserBase {
 
     return ColumnDefinition(
       columnName: name.identifier,
-      typeName: typeName?.identifier,
+      typeName: typeName,
       constraints: constraints,
     )..setSpan(name, _previous);
   }

@@ -1,24 +1,11 @@
 import 'package:sqlparser/src/ast/ast.dart';
 
+import '../common_data.dart';
 import 'utils.dart';
-
-final statement = '''
-CREATE TABLE IF NOT EXISTS users (
-  id INT NOT NULL PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT,
-  email VARCHAR NOT NULL UNIQUE ON CONFLICT ABORT,
-  score INT CONSTRAINT "score set" NOT NULL DEFAULT 420 CHECK (score > 0),
-  display_name VARCHAR COLLATE BINARY 
-     REFERENCES some(thing) ON UPDATE CASCADE ON DELETE SET NULL,
-  
-  UNIQUE (score, display_name) ON CONFLICT ABORT,
-  FOREIGN KEY (id, email) REFERENCES another (a, b)
-     ON DELETE NO ACTION ON UPDATE RESTRICT
-)
-''';
 
 void main() {
   testStatement(
-    statement,
+    createTableStmt,
     CreateTableStatement(
       tableName: 'users',
       ifNotExists: true,

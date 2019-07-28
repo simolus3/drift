@@ -30,8 +30,18 @@ class Table with ResultSet, VisibleToChildren {
   @override
   final List<TableColumn> resolvedColumns;
 
+  /// Whether this table was created with an "WITHOUT ROWID" modifier
+  final bool withoutRowId;
+
+  /// Additional constraints set on this table.
+  final List<TableConstraint> tableConstraints;
+
   /// Constructs a table from the known [name] and [resolvedColumns].
-  Table({@required this.name, this.resolvedColumns}) {
+  Table(
+      {@required this.name,
+      this.resolvedColumns,
+      this.withoutRowId = false,
+      this.tableConstraints = const []}) {
     for (var column in resolvedColumns) {
       column.table = this;
     }
