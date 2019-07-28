@@ -57,10 +57,13 @@ class SqlEngine {
 
     try {
       ReferenceFinder(globalScope: scope).start(node);
-      node
-        ..accept(ColumnResolver(context))
-        ..accept(ReferenceResolver(context))
-        ..accept(TypeResolvingVisitor(context));
+
+      if (node is CrudStatement) {
+        node
+          ..accept(ColumnResolver(context))
+          ..accept(ReferenceResolver(context))
+          ..accept(TypeResolvingVisitor(context));
+      }
     } catch (e) {
       // todo should we do now? AFAIK, everything that causes an exception
       // is added as an error contained in the context.
