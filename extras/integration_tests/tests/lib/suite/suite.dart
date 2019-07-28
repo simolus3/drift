@@ -1,7 +1,8 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
-import 'package:tests/suite/migrations.dart';
+import 'custom_objects.dart';
+import 'migrations.dart';
 
 abstract class TestExecutor {
   QueryExecutor createExecutor();
@@ -16,4 +17,5 @@ void runAllTests(TestExecutor executor) {
   });
 
   migrationTests(executor);
+  customObjectTests(executor);
 }

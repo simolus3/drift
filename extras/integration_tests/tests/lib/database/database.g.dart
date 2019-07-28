@@ -27,11 +27,13 @@ class User extends DataClass implements Insertable<User> {
   final String name;
   final DateTime birthDate;
   final Uint8List profilePicture;
+  final Preferences preferences;
   User(
       {@required this.id,
       @required this.name,
       @required this.birthDate,
-      this.profilePicture});
+      this.profilePicture,
+      this.preferences});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -46,6 +48,8 @@ class User extends DataClass implements Insertable<User> {
           .mapFromDatabaseResponse(data['${effectivePrefix}birth_date']),
       profilePicture: uint8ListType
           .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
+      preferences: $UsersTable.$converter0.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}preferences'])),
     );
   }
   factory User.fromJson(Map<String, dynamic> json,
@@ -55,6 +59,7 @@ class User extends DataClass implements Insertable<User> {
       name: serializer.fromJson<String>(json['name']),
       birthDate: serializer.fromJson<DateTime>(json['born_on']),
       profilePicture: serializer.fromJson<Uint8List>(json['profilePicture']),
+      preferences: serializer.fromJson<Preferences>(json['preferences']),
     );
   }
   @override
@@ -65,6 +70,7 @@ class User extends DataClass implements Insertable<User> {
       'name': serializer.toJson<String>(name),
       'born_on': serializer.toJson<DateTime>(birthDate),
       'profilePicture': serializer.toJson<Uint8List>(profilePicture),
+      'preferences': serializer.toJson<Preferences>(preferences),
     };
   }
 
@@ -79,6 +85,9 @@ class User extends DataClass implements Insertable<User> {
       profilePicture: profilePicture == null && nullToAbsent
           ? const Value.absent()
           : Value(profilePicture),
+      preferences: preferences == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preferences),
     ) as T;
   }
 
@@ -86,12 +95,14 @@ class User extends DataClass implements Insertable<User> {
           {int id,
           String name,
           DateTime birthDate,
-          Uint8List profilePicture}) =>
+          Uint8List profilePicture,
+          Preferences preferences}) =>
       User(
         id: id ?? this.id,
         name: name ?? this.name,
         birthDate: birthDate ?? this.birthDate,
         profilePicture: profilePicture ?? this.profilePicture,
+        preferences: preferences ?? this.preferences,
       );
   @override
   String toString() {
@@ -99,7 +110,8 @@ class User extends DataClass implements Insertable<User> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('birthDate: $birthDate, ')
-          ..write('profilePicture: $profilePicture')
+          ..write('profilePicture: $profilePicture, ')
+          ..write('preferences: $preferences')
           ..write(')'))
         .toString();
   }
@@ -108,7 +120,9 @@ class User extends DataClass implements Insertable<User> {
   int get hashCode => $mrjf($mrjc(
       id.hashCode,
       $mrjc(
-          name.hashCode, $mrjc(birthDate.hashCode, profilePicture.hashCode))));
+          name.hashCode,
+          $mrjc(birthDate.hashCode,
+              $mrjc(profilePicture.hashCode, preferences.hashCode)))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -116,7 +130,8 @@ class User extends DataClass implements Insertable<User> {
           other.id == id &&
           other.name == name &&
           other.birthDate == birthDate &&
-          other.profilePicture == profilePicture);
+          other.profilePicture == profilePicture &&
+          other.preferences == preferences);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -124,11 +139,13 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> name;
   final Value<DateTime> birthDate;
   final Value<Uint8List> profilePicture;
+  final Value<Preferences> preferences;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.birthDate = const Value.absent(),
     this.profilePicture = const Value.absent(),
+    this.preferences = const Value.absent(),
   });
 }
 
@@ -182,8 +199,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     );
   }
 
+  final VerificationMeta _preferencesMeta =
+      const VerificationMeta('preferences');
+  GeneratedTextColumn _preferences;
   @override
-  List<GeneratedColumn> get $columns => [id, name, birthDate, profilePicture];
+  GeneratedTextColumn get preferences =>
+      _preferences ??= _constructPreferences();
+  GeneratedTextColumn _constructPreferences() {
+    return GeneratedTextColumn(
+      'preferences',
+      $tableName,
+      true,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, birthDate, profilePicture, preferences];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -219,6 +251,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     } else if (profilePicture.isRequired && isInserting) {
       context.missing(_profilePictureMeta);
     }
+    context.handle(_preferencesMeta, const VerificationResult.success());
     return context;
   }
 
@@ -246,6 +279,11 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       map['profile_picture'] =
           Variable<Uint8List, BlobType>(d.profilePicture.value);
     }
+    if (d.preferences.present) {
+      final converter = $UsersTable.$converter0;
+      map['preferences'] =
+          Variable<String, StringType>(converter.mapToSql(d.preferences.value));
+    }
     return map;
   }
 
@@ -253,6 +291,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable createAlias(String alias) {
     return $UsersTable(_db, alias);
   }
+
+  static PreferenceConverter $converter0 = const PreferenceConverter();
 }
 
 class Friendship extends DataClass implements Insertable<Friendship> {
@@ -470,6 +510,13 @@ class UserCountResult {
   });
 }
 
+class SettingsForResult {
+  final Preferences preferences;
+  SettingsForResult({
+    this.preferences,
+  });
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $UsersTable _users;
@@ -482,6 +529,8 @@ abstract class _$Database extends GeneratedDatabase {
       name: row.readString('name'),
       birthDate: row.readDateTime('birth_date'),
       profilePicture: row.readBlob('profile_picture'),
+      preferences:
+          $UsersTable.$converter0.mapToDart(row.readString('preferences')),
     );
   }
 
@@ -553,6 +602,34 @@ abstract class _$Database extends GeneratedDatabase {
     return customSelectStream('SELECT COUNT(id) FROM users',
             variables: [], readsFrom: {users})
         .map((rows) => rows.map(_rowToUserCountResult).toList());
+  }
+
+  SettingsForResult _rowToSettingsForResult(QueryRow row) {
+    return SettingsForResult(
+      preferences:
+          $UsersTable.$converter0.mapToDart(row.readString('preferences')),
+    );
+  }
+
+  Future<List<SettingsForResult>> settingsFor(
+      int user,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT preferences FROM users WHERE id = :user',
+        variables: [
+          Variable.withInt(user),
+        ]).then((rows) => rows.map(_rowToSettingsForResult).toList());
+  }
+
+  Stream<List<SettingsForResult>> watchSettingsFor(int user) {
+    return customSelectStream('SELECT preferences FROM users WHERE id = :user',
+        variables: [
+          Variable.withInt(user),
+        ],
+        readsFrom: {
+          users
+        }).map((rows) => rows.map(_rowToSettingsForResult).toList());
   }
 
   @override

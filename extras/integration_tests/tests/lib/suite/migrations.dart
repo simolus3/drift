@@ -11,6 +11,8 @@ void migrationTests(TestExecutor executor) {
     // we write 3 users when the database is created
     final count = await database.userCount();
     expect(count.single.cOUNTid, 3);
+
+    await database.close();
   });
 
   test('saves and restores database', () async {
@@ -23,5 +25,7 @@ void migrationTests(TestExecutor executor) {
     // the 3 initial users plus People.florian
     final count = await database.userCount();
     expect(count.single.cOUNTid, 4);
+
+    await database.close();
   });
 }
