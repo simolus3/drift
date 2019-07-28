@@ -16,3 +16,7 @@ dependencies:
 
 dev_dependencies:
   test: ^1.6.0
+  test_core: any # version will be determined by "test"
+  path: ^1.6.0
+  coverage:
+    git: https://github.com/simolus3/coverage.git

@@ -8,7 +8,7 @@ env:
   - PKG="sqlparser"
 
 script: ./tool/mono_repo_wrapper.sh
-after_success: ./tool/upload_coverage.sh
+#after_success: ./tool/upload_coverage.sh
 
 cache:
   directories:
