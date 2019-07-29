@@ -193,17 +193,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   void writeColumnDefinition(GenerationContext into) {
     // todo make this work with custom constraints, default values, etc.
     if (hasAutoIncrement) {
-      String autoIncrementKeyword;
-      switch (into.dialect) {
-        case SqlDialect.sqlite:
-          autoIncrementKeyword = 'AUTOINCREMENT';
-          break;
-        case SqlDialect.mysql:
-          autoIncrementKeyword = 'AUTO INCREMENT';
-          break;
-      }
-
-      into.buffer.write('${$name} $typeName PRIMARY $autoIncrementKeyword');
+      into.buffer.write('${$name} $typeName PRIMARY KEY AUTOINCREMENT');
     } else {
       super.writeColumnDefinition(into);
     }
