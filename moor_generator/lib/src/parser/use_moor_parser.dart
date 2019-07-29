@@ -17,8 +17,16 @@ class UseMoorParser {
     final tableTypes =
         annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
+    final includes = annotation
+            .read('include')
+            .objectValue
+            .toSetValue()
+            ?.map((e) => e.toStringValue()) ??
+        {};
 
     final parsedTables = await session.parseTables(tableTypes, element);
+    parsedTables.addAll(await session.resolveIncludes(includes));
+
     final parsedQueries =
         await session.parseQueries(queryStrings, parsedTables);
     final daoTypes = _readDaoTypes(annotation);

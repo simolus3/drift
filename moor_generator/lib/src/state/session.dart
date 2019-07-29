@@ -10,7 +10,9 @@ import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/parser/column_parser.dart';
+import 'package:moor_generator/src/parser/moor/moor_analyzer.dart';
 import 'package:moor_generator/src/parser/sql/sql_parser.dart';
+import 'package:moor_generator/src/parser/sql/type_mapping.dart';
 import 'package:moor_generator/src/parser/table_parser.dart';
 import 'package:moor_generator/src/parser/use_dao_parser.dart';
 import 'package:moor_generator/src/parser/use_moor_parser.dart';
@@ -78,7 +80,34 @@ class GeneratorSession {
       } else {
         return _tableParser.parse(type.element as ClassElement);
       }
-    }));
+    })).then((list) => List.from(list)); // make growable
+  }
+
+  Future<List<SpecifiedTable>> resolveIncludes(Iterable<String> paths) async {
+    final mapper = TypeMapper();
+    final foundTables = <SpecifiedTable>[];
+
+    for (var path in paths) {
+      final asset = AssetId.resolve(path, from: step.inputId);
+      String content;
+      try {
+        content = await step.readAsString(asset);
+      } catch (e) {
+        errors.add(MoorError(
+            critical: true,
+            message: 'The included file $path could not be found'));
+      }
+
+      final parsed = await MoorAnalyzer(content).analyze();
+      foundTables.addAll(
+          parsed.parsedFile.declaredTables.map((t) => t.extractTable(mapper)));
+
+      for (var parseError in parsed.errors) {
+        errors.add(MoorError(message: "Can't parse sql in $path: $parseError"));
+      }
+    }
+
+    return foundTables;
   }
 
   /// Parses a column from a getter [e] declared inside a table class and its

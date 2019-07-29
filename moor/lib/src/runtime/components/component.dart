@@ -39,7 +39,7 @@ class GenerationContext {
   GenerationContext.fromDb(QueryEngine database)
       : typeSystem = database.typeSystem,
         executor = database.executor,
-        dialect = database.executor.dialect;
+        dialect = database.executor?.dialect ?? SqlDialect.sqlite;
 
   GenerationContext(this.typeSystem, this.executor,
       {this.dialect = SqlDialect.sqlite});

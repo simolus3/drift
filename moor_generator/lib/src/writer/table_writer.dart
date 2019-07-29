@@ -24,7 +24,7 @@ class TableWriter {
 
   void writeTableInfoClass(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
-    final tableDslName = table.fromClass.name;
+    final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
     buffer
@@ -174,7 +174,9 @@ class TableWriter {
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,
       code: expressionBuffer.toString(),
-      hasOverride: true,
+      // don't override on custom tables because we only override the column
+      // when the base class is user defined
+      hasOverride: !table.isFromSql,
     );
   }
 

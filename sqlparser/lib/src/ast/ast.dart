@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/analysis/analysis.dart';
 
@@ -48,6 +49,8 @@ abstract class AstNode {
 
   /// The last position that belongs to node, exclusive. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
+
+  FileSpan get span => first.span.expand(last.span);
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {

@@ -134,13 +134,26 @@ class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
   Parser(List<Token> tokens) : super(tokens);
 
-  Statement statement() {
+  Statement statement({bool expectEnd = true}) {
+    final first = _peek;
     final stmt = select() ?? _deleteStmt() ?? _update() ?? _createTable();
 
+    if (stmt == null) {
+      _error('Expected a sql statement to start here');
+    }
+
     _matchOne(TokenType.semicolon);
-    if (!_isAtEnd) {
+    if (!_isAtEnd && expectEnd) {
       _error('Expected the statement to finish here');
     }
-    return stmt;
+    return stmt..setSpan(first, _previous);
+  }
+
+  List<Statement> statements() {
+    final stmts = <Statement>[];
+    while (!_isAtEnd) {
+      stmts.add(statement(expectEnd: false));
+    }
+    return stmts;
   }
 }

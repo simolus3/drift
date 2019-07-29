@@ -6,8 +6,19 @@ import 'package:recase/recase.dart';
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
 class SpecifiedTable {
-  /// The [ClassElement] for the class that declares this table.
+  /// The [ClassElement] for the class that declares this table or null if
+  /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
+
+  /// If [fromClass] is null, another source to use when determining the name
+  /// of this table in generated Dart code.
+  final String _overriddenName;
+
+  /// Whether this table was created from an `ALTER TABLE` statement instead of
+  /// a Dart class.
+  bool get isFromSql => _overriddenName != null;
+
+  String get _baseName => _overriddenName ?? fromClass.name;
 
   /// The columns declared in this table.
   final List<SpecifiedColumn> columns;
@@ -18,9 +29,19 @@ class SpecifiedTable {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
-  String get tableFieldName => ReCase(fromClass.name).camelCase;
-  String get tableInfoName => tableInfoNameForTableClass(fromClass);
-  String get updateCompanionName => _updateCompanionName(fromClass);
+  String get tableFieldName => _dbFieldName(_baseName);
+  String get tableInfoName {
+    // if this table was parsed from sql, a user might want to refer to it
+    // directly because there is no user defined parent class.
+    // So, turn CREATE TABLE users into something called "Users" instead of
+    // "$UsersTable".
+    if (_overriddenName != null) {
+      return _overriddenName;
+    }
+    return tableInfoNameForTableClass(_baseName);
+  }
+
+  String get updateCompanionName => _updateCompanionName(_baseName);
 
   /// The set of primary keys, if they have been explicitly defined by
   /// overriding `primaryKey` in the table class. `null` if the primary key has
@@ -32,15 +53,17 @@ class SpecifiedTable {
       this.columns,
       this.sqlName,
       this.dartTypeName,
-      this.primaryKey});
+      this.primaryKey,
+      String overriddenName})
+      : _overriddenName = overriddenName;
 
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
 }
 
-String tableInfoNameForTableClass(ClassElement fromClass) =>
-    '\$${fromClass.name}Table';
+String _dbFieldName(String className) => ReCase(className).camelCase;
 
-String _updateCompanionName(ClassElement fromClass) =>
-    '${fromClass.name}Companion';
+String tableInfoNameForTableClass(String className) => '\$${className}Table';
+
+String _updateCompanionName(String className) => '${className}Companion';
