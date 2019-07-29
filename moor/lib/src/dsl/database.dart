@@ -42,15 +42,22 @@ class UseMoor {
   /// Moor will generate two methods for you: `userById(int id)` and
   /// `watchUserById(int id)`.
   /// {@endtemplate}
-  @experimental
   final Map<String, String> queries;
+
+  /// Defines the `.moor` files to include when building the table structure for
+  /// this database.
+  ///
+  /// Please note that this feature is experimental at the moment.
+  @experimental
+  final Set<String> include;
 
   /// Use this class as an annotation to inform moor_generator that a database
   /// class should be generated using the specified [UseMoor.tables].
   const UseMoor({
     @required this.tables,
     this.daos = const [],
-    @experimental this.queries = const {},
+    this.queries = const {},
+    @experimental this.include = const {},
   });
 }
 

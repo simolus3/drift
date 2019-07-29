@@ -88,6 +88,7 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
     PureDefaults,
   ],
   daos: [SomeDao],
+  include: {'test.moor'},
   queries: {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',

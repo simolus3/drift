@@ -24,7 +24,7 @@ class TableWriter {
 
   void writeTableInfoClass(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
-    final tableDslName = table.fromClass?.name ?? 'dynamic';
+    final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
     buffer
