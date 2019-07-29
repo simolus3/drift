@@ -31,7 +31,8 @@ updates that span multiple versions, we should follow these steps
 2. Make sure each package has the correct dependencies: `moor_flutter` version `1.x` should depend
    on moor `1.x` as well to ensure users will always `pub get` moor packages that are compatible
    with each other.
-3. Comment out the `dependency_overrides` section 
+3. Comment out the `dependency_overrides` section in `moor`, `moor/tool/analyzer_plugin`, `moor_flutter`,
+   `moor_generator` and `sqlparser`.
 4. Publish packages in this order to avoid scoring penalties caused by versions not existing:
    1. `moor`
    2. `moor_generator`
