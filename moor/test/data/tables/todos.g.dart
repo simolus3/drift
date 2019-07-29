@@ -1187,23 +1187,23 @@ class $PureDefaultsTable extends PureDefaults
   }
 }
 
-class StateData extends DataClass implements Insertable<StateData> {
+class State extends DataClass implements Insertable<State> {
   final int id;
   final String name;
-  StateData({@required this.id, @required this.name});
-  factory StateData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+  State({@required this.id, @required this.name});
+  factory State.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    return StateData(
+    return State(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
     );
   }
-  factory StateData.fromJson(Map<String, dynamic> json,
+  factory State.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return StateData(
+    return State(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
     );
@@ -1218,20 +1218,20 @@ class StateData extends DataClass implements Insertable<StateData> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<StateData>>(bool nullToAbsent) {
-    return StateCompanion(
+  T createCompanion<T extends UpdateCompanion<State>>(bool nullToAbsent) {
+    return StatesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
     ) as T;
   }
 
-  StateData copyWith({int id, String name}) => StateData(
+  State copyWith({int id, String name}) => State(
         id: id ?? this.id,
         name: name ?? this.name,
       );
   @override
   String toString() {
-    return (StringBuffer('StateData(')
+    return (StringBuffer('State(')
           ..write('id: $id, ')
           ..write('name: $name')
           ..write(')'))
@@ -1243,25 +1243,24 @@ class StateData extends DataClass implements Insertable<StateData> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is StateData && other.id == id && other.name == name);
+      (other is State && other.id == id && other.name == name);
 }
 
-class StateCompanion extends UpdateCompanion<StateData> {
+class StatesCompanion extends UpdateCompanion<State> {
   final Value<int> id;
   final Value<String> name;
-  const StateCompanion({
+  const StatesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
   });
 }
 
-class $StateTable extends Table with TableInfo<$StateTable, StateData> {
+class States extends Table with TableInfo<States, State> {
   final GeneratedDatabase _db;
   final String _alias;
-  $StateTable(this._db, [this._alias]);
+  States(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
-  @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
@@ -1271,7 +1270,6 @@ class $StateTable extends Table with TableInfo<$StateTable, StateData> {
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   GeneratedTextColumn _name;
-  @override
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
     return GeneratedTextColumn('name', $tableName, false,
@@ -1281,13 +1279,13 @@ class $StateTable extends Table with TableInfo<$StateTable, StateData> {
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  $StateTable get asDslTable => this;
+  States get asDslTable => this;
   @override
-  String get $tableName => _alias ?? 'state';
+  String get $tableName => _alias ?? 'states';
   @override
-  final String actualTableName = 'state';
+  final String actualTableName = 'states';
   @override
-  VerificationContext validateIntegrity(StateCompanion d,
+  VerificationContext validateIntegrity(StatesCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
     if (d.id.present) {
@@ -1307,13 +1305,13 @@ class $StateTable extends Table with TableInfo<$StateTable, StateData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  StateData map(Map<String, dynamic> data, {String tablePrefix}) {
+  State map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return StateData.fromData(data, _db, prefix: effectivePrefix);
+    return State.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
-  Map<String, Variable> entityToSql(StateCompanion d) {
+  Map<String, Variable> entityToSql(StatesCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
       map['id'] = Variable<int, IntType>(d.id.value);
@@ -1325,8 +1323,8 @@ class $StateTable extends Table with TableInfo<$StateTable, StateData> {
   }
 
   @override
-  $StateTable createAlias(String alias) {
-    return $StateTable(_db, alias);
+  States createAlias(String alias) {
+    return States(_db, alias);
   }
 }
 
@@ -1415,14 +1413,12 @@ class ExperimentsCompanion extends UpdateCompanion<Experiment> {
   });
 }
 
-class $ExperimentsTable extends Table
-    with TableInfo<$ExperimentsTable, Experiment> {
+class Experiments extends Table with TableInfo<Experiments, Experiment> {
   final GeneratedDatabase _db;
   final String _alias;
-  $ExperimentsTable(this._db, [this._alias]);
+  Experiments(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
-  @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
@@ -1433,7 +1429,6 @@ class $ExperimentsTable extends Table
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   GeneratedTextColumn _description;
-  @override
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
@@ -1443,18 +1438,17 @@ class $ExperimentsTable extends Table
 
   final VerificationMeta _stateMeta = const VerificationMeta('state');
   GeneratedIntColumn _state;
-  @override
   GeneratedIntColumn get state => _state ??= _constructState();
   GeneratedIntColumn _constructState() {
     return GeneratedIntColumn('state', $tableName, true,
         $customConstraints:
-            'REFERENCES state(id) ON UPDATE CASCADE ON DELETE SET NULL');
+            'REFERENCES states(id) ON UPDATE CASCADE ON DELETE SET NULL');
   }
 
   @override
   List<GeneratedColumn> get $columns => [id, description, state];
   @override
-  $ExperimentsTable get asDslTable => this;
+  Experiments get asDslTable => this;
   @override
   String get $tableName => _alias ?? 'experiments';
   @override
@@ -1507,8 +1501,8 @@ class $ExperimentsTable extends Table
   }
 
   @override
-  $ExperimentsTable createAlias(String alias) {
-    return $ExperimentsTable(_db, alias);
+  Experiments createAlias(String alias) {
+    return Experiments(_db, alias);
   }
 }
 
@@ -1554,10 +1548,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
   $PureDefaultsTable _pureDefaults;
   $PureDefaultsTable get pureDefaults =>
       _pureDefaults ??= $PureDefaultsTable(this);
-  $StateTable _state;
-  $StateTable get state => _state ??= $StateTable(this);
-  $ExperimentsTable _experiments;
-  $ExperimentsTable get experiments => _experiments ??= $ExperimentsTable(this);
+  States _states;
+  States get states => _states ??= States(this);
+  Experiments _experiments;
+  Experiments get experiments => _experiments ??= Experiments(this);
   SomeDao _someDao;
   SomeDao get someDao => _someDao ??= SomeDao(this as TodoDb);
   AllTodosWithCategoryResult _rowToAllTodosWithCategoryResult(QueryRow row) {
@@ -1697,7 +1691,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         sharedTodos,
         tableWithoutPK,
         pureDefaults,
-        state,
+        states,
         experiments
       ];
 }

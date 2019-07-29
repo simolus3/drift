@@ -14,6 +14,10 @@ class SpecifiedTable {
   /// of this table in generated Dart code.
   final String _overriddenName;
 
+  /// Whether this table was created from an `ALTER TABLE` statement instead of
+  /// a Dart class.
+  bool get isFromSql => _overriddenName != null;
+
   String get _baseName => _overriddenName ?? fromClass.name;
 
   /// The columns declared in this table.
@@ -25,8 +29,18 @@ class SpecifiedTable {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
-  String get tableFieldName => ReCase(_baseName).camelCase;
-  String get tableInfoName => tableInfoNameForTableClass(_baseName);
+  String get tableFieldName => _dbFieldName(_baseName);
+  String get tableInfoName {
+    // if this table was parsed from sql, a user might want to refer to it
+    // directly because there is no user defined parent class.
+    // So, turn CREATE TABLE users into something called "Users" instead of
+    // "$UsersTable".
+    if (_overriddenName != null) {
+      return _overriddenName;
+    }
+    return tableInfoNameForTableClass(_baseName);
+  }
+
   String get updateCompanionName => _updateCompanionName(_baseName);
 
   /// The set of primary keys, if they have been explicitly defined by
@@ -47,6 +61,8 @@ class SpecifiedTable {
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
 }
+
+String _dbFieldName(String className) => ReCase(className).camelCase;
 
 String tableInfoNameForTableClass(String className) => '\$${className}Table';
 

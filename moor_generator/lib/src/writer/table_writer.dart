@@ -174,7 +174,9 @@ class TableWriter {
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,
       code: expressionBuffer.toString(),
-      hasOverride: true,
+      // don't override on custom tables because we only override the column
+      // when the base class is user defined
+      hasOverride: !table.isFromSql,
     );
   }
 

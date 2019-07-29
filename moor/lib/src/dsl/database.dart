@@ -44,10 +44,12 @@ class UseMoor {
   /// {@endtemplate}
   final Map<String, String> queries;
 
+  /// {@template moor_include_param}
   /// Defines the `.moor` files to include when building the table structure for
   /// this database.
   ///
   /// Please note that this feature is experimental at the moment.
+  /// {@endtemplate}
   @experimental
   final Set<String> include;
 
@@ -87,8 +89,14 @@ class UseDao {
   final List<Type> tables;
 
   /// {@macro moor_compile_queries_param}
-  @experimental
   final Map<String, String> queries;
 
-  const UseDao({@required this.tables, @experimental this.queries = const {}});
+  /// {@macro moor_include_param}
+  @experimental
+  final Set<String> include;
+
+  const UseDao(
+      {@required this.tables,
+      this.queries = const {},
+      @experimental this.include = const {}});
 }

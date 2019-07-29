@@ -79,13 +79,13 @@ class CreateTable {
     final tableName = table.name;
     final dartTableName = ReCase(tableName).pascalCase;
 
-    // todo respect WITHOUT ROWID clause and table constraints
+    // todo include WITHOUT ROWID clause and table constraints
     return SpecifiedTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
       dartTypeName: dataClassNameForClassName(dartTableName),
-      overriddenName: dartTableName,
+      overriddenName: ReCase(tableName).pascalCase,
       primaryKey: primaryKey,
     );
   }
