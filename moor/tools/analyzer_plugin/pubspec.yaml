@@ -3,8 +3,10 @@ version: 1.0.0
 description: This pubspec is a part of moor and determines the version of the moor analyzer to load
 
 dependencies:
-  moor_generator: ^1.6.0
-
-dependency_overrides:
   moor_generator:
-    path: ../../../moor_generator
+
+#dependency_overrides:
+#  moor_generator:
+#    path: /home/simon/IdeaProjects/moor/moor_generator
+#  sqlparser:
+#    path: /home/simon/IdeaProjects/moor/sqlparser

@@ -44,14 +44,13 @@ class SqlEngine {
     final parser = Parser(tokens);
 
     final stmt = parser.statement();
-    return ParseResult._(stmt, parser.errors, sql);
+    return ParseResult._(stmt, tokens, parser.errors, sql);
   }
 
   /// Parses multiple sql statements, separated by a semicolon. All
   /// [ParseResult] entries will have the same [ParseResult.errors], but the
   /// [ParseResult.sql] will only refer to the substring creating a statement.
-  List<ParseResult> parseMultiple(String sql) {
-    final tokens = tokenize(sql);
+  List<ParseResult> parseMultiple(List<Token> tokens, String sql) {
     final parser = Parser(tokens);
 
     final stmts = parser.statements();
@@ -61,7 +60,7 @@ class SqlEngine {
       final last = statement.lastPosition;
 
       final source = sql.substring(first, last);
-      return ParseResult._(statement, parser.errors, source);
+      return ParseResult._(statement, tokens, parser.errors, source);
     }).toList();
   }
 
@@ -113,6 +112,9 @@ class ParseResult {
   /// The topmost node in the sql AST that was parsed.
   final AstNode rootNode;
 
+  /// The tokens that were scanned in the source file
+  final List<Token> tokens;
+
   /// A list of all errors that occurred during parsing. [ParsingError.toString]
   /// returns a helpful description of what went wrong, along with the position
   /// where the error occurred.
@@ -121,5 +123,5 @@ class ParseResult {
   /// The sql source that created the AST at [rootNode].
   final String sql;
 
-  ParseResult._(this.rootNode, this.errors, this.sql);
+  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql);
 }

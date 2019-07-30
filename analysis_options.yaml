@@ -28,7 +28,6 @@ linter:
     - await_only_futures
     - camel_case_types
     - cancel_subscriptions
-    - cascade_invocations
     - comment_references
     - constant_identifier_names
     - curly_braces_in_flow_control_structures

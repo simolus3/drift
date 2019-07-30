@@ -11,7 +11,9 @@ class MoorAnalyzer {
   MoorAnalyzer(this.content);
 
   Future<MoorParsingResult> analyze() {
-    final results = SqlEngine().parseMultiple(content);
+    final engine = SqlEngine();
+    final tokens = engine.tokenize(content);
+    final results = SqlEngine().parseMultiple(tokens, content);
 
     final createdTables = <CreateTable>[];
     final errors = <MoorParsingError>[];
