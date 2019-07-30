@@ -19,6 +19,10 @@ abstract class Table {
   @visibleForOverriding
   String get tableName => null;
 
+  /// Whether to append a `WITHOUT ROWID` clause in the `CREATE TABLE`
+  /// statement.
+  bool get withoutRowId => false;
+
   /// Override this to specify custom primary keys:
   /// ```dart
   /// class IngredientInRecipes extends Table {

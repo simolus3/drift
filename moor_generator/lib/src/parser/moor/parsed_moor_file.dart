@@ -79,7 +79,8 @@ class CreateTable {
     final tableName = table.name;
     final dartTableName = ReCase(tableName).pascalCase;
 
-    // todo include WITHOUT ROWID clause and table constraints
+    final constraints = table.tableConstraints.map((c) => c.span.text).toList();
+
     return SpecifiedTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
@@ -87,6 +88,8 @@ class CreateTable {
       dartTypeName: dataClassNameForClassName(dartTableName),
       overriddenName: ReCase(tableName).pascalCase,
       primaryKey: primaryKey,
+      overrideWithoutRowId: table.withoutRowId ? true : null,
+      overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
     );
   }
 

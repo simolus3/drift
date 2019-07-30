@@ -13,7 +13,8 @@ class UseDaoParser {
   Future<SpecifiedDao> parseDao(
       ClassElement element, ConstantReader annotation) async {
     final tableTypes =
-        annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
+        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
+            [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
 
     final includes = annotation

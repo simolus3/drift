@@ -6,8 +6,6 @@ import 'package:moor/src/runtime/expressions/expression.dart';
 /// The [CustomExpression.content] will be written into the query without any
 /// modification.
 ///
-/// When this statement appears in a query
-///
 /// See also:
 ///  - [currentDate] and [currentDateAndTime], which use a [CustomExpression]
 ///  internally.

@@ -15,7 +15,8 @@ class UseMoorParser {
       ClassElement element, ConstantReader annotation) async {
     // the types declared in UseMoor.tables
     final tableTypes =
-        annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
+        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
+            [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
     final includes = annotation
             .read('include')
