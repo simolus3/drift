@@ -201,7 +201,9 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   GeneratedTextColumn get a => _a ??= _constructA();
   GeneratedTextColumn _constructA() {
     return GeneratedTextColumn('a', $tableName, true,
-        $customConstraints: 'DEFAULT \'something\'');
+        $customConstraints: 'DEFAULT \'something\'',
+        defaultValue:
+            const CustomExpression<String, StringType>('\'something\''));
   }
 
   final VerificationMeta _bMeta = const VerificationMeta('b');

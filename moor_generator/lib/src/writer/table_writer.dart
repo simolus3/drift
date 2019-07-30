@@ -149,7 +149,7 @@ class TableWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument.toSource();
+      additionalParams['defaultValue'] = column.defaultArgument;
     }
 
     expressionBuffer
