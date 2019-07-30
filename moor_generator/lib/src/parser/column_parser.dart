@@ -199,7 +199,7 @@ class ColumnParser extends ParserBase {
         customConstraints: foundCustomConstraint,
         nullable: nullable,
         features: foundFeatures,
-        defaultArgument: foundDefaultExpression,
+        defaultArgument: foundDefaultExpression?.toSource(),
         typeConverter: converter);
   }
 

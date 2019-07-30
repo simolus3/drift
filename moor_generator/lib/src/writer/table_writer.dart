@@ -63,6 +63,7 @@ class TableWriter {
     _writeAliasGenerator(buffer);
 
     _writeConvertersAsStaticFields(buffer);
+    _overrideFieldsIfNeeded(buffer);
 
     // close class
     buffer.write('}');
@@ -148,7 +149,7 @@ class TableWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument.toSource();
+      additionalParams['defaultValue'] = column.defaultArgument;
     }
 
     expressionBuffer
@@ -258,5 +259,21 @@ class TableWriter {
       ..write('$typeName createAlias(String alias) {\n')
       ..write('return $typeName(_db, alias);')
       ..write('}');
+  }
+
+  void _overrideFieldsIfNeeded(StringBuffer buffer) {
+    if (table.overrideWithoutRowId != null) {
+      final value = table.overrideWithoutRowId ? 'true' : 'false';
+      buffer..write('@override\n')..write('final bool withoutRowId = $value;');
+    }
+
+    if (table.overrideTableConstraints != null) {
+      final value =
+          table.overrideTableConstraints.map(asDartLiteral).join(', ');
+
+      buffer
+        ..write('@override\n')
+        ..write('final List<String> customConstraints = const [$value];');
+    }
   }
 }

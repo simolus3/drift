@@ -2,6 +2,7 @@ import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/parser/sql/type_mapping.dart';
 import 'package:moor_generator/src/utils/names.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -45,6 +46,8 @@ class CreateTable {
       final sqlName = column.name;
       final dartName = ReCase(sqlName).camelCase;
       final constraintWriter = StringBuffer();
+      final moorType = mapper.resolvedToMoor(column.type);
+      String defaultValue;
 
       for (var constraint in column.constraints) {
         if (constraint is PrimaryKeyColumn) {
@@ -52,6 +55,13 @@ class CreateTable {
           if (constraint.autoIncrement) {
             features.add(AutoIncrement());
           }
+        }
+        if (constraint is Default) {
+          final dartType = dartTypeNames[moorType];
+          final sqlType = sqlTypes[moorType];
+          final expressionName = 'const CustomExpression<$dartType, $sqlType>';
+          final sqlDefault = constraint.expression.span.text;
+          defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
         }
 
         if (constraintWriter.isNotEmpty) {
@@ -61,13 +71,14 @@ class CreateTable {
       }
 
       final parsed = SpecifiedColumn(
-        type: mapper.resolvedToMoor(column.type),
+        type: moorType,
         nullable: column.type.nullable,
         dartGetterName: dartName,
         name: ColumnName.implicitly(sqlName),
         declaredAsPrimaryKey: isPrimaryKey,
         features: features,
         customConstraints: constraintWriter.toString(),
+        defaultArgument: defaultValue,
       );
 
       foundColumns[column.name] = parsed;
@@ -79,7 +90,8 @@ class CreateTable {
     final tableName = table.name;
     final dartTableName = ReCase(tableName).pascalCase;
 
-    // todo include WITHOUT ROWID clause and table constraints
+    final constraints = table.tableConstraints.map((c) => c.span.text).toList();
+
     return SpecifiedTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
@@ -87,6 +99,8 @@ class CreateTable {
       dartTypeName: dataClassNameForClassName(dartTableName),
       overriddenName: ReCase(tableName).pascalCase,
       primaryKey: primaryKey,
+      overrideWithoutRowId: table.withoutRowId ? true : null,
+      overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
     );
   }
 

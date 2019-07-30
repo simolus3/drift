@@ -109,13 +109,21 @@ class Migrator {
       context.buffer.write(')');
     }
 
-    final constraints = table.asDslTable.customConstraints ?? [];
+    final dslTable = table.asDslTable;
+    final constraints = dslTable.customConstraints ?? [];
 
     for (var i = 0; i < constraints.length; i++) {
       context.buffer..write(', ')..write(constraints[i]);
     }
 
-    context.buffer.write(');');
+    context.buffer.write(')');
+
+    // == true because of nullability
+    if (dslTable.withoutRowId == true) {
+      context.buffer.write(' WITHOUT ROWID');
+    }
+
+    context.buffer.write(';');
 
     return issueCustomQuery(context.sql, context.boundVariables);
   }

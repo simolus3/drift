@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:built_value/built_value.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 
@@ -61,6 +60,15 @@ const Map<ColumnType, String> createVariable = {
   ColumnType.real: 'Variable.withReal',
 };
 
+const Map<ColumnType, String> sqlTypes = {
+  ColumnType.boolean: 'BoolType',
+  ColumnType.text: 'StringType',
+  ColumnType.integer: 'IntType',
+  ColumnType.datetime: 'DateTimeType',
+  ColumnType.blob: 'BlobType',
+  ColumnType.real: 'RealType',
+};
+
 /// A column, as specified by a getter in a table.
 class SpecifiedColumn {
   /// The getter name of this column in the table class. It will also be used
@@ -95,10 +103,9 @@ class SpecifiedColumn {
   /// default ones.
   final String customConstraints;
 
-  /// If a default expression has been provided as the argument of
-  /// ColumnBuilder.withDefault, contains the Dart code that references that
-  /// expression.
-  final Expression defaultArgument;
+  /// Dart code that generates the default expression for this column, or null
+  /// if there is no default expression.
+  final String defaultArgument;
 
   /// The [UsedTypeConverter], if one has been set on this column.
   final UsedTypeConverter typeConverter;
@@ -142,14 +149,7 @@ class SpecifiedColumn {
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
-  String get sqlTypeName => const {
-        ColumnType.boolean: 'BoolType',
-        ColumnType.text: 'StringType',
-        ColumnType.integer: 'IntType',
-        ColumnType.datetime: 'DateTimeType',
-        ColumnType.blob: 'BlobType',
-        ColumnType.real: 'RealType',
-      }[type];
+  String get sqlTypeName => sqlTypes[type];
 
   const SpecifiedColumn({
     this.type,

@@ -1,12 +1,5 @@
 part of 'parser.dart';
 
-const _tokensInTypename = [
-  TokenType.identifier,
-  TokenType.leftParen,
-  TokenType.rightParen,
-  TokenType.numberLiteral,
-];
-
 mixin SchemaParser on ParserBase {
   CreateTableStatement _createTable() {
     if (!_matchOne(TokenType.create)) return null;
@@ -70,14 +63,7 @@ mixin SchemaParser on ParserBase {
     final name = _consume(TokenType.identifier, 'Expected a column name')
         as IdentifierToken;
 
-    final typeNameBuilder = StringBuffer();
-    while (_match(_tokensInTypename)) {
-      typeNameBuilder.write(_previous.lexeme);
-    }
-
-    final typeName =
-        typeNameBuilder.isEmpty ? null : typeNameBuilder.toString();
-
+    final typeName = _typeName();
     final constraints = <ColumnConstraint>[];
     ColumnConstraint constraint;
     while ((constraint = _columnConstraint(orNull: true)) != null) {
@@ -89,6 +75,33 @@ mixin SchemaParser on ParserBase {
       typeName: typeName,
       constraints: constraints,
     )..setSpan(name, _previous);
+  }
+
+  String _typeName() {
+    // sqlite doesn't really define what a type name is and has very loose rules
+    // at turning them into a type affinity. We support this pattern:
+    // typename = identifier [ "(" { identifier | comma | number_literal } ")" ]
+    if (!_matchOne(TokenType.identifier)) return null;
+
+    final typeNameBuilder = StringBuffer(_previous.lexeme);
+
+    if (_matchOne(TokenType.leftParen)) {
+      typeNameBuilder.write('(');
+
+      const inBrackets = [
+        TokenType.identifier,
+        TokenType.comma,
+        TokenType.numberLiteral
+      ];
+      while (_match(inBrackets)) {
+        typeNameBuilder..write(' ')..write(_previous.lexeme);
+      }
+
+      _consume(TokenType.rightParen,
+          'Expected closing paranthesis to finish type name');
+    }
+
+    return typeNameBuilder.toString();
   }
 
   ColumnConstraint _columnConstraint({bool orNull = false}) {
@@ -127,7 +140,7 @@ mixin SchemaParser on ParserBase {
       // when not a literal, expect an expression in parentheses
       expr ??= _expressionInParentheses();
 
-      return Default(resolvedName, expr);
+      return Default(resolvedName, expr)..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.collate)) {
       final collation = _consumeIdentifier('Expected the collation name');

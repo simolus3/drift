@@ -48,13 +48,23 @@ class SpecifiedTable {
   /// not been defined that way.
   final Set<SpecifiedColumn> primaryKey;
 
+  /// When non-null, the generated table class will override the `withoutRowId`
+  /// getter on the table class with this value.
+  final bool overrideWithoutRowId;
+
+  /// When non-null, the generated table class will override the
+  /// `customConstraints` getter in the table class with this value.
+  final List<String> overrideTableConstraints;
+
   const SpecifiedTable(
       {this.fromClass,
       this.columns,
       this.sqlName,
       this.dartTypeName,
       this.primaryKey,
-      String overriddenName})
+      String overriddenName,
+      this.overrideWithoutRowId,
+      this.overrideTableConstraints})
       : _overriddenName = overriddenName;
 
   /// Finds all type converters used in this tables.
