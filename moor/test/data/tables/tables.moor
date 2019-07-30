@@ -8,7 +8,7 @@ CREATE TABLE with_defaults (
 )
 
 CREATE TABLE with_constraints (
-    a TEXT NOT NULL,
+    a TEXT,
     b INT NOT NULL,
     c FLOAT(10, 2),
 

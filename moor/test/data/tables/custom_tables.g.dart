@@ -269,7 +269,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   final String a;
   final int b;
   final double c;
-  WithConstraint({@required this.a, @required this.b, this.c});
+  WithConstraint({this.a, @required this.b, this.c});
   factory WithConstraint.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -354,8 +354,7 @@ class WithConstraints extends Table
   GeneratedTextColumn _a;
   GeneratedTextColumn get a => _a ??= _constructA();
   GeneratedTextColumn _constructA() {
-    return GeneratedTextColumn('a', $tableName, false,
-        $customConstraints: 'NOT NULL');
+    return GeneratedTextColumn('a', $tableName, true, $customConstraints: '');
   }
 
   final VerificationMeta _bMeta = const VerificationMeta('b');
