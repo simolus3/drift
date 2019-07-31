@@ -1,6 +1,8 @@
+import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../parser/utils.dart';
 import 'data.dart';
 
 void main() {
@@ -33,5 +35,36 @@ void main() {
     expect((firstColumn.expression as Reference).resolved, id);
     expect((secondColumn.expression as Reference).resolved, content);
     expect(from.resolved, demoTable);
+  });
+
+  test('resolves the column for order by clauses', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine
+        .analyze('SELECT d.content, 3 * d.id AS t FROM demo AS d ORDER BY t');
+
+    expect(context.errors, isEmpty);
+
+    final select = context.root as SelectStatement;
+    final orderingTerm = select.orderBy.terms.single.expression as Reference;
+    final resolved = orderingTerm.resolved as ExpressionColumn;
+
+    enforceEqual(
+      resolved.expression,
+      BinaryExpression(
+        NumericLiteral(3, token(TokenType.numberLiteral)),
+        token(TokenType.star),
+        Reference(tableName: 'd', columnName: 'id'),
+      ),
+    );
+  });
+
+  test('resolves sub-queries', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine.analyze(
+        'SELECT d.*, (SELECT id FROM demo WHERE id = d.id) FROM demo d;');
+
+    expect(context.errors, isEmpty);
   });
 }

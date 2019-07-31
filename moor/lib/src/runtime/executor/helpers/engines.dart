@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -63,10 +64,11 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement) {
+  Future<void> runCustom(String statement, [List<dynamic> args]) {
     return _synchronized(() {
-      _log(statement, const []);
-      return impl.runCustom(statement, const []);
+      final resolvedArgs = args ?? const [];
+      _log(statement, resolvedArgs);
+      return impl.runCustom(statement, resolvedArgs);
     });
   }
 
@@ -101,6 +103,7 @@ class _TransactionExecutor extends TransactionExecutor
   String _sendOnRollback;
 
   Future get completed => _sendCalled.future;
+  bool _sendFakeErrorOnRollback = false;
 
   _TransactionExecutor(this._db);
 
@@ -123,13 +126,15 @@ class _TransactionExecutor extends TransactionExecutor
     if (transactionManager is NoTransactionDelegate) {
       assert(
           _db.isSequential,
-          'When using the default NoTransactionDelegate, the database must be'
+          'When using the default NoTransactionDelegate, the database must be '
           'sequential.');
       // run all the commands on the main database, which we block while the
       // transaction is running.
       unawaited(_db._synchronized(() async {
         impl = _db.delegate;
-        await impl.runCustom(transactionManager.start, const []);
+        await runCustom(transactionManager.start, const []);
+        _db.delegate.isInTransaction = true;
+
         _sendOnCommit = transactionManager.commit;
         _sendOnRollback = transactionManager.rollback;
 
@@ -141,6 +146,9 @@ class _TransactionExecutor extends TransactionExecutor
     } else if (transactionManager is SupportedTransactionDelegate) {
       transactionManager.startTransaction((transaction) async {
         impl = transaction;
+        // specs say that the db implementation will perform a rollback when
+        // this future completes with an error.
+        _sendFakeErrorOnRollback = true;
         transactionStarted.complete();
 
         // this callback must be running as long as the transaction, so we do
@@ -159,7 +167,7 @@ class _TransactionExecutor extends TransactionExecutor
   @override
   Future<void> send() async {
     if (_sendOnCommit != null) {
-      await impl.runCustom(_sendOnCommit, const []);
+      await runCustom(_sendOnCommit, const []);
     }
 
     _sendCalled.complete();
@@ -168,11 +176,16 @@ class _TransactionExecutor extends TransactionExecutor
   @override
   Future<void> rollback() async {
     if (_sendOnRollback != null) {
-      await impl.runCustom(_sendOnRollback, const []);
+      await runCustom(_sendOnRollback, const []);
+      _db.delegate.isInTransaction = false;
     }
 
-    _sendCalled.completeError(
-        Exception('artificial exception to rollback the transaction'));
+    if (_sendFakeErrorOnRollback) {
+      _sendCalled.completeError(
+          Exception('artificial exception to rollback the transaction'));
+    } else {
+      _sendCalled.complete();
+    }
   }
 }
 
@@ -203,6 +216,8 @@ class _BeforeOpeningExecutor extends QueryExecutor
   }
 }
 
+/// A database engine (implements [QueryExecutor]) that delegated the relevant
+/// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   final DatabaseDelegate delegate;
   Completer<bool> _openingCompleter;
@@ -214,6 +229,9 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   QueryDelegate get impl => delegate;
+
+  @override
+  SqlDialect get dialect => delegate.dialect;
 
   DelegatedDatabase(this.delegate,
       {this.logStatements, this.isSequential = false}) {

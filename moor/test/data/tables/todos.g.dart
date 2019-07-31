@@ -855,13 +855,12 @@ class TableWithoutPKData extends DataClass
     final intType = db.typeSystem.forDartType<int>();
     final doubleType = db.typeSystem.forDartType<double>();
     final stringType = db.typeSystem.forDartType<String>();
-    final customConverter = const CustomConverter();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
       someFloat: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
-      custom: customConverter.mapToDart(
+      custom: $TableWithoutPKTable.$converter0.mapToDart(
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
     );
   }
@@ -1029,7 +1028,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       map['some_float'] = Variable<double, RealType>(d.someFloat.value);
     }
     if (d.custom.present) {
-      final converter = const CustomConverter();
+      final converter = $TableWithoutPKTable.$converter0;
       map['custom'] =
           Variable<String, StringType>(converter.mapToSql(d.custom.value));
     }
@@ -1040,6 +1039,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable createAlias(String alias) {
     return $TableWithoutPKTable(_db, alias);
   }
+
+  static CustomConverter $converter0 = const CustomConverter();
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
@@ -1205,6 +1206,13 @@ class AllTodosWithCategoryResult {
   });
 }
 
+class FindCustomResult {
+  final MyCustomObject custom;
+  FindCustomResult({
+    this.custom,
+  });
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1327,6 +1335,29 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           todosTable
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
+  FindCustomResult _rowToFindCustomResult(QueryRow row) {
+    return FindCustomResult(
+      custom:
+          $TableWithoutPKTable.$converter0.mapToDart(row.readString('custom')),
+    );
+  }
+
+  Future<List<FindCustomResult>> findCustom(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+        variables: []).then((rows) => rows.map(_rowToFindCustomResult).toList());
+  }
+
+  Stream<List<FindCustomResult>> watchFindCustom() {
+    return customSelectStream(
+            'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+            variables: [],
+            readsFrom: {tableWithoutPK})
+        .map((rows) => rows.map(_rowToFindCustomResult).toList());
   }
 
   @override

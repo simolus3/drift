@@ -5,6 +5,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'schema/column.dart';
+part 'schema/from_create_table.dart';
 part 'schema/references.dart';
 part 'schema/table.dart';
 

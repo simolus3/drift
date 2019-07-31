@@ -47,7 +47,7 @@ class MockStreamQueries extends Mock implements StreamQueryStore {}
 
 // used so that we can mock the SqlExecutor typedef
 abstract class SqlExecutorAsClass {
-  Future<void> call(String sql);
+  Future<void> call(String sql, [List<dynamic> args]);
 }
 
 class MockQueryExecutor extends Mock implements SqlExecutorAsClass {}

@@ -1,5 +1,6 @@
 import 'dart:typed_data' show Uint8List;
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/executor/helpers/results.dart';
 
 /// An interface that supports sending database queries. Used as a backend for
@@ -12,6 +13,12 @@ import 'package:moor/src/runtime/executor/helpers/results.dart';
 /// - [String]
 /// - [Uint8List]
 abstract class DatabaseDelegate implements QueryDelegate {
+  /// Whether the database managed by this delegate is in a transaction at the
+  /// moment. This field is only set when the [transactionDelegate] is a
+  /// [NoTransactionDelegate], because in that case transactions are run on
+  /// this delegate.
+  bool isInTransaction = false;
+
   /// Returns an appropriate class to resolve the current schema version in
   /// this database.
   ///
@@ -48,6 +55,9 @@ abstract class DatabaseDelegate implements QueryDelegate {
   Future<void> close() async {
     // default no-op implementation
   }
+
+  /// The [SqlDialect] understood by this database engine.
+  SqlDialect get dialect => SqlDialect.sqlite;
 }
 
 /// An interface which can execute sql statements.

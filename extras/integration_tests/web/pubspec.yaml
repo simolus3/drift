@@ -1,0 +1,13 @@
+name: web
+description: Run integration tests for Moor on the web
+environment:
+  sdk: '>=2.4.0 <3.0.0'
+
+dependencies:
+  tests:
+    path: ../tests
+
+dev_dependencies:
+  test: ^1.5.0
+  build_runner:
+  build_web_compilers:

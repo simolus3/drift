@@ -9,7 +9,10 @@ Future main() async {
     packagesPath: 'moor/.packages',
   );
 
-  final coverage = await parseCoverage([File('moor/coverage.json')], 1);
+  final coverage = await parseCoverage([
+    File('moor/coverage.json'),
+    File('sqlparser/coverage.json'),
+  ], 1);
 
   // report coverage for the moor and moor_generator package
   final lcov = await LcovFormatter(
@@ -17,9 +20,10 @@ Future main() async {
     reportOn: [
       'moor/lib/',
       'moor_generator/lib',
+      'sqlparser/lib',
     ],
     basePath: '.',
   ).format(coverage);
 
-  File('moor/lcov.info').writeAsStringSync(lcov);
+  File('lcov.info').writeAsStringSync(lcov);
 }

@@ -5,7 +5,6 @@ import 'package:moor_example/database/database.dart';
 import 'package:moor_example/main.dart';
 import 'package:moor_example/widgets/categories_drawer.dart';
 import 'package:moor_example/widgets/todo_card.dart';
-import 'package:moor_flutter/moor_flutter.dart';
 
 // ignore_for_file: prefer_const_constructors
 
@@ -32,39 +31,23 @@ class HomeScreenState extends State<HomeScreen> {
       drawer: CategoriesDrawer(),
       // A moorAnimatedList automatically animates incoming and leaving items, we only
       // have to tell it what data to display and how to turn data into widgets.
-      body: MoorAnimatedList<EntryWithCategory>(
-        // we want to show an updating stream of all relevant entries
+      body: StreamBuilder<List<EntryWithCategory>>(
         stream: bloc.homeScreenEntries,
-        // consider items equal if their id matches. Otherwise, we'd get an
-        // animation of an old item leaving and another one coming in every time
-        // the content of an item changed!
-        equals: (a, b) => a.entry.id == b.entry.id,
-        itemBuilder: (ctx, item, animation) {
-          // When a new item arrives, it will expand vertically
-          return SizeTransition(
-            key: ObjectKey(item.entry.id),
-            sizeFactor: animation,
-            axis: Axis.vertical,
-            child: TodoCard(item.entry),
-          );
-        },
-        removedItemBuilder: (ctx, item, animation) {
-          // and it will leave the same way after being deleted.
-          return SizeTransition(
-            key: ObjectKey(item.entry.id),
-            sizeFactor: animation,
-            axis: Axis.vertical,
-            child: AnimatedBuilder(
-              animation:
-                  CurvedAnimation(parent: animation, curve: Curves.easeOut),
-              child: TodoCard(item.entry),
-              builder: (context, child) {
-                return Opacity(
-                  opacity: animation.value,
-                  child: child,
-                );
-              },
-            ),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Align(
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final activeTodos = snapshot.data;
+
+          return ListView.builder(
+            itemCount: activeTodos.length,
+            itemBuilder: (context, index) {
+              return TodoCard(activeTodos[index].entry);
+            },
           );
         },
       ),

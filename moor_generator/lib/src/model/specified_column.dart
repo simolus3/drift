@@ -1,6 +1,5 @@
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:built_value/built_value.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';
 
@@ -61,6 +60,15 @@ const Map<ColumnType, String> createVariable = {
   ColumnType.real: 'Variable.withReal',
 };
 
+const Map<ColumnType, String> sqlTypes = {
+  ColumnType.boolean: 'BoolType',
+  ColumnType.text: 'StringType',
+  ColumnType.integer: 'IntType',
+  ColumnType.datetime: 'DateTimeType',
+  ColumnType.blob: 'BlobType',
+  ColumnType.real: 'RealType',
+};
+
 /// A column, as specified by a getter in a table.
 class SpecifiedColumn {
   /// The getter name of this column in the table class. It will also be used
@@ -95,29 +103,18 @@ class SpecifiedColumn {
   /// default ones.
   final String customConstraints;
 
-  /// If a default expression has been provided as the argument of
-  /// ColumnBuilder.withDefault, contains the Dart code that references that
-  /// expression.
-  final Expression defaultArgument;
+  /// Dart code that generates the default expression for this column, or null
+  /// if there is no default expression.
+  final String defaultArgument;
 
-  /// If a type converter has been specified as the argument of
-  /// ColumnBuilder.map, this contains the Dart code that references that type
-  /// converter.
-  final Expression typeConverter;
-
-  /// If the type of this column has been overridden, contains the actual Dart
-  /// type. Otherwise null.
-  ///
-  /// Column types can be overridden with type converters. For instance, if
-  /// `C` was a type converter that converts `D` to `num`s, the column generated
-  /// by `real().map(const C())()` would have type `D` instead of `num`.
-  final DartType overriddenDartType;
+  /// The [UsedTypeConverter], if one has been set on this column.
+  final UsedTypeConverter typeConverter;
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName {
-    if (overriddenDartType != null) {
-      return overriddenDartType.name;
+    if (typeConverter != null) {
+      return typeConverter.mappedType?.name;
     }
     return variableTypeName;
   }
@@ -152,14 +149,7 @@ class SpecifiedColumn {
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
-  String get sqlTypeName => const {
-        ColumnType.boolean: 'BoolType',
-        ColumnType.text: 'StringType',
-        ColumnType.integer: 'IntType',
-        ColumnType.datetime: 'DateTimeType',
-        ColumnType.blob: 'BlobType',
-        ColumnType.real: 'RealType',
-      }[type];
+  String get sqlTypeName => sqlTypes[type];
 
   const SpecifiedColumn({
     this.type,
@@ -172,7 +162,6 @@ class SpecifiedColumn {
     this.features = const [],
     this.defaultArgument,
     this.typeConverter,
-    this.overriddenDartType,
   });
 }
 

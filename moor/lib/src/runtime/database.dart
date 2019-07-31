@@ -244,6 +244,7 @@ mixin QueryEngine on DatabaseConnectionUser {
           success = true;
         } catch (e) {
           await transactionExecutor.rollback();
+
           // pass the exception on to the one who called transaction()
           rethrow;
         } finally {
@@ -332,9 +333,8 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     }
   }
 
-  /// Closes this database instance and released the resources associated with
-  /// it.
-  void close() {
-    executor.close();
+  /// Closes this database and releases associated resources.
+  Future<void> close() async {
+    await executor.close();
   }
 }

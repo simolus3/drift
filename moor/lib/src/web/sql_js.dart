@@ -101,6 +101,10 @@ class SqlJsDatabase {
   Uint8List export() {
     return _obj.callMethod('export') as Uint8List;
   }
+
+  void close() {
+    _obj.callMethod('close');
+  }
 }
 
 class PreparedStatement {

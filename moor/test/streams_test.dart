@@ -58,7 +58,9 @@ void main() {
     expect(second, emits(isEmpty));
 
     await pumpEventQueue(times: 1);
-    verifyZeroInteractions(executor);
+    // calling executor.dialect is ok, it's needed to construct the statement
+    verify(executor.dialect);
+    verifyNoMoreInteractions(executor);
   });
 
   test('every stream instance can be listened to', () async {

@@ -15,9 +15,8 @@ class Users extends Table {
 
   BlobColumn get profilePicture => blob().nullable()();
 
-  // todo enable custom column example. The feature isn't stable yet.
-  //TextColumn get preferences =>
-  //    text().map(const PreferenceConverter()).nullable()();
+  TextColumn get preferences =>
+      text().map(const PreferenceConverter()).nullable()();
 }
 
 class Friendships extends Table {
@@ -59,7 +58,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
       return null;
     }
 
-    return json.encode(json.encode(value.toJson()));
+    return json.encode(value.toJson());
   }
 }
 
@@ -71,6 +70,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'amountOfGoodFriends':
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
     'userCount': 'SELECT COUNT(id) FROM users',
+    'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
   },
 )
 class Database extends _$Database {
@@ -121,6 +121,14 @@ class Database extends _$Database {
     return (select(users)..where((u) => u.id.equals(id))).watchSingle();
   }
 
+  Future<User> getUserById(int id) {
+    return (select(users)..where((u) => u.id.equals(id))).getSingle();
+  }
+
+  Future<int> writeUser(Insertable<User> user) {
+    return into(users).insert(user);
+  }
+
   Future<void> makeFriends(User a, User b, {bool goodFriends}) async {
     var friendsValue = const Value<bool>.absent();
     if (goodFriends != null) {
@@ -134,5 +142,10 @@ class Database extends _$Database {
     );
 
     await into(friendships).insert(companion, orReplace: true);
+  }
+
+  Future<void> updateSettings(int userId, Preferences c) async {
+    await (update(users)..where((u) => u.id.equals(userId)))
+        .write(UsersCompanion(preferences: Value(c)));
   }
 }

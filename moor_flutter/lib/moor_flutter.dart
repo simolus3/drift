@@ -22,7 +22,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   final bool inDbFolder;
   final String path;
 
-  _SqfliteDelegate(this.inDbFolder, this.path);
+  bool singleInstance;
+
+  _SqfliteDelegate(this.inDbFolder, this.path, {this.singleInstance}) {
+    singleInstance ??= true;
+  }
 
   @override
   DbVersionDelegate get versionDelegate {
@@ -57,7 +61,13 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       onUpgrade: (db, from, to) {
         _loadedSchemaVersion = from;
       },
+      singleInstance: singleInstance,
     );
+  }
+
+  @override
+  Future<void> close() {
+    return db.close();
   }
 }
 
@@ -71,6 +81,10 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
     delegate.db.transaction((transaction) async {
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
+    }).catchError((_) {
+      // Ignore the errr! We send a fake exception to indicate a rollback.
+      // sqflite will rollback, but the exception will bubble up. Here we stop
+      // the exception.
     });
   }
 }
@@ -122,10 +136,22 @@ mixin _SqfliteExecutor on QueryDelegate {
 
 /// A query executor that uses sqflite internally.
 class FlutterQueryExecutor extends DelegatedDatabase {
-  FlutterQueryExecutor({@required String path, bool logStatements})
-      : super(_SqfliteDelegate(false, path), logStatements: logStatements);
+  /// A query executor that will store the database in the file declared by
+  /// [path]. If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
+  FlutterQueryExecutor(
+      {@required String path, bool logStatements, bool singleInstance})
+      : super(_SqfliteDelegate(false, path, singleInstance: singleInstance),
+            logStatements: logStatements);
 
+  /// A query executor that will store the database in the file declared by
+  /// [path], which will be resolved relative to [s.getDatabasesPath()].
+  /// If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
   FlutterQueryExecutor.inDatabaseFolder(
-      {@required String path, bool logStatements})
-      : super(_SqfliteDelegate(true, path), logStatements: logStatements);
+      {@required String path, bool logStatements, bool singleInstance})
+      : super(_SqfliteDelegate(true, path, singleInstance: singleInstance),
+            logStatements: logStatements);
 }

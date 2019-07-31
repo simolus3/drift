@@ -1,5 +1,6 @@
 #!/bin/bash
 # Created with package:mono_repo v1.2.1
+# We don't use travis, but this let's us run mono_repo presubmit locally
 
 if [ -z "$PKG" ]; then
   echo -e '\033[31mPKG environment variable must be set!\033[0m'
@@ -21,8 +22,8 @@ while (( "$#" )); do
   case $TASK in
   command) echo
     echo -e '\033[1mTASK: command\033[22m'
-    echo -e 'dart tool/coverage.dart'
-    dart tool/coverage.dart || EXIT_CODE=$?
+    echo -e 'pub run build_runner build -v --delete-conflicting-outputs'
+    pub run build_runner build -v --delete-conflicting-outputs || EXIT_CODE=$?
     ;;
   dartanalyzer) echo
     echo -e '\033[1mTASK: dartanalyzer\033[22m'
@@ -44,7 +45,6 @@ while (( "$#" )); do
     ;;
   esac
 
-  echo -e 'task exited with' $EXIT_CODE
   shift
 done
 

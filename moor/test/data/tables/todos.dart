@@ -95,6 +95,7 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
     'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
     'search':
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
+    'findCustom': 'SELECT custom FROM table_without_p_k WHERE some_float < 10',
   },
 )
 class TodoDb extends _$TodoDb {

@@ -14,7 +14,7 @@ database tables in pure Dart and enjoy a fluent query API, auto-updating streams
 and more!
 {: .fs-6 .fw-300 }
 
-[![Build Status](https://travis-ci.com/simolus3/moor.svg?token=u4VnFEE5xnWVvkE6QsqL&branch=master)](https://travis-ci.com/simolus3/moor)
+[![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://cirrus-ci.com/github/simolus3/moor)
 [![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
 
 [Get started now]({{ site.common_links.getting_started | absolute_url }}){: .btn .btn-green .fs-5 .mb-4 .mb-md-0 .mr-2 }

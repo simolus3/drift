@@ -1,0 +1,9 @@
+dart:
+  - stable
+
+stages:
+  - analyze:
+      - dartanalyzer: --fatal-infos --fatal-warnings lib/ test/
+      - dartfmt
+  - unit_test:
+      - test

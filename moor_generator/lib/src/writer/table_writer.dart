@@ -24,7 +24,7 @@ class TableWriter {
 
   void writeTableInfoClass(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
-    final tableDslName = table.fromClass.name;
+    final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
     buffer
@@ -62,8 +62,19 @@ class TableWriter {
 
     _writeAliasGenerator(buffer);
 
+    _writeConvertersAsStaticFields(buffer);
+    _overrideFieldsIfNeeded(buffer);
+
     // close class
     buffer.write('}');
+  }
+
+  void _writeConvertersAsStaticFields(StringBuffer buffer) {
+    for (var converter in table.converters) {
+      final typeName = converter.typeOfConverter.displayName;
+      final code = converter.expression.toSource();
+      buffer..write('static $typeName ${converter.fieldName} = $code;');
+    }
   }
 
   void _writeMappingMethod(StringBuffer buffer) {
@@ -93,10 +104,10 @@ class TableWriter {
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
-        // todo instead of creating the converter every time, can we cache its
-        // instance in the generated table class?
+        final converter = column.typeConverter;
+        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
         buffer
-          ..write('final converter = ${column.typeConverter.toSource()};\n')
+          ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
           ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
       } else {
@@ -138,7 +149,7 @@ class TableWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument.toSource();
+      additionalParams['defaultValue'] = column.defaultArgument;
     }
 
     expressionBuffer
@@ -164,7 +175,9 @@ class TableWriter {
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,
       code: expressionBuffer.toString(),
-      hasOverride: true,
+      // don't override on custom tables because we only override the column
+      // when the base class is user defined
+      hasOverride: !table.isFromSql,
     );
   }
 
@@ -246,5 +259,21 @@ class TableWriter {
       ..write('$typeName createAlias(String alias) {\n')
       ..write('return $typeName(_db, alias);')
       ..write('}');
+  }
+
+  void _overrideFieldsIfNeeded(StringBuffer buffer) {
+    if (table.overrideWithoutRowId != null) {
+      final value = table.overrideWithoutRowId ? 'true' : 'false';
+      buffer..write('@override\n')..write('final bool withoutRowId = $value;');
+    }
+
+    if (table.overrideTableConstraints != null) {
+      final value =
+          table.overrideTableConstraints.map(asDartLiteral).join(', ');
+
+      buffer
+        ..write('@override\n')
+        ..write('final List<String> customConstraints = const [$value];');
+    }
   }
 }

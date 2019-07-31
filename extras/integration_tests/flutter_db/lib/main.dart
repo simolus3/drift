@@ -8,7 +8,10 @@ import 'package:path/path.dart';
 class SqfliteExecutor extends TestExecutor {
   @override
   QueryExecutor createExecutor() {
-    return FlutterQueryExecutor.inDatabaseFolder(path: 'app.db');
+    return FlutterQueryExecutor.inDatabaseFolder(
+      path: 'app.db',
+      singleInstance: false,
+    );
   }
 
   @override

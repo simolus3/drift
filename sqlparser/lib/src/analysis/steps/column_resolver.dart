@@ -80,14 +80,20 @@ class ColumnResolver extends RecursiveVisitor<void> {
         }
       } else if (resultColumn is ExpressionResultColumn) {
         final name = _nameOfResultColumn(resultColumn);
-        usedColumns.add(
-          ExpressionColumn(name: name, expression: resultColumn.expression),
-        );
+        final column =
+            ExpressionColumn(name: name, expression: resultColumn.expression);
+
+        usedColumns.add(column);
+
+        // make this column available if there is no other with the same name
+        if (!availableColumns.any((c) => c.name == name)) {
+          availableColumns.add(column);
+        }
       }
     }
 
     s.resolvedColumns = usedColumns;
-    s.scope.availableColumns = availableColumns;
+    scope.availableColumns = availableColumns;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {

@@ -13,10 +13,20 @@ class UseDaoParser {
   Future<SpecifiedDao> parseDao(
       ClassElement element, ConstantReader annotation) async {
     final tableTypes =
-        annotation.peek('tables').listValue.map((obj) => obj.toTypeValue());
+        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
+            [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
 
+    final includes = annotation
+            .read('include')
+            .objectValue
+            .toSetValue()
+            ?.map((e) => e.toStringValue()) ??
+        {};
+
     final parsedTables = await session.parseTables(tableTypes, element);
+    parsedTables.addAll(await session.resolveIncludes(includes));
+
     final parsedQueries =
         await session.parseQueries(queryStrings, parsedTables);
 

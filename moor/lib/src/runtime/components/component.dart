@@ -10,6 +10,11 @@ abstract class Component {
   void writeInto(GenerationContext context);
 }
 
+/// An enumeration of database systems supported by moor. Only
+/// [SqlDialect.sqlite] is officially supported, all others are in an
+/// experimental state at the moment.
+enum SqlDialect { sqlite, mysql }
+
 /// Contains information about a query while it's being constructed.
 class GenerationContext {
   /// Whether the query obtained by this context operates on multiple tables.
@@ -19,6 +24,7 @@ class GenerationContext {
   bool hasMultipleTables = false;
 
   final SqlTypeSystem typeSystem;
+  final SqlDialect dialect;
   final QueryExecutor executor;
 
   final List<dynamic> _boundVariables = [];
@@ -32,9 +38,11 @@ class GenerationContext {
 
   GenerationContext.fromDb(QueryEngine database)
       : typeSystem = database.typeSystem,
-        executor = database.executor;
+        executor = database.executor,
+        dialect = database.executor?.dialect ?? SqlDialect.sqlite;
 
-  GenerationContext(this.typeSystem, this.executor);
+  GenerationContext(this.typeSystem, this.executor,
+      {this.dialect = SqlDialect.sqlite});
 
   /// Introduces a variable that will be sent to the database engine. Whenever
   /// this method is called, a question mark should be added to the [buffer] so

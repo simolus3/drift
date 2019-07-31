@@ -62,7 +62,18 @@ class QueryWriter {
       for (var column in _select.resultSet.columns) {
         final fieldName = _select.resultSet.dartNameFor(column);
         final readMethod = readFromMethods[column.type];
-        buffer.write("$fieldName: row.$readMethod('${column.name}'),");
+
+        var code = "row.$readMethod('${column.name}')";
+
+        if (column.converter != null) {
+          final converter = column.converter;
+          final infoName = converter.table.tableInfoName;
+          final field = '$infoName.${converter.fieldName}';
+
+          code = '$field.mapToDart($code)';
+        }
+
+        buffer.write('$fieldName: $code,');
       }
 
       buffer.write(');\n}\n');

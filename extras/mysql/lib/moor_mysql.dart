@@ -72,6 +72,9 @@ class _MySqlDelegate extends DatabaseDelegate with _MySqlExecutor {
   TransactionDelegate get transactionDelegate => _TransactionOpener(this);
 
   @override
+  SqlDialect get dialect => SqlDialect.mysql;
+
+  @override
   Future<void> open([GeneratedDatabase db]) async {
     _connection = await MySqlConnection.connect(_settings);
   }

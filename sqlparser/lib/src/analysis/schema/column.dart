@@ -16,10 +16,16 @@ class TableColumn extends Column {
   /// The type of this column, which is immediately available.
   final ResolvedType type;
 
+  /// The column constraints set on this column.
+  ///
+  /// See also:
+  /// - https://www.sqlite.org/syntax/column-constraint.html
+  final List<ColumnConstraint> constraints;
+
   /// The table this column belongs to.
   Table table;
 
-  TableColumn(this.name, this.type);
+  TableColumn(this.name, this.type, {this.constraints = const []});
 }
 
 /// A column that is created by an expression. For instance, in the select
