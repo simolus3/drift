@@ -110,7 +110,7 @@ class TrackedFile {
 
   /// Whether this file has been given an elevated priority, for instance
   /// because the user is currently typing in it.
-  bool _prioritized;
+  bool _prioritized = false;
   MoorAnalysisResults _currentResult;
   final List<Completer<MoorAnalysisResults>> _waiting = [];
 
