@@ -121,6 +121,10 @@ class Database extends _$Database {
     return (select(users)..where((u) => u.id.equals(id))).watchSingle();
   }
 
+  Future<User> getUserById(int id) {
+    return (select(users)..where((u) => u.id.equals(id))).getSingle();
+  }
+
   Future<int> writeUser(Insertable<User> user) {
     return into(users).insert(user);
   }

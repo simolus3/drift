@@ -13,6 +13,12 @@ import 'package:moor/src/runtime/executor/helpers/results.dart';
 /// - [String]
 /// - [Uint8List]
 abstract class DatabaseDelegate implements QueryDelegate {
+  /// Whether the database managed by this delegate is in a transaction at the
+  /// moment. This field is only set when the [transactionDelegate] is a
+  /// [NoTransactionDelegate], because in that case transactions are run on
+  /// this delegate.
+  bool isInTransaction = false;
+
   /// Returns an appropriate class to resolve the current schema version in
   /// this database.
   ///

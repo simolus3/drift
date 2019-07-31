@@ -1,5 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
+import 'package:tests/suite/transactions.dart';
 
 import 'custom_objects.dart';
 import 'migrations.dart';
@@ -18,4 +19,5 @@ void runAllTests(TestExecutor executor) {
 
   migrationTests(executor);
   customObjectTests(executor);
+  transactionTests(executor);
 }

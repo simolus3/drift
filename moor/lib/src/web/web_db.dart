@@ -4,7 +4,8 @@ part of 'package:moor/moor_web.dart';
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
   WebDatabase(String name, {bool logStatements = false})
-      : super(_WebDelegate(name), logStatements: logStatements);
+      : super(_WebDelegate(name),
+            logStatements: logStatements, isSequential: true);
 }
 
 class _WebDelegate extends DatabaseDelegate {
@@ -13,7 +14,22 @@ class _WebDelegate extends DatabaseDelegate {
 
   String get _persistenceKey => 'moor_db_str_$name';
 
+  bool _inTransaction = false;
+
   _WebDelegate(this.name);
+
+  @override
+  set isInTransaction(bool value) {
+    _inTransaction = value;
+
+    if (!_inTransaction) {
+      // transaction completed, save the database!
+      _storeDb();
+    }
+  }
+
+  @override
+  bool get isInTransaction => _inTransaction;
 
   @override
   final TransactionDelegate transactionDelegate = const NoTransactionDelegate();
@@ -113,9 +129,11 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   void _storeDb() {
-    final data = _db.export();
-    final binStr = bin2str.encode(data);
-    window.localStorage[_persistenceKey] = binStr;
+    if (!isInTransaction) {
+      final data = _db.export();
+      final binStr = bin2str.encode(data);
+      window.localStorage[_persistenceKey] = binStr;
+    }
   }
 }
 

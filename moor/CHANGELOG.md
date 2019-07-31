@@ -1,10 +1,18 @@
 ## unreleased
 - Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)
 for details on how to use this feature.
+- Transactions now roll back when not completed successfully, they also rethrow the exception
+to make debugging easier.
 - New `backends` api, making it easier to write database drivers that work with moor. Apart from
 `moor_flutter`, new experimental backends can be checked out from git:
   1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/moor/tree/develop/extras/encryption
   2. `moor_mysql`: Work in progress mysql backend for moor. https://github.com/simolus3/moor/tree/develop/extras/mysql
+- The compiled sql feature is no longer experimental and will stay stable until a major version bump
+- New, experimental support for `.moor` files! Instead of declaring your tables in Dart, you can
+  choose to declare them with sql by writing the `CREATE TABLE` statement in a `.moor` file.
+  You can then use these tables in the database and with daos by using the `include` parameter
+  on `@UseMoor` and `@UseDao`. Again, please notice that this is an experimental api and there
+  might be some hiccups. Please report any issues you run into.
 ## 1.6.0
 - Experimental web support! See [the documentation](https://moor.simonbinder.eu/web) for details.
 - Make transactions easier to use: Thanks to some Dart async magic, you no longer need to run
