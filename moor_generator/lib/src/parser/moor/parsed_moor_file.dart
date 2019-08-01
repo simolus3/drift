@@ -75,7 +75,6 @@ class CreateTable {
         nullable: column.type.nullable,
         dartGetterName: dartName,
         name: ColumnName.implicitly(sqlName),
-        declaredAsPrimaryKey: isPrimaryKey,
         features: features,
         customConstraints: constraintWriter.toString(),
         defaultArgument: defaultValue,
@@ -92,6 +91,14 @@ class CreateTable {
 
     final constraints = table.tableConstraints.map((c) => c.span.text).toList();
 
+    for (var keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
+      if (keyConstraint.isPrimaryKey) {
+        primaryKey.addAll(keyConstraint.indexedColumns
+            .map((r) => foundColumns[r.columnName])
+            .where((c) => c != null));
+      }
+    }
+
     return SpecifiedTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
@@ -101,6 +108,8 @@ class CreateTable {
       primaryKey: primaryKey,
       overrideWithoutRowId: table.withoutRowId ? true : null,
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
+      // we take care of writing the primary key ourselves
+      overrideDontWriteConstraints: true,
     );
   }
 

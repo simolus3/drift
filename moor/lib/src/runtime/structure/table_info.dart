@@ -4,7 +4,7 @@ import 'package:moor/src/runtime/expressions/variables.dart';
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [D] is the type of the data class
 /// generated from the table.
-mixin TableInfo<TableDsl extends Table, D extends DataClass> {
+mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
@@ -12,6 +12,15 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> {
   /// The primary key of this table. Can be null or empty if no custom primary
   /// key has been specified.
   Set<GeneratedColumn> get $primaryKey => null;
+
+  // The "primaryKey" is what users define on their table classes, the
+  // "$primaryKey" is what moor generates in the implementation table info
+  // classes. Having two of them is pretty pointless, we're going to remove
+  // the "$primaryKey$ getter in Moor 2.0. Until then, let's make sure they're
+  // consistent for classes from CREATE TABLE statements, where the info class
+  // and the table class is the same thing but primaryKey isn't overriden.
+  @override
+  Set<Column> get primaryKey => $primaryKey;
 
   /// The table name in the sql table. This can be an alias for the actual table
   /// name. See [actualTableName] for a table name that is not aliased.

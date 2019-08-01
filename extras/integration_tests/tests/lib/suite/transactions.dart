@@ -10,7 +10,6 @@ void transactionTests(TestExecutor executor) {
 
     await db.transaction((_) async {
       final florianId = await db.writeUser(People.florian);
-      print(florianId);
 
       final dash = await db.getUserById(People.dashId);
       final florian = await db.getUserById(florianId);

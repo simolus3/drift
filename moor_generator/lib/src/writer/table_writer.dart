@@ -264,7 +264,9 @@ class TableWriter {
   void _overrideFieldsIfNeeded(StringBuffer buffer) {
     if (table.overrideWithoutRowId != null) {
       final value = table.overrideWithoutRowId ? 'true' : 'false';
-      buffer..write('@override\n')..write('final bool withoutRowId = $value;');
+      buffer
+        ..write('@override\n')
+        ..write('final bool withoutRowId = $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {
@@ -273,7 +275,14 @@ class TableWriter {
 
       buffer
         ..write('@override\n')
-        ..write('final List<String> customConstraints = const [$value];');
+        ..write('final List<String> customConstraints = const [$value];\n');
+    }
+
+    if (table.overrideDontWriteConstraints != null) {
+      final value = table.overrideDontWriteConstraints ? 'true' : 'false';
+      buffer
+        ..write('@override\n')
+        ..write('final bool dontWriteConstraints = $value;\n');
     }
   }
 }

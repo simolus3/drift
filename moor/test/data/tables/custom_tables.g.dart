@@ -122,6 +122,8 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
 
   @override
   final bool withoutRowId = true;
+  @override
+  final bool dontWriteConstraints = true;
 }
 
 class WithDefault extends DataClass implements Insertable<WithDefault> {
@@ -263,6 +265,9 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   WithDefaults createAlias(String alias) {
     return WithDefaults(_db, alias);
   }
+
+  @override
+  final bool dontWriteConstraints = true;
 }
 
 class WithConstraint extends DataClass implements Insertable<WithConstraint> {
@@ -434,6 +439,161 @@ class WithConstraints extends Table
   final List<String> customConstraints = const [
     'FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'
   ];
+  @override
+  final bool dontWriteConstraints = true;
+}
+
+class ConfigData extends DataClass implements Insertable<ConfigData> {
+  final String configKey;
+  final String configValue;
+  ConfigData({@required this.configKey, this.configValue});
+  factory ConfigData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final stringType = db.typeSystem.forDartType<String>();
+    return ConfigData(
+      configKey: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
+      configValue: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
+    );
+  }
+  factory ConfigData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return ConfigData(
+      configKey: serializer.fromJson<String>(json['configKey']),
+      configValue: serializer.fromJson<String>(json['configValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return {
+      'configKey': serializer.toJson<String>(configKey),
+      'configValue': serializer.toJson<String>(configValue),
+    };
+  }
+
+  @override
+  T createCompanion<T extends UpdateCompanion<ConfigData>>(bool nullToAbsent) {
+    return ConfigCompanion(
+      configKey: configKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configKey),
+      configValue: configValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configValue),
+    ) as T;
+  }
+
+  ConfigData copyWith({String configKey, String configValue}) => ConfigData(
+        configKey: configKey ?? this.configKey,
+        configValue: configValue ?? this.configValue,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('ConfigData(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is ConfigData &&
+          other.configKey == configKey &&
+          other.configValue == configValue);
+}
+
+class ConfigCompanion extends UpdateCompanion<ConfigData> {
+  final Value<String> configKey;
+  final Value<String> configValue;
+  const ConfigCompanion({
+    this.configKey = const Value.absent(),
+    this.configValue = const Value.absent(),
+  });
+}
+
+class Config extends Table with TableInfo<Config, ConfigData> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  Config(this._db, [this._alias]);
+  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
+  GeneratedTextColumn _configKey;
+  GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
+  GeneratedTextColumn _constructConfigKey() {
+    return GeneratedTextColumn('config_key', $tableName, false,
+        $customConstraints: 'not null primary key');
+  }
+
+  final VerificationMeta _configValueMeta =
+      const VerificationMeta('configValue');
+  GeneratedTextColumn _configValue;
+  GeneratedTextColumn get configValue =>
+      _configValue ??= _constructConfigValue();
+  GeneratedTextColumn _constructConfigValue() {
+    return GeneratedTextColumn('config_value', $tableName, true,
+        $customConstraints: '');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [configKey, configValue];
+  @override
+  Config get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'config';
+  @override
+  final String actualTableName = 'config';
+  @override
+  VerificationContext validateIntegrity(ConfigCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.configKey.present) {
+      context.handle(_configKeyMeta,
+          configKey.isAcceptableValue(d.configKey.value, _configKeyMeta));
+    } else if (configKey.isRequired && isInserting) {
+      context.missing(_configKeyMeta);
+    }
+    if (d.configValue.present) {
+      context.handle(_configValueMeta,
+          configValue.isAcceptableValue(d.configValue.value, _configValueMeta));
+    } else if (configValue.isRequired && isInserting) {
+      context.missing(_configValueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {configKey};
+  @override
+  ConfigData map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return ConfigData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(ConfigCompanion d) {
+    final map = <String, Variable>{};
+    if (d.configKey.present) {
+      map['config_key'] = Variable<String, StringType>(d.configKey.value);
+    }
+    if (d.configValue.present) {
+      map['config_value'] = Variable<String, StringType>(d.configValue.value);
+    }
+    return map;
+  }
+
+  @override
+  Config createAlias(String alias) {
+    return Config(_db, alias);
+  }
+
+  @override
+  final bool dontWriteConstraints = true;
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
@@ -446,6 +606,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   WithConstraints _withConstraints;
   WithConstraints get withConstraints =>
       _withConstraints ??= WithConstraints(this);
+  Config _config;
+  Config get config => _config ??= Config(this);
   @override
-  List<TableInfo> get allTables => [noIds, withDefaults, withConstraints];
+  List<TableInfo> get allTables =>
+      [noIds, withDefaults, withConstraints, config];
 }

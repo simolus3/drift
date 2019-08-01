@@ -26,7 +26,6 @@ final Set<String> starters = {
 };
 
 const String _methodNamed = 'named';
-const String _methodPrimaryKey = 'primaryKey';
 const String _methodReferences = 'references';
 const String _methodAutoIncrement = 'autoIncrement';
 const String _methodWithLength = 'withLength';
@@ -74,7 +73,6 @@ class ColumnParser extends ParserBase {
     Expression foundDefaultExpression;
     Expression createdTypeConverter;
     DartType typeConverterRuntime;
-    var wasDeclaredAsPrimaryKey = false;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -114,9 +112,6 @@ class ColumnParser extends ParserBase {
             );
           });
           break;
-        case _methodPrimaryKey:
-          wasDeclaredAsPrimaryKey = true;
-          break;
         case _methodReferences:
           break;
         case _methodWithLength:
@@ -130,7 +125,6 @@ class ColumnParser extends ParserBase {
           ));
           break;
         case _methodAutoIncrement:
-          wasDeclaredAsPrimaryKey = true;
           foundFeatures.add(AutoIncrement());
           break;
         case _methodNullable:
@@ -195,7 +189,6 @@ class ColumnParser extends ParserBase {
         dartGetterName: getter.name.name,
         name: name,
         overriddenJsonName: _readJsonKey(getterElement),
-        declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
         customConstraints: foundCustomConstraint,
         nullable: nullable,
         features: foundFeatures,

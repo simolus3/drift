@@ -14,3 +14,8 @@ CREATE TABLE with_constraints (
 
     FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)
 )
+
+create table config (
+    config_key TEXT not null primary key,
+    config_value TEXT
+);
