@@ -56,8 +56,8 @@ anchor = "smart"
 
 [languages]
 [languages.en]
-title = "Goldydocs"
-description = "A Docsy example site"
+title = "Moor"
+description = "A typesafe persistence library for Dart apps"
 languageName ="English"
 # Weight used for sorting.
 weight = 1
@@ -69,6 +69,15 @@ weight = 1
 #time_format_default = "02.01.2006"
 #time_format_blog = "02.01.2006"
 
+# Additional menu items to GitHub and pub
+[[menu.main]]
+	name = "Pub"
+	weight = 100
+	url = "https://pub.dev/packages/moor_flutter"
+[[menu.main]]
+    name = "GitHub"
+    weight = 110
+    url = "https://github.com/simolus3/moor/"
 
 # Everything below this are Site Params
 
@@ -103,34 +112,17 @@ navbar_logo = false
 [params.links]
 # End user relevant links. These will show up on left side of footer and in the community page if you have one.
 [[params.links.user]]
-	name = "User mailing list"
-	url = "https://example.org/mail"
+	name = "Contact me via e-mail"
+	url = "mailto:oss@simonbinder.eu"
 	icon = "fa fa-envelope"
-        desc = "Discussion and help from your fellow users"
 [[params.links.user]]
-	name ="Twitter"
-	url = "https://example.org/twitter"
-	icon = "fab fa-twitter"
-        desc = "Follow us on Twitter to get the latest news!"
+	name = "Contact me via gitter"
+	url = "https://gitter.im/simolus3"
+	icon = "fab fa-gitter"
 [[params.links.user]]
-	name = "Stack Overflow"
-	url = "https://example.org/stack"
-	icon = "fab fa-stack-overflow"
-        desc = "Practical questions and curated answers"
-# Developer relevant links. These will show up on right side of footer and in the community page if you have one.
-[[params.links.developer]]
 	name = "GitHub"
-	url = "https://github.com/google/docsy"
+	url = "https://github.com/simolus3/moor"
 	icon = "fab fa-github"
         desc = "Development takes place here!"
-[[params.links.developer]]
-	name = "Slack"
-	url = "https://example.org/slack"
-	icon = "fab fa-slack"
-        desc = "Chat with other project developers"
-[[params.links.developer]]
-	name = "Developer mailing list"
-	url = "https://example.org/mail"
-	icon = "fa fa-envelope"
-        desc = "Discuss development issues around the project"
 
+# could also add another with params.links.developer. They appear on the right
