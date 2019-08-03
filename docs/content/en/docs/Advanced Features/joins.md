@@ -10,7 +10,7 @@ aliases:
 Moor supports sql joins to write queries that operate on more than one table. To use that feature, start
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
 inner and left outer joins, a `ON` expression needs to be specified. Here's an example using the tables
-defined in the [example]({{< ref "/docs/Getting Started/_index.md" >}}).
+defined in the [example]({{< relref "../Getting Started/_index.md" >}}).
 
 ```dart
 // we define a data class to contain both a todo entry and the associated category
