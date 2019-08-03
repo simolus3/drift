@@ -1,83 +1,47 @@
-+++
-title = "Goldydocs"
-linkTitle = "Goldydocs"
+---
+title: "Moor"
+linkTitle: "Moor"
+---
 
-+++
-
-{{< blocks/cover title="Welcome to Goldydocs: A Docsy Example Project!" image_anchor="top" height="full" color="orange" >}}
+{{< blocks/cover title="Moor: Persistence library for Dart" image_anchor="top" height="med" color="indigo" >}}
 <div class="mx-auto">
 	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs" >}}">
 		Learn More <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
-	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://github.com/google/docsy-example">
-		Download <i class="fab fa-github ml-2 "></i>
+	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://pub.dev/packages/moor_flutter">
+		Get fom pub <i class="fas fa-code ml-2 "></i>
 	</a>
-	<p class="lead mt-5">Porridge temperature assessment - in the cloud!</p>
-	<div class="mx-auto mt-5">
-		{{< blocks/link-down color="info" >}}
-	</div>
 </div>
 {{< /blocks/cover >}}
 
 
-{{% blocks/lead color="primary" %}}
-Goldydocs provides a single web UI providing visibility into porridge temperature, chair size, and bed softness metrics! You can even find out who's been eating **your** porridge.
-
-(Sadly, Goldydocs isn't a real project, but you can use this site as an example to create your own real websites with [Docsy](http://docsy.dev))
+{{% blocks/lead color="dark" %}}
+Moor is an easy to use, reactive persistence library for Flutter apps. Define your
+database tables in pure Dart and enjoy a fluent query API, auto-updating streams
+and more!
 {{% /blocks/lead %}}
 
-{{< blocks/section color="dark" >}}
-{{% blocks/feature icon="fa-lightbulb" title="New chair metrics!" %}}
-The Goldydocs UI now shows chair size metrics by default.
+{{< blocks/section color="primary" >}}
+{{% blocks/feature icon="fa-lightbulb" title="Declarative tables, fluent queries!" %}}
+With moor, you can write your database tables in pure Dart without having to miss out on
+advanced sqlite features. Moor will take care of writing the `CREATE TABLE` statements when
+the database is created.
 
-Please follow this space for updates!
+Thanks to the power of Darts build system, moor generates code to write queries easily.
+
+[Get started now]({{< ref "/docs/Getting started/_index.md" >}})
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fas fa-database" title="Prefer SQL? Moor got you covered!" url="https://moor.simonbinder.eu/queries/custom" %}}
+Moor contains a powerful sql parser and analyzer, allowing it to create typesafe APIs for all your sql queries. All queries are
+validated and analyzed during build-time, so moor can provide hints about potential errors quickly and generate efficient mapping
+code.
 {{% /blocks/feature %}}
 
 
-{{% blocks/feature icon="fab fa-github" title="Contributions welcome!" url="https://github.com/google/docsy-example" %}}
-We do a [Pull Request](https://github.com/gohugoio/hugo/pulls) contributions workflow on **GitHub**. New users are always welcome!
+{{% blocks/feature icon="fas fa-star" title="And much more!" %}}
+Moor can also provide auto-updating streams emitting new results when the underlying data changes.
+Moor makes dealing with transactions easy (no special parameter to pass around everywhere),
+
 {{% /blocks/feature %}}
-
-
-{{% blocks/feature icon="fab fa-twitter" title="Follow us on Twitter!" url="https://twitter.com/docsydocs" %}}
-For announcement of latest features etc.
-{{% /blocks/feature %}}
-
-
-{{< /blocks/section >}}
-
-
-{{< blocks/section >}}
-<div class="col">
-<h1 class="text-center">This is the second Section</h1>
-</div>
-
-{{< /blocks/section >}}
-
-
-
-{{< blocks/section >}}
-{{% blocks/feature icon="fab fa-app-store-ios" title="Download **from AppStore**" %}}
-Get the Goldydocs app!
-{{% /blocks/feature %}}
-
-
-{{% blocks/feature icon="fab fa-github" title="Contributions welcome!" url="https://github.com/gohugoio/hugo" %}}
-We do a [Pull Request](https://github.com/gohugoio/hugo/pulls) contributions workflow on **GitHub**. New users are always welcome!
-{{% /blocks/feature %}}
-
-
-{{% blocks/feature icon="fab fa-twitter" title="Follow us on Twitter!" url="https://twitter.com/GoHugoIO" %}}
-For announcement of latest features etc.
-{{% /blocks/feature %}}
-
-
-{{< /blocks/section >}}
-
-{{< blocks/section >}}
-
-<div class="col-12">
-<h1 class="text-center">This is another Section</h1>
-</div>
-
 {{< /blocks/section >}}

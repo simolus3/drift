@@ -1,4 +1,4 @@
-baseURL = "/"
+baseURL = "https://moor.simonbinder.eu/"
 title = "Moor"
 
 enableRobotsTXT = true
@@ -25,7 +25,7 @@ pygmentsUseClasses = false
 pygmentsUseClassic = false
 #pygmentsOptions = "linenos=table"
 # See https://help.farbox.com/pygments.html
-pygmentsStyle = "tango"
+pygmentsStyle = "vs"
 
  # First one is picked as the Twitter card image if not set on page.
  #images = ["images/project-illustration.png"]
@@ -120,7 +120,7 @@ navbar_logo = false
 	url = "https://gitter.im/simolus3"
 	icon = "fab fa-gitter"
 [[params.links.user]]
-	name = "GitHub"
+	name = "Project on GitHub"
 	url = "https://github.com/simolus3/moor"
 	icon = "fab fa-github"
         desc = "Development takes place here!"
