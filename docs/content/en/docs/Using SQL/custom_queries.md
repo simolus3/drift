@@ -40,7 +40,7 @@ moor will figure out an appropriate type for them and include them in the genera
 `'categoryById': 'SELECT * FROM categories WHERE id = :id'` will generate the method `categoryById(int id)`.
 
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for 
-[daos]({{< relref "../Advanced features/daos.md" >}}),
+[daos]({{< relref "../Advanced Features/daos.md" >}}),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
 writing to.
 
