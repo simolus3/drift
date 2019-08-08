@@ -1,0 +1,128 @@
+baseURL = "https://moor.simonbinder.eu/"
+title = "Moor"
+
+enableRobotsTXT = true
+
+# Hugo allows theme composition (and inheritance). The precedence is from left to right.
+theme = ["docsy"]
+
+# Will give values to .Lastmod etc.
+enableGitInfo = true
+
+# Language settings
+contentDir = "content/en"
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = false
+# Useful when translating.
+#enableMissingTranslationPlaceholders = true
+
+disableKinds = ["taxonomy", "taxonomyTerm"]
+
+# Highlighting config
+pygmentsCodeFences = true
+pygmentsUseClasses = false
+# Use the new Chroma Go highlighter in Hugo.
+pygmentsUseClassic = false
+#pygmentsOptions = "linenos=table"
+# See https://help.farbox.com/pygments.html
+pygmentsStyle = "vs"
+
+ # First one is picked as the Twitter card image if not set on page.
+ #images = ["images/project-illustration.png"]
+
+# Configure how URLs look like per section.
+[permalinks]
+blog = "/:section/:year/:month/:day/:slug/"
+
+## Configuration for BlackFriday markdown parser: https://github.com/russross/blackfriday
+[blackfriday]
+plainIDAnchors = true
+hrefTargetBlank = true
+angledQuotes = false
+latexDashes = true
+
+# Image processing configuration.
+[imaging]
+resampleFilter = "CatmullRom"
+quality = 75
+anchor = "smart"
+
+[services]
+[services.googleAnalytics]
+# Comment out the next line to disable GA tracking. Also disables the feature described in [params.ui.feedback].
+#id = "UA-00000000-0"
+
+# Language configuration
+
+[languages]
+[languages.en]
+title = "Moor"
+description = "A typesafe persistence library for Dart apps"
+languageName ="English"
+# Weight used for sorting.
+weight = 1
+#[languages.no]
+#title = "Goldydocs"
+#description = "Docsy er operativsystem for skyen"
+#languageName ="Norsk"
+#contentDir = "content/no"
+#time_format_default = "02.01.2006"
+#time_format_blog = "02.01.2006"
+
+# Additional menu items to GitHub and pub
+[[menu.main]]
+	name = "Pub"
+	weight = 100
+	url = "https://pub.dev/packages/moor_flutter"
+[[menu.main]]
+    name = "GitHub"
+    weight = 110
+    url = "https://github.com/simolus3/moor/"
+
+# Everything below this are Site Params
+
+[params]
+copyright = "Simon Binder"
+#privacy_policy = "https://policies.google.com/privacy"
+
+# Menu title if your navbar has a versions selector to access old versions of your site.
+# This menu appears only if you have at least one [params.versions] set.
+version_menu = "Releases"
+
+# Repository configuration (URLs for in-page links to opening issues and suggesting changes)
+github_repo = "https://github.com/simolus3/moor"
+
+# Specify a value here if your content directory is not in your repo's root directory
+github_subdir = "docs"
+
+# Google Custom Search Engine ID. Remove or comment out to disable search.
+gcs_engine_id = " 002567324444333206795:_yptu7lact8 "
+
+# User interface configuration
+[params.ui]
+# Enable to show the side bar menu in its compact state.
+sidebar_menu_compact = false
+#  Set to true to disable breadcrumb navigation.
+breadcrumb_disable = false
+#  Set to true to hide the sidebar search box (the top nav search box will still be displayed if search is enabled)
+sidebar_search_disable = false
+#  Set to false if you don't want to display a logo (/assets/icons/logo.svg) in the top nav bar
+navbar_logo = false
+
+[params.links]
+# End user relevant links. These will show up on left side of footer and in the community page if you have one.
+[[params.links.user]]
+	name = "Contact me via e-mail"
+	url = "mailto:oss@simonbinder.eu"
+	icon = "fa fa-envelope"
+[[params.links.user]]
+	name = "Contact me via gitter"
+	url = "https://gitter.im/simolus3"
+	icon = "fab fa-gitter"
+[[params.links.user]]
+	name = "Project on GitHub"
+	url = "https://github.com/simolus3/moor"
+	icon = "fab fa-github"
+        desc = "Development takes place here!"
+
+# could also add another with params.links.developer. They appear on the right

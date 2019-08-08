@@ -93,10 +93,6 @@ class SpecifiedColumn {
   /// Whether this column has auto increment.
   bool get hasAI => features.any((f) => f is AutoIncrement);
 
-  /// Whether this column has been declared as the primary key via the
-  /// column builder. The `primaryKey` field in the table class is unrelated to
-  /// this.
-  final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
   /// If this columns has custom constraints that should be used instead of the
@@ -157,7 +153,6 @@ class SpecifiedColumn {
     this.name,
     this.overriddenJsonName,
     this.customConstraints,
-    this.declaredAsPrimaryKey = false,
     this.nullable = false,
     this.features = const [],
     this.defaultArgument,
