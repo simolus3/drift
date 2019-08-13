@@ -302,6 +302,10 @@ mixin ExpressionParser on ParserBase {
           final rightParen = _consume(TokenType.rightParen,
               'Expected closing bracket after argument list');
 
+          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+            return _aggregate(first, parameters);
+          }
+
           return FunctionExpression(
               name: first.identifier, parameters: parameters)
             ..setSpan(first, rightParen);
@@ -345,5 +349,26 @@ mixin ExpressionParser on ParserBase {
       parameters.add(expression());
     }
     return ExprFunctionParameters(distinct: distinct, parameters: parameters);
+  }
+
+  AggregateExpression _aggregate(
+      IdentifierToken name, FunctionParameters params) {
+    Expression filter;
+
+    // https://www.sqlite.org/syntax/filter.html (it's optional)
+    if (_matchOne(TokenType.filter)) {
+      _consume(TokenType.leftParen,
+          'Expected opening parenthesis after filter statement');
+      _consume(TokenType.where, 'Expected WHERE clause');
+      filter = expression();
+      _consume(TokenType.rightParen, 'Expecteded closing parenthes');
+    }
+
+    _consume(TokenType.over, 'Expected OVER to begin window clause');
+    final window = _windowDefinition();
+
+    return AggregateExpression(
+        function: name, parameters: params, filter: filter, over: window)
+      ..setSpan(name, _previous);
   }
 }

@@ -38,16 +38,20 @@ class WindowDefinition extends AstNode {
   final String baseWindowName;
   final List<Expression> partitionBy;
   final OrderBy orderBy;
+  final FrameSpec frameSpec;
 
   WindowDefinition(
-      {this.baseWindowName, this.partitionBy = const [], this.orderBy});
+      {this.baseWindowName,
+      this.partitionBy = const [],
+      this.orderBy,
+      @required this.frameSpec});
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitWindowDefinition(this);
 
   @override
   Iterable<AstNode> get childNodes =>
-      [...partitionBy, if (orderBy != null) orderBy];
+      [...partitionBy, if (orderBy != null) orderBy, frameSpec];
 
   @override
   bool contentEquals(WindowDefinition other) {
@@ -62,7 +66,7 @@ class FrameSpec extends AstNode {
   final FrameBoundary end;
 
   FrameSpec({
-    @required this.type,
+    this.type = FrameType.range,
     this.start = const FrameBoundary.unboundedPreceding(),
     this.end = const FrameBoundary.currentRow(),
     this.excludeMode = ExcludeMode.noOthers,

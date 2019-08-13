@@ -125,6 +125,9 @@ abstract class ParserBase {
 
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
+
+  /// https://www.sqlite.org/syntax/window-defn.html
+  WindowDefinition _windowDefinition();
 }
 
 // todo better error handling and synchronisation, like it's done here:
