@@ -37,7 +37,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
-        // the outer statements, so we don't
+        // the outer statements, which is why we use _resolveSelect instead of
+        // passing availableColumns down to a recursive call of _handle
         _resolveSelect(select.statement);
         availableColumns.addAll(select.statement.resolvedColumns);
       },

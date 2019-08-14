@@ -76,7 +76,7 @@ class TypeResolver {
         return const ResolveResult.needsContext();
       } else if (expr is Reference) {
         return resolveColumn(expr.resolved as Column);
-      } else if (expr is FunctionExpression) {
+      } else if (expr is Invocation) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
           expr is InExpression ||
@@ -130,16 +130,19 @@ class TypeResolver {
     }, l);
   }
 
-  ResolveResult resolveFunctionCall(FunctionExpression call) {
-    return _cache((FunctionExpression call) {
-      List<Typeable> parameters;
-      final sqlParameters = call.parameters;
-      if (sqlParameters is ExprFunctionParameters) {
-        parameters = sqlParameters.parameters;
-      } else if (sqlParameters is StarFunctionParameter) {
-        parameters = call.scope.availableColumns;
-      }
+  /// Expands the parameters
+  List<Typeable> _expandParameters(Invocation call) {
+    final sqlParameters = call.parameters;
+    if (sqlParameters is ExprFunctionParameters) {
+      return sqlParameters.parameters;
+    } else if (sqlParameters is StarFunctionParameter) {
+      return call.scope.availableColumns;
+    }
+  }
 
+  ResolveResult resolveFunctionCall(Invocation call) {
+    return _cache((Invocation call) {
+      final parameters = _expandParameters(call);
       final firstNullable = justResolve(parameters.first).nullable;
       final anyNullable = parameters.map(justResolve).any((r) => r.nullable);
 
@@ -193,6 +196,10 @@ class TypeResolver {
         case 'sqlite_compileoption_used':
         case 'total_changes':
         case 'count':
+        case 'row_number':
+        case 'rank':
+        case 'dense_rank':
+        case 'ntile':
           return const ResolveResult(ResolvedType(type: BasicType.int));
         case 'instr':
         case 'length':
@@ -204,6 +211,8 @@ class TypeResolver {
           return const ResolveResult(ResolvedType(type: BasicType.blob));
         case 'total':
         case 'avg':
+        case 'percent_rank':
+        case 'cume_dist':
           return const ResolveResult(ResolvedType(type: BasicType.real));
         case 'abs':
         case 'likelihood':
@@ -216,6 +225,12 @@ class TypeResolver {
               [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]));
         case 'nullif':
           return justResolve(parameters.first).withNullable(true);
+        case 'first_value':
+        case 'last_value':
+        case 'lag':
+        case 'lead':
+        case 'nth_value':
+          return justResolve(parameters.first);
         case 'max':
           return ResolveResult(_encapsulate(parameters, [
             BasicType.int,
@@ -236,6 +251,22 @@ class TypeResolver {
     }, call);
   }
 
+  ResolveResult _resolveFunctionArgument(
+      Invocation parent, Expression argument) {
+    return _cache((argument) {
+      final functionName = parent.name.toLowerCase();
+      final args = _expandParameters(parent);
+
+      // the second argument of nth_value is always an integer
+      if (functionName == 'nth_value' &&
+          args.length > 1 &&
+          argument == args[1]) {
+        return const ResolveResult(ResolvedType(type: BasicType.int));
+      }
+      return const ResolveResult.unknown();
+    }, argument);
+  }
+
   ResolveResult inferType(Expression e) {
     return _cache<Expression>((e) {
       final parent = e.parent;
@@ -254,6 +285,10 @@ class TypeResolver {
         return const ResolveResult(ResolvedType(type: BasicType.int));
       } else if (parent is SetComponent) {
         return resolveColumn(parent.column.resolved as Column);
+      } else if (parent is FrameSpec) {
+        // appears as part of a bounded window definition:
+        // RANGE BETWEEN <expr> PRECEDING AND <expr> FOLLOWING
+        return const ResolveResult(ResolvedType(type: BasicType.int));
       }
 
       return const ResolveResult.unknown();
@@ -288,7 +323,14 @@ class TypeResolver {
         parent is TupleExpression ||
         parent is UnaryExpression) {
       return const ResolveResult.needsContext();
-    } else if (parent is FunctionExpression) {
+    } else if (parent is Invocation) {
+      // if we have a special case for the mix of function and argument, use
+      // that. Otherwise, just assume that the argument has the same type as the
+      // return type of the function
+      final directlyResolved = _resolveFunctionArgument(parent, argument);
+      if (!directlyResolved.unknown) {
+        return directlyResolved;
+      }
       return resolveFunctionCall(parent);
     }
 

@@ -67,4 +67,15 @@ void main() {
 
     expect(context.errors, isEmpty);
   });
+
+  test('resolves sub-queries as data sources', () {
+    final engine = SqlEngine()
+      ..registerTable(demoTable)
+      ..registerTable(anotherTable);
+
+    final context = engine.analyze('SELECT d.* FROM demo d INNER JOIN tbl '
+        'ON tbl.id = (SELECT id FROM tbl WHERE date = ? AND id = d.id)');
+
+    expect(context.errors, isEmpty);
+  });
 }

@@ -66,7 +66,6 @@ Most on this list is just not supported yet because I didn't found a use case fo
 them yet. If you need them, just leave an issue and I'll try to implement them soon.
 
 - For now, `INSERT` statements are not supported, but they will be soon.
-- Windowing is not supported yet
 - Compound select statements (`UNION` / `INTERSECT`) are not supported yet
 - Common table expressions are not supported
 - Some advanced expressions, like `CAST`s aren't supported yet.

@@ -334,7 +334,8 @@ mixin ExpressionParser on ParserBase {
         break;
     }
 
-    // nothing found -> issue error
+    // nothing found -> issue error. Step back to revert the _advance() above
+    _stepBack();
     _error('Could not parse this expression');
   }
 
@@ -343,11 +344,18 @@ mixin ExpressionParser on ParserBase {
       return const StarFunctionParameter();
     }
 
+    if (_check(TokenType.rightParen)) {
+      // nothing between the brackets -> empty parameter list
+      return ExprFunctionParameters(parameters: const []);
+    }
+
     final distinct = _matchOne(TokenType.distinct);
     final parameters = <Expression>[];
-    while (_peek.type != TokenType.rightParen) {
+
+    do {
       parameters.add(expression());
-    }
+    } while (_matchOne(TokenType.comma));
+
     return ExprFunctionParameters(distinct: distinct, parameters: parameters);
   }
 

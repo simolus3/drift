@@ -1,10 +1,12 @@
 part of '../ast.dart';
 
-class AggregateExpression extends Expression {
+class AggregateExpression extends Expression implements Invocation {
   final IdentifierToken function;
 
-  String get functionName => function.identifier;
+  @override
+  String get name => function.identifier;
 
+  @override
   final FunctionParameters parameters;
   final Expression filter;
   final WindowDefinition over; // todo support window references
@@ -30,7 +32,7 @@ class AggregateExpression extends Expression {
 
   @override
   bool contentEquals(AggregateExpression other) {
-    return other.functionName == functionName;
+    return other.name == name;
   }
 }
 
