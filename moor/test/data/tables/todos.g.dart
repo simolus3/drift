@@ -1290,7 +1290,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
       List<int> var3,
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
           QueryEngine operateOn}) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return (operateOn ?? this).customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
@@ -1302,7 +1304,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Stream<List<TodoEntry>> watchWithIn(
       String var1, String var2, List<int> var3) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return customSelectStream(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [

@@ -92,7 +92,7 @@ class TypeMapper {
         continue; // already handled
       }
 
-      currentIndex++;
+      currentIndex = used.resolvedIndex;
       final name = (used is ColonNamedVariable) ? used.name : null;
       final explicitIndex =
           (used is NumberedVariable) ? used.explicitIndex : null;
@@ -110,7 +110,7 @@ class TypeMapper {
           .add(FoundVariable(currentIndex, name, type, used, isArray));
 
       // arrays cannot be indexed explicitly because they're expanded into
-      // multiple variables when executor
+      // multiple variables when executed
       if (isArray && explicitIndex != null) {
         throw ArgumentError(
             'Cannot use an array variable with an explicit index');

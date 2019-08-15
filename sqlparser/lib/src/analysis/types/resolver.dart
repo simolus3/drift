@@ -138,6 +138,7 @@ class TypeResolver {
     } else if (sqlParameters is StarFunctionParameter) {
       return call.scope.availableColumns;
     }
+    throw ArgumentError('Unknown parameters: $sqlParameters');
   }
 
   ResolveResult resolveFunctionCall(Invocation call) {

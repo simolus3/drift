@@ -1,3 +1,5 @@
+import 'dart:math' show max;
+
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -6,6 +8,8 @@ import 'package:sqlparser/sqlparser.dart';
 
 const queryEngineWarningDesc =
     'No longer needed with Moor 1.6 - see the changelog for details';
+
+const highestAssignedIndexVar = '\$highestIndex';
 
 /// Writes the handling code for a query. The code emitted will be a method that
 /// should be included in a generated database or dao class.
@@ -163,17 +167,53 @@ class QueryWriter {
     }
   }
 
+  // Some notes on parameters and generating query code:
+  // We expand array parameters to multiple variables at runtime (see the
+  // documentation of FoundVariable and SqlQuery for further discussion).
+  // To do this. we have to rewrite the sql. Consider this query:
+  // SELECT * FROM t WHERE a = ?1 AND b IN :vars OR c IN :vars AND d = ?
+  // When expanding an array variable, we write the expanded sql into a local
+  // var called "expanded$Name", e.g. when we bind "vars" to [1, 2, 3] in the
+  // query, then `expandedVars` would be "(?2, ?3, ?4)".
+  // We use explicit indexes when expanding so that we don't have to expand the
+  // "vars" variable twice. To do this, a local var called "$currentVarIndex"
+  // keeps track of the highest variable number assigned.
+
   void _writeExpandedDeclarations(StringBuffer buffer) {
+    var indexCounterWasDeclared = false;
+    var highestIndexBeforeArray = 0;
+
     for (var variable in query.variables) {
       if (variable.isArray) {
-        // final expandedvar1 = List.filled(var1.length, '?').join(',');
+        if (!indexCounterWasDeclared) {
+          // we only need the index counter when the query contains an array.
+          // add +1 because that's going to be the first index of the expanded
+          // array
+          final firstVal = highestIndexBeforeArray + 1;
+          buffer.write('var $highestAssignedIndexVar = $firstVal;');
+          indexCounterWasDeclared = true;
+        }
+
+        // final expandedvar1 = $expandVar(<startIndex>, <amount>);
         buffer
           ..write('final ')
           ..write(_expandedName(variable))
           ..write(' = ')
-          ..write('List.filled(')
+          ..write(r'$expandVar(')
+          ..write(highestAssignedIndexVar)
+          ..write(', ')
           ..write(variable.dartParameterName)
-          ..write(".length, '?').join(',');");
+          ..write('.length);\n');
+
+        // increase highest index for the next array
+        buffer
+          ..write('$highestAssignedIndexVar += ')
+          ..write(variable.dartParameterName)
+          ..write('.length;');
+      }
+
+      if (!indexCounterWasDeclared) {
+        highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
       }
     }
   }

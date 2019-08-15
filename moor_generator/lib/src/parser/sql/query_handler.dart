@@ -22,6 +22,9 @@ class QueryHandler {
     final root = context.root;
     _foundVariables = mapper.extractVariables(context);
 
+    // todo warn when the query skips variable indexes (e.g WHERE a = ?2 OR ?),
+    // where index 1 is never used.
+
     if (root is SelectStatement) {
       return _handleSelect();
     } else if (root is UpdateStatement || root is DeleteStatement) {
