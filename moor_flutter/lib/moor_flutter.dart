@@ -5,6 +5,7 @@
 library moor_flutter;
 
 import 'dart:async';
+import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
@@ -13,6 +14,11 @@ import 'package:sqflite/sqflite.dart' as s;
 
 export 'package:moor_flutter/src/animated_list.dart';
 export 'package:moor/moor.dart';
+
+/// Signature of a function that runs when a database doesn't exist on file.
+/// This can be useful to, for instance, load the database from an asset if it
+/// doesn't exist.
+typedef DatabaseCreator = FutureOr<void> Function(File file);
 
 class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   int _loadedSchemaVersion;
@@ -23,8 +29,10 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   final String path;
 
   bool singleInstance;
+  final DatabaseCreator creator;
 
-  _SqfliteDelegate(this.inDbFolder, this.path, {this.singleInstance}) {
+  _SqfliteDelegate(this.inDbFolder, this.path,
+      {this.singleInstance, this.creator}) {
     singleInstance ??= true;
   }
 
@@ -47,6 +55,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       resolvedPath = join(await s.getDatabasesPath(), path);
     } else {
       resolvedPath = path;
+    }
+
+    final file = File(resolvedPath);
+    if (creator != null && !await file.exists()) {
+      await creator(file);
     }
 
     // default value when no migration happened
@@ -82,7 +95,7 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
     }).catchError((_) {
-      // Ignore the errr! We send a fake exception to indicate a rollback.
+      // Ignore the error! We send a fake exception to indicate a rollback.
       // sqflite will rollback, but the exception will bubble up. Here we stop
       // the exception.
     });
@@ -140,9 +153,20 @@ class FlutterQueryExecutor extends DelegatedDatabase {
   /// [path]. If [logStatements] is true, statements sent to the database will
   /// be [print]ed, which can be handy for debugging. The [singleInstance]
   /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
   FlutterQueryExecutor(
-      {@required String path, bool logStatements, bool singleInstance})
-      : super(_SqfliteDelegate(false, path, singleInstance: singleInstance),
+      {@required String path,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(false, path,
+                singleInstance: singleInstance, creator: creator),
             logStatements: logStatements);
 
   /// A query executor that will store the database in the file declared by
@@ -150,8 +174,19 @@ class FlutterQueryExecutor extends DelegatedDatabase {
   /// If [logStatements] is true, statements sent to the database will
   /// be [print]ed, which can be handy for debugging. The [singleInstance]
   /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
   FlutterQueryExecutor.inDatabaseFolder(
-      {@required String path, bool logStatements, bool singleInstance})
-      : super(_SqfliteDelegate(true, path, singleInstance: singleInstance),
+      {@required String path,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(true, path,
+                singleInstance: singleInstance, creator: creator),
             logStatements: logStatements);
 }

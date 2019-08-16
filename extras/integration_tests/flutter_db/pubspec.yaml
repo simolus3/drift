@@ -20,3 +20,7 @@ dependency_overrides:
     path: ../../../moor_flutter
   moor:
     path: ../../../moor
+
+flutter:
+  assets:
+    - test_asset.db
