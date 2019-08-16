@@ -15,7 +15,7 @@ of database libraries like [sqflite](https://pub.dev/packages/sqflite) or [sql.j
 and provides additional featues, like
 
 - __Type safety__: Instead of writing sql queries manually and parsing the `List<Map<String, dynamic>>` that they 
-return, moor turns rows into object of your choice.
+return, moor turns rows into objects of your choice.
 - __Stream queries__: Moor let's you "watch" your queries with zero additional effort. Any query can be turned into
  an auto-updating stream that emits new items when the underlying data changes.
 - __Fluent queries__: Moor generates a Dart api that you can use to write queries and automatically get their results.
