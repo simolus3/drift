@@ -10,6 +10,7 @@ part 'clauses/ordering.dart';
 part 'common/queryables.dart';
 part 'common/renamable.dart';
 
+part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
 part 'expressions/expressions.dart';
 part 'expressions/function.dart';
@@ -165,6 +166,10 @@ abstract class AstVisitor<T> {
   T visitTuple(TupleExpression e);
   T visitInExpression(InExpression e);
 
+  T visitAggregateExpression(AggregateExpression e);
+  T visitWindowDefinition(WindowDefinition e);
+  T visitFrameSpec(FrameSpec e);
+
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
 }
@@ -266,6 +271,15 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitForeignKeyClause(ForeignKeyClause e) => visitChildren(e);
+
+  @override
+  T visitAggregateExpression(AggregateExpression e) => visitChildren(e);
+
+  @override
+  T visitWindowDefinition(WindowDefinition e) => visitChildren(e);
+
+  @override
+  T visitFrameSpec(FrameSpec e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {

@@ -27,6 +27,8 @@ Map<String, ResolveResult> _types = {
   'SELECT * FROM demo JOIN tbl ON demo.id = tbl.id WHERE date = ?':
       const ResolveResult(
           ResolvedType(type: BasicType.int, hint: IsDateTime())),
+  'SELECT row_number() OVER (RANGE ? PRECEDING)':
+      const ResolveResult(ResolvedType(type: BasicType.int)),
 };
 
 void main() {
@@ -42,5 +44,20 @@ void main() {
 
       expect(content.typeOf(variable), equals(resolvedType));
     });
+  });
+
+  test('handles nth_value', () {
+    final ctx = SqlEngine().analyze("SELECT nth_value('string', ?1) = ?2");
+    final variables = ctx.root.allDescendants.whereType<Variable>().iterator;
+    variables.moveNext();
+    final firstVar = variables.current;
+    variables.moveNext();
+    final secondVar = variables.current;
+
+    expect(ctx.typeOf(firstVar),
+        equals(const ResolveResult(ResolvedType(type: BasicType.int))));
+
+    expect(ctx.typeOf(secondVar),
+        equals(const ResolveResult(ResolvedType(type: BasicType.text))));
   });
 }

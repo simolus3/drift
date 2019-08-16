@@ -97,6 +97,16 @@ abstract class ParserBase {
     return _previous;
   }
 
+  /// Steps back a token. This needs to be used very carefully. We basically
+  /// only use it in [ExpressionParser._primary] because we unconditionally
+  /// [_advance] in there and we'd like to report more accurate errors when no
+  /// matching token was found.
+  void _stepBack() {
+    if (_current != null) {
+      _current--;
+    }
+  }
+
   @alwaysThrows
   void _error(String message) {
     final error = ParsingError(_peek, message);
@@ -125,6 +135,9 @@ abstract class ParserBase {
 
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
+
+  /// https://www.sqlite.org/syntax/window-defn.html
+  WindowDefinition _windowDefinition();
 }
 
 // todo better error handling and synchronisation, like it's done here:

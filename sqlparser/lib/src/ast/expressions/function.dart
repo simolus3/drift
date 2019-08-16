@@ -1,7 +1,20 @@
 part of '../ast.dart';
 
-class FunctionExpression extends Expression with ReferenceOwner {
+/// Interface for function calls, either a [FunctionExpression] or a
+/// [AggregateExpression].
+abstract class Invocation extends Expression {
+  /// The name of the function being called
+  String get name;
+
+  FunctionParameters get parameters;
+}
+
+class FunctionExpression extends Expression
+    with ReferenceOwner
+    implements Invocation {
+  @override
   final String name;
+  @override
   final FunctionParameters parameters;
 
   FunctionExpression({@required this.name, @required this.parameters});

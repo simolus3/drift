@@ -33,7 +33,7 @@ abstract class ColumnConstraint extends AstNode {
   T accept<T>(AstVisitor<T> visitor) => visitor.visitColumnConstraint(this);
 
   T when<T>({
-    T Function(NotNull n) notNull,
+    T Function(NotNull) notNull,
     T Function(PrimaryKeyColumn) primaryKey,
     T Function(UniqueColumn) unique,
     T Function(CheckColumn) check,

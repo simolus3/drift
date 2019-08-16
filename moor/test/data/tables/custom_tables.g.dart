@@ -63,6 +63,11 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   const NoIdsCompanion({
     this.payload = const Value.absent(),
   });
+  NoIdsCompanion copyWith({Value<Uint8List> payload}) {
+    return NoIdsCompanion(
+      payload: payload ?? this.payload,
+    );
+  }
 }
 
 class NoIds extends Table with TableInfo<NoIds, NoId> {
@@ -192,6 +197,12 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
     this.a = const Value.absent(),
     this.b = const Value.absent(),
   });
+  WithDefaultsCompanion copyWith({Value<String> a, Value<int> b}) {
+    return WithDefaultsCompanion(
+      a: a ?? this.a,
+      b: b ?? this.b,
+    );
+  }
 }
 
 class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
@@ -348,6 +359,14 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     this.b = const Value.absent(),
     this.c = const Value.absent(),
   });
+  WithConstraintsCompanion copyWith(
+      {Value<String> a, Value<int> b, Value<double> c}) {
+    return WithConstraintsCompanion(
+      a: a ?? this.a,
+      b: b ?? this.b,
+      c: c ?? this.c,
+    );
+  }
 }
 
 class WithConstraints extends Table
@@ -516,6 +535,13 @@ class ConfigCompanion extends UpdateCompanion<ConfigData> {
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
   });
+  ConfigCompanion copyWith(
+      {Value<String> configKey, Value<String> configValue}) {
+    return ConfigCompanion(
+      configKey: configKey ?? this.configKey,
+      configValue: configValue ?? this.configValue,
+    );
+  }
 }
 
 class Config extends Table with TableInfo<Config, ConfigData> {
