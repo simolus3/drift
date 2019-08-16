@@ -7,9 +7,9 @@ import 'utils.dart';
 void main() {
   test('parses delete statements', () {
     testStatement(
-      'DELETE FROM table WHERE id = 5',
+      'DELETE FROM tbl WHERE id = 5',
       DeleteStatement(
-        from: TableReference('table', null),
+        from: TableReference('tbl', null),
         where: BinaryExpression(
           Reference(columnName: 'id'),
           token(TokenType.equal),

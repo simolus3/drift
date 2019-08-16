@@ -57,7 +57,7 @@ class MigrationStrategy {
 }
 
 /// A function that executes queries and ignores what they return.
-typedef Future<void> SqlExecutor(String sql);
+typedef Future<void> SqlExecutor(String sql, [List<dynamic> args]);
 
 class Migrator {
   final GeneratedDatabase _db;
@@ -72,7 +72,9 @@ class Migrator {
 
   GenerationContext _createContext() {
     return GenerationContext(
-        _db.typeSystem, _SimpleSqlAsQueryExecutor(_executor));
+      _db.typeSystem,
+      _SimpleSqlAsQueryExecutor(_executor),
+    );
   }
 
   /// Creates the given table if it doesn't exist
@@ -93,8 +95,15 @@ class Migrator {
       if (i < table.$columns.length - 1) context.buffer.write(', ');
     }
 
+    final dslTable = table.asDslTable;
+
+    // we're in a bit of a hacky situation where we don't write the primary
+    // as table constraint if it has already been written on a primary key
+    // column, even though that column appears in table.$primaryKey because we
+    // need to know all primary keys for the update(table).replace(row) API
     final hasPrimaryKey = table.$primaryKey?.isNotEmpty ?? false;
-    if (hasPrimaryKey && !hasAutoIncrement) {
+    final dontWritePk = dslTable.dontWriteConstraints || hasAutoIncrement;
+    if (hasPrimaryKey && !dontWritePk) {
       context.buffer.write(', PRIMARY KEY (');
       final pkList = table.$primaryKey.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {
@@ -107,15 +116,22 @@ class Migrator {
       context.buffer.write(')');
     }
 
-    final constraints = table.asDslTable.customConstraints ?? [];
+    final constraints = dslTable.customConstraints ?? [];
 
     for (var i = 0; i < constraints.length; i++) {
       context.buffer..write(', ')..write(constraints[i]);
     }
 
-    context.buffer.write(');');
+    context.buffer.write(')');
 
-    return issueCustomQuery(context.sql);
+    // == true because of nullability
+    if (dslTable.withoutRowId == true) {
+      context.buffer.write(' WITHOUT ROWID');
+    }
+
+    context.buffer.write(';');
+
+    return issueCustomQuery(context.sql, context.boundVariables);
   }
 
   /// Deletes the table with the given name. Note that this function does not
@@ -136,8 +152,8 @@ class Migrator {
   }
 
   /// Executes the custom query.
-  Future<void> issueCustomQuery(String sql) async {
-    return _executor(sql);
+  Future<void> issueCustomQuery(String sql, [List<dynamic> args]) async {
+    return _executor(sql, args);
   }
 }
 
@@ -181,8 +197,8 @@ class _SimpleSqlAsQueryExecutor extends QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement) {
-    return executor(statement);
+  Future<void> runCustom(String statement, [List<dynamic> args]) {
+    return executor(statement, args);
   }
 
   @override

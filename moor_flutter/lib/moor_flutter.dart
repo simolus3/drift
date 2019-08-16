@@ -5,58 +5,112 @@
 library moor_flutter;
 
 import 'dart:async';
+import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
+import 'package:moor/backends.dart';
 import 'package:sqflite/sqflite.dart' as s;
 
 export 'package:moor_flutter/src/animated_list.dart';
 export 'package:moor/moor.dart';
 
-abstract class _DatabaseOwner extends QueryExecutor {
-  _DatabaseOwner(this.logStatements);
+/// Signature of a function that runs when a database doesn't exist on file.
+/// This can be useful to, for instance, load the database from an asset if it
+/// doesn't exist.
+typedef DatabaseCreator = FutureOr<void> Function(File file);
 
-  @visibleForOverriding
-  s.DatabaseExecutor get db;
+class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
+  int _loadedSchemaVersion;
+  @override
+  s.Database db;
 
-  final bool logStatements;
+  final bool inDbFolder;
+  final String path;
 
-  void _log(String sql, [List args]) {
-    if (logStatements == true) {
-      final formattedArgs = (args?.isEmpty ?? true) ? ' no variables' : args;
-      print('moor: $sql with $formattedArgs');
+  bool singleInstance;
+  final DatabaseCreator creator;
+
+  _SqfliteDelegate(this.inDbFolder, this.path,
+      {this.singleInstance, this.creator}) {
+    singleInstance ??= true;
+  }
+
+  @override
+  DbVersionDelegate get versionDelegate {
+    return OnOpenVersionDelegate(() => Future.value(_loadedSchemaVersion));
+  }
+
+  @override
+  TransactionDelegate get transactionDelegate =>
+      _SqfliteTransactionDelegate(this);
+
+  @override
+  Future<bool> get isOpen => Future.value(db != null);
+
+  @override
+  Future<void> open([GeneratedDatabase db]) async {
+    String resolvedPath;
+    if (inDbFolder) {
+      resolvedPath = join(await s.getDatabasesPath(), path);
+    } else {
+      resolvedPath = path;
     }
+
+    final file = File(resolvedPath);
+    if (creator != null && !await file.exists()) {
+      await creator(file);
+    }
+
+    // default value when no migration happened
+    _loadedSchemaVersion = db.schemaVersion;
+
+    this.db = await s.openDatabase(
+      resolvedPath,
+      version: db.schemaVersion,
+      onCreate: (db, version) {
+        _loadedSchemaVersion = 0;
+      },
+      onUpgrade: (db, from, to) {
+        _loadedSchemaVersion = from;
+      },
+      singleInstance: singleInstance,
+    );
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
-    _log(statement, args);
-    return db.rawDelete(statement, args);
+  Future<void> close() {
+    return db.close();
   }
+}
+
+class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
+  final _SqfliteDelegate delegate;
+
+  _SqfliteTransactionDelegate(this.delegate);
 
   @override
-  Future<int> runInsert(String statement, List args) {
-    _log(statement, args);
-    return db.rawInsert(statement, args);
+  void startTransaction(Future<void> Function(QueryDelegate) run) {
+    delegate.db.transaction((transaction) async {
+      final executor = _SqfliteTransactionExecutor(transaction);
+      await run(executor);
+    }).catchError((_) {
+      // Ignore the error! We send a fake exception to indicate a rollback.
+      // sqflite will rollback, but the exception will bubble up. Here we stop
+      // the exception.
+    });
   }
+}
 
+class _SqfliteTransactionExecutor extends QueryDelegate with _SqfliteExecutor {
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
-    _log(statement, args);
-    return db.rawQuery(statement, args);
-  }
+  final s.DatabaseExecutor db;
 
-  @override
-  Future<int> runUpdate(String statement, List args) {
-    _log(statement, args);
-    return db.rawUpdate(statement, args);
-  }
+  _SqfliteTransactionExecutor(this.db);
+}
 
-  @override
-  Future<void> runCustom(String statement) {
-    _log(statement, null);
-    return db.execute(statement);
-  }
+mixin _SqfliteExecutor on QueryDelegate {
+  s.DatabaseExecutor get db;
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) async {
@@ -64,163 +118,75 @@ abstract class _DatabaseOwner extends QueryExecutor {
 
     for (var statement in statements) {
       for (var boundVariables in statement.variables) {
-        _log(statement.sql, boundVariables);
         batch.execute(statement.sql, boundVariables);
       }
     }
 
     await batch.commit(noResult: true);
   }
+
+  @override
+  Future<void> runCustom(String statement, List args) {
+    return db.execute(statement);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    return db.rawInsert(statement, args);
+  }
+
+  @override
+  Future<QueryResult> runSelect(String statement, List args) async {
+    final result = await db.rawQuery(statement, args);
+    return QueryResult.fromRows(result);
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List args) {
+    return db.rawUpdate(statement, args);
+  }
 }
 
 /// A query executor that uses sqflite internally.
-class FlutterQueryExecutor extends _DatabaseOwner {
-  final bool _inDbPath;
-  final String path;
+class FlutterQueryExecutor extends DelegatedDatabase {
+  /// A query executor that will store the database in the file declared by
+  /// [path]. If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
+  FlutterQueryExecutor(
+      {@required String path,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(false, path,
+                singleInstance: singleInstance, creator: creator),
+            logStatements: logStatements);
 
-  @override
-  s.Database db;
-  Completer<void> _openingCompleter;
-  bool _hadMigration = false;
-  int _versionBefore;
-
-  FlutterQueryExecutor({@required this.path, bool logStatements})
-      : _inDbPath = false,
-        super(logStatements);
-
+  /// A query executor that will store the database in the file declared by
+  /// [path], which will be resolved relative to [s.getDatabasesPath()].
+  /// If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
   FlutterQueryExecutor.inDatabaseFolder(
-      {@required this.path, bool logStatements})
-      : _inDbPath = true,
-        super(logStatements);
-
-  @override
-  Future<bool> ensureOpen() async {
-    // mechanism to ensure that _openDatabase is only called once, even if we
-    // have many queries calling ensureOpen() repeatedly. _openingCompleter is
-    // set if we're currently in the process of opening the database.
-    if (_openingCompleter != null) {
-      // already opening, wait for that to finish and don't open the database
-      // again
-      await _openingCompleter.future;
-      return true;
-    }
-    if (db != null && db.isOpen) {
-      // database is opened and ready
-      return true;
-    }
-
-    // alright, opening the database
-    _openingCompleter = Completer();
-    await _openDatabase();
-    _openingCompleter.complete();
-
-    return true;
-  }
-
-  Future _openDatabase() async {
-    String resolvedPath;
-    if (_inDbPath) {
-      resolvedPath = join(await s.getDatabasesPath(), path);
-    } else {
-      resolvedPath = path;
-    }
-
-    db = await s.openDatabase(resolvedPath, version: databaseInfo.schemaVersion,
-        onCreate: (db, version) {
-      _hadMigration = true;
-      return databaseInfo.handleDatabaseCreation(
-        executor: _migrationExecutor(db),
-      );
-    }, onUpgrade: (db, from, to) {
-      _hadMigration = true;
-      _versionBefore = from;
-      return databaseInfo.handleDatabaseVersionChange(
-          executor: _migrationExecutor(db), from: from, to: to);
-    }, onOpen: (db) async {
-      final versionNow = await db.getVersion();
-      final resolvedPrevious = _hadMigration ? _versionBefore : versionNow;
-      final details = OpeningDetails(resolvedPrevious, versionNow);
-
-      await databaseInfo.beforeOpenCallback(
-          _BeforeOpenExecutor(db, logStatements), details);
-    });
-  }
-
-  SqlExecutor _migrationExecutor(s.Database db) {
-    return (sql) {
-      _log(sql);
-      return db.execute(sql);
-    };
-  }
-
-  @override
-  TransactionExecutor beginTransaction() {
-    return _SqfliteTransactionExecutor.startFromDb(this);
-  }
-}
-
-class _SqfliteTransactionExecutor extends _DatabaseOwner
-    implements TransactionExecutor {
-  @override
-  s.Transaction db;
-
-  /// This future should complete with the transaction once the transaction has
-  /// been created.
-  final Future<s.Transaction> _open;
-  // This completer will complete when send() is called. We use it because
-  // sqflite expects a future in the db.transaction() method. The transaction
-  // will be executed when that future completes.
-  final Completer _actionCompleter;
-
-  /// This future should complete when the call to db.transaction completes.
-  final Future _sendFuture;
-
-  _SqfliteTransactionExecutor(
-      this._open, this._actionCompleter, this._sendFuture, bool logStatements)
-      : super(logStatements) {
-    _open.then((transaction) => db = transaction);
-  }
-
-  factory _SqfliteTransactionExecutor.startFromDb(FlutterQueryExecutor db) {
-    final actionCompleter = Completer();
-    final openingCompleter = Completer<s.Transaction>();
-
-    final sendFuture = db.db.transaction((t) {
-      openingCompleter.complete(t);
-      return actionCompleter.future;
-    });
-
-    return _SqfliteTransactionExecutor(
-        openingCompleter.future, actionCompleter, sendFuture, db.logStatements);
-  }
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw StateError('Transactions cannot create another transaction!');
-  }
-
-  @override
-  Future<bool> ensureOpen() => _open.then((_) => true);
-
-  @override
-  Future<void> send() {
-    _actionCompleter.complete(null);
-    return _sendFuture;
-  }
-}
-
-class _BeforeOpenExecutor extends _DatabaseOwner {
-  @override
-  final s.DatabaseExecutor db;
-
-  _BeforeOpenExecutor(this.db, bool logStatements) : super(logStatements);
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError(
-        "Transactions can't be started in the befoeOpen callback");
-  }
-
-  @override
-  Future<bool> ensureOpen() => Future.value(true);
+      {@required String path,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(true, path,
+                singleInstance: singleInstance, creator: creator),
+            logStatements: logStatements);
 }

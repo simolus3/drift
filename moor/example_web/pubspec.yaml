@@ -10,8 +10,8 @@ dependencies:
 
 dev_dependencies:
   moor_generator:
-  build_runner: ^1.1.2
-  build_web_compilers: ^1.0.0
+  build_runner: ^1.6.0
+  build_web_compilers: ^2.1.0
 
 dependency_overrides:
   moor:

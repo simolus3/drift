@@ -19,6 +19,15 @@ abstract class Table {
   @visibleForOverriding
   String get tableName => null;
 
+  /// Whether to append a `WITHOUT ROWID` clause in the `CREATE TABLE`
+  /// statement. This is intended to be used by generated code only.
+  bool get withoutRowId => false;
+
+  /// Moor will write some table constraints automatically, for instance when
+  /// you override [primaryKey]. You can turn this behavior off if you want to.
+  /// This is intended to be used by generated code only.
+  bool get dontWriteConstraints => false;
+
   /// Override this to specify custom primary keys:
   /// ```dart
   /// class IngredientInRecipes extends Table {
@@ -93,7 +102,6 @@ abstract class Table {
   /// ```
   /// RealColumn get averageSpeed => real()();
   /// ```
-  /// Note
   @protected
   RealColumnBuilder real() => null;
 }

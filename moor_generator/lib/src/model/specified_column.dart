@@ -1,5 +1,5 @@
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:built_value/built_value.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';
 
@@ -60,6 +60,15 @@ const Map<ColumnType, String> createVariable = {
   ColumnType.real: 'Variable.withReal',
 };
 
+const Map<ColumnType, String> sqlTypes = {
+  ColumnType.boolean: 'BoolType',
+  ColumnType.text: 'StringType',
+  ColumnType.integer: 'IntType',
+  ColumnType.datetime: 'DateTimeType',
+  ColumnType.blob: 'BlobType',
+  ColumnType.real: 'RealType',
+};
+
 /// A column, as specified by a getter in a table.
 class SpecifiedColumn {
   /// The getter name of this column in the table class. It will also be used
@@ -84,24 +93,31 @@ class SpecifiedColumn {
   /// Whether this column has auto increment.
   bool get hasAI => features.any((f) => f is AutoIncrement);
 
-  /// Whether this column has been declared as the primary key via the
-  /// column builder. The `primaryKey` field in the table class is unrelated to
-  /// this.
-  final bool declaredAsPrimaryKey;
   final List<ColumnFeature> features;
 
   /// If this columns has custom constraints that should be used instead of the
   /// default ones.
   final String customConstraints;
 
-  /// If a default expression has been provided as the argument of
-  /// ColumnBuilder.withDefault, contains the Dart code that references that
-  /// expression.
-  final Expression defaultArgument;
+  /// Dart code that generates the default expression for this column, or null
+  /// if there is no default expression.
+  final String defaultArgument;
+
+  /// The [UsedTypeConverter], if one has been set on this column.
+  final UsedTypeConverter typeConverter;
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
-  String get dartTypeName => dartTypeNames[type];
+  String get dartTypeName {
+    if (typeConverter != null) {
+      return typeConverter.mappedType?.name;
+    }
+    return variableTypeName;
+  }
+
+  /// the Dart type of this column that can be handled by moors type mapping.
+  /// Basically the same as [dartTypeName], minus custom types.
+  String get variableTypeName => dartTypeNames[type];
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
@@ -129,14 +145,7 @@ class SpecifiedColumn {
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
-  String get sqlTypeName => const {
-        ColumnType.boolean: 'BoolType',
-        ColumnType.text: 'StringType',
-        ColumnType.integer: 'IntType',
-        ColumnType.datetime: 'DateTimeType',
-        ColumnType.blob: 'BlobType',
-        ColumnType.real: 'RealType',
-      }[type];
+  String get sqlTypeName => sqlTypes[type];
 
   const SpecifiedColumn({
     this.type,
@@ -144,10 +153,10 @@ class SpecifiedColumn {
     this.name,
     this.overriddenJsonName,
     this.customConstraints,
-    this.declaredAsPrimaryKey = false,
     this.nullable = false,
     this.features = const [],
     this.defaultArgument,
+    this.typeConverter,
   });
 }
 

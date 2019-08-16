@@ -1,9 +1,11 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:moor_generator/src/errors.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 
@@ -20,24 +22,24 @@ final Set<String> starters = {
   startBool,
   startDateTime,
   startBlob,
-  startReal
+  startReal,
 };
 
 const String _methodNamed = 'named';
-const String _methodPrimaryKey = 'primaryKey';
 const String _methodReferences = 'references';
 const String _methodAutoIncrement = 'autoIncrement';
 const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
+const String _methodMap = 'map';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
     'columns are formed. If you have any questions, feel free to raise an issue.';
 
 class ColumnParser extends ParserBase {
-  ColumnParser(SharedState state) : super(state);
+  ColumnParser(GeneratorSession session) : super(session);
 
   SpecifiedColumn parse(MethodDeclaration getter, Element getterElement) {
     /*
@@ -49,10 +51,11 @@ class ColumnParser extends ParserBase {
       we can extract what it means for the column (name, auto increment, PK,
       constraints...).
      */
+
     final expr = returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
         critical: true,
@@ -68,7 +71,8 @@ class ColumnParser extends ParserBase {
     String foundExplicitName;
     String foundCustomConstraint;
     Expression foundDefaultExpression;
-    var wasDeclaredAsPrimaryKey = false;
+    Expression createdTypeConverter;
+    DartType typeConverterRuntime;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -84,7 +88,7 @@ class ColumnParser extends ParserBase {
       switch (methodName) {
         case _methodNamed:
           if (foundExplicitName != null) {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -97,7 +101,7 @@ class ColumnParser extends ParserBase {
 
           foundExplicitName =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -107,9 +111,6 @@ class ColumnParser extends ParserBase {
               ),
             );
           });
-          break;
-        case _methodPrimaryKey:
-          wasDeclaredAsPrimaryKey = true;
           break;
         case _methodReferences:
           break;
@@ -124,7 +125,6 @@ class ColumnParser extends ParserBase {
           ));
           break;
         case _methodAutoIncrement:
-          wasDeclaredAsPrimaryKey = true;
           foundFeatures.add(AutoIncrement());
           break;
         case _methodNullable:
@@ -133,7 +133,7 @@ class ColumnParser extends ParserBase {
         case _methodCustomConstraint:
           foundCustomConstraint =
               readStringLiteral(remainingExpr.argumentList.arguments.first, () {
-            state.errors.add(
+            session.errors.add(
               MoorError(
                 critical: false,
                 affectedElement: getter.declaredElement,
@@ -148,6 +148,18 @@ class ColumnParser extends ParserBase {
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
           foundDefaultExpression = expression;
+          break;
+        case _methodMap:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+
+          // the map method has a parameter type that resolved to the runtime
+          // type of the custom object
+          final type = remainingExpr.typeArgumentTypes.single;
+
+          createdTypeConverter = expression;
+          typeConverterRuntime = type;
+          break;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -162,17 +174,26 @@ class ColumnParser extends ParserBase {
       name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
     }
 
+    final columnType = _startMethodToColumnType(foundStartMethod);
+
+    UsedTypeConverter converter;
+    if (createdTypeConverter != null && typeConverterRuntime != null) {
+      converter = UsedTypeConverter(
+          expression: createdTypeConverter,
+          mappedType: typeConverterRuntime,
+          sqlType: columnType);
+    }
+
     return SpecifiedColumn(
-      type: _startMethodToColumnType(foundStartMethod),
-      dartGetterName: getter.name.name,
-      name: name,
-      overriddenJsonName: _readJsonKey(getterElement),
-      declaredAsPrimaryKey: wasDeclaredAsPrimaryKey,
-      customConstraints: foundCustomConstraint,
-      nullable: nullable,
-      features: foundFeatures,
-      defaultArgument: foundDefaultExpression,
-    );
+        type: columnType,
+        dartGetterName: getter.name.name,
+        name: name,
+        overriddenJsonName: _readJsonKey(getterElement),
+        customConstraints: foundCustomConstraint,
+        nullable: nullable,
+        features: foundFeatures,
+        defaultArgument: foundDefaultExpression?.toSource(),
+        typeConverter: converter);
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

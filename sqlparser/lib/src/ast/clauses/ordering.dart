@@ -23,7 +23,10 @@ class OrderingTerm extends AstNode {
   final Expression expression;
   final OrderingMode orderingMode;
 
-  OrderingTerm({this.expression, this.orderingMode = OrderingMode.ascending});
+  OrderingMode get resolvedOrderingMode =>
+      orderingMode ?? OrderingMode.ascending;
+
+  OrderingTerm({this.expression, this.orderingMode});
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitOrderingTerm(this);

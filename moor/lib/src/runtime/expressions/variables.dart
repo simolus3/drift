@@ -45,25 +45,18 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.
   dynamic mapToSimpleValue(GenerationContext context) {
-    final type = context.typeSystem.forDartType<T>();
-    return type.mapToSqlVariable(value);
+    return _mapToSimpleValue(context, value);
   }
 
   @override
   void writeInto(GenerationContext context) {
-    if (value != null) {
-      context.buffer.write('?');
-      context.introduceVariable(mapToSimpleValue(context));
-    } else {
-      context.buffer.write('NULL');
-    }
+    _writeVariableIntoContext(context, value);
   }
 }
 
 /// An expression that represents the value of a dart object encoded to sql
-/// by writing them into the sql statements. This is not supported for all types
-/// yet as it can be vulnerable to SQL-injection attacks. Please use [Variable]
-/// instead.
+/// by writing them into the sql statements. For most cases, consider using
+/// [Variable] instead.
 class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
   const Constant(this.value);
 
@@ -74,7 +67,27 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
 
   @override
   void writeInto(GenerationContext context) {
-    final type = context.typeSystem.forDartType<T>();
-    context.buffer.write(type.mapToSqlConstant(value));
+    // Instead of writing string literals (which we don't support because of
+    // possible sql injections), just write the variable.
+    if (value is String) {
+      _writeVariableIntoContext(context, value);
+    } else {
+      final type = context.typeSystem.forDartType<T>();
+      context.buffer.write(type.mapToSqlConstant(value));
+    }
   }
+}
+
+void _writeVariableIntoContext<T>(GenerationContext context, T value) {
+  if (value != null) {
+    context.buffer.write('?');
+    context.introduceVariable(_mapToSimpleValue<T>(context, value));
+  } else {
+    context.buffer.write('NULL');
+  }
+}
+
+dynamic _mapToSimpleValue<T>(GenerationContext context, T value) {
+  final type = context.typeSystem.forDartType<T>();
+  return type.mapToSqlVariable(value);
 }

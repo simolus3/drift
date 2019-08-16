@@ -62,7 +62,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -76,6 +76,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -236,10 +242,8 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc(
-          $mrjc($mrjc(0, id.hashCode), title.hashCode), instructions.hashCode),
-      category.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode,
+      $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -261,6 +265,18 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
+  RecipesCompanion copyWith(
+      {Value<int> id,
+      Value<String> title,
+      Value<String> instructions,
+      Value<int> category}) {
+    return RecipesCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      instructions: instructions ?? this.instructions,
+      category: category ?? this.category,
+    );
+  }
 }
 
 class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
@@ -444,8 +460,8 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, id.hashCode), name.hashCode), caloriesPer100g.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -464,6 +480,14 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
+  IngredientsCompanion copyWith(
+      {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
+    return IngredientsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      caloriesPer100g: caloriesPer100g ?? this.caloriesPer100g,
+    );
+  }
 }
 
 class $IngredientsTable extends Ingredients
@@ -642,8 +666,7 @@ class IngredientInRecipe extends DataClass
 
   @override
   int get hashCode => $mrjf($mrjc(
-      $mrjc($mrjc(0, recipe.hashCode), ingredient.hashCode),
-      amountInGrams.hashCode));
+      recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -662,6 +685,14 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
+  IngredientInRecipesCompanion copyWith(
+      {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
+    return IngredientInRecipesCompanion(
+      recipe: recipe ?? this.recipe,
+      ingredient: ingredient ?? this.ingredient,
+      amountInGrams: amountInGrams ?? this.amountInGrams,
+    );
+  }
 }
 
 class $IngredientInRecipesTable extends IngredientInRecipes

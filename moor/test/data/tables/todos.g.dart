@@ -104,10 +104,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
 
   @override
   int get hashCode => $mrjf($mrjc(
+      id.hashCode,
       $mrjc(
-          $mrjc($mrjc($mrjc(0, id.hashCode), title.hashCode), content.hashCode),
-          targetDate.hashCode),
-      category.hashCode));
+          title.hashCode,
+          $mrjc(content.hashCode,
+              $mrjc(targetDate.hashCode, category.hashCode)))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -132,6 +133,20 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
+  TodosTableCompanion copyWith(
+      {Value<int> id,
+      Value<String> title,
+      Value<String> content,
+      Value<DateTime> targetDate,
+      Value<int> category}) {
+    return TodosTableCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      targetDate: targetDate ?? this.targetDate,
+      category: category ?? this.category,
+    );
+  }
 }
 
 class $TodosTableTable extends TodosTable
@@ -328,7 +343,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -342,6 +357,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -517,11 +538,11 @@ class User extends DataClass implements Insertable<User> {
 
   @override
   int get hashCode => $mrjf($mrjc(
+      id.hashCode,
       $mrjc(
-          $mrjc(
-              $mrjc($mrjc(0, id.hashCode), name.hashCode), isAwesome.hashCode),
-          profilePicture.hashCode),
-      creationTime.hashCode));
+          name.hashCode,
+          $mrjc(isAwesome.hashCode,
+              $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -546,6 +567,20 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.creationTime = const Value.absent(),
   });
+  UsersCompanion copyWith(
+      {Value<int> id,
+      Value<String> name,
+      Value<bool> isAwesome,
+      Value<Uint8List> profilePicture,
+      Value<DateTime> creationTime}) {
+    return UsersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isAwesome: isAwesome ?? this.isAwesome,
+      profilePicture: profilePicture ?? this.profilePicture,
+      creationTime: creationTime ?? this.creationTime,
+    );
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -740,7 +775,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, todo.hashCode), user.hashCode));
+  int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -754,6 +789,12 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     this.todo = const Value.absent(),
     this.user = const Value.absent(),
   });
+  SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
+    return SharedTodosCompanion(
+      todo: todo ?? this.todo,
+      user: user ?? this.user,
+    );
+  }
 }
 
 class $SharedTodosTable extends SharedTodos
@@ -842,18 +883,25 @@ class TableWithoutPKData extends DataClass
     implements Insertable<TableWithoutPKData> {
   final int notReallyAnId;
   final double someFloat;
-  TableWithoutPKData({@required this.notReallyAnId, @required this.someFloat});
+  final MyCustomObject custom;
+  TableWithoutPKData(
+      {@required this.notReallyAnId,
+      @required this.someFloat,
+      @required this.custom});
   factory TableWithoutPKData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final doubleType = db.typeSystem.forDartType<double>();
+    final stringType = db.typeSystem.forDartType<String>();
     return TableWithoutPKData(
       notReallyAnId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
       someFloat: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
+      custom: $TableWithoutPKTable.$converter0.mapToDart(
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
     );
   }
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
@@ -861,6 +909,7 @@ class TableWithoutPKData extends DataClass
     return TableWithoutPKData(
       notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
       someFloat: serializer.fromJson<double>(json['someFloat']),
+      custom: serializer.fromJson<MyCustomObject>(json['custom']),
     );
   }
   @override
@@ -869,6 +918,7 @@ class TableWithoutPKData extends DataClass
     return {
       'notReallyAnId': serializer.toJson<int>(notReallyAnId),
       'someFloat': serializer.toJson<double>(someFloat),
+      'custom': serializer.toJson<MyCustomObject>(custom),
     };
   }
 
@@ -882,41 +932,59 @@ class TableWithoutPKData extends DataClass
       someFloat: someFloat == null && nullToAbsent
           ? const Value.absent()
           : Value(someFloat),
+      custom:
+          custom == null && nullToAbsent ? const Value.absent() : Value(custom),
     ) as T;
   }
 
-  TableWithoutPKData copyWith({int notReallyAnId, double someFloat}) =>
+  TableWithoutPKData copyWith(
+          {int notReallyAnId, double someFloat, MyCustomObject custom}) =>
       TableWithoutPKData(
         notReallyAnId: notReallyAnId ?? this.notReallyAnId,
         someFloat: someFloat ?? this.someFloat,
+        custom: custom ?? this.custom,
       );
   @override
   String toString() {
     return (StringBuffer('TableWithoutPKData(')
           ..write('notReallyAnId: $notReallyAnId, ')
-          ..write('someFloat: $someFloat')
+          ..write('someFloat: $someFloat, ')
+          ..write('custom: $custom')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc($mrjc(0, notReallyAnId.hashCode), someFloat.hashCode));
+  int get hashCode => $mrjf($mrjc(
+      notReallyAnId.hashCode, $mrjc(someFloat.hashCode, custom.hashCode)));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TableWithoutPKData &&
           other.notReallyAnId == notReallyAnId &&
-          other.someFloat == someFloat);
+          other.someFloat == someFloat &&
+          other.custom == custom);
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
+  final Value<MyCustomObject> custom;
   const TableWithoutPKCompanion({
     this.notReallyAnId = const Value.absent(),
     this.someFloat = const Value.absent(),
+    this.custom = const Value.absent(),
   });
+  TableWithoutPKCompanion copyWith(
+      {Value<int> notReallyAnId,
+      Value<double> someFloat,
+      Value<MyCustomObject> custom}) {
+    return TableWithoutPKCompanion(
+      notReallyAnId: notReallyAnId ?? this.notReallyAnId,
+      someFloat: someFloat ?? this.someFloat,
+      custom: custom ?? this.custom,
+    );
+  }
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
@@ -950,8 +1018,20 @@ class $TableWithoutPKTable extends TableWithoutPK
     );
   }
 
+  final VerificationMeta _customMeta = const VerificationMeta('custom');
+  GeneratedTextColumn _custom;
   @override
-  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat];
+  GeneratedTextColumn get custom => _custom ??= _constructCustom();
+  GeneratedTextColumn _constructCustom() {
+    return GeneratedTextColumn(
+      'custom',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [notReallyAnId, someFloat, custom];
   @override
   $TableWithoutPKTable get asDslTable => this;
   @override
@@ -976,6 +1056,7 @@ class $TableWithoutPKTable extends TableWithoutPK
     } else if (someFloat.isRequired && isInserting) {
       context.missing(_someFloatMeta);
     }
+    context.handle(_customMeta, const VerificationResult.success());
     return context;
   }
 
@@ -996,6 +1077,11 @@ class $TableWithoutPKTable extends TableWithoutPK
     if (d.someFloat.present) {
       map['some_float'] = Variable<double, RealType>(d.someFloat.value);
     }
+    if (d.custom.present) {
+      final converter = $TableWithoutPKTable.$converter0;
+      map['custom'] =
+          Variable<String, StringType>(converter.mapToSql(d.custom.value));
+    }
     return map;
   }
 
@@ -1003,6 +1089,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable createAlias(String alias) {
     return $TableWithoutPKTable(_db, alias);
   }
+
+  static CustomConverter $converter0 = const CustomConverter();
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
@@ -1057,7 +1145,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), txt.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, txt.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
@@ -1071,6 +1159,12 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
+  PureDefaultsCompanion copyWith({Value<int> id, Value<String> txt}) {
+    return PureDefaultsCompanion(
+      id: id ?? this.id,
+      txt: txt ?? this.txt,
+    );
+  }
 }
 
 class $PureDefaultsTable extends PureDefaults
@@ -1168,6 +1262,13 @@ class AllTodosWithCategoryResult {
   });
 }
 
+class FindCustomResult {
+  final MyCustomObject custom;
+  FindCustomResult({
+    this.custom,
+  });
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1245,7 +1346,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
       List<int> var3,
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
           QueryEngine operateOn}) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return (operateOn ?? this).customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
@@ -1257,7 +1360,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Stream<List<TodoEntry>> watchWithIn(
       String var1, String var2, List<int> var3) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return customSelectStream(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
@@ -1290,6 +1395,29 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {
           todosTable
         }).map((rows) => rows.map(_rowToTodoEntry).toList());
+  }
+
+  FindCustomResult _rowToFindCustomResult(QueryRow row) {
+    return FindCustomResult(
+      custom:
+          $TableWithoutPKTable.$converter0.mapToDart(row.readString('custom')),
+    );
+  }
+
+  Future<List<FindCustomResult>> findCustom(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+        variables: []).then((rows) => rows.map(_rowToFindCustomResult).toList());
+  }
+
+  Stream<List<FindCustomResult>> watchFindCustom() {
+    return customSelectStream(
+            'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+            variables: [],
+            readsFrom: {tableWithoutPK})
+        .map((rows) => rows.map(_rowToFindCustomResult).toList());
   }
 
   @override

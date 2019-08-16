@@ -1,31 +1,40 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:moor_generator/src/errors.dart';
+import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/parser/parser.dart';
-import 'package:moor_generator/src/shared_state.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:moor/sqlite_keywords.dart';
 
 class TableParser extends ParserBase {
-  TableParser(SharedState state) : super(state);
+  TableParser(GeneratorSession session) : super(session);
 
-  SpecifiedTable parse(ClassElement element) {
-    final sqlName = _parseTableName(element);
+  Future<SpecifiedTable> parse(ClassElement element) async {
+    final sqlName = await _parseTableName(element);
     if (sqlName == null) return null;
 
-    final columns = _parseColumns(element);
+    final columns = await _parseColumns(element);
 
-    return SpecifiedTable(
+    final table = SpecifiedTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
-      primaryKey: _readPrimaryKey(element, columns),
+      primaryKey: await _readPrimaryKey(element, columns),
     );
+
+    var index = 0;
+    for (var converter in table.converters) {
+      converter
+        ..index = index++
+        ..table = table;
+    }
+
+    return table;
   }
 
   String _readDartTypeName(ClassElement element) {
@@ -40,7 +49,7 @@ class TableParser extends ParserBase {
     }
   }
 
-  String _parseTableName(ClassElement element) {
+  Future<String> _parseTableName(ClassElement element) async {
     // todo allow override via a field (final String tableName = '') as well
 
     final tableNameGetter = element.getGetter('tableName');
@@ -52,12 +61,13 @@ class TableParser extends ParserBase {
 
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
-    final tableNameDeclaration = state.loadElementDeclaration(tableNameGetter);
+    final tableNameDeclaration =
+        await session.loadElementDeclaration(tableNameGetter);
     final returnExpr = returnExpressionOfMethod(
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = readStringLiteral(returnExpr, () {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           critical: true,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -67,18 +77,18 @@ class TableParser extends ParserBase {
     return tableName;
   }
 
-  Set<SpecifiedColumn> _readPrimaryKey(
-      ClassElement element, List<SpecifiedColumn> columns) {
+  Future<Set<SpecifiedColumn>> _readPrimaryKey(
+      ClassElement element, List<SpecifiedColumn> columns) async {
     final primaryKeyGetter = element.getGetter('primaryKey');
     if (primaryKeyGetter == null) {
       return null;
     }
 
-    final ast = state.loadElementDeclaration(primaryKeyGetter).node
-        as MethodDeclaration;
+    final resolved = await session.loadElementDeclaration(primaryKeyGetter);
+    final ast = resolved.node as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -93,13 +103,11 @@ class TableParser extends ParserBase {
               .singleWhere((column) => column.dartGetterName == entry.name);
           parsedPrimaryKey.add(column);
         } else {
-          // Don't add an error, these features aren't on a stable dart release
-          // yet.
           print('Unexpected entry in expression.elements: $entry');
         }
       }
     } else {
-      state.errors.add(MoorError(
+      session.errors.add(MoorError(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
     }
@@ -107,14 +115,15 @@ class TableParser extends ParserBase {
     return parsedPrimaryKey;
   }
 
-  List<SpecifiedColumn> _parseColumns(ClassElement element) {
-    return element.fields
-        .where((field) => isColumn(field.type) && field.getter != null)
-        .map((field) {
-      final node =
-          state.loadElementDeclaration(field.getter).node as MethodDeclaration;
+  Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
+    final columns = element.fields
+        .where((field) => isColumn(field.type) && field.getter != null);
 
-      return state.columnParser.parse(node, field.getter);
-    }).toList();
+    return Future.wait(columns.map((field) async {
+      final resolved = await session.loadElementDeclaration(field.getter);
+      final node = resolved.node as MethodDeclaration;
+
+      return await session.parseColumn(node, field.getter);
+    }));
   }
 }

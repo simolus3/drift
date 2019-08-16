@@ -50,11 +50,32 @@ class SharedTodos extends Table {
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
+
+  TextColumn get custom => text().map(const CustomConverter())();
 }
 
 class PureDefaults extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get txt => text().nullable()();
+}
+
+// example object used for custom mapping
+class MyCustomObject {
+  final String data;
+  MyCustomObject(this.data);
+}
+
+class CustomConverter extends TypeConverter<MyCustomObject, String> {
+  const CustomConverter();
+  @override
+  MyCustomObject mapToDart(String fromDb) {
+    return fromDb == null ? null : MyCustomObject(fromDb);
+  }
+
+  @override
+  String mapToSql(MyCustomObject value) {
+    return value?.data;
+  }
 }
 
 @UseMoor(
@@ -74,6 +95,7 @@ class PureDefaults extends Table {
     'withIn': 'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
     'search':
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
+    'findCustom': 'SELECT custom FROM table_without_p_k WHERE some_float < 10',
   },
 )
 class TodoDb extends _$TodoDb {

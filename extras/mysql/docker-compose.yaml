@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  database:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: example
+    ports:
+      - "3306:3306"
+  phpmyadmin:
+    depends_on:
+      - database
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: database
+      PMA_USER: root
+      PMA_PASSWORD: password
+      PMA_PORT: 3306

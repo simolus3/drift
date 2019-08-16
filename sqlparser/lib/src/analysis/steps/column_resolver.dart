@@ -37,7 +37,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
-        // the outer statements, so we don't
+        // the outer statements, which is why we use _resolveSelect instead of
+        // passing availableColumns down to a recursive call of _handle
         _resolveSelect(select.statement);
         availableColumns.addAll(select.statement.resolvedColumns);
       },
@@ -80,14 +81,20 @@ class ColumnResolver extends RecursiveVisitor<void> {
         }
       } else if (resultColumn is ExpressionResultColumn) {
         final name = _nameOfResultColumn(resultColumn);
-        usedColumns.add(
-          ExpressionColumn(name: name, expression: resultColumn.expression),
-        );
+        final column =
+            ExpressionColumn(name: name, expression: resultColumn.expression);
+
+        usedColumns.add(column);
+
+        // make this column available if there is no other with the same name
+        if (!availableColumns.any((c) => c.name == name)) {
+          availableColumns.add(column);
+        }
       }
     }
 
     s.resolvedColumns = usedColumns;
-    s.scope.availableColumns = availableColumns;
+    scope.availableColumns = availableColumns;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {

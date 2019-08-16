@@ -53,6 +53,10 @@ class ColumnBuilder<
   /// result in an SQL column called account_creation_date).
   /// To change this default behavior, use something like
   /// `IntColumn get id = integer((c) => c.named('user_id'))`.
+  ///
+  /// Note that using [named] __does not__ have an effect on the json key of an
+  /// object. To change the json key, annotate this column getter with
+  /// [JsonKey].
   Builder named(String name) => null;
 
   /// Marks this column as nullable. Nullable columns should not appear in a
@@ -106,6 +110,44 @@ class ColumnBuilder<
   /// - [currentDate] and [currentDateAndTime], which are useful expressions to
   /// store the current date/time as a default value.
   Builder withDefault(Expression<ResultDartType, ResultSqlType> e) => null;
+
+  /// Uses a custom [converter] to store custom Dart objects in a single column
+  /// and automatically mapping them from and to sql.
+  ///
+  /// An example might look like this:
+  /// ```dart
+  ///  // this is the custom object with we want to store in a column. It
+  ///  // can be as complex as you want it to be
+  ///  class MyCustomObject {
+  ///   final String data;
+  ///   MyCustomObject(this.data);
+  /// }
+  ///
+  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
+  ///   // this class is responsible for turning a custom object into a string.
+  ///   // this is easy here, but more complex objects could be serialized using
+  ///   // json or any other method of your choice.
+  ///   const CustomConverter();
+  ///   @override
+  ///   MyCustomObject mapToDart(String fromDb) {
+  ///     return fromDb == null ? null : MyCustomObject(fromDb);
+  ///   }
+  ///
+  ///   @override
+  ///   String mapToSql(MyCustomObject value) {
+  ///     return value?.data;
+  ///   }
+  /// }
+  ///
+  /// ```
+  ///
+  /// In that case, you could have a table with this column
+  /// ```dart
+  /// TextColumn get custom => text().map(const CustomConverter())();
+  /// ```
+  /// The generated row class will then use a `MyFancyClass` instead of a
+  /// `String`, which would usually be used for [Table.text] columns.
+  Builder map<T>(TypeConverter<T, ResultDartType> converter) => null;
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your

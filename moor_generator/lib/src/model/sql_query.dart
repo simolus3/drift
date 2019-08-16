@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -10,6 +11,23 @@ abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;
   String get sql => fromContext.sql;
+
+  /// The variables that appear in the [sql] query. We support three kinds of
+  /// sql variables: The regular "?" variables, explicitly indexed "?xyz"
+  /// variables and colon-named variables. Even though this feature is not
+  /// supported by sqlite directly, we provide syntax sugar for expressions like
+  /// `column IN ?`, where the variable will have a [List] type at runtime and
+  /// expand to the appropriate tuple (e.g. `column IN (?, ?, ?)` when the
+  /// variable is bound to a list with three elements). To make the desugaring
+  /// easier at runtime, we require that:
+  ///
+  /// 1. Array arguments don't have an explicit index (`<expr> IN ?1` is
+  ///    forbidden). The reason is that arrays get expanded to multiple
+  ///    variables at runtime, so setting an explicit index doesn't make sense.
+  /// 2. We only allow explicitly-indexed variables to appear after an array
+  ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
+  ///    AND c IN ?1`. In other words, we can expand an array without worrying
+  ///    about the variables that appear after that array.
   final List<FoundVariable> variables;
 
   SqlQuery(this.name, this.fromContext, this.variables);
@@ -90,13 +108,28 @@ class ResultColumn {
   final ColumnType type;
   final bool nullable;
 
-  ResultColumn(this.name, this.type, this.nullable);
+  final UsedTypeConverter converter;
+
+  ResultColumn(this.name, this.type, this.nullable, {this.converter});
 }
 
+/// A semantic interpretation of a [Variable] in a sql statement.
 class FoundVariable {
+  /// The (unique) index of this variable in the sql query. For instance, the
+  /// query `SELECT * FROM tbl WHERE a = ? AND b = :xyz OR c = :xyz` contains
+  /// three [Variable]s in its AST, but only two [FoundVariable]s, where the
+  /// `?` will have index 1 and (both) `:xyz` variables will have index 2.
   int index;
+
+  /// The name of this variable, or null if it's not a named variable.
   String name;
+
+  /// The (inferred) type for this variable.
   final ColumnType type;
+
+  /// The first [Variable] in the sql statement that has this [index].
+  // todo: Do we really need to expose this? We only use [resolvedIndex], which
+  // should always be equal to [index].
   final Variable variable;
 
   /// Whether this variable is an array, which will be expanded into multiple
@@ -105,7 +138,9 @@ class FoundVariable {
   /// without having to look at other variables.
   final bool isArray;
 
-  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray);
+  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray) {
+    assert(variable.resolvedIndex == index);
+  }
 
   String get dartParameterName {
     if (name != null) {

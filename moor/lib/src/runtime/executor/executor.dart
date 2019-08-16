@@ -1,13 +1,24 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/utils/hash.dart';
 
 /// A query executor is responsible for executing statements on a database and
 /// return their results in a raw form.
+///
+/// This is an internal api of moor, which can break often. If you want to
+/// implement custom database backends, consider using the new `backends` API.
+/// The [moor_flutter implementation](https://github.com/simolus3/moor/blob/develop/moor_flutter/lib/moor_flutter.dart)
+/// might be useful as a reference. If you want to write your own database
+/// engine to use with moor and run into issues, please consider creating an
+/// issue.
 abstract class QueryExecutor {
   GeneratedDatabase databaseInfo;
+
+  /// The [SqlDialect] to use for this database engine.
+  SqlDialect get dialect => SqlDialect.sqlite;
 
   /// Performs the async [fn] after this executor is ready, or directly if it's
   /// already ready.
@@ -36,7 +47,7 @@ abstract class QueryExecutor {
 
   /// Runs a custom SQL statement without any variables. The result of that
   /// statement will be ignored.
-  Future<void> runCustom(String statement);
+  Future<void> runCustom(String statement, [List<dynamic> args]);
 
   /// Prepares the [statements] and then executes each one with all of the
   /// [BatchedStatement.variables].
@@ -44,6 +55,13 @@ abstract class QueryExecutor {
 
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
+
+  /// Closes this database connection and releases all resources associated with
+  /// it. Implementations should also handle [close] calls in a state where the
+  /// database isn't open.
+  Future<void> close() async {
+    // no-op per default for backwards compatibility
+  }
 }
 
 /// A statement that should be executed in a batch. Used internally by moor.
@@ -83,4 +101,8 @@ abstract class TransactionExecutor extends QueryExecutor {
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
   Future<void> send();
+
+  /// Cancels this transaction. No further queries may be sent ot this
+  /// [QueryExecutor] after this method was called.
+  Future<void> rollback();
 }

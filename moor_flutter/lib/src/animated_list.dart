@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+
+// ignore: deprecated_member_use
 import 'package:moor/diff_util.dart';
 
 typedef Widget ItemBuilder<T>(
@@ -9,6 +11,8 @@ typedef Widget RemovedItemBuilder<T>(
     BuildContext context, T item, Animation<double> anim);
 
 /// An [AnimatedList] that shows the result of a moor query stream.
+@Deprecated('Will be removed in moor 2.0. You could use the '
+    'animated_stream_list package as an alternative')
 class MoorAnimatedList<T> extends StatefulWidget {
   final Stream<List<T>> stream;
   final ItemBuilder<T> itemBuilder;

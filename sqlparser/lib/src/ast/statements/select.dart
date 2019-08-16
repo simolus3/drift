@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class SelectStatement extends Statement with ResultSet {
+class SelectStatement extends Statement with CrudStatement, ResultSet {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;

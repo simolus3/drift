@@ -1,0 +1,26 @@
+name: flutter_db
+description: Moor integration tests running on sqflite
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  moor_flutter:
+  tests:
+    path: ../tests
+
+dev_dependencies:
+  test:
+
+dependency_overrides:
+  moor_flutter:
+    path: ../../../moor_flutter
+  moor:
+    path: ../../../moor
+
+flutter:
+  assets:
+    - test_asset.db

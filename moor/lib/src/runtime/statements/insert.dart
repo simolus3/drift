@@ -25,7 +25,9 @@ class InsertStatement<D extends DataClass> {
   /// Otherwise, an exception will be thrown.
   ///
   /// If the table contains an auto-increment column, the generated value will
-  /// be returned.
+  /// be returned. If there is no auto-increment column, you can't rely on the
+  /// return value, but the future will resolve to an error when the insert
+  /// fails.
   Future<int> insert(Insertable<D> entity, {bool orReplace = false}) async {
     _validateIntegrity(entity);
     final ctx = _createContext(entity, orReplace);

@@ -1,6 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
 import 'package:moor_generator/src/writer/update_companion_writer.dart';
@@ -8,9 +8,9 @@ import 'package:moor_generator/src/writer/utils.dart';
 
 class TableWriter {
   final SpecifiedTable table;
-  final MoorOptions options;
+  final GeneratorSession session;
 
-  TableWriter(this.table, this.options);
+  TableWriter(this.table, this.session);
 
   void writeInto(StringBuffer buffer) {
     writeDataClass(buffer);
@@ -18,13 +18,13 @@ class TableWriter {
   }
 
   void writeDataClass(StringBuffer buffer) {
-    DataClassWriter(table, options).writeInto(buffer);
-    UpdateCompanionWriter(table, options).writeInto(buffer);
+    DataClassWriter(table, session).writeInto(buffer);
+    UpdateCompanionWriter(table, session).writeInto(buffer);
   }
 
   void writeTableInfoClass(StringBuffer buffer) {
     final dataClass = table.dartTypeName;
-    final tableDslName = table.fromClass.name;
+    final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
     buffer
@@ -62,8 +62,19 @@ class TableWriter {
 
     _writeAliasGenerator(buffer);
 
+    _writeConvertersAsStaticFields(buffer);
+    _overrideFieldsIfNeeded(buffer);
+
     // close class
     buffer.write('}');
+  }
+
+  void _writeConvertersAsStaticFields(StringBuffer buffer) {
+    for (var converter in table.converters) {
+      final typeName = converter.typeOfConverter.displayName;
+      final code = converter.expression.toSource();
+      buffer..write('static $typeName ${converter.fieldName} = $code;');
+    }
   }
 
   void _writeMappingMethod(StringBuffer buffer) {
@@ -87,13 +98,28 @@ class TableWriter {
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
-      buffer.write('''
-        if (d.${column.dartGetterName}.present) {
-          map['${column.name.name}'] = 
-             Variable<${column.dartTypeName}, ${column.sqlTypeName}>(
-                d.${column.dartGetterName}.value);
-        }
-      ''');
+      buffer.write('if (d.${column.dartGetterName}.present) {');
+      final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
+          'Variable<${column.variableTypeName}, ${column.sqlTypeName}>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        final converter = column.typeConverter;
+        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        buffer
+          ..write('final converter = $fieldName;\n')
+          ..write(mapSetter)
+          ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
+      } else {
+        // no type converter. Write variable directly
+        buffer
+          ..write(mapSetter)
+          ..write('(')
+          ..write('d.${column.dartGetterName}.value')
+          ..write(');');
+      }
+
+      buffer.write('}');
     }
 
     buffer.write('return map; \n}\n');
@@ -123,7 +149,7 @@ class TableWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument.toSource();
+      additionalParams['defaultValue'] = column.defaultArgument;
     }
 
     expressionBuffer
@@ -149,7 +175,9 @@ class TableWriter {
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,
       code: expressionBuffer.toString(),
-      hasOverride: true,
+      // don't override on custom tables because we only override the column
+      // when the base class is user defined
+      hasOverride: !table.isFromSql,
     );
   }
 
@@ -170,6 +198,15 @@ class TableWriter {
     for (var column in table.columns) {
       final getterName = column.dartGetterName;
       final metaName = _fieldNameForColumnMeta(column);
+
+      if (column.typeConverter != null) {
+        // dont't verify custom columns, we assume that the user knows what
+        // they're doing
+        buffer
+          ..write(
+              'context.handle($metaName, const VerificationResult.success());');
+        continue;
+      }
 
       buffer
         ..write('if (d.$getterName.present) {\n')
@@ -222,5 +259,30 @@ class TableWriter {
       ..write('$typeName createAlias(String alias) {\n')
       ..write('return $typeName(_db, alias);')
       ..write('}');
+  }
+
+  void _overrideFieldsIfNeeded(StringBuffer buffer) {
+    if (table.overrideWithoutRowId != null) {
+      final value = table.overrideWithoutRowId ? 'true' : 'false';
+      buffer
+        ..write('@override\n')
+        ..write('final bool withoutRowId = $value;\n');
+    }
+
+    if (table.overrideTableConstraints != null) {
+      final value =
+          table.overrideTableConstraints.map(asDartLiteral).join(', ');
+
+      buffer
+        ..write('@override\n')
+        ..write('final List<String> customConstraints = const [$value];\n');
+    }
+
+    if (table.overrideDontWriteConstraints != null) {
+      final value = table.overrideDontWriteConstraints ? 'true' : 'false';
+      buffer
+        ..write('@override\n')
+        ..write('final bool dontWriteConstraints = $value;\n');
+    }
   }
 }

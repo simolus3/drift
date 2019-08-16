@@ -1,5 +1,5 @@
 import 'package:moor_generator/src/model/sql_query.dart';
-import 'package:moor_generator/src/options.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/writer/query_writer.dart';
 import 'package:moor_generator/src/writer/result_set_writer.dart';
 import 'package:recase/recase.dart';
@@ -9,14 +9,14 @@ import 'utils.dart';
 
 class DatabaseWriter {
   final SpecifiedDatabase db;
-  final MoorOptions options;
+  final GeneratorSession session;
 
-  DatabaseWriter(this.db, this.options);
+  DatabaseWriter(this.db, this.session);
 
   void write(StringBuffer buffer) {
     // Write referenced tables
     for (final table in db.tables) {
-      TableWriter(table, options).writeInto(buffer);
+      TableWriter(table, session).writeInto(buffer);
     }
 
     // Write additional classes to hold the result of custom queries

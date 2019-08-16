@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-class DeleteStatement extends Statement {
+class DeleteStatement extends Statement with CrudStatement {
   final TableReference from;
   final Expression where;
 

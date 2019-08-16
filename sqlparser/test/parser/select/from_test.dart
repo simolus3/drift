@@ -17,20 +17,20 @@ void main() {
   group('from', () {
     test('a simple table', () {
       final stmt =
-          SqlEngine().parse('SELECT * FROM table').rootNode as SelectStatement;
+          SqlEngine().parse('SELECT * FROM tbl').rootNode as SelectStatement;
 
-      enforceEqual(stmt.from.single, TableReference('table', null));
+      enforceEqual(stmt.from.single, TableReference('tbl', null));
     });
 
     test('from more than one table', () {
       final stmt = SqlEngine()
-          .parse('SELECT * FROM table AS test, table2')
+          .parse('SELECT * FROM tbl AS test, table2')
           .rootNode as SelectStatement;
 
       _enforceFrom(
         stmt,
         [
-          TableReference('table', 'test'),
+          TableReference('tbl', 'test'),
           TableReference('table2', null),
         ],
       );

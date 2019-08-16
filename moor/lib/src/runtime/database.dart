@@ -177,8 +177,8 @@ mixin QueryEngine on DatabaseConnectionUser {
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final affectedRows =
-        executor.doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
+    final affectedRows = await executor
+        .doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
 
     if (updates != null) {
       await engine.streamQueries.handleTableUpdates(updates);
@@ -234,13 +234,24 @@ mixin QueryEngine on DatabaseConnectionUser {
 
     final executor = resolved.executor;
     await executor.doWhenOpened((executor) {
-      final transaction = Transaction(this, executor.beginTransaction());
+      final transactionExecutor = executor.beginTransaction();
+      final transaction = Transaction(this, transactionExecutor);
 
       return _runEngineZoned(transaction, () async {
+        var success = false;
         try {
           await action(transaction);
+          success = true;
+        } catch (e) {
+          await transactionExecutor.rollback();
+
+          // pass the exception on to the one who called transaction()
+          rethrow;
         } finally {
-          await transaction.complete();
+          if (success) {
+            // calling complete will also take care of committing the transaction
+            await transaction.complete();
+          }
         }
       });
     });
@@ -320,5 +331,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
         return migration.beforeOpen(engine, details);
       });
     }
+  }
+
+  /// Closes this database and releases associated resources.
+  Future<void> close() async {
+    await executor.close();
   }
 }

@@ -1,6 +1,7 @@
 /// A utility library to find an edit script that turns a list into another.
 /// This is useful when displaying a updating stream of immutable lists in a
 /// list that can be updated.
+@Deprecated('Will be removed in moor 2.0')
 library diff_util;
 
 import 'package:moor/src/utils/android_diffutils_port.dart' as impl;

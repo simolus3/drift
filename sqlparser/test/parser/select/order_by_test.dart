@@ -8,7 +8,7 @@ import '../utils.dart';
 void main() {
   test('parses order by clauses', () {
     final parsed = SqlEngine()
-        .parse('SELECT * FROM table ORDER BY -a, b DESC')
+        .parse('SELECT * FROM tbl ORDER BY -a, b DESC')
         .rootNode as SelectStatement;
 
     enforceEqual(
@@ -16,7 +16,6 @@ void main() {
       OrderBy(
         terms: [
           OrderingTerm(
-            orderingMode: OrderingMode.ascending,
             expression: UnaryExpression(
               token(TokenType.minus),
               Reference(columnName: 'a'),

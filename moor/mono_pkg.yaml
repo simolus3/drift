@@ -6,4 +6,5 @@ stages:
       - dartanalyzer: --fatal-infos --fatal-warnings lib/ test/
       - dartfmt
   - unit_test:
-      - command: dart tool/coverage.dart
+      - command: pub run build_runner build -v --delete-conflicting-outputs
+      - test

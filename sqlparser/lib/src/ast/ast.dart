@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/analysis/analysis.dart';
 
@@ -9,6 +10,7 @@ part 'clauses/ordering.dart';
 part 'common/queryables.dart';
 part 'common/renamable.dart';
 
+part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
 part 'expressions/expressions.dart';
 part 'expressions/function.dart';
@@ -19,6 +21,10 @@ part 'expressions/subquery.dart';
 part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
 
+part 'schema/column_definition.dart';
+part 'schema/table_definition.dart';
+
+part 'statements/create_table.dart';
 part 'statements/delete.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
@@ -44,6 +50,8 @@ abstract class AstNode {
 
   /// The last position that belongs to node, exclusive. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
+
+  FileSpan get span => first.span.expand(last.span);
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {
@@ -127,6 +135,7 @@ abstract class AstVisitor<T> {
   T visitResultColumn(ResultColumn e);
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
+  T visitCreateTableStatement(CreateTableStatement e);
 
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
@@ -136,6 +145,11 @@ abstract class AstVisitor<T> {
   T visitGroupBy(GroupBy e);
 
   T visitSetComponent(SetComponent e);
+
+  T visitColumnDefinition(ColumnDefinition e);
+  T visitColumnConstraint(ColumnConstraint e);
+  T visitTableConstraint(TableConstraint e);
+  T visitForeignKeyClause(ForeignKeyClause e);
 
   T visitBinaryExpression(BinaryExpression e);
   T visitStringComparison(StringComparisonExpression e);
@@ -151,6 +165,10 @@ abstract class AstVisitor<T> {
   T visitWhen(WhenComponent e);
   T visitTuple(TupleExpression e);
   T visitInExpression(InExpression e);
+
+  T visitAggregateExpression(AggregateExpression e);
+  T visitWindowDefinition(WindowDefinition e);
+  T visitFrameSpec(FrameSpec e);
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
@@ -237,7 +255,31 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitUpdateStatement(UpdateStatement e) => visitChildren(e);
 
   @override
+  T visitCreateTableStatement(CreateTableStatement e) => visitChildren(e);
+
+  @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);
+
+  @override
+  T visitColumnDefinition(ColumnDefinition e) => visitChildren(e);
+
+  @override
+  T visitTableConstraint(TableConstraint e) => visitChildren(e);
+
+  @override
+  T visitColumnConstraint(ColumnConstraint e) => visitChildren(e);
+
+  @override
+  T visitForeignKeyClause(ForeignKeyClause e) => visitChildren(e);
+
+  @override
+  T visitAggregateExpression(AggregateExpression e) => visitChildren(e);
+
+  @override
+  T visitWindowDefinition(WindowDefinition e) => visitChildren(e);
+
+  @override
+  T visitFrameSpec(FrameSpec e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {

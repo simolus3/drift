@@ -13,7 +13,7 @@ class ResultSetWriter {
     // write fields
     for (var column in query.resultSet.columns) {
       final name = query.resultSet.dartNameFor(column);
-      final runtimeType = dartTypeNames[column.type];
+      final runtimeType = _getRuntimeType(column);
       into.write('final $runtimeType $name\n;');
     }
 
@@ -23,5 +23,13 @@ class ResultSetWriter {
       into.write('this.${query.resultSet.dartNameFor(column)},');
     }
     into.write('});\n}\n');
+  }
+
+  String _getRuntimeType(ResultColumn column) {
+    if (column.converter != null) {
+      return column.converter.mappedType.displayName;
+    } else {
+      return dartTypeNames[column.type];
+    }
   }
 }
