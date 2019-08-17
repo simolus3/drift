@@ -40,7 +40,5 @@ updates that span multiple versions, we should follow these steps
 The `sqlparser` library can be published independently from moor.
 
 ### Building the documentation
-We use [jekyll](https://jekyllrb.com/) to write documentation. With 
-[bundler](https://bundler.io/) installed, you can serve the documentation locally with 
-`bundler exec jekyll serve`. The generated documentation can be written into the 
-`docs/_site` folder with `bundler exec jekyll build`.
+We use hugo and docsy to build the documentation. The [readme](docs/README.md) contains everything
+you need to know go get started.
