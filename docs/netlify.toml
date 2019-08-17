@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "https://moor.netlify.com/*"
+  to = "https://moor.simonbinder.eu/:splat"
+  status = 301
+  force = true
