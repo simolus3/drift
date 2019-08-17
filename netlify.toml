@@ -1,7 +1,7 @@
 # We use netlify to deploy the documentation.
 
 [build]
-  base = "docs/"
+  base = "docs"
   publish = "docs/public"
   command = 'git submodule update --init --recursive && HUGO_ENV="production" hugo'
 

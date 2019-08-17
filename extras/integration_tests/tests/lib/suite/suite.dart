@@ -1,5 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
+import 'package:tests/suite/crud_tests.dart';
 import 'package:tests/suite/transactions.dart';
 
 import 'custom_objects.dart';
@@ -17,6 +18,7 @@ void runAllTests(TestExecutor executor) {
     await executor.deleteData();
   });
 
+  crudTests(executor);
   migrationTests(executor);
   customObjectTests(executor);
   transactionTests(executor);

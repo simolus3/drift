@@ -23,3 +23,5 @@ dependency_overrides:
     path: ../../../moor
   moor_generator:
     path: ../../../moor_generator
+  sqlparser:
+    path: ../../../sqlparser
