@@ -1,7 +1,6 @@
 ---
 title: "Type converters"
-description: >
-  Store more complex data in columns with type converters
+description: Store more complex data in columns with type converters
 aliases:
  - /type_converters
 ---

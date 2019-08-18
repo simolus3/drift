@@ -5,8 +5,7 @@ weight: 20
 menu:
   main:
     weight: 20
-description: >
- Welcome to the moor documentation. This site shows you what moor can do and how to use it.
+description: Welcome to the moor documentation. This site shows you what moor can do and how to use it.
 ---
 
 ## So what's moor?
