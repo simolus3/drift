@@ -2,12 +2,20 @@
 /// library.
 library encrypted_moor;
 
+// this file should be kept in sync with moor_flutter/lib/moor_flutter.dart
+
 import 'dart:async';
+import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/backends.dart';
 import 'package:sqflite/sqflite.dart' as s;
+
+/// Signature of a function that runs when a database doesn't exist on file.
+/// This can be useful to, for instance, load the database from an asset if it
+/// doesn't exist.
+typedef DatabaseCreator = FutureOr<void> Function(File file);
 
 class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   int _loadedSchemaVersion;
@@ -18,7 +26,13 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   final String path;
   final String password;
 
-  _SqfliteDelegate(this.inDbFolder, this.path, this.password);
+  bool singleInstance;
+  final DatabaseCreator creator;
+
+  _SqfliteDelegate(this.inDbFolder, this.path,
+      {this.singleInstance, this.creator, this.password}) {
+    singleInstance ??= true;
+  }
 
   @override
   DbVersionDelegate get versionDelegate {
@@ -41,6 +55,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       resolvedPath = path;
     }
 
+    final file = File(resolvedPath);
+    if (creator != null && !await file.exists()) {
+      await creator(file);
+    }
+
     // default value when no migration happened
     _loadedSchemaVersion = db.schemaVersion;
 
@@ -54,7 +73,13 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       onUpgrade: (db, from, to) {
         _loadedSchemaVersion = from;
       },
+      singleInstance: singleInstance,
     );
+  }
+
+  @override
+  Future<void> close() {
+    return db.close();
   }
 }
 
@@ -68,6 +93,10 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
     delegate.db.transaction((transaction) async {
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
+    }).catchError((_) {
+      // Ignore the error! We send a fake exception to indicate a rollback.
+      // sqflite will rollback, but the exception will bubble up. Here we stop
+      // the exception.
     });
   }
 }
@@ -119,13 +148,50 @@ mixin _SqfliteExecutor on QueryDelegate {
 
 /// A query executor that uses sqflite_sqlcipher internally.
 class EncryptedExecutor extends DelegatedDatabase {
+  /// A query executor that will store the database in the file declared by
+  /// [path]. If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
   EncryptedExecutor(
-      {@required String path, @required String password, bool logStatements})
-      : super(_SqfliteDelegate(false, path, password),
+      {@required String path,
+      @required String password,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(false, path,
+                singleInstance: singleInstance,
+                creator: creator,
+                password: password),
             logStatements: logStatements);
 
+  /// A query executor that will store the database in the file declared by
+  /// [path], which will be resolved relative to [s.getDatabasesPath()].
+  /// If [logStatements] is true, statements sent to the database will
+  /// be [print]ed, which can be handy for debugging. The [singleInstance]
+  /// parameter sets the corresponding parameter on [s.openDatabase].
+  /// The [creator] will be called when the database file doesn't exist. It can
+  /// be used to, for instance, populate default data from an asset. Note that
+  /// migrations might behave differently when populating the database this way.
+  /// For instance, a database created by an [creator] will not receive the
+  /// [MigrationStrategy.onCreate] callback because it hasn't been created by
+  /// moor.
   EncryptedExecutor.inDatabaseFolder(
-      {@required String path, @required String password, bool logStatements})
-      : super(_SqfliteDelegate(true, path, password),
+      {@required String path,
+      @required String password,
+      bool logStatements,
+      bool singleInstance,
+      DatabaseCreator creator})
+      : super(
+            _SqfliteDelegate(true, path,
+                singleInstance: singleInstance,
+                creator: creator,
+                password: password),
             logStatements: logStatements);
 }
