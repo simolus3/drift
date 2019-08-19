@@ -10,7 +10,7 @@ final Map<String, Expression> _testCases = {
   'row_number() OVER (ORDER BY y)': AggregateExpression(
     function: identifier('row_number'),
     parameters: ExprFunctionParameters(),
-    over: WindowDefinition(
+    windowDefinition: WindowDefinition(
       frameSpec: FrameSpec(),
       orderBy: OrderBy(terms: [
         OrderingTerm(expression: Reference(columnName: 'y')),
@@ -24,7 +24,7 @@ final Map<String, Expression> _testCases = {
     function: identifier('row_number'),
     parameters: const StarFunctionParameter(),
     filter: NumericLiteral(1, token(TokenType.numberLiteral)),
-    over: WindowDefinition(
+    windowDefinition: WindowDefinition(
       baseWindowName: 'base_name',
       partitionBy: [
         Reference(columnName: 'a'),
@@ -44,7 +44,7 @@ final Map<String, Expression> _testCases = {
       AggregateExpression(
     function: identifier('row_number'),
     parameters: ExprFunctionParameters(),
-    over: WindowDefinition(
+    windowDefinition: WindowDefinition(
       frameSpec: FrameSpec(
         type: FrameType.range,
         start: const FrameBoundary.currentRow(),

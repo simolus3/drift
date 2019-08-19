@@ -7,6 +7,7 @@ class SelectStatement extends Statement with CrudStatement, ResultSet {
 
   final Expression where;
   final GroupBy groupBy;
+  final List<NamedWindowDeclaration> windowDeclarations;
 
   final OrderBy orderBy;
   final Limit limit;
@@ -22,6 +23,7 @@ class SelectStatement extends Statement with CrudStatement, ResultSet {
       this.from,
       this.where,
       this.groupBy,
+      this.windowDeclarations = const [],
       this.orderBy,
       this.limit});
 
@@ -37,6 +39,7 @@ class SelectStatement extends Statement with CrudStatement, ResultSet {
       if (from != null) ...from,
       if (where != null) where,
       if (groupBy != null) groupBy,
+      for (var windowDecl in windowDeclarations) windowDecl.definition,
       if (limit != null) limit,
       if (orderBy != null) orderBy,
     ];

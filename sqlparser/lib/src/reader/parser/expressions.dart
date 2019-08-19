@@ -373,10 +373,22 @@ mixin ExpressionParser on ParserBase {
     }
 
     _consume(TokenType.over, 'Expected OVER to begin window clause');
-    final window = _windowDefinition();
+
+    String windowName;
+    WindowDefinition window;
+
+    if (_matchOne(TokenType.identifier)) {
+      windowName = (_previous as IdentifierToken).identifier;
+    } else {
+      window = _windowDefinition();
+    }
 
     return AggregateExpression(
-        function: name, parameters: params, filter: filter, over: window)
-      ..setSpan(name, _previous);
+      function: name,
+      parameters: params,
+      filter: filter,
+      windowDefinition: window,
+      windowName: windowName,
+    )..setSpan(name, _previous);
   }
 }
