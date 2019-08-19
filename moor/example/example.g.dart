@@ -802,6 +802,15 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 }
 
+class TotalWeightResult {
+  final String title;
+  final int totalWeight;
+  TotalWeightResult({
+    this.title,
+    this.totalWeight,
+  });
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $CategoriesTable _categories;
@@ -813,6 +822,31 @@ abstract class _$Database extends GeneratedDatabase {
   $IngredientInRecipesTable _ingredientInRecipes;
   $IngredientInRecipesTable get ingredientInRecipes =>
       _ingredientInRecipes ??= $IngredientInRecipesTable(this);
+  TotalWeightResult _rowToTotalWeightResult(QueryRow row) {
+    return TotalWeightResult(
+      title: row.readString('title'),
+      totalWeight: row.readInt('total_weight'),
+    );
+  }
+
+  Future<List<TotalWeightResult>> _totalWeight(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: []).then((rows) => rows.map(_rowToTotalWeightResult).toList());
+  }
+
+  Stream<List<TotalWeightResult>> _watchTotalWeight() {
+    return customSelectStream(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: [],
+        readsFrom: {
+          recipes,
+          ingredientInRecipes
+        }).map((rows) => rows.map(_rowToTotalWeightResult).toList());
+  }
+
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];

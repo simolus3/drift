@@ -2,6 +2,7 @@ import 'dart:math' show max;
 
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -15,12 +16,13 @@ const highestAssignedIndexVar = '\$highestIndex';
 /// should be included in a generated database or dao class.
 class QueryWriter {
   final SqlQuery query;
+  final GeneratorSession session;
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
   final Set<String> _writtenMappingMethods;
 
-  QueryWriter(this.query, this._writtenMappingMethods);
+  QueryWriter(this.query, this.session, this._writtenMappingMethods);
 
   /// The expanded sql that we insert into queries whenever an array variable
   /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
@@ -102,9 +104,17 @@ class QueryWriter {
   }
 
   void _writeStreamReader(StringBuffer buffer) {
+    // turning the query name into pascal case will remove underscores
     final upperQueryName = ReCase(query.name).pascalCase;
-    buffer.write(
-        'Stream<List<${_select.resultClassName}>> watch$upperQueryName(');
+
+    String methodName;
+    if (session.options.fixPrivateWatchMethods && query.name.startsWith('_')) {
+      methodName = '_watch$upperQueryName';
+    } else {
+      methodName = 'watch$upperQueryName';
+    }
+
+    buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
     // don't supply an engine override parameter because select streams cannot
     // be used in transaction or similar context, only on the main database
     // engine.
