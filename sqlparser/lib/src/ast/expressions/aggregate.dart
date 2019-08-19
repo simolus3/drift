@@ -57,9 +57,7 @@ class AggregateExpression extends Expression
 
   @override
   bool contentEquals(AggregateExpression other) {
-    return other.name == name &&
-        other.windowDefinition == windowDefinition &&
-        other.windowName == windowName;
+    return other.name == name && other.windowName == windowName;
   }
 }
 
