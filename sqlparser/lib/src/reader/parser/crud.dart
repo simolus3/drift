@@ -22,6 +22,7 @@ mixin CrudParser on ParserBase {
 
     final where = _where();
     final groupBy = _groupBy();
+    final windowDecls = _windowDeclarations();
     final orderBy = _orderBy();
     final limit = _limit();
 
@@ -31,6 +32,7 @@ mixin CrudParser on ParserBase {
       from: from,
       where: where,
       groupBy: groupBy,
+      windowDeclarations: windowDecls,
       orderBy: orderBy,
       limit: limit,
     )..setSpan(selectToken, _previous);
@@ -253,8 +255,23 @@ mixin CrudParser on ParserBase {
     return null;
   }
 
+  List<NamedWindowDeclaration> _windowDeclarations() {
+    final declarations = <NamedWindowDeclaration>[];
+    if (_matchOne(TokenType.window)) {
+      do {
+        final name = _consumeIdentifier('Expected a name for the window');
+        _consume(TokenType.as,
+            'Expected AS between the window name and its definition');
+        final window = _windowDefinition();
+
+        declarations.add(NamedWindowDeclaration(name.identifier, window));
+      } while (_matchOne(TokenType.comma));
+    }
+    return declarations;
+  }
+
   OrderBy _orderBy() {
-    if (_match(const [TokenType.order])) {
+    if (_matchOne(TokenType.order)) {
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
       final terms = <OrderingTerm>[];
       do {

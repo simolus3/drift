@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:build/build.dart';
 import 'package:moor_generator/src/state/errors.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
@@ -49,8 +50,8 @@ class SqlParser {
 
       try {
         foundQueries.add(QueryHandler(name, context, _mapper).handle());
-      } catch (e) {
-        print('Error while generating APIs for ${context.sql}: $e');
+      } catch (e, s) {
+        log.warning('Error while generating APIs for ${context.sql}', e, s);
       }
     });
   }

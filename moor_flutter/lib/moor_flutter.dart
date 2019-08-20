@@ -46,7 +46,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       _SqfliteTransactionDelegate(this);
 
   @override
-  Future<bool> get isOpen => Future.value(db != null);
+  bool get isOpen => db != null;
 
   @override
   Future<void> open([GeneratedDatabase db]) async {

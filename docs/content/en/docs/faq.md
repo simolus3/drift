@@ -5,7 +5,7 @@ url: /faq/
 ---
 
 ## Using the database
-If you've created a `MyDatabase` class by following the [getting started guide]({{<relref "Getting Started/_index.md">}}), you
+If you've created a `MyDatabase` class by following the [getting started guide]({{<relref "Getting started/_index.md">}}), you
 still need to somehow obtain an instance of it. It's recommended to only have one (singleton) instance of your database,
 so you could store that instance in a global variable:
 

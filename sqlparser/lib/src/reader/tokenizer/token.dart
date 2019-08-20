@@ -88,6 +88,7 @@ enum TokenType {
   $else,
   end,
 
+  window,
   filter,
   over,
   partition,
@@ -222,6 +223,7 @@ const Map<String, TokenType> keywords = {
   'EXCLUDE': TokenType.exclude,
   'OTHERS': TokenType.others,
   'TIES': TokenType.ties,
+  'WINDOW': TokenType.window,
 };
 
 class Token {

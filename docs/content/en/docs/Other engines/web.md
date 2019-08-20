@@ -1,6 +1,7 @@
 ---
 title: Web support
 url: /web
+description: Experimental support for moor and webapps.
 ---
 
 Starting from moor `1.6`, you can experimentally use moor in Dart webapps. Moor web supports 

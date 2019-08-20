@@ -2,6 +2,8 @@
 container:
   image: "google/dart:latest"
 
+# We're currently not running tests with coverage because the free cirrus containers run out of memory :(
+
 task:
   pub_cache:
     folder: $HOME/.pub-cache
@@ -11,4 +13,4 @@ task:
   analyze_script: tool/analyze.sh
   test_moor_script: tool/test_moor.sh
   test_sqlparser_script: tool/test_sqlparser.sh
-  format_coverage_script: tool/upload_coverage.sh
+#  format_coverage_script: tool/upload_coverage.sh

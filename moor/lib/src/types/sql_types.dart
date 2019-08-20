@@ -26,16 +26,24 @@ class BoolType extends SqlType<bool> {
 
   @override
   bool mapFromDatabaseResponse(response) {
+    // ignore: avoid_returning_null
+    if (response == null) return null;
     return response != 0;
   }
 
   @override
   String mapToSqlConstant(bool content) {
+    if (content == null) {
+      return 'NULL';
+    }
     return content ? '1' : '0';
   }
 
   @override
   mapToSqlVariable(bool content) {
+    if (content == null) {
+      return null;
+    }
     return content ? 1 : 0;
   }
 }

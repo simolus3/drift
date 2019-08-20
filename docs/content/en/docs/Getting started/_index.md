@@ -2,8 +2,7 @@
 title: "Getting Started"
 linkTitle: "Getting Started"
 weight: 2
-description: >
-  Simple guide to get a moor project up and running
+description: Simple guide to get a moor project up and running
 
 aliases:
   - /getting-started/  # Used to have this url

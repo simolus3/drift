@@ -61,7 +61,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
 
     final writtenMappingMethods = <String>{};
     for (var query in parsedDao.queries) {
-      QueryWriter(query, writtenMappingMethods).writeInto(buffer);
+      QueryWriter(query, session, writtenMappingMethods).writeInto(buffer);
     }
 
     buffer.write('}');
