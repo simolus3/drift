@@ -2,4 +2,4 @@
 
 cd moor
 #dart tool/coverage.dart
-pub run build_runner test
+pub run build_runner test --delete-conflicting-outputs
