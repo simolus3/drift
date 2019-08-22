@@ -15,7 +15,7 @@ dependencies:
   meta: ^1.0.0
   collection: ^1.0.0
   synchronized: ^2.1.0
-  pedantic: any
+  pedantic: ^1.0.0
 
 dev_dependencies:
   moor_generator: ^1.6.0
