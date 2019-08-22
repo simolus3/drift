@@ -1,4 +1,4 @@
-## unreleased
+## 1.7.0
 - Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)
 for details on how to use this feature.
 - Transactions now roll back when not completed successfully, they also rethrow the exception

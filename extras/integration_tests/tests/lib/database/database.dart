@@ -110,8 +110,9 @@ class Database extends _$Database {
   Future<void> deleteUser(User user, {bool fail = false}) {
     return transaction((_) async {
       final id = user.id;
-      delete(friendships)
-          .where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id)));
+      await (delete(friendships)
+            ..where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id))))
+          .go();
 
       if (fail) {
         throw Exception('oh no, the query misteriously failed!');
