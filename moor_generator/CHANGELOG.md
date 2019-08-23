@@ -1,3 +1,7 @@
+## 1.7.1
+- Drop support for analyzer versions `<0.36.4`. They weren't supported in version 1.7.0 either, but
+  the `pubspec.yaml` did not specify this correctly.
+
 ## 1.7.0
 - Support type converters that were introduced in moor 1.7
 - Support parsing and generating code for `.moor` files (see [docs](https://moor.simonbinder.eu/docs/using-sql/custom_tables/)).
