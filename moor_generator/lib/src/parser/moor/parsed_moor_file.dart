@@ -52,6 +52,7 @@ class CreateTable {
       for (var constraint in column.constraints) {
         if (constraint is PrimaryKeyColumn) {
           isPrimaryKey = true;
+          features.add(const PrimaryKey());
           if (constraint.autoIncrement) {
             features.add(AutoIncrement());
           }

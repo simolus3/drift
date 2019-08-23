@@ -622,6 +622,162 @@ class Config extends Table with TableInfo<Config, ConfigData> {
   final bool dontWriteConstraints = true;
 }
 
+class MytableData extends DataClass implements Insertable<MytableData> {
+  final int someid;
+  final String sometext;
+  MytableData({@required this.someid, this.sometext});
+  factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return MytableData(
+      someid: intType.mapFromDatabaseResponse(data['${effectivePrefix}someid']),
+      sometext: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
+    );
+  }
+  factory MytableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return MytableData(
+      someid: serializer.fromJson<int>(json['someid']),
+      sometext: serializer.fromJson<String>(json['sometext']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return {
+      'someid': serializer.toJson<int>(someid),
+      'sometext': serializer.toJson<String>(sometext),
+    };
+  }
+
+  @override
+  T createCompanion<T extends UpdateCompanion<MytableData>>(bool nullToAbsent) {
+    return MytableCompanion(
+      someid:
+          someid == null && nullToAbsent ? const Value.absent() : Value(someid),
+      sometext: sometext == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sometext),
+    ) as T;
+  }
+
+  MytableData copyWith({int someid, String sometext}) => MytableData(
+        someid: someid ?? this.someid,
+        sometext: sometext ?? this.sometext,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('MytableData(')
+          ..write('someid: $someid, ')
+          ..write('sometext: $sometext')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(someid.hashCode, sometext.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is MytableData &&
+          other.someid == someid &&
+          other.sometext == sometext);
+}
+
+class MytableCompanion extends UpdateCompanion<MytableData> {
+  final Value<int> someid;
+  final Value<String> sometext;
+  const MytableCompanion({
+    this.someid = const Value.absent(),
+    this.sometext = const Value.absent(),
+  });
+  MytableCompanion copyWith({Value<int> someid, Value<String> sometext}) {
+    return MytableCompanion(
+      someid: someid ?? this.someid,
+      sometext: sometext ?? this.sometext,
+    );
+  }
+}
+
+class Mytable extends Table with TableInfo<Mytable, MytableData> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  Mytable(this._db, [this._alias]);
+  final VerificationMeta _someidMeta = const VerificationMeta('someid');
+  GeneratedIntColumn _someid;
+  GeneratedIntColumn get someid => _someid ??= _constructSomeid();
+  GeneratedIntColumn _constructSomeid() {
+    return GeneratedIntColumn('someid', $tableName, false,
+        declaredAsPrimaryKey: true, $customConstraints: 'NOT NULL PRIMARY KEY');
+  }
+
+  final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
+  GeneratedTextColumn _sometext;
+  GeneratedTextColumn get sometext => _sometext ??= _constructSometext();
+  GeneratedTextColumn _constructSometext() {
+    return GeneratedTextColumn('sometext', $tableName, true,
+        $customConstraints: '');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [someid, sometext];
+  @override
+  Mytable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'mytable';
+  @override
+  final String actualTableName = 'mytable';
+  @override
+  VerificationContext validateIntegrity(MytableCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.someid.present) {
+      context.handle(
+          _someidMeta, someid.isAcceptableValue(d.someid.value, _someidMeta));
+    } else if (someid.isRequired && isInserting) {
+      context.missing(_someidMeta);
+    }
+    if (d.sometext.present) {
+      context.handle(_sometextMeta,
+          sometext.isAcceptableValue(d.sometext.value, _sometextMeta));
+    } else if (sometext.isRequired && isInserting) {
+      context.missing(_sometextMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {someid};
+  @override
+  MytableData map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return MytableData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(MytableCompanion d) {
+    final map = <String, Variable>{};
+    if (d.someid.present) {
+      map['someid'] = Variable<int, IntType>(d.someid.value);
+    }
+    if (d.sometext.present) {
+      map['sometext'] = Variable<String, StringType>(d.sometext.value);
+    }
+    return map;
+  }
+
+  @override
+  Mytable createAlias(String alias) {
+    return Mytable(_db, alias);
+  }
+
+  @override
+  final bool dontWriteConstraints = true;
+}
+
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e)
       : super(const SqlTypeSystem.withDefaults(), e);
@@ -634,7 +790,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       _withConstraints ??= WithConstraints(this);
   Config _config;
   Config get config => _config ??= Config(this);
+  Mytable _mytable;
+  Mytable get mytable => _mytable ??= Mytable(this);
   @override
   List<TableInfo> get allTables =>
-      [noIds, withDefaults, withConstraints, config];
+      [noIds, withDefaults, withConstraints, config, mytable];
 }

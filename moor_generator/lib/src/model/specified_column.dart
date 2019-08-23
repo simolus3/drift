@@ -164,6 +164,11 @@ abstract class ColumnFeature {
   const ColumnFeature();
 }
 
+/// A `PRIMARY KEY` column constraint.
+class PrimaryKey extends ColumnFeature {
+  const PrimaryKey();
+}
+
 class AutoIncrement extends ColumnFeature {
   static const AutoIncrement _instance = AutoIncrement._();
 

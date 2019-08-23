@@ -22,19 +22,21 @@ void main() {
       // should create todos, categories, users and shared_todos table
       verify(mockQueryExecutor.call(
           'CREATE TABLE IF NOT EXISTS todos '
-          '(id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
+          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
           'content VARCHAR NOT NULL, target_date INTEGER NULL, '
           'category INTEGER NULL);',
           []));
 
       verify(mockQueryExecutor.call(
           'CREATE TABLE IF NOT EXISTS categories '
-          '(id INTEGER PRIMARY KEY AUTOINCREMENT, `desc` VARCHAR NOT NULL UNIQUE);',
+          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          '`desc` VARCHAR NOT NULL UNIQUE);',
           []));
 
       verify(mockQueryExecutor.call(
           'CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
+          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          'name VARCHAR NOT NULL, '
           'is_awesome BOOLEAN NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
@@ -66,7 +68,8 @@ void main() {
 
       verify(mockQueryExecutor.call(
           'CREATE TABLE IF NOT EXISTS users '
-          '(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, '
+          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
+          'name VARCHAR NOT NULL, '
           'is_awesome BOOLEAN NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '

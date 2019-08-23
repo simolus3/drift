@@ -5,7 +5,7 @@ CREATE TABLE no_ids (
 CREATE TABLE with_defaults (
     a TEXT DEFAULT 'something',
     b INT UNIQUE
-)
+);
 
 CREATE TABLE with_constraints (
     a TEXT,
@@ -13,9 +13,14 @@ CREATE TABLE with_constraints (
     c FLOAT(10, 2),
 
     FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)
-)
+);
 
 create table config (
     config_key TEXT not null primary key,
     config_value TEXT
 );
+
+CREATE TABLE mytable (
+    someid INTEGER NOT NULL PRIMARY KEY,
+    sometext TEXT
+)
