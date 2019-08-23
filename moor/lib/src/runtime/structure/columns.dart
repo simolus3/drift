@@ -206,7 +206,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     if (hasAutoIncrement) {
       into.write(' PRIMARY KEY AUTOINCREMENT');
     } else if (declaredAsPrimaryKey) {
-      into.write('PRIMARY KEY');
+      into.write(' PRIMARY KEY');
     }
   }
 
