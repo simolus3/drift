@@ -39,6 +39,15 @@ Queries can have parameters in them by using the `?` or `:name` syntax. When you
 moor will figure out an appropriate type for them and include them in the generated methods. For instance,
 `'categoryById': 'SELECT * FROM categories WHERE id = :id'` will generate the method `categoryById(int id)`.
 
+{{% alert title="On table names" color="info" %}}
+To use this feature, it's helpful to know how Dart tables are named in sql. For tables that don't
+override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
+called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
+called `user_address_information`. The same rule applies to column getters without an explicit name.
+Tables and columns declared in [SQL tables]({{< relref "custom_tables.md" >}}) will always have the
+name you specified.
+{{% /alert %}}
+
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for 
 [daos]({{< relref "../Advanced Features/daos.md" >}}),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
