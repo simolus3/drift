@@ -1,6 +1,7 @@
 ## 1.7.1
 - Drop support for analyzer versions `<0.36.4`. They weren't supported in version 1.7.0 either, but
   the `pubspec.yaml` did not specify this correctly.
+- Support for moor version 1.7.1, which contains a fix for integer columns declared as primary key
 
 ## 1.7.0
 - Support type converters that were introduced in moor 1.7
