@@ -133,6 +133,20 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
+  TodosTableCompanion copyWith(
+      {Value<int> id,
+      Value<String> title,
+      Value<String> content,
+      Value<DateTime> targetDate,
+      Value<int> category}) {
+    return TodosTableCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      targetDate: targetDate ?? this.targetDate,
+      category: category ?? this.category,
+    );
+  }
 }
 
 class $TodosTableTable extends TodosTable
@@ -145,7 +159,8 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -343,6 +358,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -355,7 +376,8 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _descriptionMeta =
@@ -547,6 +569,20 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.creationTime = const Value.absent(),
   });
+  UsersCompanion copyWith(
+      {Value<int> id,
+      Value<String> name,
+      Value<bool> isAwesome,
+      Value<Uint8List> profilePicture,
+      Value<DateTime> creationTime}) {
+    return UsersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isAwesome: isAwesome ?? this.isAwesome,
+      profilePicture: profilePicture ?? this.profilePicture,
+      creationTime: creationTime ?? this.creationTime,
+    );
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -558,7 +594,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -755,6 +792,12 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     this.todo = const Value.absent(),
     this.user = const Value.absent(),
   });
+  SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
+    return SharedTodosCompanion(
+      todo: todo ?? this.todo,
+      user: user ?? this.user,
+    );
+  }
 }
 
 class $SharedTodosTable extends SharedTodos
@@ -935,6 +978,16 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.someFloat = const Value.absent(),
     this.custom = const Value.absent(),
   });
+  TableWithoutPKCompanion copyWith(
+      {Value<int> notReallyAnId,
+      Value<double> someFloat,
+      Value<MyCustomObject> custom}) {
+    return TableWithoutPKCompanion(
+      notReallyAnId: notReallyAnId ?? this.notReallyAnId,
+      someFloat: someFloat ?? this.someFloat,
+      custom: custom ?? this.custom,
+    );
+  }
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
@@ -1109,6 +1162,12 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
+  PureDefaultsCompanion copyWith({Value<int> id, Value<String> txt}) {
+    return PureDefaultsCompanion(
+      id: id ?? this.id,
+      txt: txt ?? this.txt,
+    );
+  }
 }
 
 class $PureDefaultsTable extends PureDefaults
@@ -1121,7 +1180,8 @@ class $PureDefaultsTable extends PureDefaults
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
@@ -1290,7 +1350,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
       List<int> var3,
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
           QueryEngine operateOn}) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return (operateOn ?? this).customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
@@ -1302,7 +1364,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Stream<List<TodoEntry>> watchWithIn(
       String var1, String var2, List<int> var3) {
-    final expandedvar3 = List.filled(var3.length, '?').join(',');
+    var $highestIndex = 3;
+    final expandedvar3 = $expandVar($highestIndex, var3.length);
+    $highestIndex += var3.length;
     return customSelectStream(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [

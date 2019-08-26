@@ -22,13 +22,15 @@ class QueryHandler {
     final root = context.root;
     _foundVariables = mapper.extractVariables(context);
 
+    _verifyNoSkippedIndexes();
+
     if (root is SelectStatement) {
       return _handleSelect();
     } else if (root is UpdateStatement || root is DeleteStatement) {
       return _handleUpdate();
     } else {
       throw StateError(
-          'Unexpected sql: Got $root, expected a select statement');
+          'Unexpected sql: Got $root, expected a select or update statement');
     }
   }
 
@@ -131,5 +133,33 @@ class QueryHandler {
       }
     }
     return null;
+  }
+
+  /// We verify that no variable numbers are skipped in the query. For instance,
+  /// `SELECT * FROM tbl WHERE a = ?2 AND b = ?` would fail this check because
+  /// the index 1 is never used.
+  void _verifyNoSkippedIndexes() {
+    final variables = List.of(_foundVariables)
+      ..sort((a, b) => a.index.compareTo(b.index));
+
+    var currentExpectedIndex = 1;
+
+    for (var i = 0; i < variables.length; i++) {
+      final current = variables[i];
+      if (current.index > currentExpectedIndex) {
+        throw StateError('This query skips some variable indexes: '
+            'We found no variable is at position $currentExpectedIndex, '
+            'even though a variable at index ${current.index} exists.');
+      }
+
+      if (i < variables.length - 1) {
+        final next = variables[i + 1];
+        if (next.index > currentExpectedIndex) {
+          // if the next variable has a higher index, increment expected index
+          // by one because we expect that every index is present
+          currentExpectedIndex++;
+        }
+      }
+    }
   }
 }

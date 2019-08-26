@@ -60,7 +60,7 @@ class _MySqlDelegate extends DatabaseDelegate with _MySqlExecutor {
   _MySqlDelegate(this._settings);
 
   @override
-  Future<bool> get isOpen async => _connection != null;
+  bool get isOpen => _connection != null;
 
   @override
   Querier get _querier => _connection;

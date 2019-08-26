@@ -244,6 +244,7 @@ mixin QueryEngine on DatabaseConnectionUser {
           success = true;
         } catch (e) {
           await transactionExecutor.rollback();
+
           // pass the exception on to the one who called transaction()
           rethrow;
         } finally {

@@ -22,6 +22,7 @@ mixin CrudParser on ParserBase {
 
     final where = _where();
     final groupBy = _groupBy();
+    final windowDecls = _windowDeclarations();
     final orderBy = _orderBy();
     final limit = _limit();
 
@@ -31,6 +32,7 @@ mixin CrudParser on ParserBase {
       from: from,
       where: where,
       groupBy: groupBy,
+      windowDeclarations: windowDecls,
       orderBy: orderBy,
       limit: limit,
     )..setSpan(selectToken, _previous);
@@ -253,8 +255,23 @@ mixin CrudParser on ParserBase {
     return null;
   }
 
+  List<NamedWindowDeclaration> _windowDeclarations() {
+    final declarations = <NamedWindowDeclaration>[];
+    if (_matchOne(TokenType.window)) {
+      do {
+        final name = _consumeIdentifier('Expected a name for the window');
+        _consume(TokenType.as,
+            'Expected AS between the window name and its definition');
+        final window = _windowDefinition();
+
+        declarations.add(NamedWindowDeclaration(name.identifier, window));
+      } while (_matchOne(TokenType.comma));
+    }
+    return declarations;
+  }
+
   OrderBy _orderBy() {
-    if (_match(const [TokenType.order])) {
+    if (_matchOne(TokenType.order)) {
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
       final terms = <OrderingTerm>[];
       do {
@@ -347,5 +364,122 @@ mixin CrudParser on ParserBase {
     final where = _where();
     return UpdateStatement(
         or: failureMode, table: table, set: set, where: where);
+  }
+
+  @override
+  WindowDefinition _windowDefinition() {
+    _consume(TokenType.leftParen, 'Expected opening parenthesis');
+    final leftParen = _previous;
+
+    String baseWindowName;
+    OrderBy orderBy;
+
+    final partitionBy = <Expression>[];
+    if (_matchOne(TokenType.identifier)) {
+      baseWindowName = (_previous as IdentifierToken).identifier;
+    }
+
+    if (_matchOne(TokenType.partition)) {
+      _consume(TokenType.by, 'Expected PARTITION BY');
+      do {
+        partitionBy.add(expression());
+      } while (_matchOne(TokenType.comma));
+    }
+
+    if (_peek.type == TokenType.order) {
+      orderBy = _orderBy();
+    }
+
+    final spec = _frameSpec();
+
+    _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    return WindowDefinition(
+      baseWindowName: baseWindowName,
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+      frameSpec: spec ?? FrameSpec(),
+    )..setSpan(leftParen, _previous);
+  }
+
+  /// https://www.sqlite.org/syntax/frame-spec.html
+  FrameSpec _frameSpec() {
+    if (!_match(const [TokenType.range, TokenType.rows, TokenType.groups])) {
+      return null;
+    }
+
+    final typeToken = _previous;
+
+    final frameType = const {
+      TokenType.range: FrameType.range,
+      TokenType.rows: FrameType.rows,
+      TokenType.groups: FrameType.groups
+    }[typeToken.type];
+
+    FrameBoundary start, end;
+
+    // if there is no between token, we just read the start boundary and set the
+    // end to currentRow. See the link in the docs
+    if (_matchOne(TokenType.between)) {
+      start = _frameBoundary(isStartBounds: true, parseExprFollowing: true);
+      _consume(TokenType.and, 'Expected AND followed by the ending boundary');
+      end = _frameBoundary(isStartBounds: false, parseExprFollowing: true);
+    } else {
+      // <expr> FOLLOWING is not supported in the short-hand syntax
+      start = _frameBoundary(isStartBounds: true, parseExprFollowing: false);
+      end = const FrameBoundary.currentRow();
+    }
+
+    var exclude = ExcludeMode.noOthers;
+    if (_matchOne(TokenType.exclude)) {
+      if (_matchOne(TokenType.ties)) {
+        exclude = ExcludeMode.ties;
+      } else if (_matchOne(TokenType.group)) {
+        exclude = ExcludeMode.group;
+      } else if (_matchOne(TokenType.current)) {
+        _consume(TokenType.row, 'Expected EXCLUDE CURRENT ROW');
+        exclude = ExcludeMode.currentRow;
+      } else if (_matchOne(TokenType.no)) {
+        _consume(TokenType.others, 'Expected EXCLUDE NO OTHERS');
+        exclude = ExcludeMode.noOthers;
+      }
+    }
+
+    return FrameSpec(
+      type: frameType,
+      excludeMode: exclude,
+      start: start,
+      end: end,
+    )..setSpan(typeToken, _previous);
+  }
+
+  FrameBoundary _frameBoundary(
+      {bool isStartBounds = true, bool parseExprFollowing = true}) {
+    // the CURRENT ROW boundary is supported for all modes
+    if (_matchOne(TokenType.current)) {
+      _consume(TokenType.row, 'Expected ROW to finish CURRENT ROW boundary');
+      return const FrameBoundary.currentRow();
+    }
+    if (_matchOne(TokenType.unbounded)) {
+      // if this is a start boundary, only UNBOUNDED PRECEDING makes sense.
+      // Otherwise, only UNBOUNDED FOLLOWING makes sense
+      if (isStartBounds) {
+        _consume(TokenType.preceding, 'Expected UNBOUNDED PRECEDING');
+        return const FrameBoundary.unboundedPreceding();
+      } else {
+        _consume(TokenType.following, 'Expected UNBOUNDED FOLLOWING');
+        return const FrameBoundary.unboundedFollowing();
+      }
+    }
+
+    // ok, not unbounded or CURRENT ROW. It must be <expr> PRECEDING|FOLLOWING
+    // then
+    final amount = expression();
+    if (parseExprFollowing && _matchOne(TokenType.following)) {
+      return FrameBoundary.following(amount);
+    } else if (_matchOne(TokenType.preceding)) {
+      return FrameBoundary.preceding(amount);
+    }
+
+    _error('Expected either PRECEDING or FOLLOWING here');
   }
 }

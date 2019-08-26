@@ -19,7 +19,7 @@ void main() {
 
       verify(
         executor.runSelect(
-          'SELECT * FROM todos WHERE title = ?2 OR id IN (?,?,?) OR title = ?1',
+          'SELECT * FROM todos WHERE title = ?2 OR id IN (?3, ?4, ?5) OR title = ?1',
           ['one', 'two', 1, 2, 3],
         ),
       );

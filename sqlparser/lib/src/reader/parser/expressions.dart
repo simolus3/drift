@@ -302,6 +302,10 @@ mixin ExpressionParser on ParserBase {
           final rightParen = _consume(TokenType.rightParen,
               'Expected closing bracket after argument list');
 
+          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+            return _aggregate(first, parameters);
+          }
+
           return FunctionExpression(
               name: first.identifier, parameters: parameters)
             ..setSpan(first, rightParen);
@@ -330,7 +334,8 @@ mixin ExpressionParser on ParserBase {
         break;
     }
 
-    // nothing found -> issue error
+    // nothing found -> issue error. Step back to revert the _advance() above
+    _stepBack();
     _error('Could not parse this expression');
   }
 
@@ -339,11 +344,51 @@ mixin ExpressionParser on ParserBase {
       return const StarFunctionParameter();
     }
 
+    if (_check(TokenType.rightParen)) {
+      // nothing between the brackets -> empty parameter list
+      return ExprFunctionParameters(parameters: const []);
+    }
+
     final distinct = _matchOne(TokenType.distinct);
     final parameters = <Expression>[];
-    while (_peek.type != TokenType.rightParen) {
+
+    do {
       parameters.add(expression());
-    }
+    } while (_matchOne(TokenType.comma));
+
     return ExprFunctionParameters(distinct: distinct, parameters: parameters);
+  }
+
+  AggregateExpression _aggregate(
+      IdentifierToken name, FunctionParameters params) {
+    Expression filter;
+
+    // https://www.sqlite.org/syntax/filter.html (it's optional)
+    if (_matchOne(TokenType.filter)) {
+      _consume(TokenType.leftParen,
+          'Expected opening parenthesis after filter statement');
+      _consume(TokenType.where, 'Expected WHERE clause');
+      filter = expression();
+      _consume(TokenType.rightParen, 'Expecteded closing parenthes');
+    }
+
+    _consume(TokenType.over, 'Expected OVER to begin window clause');
+
+    String windowName;
+    WindowDefinition window;
+
+    if (_matchOne(TokenType.identifier)) {
+      windowName = (_previous as IdentifierToken).identifier;
+    } else {
+      window = _windowDefinition();
+    }
+
+    return AggregateExpression(
+      function: name,
+      parameters: params,
+      filter: filter,
+      windowDefinition: window,
+      windowName: windowName,
+    )..setSpan(name, _previous);
   }
 }

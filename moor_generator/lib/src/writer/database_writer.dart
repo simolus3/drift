@@ -62,7 +62,7 @@ class DatabaseWriter {
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
     for (var query in db.queries) {
-      QueryWriter(query, writtenMappingMethods).writeInto(buffer);
+      QueryWriter(query, session, writtenMappingMethods).writeInto(buffer);
     }
 
     // Write List of tables, close bracket for class

@@ -53,6 +53,10 @@ class ColumnBuilder<
   /// result in an SQL column called account_creation_date).
   /// To change this default behavior, use something like
   /// `IntColumn get id = integer((c) => c.named('user_id'))`.
+  ///
+  /// Note that using [named] __does not__ have an effect on the json key of an
+  /// object. To change the json key, annotate this column getter with
+  /// [JsonKey].
   Builder named(String name) => null;
 
   /// Marks this column as nullable. Nullable columns should not appear in a

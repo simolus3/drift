@@ -12,6 +12,7 @@ class UpdateCompanionWriter {
         'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields(buffer);
     _writeConstructor(buffer);
+    _writeCopyWith(buffer);
 
     buffer.write('}\n');
   }
@@ -31,5 +32,26 @@ class UpdateCompanionWriter {
     }
 
     buffer.write('});\n');
+  }
+
+  void _writeCopyWith(StringBuffer buffer) {
+    buffer.write('${table.updateCompanionName} copyWith({');
+    var first = true;
+    for (var column in table.columns) {
+      if (!first) {
+        buffer.write(', ');
+      }
+      first = false;
+      buffer.write('Value<${column.dartTypeName}> ${column.dartGetterName}');
+    }
+
+    buffer
+      ..write('}) {\n') //
+      ..write('return ${table.updateCompanionName}(');
+    for (var column in table.columns) {
+      final name = column.dartGetterName;
+      buffer.write('$name: $name ?? this.$name,');
+    }
+    buffer.write(');\n}\n');
   }
 }

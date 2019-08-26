@@ -53,6 +53,10 @@ class SpecifiedTable {
   final bool overrideWithoutRowId;
 
   /// When non-null, the generated table class will override the
+  /// `dontWriteConstraint` getter on the table class with this value.
+  final bool overrideDontWriteConstraints;
+
+  /// When non-null, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
@@ -64,7 +68,8 @@ class SpecifiedTable {
       this.primaryKey,
       String overriddenName,
       this.overrideWithoutRowId,
-      this.overrideTableConstraints})
+      this.overrideTableConstraints,
+      this.overrideDontWriteConstraints})
       : _overriddenName = overriddenName;
 
   /// Finds all type converters used in this tables.

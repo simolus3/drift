@@ -76,6 +76,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -88,7 +94,8 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _descriptionMeta =
@@ -259,6 +266,18 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
+  RecipesCompanion copyWith(
+      {Value<int> id,
+      Value<String> title,
+      Value<String> instructions,
+      Value<int> category}) {
+    return RecipesCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      instructions: instructions ?? this.instructions,
+      category: category ?? this.category,
+    );
+  }
 }
 
 class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
@@ -270,7 +289,8 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -462,6 +482,14 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
+  IngredientsCompanion copyWith(
+      {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
+    return IngredientsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      caloriesPer100g: caloriesPer100g ?? this.caloriesPer100g,
+    );
+  }
 }
 
 class $IngredientsTable extends Ingredients
@@ -474,7 +502,8 @@ class $IngredientsTable extends Ingredients
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -659,6 +688,14 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
+  IngredientInRecipesCompanion copyWith(
+      {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
+    return IngredientInRecipesCompanion(
+      recipe: recipe ?? this.recipe,
+      ingredient: ingredient ?? this.ingredient,
+      amountInGrams: amountInGrams ?? this.amountInGrams,
+    );
+  }
 }
 
 class $IngredientInRecipesTable extends IngredientInRecipes
@@ -768,6 +805,15 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 }
 
+class TotalWeightResult {
+  final String title;
+  final int totalWeight;
+  TotalWeightResult({
+    this.title,
+    this.totalWeight,
+  });
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $CategoriesTable _categories;
@@ -779,6 +825,31 @@ abstract class _$Database extends GeneratedDatabase {
   $IngredientInRecipesTable _ingredientInRecipes;
   $IngredientInRecipesTable get ingredientInRecipes =>
       _ingredientInRecipes ??= $IngredientInRecipesTable(this);
+  TotalWeightResult _rowToTotalWeightResult(QueryRow row) {
+    return TotalWeightResult(
+      title: row.readString('title'),
+      totalWeight: row.readInt('total_weight'),
+    );
+  }
+
+  Future<List<TotalWeightResult>> _totalWeight(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: []).then((rows) => rows.map(_rowToTotalWeightResult).toList());
+  }
+
+  Stream<List<TotalWeightResult>> _watchTotalWeight() {
+    return customSelectStream(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: [],
+        readsFrom: {
+          recipes,
+          ingredientInRecipes
+        }).map((rows) => rows.map(_rowToTotalWeightResult).toList());
+  }
+
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];

@@ -95,6 +95,11 @@ class Scanner {
           _addToken(TokenType.more);
         }
         break;
+      case '!':
+        if (_match('=')) {
+          _addToken(TokenType.exclamationEqual);
+        }
+        break;
       case '=':
         _addToken(_match('=') ? TokenType.doubleEqual : TokenType.equal);
         break;
@@ -138,8 +143,7 @@ class Scanner {
         } else if (canStartColumnName(char)) {
           _identifier();
         } else {
-          errors.add(TokenizerError(
-              'Unexpected character.', SourceLocation(_currentOffset)));
+          errors.add(TokenizerError('Unexpected character.', _currentLocation));
         }
         break;
     }

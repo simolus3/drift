@@ -140,6 +140,11 @@ class TableWriter {
         if (feature.maxLength != null) {
           additionalParams['maxTextLength'] = feature.maxLength.toString();
         }
+      } else if (feature is PrimaryKey && column.type == ColumnType.integer) {
+        // this field is only relevant for integer columns because an INTEGER
+        // PRIMARY KEY is an alias for the rowid which should allow absent
+        // values during insert, even without the `AUTOINCREMENT` clause.
+        additionalParams['declaredAsPrimaryKey'] = 'true';
       }
     }
 
@@ -264,7 +269,9 @@ class TableWriter {
   void _overrideFieldsIfNeeded(StringBuffer buffer) {
     if (table.overrideWithoutRowId != null) {
       final value = table.overrideWithoutRowId ? 'true' : 'false';
-      buffer..write('@override\n')..write('final bool withoutRowId = $value;');
+      buffer
+        ..write('@override\n')
+        ..write('final bool withoutRowId = $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {
@@ -273,7 +280,14 @@ class TableWriter {
 
       buffer
         ..write('@override\n')
-        ..write('final List<String> customConstraints = const [$value];');
+        ..write('final List<String> customConstraints = const [$value];\n');
+    }
+
+    if (table.overrideDontWriteConstraints != null) {
+      final value = table.overrideDontWriteConstraints ? 'true' : 'false';
+      buffer
+        ..write('@override\n')
+        ..write('final bool dontWriteConstraints = $value;\n');
     }
   }
 }
