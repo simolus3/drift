@@ -13,7 +13,7 @@ mixin Referencable {}
 /// many things, basically only tables.
 ///
 /// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id) FROM demo AS out;"
-/// is a valid sql query when the demo table as an id column. However,
+/// is a valid sql query when the demo table has an id column. However,
 /// "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = d) FROM demo AS out;" is
 /// not, the "d" referencable is not visible for the child select statement.
 mixin VisibleToChildren on Referencable {}
@@ -79,12 +79,20 @@ class ReferenceScope {
   /// Returns everything that is in scope and a subtype of [T].
   List<T> allOf<T>() {
     var scope = this;
+    var isInCurrentScope = true;
     final collected = <T>[];
 
     while (scope != null) {
-      collected.addAll(
-          scope._references.values.expand((list) => list).whereType<T>());
+      var foundValues =
+          scope._references.values.expand((list) => list).whereType<T>();
+
+      if (!isInCurrentScope) {
+        foundValues = foundValues.whereType<VisibleToChildren>().cast();
+      }
+
+      collected.addAll(foundValues);
       scope = scope.parent;
+      isInCurrentScope = false;
     }
     return collected;
   }

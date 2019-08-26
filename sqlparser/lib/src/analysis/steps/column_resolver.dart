@@ -115,10 +115,13 @@ class ColumnResolver extends RecursiveVisitor<void> {
   Table _resolveTableReference(TableReference r) {
     final scope = r.scope;
     final resolvedTable = scope.resolve<Table>(r.tableName, orElse: () {
-      context.reportError(AnalysisError(
+      final available = scope.allOf<Table>().map((t) => t.name);
+
+      context.reportError(UnresolvedReferenceError(
         type: AnalysisErrorType.referencedUnknownTable,
         relevantNode: r,
-        message: 'The table ${r.tableName} could not be found',
+        reference: r.tableName,
+        available: available,
       ));
     });
     return r.resolved = resolvedTable;

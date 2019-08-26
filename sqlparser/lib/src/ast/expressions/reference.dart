@@ -23,4 +23,13 @@ class Reference extends Expression with ReferenceOwner {
   bool contentEquals(Reference other) {
     return other.tableName == tableName && other.columnName == columnName;
   }
+
+  @override
+  String toString() {
+    if (tableName != null) {
+      return '$tableName.$columnName';
+    } else {
+      return columnName;
+    }
+  }
 }

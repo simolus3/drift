@@ -130,9 +130,11 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.identifier)) {
       // ignore the schema name, it's not supported. Besides that, we're on the
       // first branch in the diagram here
-      final tableName = (_previous as IdentifierToken).identifier;
+      final firstToken = _previous as IdentifierToken;
+      final tableName = firstToken.identifier;
       final alias = _as();
-      return TableReference(tableName, alias?.identifier);
+      return TableReference(tableName, alias?.identifier)
+        ..setSpan(firstToken, _previous);
     }
     return null;
   }
