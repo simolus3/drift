@@ -133,6 +133,10 @@ enum TokenType {
 
   semicolon,
   eof,
+
+  /// Moor specific token, used to declare a type converters
+  mapped,
+  inlineDart,
 }
 
 const Map<String, TokenType> keywords = {
@@ -226,6 +230,10 @@ const Map<String, TokenType> keywords = {
   'WINDOW': TokenType.window,
 };
 
+const Map<String, TokenType> moorKeywords = {
+  'MAPPED': TokenType.mapped,
+};
+
 class Token {
   final TokenType type;
 
@@ -264,6 +272,17 @@ class IdentifierToken extends Token {
 
   const IdentifierToken(this.escaped, FileSpan span)
       : super(TokenType.identifier, span);
+}
+
+/// Inline Dart appearing in a create table statement. Only parsed when the moor
+/// extensions are enabled. Dart code is wrapped in backticks.
+class InlineDartToken extends Token {
+  InlineDartToken(FileSpan span) : super(TokenType.inlineDart, span);
+
+  String get dartCode {
+    // strip the backticks
+    return lexeme.substring(1, lexeme.length - 1);
+  }
 }
 
 /// Used for tokens that are keywords. We use this special class without any

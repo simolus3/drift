@@ -8,7 +8,12 @@ class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
 
-  SqlEngine();
+  /// Moor extends the sql grammar a bit to support type converters and other
+  /// features. Enabling this flag will make this engine parse sql with these
+  /// extensions enabled.
+  final bool useMoorExtensions;
+
+  SqlEngine({this.useMoorExtensions = false});
 
   /// Registers the [table], which means that it can later be used in sql
   /// statements.
@@ -28,7 +33,7 @@ class SqlEngine {
   /// Tokenizes the [source] into a list list [Token]s. Each [Token] contains
   /// information about where it appears in the [source] and a [TokenType].
   List<Token> tokenize(String source) {
-    final scanner = Scanner(source);
+    final scanner = Scanner(source, scanMoorTokens: useMoorExtensions);
     final tokens = scanner.scanTokens();
 
     if (scanner.errors.isNotEmpty) {

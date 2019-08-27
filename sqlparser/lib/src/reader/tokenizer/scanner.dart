@@ -4,6 +4,9 @@ import 'package:sqlparser/src/reader/tokenizer/utils.dart';
 
 class Scanner {
   final String source;
+
+  /// Whether to scan tokens that are only relevant for moor.
+  final bool scanMoorTokens;
   final SourceFile _file;
 
   final List<Token> tokens = [];
@@ -21,7 +24,8 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(this.source) : _file = SourceFile.fromString(source);
+  Scanner(this.source, {this.scanMoorTokens = false})
+      : _file = SourceFile.fromString(source);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {
@@ -131,6 +135,13 @@ class Scanner {
         // todo sqlite also allows string literals with double ticks, we don't
         _identifier(escapedInQuotes: true);
         break;
+      case '`':
+        if (scanMoorTokens) {
+          _inlineDart();
+        } else {
+          _unexpectedToken();
+        }
+        break;
       case ' ':
       case '\t':
       case '\n':
@@ -143,10 +154,14 @@ class Scanner {
         } else if (canStartColumnName(char)) {
           _identifier();
         } else {
-          errors.add(TokenizerError('Unexpected character.', _currentLocation));
+          _unexpectedToken();
         }
         break;
     }
+  }
+
+  void _unexpectedToken() {
+    errors.add(TokenizerError('Unexpected character.', _currentLocation));
   }
 
   String _nextChar() {
@@ -307,9 +322,28 @@ class Scanner {
       final text = _currentSpan.text.toUpperCase();
       if (keywords.containsKey(text)) {
         tokens.add(KeywordToken(keywords[text], _currentSpan));
+      } else if (scanMoorTokens && moorKeywords.containsKey(text)) {
+        tokens.add(KeywordToken(moorKeywords[text], _currentSpan));
       } else {
         tokens.add(IdentifierToken(false, _currentSpan));
       }
+    }
+  }
+
+  void _inlineDart() {
+    // inline starts with a `, we just need to find the matching ` that
+    // terminates this token.
+    while (_peek() != '`' && !_isAtEnd) {
+      _nextChar();
+    }
+
+    if (_isAtEnd) {
+      errors.add(
+          TokenizerError('Unterminated inline Dart code', _currentLocation));
+    } else {
+      // consume the `
+      _nextChar();
+      tokens.add(InlineDartToken(_currentSpan));
     }
   }
 }
