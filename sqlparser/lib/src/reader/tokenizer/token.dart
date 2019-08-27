@@ -266,6 +266,13 @@ class IdentifierToken extends Token {
       : super(TokenType.identifier, span);
 }
 
+/// Used for tokens that are keywords. We use this special class without any
+/// additional properties to ease syntax highlighting, as it allows us to find
+/// the keywords easily.
+class KeywordToken extends Token {
+  KeywordToken(TokenType type, FileSpan span) : super(type, span);
+}
+
 class TokenizerError {
   final String message;
   final SourceLocation location;

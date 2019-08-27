@@ -306,7 +306,7 @@ class Scanner {
       // not escaped, so it could be a keyword
       final text = _currentSpan.text.toUpperCase();
       if (keywords.containsKey(text)) {
-        _addToken(keywords[text]);
+        tokens.add(KeywordToken(keywords[text], _currentSpan));
       } else {
         tokens.add(IdentifierToken(false, _currentSpan));
       }
