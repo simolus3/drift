@@ -46,7 +46,7 @@ class SqlEngine {
   /// Parses the [sql] statement into an AST-representation.
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
-    final parser = Parser(tokens);
+    final parser = Parser(tokens, useMoor: useMoorExtensions);
 
     final stmt = parser.statement();
     return ParseResult._(stmt, parser.errors, sql);
