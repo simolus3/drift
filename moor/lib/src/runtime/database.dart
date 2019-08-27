@@ -111,6 +111,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// although it is very likely that the user meant to call it on the
   /// [Transaction] t. We can detect this by calling the function passed to
   /// `transaction` in a forked [Zone] storing the transaction in
+  @protected
   bool get topLevel => false;
 
   /// We can detect when a user called methods on the wrong [QueryEngine]
@@ -169,6 +170,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// You can use the [updates] parameter so that moor knows which tables are
   /// affected by your query. All select streams that depend on a table
   /// specified there will then issue another query.
+  @protected
+  @visibleForTesting
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
     final engine = _resolvedEngine;
@@ -190,11 +193,12 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Executes a custom select statement once. To use the variables, mark them
   /// with a "?" in your [query]. They will then be changed to the appropriate
   /// value.
+  @protected
+  @visibleForTesting
+  @Deprecated('use customSelectQuery(...).get() instead')
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(
-            query, variables, <TableInfo>{}, _resolvedEngine)
-        .get();
+    return customSelectQuery(query, variables: variables).get();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -202,15 +206,36 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// appropriate value. The stream will re-emit items when any table in
   /// [readsFrom] changes, so be sure to set it to the set of tables your query
   /// reads data from.
+  @protected
+  @visibleForTesting
+  @Deprecated('use customSelectQuery(...).watch() instead')
   Stream<List<QueryRow>> customSelectStream(String query,
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
-    final tables = readsFrom ?? <TableInfo>{};
-    final statement =
-        CustomSelectStatement(query, variables, tables, _resolvedEngine);
-    return statement.watch();
+    return customSelectQuery(query, variables: variables, readsFrom: readsFrom)
+        .watch();
+  }
+
+  /// Creates a custom select statement from the given sql [query]. To run the
+  /// query once, use [Selectable.get]. For an auto-updating streams, set the
+  /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
+  /// know the query will never emit more than one row, you can also use
+  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
+  /// directly or wrapping it into a list.
+  ///
+  /// If you use variables in your query (for instance with "?"), they will be
+  /// bound to the [variables] you specify on this query.
+  @protected
+  @visibleForTesting
+  Selectable<QueryRow> customSelectQuery(String query,
+      {List<Variable> variables = const [],
+      Set<TableInfo> readsFrom = const {}}) {
+    readsFrom ??= {};
+    return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
   }
 
   /// Executes the custom sql [statement] on the database.
+  @protected
+  @visibleForTesting
   Future<void> customStatement(String statement) {
     return _resolvedEngine.executor.runCustom(statement);
   }
@@ -226,6 +251,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     might be different than that of the "global" database instance.
   ///  2. Nested transactions are not supported. Creating another transaction
   ///     inside a transaction returns the parent transaction.
+  @protected
+  @visibleForTesting
   Future transaction(Future Function(QueryEngine transaction) action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {

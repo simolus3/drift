@@ -832,22 +832,23 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
+  Selectable<TotalWeightResult> _totalWeightQuery(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelectQuery(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: [],
+        readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
+  }
+
   Future<List<TotalWeightResult>> _totalWeight(
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
           QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: []).then((rows) => rows.map(_rowToTotalWeightResult).toList());
+    return _totalWeightQuery(operateOn: operateOn).get();
   }
 
   Stream<List<TotalWeightResult>> _watchTotalWeight() {
-    return customSelectStream(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: [],
-        readsFrom: {
-          recipes,
-          ingredientInRecipes
-        }).map((rows) => rows.map(_rowToTotalWeightResult).toList());
+    return _totalWeightQuery().watch();
   }
 
   @override

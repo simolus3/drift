@@ -120,6 +120,33 @@ abstract class Selectable<T> {
   Stream<T> watchSingle() {
     return watch().transform(singleElements());
   }
+
+  /// Maps this selectable by using [mapper].
+  ///
+  /// Each entry emitted by this [Selectable] will be transformed by the
+  /// [mapper] and then emitted to the selectable returned.
+  Selectable<N> map<N>(N Function(T) mapper) {
+    return _MappedSelectable<T, N>(this, mapper);
+  }
+}
+
+class _MappedSelectable<S, T> extends Selectable<T> {
+  final Selectable<S> _source;
+  final T Function(S) _mapper;
+
+  _MappedSelectable(this._source, this._mapper);
+
+  @override
+  Future<List<T>> get() {
+    return _source.get().then(_mapResults);
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    return _source.watch().map(_mapResults);
+  }
+
+  List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
 }
 
 mixin SingleTableQueryMixin<T extends Table, D extends DataClass>

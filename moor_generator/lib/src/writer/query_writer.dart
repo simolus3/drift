@@ -46,12 +46,17 @@ class QueryWriter {
 
   void _writeSelect(StringBuffer buffer) {
     _writeMapping(buffer);
+    _writeSelectStatementCreator(buffer);
     _writeOneTimeReader(buffer);
     _writeStreamReader(buffer);
   }
 
   String _nameOfMappingMethod() {
     return '_rowTo${_select.resultClassName}';
+  }
+
+  String _nameOfCreationMethod() {
+    return '${_select.name}Query';
   }
 
   /// Writes a mapping method that turns a "QueryRow" into the desired custom
@@ -87,27 +92,50 @@ class QueryWriter {
     }
   }
 
+  /// Writes a method returning a `Selectable<T>`, where `T` is the return type
+  /// of the custom query.
+  void _writeSelectStatementCreator(StringBuffer buffer) {
+    final returnType = 'Selectable<${_select.resultClassName}>';
+    final methodName = _nameOfCreationMethod();
+
+    buffer.write('$returnType $methodName(');
+    _writeParameters(buffer);
+    buffer.write(') {\n');
+
+    _writeExpandedDeclarations(buffer);
+    buffer
+      ..write('return (operateOn ?? this).')
+      ..write('customSelectQuery(${_queryCode()}, ');
+    _writeVariables(buffer);
+    buffer.write(', ');
+    _writeReadsFrom(buffer);
+
+    buffer.write(').map(');
+    buffer.write(_nameOfMappingMethod());
+    buffer.write(');\n}\n');
+  }
+
+  /*
+    Future<List<AllTodosWithCategoryResult>> allTodos(String name,
+      {QueryEngine overrideEngine}) {
+    return _allTodosWithCategoryQuery(name, engine: overrideEngine).get();
+  }
+   */
+
   void _writeOneTimeReader(StringBuffer buffer) {
     buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
     _writeParameters(buffer);
-    buffer.write(') {\n');
-    _writeExpandedDeclarations(buffer);
-    buffer
-      ..write('return (operateOn ?? this).') // use custom engine, if set
-      ..write('customSelect(${_queryCode()},');
-    _writeVariables(buffer);
-    buffer
-      ..write(')')
-      ..write(
-          '.then((rows) => rows.map(${_nameOfMappingMethod()}).toList());\n')
-      ..write('\n}\n');
+    buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _writeUseParameters(buffer);
+    buffer.write(').get();\n}\n');
   }
 
   void _writeStreamReader(StringBuffer buffer) {
-    // turning the query name into pascal case will remove underscores
     final upperQueryName = ReCase(query.name).pascalCase;
 
     String methodName;
+    // turning the query name into pascal case will remove underscores, add the
+    // "private" modifier back in if needed
     if (session.options.fixPrivateWatchMethods && query.name.startsWith('_')) {
       methodName = '_watch$upperQueryName';
     } else {
@@ -115,23 +143,10 @@ class QueryWriter {
     }
 
     buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
-    // don't supply an engine override parameter because select streams cannot
-    // be used in transaction or similar context, only on the main database
-    // engine.
     _writeParameters(buffer, dontOverrideEngine: true);
-    buffer.write(') {\n');
-
-    _writeExpandedDeclarations(buffer);
-    buffer..write('return customSelectStream(${_queryCode()},');
-
-    _writeVariables(buffer);
-    buffer.write(',');
-    _writeReadsFrom(buffer);
-
-    buffer
-      ..write(')')
-      ..write('.map((rows) => rows.map(${_nameOfMappingMethod()}).toList());\n')
-      ..write('\n}\n');
+    buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _writeUseParameters(buffer, dontUseEngine: true);
+    buffer.write(').watch();\n}\n');
   }
 
   void _writeUpdatingQuery(StringBuffer buffer) {
@@ -174,6 +189,17 @@ class QueryWriter {
       if (query.variables.isNotEmpty) buffer.write(', ');
       buffer.write('{@Deprecated(${asDartLiteral(queryEngineWarningDesc)}) '
           'QueryEngine operateOn}');
+    }
+  }
+
+  /// Writes code that uses the parameters as declared by [_writeParameters],
+  /// assuming that for each parameter, a variable with the same name exists
+  /// in the current scope.
+  void _writeUseParameters(StringBuffer into, {bool dontUseEngine = false}) {
+    into.write(query.variables.map((v) => v.dartParameterName).join(', '));
+    if (!dontUseEngine) {
+      if (query.variables.isNotEmpty) into.write(', ');
+      into.write('operateOn: operateOn');
     }
   }
 
