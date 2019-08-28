@@ -15,72 +15,82 @@ import 'types.dart';
 class _SQLiteBindings {
   DynamicLibrary sqlite;
 
-  int Function(CString filename, Pointer<DatabasePointer> databaseOut,
-      int flags, CString vfs) sqlite3_open_v2;
+  int Function(Pointer<CBlob> filename, Pointer<Pointer<Database>> databaseOut,
+      int flags, Pointer<CBlob> vfs) sqlite3_open_v2;
 
-  int Function(DatabasePointer database) sqlite3_close_v2;
+  int Function(Pointer<Database> database) sqlite3_close_v2;
   void Function(Pointer<Void> ptr) sqlite3_free;
 
   int Function(
-      DatabasePointer database,
-      CString query,
+      Pointer<Database> database,
+      Pointer<CBlob> query,
       int nbytes,
-      Pointer<StatementPointer> statementOut,
-      Pointer<CString> tail) sqlite3_prepare_v2;
+      Pointer<Pointer<Statement>> statementOut,
+      Pointer<Pointer<CBlob>> tail) sqlite3_prepare_v2;
 
   int Function(
-    DatabasePointer database,
-    CString query,
+    Pointer<Database> database,
+    Pointer<CBlob> query,
     Pointer<Void> callback,
     Pointer<Void> cbFirstArg,
-    Pointer<CString> errorMsgOut,
+    Pointer<Pointer<CBlob>> errorMsgOut,
   ) sqlite3_exec;
 
-  int Function(StatementPointer statement) sqlite3_step;
+  int Function(Pointer<Statement> statement) sqlite3_step;
 
-  int Function(StatementPointer statement) sqlite3_reset;
+  int Function(Pointer<Statement> statement) sqlite3_reset;
 
-  int Function(StatementPointer statement) sqlite3_finalize;
+  int Function(Pointer<Statement> statement) sqlite3_finalize;
 
-  int Function(StatementPointer statement) sqlite3_column_count;
+  int Function(Pointer<Statement> statement) sqlite3_column_count;
 
-  CString Function(StatementPointer statement, int columnIndex)
+  Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_name;
 
-  CString Function(StatementPointer statement, int columnIndex)
+  Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_decltype;
 
-  int Function(StatementPointer statement, int columnIndex) sqlite3_column_type;
+  int Function(Pointer<Statement> statement, int columnIndex)
+      sqlite3_column_type;
 
-  ValuePointer Function(StatementPointer statement, int columnIndex)
+  Pointer<Value> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_value;
-  double Function(StatementPointer statement, int columnIndex)
+  double Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_double;
-  int Function(StatementPointer statement, int columnIndex) sqlite3_column_int;
-  CString Function(StatementPointer statement, int columnIndex)
+  int Function(Pointer<Statement> statement, int columnIndex)
+      sqlite3_column_int;
+  Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_text;
-  CBlob Function(StatementPointer statement, int columnIndex)
+  Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_blob;
 
   /// Returns the amount of bytes to read when using [sqlite3_column_blob].
-  int Function(StatementPointer statement, int columnIndex)
+  int Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_bytes;
 
-  int Function(DatabasePointer db) sqlite3_changes;
-  int Function(DatabasePointer db) sqlite3_last_insert_rowid;
+  int Function(Pointer<Database> db) sqlite3_changes;
+  int Function(Pointer<Database> db) sqlite3_last_insert_rowid;
 
-  CString Function(int code) sqlite3_errstr;
-  CString Function(DatabasePointer database) sqlite3_errmsg;
+  Pointer<CBlob> Function(int code) sqlite3_errstr;
+  Pointer<CBlob> Function(Pointer<Database> database) sqlite3_errmsg;
 
-  int Function(StatementPointer statement, int columnIndex, double value)
+  int Function(Pointer<Statement> statement, int columnIndex, double value)
       sqlite3_bind_double;
-  int Function(StatementPointer statement, int columnIndex, int value)
+  int Function(Pointer<Statement> statement, int columnIndex, int value)
       sqlite3_bind_int;
-  int Function(StatementPointer statement, int columnIndex, CString value,
-      int minusOne, Pointer<Void> disposeCb) sqlite3_bind_text;
-  int Function(StatementPointer statement, int columnIndex, CBlob value,
-      int length, Pointer<Void> disposeCb) sqlite3_bind_blob;
-  int Function(StatementPointer statement, int columnIndex) sqlite3_bind_null;
+  int Function(
+      Pointer<Statement> statement,
+      int columnIndex,
+      Pointer<CBlob> value,
+      int minusOne,
+      Pointer<Void> disposeCb) sqlite3_bind_text;
+  int Function(
+      Pointer<Statement> statement,
+      int columnIndex,
+      Pointer<CBlob> value,
+      int length,
+      Pointer<Void> disposeCb) sqlite3_bind_blob;
+  int Function(Pointer<Statement> statement, int columnIndex) sqlite3_bind_null;
 
   _SQLiteBindings() {
     sqlite = dlopenPlatformSpecific('sqlite3');

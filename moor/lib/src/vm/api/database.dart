@@ -5,9 +5,10 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:moor/src/vm/bindings/constants.dart';
-import 'package:moor/src/vm/bindings/types.dart';
+import 'package:moor/src/vm/bindings/types.dart' as types;
 import 'package:moor/src/vm/bindings/bindings.dart';
 import 'package:moor/src/vm/ffi/blob.dart';
+import 'package:moor/src/vm/ffi/utils.dart';
 
 part 'errors.dart';
 part 'prepared_statement.dart';
@@ -16,7 +17,7 @@ part 'result.dart';
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
 
 class Database {
-  final DatabasePointer _db;
+  final Pointer<types.Database> _db;
   final List<PreparedStatement> _preparedStmt = [];
   bool _isClosed = false;
 
@@ -31,12 +32,12 @@ class Database {
 
   /// Opens an sqlite3 database from a filename.
   factory Database.open(String fileName) {
-    final dbOut = allocate<DatabasePointer>();
-    final pathC = CString.allocate(fileName);
+    final dbOut = Pointer<Pointer<types.Database>>.allocate();
+    final pathC = CBlob.allocateString(fileName);
 
     final resultCode =
-        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, fromAddress(0));
-    final dbPointer = dbOut.load<DatabasePointer>();
+        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullptr.cast());
+    final dbPointer = dbOut.load<Pointer<types.Database>>();
 
     dbOut.free();
     pathC.free();
@@ -85,20 +86,20 @@ class Database {
   /// error occurs while executing.
   void execute(String sql) {
     _ensureOpen();
-    final sqlPtr = CString.allocate(sql);
-    final errorOut = allocate<CString>();
+    final sqlPtr = CBlob.allocateString(sql);
+    final errorOut = Pointer<Pointer<CBlob>>.allocate();
 
-    final result = bindings.sqlite3_exec(
-        _db, sqlPtr, fromAddress(0), fromAddress(0), errorOut);
+    final result =
+        bindings.sqlite3_exec(_db, sqlPtr, nullptr, nullptr, errorOut);
 
     sqlPtr.free();
 
-    final errorPtr = errorOut.load<CString>();
+    final errorPtr = errorOut.load<Pointer<CBlob>>();
     errorOut.free();
 
     String errorMsg;
-    if (errorPtr != null) {
-      errorMsg = CString.fromC(errorPtr.cast());
+    if (!isNullPointer(errorPtr)) {
+      errorMsg = errorPtr.load<CBlob>().readString();
       // the message was allocated from sqlite, we need to free it
       bindings.sqlite3_free(errorPtr.cast());
     }
@@ -112,14 +113,14 @@ class Database {
   PreparedStatement prepare(String sql) {
     _ensureOpen();
 
-    final stmtOut = allocate<StatementPointer>();
-    final sqlPtr = CString.allocate(sql);
+    final stmtOut = Pointer<Pointer<types.Statement>>.allocate();
+    final sqlPtr = CBlob.allocateString(sql);
 
     final resultCode =
-        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, fromAddress(0));
+        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, nullptr.cast());
     sqlPtr.free();
 
-    final stmt = stmtOut.load<StatementPointer>();
+    final stmt = stmtOut.load<Pointer<types.Statement>>();
     stmtOut.free();
 
     if (resultCode != Errors.SQLITE_OK) {

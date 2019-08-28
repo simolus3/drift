@@ -3,53 +3,52 @@ import 'dart:ffi';
 
 import 'dart:typed_data';
 
-/// Pointer to arbitrary blobs that aren't null-terminated.
-class CBlob extends Pointer<Uint8> {
-  /// Allocate a [CBlob] not managed in and populates it with [dartBlob].
-  factory CBlob.allocate(Uint8List dartBlob) {
-    if (dartBlob.isEmpty) {
-      return fromAddress(0);
-    }
+import 'package:moor/src/vm/ffi/utils.dart';
 
-    final ptr = allocate<Int8>(count: dartBlob.length);
-    for (var i = 0; i < dartBlob.length; ++i) {
-      ptr.elementAt(i).store(dartBlob[i]);
+/// Pointer to arbitrary blobs in C.
+class CBlob extends Struct<CBlob> {
+  @Uint8()
+  int data;
+
+  static Pointer<CBlob> allocate(Uint8List blob) {
+    final str = Pointer<CBlob>.allocate(count: blob.length);
+    for (var i = 0; i < blob.length; i++) {
+      str.elementAt(i).load<CBlob>().data = blob[i];
     }
-    return ptr.cast();
+    return str;
   }
 
-  /// Read the string from C memory into Dart.
-  static Uint8List fromC(CBlob str, int length) {
-    if (str == null) return null;
-    assert(length >= 0);
-
-    final units = Uint8List(length);
-    for (var i = 0; i < length; ++i) {
-      units[i] = str.elementAt(i).load();
-    }
-
-    return units;
-  }
-}
-
-/// A null-terminated C string.
-class CString extends Pointer<Uint8> {
-  /// Allocate a [CString] not managed in and populates it with [string].
-  factory CString.allocate(String string) {
+  /// Allocates a 0-terminated string, encoded as utf8 and read from the
+  /// [string].
+  static Pointer<CBlob> allocateString(String string) {
     final encoded = utf8.encode(string);
     final data = Uint8List(encoded.length + 1) // already filled with zeroes
       ..setAll(0, encoded);
-
-    return CBlob.allocate(data).cast();
+    return CBlob.allocate(data);
   }
 
-  /// Read the string from C memory into Dart.
-  static String fromC(CBlob str) {
-    if (str == null) return null;
-    var len = 0;
-    while (str.elementAt(++len).load<int>() != 0) {}
+  /// Reads [bytesToRead] bytes from the current position.
+  Uint8List read(int bytesToRead) {
+    assert(bytesToRead >= 0);
+    final str = addressOf;
+    if (isNullPointer(str)) return null;
 
-    final list = CBlob.fromC(str, len);
-    return utf8.decode(list);
+    final blob = Uint8List(bytesToRead);
+    for (var i = 0; i < bytesToRead; ++i) {
+      blob[i] = str.elementAt(i).load<CBlob>().data;
+    }
+    return blob;
+  }
+
+  /// Reads a 0-terminated string, decoded with utf8.
+  String readString() {
+    final str = addressOf;
+    if (isNullPointer(str)) return null;
+
+    var len = 0;
+    while (str.elementAt(++len).load<CBlob>().data != 0) {}
+
+    final units = read(len);
+    return utf8.decode(units);
   }
 }

@@ -1,7 +1,7 @@
 part of 'database.dart';
 
 class PreparedStatement {
-  final StatementPointer _stmt;
+  final Pointer<types.Statement> _stmt;
   final Database _db;
   bool _closed = false;
 
@@ -40,7 +40,8 @@ class PreparedStatement {
 
     for (var i = 0; i < columnCount; i++) {
       // name pointer doesn't need to be disposed, that happens when we finalize
-      names[i] = CString.fromC(bindings.sqlite3_column_name(_stmt, i).cast());
+      names[i] =
+          bindings.sqlite3_column_name(_stmt, i).load<CBlob>().readString();
     }
 
     while (_step() == Errors.SQLITE_ROW) {
@@ -58,12 +59,16 @@ class PreparedStatement {
       case Types.SQLITE_FLOAT:
         return bindings.sqlite3_column_double(_stmt, index);
       case Types.SQLITE_TEXT:
-        return CString.fromC(bindings.sqlite3_column_text(_stmt, index).cast());
+        return bindings
+            .sqlite3_column_text(_stmt, index)
+            .load<CBlob>()
+            .readString();
       case Types.SQLITE_BLOB:
         final length = bindings.sqlite3_column_bytes(_stmt, index);
-        final data =
-            CBlob.fromC(bindings.sqlite3_column_blob(_stmt, index), length);
-        return data;
+        return bindings
+            .sqlite3_column_blob(_stmt, index)
+            .load<CBlob>()
+            .read(length);
       case Types.SQLITE_NULL:
       default:
         return null;
@@ -107,18 +112,17 @@ class PreparedStatement {
         } else if (param is num) {
           bindings.sqlite3_bind_double(_stmt, i, param.toDouble());
         } else if (param is String) {
-          final ptr = CString.allocate(param);
+          final ptr = CBlob.allocateString(param);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_text(_stmt, i, ptr, -1, fromAddress(0));
+          bindings.sqlite3_bind_text(_stmt, i, ptr, -1, nullptr);
         } else if (param is Uint8List) {
           // todo we just have a null pointer param.isEmpty. I guess we have
           // to use sqlite3_bind_zeroblob for that?
           final ptr = CBlob.allocate(param);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_blob(
-              _stmt, i, ptr, param.length, fromAddress(0));
+          bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length, nullptr);
         }
       }
     }
