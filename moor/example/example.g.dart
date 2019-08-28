@@ -76,6 +76,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
+  });
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -266,6 +270,13 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
+  RecipesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String title,
+    @required String instructions,
+    this.category = const Value.absent(),
+  })  : this.title = Value(title),
+        this.instructions = Value(instructions);
   RecipesCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -482,6 +493,12 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
+  IngredientsCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    @required int caloriesPer100g,
+  })  : this.name = Value(name),
+        this.caloriesPer100g = Value(caloriesPer100g);
   IngredientsCompanion copyWith(
       {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
     return IngredientsCompanion(
@@ -688,6 +705,13 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
+  IngredientInRecipesCompanion.insert({
+    @required int recipe,
+    @required int ingredient,
+    @required int amountInGrams,
+  })  : this.recipe = Value(recipe),
+        this.ingredient = Value(ingredient),
+        this.amountInGrams = Value(amountInGrams);
   IngredientInRecipesCompanion copyWith(
       {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
     return IngredientInRecipesCompanion(

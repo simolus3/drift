@@ -133,6 +133,13 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
+  TodosTableCompanion.insert({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    @required String content,
+    this.targetDate = const Value.absent(),
+    this.category = const Value.absent(),
+  }) : this.content = Value(content);
   TodosTableCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -358,6 +365,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String description,
+  }) : this.description = Value(description);
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -569,6 +580,14 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.creationTime = const Value.absent(),
   });
+  UsersCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    this.isAwesome = const Value.absent(),
+    @required Uint8List profilePicture,
+    this.creationTime = const Value.absent(),
+  })  : this.name = Value(name),
+        this.profilePicture = Value(profilePicture);
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -792,6 +811,11 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     this.todo = const Value.absent(),
     this.user = const Value.absent(),
   });
+  SharedTodosCompanion.insert({
+    @required int todo,
+    @required int user,
+  })  : this.todo = Value(todo),
+        this.user = Value(user);
   SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
     return SharedTodosCompanion(
       todo: todo ?? this.todo,
@@ -978,6 +1002,13 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.someFloat = const Value.absent(),
     this.custom = const Value.absent(),
   });
+  TableWithoutPKCompanion.insert({
+    @required int notReallyAnId,
+    @required double someFloat,
+    @required MyCustomObject custom,
+  })  : this.notReallyAnId = Value(notReallyAnId),
+        this.someFloat = Value(someFloat),
+        this.custom = Value(custom);
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
@@ -1159,6 +1190,10 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   final Value<int> id;
   final Value<String> txt;
   const PureDefaultsCompanion({
+    this.id = const Value.absent(),
+    this.txt = const Value.absent(),
+  });
+  PureDefaultsCompanion.insert({
     this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });

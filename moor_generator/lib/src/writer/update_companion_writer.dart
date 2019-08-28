@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/state/session.dart';
 
@@ -12,6 +13,7 @@ class UpdateCompanionWriter {
         'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields(buffer);
     _writeConstructor(buffer);
+    _writeInsertConstructor(buffer);
     _writeCopyWith(buffer);
 
     buffer.write('}\n');
@@ -32,6 +34,51 @@ class UpdateCompanionWriter {
     }
 
     buffer.write('});\n');
+  }
+
+  /// Writes a special `.insert` constructor. All columns which may not be
+  /// absent during insert are marked `@required` here. Also, we don't need to
+  /// use value wrappers here - `Value.absent` simply isn't an option.
+  void _writeInsertConstructor(StringBuffer buffer) {
+    final requiredColumns = <SpecifiedColumn>{};
+
+    // can't be constant because we use initializers (this.a = Value(a)).
+    // for a parameter a which is only potentially constant.
+    buffer.write('${table.updateCompanionName}.insert({');
+
+    // Say we had two required columns a and c, and an optional column b.
+    // .insert({
+    //    @required String a,
+    //    this.b = const Value.absent(),
+    //    @required String b}): this.a = Value(a), this.b = Value(b);
+
+    for (var column in table.columns) {
+      final param = column.dartGetterName;
+
+      if (column.requiredDuringInsert) {
+        requiredColumns.add(column);
+
+        buffer.write('@required ${column.dartTypeName} $param,');
+      } else {
+        buffer.write('this.$param = const Value.absent(),');
+      }
+    }
+    buffer.write('})');
+
+    var first = true;
+    for (var required in requiredColumns) {
+      if (first) {
+        buffer.write(': ');
+        first = false;
+      } else {
+        buffer.write(', ');
+      }
+
+      final param = required.dartGetterName;
+      buffer.write('this.$param = Value($param)');
+    }
+
+    buffer.write(';\n');
   }
 
   void _writeCopyWith(StringBuffer buffer) {
