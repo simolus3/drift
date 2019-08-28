@@ -88,6 +88,21 @@ Future feelingLazy() {
 __⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
 the statement will affect all rows in the table!
 
+{{% alert title="Entries, companions - why do we need all of this?"  %}}
+You might have noticed that we used a `TodosCompanion` for the first update instead of
+just passing a `TodoEntry`. Moor generates the `TodoEntry` class (also called _data
+class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
+prefer to use companions. In the example above, we only set the the `category` column,
+so we used a companion. 
+Why is that necessary? If a field was set to `null`, we wouldn't know whether we need 
+to set that column back to null in the database or if we should just leave it unchanged.
+Fields in the companions have a special `Value.absent()` state which makes this explicit.
+
+Companions also have a special constructor for inserts - all columns which don't have
+a default value and aren't nullable are marked `@required` on that constructor. This makes
+companions easier to use for inserts because you know which fields to set.
+{{% /alert %}}
+
 ## Inserts
 You can very easily insert any valid object into tables. As some values can be absent
 (like default values that we don't have to set explicitly), we again use the 
