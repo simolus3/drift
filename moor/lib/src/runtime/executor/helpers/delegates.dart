@@ -1,3 +1,4 @@
+import 'dart:async' show FutureOr;
 import 'dart:typed_data' show Uint8List;
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
@@ -38,7 +39,7 @@ abstract class DatabaseDelegate implements QueryDelegate {
   /// `false` when its not. The future may never complete with an error or with
   /// null. It should return relatively quickly, as moor queries it before each
   /// statement it sends to the database.
-  Future<bool> get isOpen;
+  FutureOr<bool> get isOpen;
 
   /// Opens the database. Moor will only call this when [isOpen] has returned
   /// false before. Further, moor will not attempt to open a database multiple

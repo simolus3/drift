@@ -136,7 +136,9 @@ class TypeResolver {
     if (sqlParameters is ExprFunctionParameters) {
       return sqlParameters.parameters;
     } else if (sqlParameters is StarFunctionParameter) {
-      return call.scope.availableColumns;
+      // if * is used as a parameter, it refers to all columns in all tables
+      // that are available in the current scope.
+      return call.scope.availableColumns.whereType<TableColumn>().toList();
     }
     throw ArgumentError('Unknown parameters: $sqlParameters');
   }

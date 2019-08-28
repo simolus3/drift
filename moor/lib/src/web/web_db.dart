@@ -38,7 +38,7 @@ class _WebDelegate extends DatabaseDelegate {
   DbVersionDelegate get versionDelegate => _WebVersionDelegate(name);
 
   @override
-  Future<bool> get isOpen => Future.value(_db != null);
+  bool get isOpen => _db != null;
 
   @override
   Future<void> open([GeneratedDatabase db]) async {

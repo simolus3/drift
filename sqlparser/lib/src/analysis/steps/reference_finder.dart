@@ -42,6 +42,10 @@ class ReferenceFinder extends RecursiveVisitor<void> {
       e.scope = forked;
     }
 
+    for (var windowDecl in e.windowDeclarations) {
+      e.scope.register(windowDecl.name, windowDecl);
+    }
+
     visitChildren(e);
   }
 

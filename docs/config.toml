@@ -57,7 +57,7 @@ anchor = "smart"
 [languages]
 [languages.en]
 title = "Moor"
-description = "A typesafe persistence library for Dart apps"
+description = "A typesafe, reactive persistence library for Dart and Flutter apps"
 languageName ="English"
 # Weight used for sorting.
 weight = 1

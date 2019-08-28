@@ -1,8 +1,7 @@
 ---
 title: "Joins"
 weight: 1
-description: >
-  Use joins to write queries that read from more than one table
+description: Use joins to write queries that read from more than one table
 aliases:
  - /queries/joins
 ---

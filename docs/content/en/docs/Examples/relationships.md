@@ -1,7 +1,6 @@
 ---
 title: "Many to many relationships"
-description: >
- An example that models a shopping cart system with moor.
+description: An example that models a shopping cart system with moor.
 ---
 
 ## Defining the model

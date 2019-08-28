@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 

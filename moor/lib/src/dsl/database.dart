@@ -46,7 +46,8 @@ class UseMoor {
 
   /// {@template moor_include_param}
   /// Defines the `.moor` files to include when building the table structure for
-  /// this database.
+  /// this database. For details on how to integrate `.moor` files into your
+  /// Dart code, see [the documentation](https://moor.simonbinder.eu/docs/using-sql/custom_tables/).
   ///
   /// Please note that this feature is experimental at the moment.
   /// {@endtemplate}

@@ -35,6 +35,7 @@ Map<String, TokenType> testCases = {
   '<': TokenType.less,
   '>=': TokenType.moreEqual,
   '>': TokenType.more,
+  '!=': TokenType.exclamationEqual,
   "'hello there'": TokenType.stringLiteral,
   '1.123': TokenType.numberLiteral,
   '1.32e5': TokenType.numberLiteral,

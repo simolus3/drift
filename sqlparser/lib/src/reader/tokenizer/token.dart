@@ -88,6 +88,7 @@ enum TokenType {
   $else,
   end,
 
+  window,
   filter,
   over,
   partition,
@@ -132,6 +133,10 @@ enum TokenType {
 
   semicolon,
   eof,
+
+  /// Moor specific token, used to declare a type converters
+  mapped,
+  inlineDart,
 }
 
 const Map<String, TokenType> keywords = {
@@ -222,6 +227,11 @@ const Map<String, TokenType> keywords = {
   'EXCLUDE': TokenType.exclude,
   'OTHERS': TokenType.others,
   'TIES': TokenType.ties,
+  'WINDOW': TokenType.window,
+};
+
+const Map<String, TokenType> moorKeywords = {
+  'MAPPED': TokenType.mapped,
 };
 
 class Token {
@@ -262,6 +272,24 @@ class IdentifierToken extends Token {
 
   const IdentifierToken(this.escaped, FileSpan span)
       : super(TokenType.identifier, span);
+}
+
+/// Inline Dart appearing in a create table statement. Only parsed when the moor
+/// extensions are enabled. Dart code is wrapped in backticks.
+class InlineDartToken extends Token {
+  InlineDartToken(FileSpan span) : super(TokenType.inlineDart, span);
+
+  String get dartCode {
+    // strip the backticks
+    return lexeme.substring(1, lexeme.length - 1);
+  }
+}
+
+/// Used for tokens that are keywords. We use this special class without any
+/// additional properties to ease syntax highlighting, as it allows us to find
+/// the keywords easily.
+class KeywordToken extends Token {
+  KeywordToken(TokenType type, FileSpan span) : super(type, span);
 }
 
 class TokenizerError {

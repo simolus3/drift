@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/parser/sql/type_mapping.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -33,6 +34,8 @@ class CreateTable {
   /// The AST of this `CREATE TABLE` statement.
   final ParseResult ast;
 
+  CreateTable(this.ast);
+
   SpecifiedTable extractTable(TypeMapper mapper) {
     final table =
         SchemaFromCreateTable().read(ast.rootNode as CreateTableStatement);
@@ -47,11 +50,13 @@ class CreateTable {
       final dartName = ReCase(sqlName).camelCase;
       final constraintWriter = StringBuffer();
       final moorType = mapper.resolvedToMoor(column.type);
+      UsedTypeConverter converter;
       String defaultValue;
 
       for (var constraint in column.constraints) {
         if (constraint is PrimaryKeyColumn) {
           isPrimaryKey = true;
+          features.add(const PrimaryKey());
           if (constraint.autoIncrement) {
             features.add(AutoIncrement());
           }
@@ -62,6 +67,12 @@ class CreateTable {
           final expressionName = 'const CustomExpression<$dartType, $sqlType>';
           final sqlDefault = constraint.expression.span.text;
           defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
+        }
+
+        if (constraint is MappedBy) {
+          converter = _readTypeConverter(constraint);
+          // don't write MAPPED BY constraints when creating the table
+          continue;
         }
 
         if (constraintWriter.isNotEmpty) {
@@ -78,6 +89,7 @@ class CreateTable {
         features: features,
         customConstraints: constraintWriter.toString(),
         defaultArgument: defaultValue,
+        typeConverter: converter,
       );
 
       foundColumns[column.name] = parsed;
@@ -113,5 +125,8 @@ class CreateTable {
     );
   }
 
-  CreateTable(this.ast);
+  UsedTypeConverter _readTypeConverter(MappedBy mapper) {
+    // todo we need to somehow parse the dart expression and check types
+    return null;
+  }
 }

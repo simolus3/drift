@@ -79,8 +79,21 @@ abstract class Selectable<T> {
   /// result too many values, this method will throw. If no row is returned,
   /// `null` will be returned instead.
   ///
+  /// {@template moor_single_query_expl}
   /// Be aware that this operation won't put a limit clause on this statement,
-  /// if that's needed you would have to do that yourself.
+  /// if that's needed you would have to do use [SimpleSelectStatement.limit]:
+  /// ```dart
+  /// Future<TodoEntry> loadMostImportant() {
+  ///   return (select(todos)
+  ///    ..orderBy([(t) => OrderingTerm(expression: t.priority, mode: OrderingMode.desc)])
+  ///    ..limit(1)
+  ///   ).getSingle();
+  /// }
+  /// ```
+  /// You should only use this method if you know the query won't have more than
+  /// one row, for instance because you used `limit(1)` or you know the `where`
+  /// clause will only allow one row.
+  /// {@endtemplate}
   Future<T> getSingle() async {
     final list = await get();
     final iterator = list.iterator;
@@ -100,10 +113,40 @@ abstract class Selectable<T> {
   /// However, it is assumed that the query will only emit one result, so
   /// instead of returning a [Stream<List<T>>], this returns a [Stream<T>]. If
   /// the query emits more than one row at some point, an error will be emitted
-  /// to the stream instead.
+  /// to the stream instead. If the query emits zero rows at some point, `null`
+  /// will be added to the stream instead.
+  ///
+  /// {@macro moor_single_query_expl}
   Stream<T> watchSingle() {
     return watch().transform(singleElements());
   }
+
+  /// Maps this selectable by using [mapper].
+  ///
+  /// Each entry emitted by this [Selectable] will be transformed by the
+  /// [mapper] and then emitted to the selectable returned.
+  Selectable<N> map<N>(N Function(T) mapper) {
+    return _MappedSelectable<T, N>(this, mapper);
+  }
+}
+
+class _MappedSelectable<S, T> extends Selectable<T> {
+  final Selectable<S> _source;
+  final T Function(S) _mapper;
+
+  _MappedSelectable(this._source, this._mapper);
+
+  @override
+  Future<List<T>> get() {
+    return _source.get().then(_mapResults);
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    return _source.watch().map(_mapResults);
+  }
+
+  List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
 }
 
 mixin SingleTableQueryMixin<T extends Table, D extends DataClass>

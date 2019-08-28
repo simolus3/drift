@@ -147,6 +147,20 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.preferences = const Value.absent(),
   });
+  UsersCompanion copyWith(
+      {Value<int> id,
+      Value<String> name,
+      Value<DateTime> birthDate,
+      Value<Uint8List> profilePicture,
+      Value<Preferences> preferences}) {
+    return UsersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      birthDate: birthDate ?? this.birthDate,
+      profilePicture: profilePicture ?? this.profilePicture,
+      preferences: preferences ?? this.preferences,
+    );
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -388,6 +402,16 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
     this.secondUser = const Value.absent(),
     this.reallyGoodFriends = const Value.absent(),
   });
+  FriendshipsCompanion copyWith(
+      {Value<int> firstUser,
+      Value<int> secondUser,
+      Value<bool> reallyGoodFriends}) {
+    return FriendshipsCompanion(
+      firstUser: firstUser ?? this.firstUser,
+      secondUser: secondUser ?? this.secondUser,
+      reallyGoodFriends: reallyGoodFriends ?? this.reallyGoodFriends,
+    );
+  }
 }
 
 class $FriendshipsTable extends Friendships
@@ -583,6 +607,29 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {
           friendships
         }).map((rows) => rows.map(_rowToAmountOfGoodFriendsResult).toList());
+  }
+
+  Future<List<User>> friendsOf(
+      int user,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelect(
+        'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
+        variables: [
+          Variable.withInt(user),
+        ]).then((rows) => rows.map(_rowToUser).toList());
+  }
+
+  Stream<List<User>> watchFriendsOf(int user) {
+    return customSelectStream(
+        'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
+        variables: [
+          Variable.withInt(user),
+        ],
+        readsFrom: {
+          friendships,
+          users
+        }).map((rows) => rows.map(_rowToUser).toList());
   }
 
   UserCountResult _rowToUserCountResult(QueryRow row) {

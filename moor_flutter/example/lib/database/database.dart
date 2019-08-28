@@ -91,14 +91,14 @@ class Database extends _$Database {
   Stream<List<CategoryWithCount>> categoriesWithCount() {
     // select all categories and load how many associated entries there are for
     // each category
-    return customSelectStream(
+    return customSelectQuery(
       'SELECT c.id, c.desc, '
       '(SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount '
       'FROM categories c '
       'UNION ALL SELECT null, null, '
       '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
       readsFrom: {todos, categories},
-    ).map((rows) {
+    ).watch().map((rows) {
       // when we have the result set, map each row to the data class
       return rows.map((row) {
         final hasId = row.data['id'] != null;

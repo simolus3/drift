@@ -126,6 +126,8 @@ class ColumnParser extends ParserBase {
           break;
         case _methodAutoIncrement:
           foundFeatures.add(AutoIncrement());
+          // a column declared as auto increment is always a primary key
+          foundFeatures.add(const PrimaryKey());
           break;
         case _methodNullable:
           nullable = true;

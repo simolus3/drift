@@ -43,9 +43,13 @@ class ParsingError implements Exception {
 abstract class ParserBase {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
+
+  /// Whether to enable the extensions moor makes to the sql grammar.
+  final bool enableMoorExtensions;
+
   int _current = 0;
 
-  ParserBase(this.tokens);
+  ParserBase(this.tokens, this.enableMoorExtensions);
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
@@ -145,7 +149,7 @@ abstract class ParserBase {
 
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
-  Parser(List<Token> tokens) : super(tokens);
+  Parser(List<Token> tokens, {bool useMoor = false}) : super(tokens, useMoor);
 
   Statement statement({bool expectEnd = true}) {
     final first = _peek;

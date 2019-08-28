@@ -1,8 +1,7 @@
 ---
 title: "Migrations"
 weight: 10
-description: >
-  Define what happens when your database gets created or updated
+description: Define what happens when your database gets created or updated
 aliases:
  - /migrations
 ---

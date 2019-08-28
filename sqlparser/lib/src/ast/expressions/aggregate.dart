@@ -1,6 +1,7 @@
 part of '../ast.dart';
 
-class AggregateExpression extends Expression implements Invocation {
+class AggregateExpression extends Expression
+    implements Invocation, ReferenceOwner {
   final IdentifierToken function;
 
   @override
@@ -9,13 +10,37 @@ class AggregateExpression extends Expression implements Invocation {
   @override
   final FunctionParameters parameters;
   final Expression filter;
-  final WindowDefinition over; // todo support window references
+
+  @override
+  Referencable resolved;
+  WindowDefinition get over {
+    if (windowDefinition != null) return windowDefinition;
+    return (resolved as NamedWindowDeclaration)?.definition;
+  }
+
+  /// The window definition as declared in the `OVER` clause in sql. If this
+  /// aggregate expression didn't declare a window (e.g. it instead uses a
+  /// window via a name declared in the surrounding `SELECT` statement), we're
+  /// this field will be null. Either [windowDefinition] or [windowName] are
+  /// null. The resolved [WindowDefinition] is available in [over] in either
+  /// case.
+  final WindowDefinition windowDefinition;
+
+  /// An aggregate expression can be written as `OVER <window-name>` instead of
+  /// declaring its own [windowDefinition]. Either [windowDefinition] or
+  /// [windowName] are null. The resolved [WindowDefinition] is available in
+  /// [over] in either case.
+  final String windowName;
 
   AggregateExpression(
       {@required this.function,
       @required this.parameters,
       this.filter,
-      @required this.over});
+      this.windowDefinition,
+      this.windowName}) {
+    // either window definition or name must be null
+    assert((windowDefinition == null) != (windowName == null));
+  }
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitAggregateExpression(this);
@@ -26,14 +51,24 @@ class AggregateExpression extends Expression implements Invocation {
       if (parameters is ExprFunctionParameters)
         ...(parameters as ExprFunctionParameters).parameters,
       if (filter != null) filter,
-      over,
+      if (windowDefinition != null) windowDefinition,
     ];
   }
 
   @override
   bool contentEquals(AggregateExpression other) {
-    return other.name == name;
+    return other.name == name && other.windowName == windowName;
   }
+}
+
+/// A window declaration that appears in a `SELECT` statement like
+/// `WINDOW <name> AS <window-defn>`. It can be referenced from an
+/// [AggregateExpression] if it uses the same name.
+class NamedWindowDeclaration with Referencable {
+  final String name;
+  final WindowDefinition definition;
+
+  NamedWindowDeclaration(this.name, this.definition);
 }
 
 class WindowDefinition extends AstNode {

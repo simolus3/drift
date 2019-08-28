@@ -153,6 +153,15 @@ mixin SchemaParser on ParserBase {
       return ForeignKeyColumnConstraint(resolvedName, clause)
         ..setSpan(first, _previous);
     }
+    if (enableMoorExtensions && _matchOne(TokenType.mapped)) {
+      _consume(TokenType.by, 'Expected a MAPPED BY constraint');
+
+      final dartExpr = _consume(
+          TokenType.inlineDart, 'Expected Dart expression in backticks');
+
+      return MappedBy(resolvedName, dartExpr as InlineDartToken)
+        ..setSpan(first, _previous);
+    }
 
     // no known column constraint matched. If orNull is set and we're not
     // guaranteed to be in a constraint clause (started with CONSTRAINT), we

@@ -174,6 +174,17 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     with ComparableExpr
     implements IntColumn {
+  /// Whether this column was declared to be a primary key via a column
+  /// constraint. The only way to do this in Dart is with
+  /// [IntColumnBuilder.autoIncrement]. In `.moor` files, declaring a column
+  /// to be `INTEGER NOT NULL PRIMARY KEY` will set this flag but not
+  /// [hasAutoIncrement]. If either field is enabled, this column will be an
+  /// alias for the rowid.
+  final bool declaredAsPrimaryKey;
+
+  /// Whether this column was declared to be an `AUTOINCREMENT` column, either
+  /// with [IntColumnBuilder.autoIncrement] or with an `AUTOINCREMENT` clause
+  /// in a `.moor` file.
   final bool hasAutoIncrement;
 
   @override
@@ -183,6 +194,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     String name,
     String tableName,
     bool nullable, {
+    this.declaredAsPrimaryKey = false,
     this.hasAutoIncrement = false,
     String $customConstraints,
     Expression<int, IntType> defaultValue,
@@ -190,18 +202,18 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
-  void writeColumnDefinition(GenerationContext into) {
-    // todo make this work with custom constraints, default values, etc.
+  void writeCustomConstraints(StringBuffer into) {
     if (hasAutoIncrement) {
-      into.buffer.write('${$name} $typeName PRIMARY KEY AUTOINCREMENT');
-    } else {
-      super.writeColumnDefinition(into);
+      into.write(' PRIMARY KEY AUTOINCREMENT');
+    } else if (declaredAsPrimaryKey) {
+      into.write(' PRIMARY KEY');
     }
   }
 
   @override
   bool get isRequired {
-    return !hasAutoIncrement && super.isRequired;
+    final aliasForRowId = declaredAsPrimaryKey || hasAutoIncrement;
+    return !aliasForRowId && super.isRequired;
   }
 }
 

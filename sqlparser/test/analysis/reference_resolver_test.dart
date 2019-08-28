@@ -78,4 +78,30 @@ void main() {
 
     expect(context.errors, isEmpty);
   });
+
+  test('resolves window declarations', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine.analyze('''
+SELECT current_row() OVER wnd FROM demo
+  WINDOW wnd AS (PARTITION BY content GROUPS CURRENT ROW EXCLUDE TIES)
+    ''');
+
+    final column = (context.root as SelectStatement).resolvedColumns.single
+        as ExpressionColumn;
+
+    final over = (column.expression as AggregateExpression).over;
+
+    enforceEqual(
+      over,
+      WindowDefinition(
+        partitionBy: [Reference(columnName: 'content')],
+        frameSpec: FrameSpec(
+          type: FrameType.groups,
+          start: const FrameBoundary.currentRow(),
+          excludeMode: ExcludeMode.ties,
+        ),
+      ),
+    );
+  });
 }

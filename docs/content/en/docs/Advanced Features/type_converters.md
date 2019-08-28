@@ -1,7 +1,8 @@
 ---
 title: "Type converters"
-description: >
-  Store more complex data in columns with type converters
+description: Store more complex data in columns with type converters
+aliases:
+ - /type_converters
 ---
 
 Moor supports a variety of types out of the box, but sometimes you need to store more complex data.
