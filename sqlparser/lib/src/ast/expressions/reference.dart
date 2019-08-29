@@ -11,6 +11,8 @@ class Reference extends Expression with ReferenceOwner {
   final String tableName;
   final String columnName;
 
+  Column get resolvedColumn => resolved as Column;
+
   Reference({this.tableName, this.columnName});
 
   @override

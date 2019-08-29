@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' show min, max;
 
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';

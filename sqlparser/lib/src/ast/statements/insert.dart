@@ -16,6 +16,15 @@ class InsertStatement extends Statement with CrudStatement {
   final List<Reference> targetColumns;
   final InsertSource source;
 
+  List<Column> get resolvedTargetColumns {
+    if (targetColumns.isNotEmpty) {
+      return targetColumns.map((c) => c.resolvedColumn).toList();
+    } else {
+      // no columns declared - assume all columns from the table
+      return table.resultSet?.resolvedColumns;
+    }
+  }
+
   // todo parse upsert clauses
 
   InsertStatement(

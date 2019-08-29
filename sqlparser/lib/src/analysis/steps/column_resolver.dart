@@ -23,6 +23,14 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
+  void visitInsertStatement(InsertStatement e) {
+    final table = _resolveTableReference(e.table);
+    visitChildren(e);
+    e.scope.availableColumns = table.resolvedColumns;
+    visitChildren(e);
+  }
+
+  @override
   void visitDeleteStatement(DeleteStatement e) {
     final table = _resolveTableReference(e.from);
     e.scope.availableColumns = table.resolvedColumns;
