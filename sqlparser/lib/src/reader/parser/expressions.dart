@@ -326,8 +326,10 @@ mixin ExpressionParser on ParserBase {
         break;
       case TokenType.colon:
         final colon = token;
-        final identifier = _consume(TokenType.identifier,
-            'Expected an identifier for the named variable') as IdentifierToken;
+        final identifier = _consumeIdentifier(
+            'Expected an identifier for the named variable',
+            lenient: true);
+
         final content = identifier.identifier;
         return ColonNamedVariable(':$content')..setSpan(colon, identifier);
       default:
@@ -392,6 +394,7 @@ mixin ExpressionParser on ParserBase {
     )..setSpan(name, _previous);
   }
 
+  @override
   TupleExpression _consumeTuple() {
     final firstToken =
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');

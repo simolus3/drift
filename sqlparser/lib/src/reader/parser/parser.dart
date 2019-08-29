@@ -123,7 +123,13 @@ abstract class ParserBase {
     _error(message);
   }
 
-  IdentifierToken _consumeIdentifier(String message) {
+  /// Consumes an identifier. If [lenient] is true and the next token is not
+  /// an identifier but rather a [KeywordToken], that token will be converted
+  /// to an identifier.
+  IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
+    if (lenient && _peek is KeywordToken) {
+      return (_advance() as KeywordToken).convertToIdentifier();
+    }
     return _consume(TokenType.identifier, message) as IdentifierToken;
   }
 

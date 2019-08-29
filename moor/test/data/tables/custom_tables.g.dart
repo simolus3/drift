@@ -812,6 +812,21 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Config get config => _config ??= Config(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
+  Future<int> writeConfig(
+      String key,
+      String value,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customInsert(
+      'REPLACE INTO config VALUES (:key, :value)',
+      variables: [
+        Variable.withString(key),
+        Variable.withString(value),
+      ],
+      updates: {config},
+    );
+  }
+
   @override
   List<TableInfo> get allTables =>
       [noIds, withDefaults, withConstraints, config, mytable];

@@ -268,6 +268,11 @@ class IdentifierToken extends Token {
   /// Whether this identifier was escaped by putting it in "double ticks".
   final bool escaped;
 
+  /// Whether this identifier token is synthetic. We sometimes convert
+  /// [KeywordToken]s to identifiers if they're unambiguous, in which case
+  /// [synthetic] will be true on this token because it was not scanned as such.
+  final bool synthetic;
+
   String get identifier {
     if (escaped) {
       return lexeme.substring(1, lexeme.length - 1);
@@ -276,7 +281,7 @@ class IdentifierToken extends Token {
     }
   }
 
-  const IdentifierToken(this.escaped, FileSpan span)
+  const IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
       : super(TokenType.identifier, span);
 }
 
@@ -295,7 +300,16 @@ class InlineDartToken extends Token {
 /// additional properties to ease syntax highlighting, as it allows us to find
 /// the keywords easily.
 class KeywordToken extends Token {
+  /// Whether this token has been used as an identifier while parsing.
+  bool isIdentifier;
+
   KeywordToken(TokenType type, FileSpan span) : super(type, span);
+
+  IdentifierToken convertToIdentifier() {
+    isIdentifier = true;
+
+    return IdentifierToken(false, span, synthetic: false);
+  }
 }
 
 class TokenizerError {

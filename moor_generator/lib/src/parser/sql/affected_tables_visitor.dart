@@ -52,4 +52,10 @@ class UpdatedTablesVisitor extends RecursiveVisitor<void> {
     _addIfResolved(e.table);
     visitChildren(e);
   }
+
+  @override
+  void visitInsertStatement(InsertStatement e) {
+    _addIfResolved(e.table);
+    visitChildren(e);
+  }
 }

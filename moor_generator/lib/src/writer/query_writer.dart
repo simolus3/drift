@@ -155,6 +155,8 @@ class QueryWriter {
     return customUpdate('', variables: [], updates: {});
   }
      */
+    final implName = _update.isInsert ? 'customInsert' : 'customUpdate';
+
     buffer.write('Future<int> ${query.name}(');
     _writeParameters(buffer);
     buffer.write(') {\n');
@@ -162,7 +164,7 @@ class QueryWriter {
     _writeExpandedDeclarations(buffer);
     buffer
       ..write('return (operateOn ?? this).')
-      ..write('customUpdate(${_queryCode()},');
+      ..write('$implName(${_queryCode()},');
 
     _writeVariables(buffer);
     buffer.write(',');

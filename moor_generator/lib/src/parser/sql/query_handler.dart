@@ -26,7 +26,9 @@ class QueryHandler {
 
     if (root is SelectStatement) {
       return _handleSelect();
-    } else if (root is UpdateStatement || root is DeleteStatement) {
+    } else if (root is UpdateStatement ||
+        root is DeleteStatement ||
+        root is InsertStatement) {
       return _handleUpdate();
     } else {
       throw StateError(
@@ -39,8 +41,11 @@ class QueryHandler {
     context.root.accept(updatedFinder);
     _foundTables = updatedFinder.foundTables;
 
+    final isInsert = context.root is InsertStatement;
+
     return UpdatingQuery(name, context, _foundVariables,
-        _foundTables.map(mapper.tableToMoor).toList());
+        _foundTables.map(mapper.tableToMoor).toList(),
+        isInsert: isInsert);
   }
 
   SqlSelectQuery _handleSelect() {

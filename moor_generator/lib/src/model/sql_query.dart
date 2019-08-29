@@ -51,9 +51,11 @@ class SqlSelectQuery extends SqlQuery {
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
+  final bool isInsert;
 
   UpdatingQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.updates)
+      List<FoundVariable> variables, this.updates,
+      {this.isInsert = false})
       : super(name, fromContext, variables);
 }
 
