@@ -54,5 +54,15 @@ class SqlParser {
         log.warning('Error while generating APIs for ${context.sql}', e, s);
       }
     });
+
+    // report lints
+    for (var query in foundQueries) {
+      for (var lint in query.lints) {
+        session.errors.add(MoorError(
+          critical: false,
+          message: 'Lint for ${query.name}: $lint',
+        ));
+      }
+    }
   }
 }

@@ -5,6 +5,7 @@ import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'affected_tables_visitor.dart';
+import 'lints/linter.dart';
 
 class QueryHandler {
   final String name;
@@ -19,11 +20,20 @@ class QueryHandler {
   QueryHandler(this.name, this.context, this.mapper);
 
   SqlQuery handle() {
-    final root = context.root;
     _foundVariables = mapper.extractVariables(context);
 
     _verifyNoSkippedIndexes();
+    final query = _mapToMoor();
 
+    final linter = Linter(this);
+    linter.reportLints();
+    query.lints = linter.lints;
+
+    return query;
+  }
+
+  SqlQuery _mapToMoor() {
+    final root = context.root;
     if (root is SelectStatement) {
       return _handleSelect();
     } else if (root is UpdateStatement ||

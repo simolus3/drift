@@ -56,4 +56,5 @@ enum AnalysisErrorType {
   ambiguousReference,
 
   unknownFunction,
+  other,
 }
