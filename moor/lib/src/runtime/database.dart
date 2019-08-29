@@ -12,6 +12,9 @@ import 'package:moor/src/runtime/statements/update.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 
+typedef _CustomWriter<T> = Future<T> Function(
+    QueryExecutor e, String sql, List<dynamic> vars);
+
 /// Class that runs queries to a subset of all available queries in a database.
 ///
 /// This comes in handy to structure large amounts of database code better: The
@@ -174,20 +177,43 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
+    return _customWrite(query, variables, updates, (executor, sql, vars) {
+      return executor.runUpdate(sql, vars);
+    });
+  }
+
+  /// Executes a custom insert statement and returns the last inserted rowid.
+  ///
+  /// You can tell moor which tables your query is going to affect by using the
+  /// [updates] parameter. Query-streams running on any of these tables will
+  /// then be re-run.
+  @protected
+  @visibleForTesting
+  Future<int> customInsert(String query,
+      {List<Variable> variables = const [], Set<TableInfo> updates}) {
+    return _customWrite(query, variables, updates, (executor, sql, vars) {
+      return executor.runInsert(sql, vars);
+    });
+  }
+
+  /// Common logic for [customUpdate] and [customInsert] which takes care of
+  /// mapping the variables, running the query and optionally informing the
+  /// stream-queries.
+  Future<T> _customWrite<T>(String query, List<Variable> variables,
+      Set<TableInfo> updates, _CustomWriter<T> writer) async {
     final engine = _resolvedEngine;
     final executor = engine.executor;
 
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final affectedRows = await executor
-        .doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
+    final result = await writer(executor, query, mappedArgs);
 
     if (updates != null) {
       await engine.streamQueries.handleTableUpdates(updates);
     }
 
-    return affectedRows;
+    return result;
   }
 
   /// Executes a custom select statement once. To use the variables, mark them
