@@ -8,6 +8,10 @@ class ReferenceResolver extends RecursiveVisitor<void> {
 
   @override
   void visitReference(Reference e) {
+    if (e.resolved != null) {
+      return super.visitReference(e);
+    }
+
     final scope = e.scope;
 
     if (e.tableName != null) {
@@ -65,7 +69,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
 
   @override
   void visitAggregateExpression(AggregateExpression e) {
-    if (e.windowName != null) {
+    if (e.windowName != null && e.resolved != null) {
       final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName);
       e.resolved = resolved;
     }

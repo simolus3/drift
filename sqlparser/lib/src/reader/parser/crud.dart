@@ -368,6 +368,75 @@ mixin CrudParser on ParserBase {
         or: failureMode, table: table, set: set, where: where);
   }
 
+  InsertStatement _insertStmt() {
+    if (!_match(const [TokenType.insert, TokenType.replace])) return null;
+
+    final firstToken = _previous;
+    InsertMode insertMode;
+    if (_previous.type == TokenType.insert) {
+      // insert modes can have a failure clause (INSERT OR xxx)
+      if (_matchOne(TokenType.or)) {
+        const tokensToModes = {
+          TokenType.replace: InsertMode.insertOrReplace,
+          TokenType.rollback: InsertMode.insertOrRollback,
+          TokenType.abort: InsertMode.insertOrAbort,
+          TokenType.fail: InsertMode.insertOrFail,
+          TokenType.ignore: InsertMode.insertOrIgnore
+        };
+
+        if (_match(tokensToModes.keys)) {
+          insertMode = tokensToModes[_previous.type];
+        } else {
+          _error(
+              'After the INSERT OR, expected an insert mode (REPLACE, ROLLBACK, etc.)');
+        }
+      } else {
+        insertMode = InsertMode.insert;
+      }
+    } else {
+      // is it wasn't an insert, it must have been a replace
+      insertMode = InsertMode.replace;
+    }
+    assert(insertMode != null);
+    _consume(TokenType.into, 'Expected INSERT INTO');
+
+    final table = _tableReference();
+    final targetColumns = <Reference>[];
+
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final columnRef = _consumeIdentifier('Expected a column');
+        targetColumns.add(Reference(columnName: columnRef.identifier));
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen,
+          'Expected clpsing parenthesis after column list');
+    }
+    final source = _insertSource();
+
+    return InsertStatement(
+      mode: insertMode,
+      table: table,
+      targetColumns: targetColumns,
+      source: source,
+    )..setSpan(firstToken, _previous);
+  }
+
+  InsertSource _insertSource() {
+    if (_matchOne(TokenType.$values)) {
+      final values = <TupleExpression>[];
+      do {
+        values.add(_consumeTuple());
+      } while (_matchOne(TokenType.comma));
+      return ValuesSource(values);
+    } else if (_matchOne(TokenType.$default)) {
+      _consume(TokenType.$values, 'Expected DEFAULT VALUES');
+      return const DefaultValues();
+    } else {
+      return SelectInsertSource(select());
+    }
+  }
+
   @override
   WindowDefinition _windowDefinition() {
     _consume(TokenType.leftParen, 'Expected opening parenthesis');

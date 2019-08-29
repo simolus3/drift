@@ -57,6 +57,8 @@ enum TokenType {
   select,
   delete,
   update,
+  insert,
+  into,
   distinct,
   all,
   from,
@@ -124,6 +126,7 @@ enum TokenType {
   unique,
   check,
   $default,
+  $values,
   conflict,
   references,
   cascade,
@@ -141,6 +144,8 @@ enum TokenType {
 
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
+  'INSERT': TokenType.insert,
+  'INTO': TokenType.into,
   'COLLATE': TokenType.collate,
   'DISTINCT': TokenType.distinct,
   'UPDATE': TokenType.update,
@@ -228,6 +233,7 @@ const Map<String, TokenType> keywords = {
   'OTHERS': TokenType.others,
   'TIES': TokenType.ties,
   'WINDOW': TokenType.window,
+  'VALUES': TokenType.$values,
 };
 
 const Map<String, TokenType> moorKeywords = {

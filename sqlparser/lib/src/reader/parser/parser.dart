@@ -129,6 +129,7 @@ abstract class ParserBase {
 
   // Common operations that we are referenced very often
   Expression expression();
+  TupleExpression _consumeTuple();
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
@@ -153,7 +154,11 @@ class Parser extends ParserBase
 
   Statement statement({bool expectEnd = true}) {
     final first = _peek;
-    final stmt = select() ?? _deleteStmt() ?? _update() ?? _createTable();
+    final stmt = select() ??
+        _deleteStmt() ??
+        _update() ??
+        _insertStmt() ??
+        _createTable();
 
     if (stmt == null) {
       _error('Expected a sql statement to start here');

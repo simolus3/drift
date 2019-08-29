@@ -26,6 +26,7 @@ part 'schema/table_definition.dart';
 
 part 'statements/create_table.dart';
 part 'statements/delete.dart';
+part 'statements/insert.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 part 'statements/update.dart';
@@ -133,6 +134,7 @@ abstract class AstNode {
 abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
   T visitResultColumn(ResultColumn e);
+  T visitInsertStatement(InsertStatement e);
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
@@ -247,6 +249,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitSelectStatement(SelectStatement e) => visitChildren(e);
+
+  @override
+  T visitInsertStatement(InsertStatement e) => visitChildren(e);
 
   @override
   T visitDeleteStatement(DeleteStatement e) => visitChildren(e);

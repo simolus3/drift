@@ -391,4 +391,19 @@ mixin ExpressionParser on ParserBase {
       windowName: windowName,
     )..setSpan(name, _previous);
   }
+
+  TupleExpression _consumeTuple() {
+    final firstToken =
+        _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
+    final expressions = <Expression>[];
+
+    do {
+      expressions.add(expression());
+    } while (_matchOne(TokenType.comma));
+
+    _consume(TokenType.rightParen, 'Expected right parenthesis to close tuple');
+
+    return TupleExpression(expressions: expressions)
+      ..setSpan(firstToken, _previous);
+  }
 }
