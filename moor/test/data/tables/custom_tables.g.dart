@@ -65,7 +65,7 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   });
   NoIdsCompanion.insert({
     @required Uint8List payload,
-  }) : this.payload = Value(payload);
+  }) : payload = Value(payload);
   NoIdsCompanion copyWith({Value<Uint8List> payload}) {
     return NoIdsCompanion(
       payload: payload ?? this.payload,
@@ -370,7 +370,7 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     this.a = const Value.absent(),
     @required int b,
     this.c = const Value.absent(),
-  }) : this.b = Value(b);
+  }) : b = Value(b);
   WithConstraintsCompanion copyWith(
       {Value<String> a, Value<int> b, Value<double> c}) {
     return WithConstraintsCompanion(
@@ -550,7 +550,7 @@ class ConfigCompanion extends UpdateCompanion<ConfigData> {
   ConfigCompanion.insert({
     @required String configKey,
     this.configValue = const Value.absent(),
-  }) : this.configKey = Value(configKey);
+  }) : configKey = Value(configKey);
   ConfigCompanion copyWith(
       {Value<String> configKey, Value<String> configValue}) {
     return ConfigCompanion(

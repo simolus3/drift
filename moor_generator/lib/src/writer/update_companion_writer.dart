@@ -50,7 +50,8 @@ class UpdateCompanionWriter {
     // .insert({
     //    @required String a,
     //    this.b = const Value.absent(),
-    //    @required String b}): this.a = Value(a), this.b = Value(b);
+    //    @required String b}): a = Value(a), b = Value(b);
+    // We don't need to use this. for the initializers, Dart figures that out.
 
     for (var column in table.columns) {
       final param = column.dartGetterName;
@@ -75,7 +76,7 @@ class UpdateCompanionWriter {
       }
 
       final param = required.dartGetterName;
-      buffer.write('this.$param = Value($param)');
+      buffer.write('$param = Value($param)');
     }
 
     buffer.write(';\n');

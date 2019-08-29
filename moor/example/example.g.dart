@@ -275,8 +275,8 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     @required String title,
     @required String instructions,
     this.category = const Value.absent(),
-  })  : this.title = Value(title),
-        this.instructions = Value(instructions);
+  })  : title = Value(title),
+        instructions = Value(instructions);
   RecipesCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -497,8 +497,8 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.id = const Value.absent(),
     @required String name,
     @required int caloriesPer100g,
-  })  : this.name = Value(name),
-        this.caloriesPer100g = Value(caloriesPer100g);
+  })  : name = Value(name),
+        caloriesPer100g = Value(caloriesPer100g);
   IngredientsCompanion copyWith(
       {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
     return IngredientsCompanion(
@@ -709,9 +709,9 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     @required int recipe,
     @required int ingredient,
     @required int amountInGrams,
-  })  : this.recipe = Value(recipe),
-        this.ingredient = Value(ingredient),
-        this.amountInGrams = Value(amountInGrams);
+  })  : recipe = Value(recipe),
+        ingredient = Value(ingredient),
+        amountInGrams = Value(amountInGrams);
   IngredientInRecipesCompanion copyWith(
       {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
     return IngredientInRecipesCompanion(

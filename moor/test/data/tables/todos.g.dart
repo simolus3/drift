@@ -139,7 +139,7 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     @required String content,
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
-  }) : this.content = Value(content);
+  }) : content = Value(content);
   TodosTableCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -368,7 +368,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     @required String description,
-  }) : this.description = Value(description);
+  }) : description = Value(description);
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -586,8 +586,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.isAwesome = const Value.absent(),
     @required Uint8List profilePicture,
     this.creationTime = const Value.absent(),
-  })  : this.name = Value(name),
-        this.profilePicture = Value(profilePicture);
+  })  : name = Value(name),
+        profilePicture = Value(profilePicture);
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -814,8 +814,8 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   SharedTodosCompanion.insert({
     @required int todo,
     @required int user,
-  })  : this.todo = Value(todo),
-        this.user = Value(user);
+  })  : todo = Value(todo),
+        user = Value(user);
   SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
     return SharedTodosCompanion(
       todo: todo ?? this.todo,
@@ -1006,9 +1006,9 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     @required int notReallyAnId,
     @required double someFloat,
     @required MyCustomObject custom,
-  })  : this.notReallyAnId = Value(notReallyAnId),
-        this.someFloat = Value(someFloat),
-        this.custom = Value(custom);
+  })  : notReallyAnId = Value(notReallyAnId),
+        someFloat = Value(someFloat),
+        custom = Value(custom);
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
