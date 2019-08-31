@@ -25,6 +25,10 @@ const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodMap = 'map';
 
+const String _errorMessage = 'This getter does not create a valid column that '
+    'can be parsed by moor. Please refer to the readme from moor to see how '
+    'columns are formed. If you have any questions, feel free to raise an issue.';
+
 /// Parses a single column defined in a Dart table. These columns are a chain
 /// or [MethodInvocation]s. An example getter might look like this:
 /// ```dart
@@ -41,5 +45,172 @@ class ColumnParser {
 
   ColumnParser(this.base);
 
-  SpecifiedColumn parse(MethodDeclaration getter, MethodElement element) {}
+  SpecifiedColumn parse(MethodDeclaration getter, Element element) {
+    final expr = base.returnExpressionOfMethod(getter);
+
+    if (!(expr is FunctionExpressionInvocation)) {
+      base.task.reportError(ErrorInDartCode(
+        affectedElement: getter.declaredElement,
+        message: _errorMessage,
+        severity: Severity.criticalError,
+      ));
+      return null;
+    }
+
+    var remainingExpr =
+        (expr as FunctionExpressionInvocation).function as MethodInvocation;
+
+    String foundStartMethod;
+    String foundExplicitName;
+    String foundCustomConstraint;
+    Expression foundDefaultExpression;
+    Expression createdTypeConverter;
+    DartType typeConverterRuntime;
+    var nullable = false;
+
+    final foundFeatures = <ColumnFeature>[];
+
+    while (true) {
+      final methodName = remainingExpr.methodName.name;
+
+      if (starters.contains(methodName)) {
+        foundStartMethod = methodName;
+        break;
+      }
+
+      switch (methodName) {
+        case _methodNamed:
+          if (foundExplicitName != null) {
+            base.task.reportError(
+              ErrorInDartCode(
+                severity: Severity.warning,
+                affectedElement: getter.declaredElement,
+                message:
+                    "You're setting more than one name here, the first will "
+                    'be used',
+              ),
+            );
+          }
+
+          foundExplicitName = base.readStringLiteral(
+              remainingExpr.argumentList.arguments.first, () {
+            base.task.reportError(
+              ErrorInDartCode(
+                severity: Severity.error,
+                affectedElement: getter.declaredElement,
+                message:
+                    'This table name is cannot be resolved! Please only use '
+                    'a constant string as parameter for .named().',
+              ),
+            );
+          });
+          break;
+        case _methodReferences:
+          break;
+        case _methodWithLength:
+          final args = remainingExpr.argumentList;
+          final minArg = base.findNamedArgument(args, 'min');
+          final maxArg = base.findNamedArgument(args, 'max');
+
+          foundFeatures.add(LimitingTextLength.withLength(
+            min: base.readIntLiteral(minArg, () {}),
+            max: base.readIntLiteral(maxArg, () {}),
+          ));
+          break;
+        case _methodAutoIncrement:
+          foundFeatures.add(AutoIncrement());
+          // a column declared as auto increment is always a primary key
+          foundFeatures.add(const PrimaryKey());
+          break;
+        case _methodNullable:
+          nullable = true;
+          break;
+        case _methodCustomConstraint:
+          foundCustomConstraint = base.readStringLiteral(
+              remainingExpr.argumentList.arguments.first, () {
+            base.task.reportError(
+              ErrorInDartCode(
+                severity: Severity.warning,
+                affectedElement: getter.declaredElement,
+                message:
+                    'This constraint is cannot be resolved! Please only use '
+                    'a constant string as parameter for .customConstraint().',
+              ),
+            );
+          });
+          break;
+        case _methodDefault:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+          foundDefaultExpression = expression;
+          break;
+        case _methodMap:
+          final args = remainingExpr.argumentList;
+          final expression = args.arguments.single;
+
+          // the map method has a parameter type that resolved to the runtime
+          // type of the custom object
+          final type = remainingExpr.typeArgumentTypes.single;
+
+          createdTypeConverter = expression;
+          typeConverterRuntime = type;
+          break;
+      }
+
+      // We're not at a starting method yet, so we need to go deeper!
+      final inner = (remainingExpr.target) as MethodInvocation;
+      remainingExpr = inner;
+    }
+
+    ColumnName name;
+    if (foundExplicitName != null) {
+      name = ColumnName.explicitly(foundExplicitName);
+    } else {
+      name = ColumnName.implicitly(ReCase(getter.name.name).snakeCase);
+    }
+
+    final columnType = _startMethodToColumnType(foundStartMethod);
+
+    UsedTypeConverter converter;
+    if (createdTypeConverter != null && typeConverterRuntime != null) {
+      converter = UsedTypeConverter(
+          expression: createdTypeConverter,
+          mappedType: typeConverterRuntime,
+          sqlType: columnType);
+    }
+
+    return SpecifiedColumn(
+        type: columnType,
+        dartGetterName: getter.name.name,
+        name: name,
+        overriddenJsonName: _readJsonKey(element),
+        customConstraints: foundCustomConstraint,
+        nullable: nullable,
+        features: foundFeatures,
+        defaultArgument: foundDefaultExpression?.toSource(),
+        typeConverter: converter);
+  }
+
+  ColumnType _startMethodToColumnType(String startMethod) {
+    return const {
+      startBool: ColumnType.boolean,
+      startString: ColumnType.text,
+      startInt: ColumnType.integer,
+      startDateTime: ColumnType.datetime,
+      startBlob: ColumnType.blob,
+      startReal: ColumnType.real,
+    }[startMethod];
+  }
+
+  String _readJsonKey(Element getter) {
+    final annotations = getter.metadata;
+    final object = annotations.singleWhere((e) {
+      final value = e.computeConstantValue();
+      return isFromMoor(value.type) && value.type.name == 'JsonKey';
+    }, orElse: () => null);
+
+    if (object == null) return null;
+
+    return object.constantValue.getField('key').toStringValue();
+  }
 }

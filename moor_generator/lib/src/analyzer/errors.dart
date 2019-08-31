@@ -38,6 +38,8 @@ enum Severity {
   /// semantic errors.
   error,
 
+  /// A warning is used when the code affected is technically valid, but
+  /// unlikely to do what the user expects.
   warning,
   info,
   hint
