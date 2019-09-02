@@ -1,24 +1,20 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor/moor.dart';
-import 'package:moor_generator/src/state/generator_state.dart';
-import 'package:moor_generator/src/state/options.dart';
-import 'package:moor_generator/src/writer/query_writer.dart';
-import 'package:moor_generator/src/writer/result_set_writer.dart';
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
+import 'package:moor_generator/src/writer/queries/query_writer.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'model/sql_query.dart';
-
-class DaoGenerator extends GeneratorForAnnotation<UseDao> {
-  final MoorOptions options;
-
-  DaoGenerator(this.options);
+class DaoGenerator extends GeneratorForAnnotation<UseDao>
+    implements BaseGenerator {
+  @override
+  MoorBuilder builder;
 
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
-    final state = useState(() => GeneratorState(options));
-    final session = state.startSession(buildStep);
+    final task = await builder.createDartTask(buildStep);
 
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
@@ -27,7 +23,7 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     }
 
     final targetClass = element as ClassElement;
-    final parsedDao = await session.parseDao(targetClass, annotation);
+    final parsedDao = await task.parseDao(targetClass, annotation);
 
     final dbType = targetClass.supertype;
     if (dbType.name != 'DatabaseAccessor') {
@@ -46,33 +42,27 @@ class DaoGenerator extends GeneratorForAnnotation<UseDao> {
     }
 
     // finally, we can write the mixin
-    final buffer = StringBuffer();
+    final writer = Writer(builder.options);
+    final classScope = writer.child();
 
     final daoName = targetClass.displayName;
 
-    buffer.write('mixin _\$${daoName}Mixin on '
+    classScope.leaf().write('mixin _\$${daoName}Mixin on '
         'DatabaseAccessor<${dbImpl.displayName}> {\n');
 
     for (var table in parsedDao.tables) {
       final infoType = table.tableInfoName;
       final getterName = table.tableFieldName;
-      buffer.write('$infoType get $getterName => db.$getterName;\n');
+      classScope.leaf().write('$infoType get $getterName => db.$getterName;\n');
     }
 
     final writtenMappingMethods = <String>{};
     for (var query in parsedDao.queries) {
-      QueryWriter(query, session, writtenMappingMethods).writeInto(buffer);
+      QueryWriter(query, classScope.child(), writtenMappingMethods).write();
     }
 
-    buffer.write('}');
+    classScope.leaf().write('}');
 
-    // if the queries introduced additional classes, also write those
-    for (final query in parsedDao.queries) {
-      if (query is SqlSelectQuery && query.resultSet.matchingTable == null) {
-        ResultSetWriter(query).write(buffer);
-      }
-    }
-
-    return buffer.toString();
+    return writer.writeGenerated();
   }
 }

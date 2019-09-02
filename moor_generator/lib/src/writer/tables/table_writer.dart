@@ -1,33 +1,37 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/data_class_writer.dart';
-import 'package:moor_generator/src/writer/update_companion_writer.dart';
-import 'package:moor_generator/src/writer/memoized_getter.dart';
+import 'package:moor_generator/src/writer/tables/data_class_writer.dart';
+import 'package:moor_generator/src/writer/tables/update_companion_writer.dart';
+import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 
 class TableWriter {
   final SpecifiedTable table;
-  final GeneratorSession session;
+  final Scope scope;
 
-  TableWriter(this.table, this.session);
+  StringBuffer _buffer;
 
-  void writeInto(StringBuffer buffer) {
-    writeDataClass(buffer);
-    writeTableInfoClass(buffer);
+  TableWriter(this.table, this.scope) {
+    _buffer = scope.leaf();
   }
 
-  void writeDataClass(StringBuffer buffer) {
-    DataClassWriter(table, session).writeInto(buffer);
-    UpdateCompanionWriter(table, session).writeInto(buffer);
+  void writeInto() {
+    writeDataClass();
+    writeTableInfoClass();
   }
 
-  void writeTableInfoClass(StringBuffer buffer) {
+  void writeDataClass() {
+    DataClassWriter(table, scope.child()).write();
+    UpdateCompanionWriter(table, scope.child()).write();
+  }
+
+  void writeTableInfoClass() {
     final dataClass = table.dartTypeName;
     final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
-    buffer
+    _buffer
       ..write('class ${table.tableInfoName} extends $tableDslName '
           'with TableInfo<${table.tableInfoName}, $dataClass> {\n')
       // should have a GeneratedDatabase reference that is set in the constructor
@@ -37,15 +41,15 @@ class TableWriter {
 
     // Generate the columns
     for (var column in table.columns) {
-      _writeColumnVerificationMeta(buffer, column);
-      _writeColumnGetter(buffer, column);
+      _writeColumnVerificationMeta(column);
+      _writeColumnGetter(column);
     }
 
     // Generate $columns, $tableName, asDslTable getters
     final columnsWithGetters =
         table.columns.map((c) => c.dartGetterName).join(', ');
 
-    buffer
+    _buffer
       ..write(
           '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
       ..write('@override\n${table.tableInfoName} get asDslTable => this;\n')
@@ -54,33 +58,33 @@ class TableWriter {
       ..write(
           '@override\nfinal String actualTableName = \'${table.sqlName}\';\n');
 
-    _writeValidityCheckMethod(buffer);
-    _writePrimaryKeyOverride(buffer);
+    _writeValidityCheckMethod();
+    _writePrimaryKeyOverride();
 
-    _writeMappingMethod(buffer);
-    _writeReverseMappingMethod(buffer);
+    _writeMappingMethod();
+    _writeReverseMappingMethod();
 
-    _writeAliasGenerator(buffer);
+    _writeAliasGenerator();
 
-    _writeConvertersAsStaticFields(buffer);
-    _overrideFieldsIfNeeded(buffer);
+    _writeConvertersAsStaticFields();
+    _overrideFieldsIfNeeded();
 
     // close class
-    buffer.write('}');
+    _buffer.write('}');
   }
 
-  void _writeConvertersAsStaticFields(StringBuffer buffer) {
+  void _writeConvertersAsStaticFields() {
     for (var converter in table.converters) {
       final typeName = converter.typeOfConverter.displayName;
       final code = converter.expression.toSource();
-      buffer..write('static $typeName ${converter.fieldName} = $code;');
+      _buffer..write('static $typeName ${converter.fieldName} = $code;');
     }
   }
 
-  void _writeMappingMethod(StringBuffer buffer) {
+  void _writeMappingMethod() {
     final dataClassName = table.dartTypeName;
 
-    buffer
+    _buffer
       ..write(
           '@override\n$dataClassName map(Map<String, dynamic> data, {String tablePrefix}) {\n')
       ..write(
@@ -90,15 +94,15 @@ class TableWriter {
       ..write('}\n');
   }
 
-  void _writeReverseMappingMethod(StringBuffer buffer) {
+  void _writeReverseMappingMethod() {
     // Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance)
-    buffer
+    _buffer
       ..write('@override\nMap<String, Variable> entityToSql('
           '${table.updateCompanionName} d) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
-      buffer.write('if (d.${column.dartGetterName}.present) {');
+      _buffer.write('if (d.${column.dartGetterName}.present) {');
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<${column.variableTypeName}, ${column.sqlTypeName}>';
 
@@ -106,26 +110,26 @@ class TableWriter {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
         final fieldName = '${table.tableInfoName}.${converter.fieldName}';
-        buffer
+        _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
           ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
       } else {
         // no type converter. Write variable directly
-        buffer
+        _buffer
           ..write(mapSetter)
           ..write('(')
           ..write('d.${column.dartGetterName}.value')
           ..write(');');
       }
 
-      buffer.write('}');
+      _buffer.write('}');
     }
 
-    buffer.write('return map; \n}\n');
+    _buffer.write('return map; \n}\n');
   }
 
-  void _writeColumnGetter(StringBuffer buffer, SpecifiedColumn column) {
+  void _writeColumnGetter(SpecifiedColumn column) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
@@ -176,7 +180,7 @@ class TableWriter {
     expressionBuffer.write(');');
 
     writeMemoizedGetterWithBody(
-      buffer: buffer,
+      buffer: _buffer,
       getterName: column.dartGetterName,
       returnType: column.implColumnTypeName,
       code: expressionBuffer.toString(),
@@ -186,16 +190,15 @@ class TableWriter {
     );
   }
 
-  void _writeColumnVerificationMeta(
-      StringBuffer buffer, SpecifiedColumn column) {
+  void _writeColumnVerificationMeta(SpecifiedColumn column) {
     // final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
-    buffer
+    _buffer
       ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
       ..write("const VerificationMeta('${column.dartGetterName}');\n");
   }
 
-  void _writeValidityCheckMethod(StringBuffer buffer) {
-    buffer
+  void _writeValidityCheckMethod() {
+    _buffer
       ..write('@override\nVerificationContext validateIntegrity'
           '(${table.updateCompanionName} d, {bool isInserting = false}) {\n')
       ..write('final context = VerificationContext();\n');
@@ -207,13 +210,13 @@ class TableWriter {
       if (column.typeConverter != null) {
         // dont't verify custom columns, we assume that the user knows what
         // they're doing
-        buffer
+        _buffer
           ..write(
               'context.handle($metaName, const VerificationResult.success());');
         continue;
       }
 
-      buffer
+      _buffer
         ..write('if (d.$getterName.present) {\n')
         ..write('context.handle('
             '$metaName, '
@@ -222,15 +225,15 @@ class TableWriter {
         ..write('context.missing($metaName);\n')
         ..write('}\n');
     }
-    buffer.write('return context;\n}\n');
+    _buffer.write('return context;\n}\n');
   }
 
   String _fieldNameForColumnMeta(SpecifiedColumn column) {
     return '_${column.dartGetterName}Meta';
   }
 
-  void _writePrimaryKeyOverride(StringBuffer buffer) {
-    buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
+  void _writePrimaryKeyOverride() {
+    _buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
     var primaryKey = table.primaryKey;
 
     // If there is an auto increment column, that forms the primary key. The
@@ -239,37 +242,37 @@ class TableWriter {
     primaryKey ??= table.columns.where((c) => c.hasAI).toSet();
 
     if (primaryKey.isEmpty) {
-      buffer.write('<GeneratedColumn>{};');
+      _buffer.write('<GeneratedColumn>{};');
       return;
     }
 
-    buffer.write('{');
+    _buffer.write('{');
     final pkList = primaryKey.toList();
     for (var i = 0; i < pkList.length; i++) {
       final pk = pkList[i];
 
-      buffer.write(pk.dartGetterName);
+      _buffer.write(pk.dartGetterName);
       if (i != pkList.length - 1) {
-        buffer.write(', ');
+        _buffer.write(', ');
       }
     }
-    buffer.write('};\n');
+    _buffer.write('};\n');
   }
 
-  void _writeAliasGenerator(StringBuffer buffer) {
+  void _writeAliasGenerator() {
     final typeName = table.tableInfoName;
 
-    buffer
+    _buffer
       ..write('@override\n')
       ..write('$typeName createAlias(String alias) {\n')
       ..write('return $typeName(_db, alias);')
       ..write('}');
   }
 
-  void _overrideFieldsIfNeeded(StringBuffer buffer) {
+  void _overrideFieldsIfNeeded() {
     if (table.overrideWithoutRowId != null) {
       final value = table.overrideWithoutRowId ? 'true' : 'false';
-      buffer
+      _buffer
         ..write('@override\n')
         ..write('final bool withoutRowId = $value;\n');
     }
@@ -278,14 +281,14 @@ class TableWriter {
       final value =
           table.overrideTableConstraints.map(asDartLiteral).join(', ');
 
-      buffer
+      _buffer
         ..write('@override\n')
         ..write('final List<String> customConstraints = const [$value];\n');
     }
 
     if (table.overrideDontWriteConstraints != null) {
       final value = table.overrideDontWriteConstraints ? 'true' : 'false';
-      buffer
+      _buffer
         ..write('@override\n')
         ..write('final bool dontWriteConstraints = $value;\n');
     }

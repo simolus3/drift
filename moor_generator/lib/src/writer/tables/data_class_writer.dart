@@ -13,17 +13,18 @@ class DataClassWriter {
     _buffer = scope.leaf();
   }
 
-  void writeInto(StringBuffer buffer) {
-    buffer.write(
+  void write() {
+    _buffer.write(
         'class ${table.dartTypeName} extends DataClass implements Insertable<${table.dartTypeName}> {\n');
 
     // write individual fields
     for (var column in table.columns) {
-      buffer.write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
+      _buffer
+          .write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
     }
 
     // write constructor with named optional fields
-    buffer
+    _buffer
       ..write(table.dartTypeName)
       ..write('({')
       ..write(table.columns.map((column) {
@@ -36,27 +37,27 @@ class DataClassWriter {
       ..write('});');
 
     // Also write parsing factory
-    _writeMappingConstructor(buffer);
+    _writeMappingConstructor();
 
     // And a serializer and deserializer method
-    _writeFromJson(buffer);
-    _writeToJson(buffer);
-    _writeCompanionOverride(buffer);
+    _writeFromJson();
+    _writeToJson();
+    _writeCompanionOverride();
 
     // And a convenience method to copy data from this class.
-    _writeCopyWith(buffer);
+    _writeCopyWith();
 
-    _writeToString(buffer);
-    _writeHashCode(buffer);
+    _writeToString();
+    _writeHashCode();
 
     // override ==
     //    return identical(this, other) || (other is DataClass && other.id == id && ...)
-    buffer
+    _buffer
       ..write('@override\nbool operator ==(other) => ')
       ..write('identical(this, other) || (other is ${table.dartTypeName}');
 
     if (table.columns.isNotEmpty) {
-      buffer
+      _buffer
         ..write('&&')
         ..write(table.columns.map((c) {
           final getter = c.dartGetterName;
@@ -66,13 +67,13 @@ class DataClassWriter {
     }
 
     // finish overrides method and class declaration
-    buffer.write(');\n}');
+    _buffer.write(');\n}');
   }
 
-  void _writeMappingConstructor(StringBuffer buffer) {
+  void _writeMappingConstructor() {
     final dataClassName = table.dartTypeName;
 
-    buffer
+    _buffer
       ..write('factory $dataClassName.fromData')
       ..write('(Map<String, dynamic> data, GeneratedDatabase db, ')
       ..write('{String prefix}) {\n')
@@ -86,12 +87,12 @@ class DataClassWriter {
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
 
-      buffer
+      _buffer
           .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
     }
 
     // finally, the mighty constructor invocation:
-    buffer.write('return $dataClassName(');
+    _buffer.write('return $dataClassName(');
 
     for (var column in table.columns) {
       // id: intType.mapFromDatabaseResponse(data["id])
@@ -110,16 +111,16 @@ class DataClassWriter {
         loadType = '$loaded.mapToDart($loadType)';
       }
 
-      buffer.write('$getter: $loadType,');
+      _buffer.write('$getter: $loadType,');
     }
 
-    buffer.write(');}\n');
+    _buffer.write(');}\n');
   }
 
-  void _writeFromJson(StringBuffer buffer) {
+  void _writeFromJson() {
     final dataClassName = table.dartTypeName;
 
-    buffer
+    _buffer
       ..write('factory $dataClassName.fromJson('
           'Map<String, dynamic> json,'
           '{ValueSerializer serializer = const ValueSerializer.defaults()}'
@@ -131,14 +132,14 @@ class DataClassWriter {
       final jsonKey = column.jsonKey;
       final type = column.dartTypeName;
 
-      buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
+      _buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
     }
 
-    buffer.write(');}\n');
+    _buffer.write(');}\n');
 
-    if (session.options.generateFromJsonStringConstructor) {
+    if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
-      buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
+      _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
           '{ValueSerializer serializer = const ValueSerializer.defaults()}) => '
           '$dataClassName.fromJson('
           'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
@@ -146,8 +147,8 @@ class DataClassWriter {
     }
   }
 
-  void _writeToJson(StringBuffer buffer) {
-    buffer.write('@override Map<String, dynamic> toJson('
+  void _writeToJson() {
+    _buffer.write('@override Map<String, dynamic> toJson('
         '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
         '\n return {');
 
@@ -157,40 +158,40 @@ class DataClassWriter {
       final needsThis = getter == 'serializer';
       final value = needsThis ? 'this.$getter' : getter;
 
-      buffer
+      _buffer
           .write("'$name': serializer.toJson<${column.dartTypeName}>($value),");
     }
 
-    buffer.write('};}');
+    _buffer.write('};}');
   }
 
-  void _writeCopyWith(StringBuffer buffer) {
+  void _writeCopyWith() {
     final dataClassName = table.dartTypeName;
 
-    buffer.write('$dataClassName copyWith({');
+    _buffer.write('$dataClassName copyWith({');
     for (var i = 0; i < table.columns.length; i++) {
       final column = table.columns[i];
       final last = i == table.columns.length - 1;
 
-      buffer.write('${column.dartTypeName} ${column.dartGetterName}');
+      _buffer.write('${column.dartTypeName} ${column.dartGetterName}');
       if (!last) {
-        buffer.write(',');
+        _buffer.write(',');
       }
     }
 
-    buffer.write('}) => $dataClassName(');
+    _buffer.write('}) => $dataClassName(');
 
     for (var column in table.columns) {
       // we also have a method parameter called like the getter, so we can use
       // field: field ?? this.field
       final getter = column.dartGetterName;
-      buffer.write('$getter: $getter ?? this.$getter,');
+      _buffer.write('$getter: $getter ?? this.$getter,');
     }
 
-    buffer.write(');');
+    _buffer.write(');');
   }
 
-  void _writeToString(StringBuffer buffer) {
+  void _writeToString() {
     /*
       @override
       String toString() {
@@ -202,7 +203,7 @@ class DataClassWriter {
       }
      */
 
-    buffer
+    _buffer
       ..write('@override\nString toString() {')
       ..write("return (StringBuffer('${table.dartTypeName}(')");
 
@@ -210,36 +211,36 @@ class DataClassWriter {
       final column = table.columns[i];
       final getterName = column.dartGetterName;
 
-      buffer.write("..write('$getterName: \$$getterName");
-      if (i != table.columns.length - 1) buffer.write(', ');
+      _buffer.write("..write('$getterName: \$$getterName");
+      if (i != table.columns.length - 1) _buffer.write(', ');
 
-      buffer.write("')");
+      _buffer.write("')");
     }
 
-    buffer..write("..write(')')).toString();")..write('\}\n');
+    _buffer..write("..write(')')).toString();")..write('\}\n');
   }
 
-  void _writeHashCode(StringBuffer buffer) {
-    buffer.write('@override\n int get hashCode => ');
+  void _writeHashCode() {
+    _buffer.write('@override\n int get hashCode => ');
 
     final fields = table.columns.map((c) => c.dartGetterName).toList();
-    HashCodeWriter().writeHashCode(fields, buffer);
-    buffer.write(';');
+    HashCodeWriter().writeHashCode(fields, _buffer);
+    _buffer.write(';');
   }
 
-  void _writeCompanionOverride(StringBuffer buffer) {
+  void _writeCompanionOverride() {
     // T createCompanion<T extends UpdateCompanion>(bool nullToAbsent)
 
     final companionClass = table.updateCompanionName;
-    buffer.write('@override\nT createCompanion<T extends UpdateCompanion'
+    _buffer.write('@override\nT createCompanion<T extends UpdateCompanion'
         '<${table.dartTypeName}>>('
         'bool nullToAbsent) {\n return $companionClass(');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
-      buffer.write('$getter: $getter == null && nullToAbsent ? '
+      _buffer.write('$getter: $getter == null && nullToAbsent ? '
           'const Value.absent() : Value($getter),');
     }
-    buffer.write(') as T;}\n');
+    _buffer.write(') as T;}\n');
   }
 }

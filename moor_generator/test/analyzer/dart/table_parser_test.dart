@@ -1,3 +1,4 @@
+import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
@@ -12,7 +13,7 @@ void main() {
   MoorDartParser parser;
   setUpAll(() {
     backend = TestBackend({
-      'test_lib|main.dart': r'''
+      AssetId.parse('test_lib|lib/main.dart'): r'''
       import 'package:moor/moor.dart';
       
       class TableWithCustomName extends Table {
@@ -47,7 +48,7 @@ void main() {
   });
 
   setUp(() async {
-    final task = backend.startTask('test_lib|main.dart');
+    final task = backend.startTask(Uri.parse('package:test_lib/main.dart'));
     dartTask = await backend.session.startDartTask(task);
     parser = MoorDartParser(dartTask);
   });

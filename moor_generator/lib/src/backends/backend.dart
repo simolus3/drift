@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 
 /// A backend for the moor generator.
@@ -12,8 +13,9 @@ abstract class Backend {
 /// Used to analyze a single file via ([entrypoint]). The other methods can be
 /// used to read imports used by the other files.
 abstract class BackendTask {
-  String get entrypoint;
+  Uri get entrypoint;
+  Logger get log;
 
-  Future<LibraryElement> resolveDart(String path);
-  Future<String> readMoor(String path);
+  Future<LibraryElement> resolveDart(Uri uri);
+  Future<String> readMoor(Uri uri);
 }

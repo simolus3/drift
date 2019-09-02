@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:test/test.dart';
 
@@ -8,7 +9,7 @@ import '../../utils/test_backend.dart';
 void main() {
   test('return expression of methods', () async {
     final backend = TestBackend({
-      'test_lib|main.dart': r'''
+      AssetId.parse('test_lib|lib/main.dart'): r'''
       class Test {
         String get getter => 'foo';
         String function() => 'bar';
@@ -19,7 +20,8 @@ void main() {
     '''
     });
 
-    final backendTask = backend.startTask('test_lib|main.dart');
+    final backendTask =
+        backend.startTask(Uri.parse('package:test_lib/main.dart'));
     final dartTask = await backend.session.startDartTask(backendTask);
     final parser = MoorDartParser(dartTask);
 

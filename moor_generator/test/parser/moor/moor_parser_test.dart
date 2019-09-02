@@ -1,5 +1,5 @@
-import 'package:moor_generator/src/parser/moor/moor_analyzer.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
+import 'package:moor_generator/src/analyzer/moor/parser.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:test_api/test_api.dart';
 
 void main() {
@@ -11,13 +11,13 @@ CREATE TABLE users(
   ''';
 
   test('extracts table structure from .moor files', () async {
-    final analyzer = MoorAnalyzer(content);
-    final result = await analyzer.analyze();
+    final task = MoorTask(null, null, content);
+    final analyzer = MoorParser(task);
+    final result = await analyzer.parseAndAnalyze();
 
-    expect(result.errors, isEmpty);
+    expect(task.errors.errors, isEmpty);
 
-    final table =
-        result.parsedFile.declaredTables.single.extractTable(TypeMapper());
+    final table = result.declaredTables.single;
 
     expect(table.sqlName, 'users');
   });

@@ -1,50 +1,54 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/state/session.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 
 class UpdateCompanionWriter {
   final SpecifiedTable table;
-  final GeneratorSession session;
+  final Scope scope;
 
-  UpdateCompanionWriter(this.table, this.session);
+  StringBuffer _buffer;
 
-  void writeInto(StringBuffer buffer) {
-    buffer.write('class ${table.updateCompanionName} '
-        'extends UpdateCompanion<${table.dartTypeName}> {\n');
-    _writeFields(buffer);
-    _writeConstructor(buffer);
-    _writeInsertConstructor(buffer);
-    _writeCopyWith(buffer);
-
-    buffer.write('}\n');
+  UpdateCompanionWriter(this.table, this.scope) {
+    _buffer = scope.leaf();
   }
 
-  void _writeFields(StringBuffer buffer) {
+  void write() {
+    _buffer.write('class ${table.updateCompanionName} '
+        'extends UpdateCompanion<${table.dartTypeName}> {\n');
+    _writeFields();
+    _writeConstructor();
+    _writeInsertConstructor();
+    _writeCopyWith();
+
+    _buffer.write('}\n');
+  }
+
+  void _writeFields() {
     for (var column in table.columns) {
-      buffer.write('final Value<${column.dartTypeName}>'
+      _buffer.write('final Value<${column.dartTypeName}>'
           ' ${column.dartGetterName};\n');
     }
   }
 
-  void _writeConstructor(StringBuffer buffer) {
-    buffer.write('const ${table.updateCompanionName}({');
+  void _writeConstructor() {
+    _buffer.write('const ${table.updateCompanionName}({');
 
     for (var column in table.columns) {
-      buffer.write('this.${column.dartGetterName} = const Value.absent(),');
+      _buffer.write('this.${column.dartGetterName} = const Value.absent(),');
     }
 
-    buffer.write('});\n');
+    _buffer.write('});\n');
   }
 
   /// Writes a special `.insert` constructor. All columns which may not be
   /// absent during insert are marked `@required` here. Also, we don't need to
   /// use value wrappers here - `Value.absent` simply isn't an option.
-  void _writeInsertConstructor(StringBuffer buffer) {
+  void _writeInsertConstructor() {
     final requiredColumns = <SpecifiedColumn>{};
 
     // can't be constant because we use initializers (this.a = Value(a)).
     // for a parameter a which is only potentially constant.
-    buffer.write('${table.updateCompanionName}.insert({');
+    _buffer.write('${table.updateCompanionName}.insert({');
 
     // Say we had two required columns a and c, and an optional column b.
     // .insert({
@@ -59,47 +63,47 @@ class UpdateCompanionWriter {
       if (column.requiredDuringInsert) {
         requiredColumns.add(column);
 
-        buffer.write('@required ${column.dartTypeName} $param,');
+        _buffer.write('@required ${column.dartTypeName} $param,');
       } else {
-        buffer.write('this.$param = const Value.absent(),');
+        _buffer.write('this.$param = const Value.absent(),');
       }
     }
-    buffer.write('})');
+    _buffer.write('})');
 
     var first = true;
     for (var required in requiredColumns) {
       if (first) {
-        buffer.write(': ');
+        _buffer.write(': ');
         first = false;
       } else {
-        buffer.write(', ');
+        _buffer.write(', ');
       }
 
       final param = required.dartGetterName;
-      buffer.write('$param = Value($param)');
+      _buffer.write('$param = Value($param)');
     }
 
-    buffer.write(';\n');
+    _buffer.write(';\n');
   }
 
-  void _writeCopyWith(StringBuffer buffer) {
-    buffer.write('${table.updateCompanionName} copyWith({');
+  void _writeCopyWith() {
+    _buffer.write('${table.updateCompanionName} copyWith({');
     var first = true;
     for (var column in table.columns) {
       if (!first) {
-        buffer.write(', ');
+        _buffer.write(', ');
       }
       first = false;
-      buffer.write('Value<${column.dartTypeName}> ${column.dartGetterName}');
+      _buffer.write('Value<${column.dartTypeName}> ${column.dartGetterName}');
     }
 
-    buffer
+    _buffer
       ..write('}) {\n') //
       ..write('return ${table.updateCompanionName}(');
     for (var column in table.columns) {
       final name = column.dartGetterName;
-      buffer.write('$name: $name ?? this.$name,');
+      _buffer.write('$name: $name ?? this.$name,');
     }
-    buffer.write(');\n}\n');
+    _buffer.write(');\n}\n');
   }
 }

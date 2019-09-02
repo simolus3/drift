@@ -43,7 +43,7 @@ class QueryWriter {
     return 'expanded${v.dartParameterName}';
   }
 
-  void writeInto() {
+  void write() {
     if (query is SqlSelectQuery) {
       final select = query as SqlSelectQuery;
       if (select.resultSet.matchingTable == null) {

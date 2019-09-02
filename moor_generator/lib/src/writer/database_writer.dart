@@ -1,24 +1,28 @@
-import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/writer/queries/query_writer.dart';
+import 'package:moor_generator/src/writer/tables/table_writer.dart';
 import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:moor_generator/src/model/specified_database.dart';
-import 'package:moor_generator/src/writer/table_writer.dart';
 
 class DatabaseWriter {
   final SpecifiedDatabase db;
-  final GeneratorSession session;
+  final Scope scope;
 
-  DatabaseWriter(this.db, this.session);
+  DatabaseWriter(this.db, this.scope);
 
-  void write(StringBuffer buffer) {
+  void write() {
     // Write referenced tables
     for (final table in db.tables) {
-      TableWriter(table, session).writeInto(buffer);
+      TableWriter(table, scope.child()).writeInto();
     }
 
     // Write the database class
+    final dbScope = scope.child();
+
     final className = '_\$${db.fromClass.name}';
-    buffer.write('abstract class $className extends GeneratedDatabase {\n'
+    dbScope.leaf().write(
+        'abstract class $className extends GeneratedDatabase {\n'
         '$className(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e); \n');
 
     final tableGetters = <String>[];
@@ -28,7 +32,7 @@ class DatabaseWriter {
       final tableClassName = table.tableInfoName;
 
       writeMemoizedGetter(
-        buffer: buffer,
+        buffer: dbScope.leaf(),
         getterName: table.tableFieldName,
         returnType: tableClassName,
         code: '$tableClassName(this)',
@@ -42,7 +46,7 @@ class DatabaseWriter {
       final databaseImplName = db.fromClass.name;
 
       writeMemoizedGetter(
-        buffer: buffer,
+        buffer: dbScope.leaf(),
         getterName: getterName,
         returnType: typeName,
         code: '$typeName(this as $databaseImplName)',
@@ -52,11 +56,11 @@ class DatabaseWriter {
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
     for (var query in db.queries) {
-      QueryWriter(query, session, writtenMappingMethods).writeInto(buffer);
+      QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
     // Write List of tables, close bracket for class
-    buffer
+    dbScope.leaf()
       ..write('@override\nList<TableInfo> get allTables => [')
       ..write(tableGetters.join(','))
       ..write('];\n}');

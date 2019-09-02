@@ -21,13 +21,13 @@ import 'package:source_gen/source_gen.dart';
 class MoorSession {
   MoorSession();
 
-  Future<DartTask> startDartTask(BackendTask backendTask, {String uri}) async {
+  Future<DartTask> startDartTask(BackendTask backendTask, {Uri uri}) async {
     final input = uri ?? backendTask.entrypoint;
     final library = await backendTask.resolveDart(input);
     return DartTask(this, backendTask, library);
   }
 
-  Future<MoorTask> startMoorTask(BackendTask backendTask, {String uri}) async {
+  Future<MoorTask> startMoorTask(BackendTask backendTask, {Uri uri}) async {
     final input = uri ?? backendTask.entrypoint;
     final source = await backendTask.readMoor(input);
     return MoorTask(backendTask, this, source);
@@ -46,6 +46,23 @@ abstract class FileTask<R extends ParsedFile> {
   void reportError(MoorError error) => errors.report(error);
 
   FutureOr<R> compute();
+
+  void printErrors() {
+    /*
+    * if (session.errors.errors.isNotEmpty) {
+      print('Warning: There were some errors while running '
+          'moor_generator on ${buildStep.inputId.path}:');
+
+      for (var error in session.errors.errors) {
+        print(error.message);
+
+        if (error.affectedElement != null) {
+          final span = spanForElement(error.affectedElement);
+          print('${span.start.toolString}\n${span.highlight()}');
+        }
+      }
+    } */
+  }
 }
 
 /// Session used to parse a Dart file and extract table information.
@@ -104,8 +121,8 @@ class DartTask extends FileTask<ParsedDartFile> {
 
   /// Reads all tables declared in sql by a `.moor` file in [paths].
   Future<List<SpecifiedTable>> resolveIncludes(Iterable<String> paths) {
-    return Stream.fromFutures(
-            paths.map((path) => session.startMoorTask(backendTask, uri: path)))
+    return Stream.fromFutures(paths.map(
+            (path) => session.startMoorTask(backendTask, uri: Uri.parse(path))))
         .asyncMap((task) => task.compute())
         .expand((file) => file.declaredTables)
         .toList();
