@@ -1,16 +1,16 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:build/build.dart';
-import 'package:moor_generator/src/state/errors.dart';
+import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
-import 'package:moor_generator/src/parser/sql/query_handler.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
-import 'package:moor_generator/src/state/session.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 class SqlParser {
   final List<SpecifiedTable> tables;
-  final GeneratorSession session;
+  final FileTask task;
   final Map<DartObject, DartObject> definedQueries;
 
   final TypeMapper _mapper = TypeMapper();
@@ -18,7 +18,7 @@ class SqlParser {
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlParser(this.session, this.tables, this.definedQueries);
+  SqlParser(this.task, this.tables, this.definedQueries);
 
   void _spawnEngine() {
     _engine = SqlEngine();
@@ -36,14 +36,15 @@ class SqlParser {
       try {
         context = _engine.analyze(sql);
       } catch (e, s) {
-        session.errors.add(MoorError(
-            critical: true,
+        task.reportError(MoorError(
+            severity: Severity.criticalError,
             message: 'Error while trying to parse $sql: $e, $s'));
         return;
       }
 
       for (var error in context.errors) {
-        session.errors.add(MoorError(
+        task.reportError(MoorError(
+          severity: Severity.warning,
           message: 'The sql query $sql is invalid: $error',
         ));
       }

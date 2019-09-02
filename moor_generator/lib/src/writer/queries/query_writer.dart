@@ -1,9 +1,11 @@
 import 'dart:math' show max;
 
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
-import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
+import 'package:moor_generator/src/writer/queries/result_set_writer.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -16,13 +18,18 @@ const highestAssignedIndexVar = '\$highestIndex';
 /// should be included in a generated database or dao class.
 class QueryWriter {
   final SqlQuery query;
-  final GeneratorSession session;
+  final Scope scope;
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
+  MoorOptions get options => scope.writer.options;
+  StringBuffer _buffer;
+
   final Set<String> _writtenMappingMethods;
 
-  QueryWriter(this.query, this.session, this._writtenMappingMethods);
+  QueryWriter(this.query, this.scope, this._writtenMappingMethods) {
+    _buffer = scope.leaf();
+  }
 
   /// The expanded sql that we insert into queries whenever an array variable
   /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
@@ -36,19 +43,25 @@ class QueryWriter {
     return 'expanded${v.dartParameterName}';
   }
 
-  void writeInto(StringBuffer buffer) {
+  void writeInto() {
     if (query is SqlSelectQuery) {
-      _writeSelect(buffer);
+      final select = query as SqlSelectQuery;
+      if (select.resultSet.matchingTable == null) {
+        // query needs its own result set - write that now
+        final buffer = scope.findScopeOfLevel(DartScope.library).leaf();
+        ResultSetWriter(select).write(buffer);
+      }
+      _writeSelect();
     } else if (query is UpdatingQuery) {
-      _writeUpdatingQuery(buffer);
+      _writeUpdatingQuery();
     }
   }
 
-  void _writeSelect(StringBuffer buffer) {
-    _writeMapping(buffer);
-    _writeSelectStatementCreator(buffer);
-    _writeOneTimeReader(buffer);
-    _writeStreamReader(buffer);
+  void _writeSelect() {
+    _writeMapping();
+    _writeSelectStatementCreator();
+    _writeOneTimeReader();
+    _writeStreamReader();
   }
 
   String _nameOfMappingMethod() {
@@ -61,11 +74,11 @@ class QueryWriter {
 
   /// Writes a mapping method that turns a "QueryRow" into the desired custom
   /// return type.
-  void _writeMapping(StringBuffer buffer) {
+  void _writeMapping() {
     // avoid writing mapping methods twice if the same result class is written
     // more than once.
     if (!_writtenMappingMethods.contains(_nameOfMappingMethod())) {
-      buffer
+      _buffer
         ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
         ..write('(QueryRow row) {\n')
         ..write('return ${_select.resultClassName}(');
@@ -84,35 +97,35 @@ class QueryWriter {
           code = '$field.mapToDart($code)';
         }
 
-        buffer.write('$fieldName: $code,');
+        _buffer.write('$fieldName: $code,');
       }
 
-      buffer.write(');\n}\n');
+      _buffer.write(');\n}\n');
       _writtenMappingMethods.add(_nameOfMappingMethod());
     }
   }
 
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
   /// of the custom query.
-  void _writeSelectStatementCreator(StringBuffer buffer) {
+  void _writeSelectStatementCreator() {
     final returnType = 'Selectable<${_select.resultClassName}>';
     final methodName = _nameOfCreationMethod();
 
-    buffer.write('$returnType $methodName(');
-    _writeParameters(buffer);
-    buffer.write(') {\n');
+    _buffer.write('$returnType $methodName(');
+    _writeParameters();
+    _buffer.write(') {\n');
 
-    _writeExpandedDeclarations(buffer);
-    buffer
+    _writeExpandedDeclarations();
+    _buffer
       ..write('return (operateOn ?? this).')
       ..write('customSelectQuery(${_queryCode()}, ');
-    _writeVariables(buffer);
-    buffer.write(', ');
-    _writeReadsFrom(buffer);
+    _writeVariables();
+    _buffer.write(', ');
+    _writeReadsFrom();
 
-    buffer.write(').map(');
-    buffer.write(_nameOfMappingMethod());
-    buffer.write(');\n}\n');
+    _buffer.write(').map(');
+    _buffer.write(_nameOfMappingMethod());
+    _buffer.write(');\n}\n');
   }
 
   /*
@@ -122,34 +135,35 @@ class QueryWriter {
   }
    */
 
-  void _writeOneTimeReader(StringBuffer buffer) {
-    buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
-    _writeParameters(buffer);
-    buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
-    _writeUseParameters(buffer);
-    buffer.write(').get();\n}\n');
+  void _writeOneTimeReader() {
+    _buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
+    _writeParameters();
+    _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _writeUseParameters();
+    _buffer.write(').get();\n}\n');
   }
 
-  void _writeStreamReader(StringBuffer buffer) {
+  void _writeStreamReader() {
     final upperQueryName = ReCase(query.name).pascalCase;
 
     String methodName;
     // turning the query name into pascal case will remove underscores, add the
     // "private" modifier back in if needed
-    if (session.options.fixPrivateWatchMethods && query.name.startsWith('_')) {
+    if (scope.writer.options.fixPrivateWatchMethods &&
+        query.name.startsWith('_')) {
       methodName = '_watch$upperQueryName';
     } else {
       methodName = 'watch$upperQueryName';
     }
 
-    buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
-    _writeParameters(buffer, dontOverrideEngine: true);
-    buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
-    _writeUseParameters(buffer, dontUseEngine: true);
-    buffer.write(').watch();\n}\n');
+    _buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
+    _writeParameters(dontOverrideEngine: true);
+    _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _writeUseParameters(dontUseEngine: true);
+    _buffer.write(').watch();\n}\n');
   }
 
-  void _writeUpdatingQuery(StringBuffer buffer) {
+  void _writeUpdatingQuery() {
     /*
       Future<int> test() {
     return customUpdate('', variables: [], updates: {});
@@ -157,24 +171,23 @@ class QueryWriter {
      */
     final implName = _update.isInsert ? 'customInsert' : 'customUpdate';
 
-    buffer.write('Future<int> ${query.name}(');
-    _writeParameters(buffer);
-    buffer.write(') {\n');
+    _buffer.write('Future<int> ${query.name}(');
+    _writeParameters();
+    _buffer.write(') {\n');
 
-    _writeExpandedDeclarations(buffer);
-    buffer
+    _writeExpandedDeclarations();
+    _buffer
       ..write('return (operateOn ?? this).')
       ..write('$implName(${_queryCode()},');
 
-    _writeVariables(buffer);
-    buffer.write(',');
-    _writeUpdates(buffer);
+    _writeVariables();
+    _buffer.write(',');
+    _writeUpdates();
 
-    buffer..write(',);\n}\n');
+    _buffer..write(',);\n}\n');
   }
 
-  void _writeParameters(StringBuffer buffer,
-      {bool dontOverrideEngine = false}) {
+  void _writeParameters({bool dontOverrideEngine = false}) {
     final paramList = query.variables.map((v) {
       var dartType = dartTypeNames[v.type];
       if (v.isArray) {
@@ -183,13 +196,13 @@ class QueryWriter {
       return '$dartType ${v.dartParameterName}';
     }).join(', ');
 
-    buffer.write(paramList);
+    _buffer.write(paramList);
 
     // write named optional parameter to configure the query engine used to
     // execute the statement,
     if (!dontOverrideEngine) {
-      if (query.variables.isNotEmpty) buffer.write(', ');
-      buffer.write('{@Deprecated(${asDartLiteral(queryEngineWarningDesc)}) '
+      if (query.variables.isNotEmpty) _buffer.write(', ');
+      _buffer.write('{@Deprecated(${asDartLiteral(queryEngineWarningDesc)}) '
           'QueryEngine operateOn}');
     }
   }
@@ -197,11 +210,11 @@ class QueryWriter {
   /// Writes code that uses the parameters as declared by [_writeParameters],
   /// assuming that for each parameter, a variable with the same name exists
   /// in the current scope.
-  void _writeUseParameters(StringBuffer into, {bool dontUseEngine = false}) {
-    into.write(query.variables.map((v) => v.dartParameterName).join(', '));
+  void _writeUseParameters({bool dontUseEngine = false}) {
+    _buffer.write(query.variables.map((v) => v.dartParameterName).join(', '));
     if (!dontUseEngine) {
-      if (query.variables.isNotEmpty) into.write(', ');
-      into.write('operateOn: operateOn');
+      if (query.variables.isNotEmpty) _buffer.write(', ');
+      _buffer.write('operateOn: operateOn');
     }
   }
 
@@ -217,7 +230,7 @@ class QueryWriter {
   // "vars" variable twice. To do this, a local var called "$currentVarIndex"
   // keeps track of the highest variable number assigned.
 
-  void _writeExpandedDeclarations(StringBuffer buffer) {
+  void _writeExpandedDeclarations() {
     var indexCounterWasDeclared = false;
     var highestIndexBeforeArray = 0;
 
@@ -228,12 +241,12 @@ class QueryWriter {
           // add +1 because that's going to be the first index of the expanded
           // array
           final firstVal = highestIndexBeforeArray + 1;
-          buffer.write('var $highestAssignedIndexVar = $firstVal;');
+          _buffer.write('var $highestAssignedIndexVar = $firstVal;');
           indexCounterWasDeclared = true;
         }
 
         // final expandedvar1 = $expandVar(<startIndex>, <amount>);
-        buffer
+        _buffer
           ..write('final ')
           ..write(_expandedName(variable))
           ..write(' = ')
@@ -244,7 +257,7 @@ class QueryWriter {
           ..write('.length);\n');
 
         // increase highest index for the next array
-        buffer
+        _buffer
           ..write('$highestAssignedIndexVar += ')
           ..write(variable.dartParameterName)
           ..write('.length;');
@@ -256,8 +269,8 @@ class QueryWriter {
     }
   }
 
-  void _writeVariables(StringBuffer buffer) {
-    buffer..write('variables: [');
+  void _writeVariables() {
+    _buffer..write('variables: [');
 
     for (var variable in query.variables) {
       // for a regular variable: Variable.withInt(x),
@@ -266,15 +279,15 @@ class QueryWriter {
       final name = variable.dartParameterName;
 
       if (variable.isArray) {
-        buffer.write('for (var \$ in $name) $constructor(\$)');
+        _buffer.write('for (var \$ in $name) $constructor(\$)');
       } else {
-        buffer.write('$constructor($name)');
+        _buffer.write('$constructor($name)');
       }
 
-      buffer.write(',');
+      _buffer.write(',');
     }
 
-    buffer..write(']');
+    _buffer..write(']');
   }
 
   /// Returns a Dart string literal representing the query after variables have
@@ -295,29 +308,29 @@ class QueryWriter {
           .singleWhere((f) => f.variable.resolvedIndex == sqlVar.resolvedIndex);
       if (!moorVar.isArray) continue;
 
-      // write everything that comes before this var into the buffer
+      // write everything that comes before this var into the_buffer
       final currentIndex = sqlVar.firstPosition;
       final queryPart = query.sql.substring(lastIndex, currentIndex);
-      buffer.write(escapeForDart(queryPart));
+      _buffer.write(escapeForDart(queryPart));
       lastIndex = sqlVar.lastPosition;
 
       // write the ($expandedVar) par
-      buffer.write('(\$${_expandedName(moorVar)})');
+      _buffer.write('(\$${_expandedName(moorVar)})');
     }
 
     // write the final part after the last variable, plus the ending '
-    buffer..write(escapeForDart(query.sql.substring(lastIndex)))..write("'");
+    _buffer..write(escapeForDart(query.sql.substring(lastIndex)))..write("'");
 
     return buffer.toString();
   }
 
-  void _writeReadsFrom(StringBuffer buffer) {
+  void _writeReadsFrom() {
     final from = _select.readsFrom.map((t) => t.tableFieldName).join(', ');
-    buffer..write('readsFrom: {')..write(from)..write('}');
+    _buffer..write('readsFrom: {')..write(from)..write('}');
   }
 
-  void _writeUpdates(StringBuffer buffer) {
+  void _writeUpdates() {
     final from = _update.updates.map((t) => t.tableFieldName).join(', ');
-    buffer..write('updates: {')..write(from)..write('}');
+    _buffer..write('updates: {')..write(from)..write('}');
   }
 }

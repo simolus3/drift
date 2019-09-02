@@ -1,13 +1,9 @@
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
-import 'package:moor_generator/src/model/specified_database.dart';
-import 'package:moor_generator/src/state/session.dart';
-import 'package:source_gen/source_gen.dart';
+part of 'parser.dart';
 
 class UseMoorParser {
-  final GeneratorSession session;
+  final DartTask task;
 
-  UseMoorParser(this.session);
+  UseMoorParser(this.task);
 
   /// If [element] has a `@UseMoor` annotation, parses the database model
   /// declared by that class and the referenced tables.
@@ -25,11 +21,10 @@ class UseMoorParser {
             ?.map((e) => e.toStringValue()) ??
         {};
 
-    final parsedTables = await session.parseTables(tableTypes, element);
-    parsedTables.addAll(await session.resolveIncludes(includes));
+    final parsedTables = await task.parseTables(tableTypes, element);
+    parsedTables.addAll(await task.resolveIncludes(includes));
 
-    final parsedQueries =
-        await session.parseQueries(queryStrings, parsedTables);
+    final parsedQueries = await task.parseQueries(queryStrings, parsedTables);
     final daoTypes = _readDaoTypes(annotation);
 
     return SpecifiedDatabase(element, parsedTables, daoTypes, parsedQueries);

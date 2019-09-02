@@ -1,12 +1,9 @@
-import 'package:analyzer/dart/element/element.dart';
-import 'package:moor_generator/src/model/specified_dao.dart';
-import 'package:moor_generator/src/state/session.dart';
-import 'package:source_gen/source_gen.dart';
+part of 'parser.dart';
 
 class UseDaoParser {
-  final GeneratorSession session;
+  final DartTask dartTask;
 
-  UseDaoParser(this.session);
+  UseDaoParser(this.dartTask);
 
   /// If [element] has a `@UseDao` annotation, parses the database model
   /// declared by that class and the referenced tables.
@@ -24,11 +21,11 @@ class UseDaoParser {
             ?.map((e) => e.toStringValue()) ??
         {};
 
-    final parsedTables = await session.parseTables(tableTypes, element);
-    parsedTables.addAll(await session.resolveIncludes(includes));
+    final parsedTables = await dartTask.parseTables(tableTypes, element);
+    parsedTables.addAll(await dartTask.resolveIncludes(includes));
 
     final parsedQueries =
-        await session.parseQueries(queryStrings, parsedTables);
+        await dartTask.parseQueries(queryStrings, parsedTables);
 
     return SpecifiedDao(element, parsedTables, parsedQueries);
   }

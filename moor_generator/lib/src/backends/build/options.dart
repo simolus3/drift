@@ -1,3 +1,5 @@
+part of 'moor_builder.dart';
+
 class MoorOptions {
   final bool generateFromJsonStringConstructor;
 

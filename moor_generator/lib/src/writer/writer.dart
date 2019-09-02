@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
 
 /// Manages a tree structure which we use to generate code.
 ///
@@ -10,6 +11,9 @@ import 'package:meta/meta.dart';
 /// passing a [Scope] we will always be able to write code in a parent scope.
 class Writer {
   final Scope _root = Scope(parent: null);
+  final MoorOptions options;
+
+  Writer(this.options);
 
   String writeGenerated() => _leafNodes(_root).join();
 
@@ -41,8 +45,13 @@ abstract class _Node {
 /// we just pass a single [StringBuffer] around, this is annoying to manage.
 class Scope extends _Node {
   final List<_Node> _children = [];
+  final DartScope scope;
+  final Writer writer;
 
-  Scope({@required Scope parent}) : super(parent);
+  Scope({@required Scope parent, Writer writer})
+      : scope = parent?.scope?.nextLevel ?? DartScope.library,
+        writer = writer ?? parent?.writer,
+        super(parent);
 
   Scope get root {
     var found = this;
@@ -50,6 +59,19 @@ class Scope extends _Node {
       found = found.parent;
     }
     return found;
+  }
+
+  Iterable<Scope> get _thisAndParents sync* {
+    var scope = this;
+    do {
+      yield scope;
+      scope = scope.parent;
+    } while (scope != null);
+  }
+
+  Scope findScopeOfLevel(DartScope level) {
+    return _thisAndParents
+        .firstWhere((scope) => scope.scope.isSuperScope(level));
   }
 
   Scope child() {
@@ -69,4 +91,28 @@ class _LeafNode extends _Node {
   final StringBuffer buffer = StringBuffer();
 
   _LeafNode(Scope parent) : super(parent);
+}
+
+class DartScope {
+  static const DartScope library = DartScope._(0);
+  static const DartScope topLevelMember = DartScope._(1);
+  static const DartScope inner = DartScope._(2);
+
+  static const List<DartScope> values = [library, topLevelMember, inner];
+
+  final int _id;
+
+  const DartScope._(this._id);
+
+  DartScope get nextLevel {
+    if (_id == values.length - 1) {
+      // already in innermost level
+      return this;
+    }
+    return values[_id + 1];
+  }
+
+  bool isSuperScope(DartScope other) {
+    return other._id >= _id;
+  }
 }

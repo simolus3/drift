@@ -1,13 +1,17 @@
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/writer/utils/hash_code.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 
 class DataClassWriter {
   final SpecifiedTable table;
-  final GeneratorSession session;
+  final Scope scope;
 
-  DataClassWriter(this.table, this.session);
+  StringBuffer _buffer;
+
+  DataClassWriter(this.table, this.scope) {
+    _buffer = scope.leaf();
+  }
 
   void writeInto(StringBuffer buffer) {
     buffer.write(

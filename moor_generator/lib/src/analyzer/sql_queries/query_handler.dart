@@ -1,11 +1,14 @@
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 import 'affected_tables_visitor.dart';
 
+/// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
+/// generator package by determining its type, return columns, variables and so
+/// on.
 class QueryHandler {
   final String name;
   final AnalysisContext context;

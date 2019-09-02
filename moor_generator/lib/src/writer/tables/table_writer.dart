@@ -4,7 +4,7 @@ import 'package:moor_generator/src/state/session.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/data_class_writer.dart';
 import 'package:moor_generator/src/writer/update_companion_writer.dart';
-import 'package:moor_generator/src/writer/utils.dart';
+import 'package:moor_generator/src/writer/memoized_getter.dart';
 
 class TableWriter {
   final SpecifiedTable table;

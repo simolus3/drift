@@ -7,14 +7,19 @@ import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/src/model/specified_dao.dart';
+import 'package:moor_generator/src/model/specified_database.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
+import 'package:source_gen/source_gen.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';
+part 'use_dao_parser.dart';
+part 'use_moor_parser.dart';
 
 class MoorDartParser {
   final DartTask task;

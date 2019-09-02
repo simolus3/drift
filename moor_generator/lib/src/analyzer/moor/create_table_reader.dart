@@ -1,40 +1,17 @@
+import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-/*
-We're in the process of defining what a .moor file could actually look like.
-At the moment, we only support "CREATE TABLE" statements:
-``` // content of a .moor file
-CREATE TABLE users (
-  id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(100) NOT NULL,
-)
-```
-
-In the future, we'd also like to support
-- import statements between moor files
-- import statements from moor files referencing tables declared via the Dart DSL
-- declaring statements in these files, similar to how compiled statements work
-  with the annotation.
- */
-
-class ParsedMoorFile {
-  final List<CreateTable> declaredTables;
-
-  ParsedMoorFile(this.declaredTables);
-}
-
-class CreateTable {
+class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
   final ParseResult ast;
 
-  CreateTable(this.ast);
+  CreateTableReader(this.ast);
 
   SpecifiedTable extractTable(TypeMapper mapper) {
     final table =

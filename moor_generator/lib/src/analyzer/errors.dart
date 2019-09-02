@@ -1,22 +1,34 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 
 /// Base class for errors that can be presented to an user.
 class MoorError {
   final Severity severity;
+  final String message;
 
-  MoorError(this.severity);
+  MoorError({@required this.severity, this.message});
 }
 
 class ErrorInDartCode extends MoorError {
-  final String message;
   final Element affectedElement;
 
   ErrorInDartCode(
-      {this.message,
+      {String message,
       this.affectedElement,
       Severity severity = Severity.warning})
-      : super(severity);
+      : super(severity: severity, message: message);
+}
+
+class ErrorInMoorFile extends MoorError {
+  final FileSpan span;
+
+  ErrorInMoorFile(
+      {@required this.span,
+      String message,
+      Severity severity = Severity.warning})
+      : super(message: message, severity: severity);
 }
 
 class ErrorSink {
