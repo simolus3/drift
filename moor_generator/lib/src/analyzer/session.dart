@@ -124,7 +124,14 @@ class DartTask extends FileTask<ParsedDartFile> {
   Future<List<SpecifiedTable>> resolveIncludes(Iterable<String> paths) {
     return Stream.fromFutures(paths.map(
             (path) => session.startMoorTask(backendTask, uri: Uri.parse(path))))
-        .asyncMap((task) => task.compute())
+        .asyncMap((task) async {
+          final result = await task.compute();
+
+          // add errors from nested task to this task as well.
+          task.errors.errors.forEach(reportError);
+
+          return result;
+        })
         .expand((file) => file.declaredTables)
         .toList();
   }

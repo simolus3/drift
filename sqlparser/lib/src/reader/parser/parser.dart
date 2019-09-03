@@ -151,9 +151,6 @@ abstract class ParserBase {
   WindowDefinition _windowDefinition();
 }
 
-// todo better error handling and synchronisation, like it's done here:
-// https://craftinginterpreters.com/parsing-expressions.html#synchronizing-a-recursive-descent-parser
-
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
   Parser(List<Token> tokens, {bool useMoor = false}) : super(tokens, useMoor);
@@ -180,8 +177,19 @@ class Parser extends ParserBase
   List<Statement> statements() {
     final stmts = <Statement>[];
     while (!_isAtEnd) {
-      stmts.add(statement(expectEnd: false));
+      try {
+        stmts.add(statement(expectEnd: false));
+      } on ParsingError catch (_) {
+        // the error is added to the list errors, so ignore. We skip to the next
+        // semicolon to parse the next statement.
+        _synchronize();
+      }
     }
     return stmts;
+  }
+
+  void _synchronize() {
+    // fast-forward to the token after th next semicolon
+    while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
 }
