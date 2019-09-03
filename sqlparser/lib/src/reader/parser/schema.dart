@@ -15,7 +15,8 @@ mixin SchemaParser on ParserBase {
       ifNotExists = true;
     }
 
-    final tableIdentifier = _consumeIdentifier('Expected a table name');
+    final tableIdentifier =
+        _consumeIdentifier('Expected a table name', lenient: true);
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     _consume(
@@ -213,7 +214,8 @@ mixin SchemaParser on ParserBase {
 
   String _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
-      final name = _consumeIdentifier('Expect a name for the constraint here');
+      final name = _consumeIdentifier('Expect a name for the constraint here',
+          lenient: true);
       return name.identifier;
     }
     return null;

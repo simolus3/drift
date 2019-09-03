@@ -207,7 +207,8 @@ mixin QueryEngine on DatabaseConnectionUser {
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final result = await writer(executor, query, mappedArgs);
+    final result =
+        await executor.doWhenOpened((e) => writer(e, query, mappedArgs));
 
     if (updates != null) {
       await engine.streamQueries.handleTableUpdates(updates);

@@ -10,6 +10,8 @@ final _leadingDigits = RegExp(r'^\d*');
 abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;
+  List<AnalysisError> lints;
+
   String get sql => fromContext.sql;
 
   /// The variables that appear in the [sql] query. We support three kinds of
