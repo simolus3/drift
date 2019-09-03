@@ -1282,32 +1282,6 @@ class $PureDefaultsTable extends PureDefaults
   }
 }
 
-class AllTodosWithCategoryResult {
-  final int id;
-  final String title;
-  final String content;
-  final DateTime targetDate;
-  final int category;
-  final int catId;
-  final String catDesc;
-  AllTodosWithCategoryResult({
-    this.id,
-    this.title,
-    this.content,
-    this.targetDate,
-    this.category,
-    this.catId,
-    this.catDesc,
-  });
-}
-
-class FindCustomResult {
-  final MyCustomObject custom;
-  FindCustomResult({
-    this.custom,
-  });
-}
-
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1478,6 +1452,32 @@ abstract class _$TodoDb extends GeneratedDatabase {
         tableWithoutPK,
         pureDefaults
       ];
+}
+
+class AllTodosWithCategoryResult {
+  final int id;
+  final String title;
+  final String content;
+  final DateTime targetDate;
+  final int category;
+  final int catId;
+  final String catDesc;
+  AllTodosWithCategoryResult({
+    this.id,
+    this.title,
+    this.content,
+    this.targetDate,
+    this.category,
+    this.catId,
+    this.catDesc,
+  });
+}
+
+class FindCustomResult {
+  final MyCustomObject custom;
+  FindCustomResult({
+    this.custom,
+  });
 }
 
 // **************************************************************************

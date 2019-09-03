@@ -12,9 +12,7 @@ class TableWriter {
 
   StringBuffer _buffer;
 
-  TableWriter(this.table, this.scope) {
-    _buffer = scope.leaf();
-  }
+  TableWriter(this.table, this.scope);
 
   void writeInto() {
     writeDataClass();
@@ -27,6 +25,8 @@ class TableWriter {
   }
 
   void writeTableInfoClass() {
+    _buffer = scope.leaf();
+
     final dataClass = table.dartTypeName;
     final tableDslName = table.fromClass?.name ?? 'Table';
 

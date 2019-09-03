@@ -38,21 +38,21 @@ class SqlParser {
       } catch (e, s) {
         task.reportError(MoorError(
             severity: Severity.criticalError,
-            message: 'Error while trying to parse $sql: $e, $s'));
+            message: 'Error while trying to parse $key: $e, $s'));
         return;
       }
 
       for (var error in context.errors) {
         task.reportError(MoorError(
           severity: Severity.warning,
-          message: 'The sql query $sql is invalid: $error',
+          message: 'The sql query $key is invalid: $error',
         ));
       }
 
       try {
         foundQueries.add(QueryHandler(name, context, _mapper).handle());
       } catch (e, s) {
-        log.warning('Error while generating APIs for ${context.sql}', e, s);
+        log.warning('Error while generating APIs for $key', e, s);
       }
     });
   }

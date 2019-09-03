@@ -311,15 +311,15 @@ class QueryWriter {
       // write everything that comes before this var into the_buffer
       final currentIndex = sqlVar.firstPosition;
       final queryPart = query.sql.substring(lastIndex, currentIndex);
-      _buffer.write(escapeForDart(queryPart));
+      buffer.write(escapeForDart(queryPart));
       lastIndex = sqlVar.lastPosition;
 
       // write the ($expandedVar) par
-      _buffer.write('(\$${_expandedName(moorVar)})');
+      buffer.write('(\$${_expandedName(moorVar)})');
     }
 
     // write the final part after the last variable, plus the ending '
-    _buffer..write(escapeForDart(query.sql.substring(lastIndex)))..write("'");
+    buffer..write(escapeForDart(query.sql.substring(lastIndex)))..write("'");
 
     return buffer.toString();
   }

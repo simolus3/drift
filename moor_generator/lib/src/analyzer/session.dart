@@ -48,20 +48,18 @@ abstract class FileTask<R extends ParsedFile> {
   FutureOr<R> compute();
 
   void printErrors() {
-    /*
-    * if (session.errors.errors.isNotEmpty) {
-      print('Warning: There were some errors while running '
-          'moor_generator on ${buildStep.inputId.path}:');
+    final foundErrors = errors.errors;
+    if (foundErrors.isNotEmpty) {
+      final log = backendTask.log;
 
-      for (var error in session.errors.errors) {
-        print(error.message);
+      log.warning('There were some errors while running '
+          'moor_generator on ${backendTask.entrypoint}:');
 
-        if (error.affectedElement != null) {
-          final span = spanForElement(error.affectedElement);
-          print('${span.start.toolString}\n${span.highlight()}');
-        }
+      for (var error in foundErrors) {
+        final printer = error.isError ? log.warning : log.info;
+        error.writeDescription(printer);
       }
-    } */
+    }
   }
 }
 
@@ -116,7 +114,10 @@ class DartTask extends FileTask<ParsedDartFile> {
       } else {
         return parser.parseTable(type.element as ClassElement);
       }
-    })).then((list) => List.from(list)); // make growable
+    })).then((list) {
+      // only keep tables that were resolved successfully
+      return List.from(list.where((t) => t != null));
+    });
   }
 
   /// Reads all tables declared in sql by a `.moor` file in [paths].

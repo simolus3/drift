@@ -829,15 +829,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 }
 
-class TotalWeightResult {
-  final String title;
-  final int totalWeight;
-  TotalWeightResult({
-    this.title,
-    this.totalWeight,
-  });
-}
-
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $CategoriesTable _categories;
@@ -878,4 +869,13 @@ abstract class _$Database extends GeneratedDatabase {
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];
+}
+
+class TotalWeightResult {
+  final String title;
+  final int totalWeight;
+  TotalWeightResult({
+    this.title,
+    this.totalWeight,
+  });
 }

@@ -10,10 +10,12 @@ import 'package:moor_generator/src/backends/build/moor_builder.dart';
 /// [StringBuffer] to the generators that will get ugly to manage, but when
 /// passing a [Scope] we will always be able to write code in a parent scope.
 class Writer {
-  final Scope _root = Scope(parent: null);
+  /* late final */ Scope _root;
   final MoorOptions options;
 
-  Writer(this.options);
+  Writer(this.options) {
+    _root = Scope(parent: null, writer: this);
+  }
 
   String writeGenerated() => _leafNodes(_root).join();
 

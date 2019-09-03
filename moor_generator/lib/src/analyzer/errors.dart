@@ -1,7 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
+
+typedef LogFunction = void Function(dynamic message,
+    [Object error, StackTrace stackTrace]);
 
 /// Base class for errors that can be presented to an user.
 class MoorError {
@@ -9,6 +13,18 @@ class MoorError {
   final String message;
 
   MoorError({@required this.severity, this.message});
+
+  bool get isError =>
+      severity == Severity.criticalError || severity == Severity.error;
+
+  @override
+  String toString() {
+    return 'Error: $message';
+  }
+
+  void writeDescription(LogFunction log) {
+    log(message);
+  }
 }
 
 class ErrorInDartCode extends MoorError {
@@ -19,6 +35,16 @@ class ErrorInDartCode extends MoorError {
       this.affectedElement,
       Severity severity = Severity.warning})
       : super(severity: severity, message: message);
+
+  @override
+  void writeDescription(LogFunction log) {
+    if (affectedElement != null) {
+      final span = spanForElement(affectedElement);
+      log(span.message(message));
+    } else {
+      log(message);
+    }
+  }
 }
 
 class ErrorInMoorFile extends MoorError {
@@ -29,6 +55,11 @@ class ErrorInMoorFile extends MoorError {
       String message,
       Severity severity = Severity.warning})
       : super(message: message, severity: severity);
+
+  @override
+  void writeDescription(LogFunction log) {
+    log(span.message(message));
+  }
 }
 
 class ErrorSink {
