@@ -53,6 +53,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
 
   @override
   Future<void> open([GeneratedDatabase db]) async {
+    print('uses fix for the opening problem.');
     assert(
         !_debugIsOpening && !isOpen,
         'Database opened multiple times, this should never happen. '

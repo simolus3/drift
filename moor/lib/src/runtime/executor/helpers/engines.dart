@@ -232,6 +232,8 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   @override
   SqlDialect get dialect => delegate.dialect;
 
+  final Lock _openingLock = Lock();
+
   DelegatedDatabase(this.delegate,
       {this.logStatements, this.isSequential = false}) {
     // not using default value because it's commonly set to null
@@ -240,7 +242,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   Future<bool> ensureOpen() {
-    return _synchronized(() async {
+    return _openingLock.synchronized(() async {
       final alreadyOpen = await delegate.isOpen;
       if (alreadyOpen) return true;
 
