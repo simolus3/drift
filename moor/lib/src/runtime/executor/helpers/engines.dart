@@ -220,7 +220,6 @@ class _BeforeOpeningExecutor extends QueryExecutor
 /// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   final DatabaseDelegate delegate;
-  Completer<bool> _openingCompleter;
 
   @override
   bool logStatements;
@@ -240,29 +239,15 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   }
 
   @override
-  Future<bool> ensureOpen() async {
-    // if we're already opening the database or if its already open, return that
-    // status
-    if (_openingCompleter != null) {
-      return _openingCompleter.future;
-    }
+  Future<bool> ensureOpen() {
+    return _synchronized(() async {
+      final alreadyOpen = await delegate.isOpen;
+      if (alreadyOpen) return true;
 
-    final alreadyOpen = await delegate.isOpen;
-    if (alreadyOpen) return true;
-
-    // ignore: invariant_booleans
-    if (_openingCompleter != null) {
-      return _openingCompleter.future;
-    }
-
-    // not already open or opening. Open the database now!
-    _openingCompleter = Completer();
-    await delegate.open(databaseInfo);
-    await _runMigrations();
-
-    _openingCompleter.complete(true);
-    _openingCompleter = null;
-    return true;
+      await delegate.open(databaseInfo);
+      await _runMigrations();
+      return true;
+    });
   }
 
   Future<void> _runMigrations() async {
