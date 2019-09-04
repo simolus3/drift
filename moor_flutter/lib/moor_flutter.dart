@@ -53,11 +53,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
 
   @override
   Future<void> open([GeneratedDatabase db]) async {
-    print('uses fix for the opening problem.');
     assert(
         !_debugIsOpening && !isOpen,
         'Database opened multiple times, this should never happen. '
-        'Please report this at https://github.com/simolus3/moor/issues/135 to help fix this!');
+        'Please report this at https://github.com/simolus3/moor/issues/135 to help fix this!'
+        'Db already opened: $isOpen. Other operation in progress: $_debugIsOpening');
     _debugIsOpening = true;
 
     try {
