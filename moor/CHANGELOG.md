@@ -1,3 +1,7 @@
+## 1.7.2
+- Fixed a race condition that caused the database to be opened multiple times on slower devices.
+  This problem was introduced in `1.7.0` and was causing problems during migrations.
+
 ## 1.7.1
 - Better documentation on `getSingle` and `watchSingle` for queries.
 - Fix `INTEGER NOT NULL PRIMARY KEY` wrongly requiring a value during insert (this never affected
