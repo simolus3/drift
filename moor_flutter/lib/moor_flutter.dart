@@ -20,9 +20,6 @@ export 'package:moor/moor.dart';
 /// doesn't exist.
 typedef DatabaseCreator = FutureOr<void> Function(File file);
 
-// todo remove: Left in for debugging purposes
-var _debugIsOpening = false;
-
 class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   int _loadedSchemaVersion;
   @override
@@ -53,43 +50,32 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
 
   @override
   Future<void> open([GeneratedDatabase db]) async {
-    assert(
-        !_debugIsOpening && !isOpen,
-        'Database opened multiple times, this should never happen. '
-        'Please report this at https://github.com/simolus3/moor/issues/135 to help fix this!'
-        'Db already opened: $isOpen. Other operation in progress: $_debugIsOpening');
-    _debugIsOpening = true;
-
-    try {
-      String resolvedPath;
-      if (inDbFolder) {
-        resolvedPath = join(await s.getDatabasesPath(), path);
-      } else {
-        resolvedPath = path;
-      }
-
-      final file = File(resolvedPath);
-      if (creator != null && !await file.exists()) {
-        await creator(file);
-      }
-
-      // default value when no migration happened
-      _loadedSchemaVersion = db.schemaVersion;
-
-      this.db = await s.openDatabase(
-        resolvedPath,
-        version: db.schemaVersion,
-        onCreate: (db, version) {
-          _loadedSchemaVersion = 0;
-        },
-        onUpgrade: (db, from, to) {
-          _loadedSchemaVersion = from;
-        },
-        singleInstance: singleInstance,
-      );
-    } finally {
-      _debugIsOpening = false;
+    String resolvedPath;
+    if (inDbFolder) {
+      resolvedPath = join(await s.getDatabasesPath(), path);
+    } else {
+      resolvedPath = path;
     }
+
+    final file = File(resolvedPath);
+    if (creator != null && !await file.exists()) {
+      await creator(file);
+    }
+
+    // default value when no migration happened
+    _loadedSchemaVersion = db.schemaVersion;
+
+    this.db = await s.openDatabase(
+      resolvedPath,
+      version: db.schemaVersion,
+      onCreate: (db, version) {
+        _loadedSchemaVersion = 0;
+      },
+      onUpgrade: (db, from, to) {
+        _loadedSchemaVersion = from;
+      },
+      singleInstance: singleInstance,
+    );
   }
 
   @override

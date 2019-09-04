@@ -240,26 +240,16 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
     logStatements ??= false;
   }
 
-  var _ensureOpenCalledCounter = 0; // todo remove
-
   @override
   Future<bool> ensureOpen() {
-    final call = ++_ensureOpenCalledCounter;
-    print('ensure_open_$call: called');
-
     return _openingLock.synchronized(() async {
-      print('ensure_open_$call: lock aquired');
       final alreadyOpen = await delegate.isOpen;
       if (alreadyOpen) {
-        print('ensure_open_$call: was already open');
         return true;
       }
 
-      print('ensure_open_$call: opening database');
       await delegate.open(databaseInfo);
-      print('ensure_open_$call: running migrations');
       await _runMigrations();
-      print('ensure_open_$call: done with opening');
       return true;
     });
   }
