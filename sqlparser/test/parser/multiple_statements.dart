@@ -45,4 +45,22 @@ void main() {
       ),
     );
   });
+
+  test('parses import directives in moor mode', () {
+    final sql = r'''
+    import 'test.dart';
+    SELECT * FROM tbl;
+     ''';
+
+    final tokens = Scanner(sql, scanMoorTokens: true).scanTokens();
+    final statements = Parser(tokens, useMoor: true).statements();
+
+    expect(statements, hasLength(2));
+
+    final parsedImport = statements[0] as ImportStatement;
+    enforceEqual(parsedImport, ImportStatement('test.dart'));
+    expect(parsedImport.importToken, tokens[0]);
+    expect(parsedImport.importString, tokens[1]);
+    expect(parsedImport.semicolon, tokens[2]);
+  });
 }

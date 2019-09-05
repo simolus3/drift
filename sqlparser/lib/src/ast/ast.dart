@@ -21,6 +21,8 @@ part 'expressions/subquery.dart';
 part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
 
+part 'moor/import_statement.dart';
+
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
 
@@ -174,6 +176,8 @@ abstract class AstVisitor<T> {
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
+
+  T visitMoorImportStatement(ImportStatement e);
 }
 
 /// Visitor that walks down the entire tree, visiting all children in order.
@@ -285,6 +289,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitFrameSpec(FrameSpec e) => visitChildren(e);
+
+  @override
+  T visitMoorImportStatement(ImportStatement e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {

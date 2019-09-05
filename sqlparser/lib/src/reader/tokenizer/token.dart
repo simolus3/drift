@@ -140,6 +140,7 @@ enum TokenType {
   /// Moor specific token, used to declare a type converters
   mapped,
   inlineDart,
+  import,
 }
 
 const Map<String, TokenType> keywords = {
@@ -238,6 +239,7 @@ const Map<String, TokenType> keywords = {
 
 const Map<String, TokenType> moorKeywords = {
   'MAPPED': TokenType.mapped,
+  'IMPORT': TokenType.import,
 };
 
 class Token {

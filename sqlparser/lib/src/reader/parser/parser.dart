@@ -157,21 +157,42 @@ class Parser extends ParserBase
 
   Statement statement({bool expectEnd = true}) {
     final first = _peek;
-    final stmt = select() ??
+    var stmt = select() ??
         _deleteStmt() ??
         _update() ??
         _insertStmt() ??
         _createTable();
 
+    if (enableMoorExtensions) {
+      stmt ??= _import();
+    }
+
     if (stmt == null) {
       _error('Expected a sql statement to start here');
     }
 
-    _matchOne(TokenType.semicolon);
+    if (_matchOne(TokenType.semicolon)) {
+      stmt.semicolon = _previous;
+    }
+
     if (!_isAtEnd && expectEnd) {
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
+  }
+
+  ImportStatement _import() {
+    if (_matchOne(TokenType.import)) {
+      final importToken = _previous;
+      final import = _consume(TokenType.stringLiteral,
+              'Expected import file as a string literal (single quoted)')
+          as StringLiteralToken;
+
+      return ImportStatement(import.value)
+        ..importToken = importToken
+        ..importString = import;
+    }
+    return null;
   }
 
   List<Statement> statements() {
