@@ -16,7 +16,10 @@ class MoorParser {
     final createdReaders = <CreateTableReader>[];
 
     for (var parsedStmt in results) {
-      if (parsedStmt.rootNode is CreateTableStatement) {
+      if (parsedStmt.rootNode is ImportStatement) {
+        final importStmt = (parsedStmt.rootNode) as ImportStatement;
+        task.inlineDartResolver.importStatements.add(importStmt.importedFile);
+      } else if (parsedStmt.rootNode is CreateTableStatement) {
         createdReaders.add(CreateTableReader(parsedStmt));
       } else {
         task.reportError(ErrorInMoorFile(

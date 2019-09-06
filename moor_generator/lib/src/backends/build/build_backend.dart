@@ -1,3 +1,5 @@
+import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart' hide log;
 import 'package:build/build.dart' as build show log;
@@ -30,6 +32,11 @@ class BuildBackendTask extends BackendTask {
   @override
   Future<LibraryElement> resolveDart(Uri uri) {
     return step.resolver.libraryFor(_resolve(uri));
+  }
+
+  @override
+  Future<CompilationUnit> parseSource(String dart) async {
+    return null;
   }
 
   @override

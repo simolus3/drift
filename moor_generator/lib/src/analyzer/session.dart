@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:moor/moor.dart' show Table;
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/moor/inline_dart_resolver.dart';
 import 'package:moor_generator/src/analyzer/moor/parser.dart';
 import 'package:moor_generator/src/analyzer/results.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/sql_parser.dart';
@@ -151,9 +152,12 @@ class DartTask extends FileTask<ParsedDartFile> {
 class MoorTask extends FileTask<ParsedMoorFile> {
   final String content;
   final TypeMapper mapper = TypeMapper();
+  /* late final */ InlineDartResolver inlineDartResolver;
 
   MoorTask(BackendTask task, MoorSession session, this.content)
-      : super(task, session);
+      : super(task, session) {
+    inlineDartResolver = InlineDartResolver(this);
+  }
 
   @override
   FutureOr<ParsedMoorFile> compute() {

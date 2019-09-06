@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -17,5 +18,6 @@ abstract class BackendTask {
   Logger get log;
 
   Future<LibraryElement> resolveDart(Uri uri);
+  Future<CompilationUnit> parseSource(String dart);
   Future<String> readMoor(Uri uri);
 }
