@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'crud.dart';
@@ -43,13 +44,18 @@ class ParsingError implements Exception {
 abstract class ParserBase {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
+  final AutoCompleteEngine autoComplete;
 
   /// Whether to enable the extensions moor makes to the sql grammar.
   final bool enableMoorExtensions;
 
   int _current = 0;
 
-  ParserBase(this.tokens, this.enableMoorExtensions);
+  ParserBase(this.tokens, this.enableMoorExtensions, this.autoComplete);
+
+  void _suggestHint(HintDescription description) {
+    autoComplete?.addHint(Hint(_previous, description));
+  }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
@@ -153,7 +159,9 @@ abstract class ParserBase {
 
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
-  Parser(List<Token> tokens, {bool useMoor = false}) : super(tokens, useMoor);
+  Parser(List<Token> tokens,
+      {bool useMoor = false, AutoCompleteEngine autoComplete})
+      : super(tokens, useMoor, autoComplete);
 
   Statement statement() {
     final first = _peek;

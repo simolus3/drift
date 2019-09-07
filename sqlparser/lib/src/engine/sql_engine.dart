@@ -1,5 +1,6 @@
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -49,7 +50,7 @@ class SqlEngine {
     final parser = Parser(tokens, useMoor: useMoorExtensions);
 
     final stmt = parser.statement();
-    return ParseResult._(stmt, parser.errors, sql);
+    return ParseResult._(stmt, parser.errors, sql, null);
   }
 
   /// Parses a `.moor` file, which can consist of multiple statements and
@@ -57,12 +58,13 @@ class SqlEngine {
   ParseResult parseMoorFile(String content) {
     assert(useMoorExtensions);
 
+    final autoComplete = AutoCompleteEngine();
     final tokens = tokenize(content);
     final parser = Parser(tokens, useMoor: true);
 
     final moorFile = parser.moorFile();
 
-    return ParseResult._(moorFile, parser.errors, content);
+    return ParseResult._(moorFile, parser.errors, content, autoComplete);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned
@@ -121,5 +123,9 @@ class ParseResult {
   /// The sql source that created the AST at [rootNode].
   final String sql;
 
-  ParseResult._(this.rootNode, this.errors, this.sql);
+  /// The engine which can be used to handle auto-complete requests on this
+  /// result.
+  final AutoCompleteEngine autoCompleteEngine;
+
+  ParseResult._(this.rootNode, this.errors, this.sql, this.autoCompleteEngine);
 }
