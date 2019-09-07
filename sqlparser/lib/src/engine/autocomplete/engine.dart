@@ -33,6 +33,10 @@ class AutoCompleteEngine {
   ///
   /// This api will change in the future.
   ComputedSuggestions suggestCompletions(int offset) {
+    if (_hints.isEmpty) {
+      return ComputedSuggestions(-1, -1, []);
+    }
+
     final hint = foundHints[_lastHintBefore(offset)];
 
     final suggestions = hint.description.suggest(CalculationRequest()).toList();
@@ -68,7 +72,7 @@ class Hint {
   /// appears at the beginning of the file.
   final Token before;
 
-  int get offset => before.span.end.offset;
+  int get offset => before?.span?.end?.offset ?? 0;
 
   final HintDescription description;
 

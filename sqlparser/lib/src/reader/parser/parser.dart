@@ -54,7 +54,8 @@ abstract class ParserBase {
   ParserBase(this.tokens, this.enableMoorExtensions, this.autoComplete);
 
   void _suggestHint(HintDescription description) {
-    autoComplete?.addHint(Hint(_previous, description));
+    final tokenBefore = _current == 0 ? null : _previous;
+    autoComplete?.addHint(Hint(tokenBefore, description));
   }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
@@ -226,7 +227,13 @@ class Parser extends ParserBase
       _error('Expected the file to end here.');
     }
 
-    return MoorFile(foundComponents)..setSpan(first, _previous);
+    final file = MoorFile(foundComponents);
+    if (foundComponents.isNotEmpty) {
+      file.setSpan(first, _previous);
+    } else {
+      file.setSpan(first, first); // empty file
+    }
+    return file;
   }
 
   ImportStatement _import() {

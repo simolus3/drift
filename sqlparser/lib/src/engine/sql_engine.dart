@@ -60,7 +60,7 @@ class SqlEngine {
 
     final autoComplete = AutoCompleteEngine();
     final tokens = tokenize(content);
-    final parser = Parser(tokens, useMoor: true);
+    final parser = Parser(tokens, useMoor: true, autoComplete: autoComplete);
 
     final moorFile = parser.moorFile();
 
