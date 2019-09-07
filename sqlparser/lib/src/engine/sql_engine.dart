@@ -1,5 +1,6 @@
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -49,24 +50,21 @@ class SqlEngine {
     final parser = Parser(tokens, useMoor: useMoorExtensions);
 
     final stmt = parser.statement();
-    return ParseResult._(stmt, tokens, parser.errors, sql);
+    return ParseResult._(stmt, tokens, parser.errors, sql, null);
   }
 
-  /// Parses multiple sql statements, separated by a semicolon. All
-  /// [ParseResult] entries will have the same [ParseResult.errors], but the
-  /// [ParseResult.sql] will only refer to the substring creating a statement.
-  List<ParseResult> parseMultiple(List<Token> tokens, String sql) {
-    final parser = Parser(tokens);
+  /// Parses a `.moor` file, which can consist of multiple statements and
+  /// additional components like import statements.
+  ParseResult parseMoorFile(String content) {
+    assert(useMoorExtensions);
 
-    final stmts = parser.statements();
+    final autoComplete = AutoCompleteEngine();
+    final tokens = tokenize(content);
+    final parser = Parser(tokens, useMoor: true, autoComplete: autoComplete);
 
-    return stmts.map((statement) {
-      final first = statement.firstPosition;
-      final last = statement.lastPosition;
+    final moorFile = parser.moorFile();
 
-      final source = sql.substring(first, last);
-      return ParseResult._(statement, tokens, parser.errors, source);
-    }).toList();
+    return ParseResult._(moorFile, tokens, parser.errors, content, autoComplete);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned
@@ -128,5 +126,9 @@ class ParseResult {
   /// The sql source that created the AST at [rootNode].
   final String sql;
 
-  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql);
+  /// The engine which can be used to handle auto-complete requests on this
+  /// result.
+  final AutoCompleteEngine autoCompleteEngine;
+
+  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql, this.autoCompleteEngine);
 }

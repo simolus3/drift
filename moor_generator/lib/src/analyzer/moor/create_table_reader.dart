@@ -9,13 +9,12 @@ import 'package:sqlparser/sqlparser.dart';
 
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
-  final ParseResult ast;
+  final CreateTableStatement stmt;
 
-  CreateTableReader(this.ast);
+  CreateTableReader(this.stmt);
 
   SpecifiedTable extractTable(TypeMapper mapper) {
-    final table =
-        SchemaFromCreateTable().read(ast.rootNode as CreateTableStatement);
+    final table = SchemaFromCreateTable().read(stmt);
 
     final foundColumns = <String, SpecifiedColumn>{};
     final primaryKey = <SpecifiedColumn>{};

@@ -2,9 +2,12 @@ part of 'parser.dart';
 
 mixin SchemaParser on ParserBase {
   CreateTableStatement _createTable() {
+    _suggestHint(
+        const HintDescription.tokens([TokenType.create, TokenType.table]));
     if (!_matchOne(TokenType.create)) return null;
     final first = _previous;
 
+    _suggestHint(HintDescription.token(TokenType.table));
     _consume(TokenType.table, 'Expected TABLE keyword here');
 
     var ifNotExists = false;

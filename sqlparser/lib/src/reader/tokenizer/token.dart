@@ -237,6 +237,12 @@ const Map<String, TokenType> keywords = {
   'VALUES': TokenType.$values,
 };
 
+/// Maps [TokenType]s which are keywords to their lexeme.
+final reverseKeywords = {
+  for (var entry in keywords.entries) entry.value: entry.key,
+  for (var entry in moorKeywords.entries) entry.value: entry.key,
+};
+
 const Map<String, TokenType> moorKeywords = {
   'MAPPED': TokenType.mapped,
   'IMPORT': TokenType.import,
