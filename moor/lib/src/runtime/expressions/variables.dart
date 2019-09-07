@@ -67,14 +67,8 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
 
   @override
   void writeInto(GenerationContext context) {
-    // Instead of writing string literals (which we don't support because of
-    // possible sql injections), just write the variable.
-    if (value is String) {
-      _writeVariableIntoContext(context, value);
-    } else {
-      final type = context.typeSystem.forDartType<T>();
-      context.buffer.write(type.mapToSqlConstant(value));
-    }
+    final type = context.typeSystem.forDartType<T>();
+    context.buffer.write(type.mapToSqlConstant(value));
   }
 }
 

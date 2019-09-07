@@ -15,7 +15,8 @@ mixin SchemaParser on ParserBase {
       ifNotExists = true;
     }
 
-    final tableIdentifier = _consumeIdentifier('Expected a table name');
+    final tableIdentifier =
+        _consumeIdentifier('Expected a table name', lenient: true);
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     _consume(
@@ -153,6 +154,15 @@ mixin SchemaParser on ParserBase {
       return ForeignKeyColumnConstraint(resolvedName, clause)
         ..setSpan(first, _previous);
     }
+    if (enableMoorExtensions && _matchOne(TokenType.mapped)) {
+      _consume(TokenType.by, 'Expected a MAPPED BY constraint');
+
+      final dartExpr = _consume(
+          TokenType.inlineDart, 'Expected Dart expression in backticks');
+
+      return MappedBy(resolvedName, dartExpr as InlineDartToken)
+        ..setSpan(first, _previous);
+    }
 
     // no known column constraint matched. If orNull is set and we're not
     // guaranteed to be in a constraint clause (started with CONSTRAINT), we
@@ -204,7 +214,8 @@ mixin SchemaParser on ParserBase {
 
   String _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
-      final name = _consumeIdentifier('Expect a name for the constraint here');
+      final name = _consumeIdentifier('Expect a name for the constraint here',
+          lenient: true);
       return name.identifier;
     }
     return null;

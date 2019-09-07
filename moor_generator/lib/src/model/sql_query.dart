@@ -10,6 +10,8 @@ final _leadingDigits = RegExp(r'^\d*');
 abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;
+  List<AnalysisError> lints;
+
   String get sql => fromContext.sql;
 
   /// The variables that appear in the [sql] query. We support three kinds of
@@ -51,9 +53,11 @@ class SqlSelectQuery extends SqlQuery {
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
+  final bool isInsert;
 
   UpdatingQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.updates)
+      List<FoundVariable> variables, this.updates,
+      {this.isInsert = false})
       : super(name, fromContext, variables);
 }
 

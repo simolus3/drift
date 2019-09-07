@@ -43,9 +43,13 @@ class ParsingError implements Exception {
 abstract class ParserBase {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
+
+  /// Whether to enable the extensions moor makes to the sql grammar.
+  final bool enableMoorExtensions;
+
   int _current = 0;
 
-  ParserBase(this.tokens);
+  ParserBase(this.tokens, this.enableMoorExtensions);
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
@@ -119,12 +123,19 @@ abstract class ParserBase {
     _error(message);
   }
 
-  IdentifierToken _consumeIdentifier(String message) {
+  /// Consumes an identifier. If [lenient] is true and the next token is not
+  /// an identifier but rather a [KeywordToken], that token will be converted
+  /// to an identifier.
+  IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
+    if (lenient && _peek is KeywordToken) {
+      return (_advance() as KeywordToken).convertToIdentifier();
+    }
     return _consume(TokenType.identifier, message) as IdentifierToken;
   }
 
   // Common operations that we are referenced very often
   Expression expression();
+  TupleExpression _consumeTuple();
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
@@ -140,33 +151,66 @@ abstract class ParserBase {
   WindowDefinition _windowDefinition();
 }
 
-// todo better error handling and synchronisation, like it's done here:
-// https://craftinginterpreters.com/parsing-expressions.html#synchronizing-a-recursive-descent-parser
-
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
-  Parser(List<Token> tokens) : super(tokens);
+  Parser(List<Token> tokens, {bool useMoor = false}) : super(tokens, useMoor);
 
   Statement statement({bool expectEnd = true}) {
     final first = _peek;
-    final stmt = select() ?? _deleteStmt() ?? _update() ?? _createTable();
+    var stmt = select() ??
+        _deleteStmt() ??
+        _update() ??
+        _insertStmt() ??
+        _createTable();
+
+    if (enableMoorExtensions) {
+      stmt ??= _import();
+    }
 
     if (stmt == null) {
       _error('Expected a sql statement to start here');
     }
 
-    _matchOne(TokenType.semicolon);
+    if (_matchOne(TokenType.semicolon)) {
+      stmt.semicolon = _previous;
+    }
+
     if (!_isAtEnd && expectEnd) {
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
   }
 
+  ImportStatement _import() {
+    if (_matchOne(TokenType.import)) {
+      final importToken = _previous;
+      final import = _consume(TokenType.stringLiteral,
+              'Expected import file as a string literal (single quoted)')
+          as StringLiteralToken;
+
+      return ImportStatement(import.value)
+        ..importToken = importToken
+        ..importString = import;
+    }
+    return null;
+  }
+
   List<Statement> statements() {
     final stmts = <Statement>[];
     while (!_isAtEnd) {
-      stmts.add(statement(expectEnd: false));
+      try {
+        stmts.add(statement(expectEnd: false));
+      } on ParsingError catch (_) {
+        // the error is added to the list errors, so ignore. We skip to the next
+        // semicolon to parse the next statement.
+        _synchronize();
+      }
     }
     return stmts;
+  }
+
+  void _synchronize() {
+    // fast-forward to the token after th next semicolon
+    while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
 }

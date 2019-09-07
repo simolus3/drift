@@ -1,6 +1,8 @@
 part of '../ast.dart';
 
-abstract class Statement extends AstNode {}
+abstract class Statement extends AstNode {
+  Token semicolon;
+}
 
 /// Marker mixin for statements that read from an existing table structure.
 mixin CrudStatement on Statement {}

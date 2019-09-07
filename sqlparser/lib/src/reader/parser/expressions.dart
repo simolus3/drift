@@ -326,8 +326,10 @@ mixin ExpressionParser on ParserBase {
         break;
       case TokenType.colon:
         final colon = token;
-        final identifier = _consume(TokenType.identifier,
-            'Expected an identifier for the named variable') as IdentifierToken;
+        final identifier = _consumeIdentifier(
+            'Expected an identifier for the named variable',
+            lenient: true);
+
         final content = identifier.identifier;
         return ColonNamedVariable(':$content')..setSpan(colon, identifier);
       default:
@@ -390,5 +392,21 @@ mixin ExpressionParser on ParserBase {
       windowDefinition: window,
       windowName: windowName,
     )..setSpan(name, _previous);
+  }
+
+  @override
+  TupleExpression _consumeTuple() {
+    final firstToken =
+        _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
+    final expressions = <Expression>[];
+
+    do {
+      expressions.add(expression());
+    } while (_matchOne(TokenType.comma));
+
+    _consume(TokenType.rightParen, 'Expected right parenthesis to close tuple');
+
+    return TupleExpression(expressions: expressions)
+      ..setSpan(firstToken, _previous);
   }
 }

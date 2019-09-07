@@ -29,6 +29,11 @@ class TypeResolver {
     return calculated;
   }
 
+  /// Manually writes the [result] for the [Typeable] [t].
+  void markResult(Typeable t, ResolveResult result) {
+    _results.putIfAbsent(t, () => result);
+  }
+
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);

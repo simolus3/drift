@@ -56,9 +56,13 @@ class StringType extends SqlType<String> {
 
   @override
   String mapToSqlConstant(String content) {
-    // TODO: implement mapToSqlConstant, we would probably have to take care
-    // of sql injection vulnerabilities here
-    throw UnimplementedError("Strings can't be mapped to sql literals yet");
+    // From the sqlite docs: (https://www.sqlite.org/lang_expr.html)
+    // A string constant is formed by enclosing the string in single quotes (').
+    // A single quote within the string can be encoded by putting two single
+    // quotes in a row - as in Pascal. C-style escapes using the backslash
+    // character are not supported because they are not standard SQL.
+    final escapedChars = content.replaceAll('\'', '\'\'');
+    return "'$escapedChars'";
   }
 
   @override

@@ -10,6 +10,11 @@ Token token(TokenType type) {
   return Token(type, null);
 }
 
+InlineDartToken inlineDart(String dartCode) {
+  final fakeFile = SourceFile.fromString('`$dartCode`');
+  return InlineDartToken(fakeFile.span(0));
+}
+
 IdentifierToken identifier(String content) {
   final fakeFile = SourceFile.fromString(content);
   return IdentifierToken(false, fakeFile.span(0));

@@ -63,6 +63,9 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   const NoIdsCompanion({
     this.payload = const Value.absent(),
   });
+  NoIdsCompanion.insert({
+    @required Uint8List payload,
+  }) : payload = Value(payload);
   NoIdsCompanion copyWith({Value<Uint8List> payload}) {
     return NoIdsCompanion(
       payload: payload ?? this.payload,
@@ -194,6 +197,10 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   final Value<String> a;
   final Value<int> b;
   const WithDefaultsCompanion({
+    this.a = const Value.absent(),
+    this.b = const Value.absent(),
+  });
+  WithDefaultsCompanion.insert({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
   });
@@ -359,6 +366,11 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     this.b = const Value.absent(),
     this.c = const Value.absent(),
   });
+  WithConstraintsCompanion.insert({
+    this.a = const Value.absent(),
+    @required int b,
+    this.c = const Value.absent(),
+  }) : b = Value(b);
   WithConstraintsCompanion copyWith(
       {Value<String> a, Value<int> b, Value<double> c}) {
     return WithConstraintsCompanion(
@@ -535,6 +547,10 @@ class ConfigCompanion extends UpdateCompanion<ConfigData> {
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
   });
+  ConfigCompanion.insert({
+    @required String configKey,
+    this.configValue = const Value.absent(),
+  }) : configKey = Value(configKey);
   ConfigCompanion copyWith(
       {Value<String> configKey, Value<String> configValue}) {
     return ConfigCompanion(
@@ -694,6 +710,10 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
   });
+  MytableCompanion.insert({
+    this.someid = const Value.absent(),
+    this.sometext = const Value.absent(),
+  });
   MytableCompanion copyWith({Value<int> someid, Value<String> sometext}) {
     return MytableCompanion(
       someid: someid ?? this.someid,
@@ -792,6 +812,21 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Config get config => _config ??= Config(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
+  Future<int> writeConfig(
+      String key,
+      String value,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customInsert(
+      'REPLACE INTO config VALUES (:key, :value)',
+      variables: [
+        Variable.withString(key),
+        Variable.withString(value),
+      ],
+      updates: {config},
+    );
+  }
+
   @override
   List<TableInfo> get allTables =>
       [noIds, withDefaults, withConstraints, config, mytable];

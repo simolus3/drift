@@ -76,6 +76,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
+  });
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -266,6 +270,13 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
+  RecipesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String title,
+    @required String instructions,
+    this.category = const Value.absent(),
+  })  : title = Value(title),
+        instructions = Value(instructions);
   RecipesCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -482,6 +493,12 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
+  IngredientsCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    @required int caloriesPer100g,
+  })  : name = Value(name),
+        caloriesPer100g = Value(caloriesPer100g);
   IngredientsCompanion copyWith(
       {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
     return IngredientsCompanion(
@@ -688,6 +705,13 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
+  IngredientInRecipesCompanion.insert({
+    @required int recipe,
+    @required int ingredient,
+    @required int amountInGrams,
+  })  : recipe = Value(recipe),
+        ingredient = Value(ingredient),
+        amountInGrams = Value(amountInGrams);
   IngredientInRecipesCompanion copyWith(
       {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
     return IngredientInRecipesCompanion(
@@ -805,15 +829,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 }
 
-class TotalWeightResult {
-  final String title;
-  final int totalWeight;
-  TotalWeightResult({
-    this.title,
-    this.totalWeight,
-  });
-}
-
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $CategoriesTable _categories;
@@ -832,25 +847,35 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
+  Selectable<TotalWeightResult> _totalWeightQuery(
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelectQuery(
+        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
+        variables: [],
+        readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
+  }
+
   Future<List<TotalWeightResult>> _totalWeight(
       {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
           QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: []).then((rows) => rows.map(_rowToTotalWeightResult).toList());
+    return _totalWeightQuery(operateOn: operateOn).get();
   }
 
   Stream<List<TotalWeightResult>> _watchTotalWeight() {
-    return customSelectStream(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: [],
-        readsFrom: {
-          recipes,
-          ingredientInRecipes
-        }).map((rows) => rows.map(_rowToTotalWeightResult).toList());
+    return _totalWeightQuery().watch();
   }
 
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];
+}
+
+class TotalWeightResult {
+  final String title;
+  final int totalWeight;
+  TotalWeightResult({
+    this.title,
+    this.totalWeight,
+  });
 }
