@@ -13,9 +13,9 @@ void setupLogger(MoorPlugin plugin) {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((LogRecord rec) {
     if (rec.level >= Level.INFO) {
-      final isFatal = rec.level >= Level.WARNING;
+      final isFatal = rec.level > Level.WARNING;
       final error =
-          PluginErrorParams(isFatal, rec.message, rec.stackTrace?.toString());
+          PluginErrorParams(isFatal, rec.message, rec.stackTrace.toString());
 
       plugin.channel.sendNotification(error.toNotification());
     }

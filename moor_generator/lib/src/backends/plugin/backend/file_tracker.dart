@@ -46,7 +46,7 @@ class FileTracker {
     _putInQueue(addFile(path));
   }
 
-  void setPriorityFiles(List<String> priority) {
+  void setPriorityFiles(Iterable<String> priority) {
     // remove prioritized flag from existing files
     for (var file in _currentPriority) {
       _updateFile(file, (f) => f._prioritized = false);

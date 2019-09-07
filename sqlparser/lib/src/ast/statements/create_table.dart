@@ -9,6 +9,9 @@ class CreateTableStatement extends Statement with SchemaStatement {
   final List<TableConstraint> tableConstraints;
   final bool withoutRowId;
 
+  Token openingBracket;
+  Token closingBracket;
+
   CreateTableStatement(
       {this.ifNotExists = false,
       @required this.tableName,

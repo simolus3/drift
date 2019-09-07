@@ -19,7 +19,7 @@ mixin SchemaParser on ParserBase {
         _consumeIdentifier('Expected a table name', lenient: true);
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
-    _consume(
+    final leftParen = _consume(
         TokenType.leftParen, 'Expected opening parenthesis to list columns');
 
     final columns = <ColumnDefinition>[];
@@ -42,7 +42,8 @@ mixin SchemaParser on ParserBase {
       }
     } while (_matchOne(TokenType.comma));
 
-    _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    final rightParen =
+        _consume(TokenType.rightParen, 'Expected closing parenthesis');
 
     var withoutRowId = false;
     if (_matchOne(TokenType.without)) {
@@ -57,7 +58,10 @@ mixin SchemaParser on ParserBase {
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
-    )..setSpan(first, _previous);
+    )
+      ..setSpan(first, _previous)
+      ..openingBracket = leftParen
+      ..closingBracket = rightParen;
   }
 
   ColumnDefinition _columnDefinition() {

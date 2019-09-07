@@ -1,50 +1,29 @@
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
-import 'package:moor_generator/src/backends/plugin/services/highlights/request.dart';
+import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-const _notBuiltIn = {
-  TokenType.numberLiteral,
-  TokenType.stringLiteral,
-  TokenType.identifier,
-  TokenType.leftParen,
-  TokenType.rightParen,
-  TokenType.comma,
-  TokenType.star,
-  TokenType.less,
-  TokenType.lessEqual,
-  TokenType.lessMore,
-  TokenType.equal,
-  TokenType.more,
-  TokenType.moreEqual,
-  TokenType.shiftRight,
-  TokenType.shiftLeft,
-  TokenType.exclamationEqual,
-  TokenType.plus,
-  TokenType.minus,
-};
-
-class SqlHighlighter implements HighlightsContributor {
-  const SqlHighlighter();
+class MoorHighlightContributor implements HighlightsContributor {
+  const MoorHighlightContributor();
 
   @override
   void computeHighlights(
       HighlightsRequest request, HighlightsCollector collector) {
-    if (request is! MoorHighlightingRequest) {
+    if (request is! MoorRequest) {
       return;
     }
 
-    final typedRequest = request as MoorHighlightingRequest;
+    final typedRequest = request as MoorRequest;
     final visitor = _HighlightingVisitor(collector);
 
-    final result = typedRequest.task.lastResult;
+    final result = typedRequest.resolvedTask.lastResult;
 
     for (var stmt in result.statements) {
       stmt.accept(visitor);
     }
 
     for (var token in result.tokens) {
-      if (!_notBuiltIn.contains(token.type)) {
+      if (token is KeywordToken) {
         final start = token.span.start.offset;
         final length = token.span.length;
         collector.addRegion(start, length, HighlightRegionType.BUILT_IN);

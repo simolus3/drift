@@ -1,15 +1,25 @@
-import 'package:analyzer/context/context_root.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/context/builder.dart';
+import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
+import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_plugin/plugin/folding_mixin.dart';
+import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
+import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
+import 'package:analyzer_plugin/utilities/folding/folding.dart';
+import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
+import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
+import 'package:moor_generator/src/backends/plugin/services/folding.dart';
+import 'package:moor_generator/src/backends/plugin/services/highlights.dart';
+import 'package:moor_generator/src/backends/plugin/services/outline.dart';
+import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
 import 'backend/driver.dart';
 import 'backend/logger.dart';
 
-class MoorPlugin extends ServerPlugin {
+class MoorPlugin extends ServerPlugin
+    with OutlineMixin, HighlightsMixin, FoldingMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
   }
@@ -61,4 +71,38 @@ class MoorPlugin extends ServerPlugin {
     if (driver is! MoorDriver) return null;
     return driver as MoorDriver;
   }
+
+  Future<MoorRequest> _createMoorRequest(String path) async {
+    final driver = _moorDriverForPath(path);
+    final task = await driver.parseMoorFile(path);
+
+    return MoorRequest(task, resourceProvider);
+  }
+
+  @override
+  List<OutlineContributor> getOutlineContributors(String path) {
+    return const [MoorOutlineContributor()];
+  }
+
+  @override
+  Future<OutlineRequest> getOutlineRequest(String path) =>
+      _createMoorRequest(path);
+
+  @override
+  List<HighlightsContributor> getHighlightsContributors(String path) {
+    return const [MoorHighlightContributor()];
+  }
+
+  @override
+  Future<HighlightsRequest> getHighlightsRequest(String path) =>
+      _createMoorRequest(path);
+
+  @override
+  List<FoldingContributor> getFoldingContributors(String path) {
+    return const [MoorFoldingContributor()];
+  }
+
+  @override
+  Future<FoldingRequest> getFoldingRequest(String path) =>
+      _createMoorRequest(path);
 }

@@ -88,19 +88,20 @@ class MoorDriver implements AnalysisDriverGeneric {
   String absolutePath(Uri reference, {Uri base}) {
     final factory = dartDriver.sourceFactory;
     final baseSource = base == null ? null : factory.forUri2(base);
+
     final source =
         dartDriver.sourceFactory.resolveUri(baseSource, reference.toString());
     return source.fullName;
   }
 
   PluginTask _createTask(String path) {
-    final uri = Uri.parse(path);
+    final uri = Uri.parse(path).replace(scheme: 'file');
     return PluginTask(uri, this);
   }
 
   @override
   set priorityFiles(List<String> priorityPaths) {
-    _tracker.setPriorityFiles(priorityPaths);
+    _tracker.setPriorityFiles(priorityPaths.where(_ownsFile));
   }
 
   @override

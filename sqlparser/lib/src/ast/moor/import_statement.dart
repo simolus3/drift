@@ -8,7 +8,7 @@ class ImportStatement extends Statement {
   ImportStatement(this.importedFile);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {}
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitMoorImportStatement(this);
 
   @override
   final Iterable<AstNode> childNodes = const [];
