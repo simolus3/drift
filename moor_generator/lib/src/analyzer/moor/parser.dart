@@ -10,8 +10,10 @@ class MoorParser {
   MoorParser(this.task);
 
   Future<ParsedMoorFile> parseAndAnalyze() {
+    final engine = SqlEngine(useMoorExtensions: true);
+    final tokens = engine.tokenize(task.content);
     final results =
-        SqlEngine(useMoorExtensions: true).parseMultiple(task.content);
+        SqlEngine(useMoorExtensions: true).parseMultiple(tokens, task.content);
 
     final createdReaders = <CreateTableReader>[];
 
@@ -41,7 +43,12 @@ class MoorParser {
 
     final createdTables =
         createdReaders.map((r) => r.extractTable(task.mapper)).toList();
-    final parsedFile = ParsedMoorFile(createdTables);
+
+    final statements =
+        results.map((r) => r.rootNode).cast<Statement>().toList();
+
+    final parsedFile =
+        ParsedMoorFile(tokens, statements, declaredTables: createdTables);
 
     return Future.value(parsedFile);
   }

@@ -1,7 +1,13 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:moor_generator/src/plugin/analyzer/results.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
+
+int _compareByPriority(TrackedFile a, TrackedFile b) {
+  final aPriority = a.currentPriority?.index ?? 0;
+  final bPriority = b.currentPriority?.index ?? 0;
+  return aPriority.compareTo(bPriority);
+}
 
 /// Keeps track of files that need to be analyzed by the moor plugin.
 class FileTracker {
@@ -11,12 +17,6 @@ class FileTracker {
 
   FileTracker() {
     _pendingWork = PriorityQueue(_compareByPriority);
-  }
-
-  int _compareByPriority(TrackedFile a, TrackedFile b) {
-    final aPriority = a.currentPriority?.index ?? 0;
-    final bPriority = b.currentPriority?.index ?? 0;
-    return aPriority.compareTo(bPriority);
   }
 
   void _updateFile(TrackedFile file, Function(TrackedFile) update) {
@@ -32,6 +32,7 @@ class FileTracker {
   }
 
   bool get hasWork => _pendingWork.isNotEmpty;
+  TrackedFile get fileWithHighestPriority => _pendingWork.first;
 
   TrackedFile addFile(String path) {
     return _trackedFiles.putIfAbsent(path, () {
@@ -64,19 +65,19 @@ class FileTracker {
     _putInQueue(tracked);
   }
 
-  Future<MoorAnalysisResults> results(String path) async {
+  Future<MoorTask> results(String path) async {
     final tracked = addFile(path);
 
     if (tracked._currentResult != null) {
       return tracked._currentResult;
     } else {
-      final completer = Completer<MoorAnalysisResults>();
+      final completer = Completer<MoorTask>();
       tracked._waiting.add(completer);
       return completer.future;
     }
   }
 
-  void work(Future<MoorAnalysisResults> Function(String path) worker) {
+  void work(Future<MoorTask> Function(String path) worker) {
     if (_pendingWork.isNotEmpty) {
       final unit = _pendingWork.removeFirst();
 
@@ -111,8 +112,8 @@ class TrackedFile {
   /// Whether this file has been given an elevated priority, for instance
   /// because the user is currently typing in it.
   bool _prioritized = false;
-  MoorAnalysisResults _currentResult;
-  final List<Completer<MoorAnalysisResults>> _waiting = [];
+  MoorTask _currentResult;
+  final List<Completer<MoorTask>> _waiting = [];
 
   FilePriority get currentPriority =>
       _prioritized ? FilePriority.interactive : defaultPriority;

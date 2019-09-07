@@ -1,6 +1,6 @@
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
-import 'package:moor_generator/src/plugin/analyzer/highlights/request.dart';
+import 'package:moor_generator/src/backends/plugin/services/highlights/request.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 const _notBuiltIn = {
@@ -37,11 +37,13 @@ class SqlHighlighter implements HighlightsContributor {
     final typedRequest = request as MoorHighlightingRequest;
     final visitor = _HighlightingVisitor(collector);
 
-    for (var stmt in typedRequest.parsedFile.statements) {
+    final result = typedRequest.task.lastResult;
+
+    for (var stmt in result.statements) {
       stmt.accept(visitor);
     }
 
-    for (var token in typedRequest.parsedFile.sqlTokens) {
+    for (var token in result.tokens) {
       if (!_notBuiltIn.contains(token.type)) {
         final start = token.span.start.offset;
         final length = token.span.length;

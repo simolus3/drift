@@ -154,6 +154,9 @@ class MoorTask extends FileTask<ParsedMoorFile> {
   final TypeMapper mapper = TypeMapper();
   /* late final */ InlineDartResolver inlineDartResolver;
 
+  ParsedMoorFile _lastResult;
+  ParsedMoorFile get lastResult => _lastResult;
+
   MoorTask(BackendTask task, MoorSession session, this.content)
       : super(task, session) {
     inlineDartResolver = InlineDartResolver(this);
@@ -162,6 +165,6 @@ class MoorTask extends FileTask<ParsedMoorFile> {
   @override
   FutureOr<ParsedMoorFile> compute() {
     final parser = MoorParser(this);
-    return parser.parseAndAnalyze();
+    return parser.parseAndAnalyze().then((val) => _lastResult = val);
   }
 }
