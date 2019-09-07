@@ -1,5 +1,6 @@
 part of '../ast.dart';
 
+/// An `import "file.dart";` statement that can appear inside a moor file.
 class ImportStatement extends Statement {
   Token importToken;
   StringLiteralToken importString;

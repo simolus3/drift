@@ -46,10 +46,10 @@ void main() {
     );
   });
 
-  test('parses import directives in moor mode', () {
+  test('parses imports and declared statements in moor mode', () {
     final sql = r'''
     import 'test.dart';
-    SELECT * FROM tbl;
+    query: SELECT * FROM tbl;
      ''';
 
     final tokens = Scanner(sql, scanMoorTokens: true).scanTokens();
@@ -62,5 +62,17 @@ void main() {
     expect(parsedImport.importToken, tokens[0]);
     expect(parsedImport.importString, tokens[1]);
     expect(parsedImport.semicolon, tokens[2]);
+
+    final declared = statements[1] as DeclaredStatement;
+    enforceEqual(
+      declared,
+      DeclaredStatement(
+        'query',
+        SelectStatement(
+          columns: [StarResultColumn(null)],
+          from: [TableReference('tbl', null)],
+        ),
+      ),
+    );
   });
 }

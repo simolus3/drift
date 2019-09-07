@@ -157,14 +157,11 @@ class Parser extends ParserBase
 
   Statement statement({bool expectEnd = true}) {
     final first = _peek;
-    var stmt = select() ??
-        _deleteStmt() ??
-        _update() ??
-        _insertStmt() ??
-        _createTable();
+    Statement stmt = _crud();
+    stmt ??= _createTable();
 
     if (enableMoorExtensions) {
-      stmt ??= _import();
+      stmt ??= _import() ?? _declaredStatement();
     }
 
     if (stmt == null) {
@@ -181,6 +178,17 @@ class Parser extends ParserBase
     return stmt..setSpan(first, _previous);
   }
 
+  CrudStatement _crud() {
+    // writing select() ?? _deleteStmt() and so on doesn't cast to CrudStatement
+    // for some reason.
+    CrudStatement stmt = select();
+    stmt ??= _deleteStmt();
+    stmt ??= _update();
+    stmt ??= _insertStmt();
+
+    return stmt;
+  }
+
   ImportStatement _import() {
     if (_matchOne(TokenType.import)) {
       final importToken = _previous;
@@ -192,6 +200,23 @@ class Parser extends ParserBase
         ..importToken = importToken
         ..importString = import;
     }
+    return null;
+  }
+
+  DeclaredStatement _declaredStatement() {
+    if (_check(TokenType.identifier) || _peek is KeywordToken) {
+      final name = _consumeIdentifier('Expected a name for a declared query',
+          lenient: true);
+      final colon =
+          _consume(TokenType.colon, 'Expected colon (:) followed by a query');
+
+      final stmt = _crud();
+
+      return DeclaredStatement(name.identifier, stmt)
+        ..identifier = name
+        ..colon = colon;
+    }
+
     return null;
   }
 
