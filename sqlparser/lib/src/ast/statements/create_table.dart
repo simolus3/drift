@@ -2,7 +2,9 @@ part of '../ast.dart';
 
 /// A "CREATE TABLE" statement, see https://www.sqlite.org/lang_createtable.html
 /// for the individual components.
-class CreateTableStatement extends Statement with SchemaStatement {
+class CreateTableStatement extends Statement
+    with SchemaStatement
+    implements PartOfMoorFile {
   final bool ifNotExists;
   final String tableName;
   final List<ColumnDefinition> columns;

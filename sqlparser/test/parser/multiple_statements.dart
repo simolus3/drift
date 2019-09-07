@@ -6,42 +6,53 @@ import 'package:test/test.dart';
 
 void main() {
   test('can parse multiple statements', () {
-    final sql = 'UPDATE tbl SET a = b; SELECT * FROM tbl;';
+    final sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
     final tokens = Scanner(sql).scanTokens();
-    final statements = Parser(tokens).statements();
+    final moorFile = Parser(tokens).moorFile();
+
+    final statements = moorFile.statements;
 
     enforceEqual(
       statements[0],
-      UpdateStatement(
-        table: TableReference('tbl', null),
-        set: [
-          SetComponent(
-            column: Reference(columnName: 'a'),
-            expression: Reference(columnName: 'b'),
-          ),
-        ],
+      DeclaredStatement(
+        'a',
+        UpdateStatement(
+          table: TableReference('tbl', null),
+          set: [
+            SetComponent(
+              column: Reference(columnName: 'a'),
+              expression: Reference(columnName: 'b'),
+            ),
+          ],
+        ),
       ),
     );
     enforceEqual(
       statements[1],
-      SelectStatement(
-        columns: [StarResultColumn(null)],
-        from: [TableReference('tbl', null)],
+      DeclaredStatement(
+        'b',
+        SelectStatement(
+          columns: [StarResultColumn(null)],
+          from: [TableReference('tbl', null)],
+        ),
       ),
     );
   });
 
   test('recovers from invalid statements', () {
-    final sql = 'UPDATE tbl SET a = * d; SELECT * FROM tbl;';
+    final sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
     final tokens = Scanner(sql).scanTokens();
-    final statements = Parser(tokens).statements();
+    final statements = Parser(tokens).moorFile().statements;
 
     expect(statements, hasLength(1));
     enforceEqual(
       statements[0],
-      SelectStatement(
-        columns: [StarResultColumn(null)],
-        from: [TableReference('tbl', null)],
+      DeclaredStatement(
+        'b',
+        SelectStatement(
+          columns: [StarResultColumn(null)],
+          from: [TableReference('tbl', null)],
+        ),
       ),
     );
   });
@@ -53,7 +64,7 @@ void main() {
      ''';
 
     final tokens = Scanner(sql, scanMoorTokens: true).scanTokens();
-    final statements = Parser(tokens, useMoor: true).statements();
+    final statements = Parser(tokens, useMoor: true).moorFile().statements;
 
     expect(statements, hasLength(2));
 

@@ -155,7 +155,7 @@ class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
   Parser(List<Token> tokens, {bool useMoor = false}) : super(tokens, useMoor);
 
-  Statement statement({bool expectEnd = true}) {
+  Statement statement() {
     final first = _peek;
     Statement stmt = _crud();
     stmt ??= _createTable();
@@ -172,7 +172,7 @@ class Parser extends ParserBase
       stmt.semicolon = _previous;
     }
 
-    if (!_isAtEnd && expectEnd) {
+    if (!_isAtEnd) {
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
@@ -187,6 +187,38 @@ class Parser extends ParserBase
     stmt ??= _insertStmt();
 
     return stmt;
+  }
+
+  MoorFile moorFile() {
+    final first = _peek;
+    final foundComponents = <PartOfMoorFile>[];
+
+    // first, parse import statements
+    for (var stmt = _parseAsStatement(_import);
+        stmt != null;
+        stmt = _parseAsStatement(_import)) {
+      foundComponents.add(stmt);
+    }
+
+    // next, table declarations
+    for (var stmt = _parseAsStatement(_createTable);
+        stmt != null;
+        stmt = _parseAsStatement(_createTable)) {
+      foundComponents.add(stmt);
+    }
+
+    // finally, declared statements
+    for (var stmt = _parseAsStatement(_declaredStatement);
+        stmt != null;
+        stmt = _parseAsStatement(_declaredStatement)) {
+      foundComponents.add(stmt);
+    }
+
+    if (!_isAtEnd) {
+      _error('Expected the file to end here.');
+    }
+
+    return MoorFile(foundComponents)..setSpan(first, _previous);
   }
 
   ImportStatement _import() {
@@ -220,18 +252,27 @@ class Parser extends ParserBase
     return null;
   }
 
-  List<Statement> statements() {
-    final stmts = <Statement>[];
-    while (!_isAtEnd) {
-      try {
-        stmts.add(statement(expectEnd: false));
-      } on ParsingError catch (_) {
-        // the error is added to the list errors, so ignore. We skip to the next
-        // semicolon to parse the next statement.
-        _synchronize();
-      }
+  /// Invokes [parser], sets the appropriate source span and attaches a
+  /// semicolon if one exists.
+  T _parseAsStatement<T extends Statement>(T Function() parser) {
+    final first = _peek;
+    T result;
+    try {
+      result = parser();
+    } on ParsingError catch (_) {
+      // the error is added to the list errors, so ignore. We skip to the next
+      // semicolon to parse the next statement.
+      _synchronize();
     }
-    return stmts;
+
+    if (result == null) return null;
+
+    if (_matchOne(TokenType.semicolon)) {
+      result.semicolon = _previous;
+    }
+
+    result.setSpan(first, _previous);
+    return result;
   }
 
   void _synchronize() {

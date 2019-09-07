@@ -52,22 +52,17 @@ class SqlEngine {
     return ParseResult._(stmt, parser.errors, sql);
   }
 
-  /// Parses multiple sql statements, separated by a semicolon. All
-  /// [ParseResult] entries will have the same [ParseResult.errors], but the
-  /// [ParseResult.sql] will only refer to the substring creating a statement.
-  List<ParseResult> parseMultiple(String sql) {
-    final tokens = tokenize(sql);
-    final parser = Parser(tokens);
+  /// Parses a `.moor` file, which can consist of multiple statements and
+  /// additional components like import statements.
+  ParseResult parseMoorFile(String content) {
+    assert(useMoorExtensions);
 
-    final stmts = parser.statements();
+    final tokens = tokenize(content);
+    final parser = Parser(tokens, useMoor: true);
 
-    return stmts.map((statement) {
-      final first = statement.firstPosition;
-      final last = statement.lastPosition;
+    final moorFile = parser.moorFile();
 
-      final source = sql.substring(first, last);
-      return ParseResult._(statement, parser.errors, source);
-    }).toList();
+    return ParseResult._(moorFile, parser.errors, content);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned

@@ -2,7 +2,7 @@ part of '../ast.dart';
 
 /// A declared statement inside a `.moor` file. It consists of an identifier,
 /// followed by a colon and the query to run.
-class DeclaredStatement extends Statement {
+class DeclaredStatement extends Statement implements PartOfMoorFile {
   final String name;
   final CrudStatement statement;
 

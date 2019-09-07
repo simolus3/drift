@@ -23,6 +23,7 @@ part 'expressions/variables.dart';
 
 part 'moor/declared_statement.dart';
 part 'moor/import_statement.dart';
+part 'moor/moor_file.dart';
 
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
@@ -178,6 +179,7 @@ abstract class AstVisitor<T> {
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
 
+  T visitMoorFile(MoorFile e);
   T visitMoorImportStatement(ImportStatement e);
   T visitMoorDeclaredStatement(DeclaredStatement e);
 }
@@ -291,6 +293,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitFrameSpec(FrameSpec e) => visitChildren(e);
+
+  @override
+  T visitMoorFile(MoorFile e) => visitChildren(e);
 
   @override
   T visitMoorImportStatement(ImportStatement e) => visitChildren(e);
