@@ -1,4 +1,5 @@
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
@@ -31,4 +32,19 @@ class MoorCompletionRequest extends CompletionRequest {
   final MoorTask task;
 
   MoorCompletionRequest(this.offset, this.resourceProvider, this.task);
+}
+
+class MoorAssistRequest extends AssistRequest {
+  final MoorTask task;
+
+  @override
+  final int length;
+
+  @override
+  final int offset;
+
+  @override
+  final ResourceProvider resourceProvider;
+
+  MoorAssistRequest(this.task, this.length, this.offset, this.resourceProvider);
 }

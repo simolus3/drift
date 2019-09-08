@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
@@ -87,7 +89,6 @@ class SqlEngine {
   /// [registerTable] before calling this method.
   AnalysisContext analyzeParsed(ParseResult result) {
     final node = result.rootNode;
-    const SetParentVisitor().startAtRoot(node);
 
     final context = AnalysisContext(node, result.sql);
     final scope = _constructRootScope();
@@ -132,5 +133,39 @@ class ParseResult {
   final AutoCompleteEngine autoCompleteEngine;
 
   ParseResult._(this.rootNode, this.tokens, this.errors, this.sql,
-      this.autoCompleteEngine);
+      this.autoCompleteEngine) {
+    const SetParentVisitor().startAtRoot(rootNode);
+  }
+
+  /// Attempts to find the most relevant (bottom-most in the AST) nodes that
+  /// intersects with the source range from [offset] to [offset] + [length].
+  List<AstNode> findNodesAtPosition(int offset, {int length = 0}) {
+    if (tokens.isEmpty || rootNode == null) return const [];
+
+    final candidates = <AstNode>{};
+    final unchecked = Queue<AstNode>();
+    unchecked.add(rootNode);
+
+    while (unchecked.isNotEmpty) {
+      final node = unchecked.removeFirst();
+
+      final span = node.span;
+      final start = span.start.offset;
+      final end = span.end.offset;
+
+      final hasIntersection = !(end < offset || start > offset + length);
+      if (hasIntersection) {
+        // this node matches. As we want to find the bottom-most node in the AST
+        // that matches, this means that the parent is no longer a candidate.
+        candidates.add(node);
+        candidates.remove(node.parent);
+
+        // assume that the span of a node is a superset of the span of any
+        // child, so each child could potentially be interesting.
+        unchecked.addAll(node.childNodes);
+      }
+    }
+
+    return candidates.toList();
+  }
 }

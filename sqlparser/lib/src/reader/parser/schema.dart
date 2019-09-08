@@ -129,10 +129,14 @@ mixin SchemaParser on ParserBase {
         ..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.not)) {
-      _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
+      final notToken = _previous;
+      final nullToken =
+          _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
 
       return NotNull(resolvedName, onConflict: _conflictClauseOrNull())
-        ..setSpan(first, _previous);
+        ..setSpan(first, _previous)
+        ..not = notToken
+        ..$null = nullToken;
     }
     if (_matchOne(TokenType.unique)) {
       return UniqueColumn(resolvedName, _conflictClauseOrNull())

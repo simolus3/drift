@@ -1,17 +1,20 @@
 import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
 import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_plugin/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
 import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
+import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
+import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
 import 'package:moor_generator/src/backends/plugin/services/folding.dart';
@@ -23,7 +26,12 @@ import 'backend/driver.dart';
 import 'backend/logger.dart';
 
 class MoorPlugin extends ServerPlugin
-    with OutlineMixin, HighlightsMixin, FoldingMixin, CompletionMixin {
+    with
+        OutlineMixin,
+        HighlightsMixin,
+        FoldingMixin,
+        CompletionMixin,
+        AssistsMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
   }
@@ -118,7 +126,7 @@ class MoorPlugin extends ServerPlugin
 
   @override
   List<CompletionContributor> getCompletionContributors(String path) {
-    return [const MoorCompletingContributor()];
+    return const [MoorCompletingContributor()];
   }
 
   @override
@@ -129,5 +137,21 @@ class MoorPlugin extends ServerPlugin
     final task = await driver.parseMoorFile(path);
 
     return MoorCompletionRequest(parameters.offset, resourceProvider, task);
+  }
+
+  @override
+  List<AssistContributor> getAssistContributors(String path) {
+    return const [AssistService()];
+  }
+
+  @override
+  Future<AssistRequest> getAssistRequest(
+      plugin.EditGetAssistsParams parameters) async {
+    final path = parameters.file;
+    final driver = _moorDriverForPath(path);
+    final task = await driver.parseMoorFile(path);
+
+    return MoorAssistRequest(
+        task, parameters.length, parameters.offset, resourceProvider);
   }
 }

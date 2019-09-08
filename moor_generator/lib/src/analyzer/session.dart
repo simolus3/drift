@@ -42,6 +42,8 @@ abstract class FileTask<R extends ParsedFile> {
 
   final ErrorSink errors = ErrorSink();
 
+  String get path => backendTask.entrypoint.path;
+
   FileTask(this.backendTask, this.session);
 
   void reportError(MoorError error) => errors.report(error);

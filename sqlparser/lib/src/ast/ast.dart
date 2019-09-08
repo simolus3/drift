@@ -56,7 +56,10 @@ abstract class AstNode {
   /// The last position that belongs to node, exclusive. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
 
-  FileSpan get span => first.span.expand(last.span);
+  FileSpan get span {
+    if (first == null || last == null) return null;
+    return first.span.expand(last.span);
+  }
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {
@@ -72,6 +75,12 @@ abstract class AstNode {
       yield node;
       node = node.parent;
     }
+  }
+
+  /// Returns an iterable containing `this` node and all [parents].
+  Iterable<AstNode> get selfAndParents sync* {
+    yield this;
+    yield* parents;
   }
 
   /// Recursively returns all descendants of this node, e.g. its children, their

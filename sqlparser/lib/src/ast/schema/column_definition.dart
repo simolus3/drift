@@ -21,6 +21,15 @@ class ColumnDefinition extends AstNode {
   bool contentEquals(ColumnDefinition other) {
     return other.columnName == columnName && other.typeName == typeName;
   }
+
+  /// Finds a constraint of type [T], or null, if none is set.
+  T findConstraint<T extends ColumnConstraint>() {
+    final typedConstraints = constraints.whereType<T>().iterator;
+    if (typedConstraints.moveNext()) {
+      return typedConstraints.current;
+    }
+    return null;
+  }
 }
 
 /// https://www.sqlite.org/syntax/column-constraint.html
@@ -76,6 +85,9 @@ enum ConflictClause { rollback, abort, fail, ignore, replace }
 
 class NotNull extends ColumnConstraint {
   final ConflictClause onConflict;
+
+  Token not;
+  Token $null;
 
   NotNull(String name, {this.onConflict}) : super(name);
 
