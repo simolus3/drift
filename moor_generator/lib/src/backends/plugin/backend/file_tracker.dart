@@ -15,6 +15,13 @@ class FileTracker {
   final Map<String, TrackedFile> _trackedFiles = {};
   final Set<TrackedFile> _currentPriority = {};
 
+  final StreamController<TrackedFile> _computations =
+      StreamController.broadcast();
+
+  /// Streams that emits a [TrackedFile] when it has been worked on
+  /// successfully.
+  Stream<TrackedFile> get computations => _computations.stream;
+
   FileTracker() {
     _pendingWork = PriorityQueue(_compareByPriority);
   }
@@ -82,6 +89,8 @@ class FileTracker {
       final unit = _pendingWork.removeFirst();
 
       worker(unit.path).then((result) {
+        _computations.add(unit);
+
         for (var completer in unit._waiting) {
           completer.complete(result);
         }
@@ -93,6 +102,10 @@ class FileTracker {
         unit._waiting.clear();
       });
     }
+  }
+
+  void dispose() {
+    _computations.close();
   }
 }
 

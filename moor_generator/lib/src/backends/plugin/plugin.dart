@@ -13,6 +13,7 @@ import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
+import 'package:moor_generator/src/backends/plugin/services/errors.dart';
 import 'package:moor_generator/src/backends/plugin/services/folding.dart';
 import 'package:moor_generator/src/backends/plugin/services/highlights.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
@@ -56,9 +57,15 @@ class MoorPlugin extends ServerPlugin
     // why exactly this is necessary
     final dartDriver = builder.buildDriver(analyzerRoot)
       ..results.listen((_) {}) // Consume the stream, otherwise we leak.
-      ..exceptions.listen((_) {}); // Consume the stream, otherwise we leak.;
+      ..exceptions.listen((_) {}); // Consume the stream, otherwise we leak.
 
     final tracker = FileTracker();
+    final errorService = ErrorService(this);
+
+    tracker.computations
+        .asyncMap((file) => tracker.results(file.path))
+        .listen(errorService.handleMoorResult);
+
     return MoorDriver(tracker, analysisDriverScheduler, dartDriver,
         fileContentOverlay, resourceProvider);
   }

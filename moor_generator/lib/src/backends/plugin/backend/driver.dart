@@ -39,6 +39,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   void dispose() {
     _scheduler.remove(this);
     dartDriver.dispose();
+    _tracker.dispose();
   }
 
   void handleFileChanged(String path) {
