@@ -11,9 +11,7 @@ class MoorFoldingContributor implements FoldingContributor {
     final moorRequest = request as MoorRequest;
 
     final visitor = _FoldingVisitor(collector);
-    for (var stmt in moorRequest.resolvedTask.lastResult.statements) {
-      stmt.accept(visitor);
-    }
+    moorRequest.resolvedTask.lastResult.parsedFile.accept(visitor);
   }
 }
 

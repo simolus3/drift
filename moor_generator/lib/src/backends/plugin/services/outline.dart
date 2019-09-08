@@ -18,9 +18,7 @@ class MoorOutlineContributor implements OutlineContributor {
         libraryElement, 0, moorRequest.resolvedTask.content.length);
 
     final visitor = _OutlineVisitor(collector);
-    for (var stmt in moorRequest.resolvedTask.lastResult.statements) {
-      stmt.accept(visitor);
-    }
+    moorRequest.resolvedTask.lastResult.parsedFile.accept(visitor);
 
     collector.endElement();
   }

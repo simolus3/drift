@@ -1,15 +1,18 @@
 import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
 import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
 import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
+import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
+import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/folding.dart';
 import 'package:moor_generator/src/backends/plugin/services/highlights.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
@@ -19,7 +22,7 @@ import 'backend/driver.dart';
 import 'backend/logger.dart';
 
 class MoorPlugin extends ServerPlugin
-    with OutlineMixin, HighlightsMixin, FoldingMixin {
+    with OutlineMixin, HighlightsMixin, FoldingMixin, CompletionMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
   }
@@ -105,4 +108,19 @@ class MoorPlugin extends ServerPlugin
   @override
   Future<FoldingRequest> getFoldingRequest(String path) =>
       _createMoorRequest(path);
+
+  @override
+  List<CompletionContributor> getCompletionContributors(String path) {
+    return [const MoorCompletingContributor()];
+  }
+
+  @override
+  Future<CompletionRequest> getCompletionRequest(
+      plugin.CompletionGetSuggestionsParams parameters) async {
+    final path = parameters.file;
+    final driver = _moorDriverForPath(path);
+    final task = await driver.parseMoorFile(path);
+
+    return MoorCompletionRequest(parameters.offset, resourceProvider, task);
+  }
 }

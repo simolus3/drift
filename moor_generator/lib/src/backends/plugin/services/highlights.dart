@@ -18,11 +18,9 @@ class MoorHighlightContributor implements HighlightsContributor {
 
     final result = typedRequest.resolvedTask.lastResult;
 
-    for (var stmt in result.statements) {
-      stmt.accept(visitor);
-    }
+    result.parsedFile.accept(visitor);
 
-    for (var token in result.tokens) {
+    for (var token in result.parseResult.tokens) {
       if (token is KeywordToken) {
         final start = token.span.start.offset;
         final length = token.span.length;

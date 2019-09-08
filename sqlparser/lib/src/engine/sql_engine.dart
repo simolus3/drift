@@ -64,7 +64,8 @@ class SqlEngine {
 
     final moorFile = parser.moorFile();
 
-    return ParseResult._(moorFile, tokens, parser.errors, content, autoComplete);
+    return ParseResult._(
+        moorFile, tokens, parser.errors, content, autoComplete);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned
@@ -130,5 +131,6 @@ class ParseResult {
   /// result.
   final AutoCompleteEngine autoCompleteEngine;
 
-  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql, this.autoCompleteEngine);
+  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql,
+      this.autoCompleteEngine);
 }

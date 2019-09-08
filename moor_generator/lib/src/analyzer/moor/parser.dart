@@ -40,6 +40,6 @@ class MoorParser {
     final createdTables =
         createdReaders.map((r) => r.extractTable(task.mapper)).toList();
 
-    return Future.value(ParsedMoorFile(createdTables));
+    return Future.value(ParsedMoorFile(result, declaredTables: createdTables));
   }
 }

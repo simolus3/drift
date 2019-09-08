@@ -22,10 +22,9 @@ class ParsedDartFile extends ParsedFile {
 }
 
 class ParsedMoorFile extends ParsedFile {
-  final List<Token> tokens;
-  final List<Statement> statements;
+  final ParseResult parseResult;
+  MoorFile get parsedFile => parseResult.rootNode as MoorFile;
   final List<SpecifiedTable> declaredTables;
 
-  ParsedMoorFile(this.tokens, this.statements,
-      {this.declaredTables = const []});
+  ParsedMoorFile(this.parseResult, {this.declaredTables = const []});
 }
