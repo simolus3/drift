@@ -11,16 +11,9 @@ class MoorOutlineContributor implements OutlineContributor {
   @override
   void computeOutline(OutlineRequest request, OutlineCollector collector) {
     final moorRequest = request as MoorRequest;
-    final file = moorRequest.path;
-
-    final libraryElement = Element(ElementKind.FILE, file, _defaultFlags);
-    collector.startElement(
-        libraryElement, 0, moorRequest.resolvedTask.content.length);
 
     final visitor = _OutlineVisitor(collector);
     moorRequest.resolvedTask.lastResult.parsedFile.accept(visitor);
-
-    collector.endElement();
   }
 }
 
@@ -48,7 +41,14 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitColumnDefinition(ColumnDefinition e) {
-    _startElement(ElementKind.FIELD, e.columnName, e);
+    _startElement(ElementKind.FIELD, e.columnName, e)..returnType = e.typeName;
+    super.visitChildren(e);
+    collector.endElement();
+  }
+
+  @override
+  void visitMoorDeclaredStatement(DeclaredStatement e) {
+    _startElement(ElementKind.TOP_LEVEL_VARIABLE, e.name, e);
     super.visitChildren(e);
     collector.endElement();
   }

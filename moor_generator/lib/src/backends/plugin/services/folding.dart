@@ -21,6 +21,20 @@ class _FoldingVisitor extends RecursiveVisitor<void> {
   _FoldingVisitor(this.collector);
 
   @override
+  void visitMoorFile(MoorFile e) {
+    // construct a folding region for import statements
+    final imports = e.imports.toList();
+    if (imports.isNotEmpty) {
+      final first = imports.first.firstPosition;
+      final last = imports.last.lastPosition;
+
+      collector.addRegion(first, last - first, FoldingKind.DIRECTIVES);
+    }
+
+    super.visitChildren(e);
+  }
+
+  @override
   void visitCreateTableStatement(CreateTableStatement e) {
     final startBody = e.openingBracket;
     final endBody = e.closingBracket;
