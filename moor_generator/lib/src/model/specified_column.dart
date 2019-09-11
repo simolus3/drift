@@ -110,7 +110,7 @@ class SpecifiedColumn {
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName {
     if (typeConverter != null) {
-      return typeConverter.mappedType?.name;
+      return typeConverter.mappedType?.displayName;
     }
     return variableTypeName;
   }
