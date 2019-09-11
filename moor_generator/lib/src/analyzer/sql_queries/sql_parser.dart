@@ -1,7 +1,6 @@
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
@@ -10,15 +9,15 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 class SqlParser {
   final List<SpecifiedTable> tables;
-  final FileTask task;
-  final Map<DartObject, DartObject> definedQueries;
+  final AnalyzeDartStep step;
+  final List<DeclaredQuery> definedQueries;
 
   final TypeMapper _mapper = TypeMapper();
   SqlEngine _engine;
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlParser(this.task, this.tables, this.definedQueries);
+  SqlParser(this.step, this.tables, this.definedQueries);
 
   void _spawnEngine() {
     _engine = SqlEngine();
@@ -28,39 +27,39 @@ class SqlParser {
   void parse() {
     _spawnEngine();
 
-    definedQueries.forEach((key, value) {
-      final name = key.toStringValue();
-      final sql = value.toStringValue();
+    for (var query in definedQueries) {
+      final name = query.name;
+      final sql = query.sql;
 
       AnalysisContext context;
       try {
         context = _engine.analyze(sql);
       } catch (e, s) {
-        task.reportError(MoorError(
+        step.reportError(MoorError(
             severity: Severity.criticalError,
-            message: 'Error while trying to parse $key: $e, $s'));
+            message: 'Error while trying to parse $name: $e, $s'));
         return;
       }
 
       for (var error in context.errors) {
-        task.reportError(MoorError(
+        step.reportError(MoorError(
           severity: Severity.warning,
-          message: 'The sql query $key is invalid: $error',
+          message: 'The sql query $name is invalid: $error',
         ));
       }
 
       try {
         foundQueries.add(QueryHandler(name, context, _mapper).handle());
       } catch (e, s) {
-        log.warning('Error while generating APIs for $key', e, s);
+        log.warning('Error while generating APIs for $name', e, s);
       }
-    });
+    }
 
     // report lints
     for (var query in foundQueries) {
       for (var lint in query.lints) {
-        task.reportError(MoorError(
-          severity: Severity.warning,
+        step.reportError(MoorError(
+          severity: Severity.info,
           message: 'Lint for ${query.name}: $lint',
         ));
       }

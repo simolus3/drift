@@ -7,6 +7,13 @@ import 'package:sqlparser/sqlparser.dart';
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
 
+class DeclaredQuery {
+  final String name;
+  final String sql;
+
+  DeclaredQuery(this.name, this.sql);
+}
+
 abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;

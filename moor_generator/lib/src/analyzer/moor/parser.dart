@@ -1,17 +1,17 @@
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
-import 'package:moor_generator/src/analyzer/results.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorParser {
-  final MoorTask task;
+  final ParseMoorFile step;
 
-  MoorParser(this.task);
+  MoorParser(this.step);
 
   Future<ParsedMoorFile> parseAndAnalyze() {
     final result =
-        SqlEngine(useMoorExtensions: true).parseMoorFile(task.content);
+        SqlEngine(useMoorExtensions: true).parseMoorFile(step.content);
     final parsedFile = result.rootNode as MoorFile;
 
     final createdReaders = <CreateTableReader>[];
@@ -19,11 +19,11 @@ class MoorParser {
     for (var parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
-        task.inlineDartResolver.importStatements.add(importStmt.importedFile);
+        step.inlineDartResolver.importStatements.add(importStmt.importedFile);
       } else if (parsedStmt is CreateTableStatement) {
         createdReaders.add(CreateTableReader(parsedStmt));
       } else {
-        task.reportError(ErrorInMoorFile(
+        step.reportError(ErrorInMoorFile(
             span: parsedStmt.span,
             message: 'At the moment, only CREATE TABLE statements are supported'
                 'in .moor files'));
@@ -31,14 +31,14 @@ class MoorParser {
     }
 
     for (var error in result.errors) {
-      task.reportError(ErrorInMoorFile(
+      step.reportError(ErrorInMoorFile(
         span: error.token.span,
         message: error.message,
       ));
     }
 
     final createdTables =
-        createdReaders.map((r) => r.extractTable(task.mapper)).toList();
+        createdReaders.map((r) => r.extractTable(step.mapper)).toList();
 
     return Future.value(ParsedMoorFile(result, declaredTables: createdTables));
   }

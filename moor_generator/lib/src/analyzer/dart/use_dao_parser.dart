@@ -1,14 +1,36 @@
 part of 'parser.dart';
 
 class UseDaoParser {
-  final DartTask dartTask;
+  final ParseDartStep step;
 
-  UseDaoParser(this.dartTask);
+  UseDaoParser(this.step);
 
   /// If [element] has a `@UseDao` annotation, parses the database model
   /// declared by that class and the referenced tables.
   Future<SpecifiedDao> parseDao(
       ClassElement element, ConstantReader annotation) async {
+    final dbType = element.supertype;
+    if (dbType.name != 'DatabaseAccessor') {
+      step.reportError(ErrorInDartCode(
+        affectedElement: element,
+        severity: Severity.criticalError,
+        message: 'This class must directly inherit from DatabaseAccessor',
+      ));
+      return null;
+    }
+
+    // inherits from DatabaseAccessor<T>, we want to know which T
+    final dbImpl = dbType.typeArguments.single;
+    if (dbImpl.isDynamic) {
+      step.reportError(ErrorInDartCode(
+        affectedElement: element,
+        severity: Severity.criticalError,
+        message: 'This class must inherit from DatabaseAccessor<T>, where T '
+            'is an actual type of a database.',
+      ));
+      return null;
+    }
+
     final tableTypes =
         annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
             [];
@@ -18,15 +40,13 @@ class UseDaoParser {
             .read('include')
             .objectValue
             .toSetValue()
-            ?.map((e) => e.toStringValue()) ??
-        {};
+            ?.map((e) => e.toStringValue())
+            ?.toList() ??
+        [];
 
-    final parsedTables = await dartTask.parseTables(tableTypes, element);
-    parsedTables.addAll(await dartTask.resolveIncludes(includes));
+    final parsedTables = await step.parseTables(tableTypes, element);
+    final parsedQueries = step.readDeclaredQueries(queryStrings);
 
-    final parsedQueries =
-        await dartTask.parseQueries(queryStrings, parsedTables);
-
-    return SpecifiedDao(element, parsedTables, parsedQueries);
+    return SpecifiedDao(element, dbImpl, parsedTables, includes, parsedQueries);
   }
 }

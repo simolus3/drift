@@ -5,10 +5,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_dao.dart';
-import 'package:moor_generator/src/model/specified_database.dart';
+import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
@@ -22,12 +21,12 @@ part 'use_dao_parser.dart';
 part 'use_moor_parser.dart';
 
 class MoorDartParser {
-  final DartTask task;
+  final ParseDartStep step;
 
   ColumnParser _columnParser;
   TableParser _tableParser;
 
-  MoorDartParser(this.task) {
+  MoorDartParser(this.step) {
     _columnParser = ColumnParser(this);
     _tableParser = TableParser(this);
   }
@@ -46,7 +45,7 @@ class MoorDartParser {
     final body = method.body;
 
     if (!(body is ExpressionFunctionBody)) {
-      task.reportError(ErrorInDartCode(
+      step.reportError(ErrorInDartCode(
         affectedElement: method.declaredElement,
         severity: Severity.criticalError,
         message:

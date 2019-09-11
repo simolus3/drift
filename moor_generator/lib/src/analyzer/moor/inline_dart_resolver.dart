@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 
 /// Resolves the type of Dart expressions given as a string. The
 /// [importStatements] are used to discover types.
@@ -18,13 +18,13 @@ import 'package:moor_generator/src/analyzer/session.dart';
 /// of the top-level `expr` variable in that source.
 class InlineDartResolver {
   final List<String> importStatements = [];
-  final MoorTask task;
+  final ParseMoorFile step;
 
-  InlineDartResolver(this.task);
+  InlineDartResolver(this.step);
 
   Future<DartType> resolveDartTypeOf(String expression) async {
     final template = _createDartTemplate(expression);
-    final unit = await task.backendTask.parseSource(template);
+    final unit = await step.task.backend.parseSource(template);
 
     final declaration = unit.declarations.single as TopLevelVariableDeclaration;
     return declaration.variables.variables.single.initializer.staticType;

@@ -49,7 +49,7 @@ class ColumnParser {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (!(expr is FunctionExpressionInvocation)) {
-      base.task.reportError(ErrorInDartCode(
+      base.step.reportError(ErrorInDartCode(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
         severity: Severity.criticalError,
@@ -81,7 +81,7 @@ class ColumnParser {
       switch (methodName) {
         case _methodNamed:
           if (foundExplicitName != null) {
-            base.task.reportError(
+            base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
                 affectedElement: getter.declaredElement,
@@ -94,7 +94,7 @@ class ColumnParser {
 
           foundExplicitName = base.readStringLiteral(
               remainingExpr.argumentList.arguments.first, () {
-            base.task.reportError(
+            base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.error,
                 affectedElement: getter.declaredElement,
@@ -128,7 +128,7 @@ class ColumnParser {
         case _methodCustomConstraint:
           foundCustomConstraint = base.readStringLiteral(
               remainingExpr.argumentList.arguments.first, () {
-            base.task.reportError(
+            base.step.reportError(
               ErrorInDartCode(
                 severity: Severity.warning,
                 affectedElement: getter.declaredElement,

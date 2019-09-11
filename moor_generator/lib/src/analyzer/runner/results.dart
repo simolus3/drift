@@ -1,18 +1,20 @@
 import 'package:meta/meta.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:moor_generator/src/model/specified_dao.dart';
-import 'package:moor_generator/src/model/specified_database.dart';
+import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-abstract class ParsedFile {}
+abstract class FileResult {}
 
-class ParsedDartFile extends ParsedFile {
+class ParsedDartFile extends FileResult {
   final LibraryElement library;
 
   final List<SpecifiedTable> declaredTables;
   final List<SpecifiedDao> declaredDaos;
   final List<SpecifiedDatabase> declaredDatabases;
+
+  Iterable<SpecifiedDbAccessor> get dbAccessors =>
+      declaredDatabases.cast<SpecifiedDbAccessor>().followedBy(declaredDaos);
 
   ParsedDartFile(
       {@required this.library,
@@ -21,7 +23,7 @@ class ParsedDartFile extends ParsedFile {
       this.declaredDatabases = const []});
 }
 
-class ParsedMoorFile extends ParsedFile {
+class ParsedMoorFile extends FileResult {
   final ParseResult parseResult;
   MoorFile get parsedFile => parseResult.rootNode as MoorFile;
   final List<SpecifiedTable> declaredTables;

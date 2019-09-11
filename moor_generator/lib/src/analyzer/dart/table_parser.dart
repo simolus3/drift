@@ -60,7 +60,7 @@ class TableParser {
         tableNameDeclaration.node as MethodDeclaration);
 
     final tableName = base.readStringLiteral(returnExpr, () {
-      base.task.reportError(ErrorInDartCode(
+      base.step.reportError(ErrorInDartCode(
           severity: Severity.criticalError,
           message:
               'This getter must return a string literal, and do nothing more',
@@ -81,7 +81,7 @@ class TableParser {
     final ast = resolved.node as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      base.task.reportError(ErrorInDartCode(
+      base.step.reportError(ErrorInDartCode(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal using the => syntax!'));
       return null;
@@ -100,7 +100,7 @@ class TableParser {
         }
       }
     } else {
-      base.task.reportError(ErrorInDartCode(
+      base.step.reportError(ErrorInDartCode(
           affectedElement: primaryKeyGetter,
           message: 'This must return a set literal!'));
     }

@@ -1,15 +1,20 @@
 import 'package:build/build.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/backends/build/build_backend.dart';
 import 'package:moor_generator/src/backends/build/generators/dao_generator.dart';
 import 'package:moor_generator/src/backends/build/generators/moor_generator.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 part 'options.dart';
 
+final backendResource = Resource(() => BuildBackend());
+
 class MoorBuilder extends SharedPartBuilder {
-  final BuildBackend backend = BuildBackend();
   final MoorOptions options;
+
+  MoorBuilder._(List<Generator> generators, String name, this.options)
+      : super(generators, name);
 
   factory MoorBuilder(BuilderOptions options) {
     final parsedOptions = MoorOptions.fromBuilder(options.config);
@@ -28,13 +33,22 @@ class MoorBuilder extends SharedPartBuilder {
     return builder;
   }
 
-  MoorBuilder._(List<Generator> generators, String name, this.options)
-      : super(generators, name);
+  Writer createWriter() => Writer(options);
 
-  Future<DartTask> createDartTask(BuildStep step) async {
+  Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
+    final backend = await step.fetchResource(backendResource);
     final backendTask = backend.createTask(step);
-    return await backend.session
-        .startDartTask(backendTask, uri: step.inputId.uri);
+    final session = backend.session;
+
+    final input = session.registerFile(step.inputId.uri);
+    final task = session.startTask(backendTask);
+    await task.runTask();
+
+    task.printErrors();
+
+    await backendTask.finish(input);
+
+    return input.currentResult as ParsedDartFile;
   }
 }
 

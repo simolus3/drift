@@ -1,9 +1,9 @@
+import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:moor_generator/src/writer/queries/query_writer.dart';
 import 'package:moor_generator/src/writer/tables/table_writer.dart';
 import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
-import 'package:moor_generator/src/model/specified_database.dart';
 
 class DatabaseWriter {
   final SpecifiedDatabase db;
@@ -55,7 +55,7 @@ class DatabaseWriter {
 
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
-    for (var query in db.queries) {
+    for (var query in db.resolvedQueries) {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
