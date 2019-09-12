@@ -21,24 +21,33 @@ class Task {
   final MoorSession session;
   final BackendTask backend;
 
-  final Map<FoundFile, Step> _performedSteps = {};
+  final Set<FoundFile> _analyzedFiles = {};
   final List<FoundFile> _unhandled = [];
 
   Task(this.session, this.input, this.backend);
 
   /// Returns an iterable of [FoundFile]s that were analyzed by this task.
-  Iterable<FoundFile> get analyzedFiles => _performedSteps.keys;
+  Iterable<FoundFile> get analyzedFiles => _analyzedFiles;
 
   Future runTask() async {
     // step 1: parse all files included by the input
     _unhandled.clear();
     _unhandled.add(input);
     while (_unhandled.isNotEmpty) {
-      await _parse(_unhandled.removeLast());
+      final file = _unhandled.removeLast();
+      final step = await _parse(file);
+
+      // the step can be null when a file that has already been parsed or even
+      // analyzed is encountered (for instance because of an import)
+      if (step != null) {
+        file.errors.consume(step.errors);
+      }
+
+      _analyzedFiles.add(file);
     }
 
     // step 2: resolve queries in the input
-    for (var file in _performedSteps.keys) {
+    for (var file in _analyzedFiles) {
       file.errors.clearNonParsingErrors();
       await _analyze(file);
     }
@@ -46,21 +55,20 @@ class Task {
     session.notifyTaskFinished(this);
   }
 
-  Future<void> _parse(FoundFile file) async {
-    if (file.state != FileState.dirty) {
+  Future<Step> _parse(FoundFile file) async {
+    if (file.isParsed) {
       // already parsed, nothing to do :)
-      return;
+      return null;
     }
 
-    final resolvedImports = <FoundFile>{};
-
+    Step createdStep;
     file.errors.clearAll();
+    final resolvedImports = <FoundFile>{};
 
     switch (file.type) {
       case FileType.moor:
         final content = await backend.readMoor(file.uri);
-        final step = ParseMoorFile(this, file, content);
-        _performedSteps[file] = step;
+        final step = createdStep = ParseMoorStep(this, file, content);
 
         final parsed = await step.parseFile();
         file.currentResult = parsed;
@@ -76,13 +84,11 @@ class Task {
           } else {
             resolvedImports.add(found);
           }
-          file.errors.consume(step.errors);
         }
         break;
       case FileType.dart:
         final library = await backend.resolveDart(file.uri);
-        final step = ParseDartStep(this, file, library);
-        _performedSteps[file] = step;
+        final step = createdStep = ParseDartStep(this, file, library);
 
         final parsed = await step.parse();
         file.currentResult = parsed;
@@ -109,7 +115,6 @@ class Task {
           }
 
           accessor.resolvedImports = resolvedForAccessor;
-          file.errors.consume(step.errors);
         }
         break;
       default:
@@ -119,35 +124,39 @@ class Task {
     file.state = FileState.parsed;
     session.fileGraph.setImports(file, resolvedImports.toList());
     _notifyFilesNeedWork(resolvedImports);
+    return createdStep;
   }
 
   Future<void> _analyze(FoundFile file) async {
     // skip if already analyzed.
     if (file.state == FileState.analyzed) return;
 
+    Step step;
+
     switch (file.type) {
       case FileType.dart:
-        final step = AnalyzeDartStep(this, file)..analyze();
-        file.errors.consume(step.errors);
+        step = AnalyzeDartStep(this, file)..analyze();
         break;
       default:
         break;
     }
 
     file.state = FileState.analyzed;
+    if (step != null) {
+      file.errors.consume(step.errors);
+    }
   }
 
   void _notifyFilesNeedWork(Iterable<FoundFile> files) {
     for (var file in files) {
-      if (!_performedSteps.containsKey(file) && !_unhandled.contains(file)) {
+      if (!_analyzedFiles.contains(file) && !_unhandled.contains(file)) {
         _unhandled.add(file);
       }
     }
   }
 
   void printErrors() {
-    final foundErrors =
-        _performedSteps.values.expand((step) => step.errors.errors);
+    final foundErrors = _analyzedFiles.expand((file) => file.errors.errors);
     if (foundErrors.isNotEmpty) {
       final log = backend.log;
 

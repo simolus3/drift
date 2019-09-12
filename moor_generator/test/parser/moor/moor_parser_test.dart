@@ -10,7 +10,7 @@ CREATE TABLE users(
   ''';
 
   test('extracts table structure from .moor files', () async {
-    final parseStep = ParseMoorFile(null, null, content);
+    final parseStep = ParseMoorStep(null, null, content);
     final result = await parseStep.parseFile();
 
     expect(parseStep.errors.errors, isEmpty);

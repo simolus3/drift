@@ -27,7 +27,7 @@ class DatabaseWriter {
 
     final tableGetters = <String>[];
 
-    for (var table in db.tables) {
+    for (var table in db.allTables) {
       tableGetters.add(table.tableFieldName);
       final tableClassName = table.tableInfoName;
 

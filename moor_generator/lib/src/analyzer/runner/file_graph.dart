@@ -98,8 +98,8 @@ class FoundFile {
   final FileType type;
 
   FileResult currentResult;
-  FileState state;
-  ErrorSink errors;
+  /* (not null) */ FileState state = FileState.dirty;
+  final ErrorSink errors = ErrorSink();
 
   FoundFile(this.uri, this.type);
 

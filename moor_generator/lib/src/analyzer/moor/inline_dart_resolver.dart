@@ -18,7 +18,7 @@ import 'package:moor_generator/src/analyzer/runner/steps.dart';
 /// of the top-level `expr` variable in that source.
 class InlineDartResolver {
   final List<String> importStatements = [];
-  final ParseMoorFile step;
+  final ParseMoorStep step;
 
   InlineDartResolver(this.step);
 

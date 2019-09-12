@@ -5,7 +5,7 @@ import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorParser {
-  final ParseMoorFile step;
+  final ParseMoorStep step;
 
   MoorParser(this.step);
 
