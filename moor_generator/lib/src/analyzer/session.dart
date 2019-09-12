@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
@@ -13,7 +15,13 @@ class MoorSession {
   final FileGraph fileGraph = FileGraph();
   final Backend backend;
 
+  final _completedTasks = StreamController<Task>.broadcast();
+  final _changedFiles = StreamController<FoundFile>.broadcast();
+
   MoorSession(this.backend);
+
+  /// Stream that emits a [Task] that has been completed.
+  Stream<Task> get completedTasks => _completedTasks.stream;
 
   FileType _findFileType(String path) {
     final extension = p.extension(path);
@@ -39,5 +47,24 @@ class MoorSession {
 
   Task startTask(BackendTask backend) {
     return Task(this, _uriToFile(backend.entrypoint), backend);
+  }
+
+  /// Notifies this backend that the content of the given [file] has been
+  /// changed.
+  void notifyFileChanged(FoundFile file) {
+    file.state = FileState.dirty;
+    // all files that transitively imported this files are no longer analyzed
+    // because they depend on this file. They're still parsed though
+    for (var affected in fileGraph.crawl(file, transposed: true)) {
+      if (affected.state == FileState.analyzed) {
+        affected.state = FileState.parsed;
+      }
+    }
+
+    _changedFiles.add(file);
+  }
+
+  void notifyTaskFinished(Task task) {
+    _completedTasks.add(task);
   }
 }

@@ -8,25 +8,26 @@ class MoorCompletingContributor implements CompletionContributor {
   @override
   Future<void> computeSuggestions(
       MoorCompletionRequest request, CompletionCollector collector) {
-    final autoComplete = request.task.lastResult.parseResult.autoCompleteEngine;
-    final results = autoComplete.suggestCompletions(request.offset);
+    if (request.isMoorAndParsed) {
+      final autoComplete = request.parsedMoor.parseResult.autoCompleteEngine;
+      final results = autoComplete.suggestCompletions(request.offset);
 
-    collector
-      ..offset = results.anchor
-      ..length = results.lengthBefore;
+      collector
+        ..offset = results.anchor
+        ..length = results.lengthBefore;
 
-    for (var suggestion in results.suggestions) {
-      collector.addSuggestion(CompletionSuggestion(
-        CompletionSuggestionKind.KEYWORD,
-        suggestion.relevance,
-        suggestion.code,
-        -1,
-        -1,
-        false,
-        false,
-      ));
+      for (var suggestion in results.suggestions) {
+        collector.addSuggestion(CompletionSuggestion(
+          CompletionSuggestionKind.KEYWORD,
+          suggestion.relevance,
+          suggestion.code,
+          -1,
+          -1,
+          false,
+          false,
+        ));
+      }
     }
-
     return Future.value();
   }
 }

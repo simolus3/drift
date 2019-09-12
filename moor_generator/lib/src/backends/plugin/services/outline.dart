@@ -12,8 +12,11 @@ class MoorOutlineContributor implements OutlineContributor {
   void computeOutline(OutlineRequest request, OutlineCollector collector) {
     final moorRequest = request as MoorRequest;
 
-    final visitor = _OutlineVisitor(collector);
-    moorRequest.resolvedTask.lastResult.parsedFile.accept(visitor);
+    if (moorRequest.isMoorAndParsed) {
+      final visitor = _OutlineVisitor(collector);
+
+      moorRequest.parsedMoor.parsedFile.accept(visitor);
+    }
   }
 }
 

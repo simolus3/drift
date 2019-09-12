@@ -14,12 +14,15 @@ class AssistService implements AssistContributor {
   @override
   void computeAssists(AssistRequest request, AssistCollector collector) {
     final moorRequest = request as MoorAssistRequest;
-    final parseResult = moorRequest.task.lastResult.parseResult;
-    final relevantNodes =
-        parseResult.findNodesAtPosition(request.offset, length: request.length);
 
-    for (var node in relevantNodes.expand((node) => node.selfAndParents)) {
-      _handleNode(collector, node, moorRequest.task.path);
+    if (moorRequest.isMoorAndParsed) {
+      final parseResult = moorRequest.parsedMoor.parseResult;
+      final relevantNodes = parseResult.findNodesAtPosition(request.offset,
+          length: request.length);
+
+      for (var node in relevantNodes.expand((node) => node.selfAndParents)) {
+        _handleNode(collector, node, moorRequest.path);
+      }
     }
   }
 

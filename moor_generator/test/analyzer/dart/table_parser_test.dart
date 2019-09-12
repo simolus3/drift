@@ -1,6 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:test/test.dart';
@@ -9,7 +9,7 @@ import '../../utils/test_backend.dart';
 
 void main() {
   TestBackend backend;
-  DartTask dartTask;
+  ParseDartStep dartStep;
   MoorDartParser parser;
   setUpAll(() {
     backend = TestBackend({
@@ -48,13 +48,15 @@ void main() {
   });
 
   setUp(() async {
-    final task = backend.startTask(Uri.parse('package:test_lib/main.dart'));
-    dartTask = await backend.session.startDartTask(task);
-    parser = MoorDartParser(dartTask);
+    final uri = Uri.parse('package:test_lib/main.dart');
+    final task = backend.startTask(uri);
+
+    dartStep = ParseDartStep(null, null, await task.resolveDart(uri));
+    parser = MoorDartParser(dartStep);
   });
 
   Future<SpecifiedTable> parse(String name) async {
-    return parser.parseTable(dartTask.library.getType(name));
+    return parser.parseTable(dartStep.library.getType(name));
   }
 
   group('table names', () {
@@ -70,7 +72,7 @@ void main() {
 
     test('should not parse for complex methods', () async {
       await parse('WrongName');
-      expect(dartTask.errors.errors, isNotEmpty);
+      expect(dartStep.errors.errors, isNotEmpty);
     });
   });
 

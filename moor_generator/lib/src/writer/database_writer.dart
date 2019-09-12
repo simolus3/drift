@@ -13,7 +13,7 @@ class DatabaseWriter {
 
   void write() {
     // Write referenced tables
-    for (final table in db.tables) {
+    for (final table in db.allTables) {
       TableWriter(table, scope.child()).writeInto();
     }
 

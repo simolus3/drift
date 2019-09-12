@@ -22,11 +22,14 @@ abstract class Step {
   final FoundFile file;
   final ErrorSink errors = ErrorSink();
 
+  bool get isParsing => true;
+
   String get path => file.uri.path;
 
   Step(this.task, this.file);
 
-  void reportError(MoorError error) => errors.report(error);
+  void reportError(MoorError error) =>
+      errors.report(error..wasDuringParsing = isParsing);
 }
 
 /// Extracts the following information from a Dart file:
@@ -154,6 +157,9 @@ class ParseMoorFile extends Step {
 class AnalyzeDartStep extends Step {
   AnalyzeDartStep(Task task, FoundFile file) : super(task, file);
 
+  @override
+  final bool isParsing = false;
+
   void analyze() {
     final parseResult = file.currentResult as ParsedDartFile;
 
@@ -164,6 +170,7 @@ class AnalyzeDartStep extends Step {
           .expand((file) => file.declaredTables);
       final availableTables =
           accessor.tables.followedBy(transitivelyAvailable).toList();
+      accessor.allTables = availableTables;
 
       final parser = SqlParser(this, availableTables, accessor.queries);
       parser.parse();

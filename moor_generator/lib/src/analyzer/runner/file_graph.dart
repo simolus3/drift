@@ -101,9 +101,12 @@ class FoundFile {
   FileState state;
   ErrorSink errors;
 
+  FoundFile(this.uri, this.type);
+
   String get shortName => uri.pathSegments.last;
 
-  FoundFile(this.uri, this.type);
+  bool get isParsed => state != FileState.dirty;
+  bool get isAnalyzed => state == FileState.analyzed;
 
   @override
   int get hashCode => uri.hashCode;

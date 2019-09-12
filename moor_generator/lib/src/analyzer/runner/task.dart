@@ -26,6 +26,9 @@ class Task {
 
   Task(this.session, this.input, this.backend);
 
+  /// Returns an iterable of [FoundFile]s that were analyzed by this task.
+  Iterable<FoundFile> get analyzedFiles => _performedSteps.keys;
+
   Future runTask() async {
     // step 1: parse all files included by the input
     _unhandled.clear();
@@ -36,16 +39,22 @@ class Task {
 
     // step 2: resolve queries in the input
     for (var file in _performedSteps.keys) {
+      file.errors.clearNonParsingErrors();
       await _analyze(file);
     }
+
+    session.notifyTaskFinished(this);
   }
 
   Future<void> _parse(FoundFile file) async {
-    final resolvedImports = <FoundFile>{};
     if (file.state != FileState.dirty) {
       // already parsed, nothing to do :)
       return;
     }
+
+    final resolvedImports = <FoundFile>{};
+
+    file.errors.clearAll();
 
     switch (file.type) {
       case FileType.moor:
@@ -67,6 +76,7 @@ class Task {
           } else {
             resolvedImports.add(found);
           }
+          file.errors.consume(step.errors);
         }
         break;
       case FileType.dart:
@@ -99,6 +109,7 @@ class Task {
           }
 
           accessor.resolvedImports = resolvedForAccessor;
+          file.errors.consume(step.errors);
         }
         break;
       default:
@@ -116,7 +127,8 @@ class Task {
 
     switch (file.type) {
       case FileType.dart:
-        AnalyzeDartStep(this, file).analyze();
+        final step = AnalyzeDartStep(this, file)..analyze();
+        file.errors.consume(step.errors);
         break;
       default:
         break;

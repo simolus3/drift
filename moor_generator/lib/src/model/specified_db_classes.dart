@@ -14,6 +14,10 @@ class SpecifiedDbAccessor {
   List<FoundFile> resolvedImports = [];
   List<SqlQuery> resolvedQueries = const [];
 
+  /// All tables available to this class. This includes the [tables] and all
+  /// tables defined in a [includes] table.
+  List<SpecifiedTable> allTables = [];
+
   SpecifiedDbAccessor(this.fromClass, this.tables, this.includes, this.queries);
 }
 

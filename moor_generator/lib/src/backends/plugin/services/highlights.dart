@@ -14,17 +14,18 @@ class MoorHighlightContributor implements HighlightsContributor {
     }
 
     final typedRequest = request as MoorRequest;
-    final visitor = _HighlightingVisitor(collector);
+    if (typedRequest.isMoorAndParsed) {
+      final result = typedRequest.parsedMoor;
 
-    final result = typedRequest.resolvedTask.lastResult;
+      final visitor = _HighlightingVisitor(collector);
+      result.parsedFile.accept(visitor);
 
-    result.parsedFile.accept(visitor);
-
-    for (var token in result.parseResult.tokens) {
-      if (token is KeywordToken && !token.isIdentifier) {
-        final start = token.span.start.offset;
-        final length = token.span.length;
-        collector.addRegion(start, length, HighlightRegionType.BUILT_IN);
+      for (var token in result.parseResult.tokens) {
+        if (token is KeywordToken && !token.isIdentifier) {
+          final start = token.span.start.offset;
+          final length = token.span.length;
+          collector.addRegion(start, length, HighlightRegionType.BUILT_IN);
+        }
       }
     }
   }

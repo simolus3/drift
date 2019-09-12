@@ -70,12 +70,15 @@ class MoorPlugin extends ServerPlugin
     final tracker = FileTracker();
     final errorService = ErrorService(this);
 
-    tracker.computations
-        .asyncMap((file) => tracker.results(file.path))
-        .listen(errorService.handleMoorResult);
-
-    return MoorDriver(tracker, analysisDriverScheduler, dartDriver,
+    final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
         fileContentOverlay, resourceProvider);
+
+    driver
+        .completedFiles()
+        .where((file) => file.isParsed)
+        .listen(errorService.handleResult);
+
+    return driver;
   }
 
   @override
@@ -92,9 +95,9 @@ class MoorPlugin extends ServerPlugin
 
   Future<MoorRequest> _createMoorRequest(String path) async {
     final driver = _moorDriverForPath(path);
-    final task = await driver.parseMoorFile(path);
+    final file = await driver.waitFileParsed(path);
 
-    return MoorRequest(task, resourceProvider);
+    return MoorRequest(file, resourceProvider);
   }
 
   @override
@@ -134,9 +137,9 @@ class MoorPlugin extends ServerPlugin
       plugin.CompletionGetSuggestionsParams parameters) async {
     final path = parameters.file;
     final driver = _moorDriverForPath(path);
-    final task = await driver.parseMoorFile(path);
+    final file = await driver.waitFileParsed(path);
 
-    return MoorCompletionRequest(parameters.offset, resourceProvider, task);
+    return MoorCompletionRequest(parameters.offset, resourceProvider, file);
   }
 
   @override
@@ -149,9 +152,9 @@ class MoorPlugin extends ServerPlugin
       plugin.EditGetAssistsParams parameters) async {
     final path = parameters.file;
     final driver = _moorDriverForPath(path);
-    final task = await driver.parseMoorFile(path);
+    final file = await driver.waitFileParsed(path);
 
     return MoorAssistRequest(
-        task, parameters.length, parameters.offset, resourceProvider);
+        file, parameters.length, parameters.offset, resourceProvider);
   }
 }

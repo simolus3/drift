@@ -10,8 +10,11 @@ class MoorFoldingContributor implements FoldingContributor {
   void computeFolding(FoldingRequest request, FoldingCollector collector) {
     final moorRequest = request as MoorRequest;
 
-    final visitor = _FoldingVisitor(collector);
-    moorRequest.resolvedTask.lastResult.parsedFile.accept(visitor);
+    if (moorRequest.isMoorAndParsed) {
+      final result = moorRequest.parsedMoor;
+      final visitor = _FoldingVisitor(collector);
+      result.parsedFile.accept(visitor);
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
+import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/backend/plugin_backend.dart';
@@ -19,19 +20,26 @@ class MoorDriver implements AnalysisDriverGeneric {
   final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
 
-  final MoorSession session = MoorSession();
+  /* late final */ MoorSession session;
+  bool _isWorking = false;
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider) {
     _scheduler.add(this);
+    final backend = PluginBackend(this);
+    session = backend.session;
   }
 
   bool _ownsFile(String path) => path.endsWith('.moor');
 
+  FoundFile pathToFoundFile(String path) {
+    return session.registerFile(Uri.parse(path));
+  }
+
   @override
   void addFile(String path) {
     if (_ownsFile(path)) {
-      _tracker.addFile(path);
+      pathToFoundFile(path); // will be registered if it doesn't exists
     }
   }
 
@@ -44,7 +52,7 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   void handleFileChanged(String path) {
     if (_ownsFile(path)) {
-      _tracker.handleContentChanged(path);
+      session.notifyFileChanged(pathToFoundFile(path));
       _scheduler.notify(this);
     }
   }
@@ -54,22 +62,18 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   Future<void> performWork() async {
-    final completer = Completer();
+    if (_isWorking) return;
 
-    if (_tracker.hasWork) {
-      _tracker.work((path) async {
-        try {
-          final backendTask = _createTask(path);
-          final moorTask = await session.startMoorTask(backendTask);
-          await moorTask.compute();
+    _isWorking = true;
 
-          return moorTask;
-        } finally {
-          completer.complete();
-        }
-      });
+    try {
+      final mostImportantFile = _tracker.fileWithHighestPriority;
+      final backendTask = _createTask(mostImportantFile.file.uri.path);
 
-      await completer.future;
+      final task = session.startTask(backendTask);
+      await task.runTask();
+    } finally {
+      _isWorking = false;
     }
   }
 
@@ -81,6 +85,11 @@ class MoorDriver implements AnalysisDriverGeneric {
 
     final file = _resourceProvider.getFile(path);
     return file.exists ? file.readAsStringSync() : '';
+  }
+
+  bool doesFileExist(String path) {
+    return contentOverlay[path] != null ||
+        _resourceProvider.getFile(path).exists;
   }
 
   /// Finds the absolute path of a [reference] url, optionally assuming that the
@@ -102,29 +111,31 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   set priorityFiles(List<String> priorityPaths) {
-    _tracker.setPriorityFiles(priorityPaths.where(_ownsFile));
+    final found = priorityPaths.where(_ownsFile).map(pathToFoundFile);
+    _tracker.setPriorityFiles(found);
   }
 
   @override
   AnalysisDriverPriority get workPriority {
     if (_tracker.hasWork) {
       final mostImportant = _tracker.fileWithHighestPriority;
-      switch (mostImportant.currentPriority) {
-        case FilePriority.ignore:
-          return AnalysisDriverPriority.nothing;
-        case FilePriority.regular:
-          return AnalysisDriverPriority.general;
-        case FilePriority.interactive:
-          return AnalysisDriverPriority.interactive;
-      }
+      return mostImportant.currentPriority;
     } else {
       return AnalysisDriverPriority.nothing;
     }
-    throw AssertionError('unreachable');
   }
 
-  Future<MoorTask> parseMoorFile(String path) {
+  Stream<FoundFile> completedFiles() {
+    return session.completedTasks.expand((task) => task.analyzedFiles);
+  }
+
+  /// Waits for the file at [path] to be parsed.
+  Future<FoundFile> waitFileParsed(String path) {
     _scheduler.notify(this);
-    return _tracker.results(path);
+
+    final found = pathToFoundFile(path);
+
+    return completedFiles()
+        .firstWhere((file) => file == found && file.isParsed);
   }
 }

@@ -37,6 +37,12 @@ class TestBackend extends Backend {
   void finish() {
     _finish.complete();
   }
+
+  @override
+  Uri resolve(Uri base, String import) {
+    final from = AssetId.resolve(base.toString());
+    return AssetId.resolve(import, from: from).uri;
+  }
 }
 
 class _TestBackendTask extends BackendTask {
@@ -65,5 +71,10 @@ class _TestBackendTask extends BackendTask {
   @override
   Future<CompilationUnit> parseSource(String dart) {
     return null;
+  }
+
+  @override
+  Future<bool> exists(Uri uri) async {
+    return backend.fakeContent.containsKey(AssetId.parse(uri.toString()));
   }
 }

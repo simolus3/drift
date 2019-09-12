@@ -1,5 +1,4 @@
-import 'package:moor_generator/src/analyzer/moor/parser.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:test_api/test_api.dart';
 
 void main() {
@@ -11,11 +10,10 @@ CREATE TABLE users(
   ''';
 
   test('extracts table structure from .moor files', () async {
-    final task = MoorTask(null, null, content);
-    final analyzer = MoorParser(task);
-    final result = await analyzer.parseAndAnalyze();
+    final parseStep = ParseMoorFile(null, null, content);
+    final result = await parseStep.parseFile();
 
-    expect(task.errors.errors, isEmpty);
+    expect(parseStep.errors.errors, isEmpty);
 
     final table = result.declaredTables.single;
 

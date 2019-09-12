@@ -21,7 +21,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<${dao.dbClass.displayName}> {\n');
 
-      for (var table in dao.tables) {
+      for (var table in dao.allTables) {
         final infoType = table.tableInfoName;
         final getterName = table.tableFieldName;
         classScope

@@ -12,6 +12,8 @@ class MoorError {
   final Severity severity;
   final String message;
 
+  bool wasDuringParsing = true;
+
   MoorError({@required this.severity, this.message});
 
   bool get isError =>
@@ -68,6 +70,18 @@ class ErrorSink {
 
   void report(MoorError error) {
     _errors.add(error);
+  }
+
+  void clearAll() {
+    _errors.clear();
+  }
+
+  void clearNonParsingErrors() {
+    _errors.removeWhere((e) => !e.wasDuringParsing);
+  }
+
+  void consume(ErrorSink other) {
+    _errors.addAll(other._errors);
   }
 }
 
