@@ -12,6 +12,9 @@ class SpecifiedDbAccessor {
   final List<DeclaredQuery> queries;
 
   List<FoundFile> resolvedImports = [];
+
+  /// Resolved queries. This includes queries that weren't declared on this
+  /// class but imported via an `includes` directive.
   List<SqlQuery> resolvedQueries = const [];
 
   /// All tables available to this class. This includes the [tables] and all

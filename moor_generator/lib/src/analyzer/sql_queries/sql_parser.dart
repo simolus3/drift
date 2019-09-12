@@ -9,7 +9,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 class SqlParser {
   final List<SpecifiedTable> tables;
-  final AnalyzeDartStep step;
+  final Step step;
   final List<DeclaredQuery> definedQueries;
 
   final TypeMapper _mapper = TypeMapper();

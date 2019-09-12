@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/backend.dart';
@@ -47,8 +48,14 @@ class Task {
       _analyzedFiles.add(file);
     }
 
-    // step 2: resolve queries in the input
-    for (var file in _analyzedFiles) {
+    // step 2: resolve queries in the input.
+    // todo we force that moor files are analyzed first because they contain
+    // resolved queries which are copied into database accessors. Can we find
+    // a way to remove this special-handling?
+    final moorFiles = _analyzedFiles.where((f) => f.type == FileType.moor);
+    final otherFiles = _analyzedFiles.where((f) => f.type != FileType.moor);
+
+    for (var file in moorFiles.followedBy(otherFiles)) {
       file.errors.clearNonParsingErrors();
       await _analyze(file);
     }
@@ -130,6 +137,36 @@ class Task {
     return createdStep;
   }
 
+  /// Crawls through all (transitive) imports of the provided [roots]. Each
+  /// [FoundFile] in the iterable provides queries and tables that are available
+  /// to the entity that imports them.
+  ///
+  /// This is different to [FileGraph.crawl] because imports are not accurate on
+  /// Dart files: Two accessors in a single Dart file could reference different
+  /// imports, but the [FileGraph] would only know about the union.
+  Iterable<FoundFile> crawlImports(Iterable<FoundFile> roots) sync* {
+    final found = <FoundFile>{};
+    final unhandled = roots.toList();
+
+    while (unhandled.isNotEmpty) {
+      final available = unhandled.removeLast();
+      found.add(available);
+      yield available;
+
+      var importsFromHere = const Iterable<FoundFile>.empty();
+      if (available.type == FileType.moor) {
+        importsFromHere =
+            (available.currentResult as ParsedMoorFile).resolvedImports.values;
+      }
+
+      for (var next in importsFromHere) {
+        if (!found.contains(next) && !unhandled.contains(next)) {
+          unhandled.add(next);
+        }
+      }
+    }
+  }
+
   Future<void> _analyze(FoundFile file) async {
     // skip if already analyzed.
     if (file.state == FileState.analyzed) return;
@@ -139,6 +176,9 @@ class Task {
     switch (file.type) {
       case FileType.dart:
         step = AnalyzeDartStep(this, file)..analyze();
+        break;
+      case FileType.moor:
+        step = AnalyzeMoorStep(this, file)..analyze();
         break;
       default:
         break;

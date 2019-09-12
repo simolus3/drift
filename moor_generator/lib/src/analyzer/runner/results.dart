@@ -6,12 +6,15 @@ import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-abstract class FileResult {}
+abstract class FileResult {
+  final List<SpecifiedTable> declaredTables;
+
+  FileResult(this.declaredTables);
+}
 
 class ParsedDartFile extends FileResult {
   final LibraryElement library;
 
-  final List<SpecifiedTable> declaredTables;
   final List<SpecifiedDao> declaredDaos;
   final List<SpecifiedDatabase> declaredDatabases;
 
@@ -20,9 +23,10 @@ class ParsedDartFile extends FileResult {
 
   ParsedDartFile(
       {@required this.library,
-      this.declaredTables = const [],
+      List<SpecifiedTable> declaredTables = const [],
       this.declaredDaos = const [],
-      this.declaredDatabases = const []});
+      this.declaredDatabases = const []})
+      : super(declaredTables);
 }
 
 class ParsedMoorFile extends FileResult {
@@ -30,14 +34,14 @@ class ParsedMoorFile extends FileResult {
   MoorFile get parsedFile => parseResult.rootNode as MoorFile;
 
   final List<ImportStatement> imports;
-  final List<SpecifiedTable> declaredTables;
   final List<DeclaredQuery> queries;
 
   List<SqlQuery> resolvedQueries;
   Map<ImportStatement, FoundFile> resolvedImports;
 
   ParsedMoorFile(this.parseResult,
-      {this.declaredTables = const [],
+      {List<SpecifiedTable> declaredTables = const [],
       this.queries = const [],
-      this.imports = const []});
+      this.imports = const []})
+      : super(declaredTables);
 }
