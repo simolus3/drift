@@ -7,11 +7,40 @@ import 'package:sqlparser/sqlparser.dart';
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
 
-class DeclaredQuery {
+/// Represents the declaration of a compile-time query that will be analyzed
+/// by moor_generator.
+///
+/// The subclasses [DeclaredDartQuery] and [DeclaredMoorQuery] contain
+/// information about the declared statement, only the name is common for both
+/// declaration methods.
+/// In the `analyze` step, a [DeclaredQuery] is turned into a resolved
+/// [SqlQuery], which contains information about the affected tables and what
+/// columns are returned.
+abstract class DeclaredQuery {
   final String name;
+
+  DeclaredQuery(this.name);
+}
+
+/// A [DeclaredQuery] parsed from a Dart file by reading a constant annotation.
+class DeclaredDartQuery extends DeclaredQuery {
   final String sql;
 
-  DeclaredQuery(this.name, this.sql);
+  DeclaredDartQuery(String name, this.sql) : super(name);
+}
+
+/// A [DeclaredQuery] read from a `.moor` file, where the AST is already
+/// available.
+class DeclaredMoorQuery extends DeclaredQuery {
+  final AstNode query;
+
+  DeclaredMoorQuery(String name, this.query) : super(name);
+
+  factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
+    final name = stmt.name;
+    final query = stmt.statement;
+    return DeclaredMoorQuery(name, query);
+  }
 }
 
 abstract class SqlQuery {

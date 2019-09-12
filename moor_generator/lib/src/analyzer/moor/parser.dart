@@ -2,6 +2,7 @@ import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorParser {
@@ -15,18 +16,18 @@ class MoorParser {
     final parsedFile = result.rootNode as MoorFile;
 
     final createdReaders = <CreateTableReader>[];
+    final queryDeclarations = <DeclaredMoorQuery>[];
+    final importStatements = <ImportStatement>[];
 
     for (var parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
         step.inlineDartResolver.importStatements.add(importStmt.importedFile);
+        importStatements.add(importStmt);
       } else if (parsedStmt is CreateTableStatement) {
         createdReaders.add(CreateTableReader(parsedStmt));
-      } else {
-        step.reportError(ErrorInMoorFile(
-            span: parsedStmt.span,
-            message: 'At the moment, only CREATE TABLE statements are supported'
-                'in .moor files'));
+      } else if (parsedStmt is DeclaredStatement) {
+        queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
       }
     }
 
@@ -40,6 +41,13 @@ class MoorParser {
     final createdTables =
         createdReaders.map((r) => r.extractTable(step.mapper)).toList();
 
-    return Future.value(ParsedMoorFile(result, declaredTables: createdTables));
+    return Future.value(
+      ParsedMoorFile(
+        result,
+        declaredTables: createdTables,
+        queries: queryDeclarations,
+        imports: importStatements,
+      ),
+    );
   }
 }

@@ -105,7 +105,7 @@ class ParseDartStep extends Step {
       final key = entry.key.toStringValue();
       final value = entry.value.toStringValue();
 
-      return DeclaredQuery(key, value);
+      return DeclaredDartQuery(key, value);
     }).toList();
   }
 }

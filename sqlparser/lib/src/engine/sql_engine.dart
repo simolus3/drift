@@ -91,6 +91,25 @@ class SqlEngine {
     final node = result.rootNode;
 
     final context = AnalysisContext(node, result.sql);
+    _analyzeContext(context);
+
+    return context;
+  }
+
+  /// Analyzes the given [node], which should be a [CrudStatement].
+  /// The [AnalysisContext] enhances the AST by reporting type hints and errors.
+  ///
+  /// The analyzer needs to know all the available tables to resolve references
+  /// and result columns, so all known tables should be registered using
+  /// [registerTable] before calling this method.
+  AnalysisContext analyzeNode(AstNode node) {
+    final context = AnalysisContext(node, node.span.context);
+    _analyzeContext(context);
+    return context;
+  }
+
+  void _analyzeContext(AnalysisContext context) {
+    final node = context.root;
     final scope = _constructRootScope();
 
     try {
@@ -106,8 +125,6 @@ class SqlEngine {
       // todo should we do now? AFAIK, everything that causes an exception
       // is added as an error contained in the context.
     }
-
-    return context;
   }
 }
 

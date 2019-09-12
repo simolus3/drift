@@ -29,16 +29,22 @@ class SqlParser {
 
     for (var query in definedQueries) {
       final name = query.name;
-      final sql = query.sql;
 
       AnalysisContext context;
-      try {
-        context = _engine.analyze(sql);
-      } catch (e, s) {
-        step.reportError(MoorError(
-            severity: Severity.criticalError,
-            message: 'Error while trying to parse $name: $e, $s'));
-        return;
+
+      if (query is DeclaredDartQuery) {
+        final sql = query.sql;
+
+        try {
+          context = _engine.analyze(sql);
+        } catch (e, s) {
+          step.reportError(MoorError(
+              severity: Severity.criticalError,
+              message: 'Error while trying to parse $name: $e, $s'));
+          return;
+        }
+      } else if (query is DeclaredMoorQuery) {
+        context = _engine.analyzeNode(query.query);
       }
 
       for (var error in context.errors) {

@@ -4,6 +4,7 @@ import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:moor_generator/src/model/specified_db_classes.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 /// A task is used to fully parse and analyze files based on an input file. To
 /// analyze that file, all transitive imports will have to be analyzed as well.
@@ -73,7 +74,8 @@ class Task {
         final parsed = await step.parseFile();
         file.currentResult = parsed;
 
-        for (var import in parsed.parsedFile.imports) {
+        parsed.resolvedImports = <ImportStatement, FoundFile>{};
+        for (var import in parsed.imports) {
           final found = session.resolve(file, import.importedFile);
           if (!await backend.exists(found.uri)) {
             step.reportError(ErrorInMoorFile(
@@ -83,6 +85,7 @@ class Task {
             ));
           } else {
             resolvedImports.add(found);
+            parsed.resolvedImports[import] = found;
           }
         }
         break;
