@@ -29,6 +29,7 @@ class SqlParser {
 
     for (var query in definedQueries) {
       final name = query.name;
+      var declaredInMoor = false;
 
       AnalysisContext context;
 
@@ -45,6 +46,7 @@ class SqlParser {
         }
       } else if (query is DeclaredMoorQuery) {
         context = _engine.analyzeNode(query.query);
+        declaredInMoor = true;
       }
 
       for (var error in context.errors) {
@@ -55,7 +57,9 @@ class SqlParser {
       }
 
       try {
-        foundQueries.add(QueryHandler(name, context, _mapper).handle());
+        final query = QueryHandler(name, context, _mapper).handle()
+          ..declaredInMoorFile = declaredInMoor;
+        foundQueries.add(query);
       } catch (e, s) {
         log.warning('Error while generating APIs for $name', e, s);
       }

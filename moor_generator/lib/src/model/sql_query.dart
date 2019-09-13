@@ -48,6 +48,12 @@ abstract class SqlQuery {
   final AnalysisContext fromContext;
   List<AnalysisError> lints;
 
+  /// Whether this query was declared in a `.moor` file.
+  ///
+  /// For those kind of queries, we don't generate `get` and `watch` methods and
+  /// instead only generate a single method returning a selectable.
+  bool declaredInMoorFile = false;
+
   String get sql => fromContext.sql;
 
   /// The variables that appear in the [sql] query. We support three kinds of

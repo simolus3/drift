@@ -93,9 +93,11 @@ class ProgrammingLanguages extends Table {
     final importQuery = database.resolvedQueries
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
     expect(importQuery.resultClassName, 'ProgrammingLanguage');
+    expect(importQuery.declaredInMoorFile, isFalse);
 
     final librariesQuery = database.resolvedQueries
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;
     expect(librariesQuery.variables.single.type, ColumnType.text);
+    expect(librariesQuery.declaredInMoorFile, isTrue);
   });
 }

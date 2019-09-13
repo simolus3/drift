@@ -812,6 +812,27 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Config get config => _config ??= Config(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
+  ConfigData _rowToConfigData(QueryRow row) {
+    return ConfigData(
+      configKey: row.readString('config_key'),
+      configValue: row.readString('config_value'),
+    );
+  }
+
+  Selectable<ConfigData> readConfig(
+      String var1,
+      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
+          QueryEngine operateOn}) {
+    return (operateOn ?? this).customSelectQuery(
+        'readConfig: SELECT * FROM config WHERE config_key = ?;',
+        variables: [
+          Variable.withString(var1),
+        ],
+        readsFrom: {
+          config
+        }).map(_rowToConfigData);
+  }
+
   Future<int> writeConfig(
       String key,
       String value,

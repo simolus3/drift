@@ -60,8 +60,11 @@ class QueryWriter {
   void _writeSelect() {
     _writeMapping();
     _writeSelectStatementCreator();
-    _writeOneTimeReader();
-    _writeStreamReader();
+
+    if (!query.declaredInMoorFile) {
+      _writeOneTimeReader();
+      _writeStreamReader();
+    }
   }
 
   String _nameOfMappingMethod() {
@@ -69,7 +72,11 @@ class QueryWriter {
   }
 
   String _nameOfCreationMethod() {
-    return '${_select.name}Query';
+    if (query.declaredInMoorFile) {
+      return query.name;
+    } else {
+      return '${query.name}Query';
+    }
   }
 
   /// Writes a mapping method that turns a "QueryRow" into the desired custom
@@ -127,13 +134,6 @@ class QueryWriter {
     _buffer.write(_nameOfMappingMethod());
     _buffer.write(');\n}\n');
   }
-
-  /*
-    Future<List<AllTodosWithCategoryResult>> allTodos(String name,
-      {QueryEngine overrideEngine}) {
-    return _allTodosWithCategoryQuery(name, engine: overrideEngine).get();
-  }
-   */
 
   void _writeOneTimeReader() {
     _buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
