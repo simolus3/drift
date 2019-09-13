@@ -44,7 +44,10 @@ abstract class AnalyzingStep extends Step {
   final bool isParsing = false;
 
   List<FoundFile> _transitiveImports(Iterable<FoundFile> directImports) {
-    return task.crawlImports(directImports).toList();
+    return task
+        .crawlImports(directImports)
+        .where((import) => import != file)
+        .toList();
   }
 
   Iterable<SpecifiedTable> _availableTables(List<FoundFile> imports) {

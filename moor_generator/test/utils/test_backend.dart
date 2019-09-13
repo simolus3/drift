@@ -75,6 +75,6 @@ class _TestBackendTask extends BackendTask {
 
   @override
   Future<bool> exists(Uri uri) async {
-    return backend.fakeContent.containsKey(AssetId.parse(uri.toString()));
+    return backend.fakeContent.containsKey(AssetId.resolve(uri.toString()));
   }
 }
