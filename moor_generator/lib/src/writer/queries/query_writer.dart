@@ -145,9 +145,8 @@ class QueryWriter {
 
     String methodName;
     // turning the query name into pascal case will remove underscores, add the
-    // "private" modifier back in if needed
-    if (scope.writer.options.fixPrivateWatchMethods &&
-        query.name.startsWith('_')) {
+    // "private" modifier back in
+    if (query.name.startsWith('_')) {
       methodName = '_watch$upperQueryName';
     } else {
       methodName = 'watch$upperQueryName';

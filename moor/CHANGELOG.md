@@ -30,6 +30,10 @@ TODO: Properly describe these additions when they're finalized:
   On a similar note, we also removed the `operateOn` parameter from compiled queries.
   
 - Removed `MigrationStrategy.onFinished`. Use `beforeOpen` instead.
+- Compiled sql queries starting with an underscore will now generate private match queries.
+  Previously, the query `_allUsers` would generate a `watchAllUsers` method, that has been
+  adopted to `_watchAllUsers`. The `generate_private_watch_methods` builder option, which
+  backported this fix to older versions, has thus been removed.
 
 ## 1.7.2
 - Fixed a race condition that caused the database to be opened multiple times on slower devices.
