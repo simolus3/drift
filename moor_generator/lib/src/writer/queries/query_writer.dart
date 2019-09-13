@@ -9,9 +9,6 @@ import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-const queryEngineWarningDesc =
-    'No longer needed with Moor 1.6 - see the changelog for details';
-
 const highestAssignedIndexVar = '\$highestIndex';
 
 /// Writes the handling code for a query. The code emitted will be a method that
@@ -157,9 +154,9 @@ class QueryWriter {
     }
 
     _buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
-    _writeParameters(dontOverrideEngine: true);
+    _writeParameters();
     _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
-    _writeUseParameters(dontUseEngine: true);
+    _writeUseParameters();
     _buffer.write(').watch();\n}\n');
   }
 
@@ -187,7 +184,7 @@ class QueryWriter {
     _buffer..write(',);\n}\n');
   }
 
-  void _writeParameters({bool dontOverrideEngine = false}) {
+  void _writeParameters() {
     final paramList = query.variables.map((v) {
       var dartType = dartTypeNames[v.type];
       if (v.isArray) {
@@ -197,25 +194,13 @@ class QueryWriter {
     }).join(', ');
 
     _buffer.write(paramList);
-
-    // write named optional parameter to configure the query engine used to
-    // execute the statement,
-    if (!dontOverrideEngine) {
-      if (query.variables.isNotEmpty) _buffer.write(', ');
-      _buffer.write('{@Deprecated(${asDartLiteral(queryEngineWarningDesc)}) '
-          'QueryEngine operateOn}');
-    }
   }
 
   /// Writes code that uses the parameters as declared by [_writeParameters],
   /// assuming that for each parameter, a variable with the same name exists
   /// in the current scope.
-  void _writeUseParameters({bool dontUseEngine = false}) {
+  void _writeUseParameters() {
     _buffer.write(query.variables.map((v) => v.dartParameterName).join(', '));
-    if (!dontUseEngine) {
-      if (query.variables.isNotEmpty) _buffer.write(', ');
-      _buffer.write('operateOn: operateOn');
-    }
   }
 
   // Some notes on parameters and generating query code:

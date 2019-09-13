@@ -9,7 +9,7 @@ void transactionTests(TestExecutor executor) {
     final db = Database(executor.createExecutor());
 
     // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-    await db.transaction((_) async {
+    await db.transaction(() async {
       final florianId = await db.writeUser(People.florian);
 
       final dash = await db.getUserById(People.dashId);
@@ -32,7 +32,7 @@ void transactionTests(TestExecutor executor) {
 
     try {
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      await db.transaction((_) async {
+      await db.transaction(() async {
         final florianId = await db.writeUser(People.florian);
 
         final dash = await db.getUserById(People.dashId);

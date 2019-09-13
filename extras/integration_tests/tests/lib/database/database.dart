@@ -98,7 +98,7 @@ class Database extends _$Database {
           await m.createTable(friendships);
         }
       },
-      beforeOpen: (_, details) async {
+      beforeOpen: (details) async {
         if (details.wasCreated) {
           await into(users)
               .insertAll([People.dash, People.duke, People.gopher]);
@@ -108,7 +108,7 @@ class Database extends _$Database {
   }
 
   Future<void> deleteUser(User user, {bool fail = false}) {
-    return transaction((_) async {
+    return transaction(() async {
       final id = user.id;
       await (delete(friendships)
             ..where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id))))

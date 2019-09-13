@@ -16,8 +16,7 @@ typedef Future<void> OnMigrationFinished();
 /// Signature of a function that's called before a database is marked opened by
 /// moor, but after migrations took place. This is a suitable callback to to
 /// populate initial data or issue `PRAGMA` statements that you want to use.
-typedef OnBeforeOpen = Future<void> Function(
-    QueryEngine db, OpeningDetails details);
+typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 
 Future<void> _defaultOnCreate(Migrator m) => m.createAllTables();
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
@@ -33,14 +32,6 @@ class MigrationStrategy {
   /// happened at a lower [GeneratedDatabase.schemaVersion].
   final OnUpgrade onUpgrade;
 
-  /// Executes after the database is ready and all migrations ran, but before
-  /// any other queries will be executed, making this method suitable to
-  /// populate data.
-  @Deprecated(
-      'This callback is broken and only exists for backwards compatibility. '
-      'Use beforeOpen instead')
-  final OnMigrationFinished onFinished;
-
   /// Executes after the database is ready to be used (ie. it has been opened
   /// and all migrations ran), but before any other queries will be sent. This
   /// makes it a suitable place to populate data after the database has been
@@ -51,8 +42,6 @@ class MigrationStrategy {
     this.onCreate = _defaultOnCreate,
     this.onUpgrade = _defaultOnUpdate,
     this.beforeOpen,
-    @Deprecated('This callback is broken. Use beforeOpen instead')
-        this.onFinished,
   });
 }
 

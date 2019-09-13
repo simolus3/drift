@@ -28,7 +28,7 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (m) async => await m.createAllTables(),
-      beforeOpen: (engine, details) async {
+      beforeOpen: (details) async {
         if (details.wasCreated) {
           // populate default data
           await createTodoEntry(

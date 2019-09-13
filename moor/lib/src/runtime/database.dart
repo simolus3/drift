@@ -280,10 +280,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     inside a transaction returns the parent transaction.
   @protected
   @visibleForTesting
-  Future transaction(Future Function(QueryEngine transaction) action) async {
+  Future transaction(Future Function() action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {
-      return action(resolved);
+      return action();
     }
 
     final executor = resolved.executor;
@@ -294,7 +294,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       return _runEngineZoned(transaction, () async {
         var success = false;
         try {
-          await action(transaction);
+          await action();
           success = true;
         } catch (e) {
           await transactionExecutor.rollback();
@@ -376,13 +376,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   Future<void> beforeOpenCallback(
       QueryExecutor executor, OpeningDetails details) async {
     final migration = _resolvedMigration;
-    if (migration.onFinished != null) {
-      await migration.onFinished();
-    }
+
     if (migration.beforeOpen != null) {
       final engine = BeforeOpenEngine(this, executor);
       await _runEngineZoned(engine, () {
-        return migration.beforeOpen(engine, details);
+        return migration.beforeOpen(details);
       });
     }
   }

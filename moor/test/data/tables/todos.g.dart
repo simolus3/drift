@@ -1312,9 +1312,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<AllTodosWithCategoryResult> allTodosWithCategoryQuery(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<AllTodosWithCategoryResult> allTodosWithCategoryQuery() {
     return (operateOn ?? this).customSelectQuery(
         'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
         variables: [],
@@ -1324,20 +1322,15 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map(_rowToAllTodosWithCategoryResult);
   }
 
-  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return allTodosWithCategoryQuery(operateOn: operateOn).get();
+  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory() {
+    return allTodosWithCategoryQuery().get();
   }
 
   Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
     return allTodosWithCategoryQuery().watch();
   }
 
-  Future<int> deleteTodoById(
-      int var1,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Future<int> deleteTodoById(int var1) {
     return (operateOn ?? this).customUpdate(
       'DELETE FROM todos WHERE id = ?',
       variables: [
@@ -1357,12 +1350,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<TodoEntry> withInQuery(
-      String var1,
-      String var2,
-      List<int> var3,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<TodoEntry> withInQuery(String var1, String var2, List<int> var3) {
     var $highestIndex = 3;
     final expandedvar3 = $expandVar($highestIndex, var3.length);
     $highestIndex += var3.length;
@@ -1378,13 +1366,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map(_rowToTodoEntry);
   }
 
-  Future<List<TodoEntry>> withIn(
-      String var1,
-      String var2,
-      List<int> var3,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return withInQuery(var1, var2, var3, operateOn: operateOn).get();
+  Future<List<TodoEntry>> withIn(String var1, String var2, List<int> var3) {
+    return withInQuery(var1, var2, var3).get();
   }
 
   Stream<List<TodoEntry>> watchWithIn(
@@ -1392,10 +1375,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return withInQuery(var1, var2, var3).watch();
   }
 
-  Selectable<TodoEntry> searchQuery(
-      int id,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<TodoEntry> searchQuery(int id) {
     return (operateOn ?? this).customSelectQuery(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [
@@ -1406,11 +1386,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map(_rowToTodoEntry);
   }
 
-  Future<List<TodoEntry>> search(
-      int id,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return searchQuery(id, operateOn: operateOn).get();
+  Future<List<TodoEntry>> search(int id) {
+    return searchQuery(id).get();
   }
 
   Stream<List<TodoEntry>> watchSearch(int id) {
@@ -1424,19 +1401,15 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<FindCustomResult> findCustomQuery(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<FindCustomResult> findCustomQuery() {
     return (operateOn ?? this).customSelectQuery(
         'SELECT custom FROM table_without_p_k WHERE some_float < 10',
         variables: [],
         readsFrom: {tableWithoutPK}).map(_rowToFindCustomResult);
   }
 
-  Future<List<FindCustomResult>> findCustom(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return findCustomQuery(operateOn: operateOn).get();
+  Future<List<FindCustomResult>> findCustom() {
+    return findCustomQuery().get();
   }
 
   Stream<List<FindCustomResult>> watchFindCustom() {
@@ -1498,10 +1471,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
     );
   }
 
-  Selectable<TodoEntry> todosForUserQuery(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<TodoEntry> todosForUserQuery(int user) {
     return (operateOn ?? this).customSelectQuery(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [
@@ -1514,11 +1484,8 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
         }).map(_rowToTodoEntry);
   }
 
-  Future<List<TodoEntry>> todosForUser(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return todosForUserQuery(user, operateOn: operateOn).get();
+  Future<List<TodoEntry>> todosForUser(int user) {
+    return todosForUserQuery(user).get();
   }
 
   Stream<List<TodoEntry>> watchTodosForUser(int user) {

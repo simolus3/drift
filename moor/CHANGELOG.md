@@ -1,3 +1,36 @@
+## 2.0.0
+This is the first major update after the initial release and moor and we have a lot to cover.
+... Finally, we also removed a variety of deprecated features. See the breaking changes
+section to learn what components are affected and what alternatives are available.
+
+TODO: Properly describe these additions when they're finalized:
+
+- Queries and imports in `.moor` files
+- Analyzer plugin for Dart Code
+- `ffi` libraries
+
+### Breaking changes
+- __THIS LIKELY AFFECTS YOUR APP:__ Removed the `transaction` parameter for callbacks
+  in transactions and `beforeOpen` callbacks. So, instead of writing
+  ```dart
+  transaction((t) async {
+    await t.update(table)...;
+  });
+  ```
+  simply write
+  ```dart
+  transaction(() async {
+    await update(table)...;
+  });
+  ```
+  Similarly, instead of using `onOpen: (db, details) async {...}`, use
+  `onOpen: (details) async {...}`. You don't have to worry about calling methods on
+  your database instead of a transaction objects. They will be delegated automatically.
+  
+  On a similar note, we also removed the `operateOn` parameter from compiled queries.
+  
+- Removed `MigrationStrategy.onFinished`. Use `beforeOpen` instead.
+
 ## 1.7.2
 - Fixed a race condition that caused the database to be opened multiple times on slower devices.
   This problem was introduced in `1.7.0` and was causing problems during migrations.

@@ -819,10 +819,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<ConfigData> readConfig(
-      String var1,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<ConfigData> readConfig(String var1) {
     return (operateOn ?? this).customSelectQuery(
         'readConfig: SELECT * FROM config WHERE config_key = ?;',
         variables: [
@@ -833,11 +830,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(_rowToConfigData);
   }
 
-  Future<int> writeConfig(
-      String key,
-      String value,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Future<int> writeConfig(String key, String value) {
     return (operateOn ?? this).customInsert(
       'REPLACE INTO config VALUES (:key, :value)',
       variables: [

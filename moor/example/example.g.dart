@@ -847,19 +847,15 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<TotalWeightResult> _totalWeightQuery(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
+  Selectable<TotalWeightResult> _totalWeightQuery() {
     return (operateOn ?? this).customSelectQuery(
         '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
         variables: [],
         readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
   }
 
-  Future<List<TotalWeightResult>> _totalWeight(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return _totalWeightQuery(operateOn: operateOn).get();
+  Future<List<TotalWeightResult>> _totalWeight() {
+    return _totalWeightQuery().get();
   }
 
   Stream<List<TotalWeightResult>> _watchTotalWeight() {

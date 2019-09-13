@@ -63,7 +63,7 @@ class Database extends _$Database {
           await m.addColumn(todos, todos.targetDate);
         }
       },
-      beforeOpen: (db, details) async {
+      beforeOpen: (details) async {
         if (details.wasCreated) {
           // create default categories and entries
           final workId = await into(categories)
@@ -154,7 +154,7 @@ class Database extends _$Database {
   }
 
   Future deleteCategory(Category category) {
-    return transaction((t) async {
+    return transaction(() async {
       await _resetCategory(category.id);
       await delete(categories).delete(category);
     });
