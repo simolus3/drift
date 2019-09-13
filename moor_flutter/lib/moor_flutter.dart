@@ -12,7 +12,6 @@ import 'package:moor/moor.dart';
 import 'package:moor/backends.dart';
 import 'package:sqflite/sqflite.dart' as s;
 
-export 'package:moor_flutter/src/animated_list.dart';
 export 'package:moor/moor.dart';
 
 /// Signature of a function that runs when a database doesn't exist on file.
