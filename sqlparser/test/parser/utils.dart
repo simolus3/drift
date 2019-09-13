@@ -18,8 +18,8 @@ IdentifierToken identifier(String content) {
   return IdentifierToken(false, fakeSpan(content));
 }
 
-void testStatement(String sql, AstNode expected) {
-  final parsed = SqlEngine().parse(sql).rootNode;
+void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
+  final parsed = SqlEngine(useMoorExtensions: moorMode).parse(sql).rootNode;
   enforceEqual(parsed, expected);
 }
 

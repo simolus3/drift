@@ -303,8 +303,10 @@ mixin CrudParser on ParserBase {
 
   /// Parses a [Limit] clause, or returns null if there is no limit token after
   /// the current position.
-  Limit _limit() {
+  LimitBase _limit() {
     if (!_matchOne(TokenType.limit)) return null;
+
+    final limitToken = _previous;
 
     // Unintuitive, it's "$amount OFFSET $offset", but "$offset, $amount"
     // the order changes between the separator tokens.
@@ -313,13 +315,22 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.comma)) {
       final separator = _previous;
       final count = expression();
-      return Limit(count: count, offsetSeparator: separator, offset: first);
+      return Limit(count: count, offsetSeparator: separator, offset: first)
+        ..setSpan(limitToken, _previous);
     } else if (_matchOne(TokenType.offset)) {
       final separator = _previous;
       final offset = expression();
-      return Limit(count: first, offsetSeparator: separator, offset: offset);
+      return Limit(count: first, offsetSeparator: separator, offset: offset)
+        ..setSpan(limitToken, _previous);
     } else {
-      return Limit(count: first);
+      // no offset or comma was parsed (so just LIMIT $expr). In that case, we
+      // want to provide additional flexibility to the user by interpreting the
+      // expression as a whole limit clause.
+      if (first is InlineDartExpression) {
+        return InlineDartLimit(name: first.name)
+          ..setSpan(limitToken, _previous);
+      }
+      return Limit(count: first)..setSpan(limitToken, _previous);
     }
   }
 

@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-abstract class LimitBase {}
+abstract class LimitBase implements AstNode {}
 
 class Limit extends AstNode implements LimitBase {
   Expression count;

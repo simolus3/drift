@@ -13,7 +13,7 @@ void main() {
     final select = context.root as SelectStatement;
     final firstEquals = (select.columns[0] as ExpressionResultColumn).expression
         as BinaryExpression;
-    final limit = select.limit;
+    final limit = select.limit as Limit;
 
     expect((firstEquals.left as Variable).resolvedIndex, 1);
     expect((firstEquals.right as Variable).resolvedIndex, 2);

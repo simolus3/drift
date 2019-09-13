@@ -136,7 +136,7 @@ class Scanner {
         break;
       case r'$':
         final name = _matchColumnName();
-        tokens.add(ColonVariableToken(_currentSpan, name));
+        tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
       case ';':
         _addToken(TokenType.semicolon);
