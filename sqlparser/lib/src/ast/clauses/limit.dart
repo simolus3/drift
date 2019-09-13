@@ -1,6 +1,8 @@
 part of '../ast.dart';
 
-class Limit extends AstNode {
+abstract class LimitBase {}
+
+class Limit extends AstNode implements LimitBase {
   Expression count;
   Token offsetSeparator; // can either be OFFSET or just a comma
   Expression offset;

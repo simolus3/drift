@@ -41,15 +41,15 @@ final Map<String, Expression> _testCases = {
   '? * ?3 + ?2 == :test': BinaryExpression(
     BinaryExpression(
       BinaryExpression(
-        NumberedVariable(token(TokenType.questionMark), null),
+        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
         token(TokenType.star),
-        NumberedVariable(token(TokenType.questionMark), 3),
+        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?3'), 3)),
       ),
       token(TokenType.plus),
-      NumberedVariable(token(TokenType.questionMark), 2),
+      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?2'), 2)),
     ),
     token(TokenType.doubleEqual),
-    ColonNamedVariable(':test'),
+    ColonNamedVariable(ColonVariableToken(fakeSpan(':test'), ':test')),
   ),
   'CASE x WHEN a THEN b WHEN c THEN d ELSE e END': CaseExpression(
     base: Reference(columnName: 'x'),

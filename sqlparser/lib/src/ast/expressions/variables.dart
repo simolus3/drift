@@ -6,10 +6,10 @@ mixin Variable on Expression {
 
 /// A "?" or "?123" variable placeholder
 class NumberedVariable extends Expression with Variable {
-  final Token questionMark;
-  final int explicitIndex;
+  final QuestionMarkVariableToken token;
+  int get explicitIndex => token.explicitIndex;
 
-  NumberedVariable(this.questionMark, this.explicitIndex);
+  NumberedVariable(this.token);
 
   @override
   T accept<T>(AstVisitor<T> visitor) {
@@ -26,9 +26,10 @@ class NumberedVariable extends Expression with Variable {
 }
 
 class ColonNamedVariable extends Expression with Variable {
-  final String name;
+  final ColonVariableToken token;
+  String get name => token.name;
 
-  ColonNamedVariable(this.name);
+  ColonNamedVariable(this.token);
 
   @override
   T accept<T>(AstVisitor<T> visitor) {

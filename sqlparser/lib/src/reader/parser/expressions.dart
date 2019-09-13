@@ -313,25 +313,20 @@ mixin ExpressionParser on ParserBase {
           return Reference(columnName: first.identifier)..setSpan(first, first);
         }
         break;
-      case TokenType.questionMark:
-        final mark = token;
-
-        if (_matchOne(TokenType.numberLiteral)) {
-          final number = _previous;
-          return NumberedVariable(mark, _parseNumber(number.lexeme).toInt())
-            ..setSpan(mark, number);
-        } else {
-          return NumberedVariable(mark, null)..setSpan(mark, mark);
+      case TokenType.questionMarkVariable:
+        return NumberedVariable(token as QuestionMarkVariableToken)
+          ..setSpan(token, token);
+      case TokenType.colonVariable:
+        return ColonNamedVariable(token as ColonVariableToken)
+          ..setSpan(token, token);
+      case TokenType.dollarSignVariable:
+        if (enableMoorExtensions) {
+          final typedToken = token as DollarSignVariableToken;
+          return InlineDartExpression(name: typedToken.name)
+            ..token = typedToken
+            ..setSpan(token, token);
         }
         break;
-      case TokenType.colon:
-        final colon = token;
-        final identifier = _consumeIdentifier(
-            'Expected an identifier for the named variable',
-            lenient: true);
-
-        final content = identifier.identifier;
-        return ColonNamedVariable(':$content')..setSpan(colon, identifier);
       default:
         break;
     }

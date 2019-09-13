@@ -38,11 +38,12 @@ enum TokenType {
   exists,
   collate,
 
-  questionMark,
+  questionMarkVariable,
   colon,
-  // todo at and dollarSign are currently not used
+  colonVariable,
+  // todo at is not used at the moment
   at,
-  dollarSign,
+  dollarSignVariable,
 
   stringLiteral,
   numberLiteral,
@@ -291,6 +292,33 @@ class IdentifierToken extends Token {
 
   const IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
       : super(TokenType.identifier, span);
+}
+
+abstract class VariableToken extends Token {
+  VariableToken(TokenType type, FileSpan span) : super(type, span);
+}
+
+class QuestionMarkVariableToken extends Token {
+  /// The explicit index, if this variable was of the form `?123`. Otherwise
+  /// null.
+  final int explicitIndex;
+
+  QuestionMarkVariableToken(FileSpan span, this.explicitIndex)
+      : super(TokenType.questionMarkVariable, span);
+}
+
+class ColonVariableToken extends Token {
+  final String name;
+
+  ColonVariableToken(FileSpan span, this.name)
+      : super(TokenType.colonVariable, span);
+}
+
+class DollarSignVariableToken extends Token {
+  final String name;
+
+  DollarSignVariableToken(FileSpan span, this.name)
+      : super(TokenType.dollarSignVariable, span);
 }
 
 /// Inline Dart appearing in a create table statement. Only parsed when the moor

@@ -11,18 +11,20 @@ Token token(TokenType type) {
 }
 
 InlineDartToken inlineDart(String dartCode) {
-  final fakeFile = SourceFile.fromString('`$dartCode`');
-  return InlineDartToken(fakeFile.span(0));
+  return InlineDartToken(fakeSpan('`$dartCode`'));
 }
 
 IdentifierToken identifier(String content) {
-  final fakeFile = SourceFile.fromString(content);
-  return IdentifierToken(false, fakeFile.span(0));
+  return IdentifierToken(false, fakeSpan(content));
 }
 
 void testStatement(String sql, AstNode expected) {
   final parsed = SqlEngine().parse(sql).rootNode;
   enforceEqual(parsed, expected);
+}
+
+FileSpan fakeSpan(String content) {
+  return SourceFile.fromString(content).span(0);
 }
 
 void testAll(Map<String, AstNode> testCases) {

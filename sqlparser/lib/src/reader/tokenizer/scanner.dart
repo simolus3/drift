@@ -112,10 +112,31 @@ class Scanner {
         break;
 
       case '?':
-        _addToken(TokenType.questionMark);
+        // if the next chars are numbers, this is an explicitly index variable
+        final buffer = StringBuffer();
+        while (!_isAtEnd && isDigit(_peek())) {
+          buffer.write(_nextChar());
+        }
+
+        int explicitIndex;
+        if (buffer.isNotEmpty) {
+          explicitIndex = int.parse(buffer.toString());
+        }
+
+        tokens.add(QuestionMarkVariableToken(_currentSpan, explicitIndex));
         break;
       case ':':
-        _addToken(TokenType.colon);
+        final name = _matchColumnName();
+        if (name == null) {
+          _addToken(TokenType.colon);
+        } else {
+          tokens.add(ColonVariableToken(_currentSpan, ':$name'));
+        }
+
+        break;
+      case r'$':
+        final name = _matchColumnName();
+        tokens.add(ColonVariableToken(_currentSpan, name));
         break;
       case ';':
         _addToken(TokenType.semicolon);
@@ -328,6 +349,17 @@ class Scanner {
         tokens.add(IdentifierToken(false, _currentSpan));
       }
     }
+  }
+
+  String _matchColumnName() {
+    if (_isAtEnd || !canStartColumnName(_peek())) return null;
+
+    final buffer = StringBuffer()..write(_nextChar());
+    while (!_isAtEnd && continuesColumnName(_peek())) {
+      buffer.write(_nextChar());
+    }
+
+    return buffer.toString();
   }
 
   void _inlineDart() {
