@@ -34,6 +34,7 @@ TODO: Properly describe these additions when they're finalized:
   Previously, the query `_allUsers` would generate a `watchAllUsers` method, that has been
   adopted to `_watchAllUsers`. The `generate_private_watch_methods` builder option, which
   backported this fix to older versions, has thus been removed.
+- Removed `InsertStatement.insertOrReplace`. Use `insert(data, orReplace: true)` instead.
 
 ## 1.7.2
 - Fixed a race condition that caused the database to be opened multiple times on slower devices.
