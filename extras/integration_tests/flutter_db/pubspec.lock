@@ -159,7 +159,7 @@ packages:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.6"
+    version: "1.1.7"
   mime:
     dependency: transitive
     description:
@@ -173,7 +173,14 @@ packages:
       path: "../../../moor"
       relative: true
     source: path
-    version: "1.7.1"
+    version: "1.7.2"
+  moor_ffi:
+    dependency: "direct main"
+    description:
+      path: "../../../moor_ffi"
+      relative: true
+    source: path
+    version: "0.0.1"
   moor_flutter:
     dependency: "direct main"
     description:
@@ -404,5 +411,5 @@ packages:
     source: hosted
     version: "2.1.16"
 sdks:
-  dart: ">=2.4.0 <3.0.0"
+  dart: ">=2.5.0-dev <2.6.0"
   flutter: ">=1.2.1 <2.0.0"

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:moor_ffi/moor_ffi.dart';
 import 'package:tests/tests.dart';
 import 'package:test/test.dart';
 import 'package:moor_flutter/moor_flutter.dart';
@@ -27,8 +28,24 @@ class SqfliteExecutor extends TestExecutor {
   }
 }
 
+class FfiExecutor extends TestExecutor {
+  @override
+  QueryExecutor createExecutor() {
+    return VmDatabase(File('app_ffi.db'));
+  }
+
+  @override
+  Future deleteData() async {
+    final file = File('app_ffi.db');
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+}
+
 void main() {
   runAllTests(SqfliteExecutor());
+  runAllTests(FfiExecutor());
 
   // Additional integration test for flutter: Test loading a database from asset
   test('can load a database from asset', () async {

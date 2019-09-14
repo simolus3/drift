@@ -11,6 +11,8 @@ dependencies:
   moor_flutter:
   tests:
     path: ../tests
+  moor_ffi:
+    path: ../../../moor_ffi
 
 dev_dependencies:
   test:
