@@ -1,13 +1,55 @@
 ## 2.0.0
-This is the first major update after the initial release and moor and we have a lot to cover.
-... Finally, we also removed a variety of deprecated features. See the breaking changes
+This is the first major update after the initial release and moor and we have a lot to cover:
+The `.moor` files can now have their own imports and queries, you can embed Dart in sql queries
+using the new templates feature and we have a prototype of a pure-Dart SQL IDE ready.
+Finally, we also removed a variety of deprecated features. See the breaking changes
 section to learn what components are affected and what alternatives are available.
 
-TODO: Properly describe these additions when they're finalized:
+### New features
 
-- Queries and imports in `.moor` files
-- Analyzer plugin for Dart Code
-- `ffi` libraries
+#### Updates to the sql parser
+`.moor` files were introduced in moor 1.7 as an experimental way to declare tables by using
+`CREATE TABLE` statements. In this version, they become stable and support their own import
+and query system. This allows you to write queries in their own file:
+
+```sql
+CREATE TABLE users (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR NOT NULL
+);
+
+findByName: SELECT * FROM users WHERE name LIKE :query;
+```
+When this file is included from a `@UseMoor` annotation, moor will generate methods to run the
+query. Of course, you can also write Dart queries for tables declared in sql:
+```dart
+Stream<User> loadUserById(int id) {
+ return (select(users)..where((u) => u.id.equals(2))).watchSingle();
+}
+```
+
+Moor files can also import other moor files by using an `import 'other.moor';'` statement at the 
+top. Then, all tables defined in `other.moor` will also be available to the current file.
+
+Moor takes Dart and SQL interop even further with the new "Dart in SQL templates". You can define
+a query like this:
+```sql
+findDynamic: SELECT * FROM users WHERE $condition;
+```
+
+And moor will generate a method `findDynamic(Expression<bool, BoolType> condition)` for you. This
+allows you to bind the template with a predicate as complex as you'd like. At the moment, Dart
+templates are supported for expressions, `OrderBy`, `OrderingTerm` and `Limit`.
+
+`INSERT` statements can now be used as a compiled statement - both in moor files and
+in a `@UseMoor` or `@UseDao` annotation. A new builtin linter will even warn you when you forget
+to provide a value for a non-nullable column - right at compile time!
+
+And finally, we now generate better query code when queries only return a single column. Instead of
+generating a whole new class for that, we simply return the value directly.
+
+#### Experimental ffi support
+TODO: Describe ffi port
 
 ### Minor changes
 - a `Constant<String>` can now be written to SQL, it used to throw before. This is useful
