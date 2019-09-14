@@ -4,6 +4,7 @@ linkTitle: "Writing queries"
 description: Learn how to write database queries in pure Dart with moor
 aliases:
  - /queries/
+weight: 100
 ---
 
 {{% pageinfo %}}
