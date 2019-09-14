@@ -9,7 +9,7 @@ class SelectStatement extends Statement with CrudStatement, ResultSet {
   final GroupBy groupBy;
   final List<NamedWindowDeclaration> windowDeclarations;
 
-  final OrderBy orderBy;
+  final OrderByBase orderBy;
   final LimitBase limit;
 
   /// The resolved list of columns returned by this select statements. Not

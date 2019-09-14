@@ -272,22 +272,41 @@ mixin CrudParser on ParserBase {
     return declarations;
   }
 
-  OrderBy _orderBy() {
+  OrderByBase _orderBy() {
     if (_matchOne(TokenType.order)) {
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
-      final terms = <OrderingTerm>[];
+      final terms = <OrderingTermBase>[];
       do {
         terms.add(_orderingTerm());
       } while (_matchOne(TokenType.comma));
+
+      // If we only hit a single ordering term and that term is a Dart
+      // placeholder, we can upgrade that term to a full order by placeholder.
+      // This gives users more control at runtime (they can specify multiple
+      // terms).
+      if (terms.length == 1 && terms.single is DartOrderingTermPlaceholder) {
+        final termPlaceholder = terms.single as DartOrderingTermPlaceholder;
+        return DartOrderByPlaceholder(name: termPlaceholder.name);
+      }
+
       return OrderBy(terms: terms);
     }
     return null;
   }
 
-  OrderingTerm _orderingTerm() {
+  OrderingTermBase _orderingTerm() {
     final expr = expression();
+    final mode = _orderingModeOrNull();
 
-    return OrderingTerm(expression: expr, orderingMode: _orderingModeOrNull());
+    // if there is no ASC or DESC after a Dart placeholder, we can upgrade the
+    // expression to an ordering term placeholder and let users define the mode
+    // at runtime.
+    if (mode == null && expr is DartExpressionPlaceholder) {
+      return DartOrderingTermPlaceholder(name: expr.name)
+        ..setSpan(expr.first, expr.last);
+    }
+
+    return OrderingTerm(expression: expr, orderingMode: mode);
   }
 
   @override
@@ -326,8 +345,8 @@ mixin CrudParser on ParserBase {
       // no offset or comma was parsed (so just LIMIT $expr). In that case, we
       // want to provide additional flexibility to the user by interpreting the
       // expression as a whole limit clause.
-      if (first is InlineDartExpression) {
-        return InlineDartLimit(name: first.name)
+      if (first is DartExpressionPlaceholder) {
+        return DartLimitPlaceholder(name: first.name)
           ..setSpan(limitToken, _previous);
       }
       return Limit(count: first)..setSpan(limitToken, _previous);
@@ -457,7 +476,7 @@ mixin CrudParser on ParserBase {
     final leftParen = _previous;
 
     String baseWindowName;
-    OrderBy orderBy;
+    OrderByBase orderBy;
 
     final partitionBy = <Expression>[];
     if (_matchOne(TokenType.identifier)) {

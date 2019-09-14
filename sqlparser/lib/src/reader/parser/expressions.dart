@@ -322,7 +322,7 @@ mixin ExpressionParser on ParserBase {
       case TokenType.dollarSignVariable:
         if (enableMoorExtensions) {
           final typedToken = token as DollarSignVariableToken;
-          return InlineDartExpression(name: typedToken.name)
+          return DartExpressionPlaceholder(name: typedToken.name)
             ..token = typedToken
             ..setSpan(token, token);
         }

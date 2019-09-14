@@ -1,7 +1,16 @@
 part of '../ast.dart';
 
-class OrderBy extends AstNode {
-  final List<OrderingTerm> terms;
+/// Base for `ORDER BY` clauses. Without moor extensions, ony [OrderBy] will be
+/// parsed. Otherwise, [DartOrderByPlaceholder] can be parsed as well.
+abstract class OrderByBase extends AstNode {}
+
+/// Base for a single ordering term that is a part of a [OrderBy]. Without moor
+/// extensions, only [OrderingTerm] will be parsed. With moor extensions, a
+/// [DartOrderingTermPlaceholder] can be parsed as well.
+abstract class OrderingTermBase extends AstNode {}
+
+class OrderBy extends AstNode implements OrderByBase {
+  final List<OrderingTermBase> terms;
 
   OrderBy({this.terms});
 
@@ -19,7 +28,7 @@ class OrderBy extends AstNode {
 
 enum OrderingMode { ascending, descending }
 
-class OrderingTerm extends AstNode {
+class OrderingTerm extends AstNode implements OrderingTermBase {
   final Expression expression;
   final OrderingMode orderingMode;
 

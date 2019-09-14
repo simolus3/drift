@@ -8,40 +8,45 @@ part of '../ast.dart';
 ///  1. expressions: Any expression can be used for moor: `SELECT * FROM table
 ///  = $expr`. Generated code will write this as an `Expression` class from
 ///  moor.
-///  2. limits
-///  3. A single order-by clause
-///  4. A list of order-by clauses
-abstract class InlineDart extends AstNode {
+///  2. limits, which will be exposed as a `Limit` component from moor
+///  3. A single order-by clause, which will be exposed as a `OrderingTerm` from
+///  moor.
+///  4. A list of order-by clauses, which will be exposed as a `OrderBy` from
+///  moor.
+abstract class DartPlaceholder extends AstNode {
   final String name;
 
   DollarSignVariableToken token;
 
-  InlineDart._(this.name);
+  DartPlaceholder._(this.name);
 
   @override
   final Iterable<AstNode> childNodes = const Iterable.empty();
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitInlineDartCode(this);
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitDartPlaceholder(this);
 
-  bool _dartEquals(covariant InlineDart other);
+  bool _dartEquals(covariant DartPlaceholder other) => true;
 
   @override
-  bool contentEquals(InlineDart other) {
+  bool contentEquals(DartPlaceholder other) {
     return other.name == name && other._dartEquals(other);
   }
 }
 
-class InlineDartExpression extends InlineDart implements Expression {
-  InlineDartExpression({@required String name}) : super._(name);
-
-  @override
-  bool _dartEquals(InlineDartExpression other) => true;
+class DartExpressionPlaceholder extends DartPlaceholder implements Expression {
+  DartExpressionPlaceholder({@required String name}) : super._(name);
 }
 
-class InlineDartLimit extends InlineDart implements LimitBase {
-  InlineDartLimit({@required String name}) : super._(name);
+class DartLimitPlaceholder extends DartPlaceholder implements LimitBase {
+  DartLimitPlaceholder({@required String name}) : super._(name);
+}
 
-  @override
-  bool _dartEquals(InlineDartLimit other) => true;
+class DartOrderingTermPlaceholder extends DartPlaceholder
+    implements OrderingTermBase {
+  DartOrderingTermPlaceholder({@required String name}) : super._(name);
+}
+
+class DartOrderByPlaceholder extends DartPlaceholder implements OrderByBase {
+  DartOrderByPlaceholder({@required String name}) : super._(name);
 }

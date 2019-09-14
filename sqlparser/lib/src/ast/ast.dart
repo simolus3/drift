@@ -193,7 +193,7 @@ abstract class AstVisitor<T> {
   T visitMoorFile(MoorFile e);
   T visitMoorImportStatement(ImportStatement e);
   T visitMoorDeclaredStatement(DeclaredStatement e);
-  T visitInlineDartCode(InlineDart e);
+  T visitDartPlaceholder(DartPlaceholder e);
 }
 
 /// Visitor that walks down the entire tree, visiting all children in order.
@@ -316,7 +316,7 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitMoorDeclaredStatement(DeclaredStatement e) => visitChildren(e);
 
   @override
-  T visitInlineDartCode(InlineDart e) => visitChildren(e);
+  T visitDartPlaceholder(DartPlaceholder e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {
