@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:moor/moor_vm.dart';
+import 'package:moor_ffi/moor_ffi.dart';
 import 'package:tests/tests.dart';
 
 import 'package:path/path.dart' show join;

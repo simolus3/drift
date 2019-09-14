@@ -8,8 +8,14 @@ environment:
   sdk: '>=2.4.0 <3.0.0'
 
 dependencies:
+  moor_ffi:
+    path: ../../../moor_ffi
   tests:
     path: ../tests
 
 dev_dependencies:
   test: ^1.5.0
+
+dependency_overrides:
+  moor:
+    path: ../../../moor

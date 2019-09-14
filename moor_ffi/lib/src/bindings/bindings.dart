@@ -4,8 +4,9 @@
 
 import 'dart:ffi';
 
+import 'package:moor_ffi/moor_ffi.dart';
+
 import '../ffi/blob.dart';
-import '../ffi/open_platform_specific.dart';
 
 import 'signatures.dart';
 import 'types.dart';
@@ -93,7 +94,7 @@ class _SQLiteBindings {
   int Function(Pointer<Statement> statement, int columnIndex) sqlite3_bind_null;
 
   _SQLiteBindings() {
-    sqlite = dlopenPlatformSpecific('sqlite3');
+    sqlite = moorSqliteOpener();
 
     sqlite3_bind_double = sqlite
         .lookup<NativeFunction<sqlite3_bind_double_native>>(
