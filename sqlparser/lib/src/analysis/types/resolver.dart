@@ -37,8 +37,8 @@ class TypeResolver {
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);
-    } else if (t is Variable) {
-      return inferType(t);
+    } else if (t is Variable || t is DartExpressionPlaceholder) {
+      return inferType(t as Expression);
     } else if (t is Expression) {
       return resolveExpression(t);
     }
@@ -297,6 +297,8 @@ class TypeResolver {
         // appears as part of a bounded window definition:
         // RANGE BETWEEN <expr> PRECEDING AND <expr> FOLLOWING
         return const ResolveResult(ResolvedType(type: BasicType.int));
+      } else if (parent is HasWhereClause && e == parent.where) {
+        return const ResolveResult(ResolvedType.bool());
       }
 
       return const ResolveResult.unknown();

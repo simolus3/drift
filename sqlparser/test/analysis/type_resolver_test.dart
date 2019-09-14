@@ -73,4 +73,15 @@ void main() {
     expect(ctx.typeOf(secondVar),
         equals(const ResolveResult(ResolvedType(type: BasicType.text))));
   });
+
+  test('can infer types for dart placeholder', () {
+    final ctx = (SqlEngine(useMoorExtensions: true)..registerTable(demoTable))
+        .analyze(r'SELECT * FROM demo WHERE $expr');
+
+    final dartExpr =
+        ctx.root.allDescendants.whereType<DartPlaceholder>().single;
+
+    expect(ctx.typeOf(dartExpr as Expression),
+        const ResolveResult(ResolvedType.bool()));
+  });
 }

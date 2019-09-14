@@ -1,10 +1,13 @@
 part of '../ast.dart';
 
-class SelectStatement extends Statement with CrudStatement, ResultSet {
+class SelectStatement extends Statement
+    with CrudStatement, ResultSet
+    implements HasWhereClause {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;
 
+  @override
   final Expression where;
   final GroupBy groupBy;
   final List<NamedWindowDeclaration> windowDeclarations;
