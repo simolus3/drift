@@ -1313,7 +1313,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Selectable<AllTodosWithCategoryResult> allTodosWithCategoryQuery() {
-    return (operateOn ?? this).customSelectQuery(
+    return customSelectQuery(
         'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
         variables: [],
         readsFrom: {
@@ -1331,7 +1331,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Future<int> deleteTodoById(int var1) {
-    return (operateOn ?? this).customUpdate(
+    return customUpdate(
       'DELETE FROM todos WHERE id = ?',
       variables: [
         Variable.withInt(var1),
@@ -1354,7 +1354,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     var $highestIndex = 3;
     final expandedvar3 = $expandVar($highestIndex, var3.length);
     $highestIndex += var3.length;
-    return (operateOn ?? this).customSelectQuery(
+    return customSelectQuery(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
           Variable.withString(var1),
@@ -1376,7 +1376,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Selectable<TodoEntry> searchQuery(int id) {
-    return (operateOn ?? this).customSelectQuery(
+    return customSelectQuery(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [
           Variable.withInt(id),
@@ -1402,7 +1402,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Selectable<FindCustomResult> findCustomQuery() {
-    return (operateOn ?? this).customSelectQuery(
+    return customSelectQuery(
         'SELECT custom FROM table_without_p_k WHERE some_float < 10',
         variables: [],
         readsFrom: {tableWithoutPK}).map(_rowToFindCustomResult);
@@ -1472,7 +1472,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   }
 
   Selectable<TodoEntry> todosForUserQuery(int user) {
-    return (operateOn ?? this).customSelectQuery(
+    return customSelectQuery(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [
           Variable.withInt(user),

@@ -102,8 +102,8 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyzeNode(AstNode node) {
-    final context = AnalysisContext(node, node.span.context);
+  AnalysisContext analyzeNode(AstNode node, String file) {
+    final context = AnalysisContext(node, file);
     _analyzeContext(context);
     return context;
   }
@@ -184,5 +184,11 @@ class ParseResult {
     }
 
     return candidates.toList();
+  }
+
+  /// Returns the lexeme that created an AST [node] (which should be a child of
+  /// [rootNode], e.g appear in this result).
+  String lexemeOfNode(AstNode node) {
+    return sql.substring(node.firstPosition, node.lastPosition);
   }
 }

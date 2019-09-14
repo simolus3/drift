@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
@@ -33,6 +34,7 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
   final AstNode query;
+  ParsedMoorFile file;
 
   DeclaredMoorQuery(String name, this.query) : super(name);
 

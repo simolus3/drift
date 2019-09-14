@@ -41,13 +41,16 @@ class MoorParser {
     final createdTables =
         createdReaders.map((r) => r.extractTable(step.mapper)).toList();
 
-    return Future.value(
-      ParsedMoorFile(
-        result,
-        declaredTables: createdTables,
-        queries: queryDeclarations,
-        imports: importStatements,
-      ),
+    final analyzedFile = ParsedMoorFile(
+      result,
+      declaredTables: createdTables,
+      queries: queryDeclarations,
+      imports: importStatements,
     );
+    for (var decl in queryDeclarations) {
+      decl.file = analyzedFile;
+    }
+
+    return Future.value(analyzedFile);
   }
 }

@@ -820,8 +820,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<ConfigData> readConfig(String var1) {
-    return (operateOn ?? this).customSelectQuery(
-        'readConfig: SELECT * FROM config WHERE config_key = ?;',
+    return customSelectQuery('SELECT * FROM config WHERE config_key = ?',
         variables: [
           Variable.withString(var1),
         ],
@@ -830,8 +829,22 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(_rowToConfigData);
   }
 
+  Selectable<ConfigData> readMultiple(List<String> var1) {
+    var $highestIndex = 1;
+    final expandedvar1 = $expandVar($highestIndex, var1.length);
+    $highestIndex += var1.length;
+    return customSelectQuery(
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1)',
+        variables: [
+          for (var $ in var1) Variable.withString($),
+        ],
+        readsFrom: {
+          config
+        }).map(_rowToConfigData);
+  }
+
   Future<int> writeConfig(String key, String value) {
-    return (operateOn ?? this).customInsert(
+    return customInsert(
       'REPLACE INTO config VALUES (:key, :value)',
       variables: [
         Variable.withString(key),

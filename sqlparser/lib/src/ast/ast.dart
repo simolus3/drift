@@ -54,7 +54,8 @@ abstract class AstNode {
   /// nodes.
   int get firstPosition => first.span.start.offset;
 
-  /// The last position that belongs to node, exclusive. Not set for all nodes.
+  /// The (exclusive) last index of this node in the source. In other words, the
+  /// first index that is _not_ a part of this node. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
 
   FileSpan get span {

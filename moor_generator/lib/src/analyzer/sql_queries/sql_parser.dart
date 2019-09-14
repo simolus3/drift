@@ -45,7 +45,7 @@ class SqlParser {
           return;
         }
       } else if (query is DeclaredMoorQuery) {
-        context = _engine.analyzeNode(query.query);
+        context = _engine.analyzeNode(query.query, query.file.parseResult.sql);
         declaredInMoor = true;
       }
 

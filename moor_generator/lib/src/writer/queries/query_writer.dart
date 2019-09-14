@@ -120,9 +120,7 @@ class QueryWriter {
     _buffer.write(') {\n');
 
     _writeExpandedDeclarations();
-    _buffer
-      ..write('return (operateOn ?? this).')
-      ..write('customSelectQuery(${_queryCode()}, ');
+    _buffer.write('return customSelectQuery(${_queryCode()}, ');
     _writeVariables();
     _buffer.write(', ');
     _writeReadsFrom();
@@ -172,9 +170,7 @@ class QueryWriter {
     _buffer.write(') {\n');
 
     _writeExpandedDeclarations();
-    _buffer
-      ..write('return (operateOn ?? this).')
-      ..write('$implName(${_queryCode()},');
+    _buffer.write('return $implName(${_queryCode()},');
 
     _writeVariables();
     _buffer.write(',');
@@ -285,14 +281,15 @@ class QueryWriter {
           ..sort((a, b) => a.firstPosition.compareTo(b.firstPosition));
 
     final buffer = StringBuffer("'");
-    var lastIndex = 0;
+
+    var lastIndex = query.fromContext.root.firstPosition;
 
     for (var sqlVar in vars) {
       final moorVar = query.variables
           .singleWhere((f) => f.variable.resolvedIndex == sqlVar.resolvedIndex);
       if (!moorVar.isArray) continue;
 
-      // write everything that comes before this var into the_buffer
+      // write everything that comes before this var into the buffer
       final currentIndex = sqlVar.firstPosition;
       final queryPart = query.sql.substring(lastIndex, currentIndex);
       buffer.write(escapeForDart(queryPart));
@@ -303,7 +300,10 @@ class QueryWriter {
     }
 
     // write the final part after the last variable, plus the ending '
-    buffer..write(escapeForDart(query.sql.substring(lastIndex)))..write("'");
+    final lastPosition = query.fromContext.root.lastPosition;
+    buffer
+      ..write(escapeForDart(query.sql.substring(lastIndex, lastPosition)))
+      ..write("'");
 
     return buffer.toString();
   }

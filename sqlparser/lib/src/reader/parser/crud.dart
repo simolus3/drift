@@ -353,6 +353,8 @@ mixin CrudParser on ParserBase {
 
   UpdateStatement _update() {
     if (!_matchOne(TokenType.update)) return null;
+    final updateToken = _previous;
+
     FailureMode failureMode;
     if (_matchOne(TokenType.or)) {
       failureMode = UpdateStatement.failureModeFromToken(_advance().type);
@@ -376,7 +378,8 @@ mixin CrudParser on ParserBase {
 
     final where = _where();
     return UpdateStatement(
-        or: failureMode, table: table, set: set, where: where);
+        or: failureMode, table: table, set: set, where: where)
+      ..setSpan(updateToken, _previous);
   }
 
   InsertStatement _insertStmt() {
