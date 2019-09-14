@@ -1,4 +1,3 @@
-import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
@@ -14,7 +13,7 @@ class ResultSetWriter {
     // write fields
     for (var column in query.resultSet.columns) {
       final name = query.resultSet.dartNameFor(column);
-      final runtimeType = _getRuntimeType(column);
+      final runtimeType = column.dartType;
       into.write('final $runtimeType $name\n;');
     }
 
@@ -24,13 +23,5 @@ class ResultSetWriter {
       into.write('this.${query.resultSet.dartNameFor(column)},');
     }
     into.write('});\n}\n');
-  }
-
-  String _getRuntimeType(ResultColumn column) {
-    if (column.converter != null) {
-      return column.converter.mappedType.displayName;
-    } else {
-      return dartTypeNames[column.type];
-    }
   }
 }

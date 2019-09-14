@@ -19,10 +19,10 @@ void transactionTests(TestExecutor executor) {
     });
 
     final countResult = await db.userCount();
-    expect(countResult.single.cOUNTid, 4);
+    expect(countResult.single, 4);
 
     final friendsResult = await db.amountOfGoodFriends(People.dashId);
-    expect(friendsResult.single.count, 1);
+    expect(friendsResult.single, 1);
 
     await db.close();
   });
@@ -45,10 +45,10 @@ void transactionTests(TestExecutor executor) {
     } on Exception catch (_) {}
 
     final countResult = await db.userCount();
-    expect(countResult.single.cOUNTid, 3); // only the default folks
+    expect(countResult.single, 3); // only the default folks
 
     final friendsResult = await db.amountOfGoodFriends(People.dashId);
-    expect(friendsResult.single.count, 0); // no friendship was inserted
+    expect(friendsResult.single, 0); // no friendship was inserted
 
     await db.close();
   });

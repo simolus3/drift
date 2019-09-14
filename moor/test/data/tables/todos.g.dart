@@ -1388,25 +1388,20 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return searchQuery(id).watch();
   }
 
-  FindCustomResult _rowToFindCustomResult(QueryRow row) {
-    return FindCustomResult(
-      custom:
-          $TableWithoutPKTable.$converter0.mapToDart(row.readString('custom')),
-    );
-  }
-
-  Selectable<FindCustomResult> findCustomQuery() {
+  Selectable<MyCustomObject> findCustomQuery() {
     return customSelectQuery(
-        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
-        variables: [],
-        readsFrom: {tableWithoutPK}).map(_rowToFindCustomResult);
+            'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+            variables: [],
+            readsFrom: {tableWithoutPK})
+        .map((QueryRow row) => $TableWithoutPKTable.$converter0
+            .mapToDart(row.readString('custom')));
   }
 
-  Future<List<FindCustomResult>> findCustom() {
+  Future<List<MyCustomObject>> findCustom() {
     return findCustomQuery().get();
   }
 
-  Stream<List<FindCustomResult>> watchFindCustom() {
+  Stream<List<MyCustomObject>> watchFindCustom() {
     return findCustomQuery().watch();
   }
 
@@ -1437,13 +1432,6 @@ class AllTodosWithCategoryResult {
     this.category,
     this.catId,
     this.catDesc,
-  });
-}
-
-class FindCustomResult {
-  final MyCustomObject custom;
-  FindCustomResult({
-    this.custom,
   });
 }
 

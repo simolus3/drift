@@ -7,7 +7,7 @@ import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/queries/result_set_writer.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 const highestAssignedIndexVar = '\$arrayStartIndex';
 
@@ -51,8 +51,7 @@ class QueryWriter {
   void write() {
     if (query is SqlSelectQuery) {
       final select = query as SqlSelectQuery;
-      if (select.resultSet.matchingTable == null) {
-        // query needs its own result set - write that now
+      if (select.resultSet.needsOwnClass) {
         final buffer = scope.findScopeOfLevel(DartScope.library).leaf();
         ResultSetWriter(select).write(buffer);
       }
@@ -63,7 +62,10 @@ class QueryWriter {
   }
 
   void _writeSelect() {
-    _writeMapping();
+    if (!_select.resultSet.singleColumn) {
+      _writeMapping();
+    }
+
     _writeSelectStatementCreator();
 
     if (!query.declaredInMoorFile) {
@@ -97,24 +99,30 @@ class QueryWriter {
 
       for (var column in _select.resultSet.columns) {
         final fieldName = _select.resultSet.dartNameFor(column);
-        final readMethod = readFromMethods[column.type];
-
-        var code = "row.$readMethod('${column.name}')";
-
-        if (column.converter != null) {
-          final converter = column.converter;
-          final infoName = converter.table.tableInfoName;
-          final field = '$infoName.${converter.fieldName}';
-
-          code = '$field.mapToDart($code)';
-        }
-
-        _buffer.write('$fieldName: $code,');
+        _buffer.write('$fieldName: ${_readingCode(column)},');
       }
 
       _buffer.write(');\n}\n');
       _writtenMappingMethods.add(_nameOfMappingMethod());
     }
+  }
+
+  /// Returns Dart code that, given a variable of type `QueryRow` named `row`
+  /// in the same scope, reads the [column] from that row and brings it into a
+  /// suitable type.
+  String _readingCode(ResultColumn column) {
+    final readMethod = readFromMethods[column.type];
+
+    var code = "row.$readMethod('${column.name}')";
+
+    if (column.converter != null) {
+      final converter = column.converter;
+      final infoName = converter.table.tableInfoName;
+      final field = '$infoName.${converter.fieldName}';
+
+      code = '$field.mapToDart($code)';
+    }
+    return code;
   }
 
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
@@ -134,7 +142,14 @@ class QueryWriter {
     _writeReadsFrom();
 
     _buffer.write(').map(');
-    _buffer.write(_nameOfMappingMethod());
+    // for queries that only return one row, it makes more sense to inline the
+    // mapping code with a lambda
+    if (_select.resultSet.singleColumn) {
+      final column = _select.resultSet.columns.single;
+      _buffer.write('(QueryRow row) => ${_readingCode(column)}');
+    } else {
+      _buffer.write(_nameOfMappingMethod());
+    }
     _buffer.write(');\n}\n');
   }
 

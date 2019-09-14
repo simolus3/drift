@@ -9,8 +9,8 @@ void migrationTests(TestExecutor executor) {
     final database = Database(executor.createExecutor(), schemaVersion: 1);
 
     // we write 3 users when the database is created
-    final count = await database.userCount();
-    expect(count.single.cOUNTid, 3);
+    final count = await database.userCountQuery().getSingle();
+    expect(count, 3);
 
     await database.close();
   });
@@ -23,8 +23,8 @@ void migrationTests(TestExecutor executor) {
     database = Database(executor.createExecutor(), schemaVersion: 2);
 
     // the 3 initial users plus People.florian
-    final count = await database.userCount();
-    expect(count.single.cOUNTid, 4);
+    final count = await database.userCountQuery().getSingle();
+    expect(count, 4);
 
     await database.close();
   });

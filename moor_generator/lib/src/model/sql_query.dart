@@ -101,6 +101,11 @@ class SqlSelectQuery extends SqlQuery {
     if (resultSet.matchingTable != null) {
       return resultSet.matchingTable.dartTypeName;
     }
+
+    if (resultSet.singleColumn) {
+      return resultSet.columns.single.dartType;
+    }
+
     return '${ReCase(name).pascalCase}Result';
   }
 
@@ -128,6 +133,14 @@ class InferredResultSet {
   final Map<ResultColumn, String> _dartNames = {};
 
   InferredResultSet(this.matchingTable, this.columns);
+
+  /// Whether a new class needs to be written to store the result of this query.
+  /// We don't need to do that for queries which return an existing table model
+  /// or if they only return exactly one column.
+  bool get needsOwnClass => matchingTable == null && !singleColumn;
+
+  /// Whether this query returns a single column.
+  bool get singleColumn => columns.length == 1;
 
   void forceDartNames(Map<ResultColumn, String> names) {
     _dartNames
@@ -173,6 +186,15 @@ class ResultColumn {
   final UsedTypeConverter converter;
 
   ResultColumn(this.name, this.type, this.nullable, {this.converter});
+
+  /// The dart type that can store a result of this column.
+  String get dartType {
+    if (converter != null) {
+      return converter.mappedType.displayName;
+    } else {
+      return dartTypeNames[type];
+    }
+  }
 }
 
 /// Something in the query that needs special attention when generating code,
