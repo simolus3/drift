@@ -9,13 +9,17 @@ import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-const highestAssignedIndexVar = '\$highestIndex';
+const highestAssignedIndexVar = '\$arrayStartIndex';
+
+int _compareNodes(AstNode a, AstNode b) =>
+    a.firstPosition.compareTo(b.firstPosition);
 
 /// Writes the handling code for a query. The code emitted will be a method that
 /// should be included in a generated database or dao class.
 class QueryWriter {
   final SqlQuery query;
   final Scope scope;
+
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
@@ -38,6 +42,10 @@ class QueryWriter {
   /// ```
   String _expandedName(FoundVariable v) {
     return 'expanded${v.dartParameterName}';
+  }
+
+  String _placeholderContextName(FoundDartPlaceholder placeholder) {
+    return 'generated${placeholder.name}';
   }
 
   void write() {
@@ -180,19 +188,19 @@ class QueryWriter {
   }
 
   void _writeParameters() {
-    final variableParams = query.variables.map((v) {
-      var dartType = dartTypeNames[v.type];
-      if (v.isArray) {
-        dartType = 'List<$dartType>';
+    final paramList = query.elements.map((e) {
+      if (e is FoundVariable) {
+        var dartType = dartTypeNames[e.type];
+        if (e.isArray) {
+          dartType = 'List<$dartType>';
+        }
+        return '$dartType ${e.dartParameterName}';
+      } else if (e is FoundDartPlaceholder) {
+        return '${e.parameterType} ${e.name}';
       }
-      return '$dartType ${v.dartParameterName}';
-    });
 
-    final placeholderParams = query.placeholders.map((p) {
-      return '${p.parameterType} ${p.name}';
-    });
-
-    final paramList = variableParams.followedBy(placeholderParams).join(', ');
+      throw AssertionError('Unknown element (not variable of placeholder)');
+    }).join(', ');
     _buffer.write(paramList);
   }
 
@@ -200,10 +208,7 @@ class QueryWriter {
   /// assuming that for each parameter, a variable with the same name exists
   /// in the current scope.
   void _writeUseParameters() {
-    final parameters = query.variables
-        .map((v) => v.dartParameterName)
-        .followedBy(query.placeholders.map((p) => p.name));
-
+    final parameters = query.elements.map((e) => e.dartParameterName);
     _buffer.write(parameters.join(', '));
   }
 
@@ -218,42 +223,71 @@ class QueryWriter {
   // We use explicit indexes when expanding so that we don't have to expand the
   // "vars" variable twice. To do this, a local var called "$currentVarIndex"
   // keeps track of the highest variable number assigned.
+  // We can use the same mechanism for runtime Dart placeholders, where we
+  // generate a GenerationContext, write the placeholder and finally extract the
+  // variables
 
   void _writeExpandedDeclarations() {
     var indexCounterWasDeclared = false;
     var highestIndexBeforeArray = 0;
 
-    for (var variable in query.variables) {
-      if (variable.isArray) {
-        if (!indexCounterWasDeclared) {
-          // we only need the index counter when the query contains an array.
-          // add +1 because that's going to be the first index of the expanded
-          // array
-          final firstVal = highestIndexBeforeArray + 1;
-          _buffer.write('var $highestAssignedIndexVar = $firstVal;');
-          indexCounterWasDeclared = true;
+    void _writeIndexCounter() {
+      // we only need the index counter when the query contains an expanded
+      // element.
+      // add +1 because that's going to be the first index of this element.
+      final firstVal = highestIndexBeforeArray + 1;
+      _buffer.write('var $highestAssignedIndexVar = $firstVal;');
+      indexCounterWasDeclared = true;
+    }
+
+    void _increaseIndexCounter(String by) {
+      _buffer..write('$highestAssignedIndexVar += ')..write(by)..write(';\n');
+    }
+
+    // query.elements are guaranteed to be sorted in the order in which they're
+    // going to have an effect when expanded. See TypeMapper.extractElements for
+    // the gory details.
+    for (var element in query.elements) {
+      if (element is FoundVariable) {
+        if (element.isArray) {
+          if (!indexCounterWasDeclared) {
+            _writeIndexCounter();
+          }
+
+          // final expandedvar1 = $expandVar(<startIndex>, <amount>);
+          _buffer
+            ..write('final ')
+            ..write(_expandedName(element))
+            ..write(' = ')
+            ..write(r'$expandVar(')
+            ..write(highestAssignedIndexVar)
+            ..write(', ')
+            ..write(element.dartParameterName)
+            ..write('.length);\n');
+
+          // increase highest index for the next expanded element
+          _increaseIndexCounter('${element.dartParameterName}.length');
         }
 
-        // final expandedvar1 = $expandVar(<startIndex>, <amount>);
+        if (!indexCounterWasDeclared) {
+          highestIndexBeforeArray = max(highestIndexBeforeArray, element.index);
+        }
+      } else if (element is FoundDartPlaceholder) {
+        if (!indexCounterWasDeclared) {
+          indexCounterWasDeclared = true;
+        }
         _buffer
           ..write('final ')
-          ..write(_expandedName(variable))
+          ..write(_placeholderContextName(element))
           ..write(' = ')
-          ..write(r'$expandVar(')
-          ..write(highestAssignedIndexVar)
-          ..write(', ')
-          ..write(variable.dartParameterName)
-          ..write('.length);\n');
+          ..write(r'$write(')
+          ..write(element.dartParameterName)
+          ..write(');\n');
 
-        // increase highest index for the next array
-        _buffer
-          ..write('$highestAssignedIndexVar += ')
-          ..write(variable.dartParameterName)
-          ..write('.length;');
-      }
-
-      if (!indexCounterWasDeclared) {
-        highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
+        // similar to the case for expanded array variables, we need to
+        // increase the index
+        _increaseIndexCounter(
+            '${_placeholderContextName(element)}.amountOfVariables');
       }
     }
   }
@@ -283,29 +317,42 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode() {
-    // sort variables by the order in which they appear
-    final vars = query.fromContext.root.allDescendants
-        .whereType<Variable>()
+    // sort variables and placeholders by the order in which they appear
+    final toReplace = query.fromContext.root.allDescendants
+        .where((node) => node is Variable || node is DartPlaceholder)
         .toList()
-          ..sort((a, b) => a.firstPosition.compareTo(b.firstPosition));
+          ..sort(_compareNodes);
 
     final buffer = StringBuffer("'");
 
     var lastIndex = query.fromContext.root.firstPosition;
 
-    for (var sqlVar in vars) {
-      final moorVar = query.variables
-          .singleWhere((f) => f.variable.resolvedIndex == sqlVar.resolvedIndex);
-      if (!moorVar.isArray) continue;
-
+    void replaceNode(AstNode node, String content) {
       // write everything that comes before this var into the buffer
-      final currentIndex = sqlVar.firstPosition;
+      final currentIndex = node.firstPosition;
       final queryPart = query.sql.substring(lastIndex, currentIndex);
       buffer.write(escapeForDart(queryPart));
-      lastIndex = sqlVar.lastPosition;
+      lastIndex = node.lastPosition;
 
-      // write the ($expandedVar) par
-      buffer.write('(\$${_expandedName(moorVar)})');
+      // write the replaced content
+      buffer.write(content);
+    }
+
+    for (var rewriteTarget in toReplace) {
+      if (rewriteTarget is Variable) {
+        final moorVar = query.variables.singleWhere(
+            (f) => f.variable.resolvedIndex == rewriteTarget.resolvedIndex);
+
+        if (moorVar.isArray) {
+          replaceNode(rewriteTarget, '(\$${_expandedName(moorVar)})');
+        }
+      } else if (rewriteTarget is DartPlaceholder) {
+        final moorPlaceholder =
+            query.placeholders.singleWhere((p) => p.astNode == rewriteTarget);
+
+        replaceNode(rewriteTarget,
+            '\${${_placeholderContextName(moorPlaceholder)}.sql}');
+      }
     }
 
     // write the final part after the last variable, plus the ending '

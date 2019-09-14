@@ -74,16 +74,23 @@ abstract class SqlQuery {
   ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
   ///    AND c IN ?1`. In other words, we can expand an array without worrying
   ///    about the variables that appear after that array.
-  final List<FoundVariable> variables;
+  List<FoundVariable> variables;
 
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
   /// [DartPlaceholderType.expression] and [ColumnType.boolean]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
-  final List<FoundDartPlaceholder> placeholders;
+  List<FoundDartPlaceholder> placeholders;
 
-  SqlQuery(this.name, this.fromContext, this.variables, this.placeholders);
+  /// Union of [variables] and [elements], but in the order in which they
+  /// appear inside the query.
+  final List<FoundElement> elements;
+
+  SqlQuery(this.name, this.fromContext, this.elements) {
+    variables = elements.whereType<FoundVariable>().toList();
+    placeholders = elements.whereType<FoundDartPlaceholder>().toList();
+  }
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -97,28 +104,19 @@ class SqlSelectQuery extends SqlQuery {
     return '${ReCase(name).pascalCase}Result';
   }
 
-  SqlSelectQuery(
-      String name,
-      AnalysisContext fromContext,
-      List<FoundVariable> variables,
-      List<FoundDartPlaceholder> placeholders,
-      this.readsFrom,
-      this.resultSet)
-      : super(name, fromContext, variables, placeholders);
+  SqlSelectQuery(String name, AnalysisContext fromContext,
+      List<FoundElement> elements, this.readsFrom, this.resultSet)
+      : super(name, fromContext, elements);
 }
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
   final bool isInsert;
 
-  UpdatingQuery(
-      String name,
-      AnalysisContext fromContext,
-      List<FoundVariable> variables,
-      List<FoundDartPlaceholder> placeholders,
-      this.updates,
+  UpdatingQuery(String name, AnalysisContext fromContext,
+      List<FoundElement> elements, this.updates,
       {this.isInsert = false})
-      : super(name, fromContext, variables, placeholders);
+      : super(name, fromContext, elements);
 }
 
 class InferredResultSet {
@@ -177,12 +175,19 @@ class ResultColumn {
   ResultColumn(this.name, this.type, this.nullable, {this.converter});
 }
 
+/// Something in the query that needs special attention when generating code,
+/// such as variables or Dart placeholders.
+abstract class FoundElement {
+  String get dartParameterName;
+}
+
 /// A semantic interpretation of a [Variable] in a sql statement.
-class FoundVariable {
+class FoundVariable extends FoundElement {
   /// The (unique) index of this variable in the sql query. For instance, the
   /// query `SELECT * FROM tbl WHERE a = ? AND b = :xyz OR c = :xyz` contains
   /// three [Variable]s in its AST, but only two [FoundVariable]s, where the
-  /// `?` will have index 1 and (both) `:xyz` variables will have index 2.
+  /// `?` will have index 1 and (both) `:xyz` variables will have index 2. We
+  /// only report one [FoundVariable] per index.
   int index;
 
   /// The name of this variable, or null if it's not a named variable.
@@ -206,6 +211,7 @@ class FoundVariable {
     assert(variable.resolvedIndex == index);
   }
 
+  @override
   String get dartParameterName {
     if (name != null) {
       return name.replaceAll(_illegalChars, '');
@@ -223,7 +229,7 @@ enum DartPlaceholderType {
 }
 
 /// A Dart placeholder that will be bound at runtime.
-class FoundDartPlaceholder {
+class FoundDartPlaceholder extends FoundElement {
   final DartPlaceholderType type;
 
   /// If [type] is [DartPlaceholderType.expression] and the expression could be
@@ -231,6 +237,7 @@ class FoundDartPlaceholder {
   final ColumnType columnType;
 
   final String name;
+  DartPlaceholder astNode;
 
   FoundDartPlaceholder(this.type, this.columnType, this.name);
 
@@ -254,4 +261,7 @@ class FoundDartPlaceholder {
 
     throw AssertionError('cant happen, all branches covered');
   }
+
+  @override
+  String get dartParameterName => name;
 }

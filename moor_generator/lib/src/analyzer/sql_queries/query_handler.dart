@@ -16,16 +16,16 @@ class QueryHandler {
   final TypeMapper mapper;
 
   Set<Table> _foundTables;
-  List<FoundVariable> _foundVariables;
-  List<FoundDartPlaceholder> _foundPlaceholders;
+  List<FoundElement> _foundElements;
+  Iterable<FoundVariable> get _foundVariables =>
+      _foundElements.whereType<FoundVariable>();
 
   SelectStatement get _select => context.root as SelectStatement;
 
   QueryHandler(this.name, this.context, this.mapper);
 
   SqlQuery handle() {
-    _foundVariables = mapper.extractVariables(context);
-    _foundPlaceholders = mapper.extractPlaceholders(context);
+    _foundElements = mapper.extractElements(context);
 
     _verifyNoSkippedIndexes();
     final query = _mapToMoor();
@@ -58,7 +58,7 @@ class QueryHandler {
 
     final isInsert = context.root is InsertStatement;
 
-    return UpdatingQuery(name, context, _foundVariables, _foundPlaceholders,
+    return UpdatingQuery(name, context, _foundElements,
         _foundTables.map(mapper.tableToMoor).toList(),
         isInsert: isInsert);
   }
@@ -69,8 +69,8 @@ class QueryHandler {
     _foundTables = tableFinder.foundTables;
     final moorTables = _foundTables.map(mapper.tableToMoor).toList();
 
-    return SqlSelectQuery(name, context, _foundVariables, _foundPlaceholders,
-        moorTables, _inferResultSet());
+    return SqlSelectQuery(
+        name, context, _foundElements, moorTables, _inferResultSet());
   }
 
   InferredResultSet _inferResultSet() {

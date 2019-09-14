@@ -830,11 +830,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<ConfigData> readMultiple(List<String> var1, OrderBy clause) {
-    var $highestIndex = 1;
-    final expandedvar1 = $expandVar($highestIndex, var1.length);
-    $highestIndex += var1.length;
+    var $arrayStartIndex = 1;
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    $arrayStartIndex += var1.length;
+    final generatedclause = $write(clause);
+    $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelectQuery(
-        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY \$clause',
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable.withString($),
         ],

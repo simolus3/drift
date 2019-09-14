@@ -286,7 +286,8 @@ mixin CrudParser on ParserBase {
       // terms).
       if (terms.length == 1 && terms.single is DartOrderingTermPlaceholder) {
         final termPlaceholder = terms.single as DartOrderingTermPlaceholder;
-        return DartOrderByPlaceholder(name: termPlaceholder.name);
+        return DartOrderByPlaceholder(name: termPlaceholder.name)
+          ..setSpan(termPlaceholder.first, termPlaceholder.last);
       }
 
       return OrderBy(terms: terms);

@@ -28,7 +28,15 @@ class GenerationContext {
   final QueryExecutor executor;
 
   final List<dynamic> _boundVariables = [];
+
+  /// The values of [introducedVariables] that will be sent to the underlying
+  /// engine.
   List<dynamic> get boundVariables => _boundVariables;
+
+  /// All variables ("?" in sql) that were added to this context.
+  final List<Variable> introducedVariables = [];
+
+  int get amountOfVariables => boundVariables.length;
 
   /// The string buffer contains the sql query as it's being constructed.
   final StringBuffer buffer = StringBuffer();
@@ -49,7 +57,8 @@ class GenerationContext {
   /// that the prepared statement can be executed with the variable. The value
   /// must be a type that is supported by the sqflite library. A list of
   /// supported types can be found [here](https://github.com/tekartik/sqflite#supported-sqlite-types).
-  void introduceVariable(dynamic value) {
+  void introduceVariable(Variable v, dynamic value) {
+    introducedVariables.add(v);
     _boundVariables.add(value);
   }
 

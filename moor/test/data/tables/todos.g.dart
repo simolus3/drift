@@ -1351,9 +1351,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   Selectable<TodoEntry> withInQuery(String var1, String var2, List<int> var3) {
-    var $highestIndex = 3;
-    final expandedvar3 = $expandVar($highestIndex, var3.length);
-    $highestIndex += var3.length;
+    var $arrayStartIndex = 3;
+    final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
+    $arrayStartIndex += var3.length;
     return customSelectQuery(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [

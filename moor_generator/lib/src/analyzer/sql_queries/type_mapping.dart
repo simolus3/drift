@@ -72,82 +72,141 @@ class TypeMapper {
     throw StateError('Unexpected type: $type');
   }
 
-  List<FoundVariable> extractVariables(AnalysisContext ctx) {
+  /// Extracts variables and Dart templates from the [ctx]. Variables are
+  /// sorted by their ascending index. Placeholders are sorted by the position
+  /// they have in the query. When comparing variables and placeholders, the
+  /// variable comes first if the first variable with the same index appears
+  /// before the placeholder.
+  ///
+  /// Additionally, the following assumptions can be made if this method returns
+  /// without throwing:
+  ///  - array variables don't have an explicit index
+  ///  - if an explicitly indexed variable appears AFTER an array variable or
+  ///    a Dart placeholder, its indexed is LOWER than that element. This means
+  ///    that elements can be expanded into multiple variables without breaking
+  ///    variables that appear after them.
+  List<FoundElement> extractElements(AnalysisContext ctx) {
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
-    final usedVars = ctx.root.allDescendants.whereType<Variable>().toList()
-      ..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+    final variables = ctx.root.allDescendants.whereType<Variable>().toList();
+    final placeholders =
+        ctx.root.allDescendants.whereType<DartPlaceholder>().toList();
 
-    final foundVariables = <FoundVariable>[];
+    final merged = _mergeVarsAndPlaceholders(variables, placeholders);
+
+    final foundElements = <FoundElement>[];
     // we don't allow variables with an explicit index after an array. For
     // instance: SELECT * FROM t WHERE id IN ? OR id = ?2. The reason this is
     // not allowed is that we expand the first arg into multiple vars at runtime
-    // which would break the index.
+    // which would break the index. The initial high values can be arbitrary.
+    // We've chosen 999 because most sqlite binaries don't allow more variables.
     var maxIndex = 999;
     var currentIndex = 0;
 
-    for (var used in usedVars) {
-      if (used.resolvedIndex == currentIndex) {
-        continue; // already handled
-      }
+    for (var used in merged) {
+      if (used is Variable) {
+        if (used.resolvedIndex == currentIndex) {
+          continue; // already handled, we only report a single variable / index
+        }
 
-      currentIndex = used.resolvedIndex;
-      final name = (used is ColonNamedVariable) ? used.name : null;
-      final explicitIndex =
-          (used is NumberedVariable) ? used.explicitIndex : null;
-      final internalType = ctx.typeOf(used);
-      final type = resolvedToMoor(internalType.type);
-      final isArray = internalType.type?.isArray ?? false;
+        currentIndex = used.resolvedIndex;
+        final name = (used is ColonNamedVariable) ? used.name : null;
+        final explicitIndex =
+            (used is NumberedVariable) ? used.explicitIndex : null;
+        final internalType = ctx.typeOf(used);
+        final type = resolvedToMoor(internalType.type);
+        final isArray = internalType.type?.isArray ?? false;
 
-      if (explicitIndex != null && currentIndex >= maxIndex) {
-        throw ArgumentError(
-            'Cannot have a variable with an index lower than that of an array '
-            'appearing after an array!');
-      }
+        if (explicitIndex != null && currentIndex >= maxIndex) {
+          throw ArgumentError(
+              'Cannot have a variable with an index lower than that of an array '
+              'appearing after an array!');
+        }
 
-      foundVariables
-          .add(FoundVariable(currentIndex, name, type, used, isArray));
+        foundElements
+            .add(FoundVariable(currentIndex, name, type, used, isArray));
 
-      // arrays cannot be indexed explicitly because they're expanded into
-      // multiple variables when executed
-      if (isArray && explicitIndex != null) {
-        throw ArgumentError(
-            'Cannot use an array variable with an explicit index');
-      }
-      if (isArray) {
-        maxIndex = used.resolvedIndex;
+        // arrays cannot be indexed explicitly because they're expanded into
+        // multiple variables when executed
+        if (isArray && explicitIndex != null) {
+          throw ArgumentError(
+              'Cannot use an array variable with an explicit index');
+        }
+        if (isArray) {
+          maxIndex = used.resolvedIndex;
+        }
+      } else if (used is DartPlaceholder) {
+        // we don't what index this placeholder has, so we can't allow _any_
+        // explicitly indexed variables coming after this
+        maxIndex = 0;
+        foundElements.add(_extractPlaceholder(ctx, used));
       }
     }
-
-    return foundVariables;
+    return foundElements;
   }
 
-  List<FoundDartPlaceholder> extractPlaceholders(AnalysisContext context) {
-    final placeholders =
-        context.root.allDescendants.whereType<DartPlaceholder>().toList();
-    final found = <FoundDartPlaceholder>[];
-
-    for (var placeholder in placeholders) {
-      ColumnType columnType;
-      final name = placeholder.name;
-
-      final type = placeholder.when(
-        isExpression: (e) {
-          final foundType = context.typeOf(e);
-          if (foundType.type != null) {
-            columnType = resolvedToMoor(foundType.type);
-          }
-          return DartPlaceholderType.expression;
-        },
-        isLimit: (_) => DartPlaceholderType.limit,
-        isOrderBy: (_) => DartPlaceholderType.orderBy,
-        isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
-      );
-
-      found.add(FoundDartPlaceholder(type, columnType, name));
+  /// Merges [vars] and [placeholders] into a list that satisfies the order
+  /// described in [extractElements].
+  List<dynamic /* Variable|DartPlaceholder */ > _mergeVarsAndPlaceholders(
+      List<Variable> vars, List<DartPlaceholder> placeholders) {
+    final groupVarsByIndex = <int, List<Variable>>{};
+    for (var variable in vars) {
+      groupVarsByIndex
+          .putIfAbsent(variable.resolvedIndex, () => [])
+          .add(variable);
     }
-    return found;
+    // sort each group by index
+    for (var group in groupVarsByIndex.values) {
+      group..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+    }
+
+    int Function(dynamic, dynamic) comparer;
+    comparer = (dynamic a, dynamic b) {
+      if (a is Variable && b is Variable) {
+        // variables are sorted by their index
+        return a.resolvedIndex.compareTo(b.resolvedIndex);
+      } else if (a is DartPlaceholder && b is DartPlaceholder) {
+        // placeholders by their position
+        return AnalysisContext.compareNodesByOrder(a, b);
+      } else {
+        // ok, one of them is a variable, the other one is a placeholder. Let's
+        // assume a is the variable. If not, we just switch results.
+        if (a is Variable) {
+          final placeholderB = b as DartPlaceholder;
+          final firstWithSameIndex = groupVarsByIndex[a.resolvedIndex].first;
+
+          return firstWithSameIndex.firstPosition
+              .compareTo(placeholderB.firstPosition);
+        } else {
+          return -comparer(b, a);
+        }
+      }
+    };
+
+    final list = vars.cast<dynamic>().followedBy(placeholders).toList();
+    return list..sort(comparer);
+  }
+
+  FoundDartPlaceholder _extractPlaceholder(
+      AnalysisContext context, DartPlaceholder placeholder) {
+    ColumnType columnType;
+    final name = placeholder.name;
+
+    final type = placeholder.when(
+      isExpression: (e) {
+        final foundType = context.typeOf(e);
+        if (foundType.type != null) {
+          columnType = resolvedToMoor(foundType.type);
+        }
+        return DartPlaceholderType.expression;
+      },
+      isLimit: (_) => DartPlaceholderType.limit,
+      isOrderBy: (_) => DartPlaceholderType.orderBy,
+      isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
+    );
+
+    return FoundDartPlaceholder(type, columnType, name)..astNode = placeholder;
   }
 
   SpecifiedTable tableToMoor(Table table) {

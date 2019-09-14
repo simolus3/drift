@@ -44,10 +44,12 @@ class OrderBy extends Component {
   OrderBy(this.terms);
 
   @override
-  void writeInto(GenerationContext context) {
+  void writeInto(GenerationContext context, {bool writeOrderBy = true}) {
     var first = true;
 
-    context.buffer.write('ORDER BY ');
+    if (writeOrderBy) {
+      context.buffer.write('ORDER BY ');
+    }
 
     for (var term in terms) {
       if (first) {
