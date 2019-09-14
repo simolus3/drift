@@ -26,4 +26,4 @@ CREATE TABLE mytable (
 );
 
 readConfig: SELECT * FROM config WHERE config_key = ?;
-readMultiple: SELECT * FROM config WHERE config_key IN ?;
+readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;

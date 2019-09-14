@@ -123,6 +123,33 @@ class TypeMapper {
     return foundVariables;
   }
 
+  List<FoundDartPlaceholder> extractPlaceholders(AnalysisContext context) {
+    final placeholders =
+        context.root.allDescendants.whereType<DartPlaceholder>().toList();
+    final found = <FoundDartPlaceholder>[];
+
+    for (var placeholder in placeholders) {
+      ColumnType columnType;
+      final name = placeholder.name;
+
+      final type = placeholder.when(
+        isExpression: (e) {
+          final foundType = context.typeOf(e);
+          if (foundType.type != null) {
+            columnType = resolvedToMoor(foundType.type);
+          }
+          return DartPlaceholderType.expression;
+        },
+        isLimit: (_) => DartPlaceholderType.limit,
+        isOrderBy: (_) => DartPlaceholderType.orderBy,
+        isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
+      );
+
+      found.add(FoundDartPlaceholder(type, columnType, name));
+    }
+    return found;
+  }
+
   SpecifiedTable tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }

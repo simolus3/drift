@@ -829,12 +829,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(_rowToConfigData);
   }
 
-  Selectable<ConfigData> readMultiple(List<String> var1) {
+  Selectable<ConfigData> readMultiple(List<String> var1, OrderBy clause) {
     var $highestIndex = 1;
     final expandedvar1 = $expandVar($highestIndex, var1.length);
     $highestIndex += var1.length;
     return customSelectQuery(
-        'SELECT * FROM config WHERE config_key IN ($expandedvar1)',
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY \$clause',
         variables: [
           for (var $ in var1) Variable.withString($),
         ],

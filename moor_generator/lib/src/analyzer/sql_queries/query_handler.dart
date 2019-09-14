@@ -17,6 +17,7 @@ class QueryHandler {
 
   Set<Table> _foundTables;
   List<FoundVariable> _foundVariables;
+  List<FoundDartPlaceholder> _foundPlaceholders;
 
   SelectStatement get _select => context.root as SelectStatement;
 
@@ -24,6 +25,7 @@ class QueryHandler {
 
   SqlQuery handle() {
     _foundVariables = mapper.extractVariables(context);
+    _foundPlaceholders = mapper.extractPlaceholders(context);
 
     _verifyNoSkippedIndexes();
     final query = _mapToMoor();
@@ -45,7 +47,7 @@ class QueryHandler {
       return _handleUpdate();
     } else {
       throw StateError(
-          'Unexpected sql: Got $root, expected a select or update statement');
+          'Unexpected sql: Got $root, expected insert, select, update or delete');
     }
   }
 
@@ -56,7 +58,7 @@ class QueryHandler {
 
     final isInsert = context.root is InsertStatement;
 
-    return UpdatingQuery(name, context, _foundVariables,
+    return UpdatingQuery(name, context, _foundVariables, _foundPlaceholders,
         _foundTables.map(mapper.tableToMoor).toList(),
         isInsert: isInsert);
   }
@@ -67,8 +69,8 @@ class QueryHandler {
     _foundTables = tableFinder.foundTables;
     final moorTables = _foundTables.map(mapper.tableToMoor).toList();
 
-    return SqlSelectQuery(
-        name, context, _foundVariables, moorTables, _inferResultSet());
+    return SqlSelectQuery(name, context, _foundVariables, _foundPlaceholders,
+        moorTables, _inferResultSet());
   }
 
   InferredResultSet _inferResultSet() {

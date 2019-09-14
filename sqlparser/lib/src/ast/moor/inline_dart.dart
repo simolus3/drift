@@ -32,6 +32,24 @@ abstract class DartPlaceholder extends AstNode {
   bool contentEquals(DartPlaceholder other) {
     return other.name == name && other._dartEquals(other);
   }
+
+  T when<T>(
+      {T Function(DartExpressionPlaceholder) isExpression,
+      T Function(DartLimitPlaceholder) isLimit,
+      T Function(DartOrderingTermPlaceholder) isOrderingTerm,
+      T Function(DartOrderByPlaceholder) isOrderBy}) {
+    if (this is DartExpressionPlaceholder) {
+      return isExpression?.call(this as DartExpressionPlaceholder);
+    } else if (this is DartLimitPlaceholder) {
+      return isLimit?.call(this as DartLimitPlaceholder);
+    } else if (this is DartOrderingTermPlaceholder) {
+      return isOrderingTerm?.call(this as DartOrderingTermPlaceholder);
+    } else if (this is DartOrderByPlaceholder) {
+      return isOrderBy?.call(this as DartOrderByPlaceholder);
+    }
+
+    throw AssertionError('Invalid placeholder: $runtimeType');
+  }
 }
 
 class DartExpressionPlaceholder extends DartPlaceholder implements Expression {

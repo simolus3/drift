@@ -76,7 +76,14 @@ abstract class SqlQuery {
   ///    about the variables that appear after that array.
   final List<FoundVariable> variables;
 
-  SqlQuery(this.name, this.fromContext, this.variables);
+  /// The placeholders in this query which are bound and converted to sql at
+  /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
+  /// going to be a [FoundDartPlaceholder] with the type
+  /// [DartPlaceholderType.expression] and [ColumnType.boolean]. We will
+  /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
+  final List<FoundDartPlaceholder> placeholders;
+
+  SqlQuery(this.name, this.fromContext, this.variables, this.placeholders);
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -90,19 +97,28 @@ class SqlSelectQuery extends SqlQuery {
     return '${ReCase(name).pascalCase}Result';
   }
 
-  SqlSelectQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.readsFrom, this.resultSet)
-      : super(name, fromContext, variables);
+  SqlSelectQuery(
+      String name,
+      AnalysisContext fromContext,
+      List<FoundVariable> variables,
+      List<FoundDartPlaceholder> placeholders,
+      this.readsFrom,
+      this.resultSet)
+      : super(name, fromContext, variables, placeholders);
 }
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
   final bool isInsert;
 
-  UpdatingQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.updates,
+  UpdatingQuery(
+      String name,
+      AnalysisContext fromContext,
+      List<FoundVariable> variables,
+      List<FoundDartPlaceholder> placeholders,
+      this.updates,
       {this.isInsert = false})
-      : super(name, fromContext, variables);
+      : super(name, fromContext, variables, placeholders);
 }
 
 class InferredResultSet {
@@ -196,5 +212,46 @@ class FoundVariable {
     } else {
       return 'var${variable.resolvedIndex}';
     }
+  }
+}
+
+enum DartPlaceholderType {
+  expression,
+  limit,
+  orderByTerm,
+  orderBy,
+}
+
+/// A Dart placeholder that will be bound at runtime.
+class FoundDartPlaceholder {
+  final DartPlaceholderType type;
+
+  /// If [type] is [DartPlaceholderType.expression] and the expression could be
+  /// resolved, this is the type of that expression.
+  final ColumnType columnType;
+
+  final String name;
+
+  FoundDartPlaceholder(this.type, this.columnType, this.name);
+
+  /// The type of this parameter on a generated method.
+  String get parameterType {
+    switch (type) {
+      case DartPlaceholderType.expression:
+        if (columnType == null) return 'Expression';
+
+        final dartType = dartTypeNames[columnType];
+        final sqlImplType = sqlTypes[columnType];
+        return 'Expression<$dartType, $sqlImplType>';
+        break;
+      case DartPlaceholderType.limit:
+        return 'Limit';
+      case DartPlaceholderType.orderByTerm:
+        return 'OrderingTerm';
+      case DartPlaceholderType.orderBy:
+        return 'OrderBy';
+    }
+
+    throw AssertionError('cant happen, all branches covered');
   }
 }

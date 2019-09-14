@@ -180,14 +180,19 @@ class QueryWriter {
   }
 
   void _writeParameters() {
-    final paramList = query.variables.map((v) {
+    final variableParams = query.variables.map((v) {
       var dartType = dartTypeNames[v.type];
       if (v.isArray) {
         dartType = 'List<$dartType>';
       }
       return '$dartType ${v.dartParameterName}';
-    }).join(', ');
+    });
 
+    final placeholderParams = query.placeholders.map((p) {
+      return '${p.parameterType} ${p.name}';
+    });
+
+    final paramList = variableParams.followedBy(placeholderParams).join(', ');
     _buffer.write(paramList);
   }
 
@@ -195,7 +200,11 @@ class QueryWriter {
   /// assuming that for each parameter, a variable with the same name exists
   /// in the current scope.
   void _writeUseParameters() {
-    _buffer.write(query.variables.map((v) => v.dartParameterName).join(', '));
+    final parameters = query.variables
+        .map((v) => v.dartParameterName)
+        .followedBy(query.placeholders.map((p) => p.name));
+
+    _buffer.write(parameters.join(', '));
   }
 
   // Some notes on parameters and generating query code:
