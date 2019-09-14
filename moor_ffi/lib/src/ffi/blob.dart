@@ -3,7 +3,7 @@ import 'dart:ffi';
 
 import 'dart:typed_data';
 
-import 'package:moor/src/vm/ffi/utils.dart';
+import 'package:moor_ffi/src/ffi/utils.dart';
 
 /// Pointer to arbitrary blobs in C.
 class CBlob extends Struct<CBlob> {
@@ -33,6 +33,7 @@ class CBlob extends Struct<CBlob> {
     final str = addressOf;
     if (isNullPointer(str)) return null;
 
+    // todo can we user Pointer.asExternalTypedData here?
     final blob = Uint8List(bytesToRead);
     for (var i = 0; i < bytesToRead; ++i) {
       blob[i] = str.elementAt(i).load<CBlob>().data;

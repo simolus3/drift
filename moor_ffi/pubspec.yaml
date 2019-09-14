@@ -1,0 +1,25 @@
+name: moor_ffi
+description: "Experimental moor implementation that uses dart:ffi"
+version: 2.0.0-dev
+author:
+homepage:
+
+environment:
+  sdk: ">=2.5.0-dev <2.6.0"
+
+dependencies:
+  moor: ^2.0.0
+#  flutter:
+#    sdk: flutter
+
+dev_dependencies:
+  test: ^1.6.0
+
+#flutter:
+#  plugin:
+#    androidPackage: com.example.moor_ffi
+#    pluginClass: MoorFfiPlugin
+
+dependency_overrides:
+  moor:
+    path: ../moor

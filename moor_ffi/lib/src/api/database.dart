@@ -4,11 +4,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:moor/src/vm/bindings/constants.dart';
-import 'package:moor/src/vm/bindings/types.dart' as types;
-import 'package:moor/src/vm/bindings/bindings.dart';
-import 'package:moor/src/vm/ffi/blob.dart';
-import 'package:moor/src/vm/ffi/utils.dart';
+import 'package:moor_ffi/src/bindings/constants.dart';
+import 'package:moor_ffi/src/bindings/types.dart' as types;
+import 'package:moor_ffi/src/bindings/bindings.dart';
+import 'package:moor_ffi/src/ffi/blob.dart';
+import 'package:moor_ffi/src/ffi/utils.dart';
 
 part 'errors.dart';
 part 'prepared_statement.dart';

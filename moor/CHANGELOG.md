@@ -9,6 +9,10 @@ TODO: Properly describe these additions when they're finalized:
 - Analyzer plugin for Dart Code
 - `ffi` libraries
 
+### Minor changes
+- a `Constant<String>` can now be written to SQL, it used to throw before. This is useful
+  if you need default values for strings columns.
+
 ### Breaking changes
 - __THIS LIKELY AFFECTS YOUR APP:__ Removed the `transaction` parameter for callbacks
   in transactions and `beforeOpen` callbacks. So, instead of writing
@@ -28,7 +32,9 @@ TODO: Properly describe these additions when they're finalized:
   your database instead of a transaction objects. They will be delegated automatically.
   
   On a similar note, we also removed the `operateOn` parameter from compiled queries.
-  
+- Compiled queries that return only a single column (e.g. `SELECT COUNT(*) FROM users`)
+  will just return their value (in this case, an `int`) now. Moor no longer generates a 
+  new class in that case.
 - Removed `MigrationStrategy.onFinished`. Use `beforeOpen` instead.
 - Compiled sql queries starting with an underscore will now generate private match queries.
   Previously, the query `_allUsers` would generate a `watchAllUsers` method, that has been

@@ -1,4 +1,4 @@
-part of 'package:moor/moor_vm.dart';
+part of 'package:moor_ffi/moor_ffi.dart';
 
 /// A moor database that runs on the Dart VM.
 class VMDatabase extends DelegatedDatabase {

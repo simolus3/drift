@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+    }
+}
+
+plugins {
+    id "de.undercouch.download" version "4.0.0"
+}
+
+group 'com.example.moor_ffi'
+version '1.0'
+
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 16
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "cpp/CMakeLists.txt"
+        }
+    }
+
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+}
+
+task downloadSqlite(type: Download) {
+    src 'https://sqlite.org/2019/sqlite-amalgamation-3290000.zip'
+    dest 'sqlite_3290000.zip'
+    overwrite false
+}
+
+task extractSqlite(dependsOn: downloadSqlite, type: Copy) {
+    from zipTree(downloadSqlite.dest).matching {
+        include '*/sqlite3.c'
+        eachFile { it.setPath(it.getName()) } // Don't use top-level folder in zip
+    }
+    into 'cpp'
+}
+
+preBuild.dependsOn extractSqlite
