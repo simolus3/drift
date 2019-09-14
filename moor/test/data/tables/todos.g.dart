@@ -1333,9 +1333,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   Future<int> deleteTodoById(int var1) {
     return customUpdate(
       'DELETE FROM todos WHERE id = ?',
-      variables: [
-        Variable.withInt(var1),
-      ],
+      variables: [Variable.withInt(var1)],
       updates: {todosTable},
     );
   }
@@ -1359,7 +1357,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [
           Variable.withString(var1),
           Variable.withString(var2),
-          for (var $ in var3) Variable.withInt($),
+          for (var $ in var3) Variable.withInt($)
         ],
         readsFrom: {
           todosTable
@@ -1378,12 +1376,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
   Selectable<TodoEntry> searchQuery(int id) {
     return customSelectQuery(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
-        variables: [
-          Variable.withInt(id),
-        ],
-        readsFrom: {
-          todosTable
-        }).map(_rowToTodoEntry);
+        variables: [Variable.withInt(id)],
+        readsFrom: {todosTable}).map(_rowToTodoEntry);
   }
 
   Future<List<TodoEntry>> search(int id) {
@@ -1474,14 +1468,8 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   Selectable<TodoEntry> todosForUserQuery(int user) {
     return customSelectQuery(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [
-          Variable.withInt(user),
-        ],
-        readsFrom: {
-          todosTable,
-          sharedTodos,
-          users
-        }).map(_rowToTodoEntry);
+        variables: [Variable.withInt(user)],
+        readsFrom: {todosTable, sharedTodos, users}).map(_rowToTodoEntry);
   }
 
   Future<List<TodoEntry>> todosForUser(int user) {

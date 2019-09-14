@@ -821,12 +821,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<ConfigData> readConfig(String var1) {
     return customSelectQuery('SELECT * FROM config WHERE config_key = ?',
-        variables: [
-          Variable.withString(var1),
-        ],
-        readsFrom: {
-          config
-        }).map(_rowToConfigData);
+        variables: [Variable.withString(var1)],
+        readsFrom: {config}).map(_rowToConfigData);
   }
 
   Selectable<ConfigData> readMultiple(List<String> var1, OrderBy clause) {
@@ -839,6 +835,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable.withString($),
+          ...generatedclause.introducedVariables
         ],
         readsFrom: {
           config
@@ -848,10 +845,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Future<int> writeConfig(String key, String value) {
     return customInsert(
       'REPLACE INTO config VALUES (:key, :value)',
-      variables: [
-        Variable.withString(key),
-        Variable.withString(value),
-      ],
+      variables: [Variable.withString(key), Variable.withString(value)],
       updates: {config},
     );
   }

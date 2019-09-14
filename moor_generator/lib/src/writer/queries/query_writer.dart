@@ -295,19 +295,28 @@ class QueryWriter {
   void _writeVariables() {
     _buffer..write('variables: [');
 
-    for (var variable in query.variables) {
-      // for a regular variable: Variable.withInt(x),
-      // for a list of vars: for (var $ in vars) Variable.withInt($),
-      final constructor = createVariable[variable.type];
-      final name = variable.dartParameterName;
-
-      if (variable.isArray) {
-        _buffer.write('for (var \$ in $name) $constructor(\$)');
-      } else {
-        _buffer.write('$constructor($name)');
+    var first = true;
+    for (var element in query.elements) {
+      if (!first) {
+        _buffer.write(', ');
       }
+      first = false;
 
-      _buffer.write(',');
+      if (element is FoundVariable) {
+        // for a regular variable: Variable.withInt(x),
+        // for a list of vars: for (var $ in vars) Variable.withInt($),
+        final constructor = createVariable[element.type];
+        final name = element.dartParameterName;
+
+        if (element.isArray) {
+          _buffer.write('for (var \$ in $name) $constructor(\$)');
+        } else {
+          _buffer.write('$constructor($name)');
+        }
+      } else if (element is FoundDartPlaceholder) {
+        _buffer.write(
+            '...${_placeholderContextName(element)}.introducedVariables');
+      }
     }
 
     _buffer..write(']');
