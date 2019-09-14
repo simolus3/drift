@@ -54,4 +54,17 @@ void main() {
     await db.into(db.mytable).insert(const MytableCompanion());
     verify(mock.runInsert('INSERT INTO mytable DEFAULT VALUES', []));
   });
+
+  test('runs queries with arrays and Dart templates', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    await db.readMultiple(['a', 'b'],
+        OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
+
+    verify(mock.runSelect(
+      'SELECT * FROM config WHERE config_key IN (?1, ?2) ORDER BY config_key ASC',
+      ['a', 'b'],
+    ));
+  });
 }
