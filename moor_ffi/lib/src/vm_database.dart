@@ -1,19 +1,19 @@
 part of 'package:moor_ffi/moor_ffi.dart';
 
 /// A moor database that runs on the Dart VM.
-class VMDatabase extends DelegatedDatabase {
-  VMDatabase._(DatabaseDelegate delegate, bool logStatements)
+class VmDatabase extends DelegatedDatabase {
+  VmDatabase._(DatabaseDelegate delegate, bool logStatements)
       : super(delegate, isSequential: true, logStatements: logStatements);
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
-  factory VMDatabase(File file, {bool logStatements = false}) {
-    return VMDatabase._(_VmDelegate(file), logStatements);
+  factory VmDatabase(File file, {bool logStatements = false}) {
+    return VmDatabase._(_VmDelegate(file), logStatements);
   }
 
   /// Creates a database won't persist its changes on disk.
-  factory VMDatabase.memory({bool logStatements = false}) {
-    return VMDatabase._(_VmDelegate(null), logStatements);
+  factory VmDatabase.memory({bool logStatements = false}) {
+    return VmDatabase._(_VmDelegate(null), logStatements);
   }
 }
 

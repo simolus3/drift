@@ -11,7 +11,7 @@ class VmExecutor extends TestExecutor {
 
   @override
   QueryExecutor createExecutor() {
-    return VMDatabase(file);
+    return VmDatabase(file);
   }
 
   @override

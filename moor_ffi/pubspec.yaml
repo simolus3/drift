@@ -1,6 +1,6 @@
 name: moor_ffi
 description: "Experimental moor implementation that uses dart:ffi"
-version: 2.0.0-dev
+version: 0.0.1
 author:
 homepage:
 
