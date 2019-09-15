@@ -17,8 +17,9 @@ class _FakeDb extends GeneratedDatabase {
       },
       beforeOpen: (details) async {
         // this fake select query is verified via mocks
-        await customSelect(
-            'opened: ${details.versionBefore} to ${details.versionNow}');
+        await customSelectQuery(
+                'opened: ${details.versionBefore} to ${details.versionNow}')
+            .get();
       },
     );
   }

@@ -62,7 +62,7 @@ class TypeResolver {
         // todo probably needs to be nullable when coming from a join?
         return ResolveResult(column.type);
       } else if (column is ExpressionColumn) {
-        return resolveExpression(column.expression);
+        return resolveOrInfer(column.expression);
       }
 
       throw StateError('Unknown column $column');

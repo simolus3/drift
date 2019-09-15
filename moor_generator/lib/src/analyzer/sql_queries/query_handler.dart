@@ -82,11 +82,11 @@ class QueryHandler {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
       UsedTypeConverter converter;
-      if (type.hint is TypeConverterHint) {
+      if (type?.hint is TypeConverterHint) {
         converter = (type.hint as TypeConverterHint).converter;
       }
 
-      columns.add(ResultColumn(column.name, moorType, type.nullable,
+      columns.add(ResultColumn(column.name, moorType, type?.nullable ?? true,
           converter: converter));
 
       final table = _tableOfColumn(column);

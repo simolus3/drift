@@ -2,6 +2,8 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../query_handler.dart';
 
+/// Provides additional hints that aren't implemented in the sqlparser because
+/// they're specific to moor.
 class Linter {
   final QueryHandler handler;
   final List<AnalysisError> lints = [];
@@ -17,6 +19,39 @@ class _LintingVisitor extends RecursiveVisitor<void> {
   final Linter linter;
 
   _LintingVisitor(this.linter);
+
+  @override
+  void visitResultColumn(ResultColumn e) {
+    super.visitResultColumn(e);
+
+    if (e is ExpressionResultColumn) {
+      // The generated code will be invalid if knowing the expression is needed
+      // to know the column name (e.g. it's a Dart template without an AS), or
+      // if the type is unknown.
+      final expression = e.expression;
+      final resolveResult = linter.handler.context.typeOf(expression);
+
+      if (resolveResult.type == null) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'Expression has an unknown type, the generated code can be'
+              ' inaccurate.',
+          relevantNode: expression,
+        ));
+      }
+
+      final dependsOnPlaceholder = e.as == null &&
+          expression.allDescendants.whereType<DartPlaceholder>().isNotEmpty;
+      if (dependsOnPlaceholder) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'The name of this column depends on a Dart template, which '
+              'breaks generated code. Try adding an `AS` alias to fix this.',
+          relevantNode: e,
+        ));
+      }
+    }
+  }
 
   @override
   void visitInsertStatement(InsertStatement e) {

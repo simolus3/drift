@@ -113,7 +113,8 @@ class QueryWriter {
   String _readingCode(ResultColumn column) {
     final readMethod = readFromMethods[column.type];
 
-    var code = "row.$readMethod('${column.name}')";
+    final dartLiteral = asDartLiteral(column.name);
+    var code = 'row.$readMethod($dartLiteral)';
 
     if (column.converter != null) {
       final converter = column.converter;
