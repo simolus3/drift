@@ -15,10 +15,11 @@ dependencies:
 dev_dependencies:
   test: ^1.6.0
 
-#flutter:
-#  plugin:
-#    androidPackage: com.example.moor_ffi
-#    pluginClass: MoorFfiPlugin
+flutter:
+  plugin:
+    # the flutter.plugin key needs to exists so that this project gets recognized as a plugin when imported. We need to
+    # get recognized as a plugin so that our build scripts are executed.
+    foo: bar
 
 dependency_overrides:
   moor:

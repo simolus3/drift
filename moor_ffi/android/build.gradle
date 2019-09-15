@@ -13,9 +13,8 @@ plugins {
     id "de.undercouch.download" version "4.0.0"
 }
 
-group 'com.example.moor_ffi'
+group 'eu.simonbinder.moor_ffi'
 version '1.0'
-
 
 rootProject.allprojects {
     repositories {

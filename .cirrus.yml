@@ -1,6 +1,6 @@
 # Run tasks with the dart SDK installed by default
-container: # todo set back to latest
-  image: "google/dart:dev"
+container:
+  image: "google/dart:latest"
 
 # We're currently not running tests with coverage because the free cirrus containers run out of memory :(
 
