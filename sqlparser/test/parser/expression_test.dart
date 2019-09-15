@@ -83,6 +83,15 @@ final Map<String, Expression> _testCases = {
       ),
     ),
   ),
+  '(SELECT x)': SubQuery(
+    select: SelectStatement(
+      columns: [
+        ExpressionResultColumn(
+          expression: Reference(columnName: 'x'),
+        ),
+      ],
+    ),
+  ),
   "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
     StringLiteral.from(token(TokenType.stringLiteral), 'hello'),
     token(TokenType.doublePipe),
@@ -90,6 +99,41 @@ final Map<String, Expression> _testCases = {
       operator: token(TokenType.collate),
       inner: StringLiteral.from(token(TokenType.stringLiteral), 'world'),
       collateFunction: token(TokenType.identifier),
+    ),
+  ),
+  'x in ?': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+  ),
+  'x IN (SELECT col FROM tbl)': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: SubQuery(
+      select: SelectStatement(
+        columns: [
+          ExpressionResultColumn(
+            expression: Reference(columnName: 'col'),
+          )
+        ],
+        from: [
+          TableReference('tbl', null),
+        ],
+      ),
+    ),
+  ),
+  'x IN (1, 2, (SELECT 3))': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: Tuple(
+      expressions: [
+        NumericLiteral(1.0, token(TokenType.numberLiteral)),
+        NumericLiteral(2.0, token(TokenType.numberLiteral)),
+        SubQuery(
+          select: SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: NumericLiteral(3.0, token(TokenType.numberLiteral)),
+            ),
+          ]),
+        ),
+      ],
     ),
   ),
 };

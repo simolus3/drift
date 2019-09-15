@@ -460,7 +460,8 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.$values)) {
       final values = <Tuple>[];
       do {
-        values.add(_consumeTuple());
+        // it will be a tuple, we don't turn on "orSubQuery"
+        values.add(_consumeTuple() as Tuple);
       } while (_matchOne(TokenType.comma));
       return ValuesSource(values);
     } else if (_matchOne(TokenType.$default)) {

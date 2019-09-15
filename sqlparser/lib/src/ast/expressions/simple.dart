@@ -122,10 +122,15 @@ class BetweenExpression extends Expression {
 class InExpression extends Expression {
   final bool not;
   final Expression left;
+
+  /// The right-hand part: Contains the set of values [left] will be tested
+  /// against. From the sqlite grammar, we support [Tuple] and a [SubQuery].
+  /// We also support a [Variable] as syntax sugar - it will be expanded into a
+  /// tuple of variables at runtime.
   final Expression inside;
 
   InExpression({this.not = false, @required this.left, @required this.inside}) {
-    assert(inside is Tuple || inside is Variable);
+    assert(inside is Tuple || inside is Variable || inside is SubQuery);
   }
 
   @override

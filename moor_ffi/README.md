@@ -1,21 +1,23 @@
 # moor_ffi
 
-Moor backend that uses the new `dart:ffi` apis. Note that, while we have integration tests
+Moor backend that uses `dart:ffi`. Note that, while we have integration tests
 on this package, it depends on the `dart:ffi` apis, which are in "preview" status at the moment.
 Thus, this library is not suited for production use.
 
 If you want to use moor on Android or iOS, see the [getting started guide](https://moor.simonbinder.eu/docs/getting-started/)
 which recommends to use the [moor_flutter](https://pub.dev/packages/moor_flutter) package.
-At the moment, this library is targeted for advanced moor users who want to try out the `ffi`
+At the moment, this library is targeted at advanced moor users who want to try out the `ffi`
 backend.
 
 ## Supported platforms
-At the moment, this plugin supports Android natively. However, it's also going to run on all
-platforms that expose `sqlite3` as a shared native library (macOS and virtually all Linux
-distros, I'm not sure about Windows). Native iOS and macOS support is planned.
+At the moment, this plugin only supports Android without further work. However, it's also going
+to run on all platforms that expose `sqlite3` as a shared native library (macOS and virtually 
+all Linux distros, I'm not sure about Windows). Native iOS and macOS support is planned.
+As Flutter desktop doesn't support plugins on Windows and Linux yet, we can't bundle the 
+sqlite library on those platforms.
 
 ## Migrating from moor_flutter
-Add both `moor` and `moor_ffi` to your pubspec.
+Add both `moor` and `moor_ffi` to your pubspec, the `moor_flutter` dependency can be dropped.
 
 ```yaml
 dependencies:

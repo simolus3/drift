@@ -142,7 +142,10 @@ abstract class ParserBase {
 
   // Common operations that we are referenced very often
   Expression expression();
-  Tuple _consumeTuple();
+
+  /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
+  /// (in brackets) will be accepted as well.
+  Expression _consumeTuple({bool orSubQuery = false});
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.

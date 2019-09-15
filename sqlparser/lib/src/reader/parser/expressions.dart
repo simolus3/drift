@@ -67,7 +67,7 @@ mixin ExpressionParser on ParserBase {
       final not = _matchOne(TokenType.not);
       _matchOne(TokenType.$in);
 
-      final inside = _variableOrNull() ?? _consumeTuple();
+      final inside = _variableOrNull() ?? _consumeTuple(orSubQuery: true);
       return InExpression(left: left, inside: inside, not: not);
     }
 
@@ -289,12 +289,6 @@ mixin ExpressionParser on ParserBase {
           return Reference(columnName: first.identifier)..setSpan(first, first);
         }
         break;
-      case TokenType.questionMarkVariable:
-        return NumberedVariable(token as QuestionMarkVariableToken)
-          ..setSpan(token, token);
-      case TokenType.colonVariable:
-        return ColonNamedVariable(token as ColonVariableToken)
-          ..setSpan(token, token);
       case TokenType.dollarSignVariable:
         if (enableMoorExtensions) {
           final typedToken = token as DollarSignVariableToken;
@@ -377,20 +371,28 @@ mixin ExpressionParser on ParserBase {
   }
 
   @override
-  Tuple _consumeTuple() {
+  Expression _consumeTuple({bool orSubQuery = false}) {
     final firstToken =
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
 
-    // tuples can be empty `()`, so only start parsing values when it's not
-    if (_peek.type != TokenType.rightParen) {
-      do {
-        expressions.add(expression());
-      } while (_matchOne(TokenType.comma));
+    final subQuery = select();
+    if (subQuery == null) {
+      // no sub query found. read expressions that form the tuple.
+      // tuples can be empty `()`, so only start parsing values when it's not
+      if (_peek.type != TokenType.rightParen) {
+        do {
+          expressions.add(expression());
+        } while (_matchOne(TokenType.comma));
+      }
+
+      _consume(
+          TokenType.rightParen, 'Expected right parenthesis to close tuple');
+      return Tuple(expressions: expressions)..setSpan(firstToken, _previous);
+    } else {
+      _consume(TokenType.rightParen,
+          'Expected right parenthesis to finish subquery');
+      return SubQuery(select: subQuery)..setSpan(firstToken, _previous);
     }
-
-    _consume(TokenType.rightParen, 'Expected right parenthesis to close tuple');
-
-    return Tuple(expressions: expressions)..setSpan(firstToken, _previous);
   }
 }
