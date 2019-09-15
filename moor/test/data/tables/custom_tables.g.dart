@@ -842,6 +842,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(_rowToConfigData);
   }
 
+  Selectable<ConfigData> readDynamic(Expression<bool, BoolType> predicate) {
+    final generatedpredicate = $write(predicate);
+    return customSelectQuery(
+        'SELECT * FROM config WHERE ${generatedpredicate.sql}',
+        variables: [...generatedpredicate.introducedVariables],
+        readsFrom: {config}).map(_rowToConfigData);
+  }
+
   Future<int> writeConfig(String key, String value) {
     return customInsert(
       'REPLACE INTO config VALUES (:key, :value)',

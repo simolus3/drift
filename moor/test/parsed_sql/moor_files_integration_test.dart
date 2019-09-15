@@ -67,4 +67,20 @@ void main() {
       ['a', 'b'],
     ));
   });
+
+  test('runs query with variables from template', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    final mockResponse = {'config_key': 'key', 'config_value': 'value'};
+    when(mock.runSelect(any, any))
+        .thenAnswer((_) => Future.value([mockResponse]));
+
+    final parsed =
+        await db.readDynamic(db.config.configKey.equals('key')).getSingle();
+
+    verify(
+        mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
+    expect(parsed, ConfigData(configKey: 'key', configValue: 'value'));
+  });
 }

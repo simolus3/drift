@@ -244,9 +244,14 @@ class QueryWriter {
 
   void _writeExpandedDeclarations() {
     var indexCounterWasDeclared = false;
+    final needsIndexCounter = query.variables.any((v) => v.isArray);
     var highestIndexBeforeArray = 0;
 
-    void _writeIndexCounter() {
+    void _writeIndexCounterIfNeeded() {
+      if (indexCounterWasDeclared || !needsIndexCounter) {
+        return; // already written or not necessary at all
+      }
+
       // we only need the index counter when the query contains an expanded
       // element.
       // add +1 because that's going to be the first index of this element.
@@ -256,7 +261,9 @@ class QueryWriter {
     }
 
     void _increaseIndexCounter(String by) {
-      _buffer..write('$highestAssignedIndexVar += ')..write(by)..write(';\n');
+      if (needsIndexCounter) {
+        _buffer..write('$highestAssignedIndexVar += ')..write(by)..write(';\n');
+      }
     }
 
     // query.elements are guaranteed to be sorted in the order in which they're
@@ -265,9 +272,7 @@ class QueryWriter {
     for (var element in query.elements) {
       if (element is FoundVariable) {
         if (element.isArray) {
-          if (!indexCounterWasDeclared) {
-            _writeIndexCounter();
-          }
+          _writeIndexCounterIfNeeded();
 
           // final expandedvar1 = $expandVar(<startIndex>, <amount>);
           _buffer
@@ -288,9 +293,8 @@ class QueryWriter {
           highestIndexBeforeArray = max(highestIndexBeforeArray, element.index);
         }
       } else if (element is FoundDartPlaceholder) {
-        if (!indexCounterWasDeclared) {
-          indexCounterWasDeclared = true;
-        }
+        _writeIndexCounterIfNeeded();
+
         _buffer
           ..write('final ')
           ..write(_placeholderContextName(element))
