@@ -72,7 +72,7 @@ abstract class InsertSource {
 
 /// Uses a list of values for an insert statement (`VALUES (a, b, c)`).
 class ValuesSource extends InsertSource {
-  final List<TupleExpression> values;
+  final List<Tuple> values;
 
   ValuesSource(this.values);
 

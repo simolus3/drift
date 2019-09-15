@@ -46,7 +46,7 @@ final Map<String, AstNode> testCases = {
     from: [TableReference('tbl', null)],
     where: InExpression(
       left: Reference(columnName: 'id'),
-      inside: TupleExpression(expressions: []),
+      inside: Tuple(expressions: []),
     ),
   ),
 };

@@ -285,7 +285,7 @@ class TypeResolver {
 
         // If this appears in a tuple, e.g. test IN (?). The "(?)" will be an
         // array. Of course, the individual entry is not, so reset that state.
-        if (parent is TupleExpression) {
+        if (parent is Tuple) {
           return inferredType.mapResult((r) => r.toArray(false));
         }
         return inferredType;
@@ -330,7 +330,7 @@ class TypeResolver {
         return resolveExpression(otherNode as Expression);
       }
     } else if (parent is Parentheses ||
-        parent is TupleExpression ||
+        parent is Tuple ||
         parent is UnaryExpression) {
       return const ResolveResult.needsContext();
     } else if (parent is Invocation) {

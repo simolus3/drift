@@ -118,13 +118,15 @@ class BetweenExpression extends Expression {
   bool contentEquals(BetweenExpression other) => other.not == not;
 }
 
-/// `$left$ IN $inside`
+/// `$left$ IN $inside`.
 class InExpression extends Expression {
   final bool not;
   final Expression left;
   final Expression inside;
 
-  InExpression({this.not = false, @required this.left, @required this.inside});
+  InExpression({this.not = false, @required this.left, @required this.inside}) {
+    assert(inside is Tuple || inside is Variable);
+  }
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);
@@ -158,8 +160,4 @@ class Parentheses extends Expression {
 
   @override
   bool contentEquals(Parentheses other) => true;
-
-  TupleExpression get asTuple {
-    return TupleExpression(expressions: [expression]);
-  }
 }

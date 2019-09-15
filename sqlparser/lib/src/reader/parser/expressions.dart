@@ -67,13 +67,7 @@ mixin ExpressionParser on ParserBase {
       final not = _matchOne(TokenType.not);
       _matchOne(TokenType.$in);
 
-      var inside = _equals();
-      if (inside is Parentheses) {
-        // if we have something like x IN (3), then (3) is a tuple and not a
-        // parenthesis. We can only know this from the context unfortunately
-        inside = (inside as Parentheses).asTuple;
-      }
-
+      final inside = _variableOrNull() ?? _consumeTuple();
       return InExpression(left: left, inside: inside, not: not);
     }
 
@@ -248,42 +242,24 @@ mixin ExpressionParser on ParserBase {
     final literal = _literalOrNull();
     if (literal != null) return literal;
 
+    final variable = _variableOrNull();
+    if (variable != null) return variable;
+
     final token = _advance();
     final type = token.type;
     switch (type) {
       case TokenType.leftParen:
-        // Opening brackets could be three things: An inner select statement
-        // (SELECT ...), a parenthesised expression, or a tuple of expressions
-        // (a, b, c).
+        // An opening bracket in the context of an expression could either be
+        // an inner select statement or a parenthesised expression.
         final left = token;
         if (_peek.type == TokenType.select) {
           final stmt = select();
           _consume(TokenType.rightParen, 'Expected a closing bracket');
           return SubQuery(select: stmt);
         } else {
-          // alright, it's either a tuple or just parenthesis. A tuple can be
-          // empty, so if the next statement is the closing bracket we're done
-          if (_matchOne(TokenType.rightParen)) {
-            return TupleExpression(expressions: [])..setSpan(left, _previous);
-          }
-
           final expr = expression();
-
-          // Are we witnessing a tuple?
-          if (_check(TokenType.comma)) {
-            // we are, add expressions as long as we see commas
-            final exprs = [expr];
-            while (_matchOne(TokenType.comma)) {
-              exprs.add(expression());
-            }
-
-            _consume(TokenType.rightParen, 'Expected a closing bracket');
-            return TupleExpression(expressions: exprs);
-          } else {
-            // we aren't, so that'll just be parentheses.
-            _consume(TokenType.rightParen, 'Expected a closing bracket');
-            return Parentheses(left, expr, token);
-          }
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return Parentheses(left, expr, token);
         }
         break;
       case TokenType.identifier:
@@ -334,6 +310,17 @@ mixin ExpressionParser on ParserBase {
     // nothing found -> issue error. Step back to revert the _advance() above
     _stepBack();
     _error('Could not parse this expression');
+  }
+
+  Variable _variableOrNull() {
+    if (_matchOne(TokenType.questionMarkVariable)) {
+      return NumberedVariable(_previous as QuestionMarkVariableToken)
+        ..setSpan(_previous, _previous);
+    } else if (_matchOne(TokenType.colonVariable)) {
+      return ColonNamedVariable(_previous as ColonVariableToken)
+        ..setSpan(_previous, _previous);
+    }
+    return null;
   }
 
   FunctionParameters _functionParameters() {
@@ -390,18 +377,20 @@ mixin ExpressionParser on ParserBase {
   }
 
   @override
-  TupleExpression _consumeTuple() {
+  Tuple _consumeTuple() {
     final firstToken =
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
 
-    do {
-      expressions.add(expression());
-    } while (_matchOne(TokenType.comma));
+    // tuples can be empty `()`, so only start parsing values when it's not
+    if (_peek.type != TokenType.rightParen) {
+      do {
+        expressions.add(expression());
+      } while (_matchOne(TokenType.comma));
+    }
 
     _consume(TokenType.rightParen, 'Expected right parenthesis to close tuple');
 
-    return TupleExpression(expressions: expressions)
-      ..setSpan(firstToken, _previous);
+    return Tuple(expressions: expressions)..setSpan(firstToken, _previous);
   }
 }

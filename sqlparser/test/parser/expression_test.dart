@@ -83,12 +83,6 @@ final Map<String, Expression> _testCases = {
       ),
     ),
   ),
-  '(1, 2, 3)': TupleExpression(
-    expressions: [
-      for (var i = 1; i <= 3; i++)
-        NumericLiteral(i, token(TokenType.numberLiteral)),
-    ],
-  ),
   "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
     StringLiteral.from(token(TokenType.stringLiteral), 'hello'),
     token(TokenType.doublePipe),

@@ -16,7 +16,7 @@ void main() {
           Reference(columnName: 'c'),
         ],
         source: ValuesSource([
-          TupleExpression(expressions: [
+          Tuple(expressions: [
             Reference(columnName: 'd'),
             Reference(columnName: 'e'),
             Reference(columnName: 'f'),

@@ -458,7 +458,7 @@ mixin CrudParser on ParserBase {
 
   InsertSource _insertSource() {
     if (_matchOne(TokenType.$values)) {
-      final values = <TupleExpression>[];
+      final values = <Tuple>[];
       do {
         values.add(_consumeTuple());
       } while (_matchOne(TokenType.comma));

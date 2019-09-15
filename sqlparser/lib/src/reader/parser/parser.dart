@@ -142,7 +142,7 @@ abstract class ParserBase {
 
   // Common operations that we are referenced very often
   Expression expression();
-  TupleExpression _consumeTuple();
+  Tuple _consumeTuple();
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
