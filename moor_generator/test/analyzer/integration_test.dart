@@ -43,6 +43,11 @@ class Database {}
         AssetId.parse('test_lib|lib/tables.moor'): r'''
 import 'another.dart';
 
+CREATE TABLE reference_test (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  library INT NOT NULL REFERENCES libraries(id)
+);
+
 CREATE TABLE libraries (
    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
    name TEXT NOT NULL
@@ -89,6 +94,10 @@ class ProgrammingLanguages extends Table {
 
     expect(database.allTables.map((t) => t.sqlName),
         containsAll(['used_languages', 'libraries', 'programming_languages']));
+
+    final tableWithReferences =
+        database.allTables.singleWhere((r) => r.sqlName == 'reference_test');
+    expect(tableWithReferences.references.single.sqlName, 'libraries');
 
     final importQuery = database.resolvedQueries
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;

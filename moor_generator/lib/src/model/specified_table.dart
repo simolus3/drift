@@ -60,7 +60,11 @@ class SpecifiedTable {
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
-  const SpecifiedTable(
+  /// The set of tables referenced somewhere in the declaration of this table,
+  /// for instance by using a `REFERENCES` column constraint.
+  final Set<SpecifiedTable> references = {};
+
+  SpecifiedTable(
       {this.fromClass,
       this.columns,
       this.sqlName,
@@ -75,6 +79,19 @@ class SpecifiedTable {
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
+
+  String get displayName {
+    if (isFromSql) {
+      return sqlName;
+    } else {
+      return fromClass.displayName;
+    }
+  }
+
+  @override
+  String toString() {
+    return 'SpecifiedTable: $displayName';
+  }
 }
 
 String _dbFieldName(String className) => ReCase(className).camelCase;
