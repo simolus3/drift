@@ -136,6 +136,7 @@ enum TokenType {
   action,
 
   semicolon,
+  comment,
   eof,
 
   /// Moor specific token, used to declare a type converters
@@ -252,6 +253,10 @@ const Map<String, TokenType> moorKeywords = {
 class Token {
   final TokenType type;
 
+  /// Whether this token should be invisible to the parser. We use this for
+  /// comment tokens.
+  bool get invisibleToParser => false;
+
   final FileSpan span;
   String get lexeme => span.text;
 
@@ -346,6 +351,22 @@ class KeywordToken extends Token {
 
     return IdentifierToken(false, span, synthetic: false);
   }
+}
+
+enum CommentMode { line, cStyle }
+
+/// A comment, either started with -- or with /*.
+class CommentToken extends Token {
+  final CommentMode mode;
+
+  /// The content of this comment, excluding the "--", "/*", "*/".
+  final String content;
+
+  @override
+  final bool invisibleToParser = true;
+
+  CommentToken(this.mode, this.content, FileSpan span)
+      : super(TokenType.comment, span);
 }
 
 class TokenizerError {

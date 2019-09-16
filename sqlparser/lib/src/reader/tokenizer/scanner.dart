@@ -61,13 +61,22 @@ class Scanner {
         _addToken(TokenType.plus);
         break;
       case '-':
-        _addToken(TokenType.minus);
+        if (_match('-')) {
+          _lineComment();
+        } else {
+          _addToken(TokenType.minus);
+        }
         break;
       case '*':
         _addToken(TokenType.star);
         break;
       case '/':
-        _addToken(TokenType.slash);
+        if (_match('*')) {
+          _cStyleComment();
+        } else {
+          _addToken(TokenType.slash);
+        }
+
         break;
       case '%':
         _addToken(TokenType.percent);
@@ -377,5 +386,38 @@ class Scanner {
       _nextChar();
       tokens.add(InlineDartToken(_currentSpan));
     }
+  }
+
+  /// Scans a line comment after the -- has already been read.
+  void _lineComment() {
+    final contentBuilder = StringBuffer();
+    while (_peek() != '\n' && !_isAtEnd) {
+      contentBuilder.write(_nextChar());
+    }
+
+    tokens.add(CommentToken(
+        CommentMode.line, contentBuilder.toString(), _currentSpan));
+  }
+
+  /// Scans a /* ... */ comment after the first /* has already been read.
+  /// Note that in sqlite, these comments don't have to be terminated - they
+  /// will be closed by the end of input without causing a parsing error.
+  void _cStyleComment() {
+    final contentBuilder = StringBuffer();
+    while (!_isAtEnd) {
+      if (_match('*')) {
+        if (!_isAtEnd && _match('/')) {
+          break;
+        } else {
+          // write the * we otherwise forgot to write
+          contentBuilder.write('*');
+        }
+      } else {
+        contentBuilder.write(_nextChar());
+      }
+    }
+
+    tokens.add(CommentToken(
+        CommentMode.cStyle, contentBuilder.toString(), _currentSpan));
   }
 }

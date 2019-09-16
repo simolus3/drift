@@ -38,11 +38,12 @@ void _visit(SpecifiedTable table, _SortRun run) {
 }
 
 class _SortRun {
-  Map<SpecifiedTable, SpecifiedTable> previous = {};
+  final Map<SpecifiedTable, SpecifiedTable> previous = {};
   final List<SpecifiedTable> result = [];
 
   /// Throws a [CircularReferenceException] because the [last] table depends on
-  /// [first], which transitively depends on [last] first.
+  /// [first], which (transitively) depends on [last] as well. The path in the
+  /// thrown exception will go from [first] to [last].
   void throwCircularException(SpecifiedTable last, SpecifiedTable first) {
     final constructedPath = <SpecifiedTable>[];
     for (var current = last; current != first; current = previous[current]) {

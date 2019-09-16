@@ -35,6 +35,11 @@ class SqlEngine {
 
   /// Tokenizes the [source] into a list list [Token]s. Each [Token] contains
   /// information about where it appears in the [source] and a [TokenType].
+  ///
+  /// Note that the list might be tokens that should be
+  /// [Token.invisibleToParser], if you're passing them to a [Parser] directly,
+  /// you need to filter them. When using the methods in this class, this will
+  /// be taken care of automatically.
   List<Token> tokenize(String source) {
     final scanner = Scanner(source, scanMoorTokens: useMoorExtensions);
     final tokens = scanner.scanTokens();
@@ -49,7 +54,8 @@ class SqlEngine {
   /// Parses the [sql] statement into an AST-representation.
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
-    final parser = Parser(tokens, useMoor: useMoorExtensions);
+    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
+    final parser = Parser(tokensForParser, useMoor: useMoorExtensions);
 
     final stmt = parser.statement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
@@ -62,7 +68,9 @@ class SqlEngine {
 
     final autoComplete = AutoCompleteEngine();
     final tokens = tokenize(content);
-    final parser = Parser(tokens, useMoor: true, autoComplete: autoComplete);
+    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
+    final parser =
+        Parser(tokensForParser, useMoor: true, autoComplete: autoComplete);
 
     final moorFile = parser.moorFile();
 
@@ -134,7 +142,8 @@ class ParseResult {
   /// The topmost node in the sql AST that was parsed.
   final AstNode rootNode;
 
-  /// The tokens that were scanned in the source file
+  /// The tokens that were scanned in the source file, including those that are
+  /// [Token.invisibleToParser].
   final List<Token> tokens;
 
   /// A list of all errors that occurred during parsing. [ParsingError.toString]
