@@ -81,6 +81,6 @@ void main() {
 
     verify(
         mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
-    expect(parsed, ConfigData(configKey: 'key', configValue: 'value'));
+    expect(parsed, Config(configKey: 'key', configValue: 'value'));
   });
 }

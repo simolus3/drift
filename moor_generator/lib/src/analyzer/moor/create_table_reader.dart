@@ -76,6 +76,8 @@ class CreateTableReader {
 
     final tableName = table.name;
     final dartTableName = ReCase(tableName).pascalCase;
+    final dataClassName = stmt.overriddenDataClassName ??
+        dataClassNameForClassName(dartTableName);
 
     final constraints = table.tableConstraints.map((c) => c.span.text).toList();
 
@@ -91,8 +93,8 @@ class CreateTableReader {
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
-      dartTypeName: dataClassNameForClassName(dartTableName),
-      overriddenName: ReCase(tableName).pascalCase,
+      dartTypeName: dataClassName,
+      overriddenName: dartTableName,
       primaryKey: primaryKey,
       overrideWithoutRowId: table.withoutRowId ? true : null,
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,

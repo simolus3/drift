@@ -35,10 +35,14 @@ class SpecifiedTable {
     // directly because there is no user defined parent class.
     // So, turn CREATE TABLE users into something called "Users" instead of
     // "$UsersTable".
-    if (_overriddenName != null) {
-      return _overriddenName;
+    final name = _overriddenName ?? tableInfoNameForTableClass(_baseName);
+    if (name == dartTypeName) {
+      // resolve clashes if the table info class has the same name as the data
+      // class. This can happen because the data class name can be specified by
+      // the user.
+      return '${name}Table';
     }
-    return tableInfoNameForTableClass(_baseName);
+    return name;
   }
 
   String get updateCompanionName => _updateCompanionName(_baseName);

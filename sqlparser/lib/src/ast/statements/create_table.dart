@@ -11,6 +11,11 @@ class CreateTableStatement extends Statement
   final List<TableConstraint> tableConstraints;
   final bool withoutRowId;
 
+  /// Specific to moor. Overrides the name of the data class used to hold a
+  /// result for of this table. Will be null when the moor extensions are not
+  /// enabled or if no name has been set.
+  final String overriddenDataClassName;
+
   Token openingBracket;
   Token closingBracket;
 
@@ -19,7 +24,8 @@ class CreateTableStatement extends Statement
       @required this.tableName,
       this.columns = const [],
       this.tableConstraints = const [],
-      this.withoutRowId = false});
+      this.withoutRowId = false,
+      this.overriddenDataClassName});
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitCreateTableStatement(this);
@@ -31,6 +37,7 @@ class CreateTableStatement extends Statement
   bool contentEquals(CreateTableStatement other) {
     return other.ifNotExists == ifNotExists &&
         other.tableName == tableName &&
-        other.withoutRowId == withoutRowId;
+        other.withoutRowId == withoutRowId &&
+        other.overriddenDataClassName == overriddenDataClassName;
   }
 }

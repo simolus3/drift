@@ -474,24 +474,24 @@ class WithConstraints extends Table
   final bool dontWriteConstraints = true;
 }
 
-class ConfigData extends DataClass implements Insertable<ConfigData> {
+class Config extends DataClass implements Insertable<Config> {
   final String configKey;
   final String configValue;
-  ConfigData({@required this.configKey, this.configValue});
-  factory ConfigData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+  Config({@required this.configKey, this.configValue});
+  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final stringType = db.typeSystem.forDartType<String>();
-    return ConfigData(
+    return Config(
       configKey: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
       configValue: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
     );
   }
-  factory ConfigData.fromJson(Map<String, dynamic> json,
+  factory Config.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return ConfigData(
+    return Config(
       configKey: serializer.fromJson<String>(json['configKey']),
       configValue: serializer.fromJson<String>(json['configValue']),
     );
@@ -506,7 +506,7 @@ class ConfigData extends DataClass implements Insertable<ConfigData> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<ConfigData>>(bool nullToAbsent) {
+  T createCompanion<T extends UpdateCompanion<Config>>(bool nullToAbsent) {
     return ConfigCompanion(
       configKey: configKey == null && nullToAbsent
           ? const Value.absent()
@@ -517,13 +517,13 @@ class ConfigData extends DataClass implements Insertable<ConfigData> {
     ) as T;
   }
 
-  ConfigData copyWith({String configKey, String configValue}) => ConfigData(
+  Config copyWith({String configKey, String configValue}) => Config(
         configKey: configKey ?? this.configKey,
         configValue: configValue ?? this.configValue,
       );
   @override
   String toString() {
-    return (StringBuffer('ConfigData(')
+    return (StringBuffer('Config(')
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue')
           ..write(')'))
@@ -535,12 +535,12 @@ class ConfigData extends DataClass implements Insertable<ConfigData> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is ConfigData &&
+      (other is Config &&
           other.configKey == configKey &&
           other.configValue == configValue);
 }
 
-class ConfigCompanion extends UpdateCompanion<ConfigData> {
+class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<String> configKey;
   final Value<String> configValue;
   const ConfigCompanion({
@@ -560,10 +560,10 @@ class ConfigCompanion extends UpdateCompanion<ConfigData> {
   }
 }
 
-class Config extends Table with TableInfo<Config, ConfigData> {
+class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final GeneratedDatabase _db;
   final String _alias;
-  Config(this._db, [this._alias]);
+  ConfigTable(this._db, [this._alias]);
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   GeneratedTextColumn _configKey;
   GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
@@ -585,7 +585,7 @@ class Config extends Table with TableInfo<Config, ConfigData> {
   @override
   List<GeneratedColumn> get $columns => [configKey, configValue];
   @override
-  Config get asDslTable => this;
+  ConfigTable get asDslTable => this;
   @override
   String get $tableName => _alias ?? 'config';
   @override
@@ -612,9 +612,9 @@ class Config extends Table with TableInfo<Config, ConfigData> {
   @override
   Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
-  ConfigData map(Map<String, dynamic> data, {String tablePrefix}) {
+  Config map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return ConfigData.fromData(data, _db, prefix: effectivePrefix);
+    return Config.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
@@ -630,8 +630,8 @@ class Config extends Table with TableInfo<Config, ConfigData> {
   }
 
   @override
-  Config createAlias(String alias) {
-    return Config(_db, alias);
+  ConfigTable createAlias(String alias) {
+    return ConfigTable(_db, alias);
   }
 
   @override
@@ -808,24 +808,24 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   WithConstraints _withConstraints;
   WithConstraints get withConstraints =>
       _withConstraints ??= WithConstraints(this);
-  Config _config;
-  Config get config => _config ??= Config(this);
+  ConfigTable _config;
+  ConfigTable get config => _config ??= ConfigTable(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
-  ConfigData _rowToConfigData(QueryRow row) {
-    return ConfigData(
+  Config _rowToConfig(QueryRow row) {
+    return Config(
       configKey: row.readString('config_key'),
       configValue: row.readString('config_value'),
     );
   }
 
-  Selectable<ConfigData> readConfig(String var1) {
+  Selectable<Config> readConfig(String var1) {
     return customSelectQuery('SELECT * FROM config WHERE config_key = ?',
         variables: [Variable.withString(var1)],
-        readsFrom: {config}).map(_rowToConfigData);
+        readsFrom: {config}).map(_rowToConfig);
   }
 
-  Selectable<ConfigData> readMultiple(List<String> var1, OrderBy clause) {
+  Selectable<Config> readMultiple(List<String> var1, OrderBy clause) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
@@ -839,15 +839,15 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config
-        }).map(_rowToConfigData);
+        }).map(_rowToConfig);
   }
 
-  Selectable<ConfigData> readDynamic(Expression<bool, BoolType> predicate) {
+  Selectable<Config> readDynamic(Expression<bool, BoolType> predicate) {
     final generatedpredicate = $write(predicate);
     return customSelectQuery(
         'SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {config}).map(_rowToConfigData);
+        readsFrom: {config}).map(_rowToConfig);
   }
 
   Future<int> writeConfig(String key, String value) {

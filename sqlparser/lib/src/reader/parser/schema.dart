@@ -55,12 +55,21 @@ mixin SchemaParser on ParserBase {
       withoutRowId = true;
     }
 
+    String overriddenName;
+    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+      overriddenName = _consumeIdentifier(
+              'Expected the name for the data class',
+              lenient: true)
+          .identifier;
+    }
+
     return CreateTableStatement(
       ifNotExists: ifNotExists,
       tableName: tableIdentifier.identifier,
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
+      overriddenDataClassName: overriddenName,
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
