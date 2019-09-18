@@ -167,6 +167,9 @@ class Parser extends ParserBase
       {bool useMoor = false, AutoCompleteEngine autoComplete})
       : super(tokens, useMoor, autoComplete);
 
+  // todo remove this and don't be that lazy in moorFile()
+  var _lastStmtHadParsingError = false;
+
   Statement statement() {
     final first = _peek;
     Statement stmt = _crud();
@@ -205,23 +208,25 @@ class Parser extends ParserBase
     final first = _peek;
     final foundComponents = <PartOfMoorFile>[];
 
+    // (we try again if the last statement had a parsing error)
+
     // first, parse import statements
     for (var stmt = _parseAsStatement(_import);
-        stmt != null;
+        stmt != null || _lastStmtHadParsingError;
         stmt = _parseAsStatement(_import)) {
       foundComponents.add(stmt);
     }
 
     // next, table declarations
     for (var stmt = _parseAsStatement(_createTable);
-        stmt != null;
+        stmt != null || _lastStmtHadParsingError;
         stmt = _parseAsStatement(_createTable)) {
       foundComponents.add(stmt);
     }
 
     // finally, declared statements
     for (var stmt = _parseAsStatement(_declaredStatement);
-        stmt != null;
+        stmt != null || _lastStmtHadParsingError;
         stmt = _parseAsStatement(_declaredStatement)) {
       foundComponents.add(stmt);
     }
@@ -229,6 +234,8 @@ class Parser extends ParserBase
     if (!_isAtEnd) {
       _error('Expected the file to end here.');
     }
+
+    foundComponents.removeWhere((c) => c == null);
 
     final file = MoorFile(foundComponents);
     if (foundComponents.isNotEmpty) {
@@ -273,11 +280,13 @@ class Parser extends ParserBase
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
   T _parseAsStatement<T extends Statement>(T Function() parser) {
+    _lastStmtHadParsingError = false;
     final first = _peek;
     T result;
     try {
       result = parser();
     } on ParsingError catch (_) {
+      _lastStmtHadParsingError = true;
       // the error is added to the list errors, so ignore. We skip to the next
       // semicolon to parse the next statement.
       _synchronize();

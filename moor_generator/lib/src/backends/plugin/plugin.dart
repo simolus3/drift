@@ -73,10 +73,10 @@ class MoorPlugin extends ServerPlugin
     final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
         fileContentOverlay, resourceProvider);
 
-    driver
-        .completedFiles()
-        .where((file) => file.isParsed)
-        .listen(errorService.handleResult);
+    driver.completedFiles().where((file) => file.isParsed).listen((file) {
+      sendNotificationsForFile(file.uri.path);
+      errorService.handleResult(file);
+    });
 
     return driver;
   }

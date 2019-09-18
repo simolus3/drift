@@ -59,9 +59,13 @@ abstract class AstNode {
   int get lastPosition => last.span.end.offset;
 
   FileSpan get span {
-    if (first == null || last == null) return null;
+    if (!hasSpan) return null;
     return first.span.expand(last.span);
   }
+
+  /// Whether a source span has been set on this node. The span describes what
+  /// range in the source code is covered by this node.
+  bool get hasSpan => first != null && last != null;
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {

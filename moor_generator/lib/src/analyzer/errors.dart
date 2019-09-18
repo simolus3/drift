@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 typedef LogFunction = void Function(dynamic message,
     [Object error, StackTrace stackTrace]);
@@ -57,6 +58,15 @@ class ErrorInMoorFile extends MoorError {
       String message,
       Severity severity = Severity.warning})
       : super(message: message, severity: severity);
+
+  factory ErrorInMoorFile.fromSqlParser(AnalysisError error,
+      {Severity overrideSeverity}) {
+    return ErrorInMoorFile(
+      span: error.span,
+      message: error.message ?? error.type.toString(),
+      severity: overrideSeverity ?? Severity.error,
+    );
+  }
 
   @override
   void writeDescription(LogFunction log) {

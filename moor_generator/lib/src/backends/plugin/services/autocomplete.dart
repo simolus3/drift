@@ -21,8 +21,8 @@ class MoorCompletingContributor implements CompletionContributor {
           CompletionSuggestionKind.KEYWORD,
           suggestion.relevance,
           suggestion.code,
-          -1,
-          -1,
+          0,
+          0,
           false,
           false,
         ));

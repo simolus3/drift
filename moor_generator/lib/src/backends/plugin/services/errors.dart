@@ -4,7 +4,7 @@ import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/plugin/plugin.dart';
 
-const _parsingErrorCode = 'moor.parsingError';
+const _genericError = 'moor.errorGeneric';
 
 /// Sends information about errors, lints and warnings encountered in a `.moor`
 /// file to the analyzer.
@@ -31,7 +31,7 @@ class ErrorService {
         final location = _findLocationForError(error, path);
 
         errors.add(AnalysisError(
-            severity, type, location, error.message, _parsingErrorCode));
+            severity, type, location, error.message, _genericError));
       }
     }
 
@@ -44,9 +44,9 @@ class ErrorService {
       final span = error.span;
       final start = span.start;
       return Location(
-          path, start.offset, span.length, start.line, start.column);
+          path, start.offset, span.length, start.line + 1, start.column + 1);
     }
 
-    return Location(path, -1, -1, 0, 0);
+    return Location(path, 0, 0, 0, 0);
   }
 }

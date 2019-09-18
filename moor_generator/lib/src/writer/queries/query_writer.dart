@@ -205,17 +205,7 @@ class QueryWriter {
 
   void _writeParameters() {
     final paramList = query.elements.map((e) {
-      if (e is FoundVariable) {
-        var dartType = dartTypeNames[e.type];
-        if (e.isArray) {
-          dartType = 'List<$dartType>';
-        }
-        return '$dartType ${e.dartParameterName}';
-      } else if (e is FoundDartPlaceholder) {
-        return '${e.parameterType} ${e.name}';
-      }
-
-      throw AssertionError('Unknown element (not variable of placeholder)');
+      return '${e.parameterType} ${e.dartParameterName}';
     }).join(', ');
     _buffer.write(paramList);
   }

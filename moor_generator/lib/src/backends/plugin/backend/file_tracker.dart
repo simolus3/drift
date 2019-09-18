@@ -5,6 +5,7 @@ import 'package:analyzer/src/dart/analysis/driver.dart'
     show AnalysisDriverPriority;
 import 'package:collection/collection.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/analyzer/runner/task.dart';
 
 int _compareByPriority(TrackedFile a, TrackedFile b) {
   final aPriority = a.currentPriority?.index ?? 0;
@@ -25,29 +26,18 @@ class FileTracker {
     _pendingWork = PriorityQueue(_compareByPriority);
   }
 
-  void _updateFile(TrackedFile file, Function(TrackedFile) update) {
+  void _notifyFilePriorityChanged(TrackedFile file) {
     _pendingWork.remove(file);
-    update(file);
 
-    // if a file is analyzed, we don't need to do anything. So don't add it to
-    // list of of tracked files.
+    // if a file is analyzed, we don't need to do anything with it. So don't add
+    // it back into the queue
     if (!file.file.isAnalyzed) {
       _pendingWork.add(file);
     }
   }
 
-  void _putInQueue(TrackedFile file) {
-    _updateFile(file, (f) {
-      // no action needed, insert with current priority.
-    });
-  }
-
   bool get hasWork => _pendingWork.isNotEmpty;
   TrackedFile get fileWithHighestPriority => _pendingWork.first;
-
-  void notifyAnalysisStateChanged(FoundFile file) {
-    _putInQueue(_addFile(file));
-  }
 
   TrackedFile _addFile(FoundFile file) {
     return _trackedFiles.putIfAbsent(file, () {
@@ -57,17 +47,33 @@ class FileTracker {
     });
   }
 
+  /// Notify the work tracker that the list of [files] has changed. It's enough
+  /// if any of the files in the list has changed, the others are likely
+  /// affected because they transitively import the changed file. This method
+  /// assumes that the [FoundFile.state] in each file has already been adjusted.
+  void notifyFilesChanged(List<FoundFile> files) {
+    files.map(_addFile).forEach(_notifyFilePriorityChanged);
+  }
+
   void setPriorityFiles(Iterable<FoundFile> priority) {
     // remove prioritized flag from existing files
     for (var file in _currentPriority) {
-      _updateFile(file, (f) => f._prioritized = false);
+      file._prioritized = false;
+      _notifyFilePriorityChanged(file);
     }
     _currentPriority
       ..clear()
       ..addAll(priority.map(_addFile))
       ..forEach((file) {
-        _updateFile(file, (f) => f._prioritized = true);
+        file._prioritized = true;
+        _notifyFilePriorityChanged(file);
       });
+  }
+
+  void handleTaskCompleted(Task task) {
+    for (var file in task.analyzedFiles) {
+      _notifyFilePriorityChanged(_addFile(file));
+    }
   }
 
   void dispose() {

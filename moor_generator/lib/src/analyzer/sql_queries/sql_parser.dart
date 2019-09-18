@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
@@ -50,10 +51,9 @@ class SqlParser {
       }
 
       for (var error in context.errors) {
-        step.reportError(MoorError(
-          severity: Severity.warning,
-          message: 'The sql query $name is invalid: $error',
-        ));
+        _report(error,
+            msg: () => 'The sql query $name is invalid: $error',
+            severity: Severity.error);
       }
 
       try {
@@ -68,11 +68,23 @@ class SqlParser {
     // report lints
     for (var query in foundQueries) {
       for (var lint in query.lints) {
-        step.reportError(MoorError(
-          severity: Severity.info,
-          message: 'Lint for ${query.name}: $lint',
-        ));
+        _report(lint,
+            msg: () => 'Lint for ${query.name}: $lint',
+            severity: Severity.warning);
       }
+    }
+  }
+
+  void _report(AnalysisError error,
+      {String Function() msg, Severity severity}) {
+    if (step.file.type == FileType.moor) {
+      step.reportError(
+          ErrorInMoorFile.fromSqlParser(error, overrideSeverity: severity));
+    } else {
+      step.reportError(MoorError(
+        severity: severity,
+        message: msg(),
+      ));
     }
   }
 }

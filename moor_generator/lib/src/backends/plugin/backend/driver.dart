@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
+import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
@@ -21,6 +22,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   final ResourceProvider _resourceProvider;
 
   /* late final */ MoorSession session;
+  StreamSubscription _fileChangeSubscription;
   bool _isWorking = false;
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
@@ -28,12 +30,15 @@ class MoorDriver implements AnalysisDriverGeneric {
     _scheduler.add(this);
     final backend = PluginBackend(this);
     session = backend.session;
+
+    _fileChangeSubscription =
+        session.changedFiles.listen(_tracker.notifyFilesChanged);
   }
 
   bool _ownsFile(String path) => path.endsWith('.moor');
 
   FoundFile pathToFoundFile(String path) {
-    return session.registerFile(Uri.parse(path));
+    return session.registerFile(Uri.parse('file://$path'));
   }
 
   @override
@@ -45,6 +50,7 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   void dispose() {
+    _fileChangeSubscription?.cancel();
     _scheduler.remove(this);
     dartDriver.dispose();
     _tracker.dispose();
@@ -68,10 +74,15 @@ class MoorDriver implements AnalysisDriverGeneric {
 
     try {
       final mostImportantFile = _tracker.fileWithHighestPriority;
-      final backendTask = _createTask(mostImportantFile.file.uri.path);
+      if (mostImportantFile.file?.isAnalyzed ?? false) {
+        Logger.root.fine('Blocked attempt to work on fully analyzed file');
+        return;
+      }
+      final backendTask = _createTask(mostImportantFile.file.uri);
 
       final task = session.startTask(backendTask);
       await task.runTask();
+      _tracker.handleTaskCompleted(task);
     } finally {
       _isWorking = false;
     }
@@ -104,8 +115,7 @@ class MoorDriver implements AnalysisDriverGeneric {
     return source.fullName;
   }
 
-  PluginTask _createTask(String path) {
-    final uri = Uri.parse(path).replace(scheme: 'file');
+  PluginTask _createTask(Uri uri) {
     return PluginTask(uri, this);
   }
 

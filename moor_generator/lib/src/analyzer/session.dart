@@ -16,12 +16,18 @@ class MoorSession {
   final Backend backend;
 
   final _completedTasks = StreamController<Task>.broadcast();
-  final _changedFiles = StreamController<FoundFile>.broadcast();
+  final _changedFiles = StreamController<List<FoundFile>>.broadcast();
 
   MoorSession(this.backend);
 
   /// Stream that emits a [Task] that has been completed.
   Stream<Task> get completedTasks => _completedTasks.stream;
+
+  /// Stream that emits a list of [FoundFile] that need to be parsed or
+  /// re-analyzed because a file has changed.
+  /// This is not supported on all backends (notably, not with `package:build`,
+  /// which assumes immutable files during a build run).
+  Stream<List<FoundFile>> get changedFiles => _changedFiles.stream;
 
   FileType _findFileType(String path) {
     final extension = p.extension(path);
@@ -53,15 +59,18 @@ class MoorSession {
   /// changed.
   void notifyFileChanged(FoundFile file) {
     file.state = FileState.dirty;
+    final changed = [file];
+
     // all files that transitively imported this files are no longer analyzed
     // because they depend on this file. They're still parsed though
     for (var affected in fileGraph.crawl(file, transposed: true)) {
       if (affected.state == FileState.analyzed) {
         affected.state = FileState.parsed;
       }
+      changed.add(affected);
     }
 
-    _changedFiles.add(file);
+    _changedFiles.add(changed);
   }
 
   void notifyTaskFinished(Task task) {

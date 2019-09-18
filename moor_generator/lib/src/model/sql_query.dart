@@ -202,6 +202,9 @@ class ResultColumn {
 /// such as variables or Dart placeholders.
 abstract class FoundElement {
   String get dartParameterName;
+
+  /// The type of this element on the generated method.
+  String get parameterType;
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
@@ -242,6 +245,15 @@ class FoundVariable extends FoundElement {
       return 'var${variable.resolvedIndex}';
     }
   }
+
+  @override
+  String get parameterType {
+    final innerType = dartTypeNames[type] ?? 'dynamic';
+    if (isArray) {
+      return 'List<$innerType>';
+    }
+    return innerType;
+  }
 }
 
 enum DartPlaceholderType {
@@ -264,7 +276,7 @@ class FoundDartPlaceholder extends FoundElement {
 
   FoundDartPlaceholder(this.type, this.columnType, this.name);
 
-  /// The type of this parameter on a generated method.
+  @override
   String get parameterType {
     switch (type) {
       case DartPlaceholderType.expression:

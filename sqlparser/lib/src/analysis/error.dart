@@ -9,7 +9,7 @@ class AnalysisError {
 
   /// The relevant portion of the source code that caused this error. Some AST
   /// nodes don't have a span, in that case this error is going to be null.
-  SourceSpan get span {
+  FileSpan get span {
     final first = relevantNode?.first?.span;
     final last = relevantNode?.last?.span;
 

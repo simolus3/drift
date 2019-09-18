@@ -27,8 +27,8 @@ class _FoldingVisitor extends RecursiveVisitor<void> {
   void visitMoorFile(MoorFile e) {
     // construct a folding region for import statements
     final imports = e.imports.toList();
-    if (imports.isNotEmpty) {
-      final first = imports.first.firstPosition;
+    if (imports.length > 1) {
+      final first = imports[1].firstPosition;
       final last = imports.last.lastPosition;
 
       collector.addRegion(first, last - first, FoldingKind.DIRECTIVES);
