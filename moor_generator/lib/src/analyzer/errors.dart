@@ -70,7 +70,7 @@ class ErrorInMoorFile extends MoorError {
 
   @override
   void writeDescription(LogFunction log) {
-    log(span.message(message));
+    log(span.message(message, color: isError));
   }
 }
 
