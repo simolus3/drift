@@ -391,7 +391,7 @@ class Scanner {
   /// Scans a line comment after the -- has already been read.
   void _lineComment() {
     final contentBuilder = StringBuffer();
-    while (_peek() != '\n' && !_isAtEnd) {
+    while (!_isAtEnd && _peek() != '\n') {
       contentBuilder.write(_nextChar());
     }
 

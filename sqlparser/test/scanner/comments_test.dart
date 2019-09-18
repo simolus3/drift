@@ -32,4 +32,13 @@ void main() {
       ' not terminated',
     ]);
   });
+
+  test('supports -- comments on last line', () {
+    const sql = '-- not much to see';
+
+    final tokens = Scanner(sql).scanTokens();
+    expect(tokens, hasLength(2));
+    expect((tokens[0] as CommentToken).content, ' not much to see');
+    expect(tokens[1].type, TokenType.eof);
+  });
 }
