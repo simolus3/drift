@@ -274,6 +274,7 @@ mixin CrudParser on ParserBase {
 
   OrderByBase _orderBy() {
     if (_matchOne(TokenType.order)) {
+      final orderToken = _previous;
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
       final terms = <OrderingTermBase>[];
       do {
@@ -290,7 +291,7 @@ mixin CrudParser on ParserBase {
           ..setSpan(termPlaceholder.first, termPlaceholder.last);
       }
 
-      return OrderBy(terms: terms);
+      return OrderBy(terms: terms)..setSpan(orderToken, _previous);
     }
     return null;
   }
@@ -307,7 +308,8 @@ mixin CrudParser on ParserBase {
         ..setSpan(expr.first, expr.last);
     }
 
-    return OrderingTerm(expression: expr, orderingMode: mode);
+    return OrderingTerm(expression: expr, orderingMode: mode)
+      ..setSpan(expr.first, _previous);
   }
 
   @override
@@ -356,6 +358,8 @@ mixin CrudParser on ParserBase {
 
   DeleteStatement _deleteStmt() {
     if (!_matchOne(TokenType.delete)) return null;
+    final deleteToken = _previous;
+
     _consume(TokenType.from, 'Expected a FROM here');
 
     final table = _tableReference();
@@ -368,7 +372,8 @@ mixin CrudParser on ParserBase {
       where = expression();
     }
 
-    return DeleteStatement(from: table, where: where);
+    return DeleteStatement(from: table, where: where)
+      ..setSpan(deleteToken, _previous);
   }
 
   UpdateStatement _update() {
@@ -393,7 +398,8 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.equal, 'Expected = after the column name');
       final expr = expression();
 
-      set.add(SetComponent(column: reference, expression: expr));
+      set.add(SetComponent(column: reference, expression: expr)
+        ..setSpan(columnName, _previous));
     } while (_matchOne(TokenType.comma));
 
     final where = _where();
@@ -428,7 +434,7 @@ mixin CrudParser on ParserBase {
         insertMode = InsertMode.insert;
       }
     } else {
-      // is it wasn't an insert, it must have been a replace
+      // if it wasn't an insert, it must have been a replace
       insertMode = InsertMode.replace;
     }
     assert(insertMode != null);
@@ -440,7 +446,8 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.leftParen)) {
       do {
         final columnRef = _consumeIdentifier('Expected a column');
-        targetColumns.add(Reference(columnName: columnRef.identifier));
+        targetColumns.add(Reference(columnName: columnRef.identifier)
+          ..setSpan(columnRef, columnRef));
       } while (_matchOne(TokenType.comma));
 
       _consume(TokenType.rightParen,

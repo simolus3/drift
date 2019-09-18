@@ -20,15 +20,20 @@ mixin ExpressionParser on ParserBase {
 
   Expression _case() {
     if (_matchOne(TokenType.$case)) {
+      final caseToken = _previous;
+
       final base = _check(TokenType.when) ? null : _or();
       final whens = <WhenComponent>[];
       Expression $else;
 
       while (_matchOne(TokenType.when)) {
+        final whenToken = _previous;
+
         final whenExpr = _or();
         _consume(TokenType.then, 'Expected THEN');
         final then = _or();
-        whens.add(WhenComponent(when: whenExpr, then: then));
+        whens.add(WhenComponent(when: whenExpr, then: then)
+          ..setSpan(whenToken, _previous));
       }
 
       if (_matchOne(TokenType.$else)) {
@@ -36,7 +41,8 @@ mixin ExpressionParser on ParserBase {
       }
 
       _consume(TokenType.end, 'Expected END to finish the case operator');
-      return CaseExpression(whens: whens, base: base, elseExpr: $else);
+      return CaseExpression(whens: whens, base: base, elseExpr: $else)
+        ..setSpan(caseToken, _previous);
     }
 
     return _or();
@@ -52,7 +58,8 @@ mixin ExpressionParser on ParserBase {
     while (_match(types)) {
       final operator = _previous;
       final right = higherPrecedence();
-      expression = BinaryExpression(expression, operator, right);
+      expression = BinaryExpression(expression, operator, right)
+        ..setSpan(expression.first, _previous);
     }
     return expression;
   }
@@ -68,7 +75,8 @@ mixin ExpressionParser on ParserBase {
       _matchOne(TokenType.$in);
 
       final inside = _variableOrNull() ?? _consumeTuple(orSubQuery: true);
-      return InExpression(left: left, inside: inside, not: not);
+      return InExpression(left: left, inside: inside, not: not)
+        ..setSpan(left.first, _previous);
     }
 
     return left;
@@ -79,6 +87,7 @@ mixin ExpressionParser on ParserBase {
   /// expressions.
   Expression _equals() {
     var expression = _comparison();
+    final first = expression.first;
 
     final ops = const [
       TokenType.equal,
@@ -104,15 +113,18 @@ mixin ExpressionParser on ParserBase {
         final upper = _comparison();
 
         expression = BetweenExpression(
-            not: not, check: expression, lower: lower, upper: upper);
+            not: not, check: expression, lower: lower, upper: upper)
+          ..setSpan(first, _previous);
       } else if (_match(ops)) {
         final operator = _previous;
         if (operator.type == TokenType.$is) {
           final not = _match(const [TokenType.not]);
           // special case: is not expression
-          expression = IsExpression(not, expression, _comparison());
+          expression = IsExpression(not, expression, _comparison())
+            ..setSpan(first, _previous);
         } else {
-          expression = BinaryExpression(expression, operator, _comparison());
+          expression = BinaryExpression(expression, operator, _comparison())
+            ..setSpan(first, _previous);
         }
       } else if (_checkAnyWithNot(stringOps)) {
         final not = _matchOne(TokenType.not);
@@ -130,7 +142,8 @@ mixin ExpressionParser on ParserBase {
             left: expression,
             operator: operator,
             right: right,
-            escape: escape);
+            escape: escape)
+          ..setSpan(first, _previous);
       } else {
         break; // no matching operator with this precedence was found
       }
@@ -175,14 +188,17 @@ mixin ExpressionParser on ParserBase {
     ])) {
       final operator = _previous;
       final expression = _unary();
-      return UnaryExpression(operator, expression);
+      return UnaryExpression(operator, expression)
+        ..setSpan(operator, expression.last);
     } else if (_matchOne(TokenType.exists)) {
+      final existsToken = _previous;
       _consume(
           TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
       final selectStmt = select();
       _consume(TokenType.rightParen,
           'Expected closing paranthesis to finish EXISTS expression');
-      return ExistsExpression(select: selectStmt);
+      return ExistsExpression(select: selectStmt)
+        ..setSpan(existsToken, _previous);
     }
 
     return _postfix();
@@ -255,11 +271,11 @@ mixin ExpressionParser on ParserBase {
         if (_peek.type == TokenType.select) {
           final stmt = select();
           _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return SubQuery(select: stmt);
+          return SubQuery(select: stmt)..setSpan(left, _previous);
         } else {
           final expr = expression();
           _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return Parentheses(left, expr, token);
+          return Parentheses(left, expr, token)..setSpan(left, _previous);
         }
         break;
       case TokenType.identifier:

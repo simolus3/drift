@@ -20,6 +20,7 @@ IdentifierToken identifier(String content) {
 
 void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
   final parsed = SqlEngine(useMoorExtensions: moorMode).parse(sql).rootNode;
+  enforceHasSpan(parsed);
   enforceEqual(parsed, expected);
 }
 
@@ -33,4 +34,15 @@ void testAll(Map<String, AstNode> testCases) {
       testStatement(sql, expected);
     });
   });
+}
+
+/// The parser should make sure [AstNode.hasSpan] is true on relevant nodes.
+void enforceHasSpan(AstNode node) {
+  final problematic = [node]
+      .followedBy(node.allDescendants)
+      .firstWhere((node) => !node.hasSpan, orElse: () => null);
+
+  if (problematic != null) {
+    throw ArgumentError('Node $problematic did not have a span');
+  }
 }

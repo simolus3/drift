@@ -2,6 +2,8 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 const content = r'''
 import 'other.dart';
 import 'another.moor';
@@ -19,6 +21,7 @@ void main() {
   test('parses moor files', () {
     final parsed = SqlEngine(useMoorExtensions: true).parseMoorFile(content);
     final file = parsed.rootNode;
+    enforceHasSpan(file);
 
     enforceEqual(
       file,
