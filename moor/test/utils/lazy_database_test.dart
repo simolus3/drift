@@ -2,6 +2,7 @@ import 'package:moor/moor.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:test_api/test_api.dart';
 
+import '../data/tables/todos.dart';
 import '../data/utils/mocks.dart';
 
 void main() {
@@ -44,5 +45,15 @@ void main() {
 
     await pumpEventQueue();
     expect(openCount, 1);
+  });
+
+  test('sets generated database property', () async {
+    final inner = MockExecutor();
+    final db = TodoDb(LazyDatabase(() => inner));
+
+    // run a statement to make sure the database has been opened
+    await db.customSelectQuery('custom_select').get();
+
+    verify(inner.databaseInfo = db);
   });
 }

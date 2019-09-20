@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:moor/backends.dart';
+import 'package:moor/moor.dart';
 
 /// Signature of a function that opens a database connection when instructed to.
 typedef DatabaseOpener = FutureOr<QueryExecutor> Function();
@@ -17,6 +18,12 @@ class LazyDatabase extends QueryExecutor {
 
   LazyDatabase(this.opener);
 
+  @override
+  set databaseInfo(GeneratedDatabase db) {
+    super.databaseInfo = db;
+    _delegate?.databaseInfo = db;
+  }
+
   Future<void> _awaitOpened() {
     if (_delegate != null) {
       return Future.value();
@@ -26,6 +33,7 @@ class LazyDatabase extends QueryExecutor {
       _openDelegate = Completer();
       Future.value(opener()).then((database) {
         _delegate = database;
+        _delegate.databaseInfo = databaseInfo;
         _openDelegate.complete();
       });
       return _openDelegate.future;
