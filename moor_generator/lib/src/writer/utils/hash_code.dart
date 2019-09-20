@@ -2,6 +2,8 @@ const _hashCombine = '\$mrjc';
 const _hashFinish = '\$mrjf';
 
 class HashCodeWriter {
+  const HashCodeWriter();
+
   /// Writes an expression to calculate a hash code of an object that consists
   /// of the [fields].
   void writeHashCode(List<String> fields, StringBuffer into) {

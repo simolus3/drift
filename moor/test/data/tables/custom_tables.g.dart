@@ -6,7 +6,7 @@ part of 'custom_tables.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class NoId extends DataClass implements Insertable<NoId> {
   final Uint8List payload;
   NoId({@required this.payload});
@@ -55,7 +55,8 @@ class NoId extends DataClass implements Insertable<NoId> {
   int get hashCode => $mrjf(payload.hashCode);
   @override
   bool operator ==(other) =>
-      identical(this, other) || (other is NoId && other.payload == payload);
+      identical(this, other) ||
+      (other is NoId && other.payload == this.payload);
 }
 
 class NoIdsCompanion extends UpdateCompanion<NoId> {
@@ -190,7 +191,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is WithDefault && other.a == a && other.b == b);
+      (other is WithDefault && other.a == this.a && other.b == this.b);
 }
 
 class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
@@ -354,7 +355,10 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is WithConstraint && other.a == a && other.b == b && other.c == c);
+      (other is WithConstraint &&
+          other.a == this.a &&
+          other.b == this.b &&
+          other.c == this.c);
 }
 
 class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
@@ -536,8 +540,8 @@ class Config extends DataClass implements Insertable<Config> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Config &&
-          other.configKey == configKey &&
-          other.configValue == configValue);
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue);
 }
 
 class ConfigCompanion extends UpdateCompanion<Config> {
@@ -699,8 +703,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is MytableData &&
-          other.someid == someid &&
-          other.sometext == sometext);
+          other.someid == this.someid &&
+          other.sometext == this.sometext);
 }
 
 class MytableCompanion extends UpdateCompanion<MytableData> {

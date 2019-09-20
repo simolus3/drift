@@ -6,7 +6,7 @@ part of 'example.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
@@ -66,7 +66,9 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Category && other.id == id && other.description == description);
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -253,10 +255,10 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Recipe &&
-          other.id == id &&
-          other.title == title &&
-          other.instructions == instructions &&
-          other.category == category);
+          other.id == this.id &&
+          other.title == this.title &&
+          other.instructions == this.instructions &&
+          other.category == this.category);
 }
 
 class RecipesCompanion extends UpdateCompanion<Recipe> {
@@ -479,9 +481,9 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Ingredient &&
-          other.id == id &&
-          other.name == name &&
-          other.caloriesPer100g == caloriesPer100g);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.caloriesPer100g == this.caloriesPer100g);
 }
 
 class IngredientsCompanion extends UpdateCompanion<Ingredient> {
@@ -691,9 +693,9 @@ class IngredientInRecipe extends DataClass
   bool operator ==(other) =>
       identical(this, other) ||
       (other is IngredientInRecipe &&
-          other.recipe == recipe &&
-          other.ingredient == ingredient &&
-          other.amountInGrams == amountInGrams);
+          other.recipe == this.recipe &&
+          other.ingredient == this.ingredient &&
+          other.amountInGrams == this.amountInGrams);
 }
 
 class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
@@ -874,4 +876,12 @@ class TotalWeightResult {
     this.title,
     this.totalWeight,
   });
+  @override
+  int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is TotalWeightResult &&
+          other.title == this.title &&
+          other.totalWeight == this.totalWeight);
 }

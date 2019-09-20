@@ -13,9 +13,8 @@ class MoorGenerator extends Generator implements BaseGenerator {
     final writer = builder.createWriter();
 
     if (parsed.declaredDatabases.isNotEmpty) {
-      writer
-          .leaf()
-          .write('// ignore_for_file: unnecessary_brace_in_string_interps\n');
+      writer.leaf().write(
+          '// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this\n');
     }
 
     for (var db in parsed.declaredDatabases) {

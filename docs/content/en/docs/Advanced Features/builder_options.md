@@ -26,3 +26,6 @@ At the moment, moor supports these options:
 * `write_from_json_string_constructor`: boolean. Adds a `.fromJsonString` factory
    constructor to generated data classes. By default, we only write a `.fromJson`
    constructor that takes a `Map<String, dynamic>`.
+* `overrride_hash_and_equals_in_result_sets`: boolean. When moor generates another class
+   to hold the result of generated select queries, this flag controls whether moor should
+   override `operator ==` and `hashCode` in those classes.

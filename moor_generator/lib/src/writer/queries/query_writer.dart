@@ -52,8 +52,8 @@ class QueryWriter {
     if (query is SqlSelectQuery) {
       final select = query as SqlSelectQuery;
       if (select.resultSet.needsOwnClass) {
-        final buffer = scope.findScopeOfLevel(DartScope.library).leaf();
-        ResultSetWriter(select).write(buffer);
+        final resultSetScope = scope.findScopeOfLevel(DartScope.library);
+        ResultSetWriter(select, resultSetScope).write();
       }
       _writeSelect();
     } else if (query is UpdatingQuery) {

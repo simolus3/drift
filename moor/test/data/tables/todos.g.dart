@@ -6,7 +6,7 @@ part of 'todos.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String title;
@@ -113,11 +113,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TodoEntry &&
-          other.id == id &&
-          other.title == title &&
-          other.content == content &&
-          other.targetDate == targetDate &&
-          other.category == category);
+          other.id == this.id &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.targetDate == this.targetDate &&
+          other.category == this.category);
 }
 
 class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
@@ -355,7 +355,9 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Category && other.id == id && other.description == description);
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -560,11 +562,11 @@ class User extends DataClass implements Insertable<User> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is User &&
-          other.id == id &&
-          other.name == name &&
-          other.isAwesome == isAwesome &&
-          other.profilePicture == profilePicture &&
-          other.creationTime == creationTime);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isAwesome == this.isAwesome &&
+          other.profilePicture == this.profilePicture &&
+          other.creationTime == this.creationTime);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -801,7 +803,9 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is SharedTodo && other.todo == todo && other.user == user);
+      (other is SharedTodo &&
+          other.todo == this.todo &&
+          other.user == this.user);
 }
 
 class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
@@ -988,9 +992,9 @@ class TableWithoutPKData extends DataClass
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TableWithoutPKData &&
-          other.notReallyAnId == notReallyAnId &&
-          other.someFloat == someFloat &&
-          other.custom == custom);
+          other.notReallyAnId == this.notReallyAnId &&
+          other.someFloat == this.someFloat &&
+          other.custom == this.custom);
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
@@ -1183,7 +1187,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is PureDefault && other.id == id && other.txt == txt);
+      (other is PureDefault && other.id == this.id && other.txt == this.txt);
 }
 
 class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
@@ -1433,6 +1437,28 @@ class AllTodosWithCategoryResult {
     this.catId,
     this.catDesc,
   });
+  @override
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(
+          title.hashCode,
+          $mrjc(
+              content.hashCode,
+              $mrjc(
+                  targetDate.hashCode,
+                  $mrjc(category.hashCode,
+                      $mrjc(catId.hashCode, catDesc.hashCode)))))));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is AllTodosWithCategoryResult &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.targetDate == this.targetDate &&
+          other.category == this.category &&
+          other.catId == this.catId &&
+          other.catDesc == this.catDesc);
 }
 
 // **************************************************************************

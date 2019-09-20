@@ -24,6 +24,7 @@ have already cloned the `moor` repository.
    }
    ```
 6. Close that editor.
+7. Uncomment the plugin lines in `analysis_options.yaml`
   
 ## Running
 After you completed the setup, these steps will open an editor instance that runs the plugin.

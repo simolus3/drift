@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/writer/utils/hash_code.dart';
+import 'package:moor_generator/src/writer/utils/override_equals.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -50,24 +51,11 @@ class DataClassWriter {
     _writeToString();
     _writeHashCode();
 
-    // override ==
-    //    return identical(this, other) || (other is DataClass && other.id == id && ...)
-    _buffer
-      ..write('@override\nbool operator ==(other) => ')
-      ..write('identical(this, other) || (other is ${table.dartTypeName}');
+    overrideEquals(table.columns.map((c) => c.dartGetterName),
+        table.dartTypeName, _buffer);
 
-    if (table.columns.isNotEmpty) {
-      _buffer
-        ..write('&&')
-        ..write(table.columns.map((c) {
-          final getter = c.dartGetterName;
-
-          return 'other.$getter == $getter';
-        }).join(' && '));
-    }
-
-    // finish overrides method and class declaration
-    _buffer.write(');\n}');
+    // finish class declaration
+    _buffer.write('}');
   }
 
   void _writeMappingConstructor() {
@@ -224,7 +212,7 @@ class DataClassWriter {
     _buffer.write('@override\n int get hashCode => ');
 
     final fields = table.columns.map((c) => c.dartGetterName).toList();
-    HashCodeWriter().writeHashCode(fields, _buffer);
+    const HashCodeWriter().writeHashCode(fields, _buffer);
     _buffer.write(';');
   }
 
