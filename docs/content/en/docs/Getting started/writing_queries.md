@@ -56,6 +56,20 @@ Future<List<TodoEntry>> sortEntriesAlphabetically() {
 ```
 You can also reverse the order by setting the `mode` property of the `OrderingTerm` to
 `OrderingMode.desc`.
+
+### Single values
+If you now a query is never going to return more than one row, wrapping the result in a `List`
+can be tedious. Moor lets you work around that with `getSingle` and `watchSingle`:
+```dart
+Stream<TodoEntry> entryById(int id) {
+  return (select(todos)..where((t) => t.id.equals(id))).watchSingle();
+}
+```
+If an entry with the provided id exists, it will be sent to the stream. Otherwise,
+`null` will be added to stream. If a query used with `watchSingle` ever returns
+more than one entry (which is impossible in this case), an error will be added
+instead.
+
 ## Updates and deletes
 You can use the generated classes to update individual fields of any row:
 ```dart
@@ -126,3 +140,6 @@ addTodoEntry(
 If a column is nullable or has a default value (this includes auto-increments), the field
 can be omitted. All other fields must be set and non-null. The `insert` method will throw
 otherwise.
+
+Multiple inserts can be batched by using `insertAll` - it takes a list of companions instead
+of a single companion.
