@@ -34,6 +34,11 @@ class MockExecutor extends Mock implements QueryExecutor {
       return transactions;
     });
 
+    when(ensureOpen()).thenAnswer((i) {
+      _opened = true;
+      return Future.value(true);
+    });
+
     when(doWhenOpened(any)).thenAnswer((i) {
       _opened = true;
       final action = i.positionalArguments.single as _EnsureOpenAction;

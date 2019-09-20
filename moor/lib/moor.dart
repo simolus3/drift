@@ -35,3 +35,4 @@ export 'package:moor/src/runtime/migration.dart';
 export 'package:moor/src/runtime/exceptions.dart';
 export 'package:moor/src/utils/expand_variables.dart';
 export 'package:moor/src/utils/hash.dart';
+export 'package:moor/src/utils/lazy_database.dart';
