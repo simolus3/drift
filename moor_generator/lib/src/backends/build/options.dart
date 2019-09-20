@@ -12,7 +12,7 @@ class MoorOptions {
         config['write_from_json_string_constructor'] as bool ?? false;
 
     final overrideInResultSets =
-        config['overrride_hash_and_equals_in_result_sets'] as bool ?? false;
+        config['override_hash_and_equals_in_result_sets'] as bool ?? false;
 
     return MoorOptions(writeFromString, overrideInResultSets);
   }
