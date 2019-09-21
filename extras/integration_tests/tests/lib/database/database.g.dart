@@ -21,7 +21,7 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
@@ -127,11 +127,11 @@ class User extends DataClass implements Insertable<User> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is User &&
-          other.id == id &&
-          other.name == name &&
-          other.birthDate == birthDate &&
-          other.profilePicture == profilePicture &&
-          other.preferences == preferences);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.birthDate == this.birthDate &&
+          other.profilePicture == this.profilePicture &&
+          other.preferences == this.preferences);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -397,9 +397,9 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Friendship &&
-          other.firstUser == firstUser &&
-          other.secondUser == secondUser &&
-          other.reallyGoodFriends == reallyGoodFriends);
+          other.firstUser == this.firstUser &&
+          other.secondUser == this.secondUser &&
+          other.reallyGoodFriends == this.reallyGoodFriends);
 }
 
 class FriendshipsCompanion extends UpdateCompanion<Friendship> {
@@ -628,6 +628,23 @@ abstract class _$Database extends GeneratedDatabase {
 
   Stream<List<Preferences>> watchSettingsFor(int user) {
     return settingsForQuery(user).watch();
+  }
+
+  Selectable<User> usersByIdQuery(List<int> var1) {
+    var $arrayStartIndex = 1;
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    $arrayStartIndex += var1.length;
+    return customSelectQuery('SELECT * FROM users WHERE id IN ($expandedvar1)',
+        variables: [for (var $ in var1) Variable.withInt($)],
+        readsFrom: {users}).map(_rowToUser);
+  }
+
+  Future<List<User>> usersById(List<int> var1) {
+    return usersByIdQuery(var1).get();
+  }
+
+  Stream<List<User>> watchUsersById(List<int> var1) {
+    return usersByIdQuery(var1).watch();
   }
 
   @override

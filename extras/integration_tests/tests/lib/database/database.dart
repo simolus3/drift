@@ -75,6 +75,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
          WHERE (f.first_user = :user OR f.second_user = :user)''',
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
+    'usersById': 'SELECT * FROM users WHERE id IN ?',
   },
 )
 class Database extends _$Database {

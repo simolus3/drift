@@ -23,4 +23,13 @@ void crudTests(TestExecutor executor) {
     await db.makeFriends(a, b);
     await expectation;
   });
+
+  test('IN ? expressions can be expanded', () async {
+    // regression test for https://github.com/simolus3/moor/issues/156
+    final db = Database(executor.createExecutor());
+
+    final result = await db.usersById([1, 2, 3]);
+
+    expect(result.map((u) => u.name), ['Dash', 'Duke', 'Go Gopher']);
+  });
 }
