@@ -1,4 +1,5 @@
-part of 'package:moor_ffi/moor_ffi.dart';
+import 'dart:ffi';
+import 'dart:io';
 
 /// Signature responsible for loading the dynamic sqlite3 library that moor will
 /// use.

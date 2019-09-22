@@ -4,7 +4,7 @@
 
 import 'dart:ffi';
 
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:moor_ffi/open_helper.dart';
 
 import '../ffi/blob.dart';
 

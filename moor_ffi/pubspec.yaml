@@ -8,19 +8,16 @@ environment:
   sdk: ">=2.5.0-dev <2.6.0"
 
 dependencies:
-  moor: ^2.0.0
+  moor: ">=1.7.0 <2.1.0"
 #  flutter:
 #    sdk: flutter
 
 dev_dependencies:
   test: ^1.6.0
+  path: ^1.6.0
 
 flutter:
   plugin:
     # the flutter.plugin key needs to exists so that this project gets recognized as a plugin when imported. We need to
     # get recognized as a plugin so that our build scripts are executed.
     foo: bar
-
-dependency_overrides:
-  moor:
-    path: ../moor
