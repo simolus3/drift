@@ -1,6 +1,6 @@
 part of 'database.dart';
 
-class PreparedStatement {
+class PreparedStatement implements BasePreparedStatement {
   final Pointer<types.Statement> _stmt;
   final Database _db;
   bool _closed = false;
@@ -10,6 +10,7 @@ class PreparedStatement {
 
   PreparedStatement._(this._stmt, this._db);
 
+  @override
   void close() {
     if (!_closed) {
       _reset();
@@ -25,8 +26,7 @@ class PreparedStatement {
     }
   }
 
-  /// Executes this prepared statement as a select statement. The returned rows
-  /// will be returned.
+  @override
   Result select([List<dynamic> params]) {
     _ensureNotFinalized();
     _reset();
@@ -75,7 +75,7 @@ class PreparedStatement {
     }
   }
 
-  /// Executes this prepared statement.
+  @override
   void execute([List<dynamic> params]) {
     _ensureNotFinalized();
     _reset();

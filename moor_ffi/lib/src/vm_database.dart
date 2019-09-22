@@ -18,7 +18,7 @@ class VmDatabase extends DelegatedDatabase {
 }
 
 class _VmDelegate extends DatabaseDelegate {
-  Database _db;
+  BaseDatabase _db;
 
   final File file;
 
@@ -45,12 +45,12 @@ class _VmDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
+  Future<void> runBatched(List<BatchedStatement> statements) async {
     for (var stmt in statements) {
-      final prepared = _db.prepare(stmt.sql);
+      final prepared = await _db.prepare(stmt.sql);
 
       for (var boundVars in stmt.variables) {
-        prepared.execute(boundVars);
+        await prepared.execute(boundVars);
       }
 
       prepared.close();
@@ -59,55 +59,54 @@ class _VmDelegate extends DatabaseDelegate {
     return Future.value();
   }
 
-  void _runWithArgs(String statement, List<dynamic> args) {
+  Future _runWithArgs(String statement, List<dynamic> args) async {
     if (args.isEmpty) {
-      _db.execute(statement);
+      await _db.execute(statement);
     } else {
-      _db.prepare(statement)
-        ..execute(args)
-        ..close();
+      final stmt = await _db.prepare(statement);
+      await stmt.execute(args);
+      await stmt.close();
     }
   }
 
   @override
-  Future<void> runCustom(String statement, List args) {
-    _runWithArgs(statement, args);
-    return Future.value();
+  Future<void> runCustom(String statement, List args) async {
+    await _runWithArgs(statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
-    _runWithArgs(statement, args);
-    return Future.value(_db.lastInsertId);
+  Future<int> runInsert(String statement, List args) async {
+    await _runWithArgs(statement, args);
+    return await _db.getLastInsertId();
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
-    _runWithArgs(statement, args);
-    return Future.value(_db.updatedRows);
+  Future<int> runUpdate(String statement, List args) async {
+    await _runWithArgs(statement, args);
+    return await _db.getUpdatedRows();
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List args) {
-    final stmt = _db.prepare(statement);
-    final result = stmt.select(args);
-    stmt.close();
+  Future<QueryResult> runSelect(String statement, List args) async {
+    final stmt = await _db.prepare(statement);
+    final result = await stmt.select(args);
+    await stmt.close();
 
     return Future.value(QueryResult(result.columnNames, result.rows));
   }
 }
 
 class _VmVersionDelegate extends DynamicVersionDelegate {
-  final Database database;
+  final BaseDatabase database;
 
   _VmVersionDelegate(this.database);
 
   @override
-  Future<int> get schemaVersion => Future.value(database.userVersion);
+  Future<int> get schemaVersion => Future.value(database.userVersion());
 
   @override
-  Future<void> setSchemaVersion(int version) {
-    database.userVersion = version;
+  Future<void> setSchemaVersion(int version) async {
+    await database.setUserVersion(version);
     return Future.value();
   }
 }

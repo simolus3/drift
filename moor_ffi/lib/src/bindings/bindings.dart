@@ -94,7 +94,7 @@ class _SQLiteBindings {
   int Function(Pointer<Statement> statement, int columnIndex) sqlite3_bind_null;
 
   _SQLiteBindings() {
-    sqlite = moorSqliteOpener();
+    sqlite = open.openSqlite();
 
     sqlite3_bind_double = sqlite
         .lookup<NativeFunction<sqlite3_bind_double_native>>(

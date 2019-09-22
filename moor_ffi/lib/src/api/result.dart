@@ -1,4 +1,6 @@
-part of 'database.dart';
+import 'dart:collection';
+
+import 'package:collection/collection.dart';
 
 /// Stores the result of a select statement.
 class Result extends Iterable<Row> {
