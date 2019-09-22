@@ -96,7 +96,9 @@ dev_dependencies:
 
 In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
 with both `package:moor/moor.dart` and `package:moor_ffi/moor_ffi.dart`.
-
 In all other project files that use moor apis (e.g. a `Value` class for companions), just import `package:moor/moor.dart`.
 
 Finally, replace usages of `FlutterQueryExecutor` with `VmDatabase`.
+
+Note that, at the moment, there is no counterpart for `FlutterQueryExecutor.inDatabasePath` and that the async API using
+a background isolate is not available yet. Both shortcomings with be fixed by the upcoming moor 2.0 release.

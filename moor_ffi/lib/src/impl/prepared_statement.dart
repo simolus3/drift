@@ -22,7 +22,7 @@ class PreparedStatement implements BasePreparedStatement {
 
   void _ensureNotFinalized() {
     if (_closed) {
-      throw Exception('Tried to operate on a released prepared statement');
+      throw StateError('Tried to operate on a released prepared statement');
     }
   }
 

@@ -5,6 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:moor_ffi/database.dart';
 
+import 'suite/insert.dart' as insert;
+import 'suite/prepared_statements.dart' as prepared_statements;
 import 'suite/select.dart' as select;
 import 'suite/user_version.dart' as user_version;
 
@@ -59,6 +61,8 @@ void main() {
 }
 
 void _declareAll(TestedDatabase db) {
+  insert.main(db);
+  prepared_statements.main(db);
   select.main(db);
   user_version.main(db);
 }

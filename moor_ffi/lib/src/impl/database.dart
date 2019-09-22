@@ -44,6 +44,7 @@ class Database implements BaseDatabase {
     if (resultCode == Errors.SQLITE_OK) {
       return Database._(dbPointer);
     } else {
+      bindings.sqlite3_close_v2(dbPointer);
       throw SqliteException._fromErrorCode(dbPointer, resultCode);
     }
   }
@@ -56,6 +57,12 @@ class Database implements BaseDatabase {
 
   @override
   void close() {
+    // close all prepared statements first
+    _isClosed = true;
+    for (var stmt in _preparedStmt) {
+      stmt.close();
+    }
+
     final code = bindings.sqlite3_close_v2(_db);
     SqliteException exception;
     if (code != Errors.SQLITE_OK) {
@@ -63,10 +70,7 @@ class Database implements BaseDatabase {
     }
     _isClosed = true;
 
-    for (var stmt in _preparedStmt) {
-      stmt.close();
-    }
-    _db.free();
+    // we don't need to deallocate the _db pointer, sqlite takes care of that
 
     if (exception != null) {
       throw exception;
@@ -82,6 +86,7 @@ class Database implements BaseDatabase {
   @override
   void execute(String sql) {
     _ensureOpen();
+
     final sqlPtr = CBlob.allocateString(sql);
     final errorOut = Pointer<Pointer<CBlob>>.allocate();
 
@@ -125,7 +130,10 @@ class Database implements BaseDatabase {
       throw SqliteException._fromErrorCode(_db, resultCode);
     }
 
-    return PreparedStatement._(stmt, this);
+    final prepared = PreparedStatement._(stmt, this);
+    _preparedStmt.add(prepared);
+
+    return prepared;
   }
 
   @override

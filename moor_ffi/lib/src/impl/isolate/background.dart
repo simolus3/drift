@@ -48,6 +48,8 @@ class DbOperationProxy {
   final SendPort send;
   final Isolate isolate;
 
+  var closed = false;
+
   int _currentRequestId = 0;
 
   DbOperationProxy(
@@ -57,6 +59,10 @@ class DbOperationProxy {
 
   Future<dynamic> sendRequest(IsolateCommandType type, dynamic data,
       {int preparedStmtId}) {
+    if (closed) {
+      throw StateError('Tried to call a database method after .close()');
+    }
+
     final id = _currentRequestId++;
     final cmd = IsolateCommand(id, type, data)
       ..preparedStatementId = preparedStmtId;
@@ -80,6 +86,7 @@ class DbOperationProxy {
   }
 
   void close() {
+    closed = true;
     _receivePort.close();
     backgroundMsgs.close();
     isolate.kill();
@@ -128,7 +135,15 @@ class BackgroundIsolateRunner {
           final response = _handleCommand(data);
           send.send(IsolateResponse(data.requestId, response, null));
         } catch (e) {
-          send.send(IsolateResponse(data.requestId, null, e));
+          if (e is Error) {
+            // errors contain a StackTrace, which cannot be sent. So we just
+            // send the description of that stacktrace.
+            final exception =
+                Exception('Error in background isolate: $e\n${e.stackTrace}');
+            send.send(IsolateResponse(data.requestId, null, exception));
+          } else {
+            send.send(IsolateResponse(data.requestId, null, e));
+          }
         }
       }
     });
