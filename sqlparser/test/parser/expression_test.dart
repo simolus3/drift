@@ -41,15 +41,15 @@ final Map<String, Expression> _testCases = {
   '? * ?3 + ?2 == :test': BinaryExpression(
     BinaryExpression(
       BinaryExpression(
-        NumberedVariable(token(TokenType.questionMark), null),
+        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
         token(TokenType.star),
-        NumberedVariable(token(TokenType.questionMark), 3),
+        NumberedVariable(QuestionMarkVariableToken(fakeSpan('?3'), 3)),
       ),
       token(TokenType.plus),
-      NumberedVariable(token(TokenType.questionMark), 2),
+      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?2'), 2)),
     ),
     token(TokenType.doubleEqual),
-    ColonNamedVariable(':test'),
+    ColonNamedVariable(ColonVariableToken(fakeSpan(':test'), ':test')),
   ),
   'CASE x WHEN a THEN b WHEN c THEN d ELSE e END': CaseExpression(
     base: Reference(columnName: 'x'),
@@ -83,11 +83,14 @@ final Map<String, Expression> _testCases = {
       ),
     ),
   ),
-  '(1, 2, 3)': TupleExpression(
-    expressions: [
-      for (var i = 1; i <= 3; i++)
-        NumericLiteral(i, token(TokenType.numberLiteral)),
-    ],
+  '(SELECT x)': SubQuery(
+    select: SelectStatement(
+      columns: [
+        ExpressionResultColumn(
+          expression: Reference(columnName: 'x'),
+        ),
+      ],
+    ),
   ),
   "'hello' || 'world' COLLATE NOCASE": BinaryExpression(
     StringLiteral.from(token(TokenType.stringLiteral), 'hello'),
@@ -96,6 +99,41 @@ final Map<String, Expression> _testCases = {
       operator: token(TokenType.collate),
       inner: StringLiteral.from(token(TokenType.stringLiteral), 'world'),
       collateFunction: token(TokenType.identifier),
+    ),
+  ),
+  'x in ?': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+  ),
+  'x IN (SELECT col FROM tbl)': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: SubQuery(
+      select: SelectStatement(
+        columns: [
+          ExpressionResultColumn(
+            expression: Reference(columnName: 'col'),
+          )
+        ],
+        from: [
+          TableReference('tbl', null),
+        ],
+      ),
+    ),
+  ),
+  'x IN (1, 2, (SELECT 3))': InExpression(
+    left: Reference(columnName: 'x'),
+    inside: Tuple(
+      expressions: [
+        NumericLiteral(1.0, token(TokenType.numberLiteral)),
+        NumericLiteral(2.0, token(TokenType.numberLiteral)),
+        SubQuery(
+          select: SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: NumericLiteral(3.0, token(TokenType.numberLiteral)),
+            ),
+          ]),
+        ),
+      ],
     ),
   ),
 };
@@ -108,6 +146,8 @@ void main() {
         final tokens = scanner.scanTokens();
         final parser = Parser(tokens);
         final expression = parser.expression();
+        enforceHasSpan(expression);
+
         enforceEqual(expression, expected);
       });
     });

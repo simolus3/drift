@@ -6,7 +6,7 @@ part of 'example.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
@@ -66,13 +66,19 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Category && other.id == id && other.description == description);
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
   const CategoriesCompanion({
+    this.id = const Value.absent(),
+    this.description = const Value.absent(),
+  });
+  CategoriesCompanion.insert({
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
@@ -94,7 +100,8 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _descriptionMeta =
@@ -248,10 +255,10 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Recipe &&
-          other.id == id &&
-          other.title == title &&
-          other.instructions == instructions &&
-          other.category == category);
+          other.id == this.id &&
+          other.title == this.title &&
+          other.instructions == this.instructions &&
+          other.category == this.category);
 }
 
 class RecipesCompanion extends UpdateCompanion<Recipe> {
@@ -265,6 +272,13 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.instructions = const Value.absent(),
     this.category = const Value.absent(),
   });
+  RecipesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String title,
+    @required String instructions,
+    this.category = const Value.absent(),
+  })  : title = Value(title),
+        instructions = Value(instructions);
   RecipesCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -288,7 +302,8 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -466,9 +481,9 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Ingredient &&
-          other.id == id &&
-          other.name == name &&
-          other.caloriesPer100g == caloriesPer100g);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.caloriesPer100g == this.caloriesPer100g);
 }
 
 class IngredientsCompanion extends UpdateCompanion<Ingredient> {
@@ -480,6 +495,12 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.name = const Value.absent(),
     this.caloriesPer100g = const Value.absent(),
   });
+  IngredientsCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    @required int caloriesPer100g,
+  })  : name = Value(name),
+        caloriesPer100g = Value(caloriesPer100g);
   IngredientsCompanion copyWith(
       {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
     return IngredientsCompanion(
@@ -500,7 +521,8 @@ class $IngredientsTable extends Ingredients
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -671,9 +693,9 @@ class IngredientInRecipe extends DataClass
   bool operator ==(other) =>
       identical(this, other) ||
       (other is IngredientInRecipe &&
-          other.recipe == recipe &&
-          other.ingredient == ingredient &&
-          other.amountInGrams == amountInGrams);
+          other.recipe == this.recipe &&
+          other.ingredient == this.ingredient &&
+          other.amountInGrams == this.amountInGrams);
 }
 
 class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
@@ -685,6 +707,13 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     this.ingredient = const Value.absent(),
     this.amountInGrams = const Value.absent(),
   });
+  IngredientInRecipesCompanion.insert({
+    @required int recipe,
+    @required int ingredient,
+    @required int amountInGrams,
+  })  : recipe = Value(recipe),
+        ingredient = Value(ingredient),
+        amountInGrams = Value(amountInGrams);
   IngredientInRecipesCompanion copyWith(
       {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
     return IngredientInRecipesCompanion(
@@ -802,15 +831,6 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   }
 }
 
-class TotalWeightResult {
-  final String title;
-  final int totalWeight;
-  TotalWeightResult({
-    this.title,
-    this.totalWeight,
-  });
-}
-
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $CategoriesTable _categories;
@@ -829,25 +849,39 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Future<List<TotalWeightResult>> _totalWeight(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: []).then((rows) => rows.map(_rowToTotalWeightResult).toList());
+  Selectable<TotalWeightResult> _totalWeightQuery() {
+    return customSelectQuery(
+        'SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id',
+        variables: [],
+        readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
+  }
+
+  Future<List<TotalWeightResult>> _totalWeight() {
+    return _totalWeightQuery().get();
   }
 
   Stream<List<TotalWeightResult>> _watchTotalWeight() {
-    return customSelectStream(
-        '      SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id\n     ',
-        variables: [],
-        readsFrom: {
-          recipes,
-          ingredientInRecipes
-        }).map((rows) => rows.map(_rowToTotalWeightResult).toList());
+    return _totalWeightQuery().watch();
   }
 
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];
+}
+
+class TotalWeightResult {
+  final String title;
+  final int totalWeight;
+  TotalWeightResult({
+    this.title,
+    this.totalWeight,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is TotalWeightResult &&
+          other.title == this.title &&
+          other.totalWeight == this.totalWeight);
 }

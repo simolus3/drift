@@ -74,7 +74,7 @@ class NamedWindowDeclaration with Referencable {
 class WindowDefinition extends AstNode {
   final String baseWindowName;
   final List<Expression> partitionBy;
-  final OrderBy orderBy;
+  final OrderByBase orderBy;
   final FrameSpec frameSpec;
 
   WindowDefinition(

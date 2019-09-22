@@ -46,8 +46,9 @@ void main() {
     expect(context.errors, isEmpty);
 
     final select = context.root as SelectStatement;
-    final orderingTerm = select.orderBy.terms.single.expression as Reference;
-    final resolved = orderingTerm.resolved as ExpressionColumn;
+    final term = (select.orderBy as OrderBy).terms.single as OrderingTerm;
+    final expression = term.expression as Reference;
+    final resolved = expression.resolved as ExpressionColumn;
 
     enforceEqual(
       resolved.expression,

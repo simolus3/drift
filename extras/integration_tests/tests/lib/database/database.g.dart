@@ -21,7 +21,7 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
@@ -127,11 +127,11 @@ class User extends DataClass implements Insertable<User> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is User &&
-          other.id == id &&
-          other.name == name &&
-          other.birthDate == birthDate &&
-          other.profilePicture == profilePicture &&
-          other.preferences == preferences);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.birthDate == this.birthDate &&
+          other.profilePicture == this.profilePicture &&
+          other.preferences == this.preferences);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -147,6 +147,14 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.preferences = const Value.absent(),
   });
+  UsersCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    @required DateTime birthDate,
+    this.profilePicture = const Value.absent(),
+    this.preferences = const Value.absent(),
+  })  : name = Value(name),
+        birthDate = Value(birthDate);
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -172,7 +180,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -388,9 +397,9 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is Friendship &&
-          other.firstUser == firstUser &&
-          other.secondUser == secondUser &&
-          other.reallyGoodFriends == reallyGoodFriends);
+          other.firstUser == this.firstUser &&
+          other.secondUser == this.secondUser &&
+          other.reallyGoodFriends == this.reallyGoodFriends);
 }
 
 class FriendshipsCompanion extends UpdateCompanion<Friendship> {
@@ -402,6 +411,12 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
     this.secondUser = const Value.absent(),
     this.reallyGoodFriends = const Value.absent(),
   });
+  FriendshipsCompanion.insert({
+    @required int firstUser,
+    @required int secondUser,
+    this.reallyGoodFriends = const Value.absent(),
+  })  : firstUser = Value(firstUser),
+        secondUser = Value(secondUser);
   FriendshipsCompanion copyWith(
       {Value<int> firstUser,
       Value<int> secondUser,
@@ -520,27 +535,6 @@ class $FriendshipsTable extends Friendships
   }
 }
 
-class AmountOfGoodFriendsResult {
-  final int count;
-  AmountOfGoodFriendsResult({
-    this.count,
-  });
-}
-
-class UserCountResult {
-  final int cOUNTid;
-  UserCountResult({
-    this.cOUNTid,
-  });
-}
-
-class SettingsForResult {
-  final Preferences preferences;
-  SettingsForResult({
-    this.preferences,
-  });
-}
-
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $UsersTable _users;
@@ -558,125 +552,99 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Future<List<User>> mostPopularUsers(
-      int amount,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
+  Selectable<User> mostPopularUsersQuery(int amount) {
+    return customSelectQuery(
         'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-        variables: [
-          Variable.withInt(amount),
-        ]).then((rows) => rows.map(_rowToUser).toList());
+        variables: [Variable.withInt(amount)],
+        readsFrom: {users, friendships}).map(_rowToUser);
+  }
+
+  Future<List<User>> mostPopularUsers(int amount) {
+    return mostPopularUsersQuery(amount).get();
   }
 
   Stream<List<User>> watchMostPopularUsers(int amount) {
-    return customSelectStream(
-        'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-        variables: [
-          Variable.withInt(amount),
-        ],
-        readsFrom: {
-          users,
-          friendships
-        }).map((rows) => rows.map(_rowToUser).toList());
+    return mostPopularUsersQuery(amount).watch();
   }
 
-  AmountOfGoodFriendsResult _rowToAmountOfGoodFriendsResult(QueryRow row) {
-    return AmountOfGoodFriendsResult(
-      count: row.readInt('COUNT(*)'),
-    );
-  }
-
-  Future<List<AmountOfGoodFriendsResult>> amountOfGoodFriends(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
+  Selectable<int> amountOfGoodFriendsQuery(int user) {
+    return customSelectQuery(
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
         variables: [
-          Variable.withInt(user),
-        ]).then((rows) => rows.map(_rowToAmountOfGoodFriendsResult).toList());
-  }
-
-  Stream<List<AmountOfGoodFriendsResult>> watchAmountOfGoodFriends(int user) {
-    return customSelectStream(
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
-        variables: [
-          Variable.withInt(user),
+          Variable.withInt(user)
         ],
         readsFrom: {
           friendships
-        }).map((rows) => rows.map(_rowToAmountOfGoodFriendsResult).toList());
+        }).map((QueryRow row) => row.readInt('COUNT(*)'));
   }
 
-  Future<List<User>> friendsOf(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
+  Future<List<int>> amountOfGoodFriends(int user) {
+    return amountOfGoodFriendsQuery(user).get();
+  }
+
+  Stream<List<int>> watchAmountOfGoodFriends(int user) {
+    return amountOfGoodFriendsQuery(user).watch();
+  }
+
+  Selectable<User> friendsOfQuery(int user) {
+    return customSelectQuery(
         'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
-        variables: [
-          Variable.withInt(user),
-        ]).then((rows) => rows.map(_rowToUser).toList());
+        variables: [Variable.withInt(user)],
+        readsFrom: {friendships, users}).map(_rowToUser);
+  }
+
+  Future<List<User>> friendsOf(int user) {
+    return friendsOfQuery(user).get();
   }
 
   Stream<List<User>> watchFriendsOf(int user) {
-    return customSelectStream(
-        'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
-        variables: [
-          Variable.withInt(user),
-        ],
-        readsFrom: {
-          friendships,
-          users
-        }).map((rows) => rows.map(_rowToUser).toList());
+    return friendsOfQuery(user).watch();
   }
 
-  UserCountResult _rowToUserCountResult(QueryRow row) {
-    return UserCountResult(
-      cOUNTid: row.readInt('COUNT(id)'),
-    );
+  Selectable<int> userCountQuery() {
+    return customSelectQuery('SELECT COUNT(id) FROM users',
+        variables: [],
+        readsFrom: {users}).map((QueryRow row) => row.readInt('COUNT(id)'));
   }
 
-  Future<List<UserCountResult>> userCount(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect('SELECT COUNT(id) FROM users',
-        variables: []).then((rows) => rows.map(_rowToUserCountResult).toList());
+  Future<List<int>> userCount() {
+    return userCountQuery().get();
   }
 
-  Stream<List<UserCountResult>> watchUserCount() {
-    return customSelectStream('SELECT COUNT(id) FROM users',
-            variables: [], readsFrom: {users})
-        .map((rows) => rows.map(_rowToUserCountResult).toList());
+  Stream<List<int>> watchUserCount() {
+    return userCountQuery().watch();
   }
 
-  SettingsForResult _rowToSettingsForResult(QueryRow row) {
-    return SettingsForResult(
-      preferences:
-          $UsersTable.$converter0.mapToDart(row.readString('preferences')),
-    );
+  Selectable<Preferences> settingsForQuery(int user) {
+    return customSelectQuery('SELECT preferences FROM users WHERE id = :user',
+            variables: [Variable.withInt(user)], readsFrom: {users})
+        .map((QueryRow row) =>
+            $UsersTable.$converter0.mapToDart(row.readString('preferences')));
   }
 
-  Future<List<SettingsForResult>> settingsFor(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        'SELECT preferences FROM users WHERE id = :user',
-        variables: [
-          Variable.withInt(user),
-        ]).then((rows) => rows.map(_rowToSettingsForResult).toList());
+  Future<List<Preferences>> settingsFor(int user) {
+    return settingsForQuery(user).get();
   }
 
-  Stream<List<SettingsForResult>> watchSettingsFor(int user) {
-    return customSelectStream('SELECT preferences FROM users WHERE id = :user',
-        variables: [
-          Variable.withInt(user),
-        ],
-        readsFrom: {
-          users
-        }).map((rows) => rows.map(_rowToSettingsForResult).toList());
+  Stream<List<Preferences>> watchSettingsFor(int user) {
+    return settingsForQuery(user).watch();
+  }
+
+  Selectable<User> usersByIdQuery(List<int> var1) {
+    var $arrayStartIndex = 1;
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    $arrayStartIndex += var1.length;
+    return customSelectQuery('SELECT * FROM users WHERE id IN ($expandedvar1)',
+        variables: [for (var $ in var1) Variable.withInt($)],
+        readsFrom: {users}).map(_rowToUser);
+  }
+
+  Future<List<User>> usersById(List<int> var1) {
+    return usersByIdQuery(var1).get();
+  }
+
+  Stream<List<User>> watchUsersById(List<int> var1) {
+    return usersByIdQuery(var1).watch();
   }
 
   @override

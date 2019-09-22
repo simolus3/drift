@@ -1,4 +1,101 @@
-## unreleased
+## 2.0.0
+This is the first major update after the initial release and moor and we have a lot to cover:
+The `.moor` files can now have their own imports and queries, you can embed Dart in sql queries
+using the new templates feature and we have a prototype of a pure-Dart SQL IDE ready.
+Finally, we also removed a variety of deprecated features. See the breaking changes
+section to learn what components are affected and what alternatives are available.
+
+### New features
+
+#### Updates to the sql parser
+`.moor` files were introduced in moor 1.7 as an experimental way to declare tables by using
+`CREATE TABLE` statements. In this version, they become stable and support their own import
+and query system. This allows you to write queries in their own file:
+
+```sql
+CREATE TABLE users (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR NOT NULL
+);
+
+findByName: SELECT * FROM users WHERE name LIKE :query;
+```
+When this file is included from a `@UseMoor` annotation, moor will generate methods to run the
+query. Of course, you can also write Dart queries for tables declared in sql:
+```dart
+Stream<User> loadUserById(int id) {
+ return (select(users)..where((u) => u.id.equals(2))).watchSingle();
+}
+```
+
+Moor files can also import other moor files by using an `import 'other.moor';'` statement at the 
+top. Then, all tables defined in `other.moor` will also be available to the current file.
+
+Moor takes Dart and SQL interop even further with the new "Dart in SQL templates". You can define
+a query like this:
+```sql
+findDynamic: SELECT * FROM users WHERE $condition;
+```
+
+And moor will generate a method `findDynamic(Expression<bool, BoolType> condition)` for you. This
+allows you to bind the template with a predicate as complex as you'd like. At the moment, Dart
+templates are supported for expressions, `OrderBy`, `OrderingTerm` and `Limit`.
+
+`INSERT` statements can now be used as a compiled statement - both in moor files and
+in a `@UseMoor` or `@UseDao` annotation. A new builtin linter will even warn you when you forget
+to provide a value for a non-nullable column - right at compile time!
+
+And finally, we now generate better query code when queries only return a single column. Instead of
+generating a whole new class for that, we simply return the value directly.
+
+#### Experimental ffi support
+TODO: Describe ffi port
+
+### Minor changes
+- a `Constant<String>` can now be written to SQL, it used to throw before. This is useful
+  if you need default values for strings columns.
+- new `LazyDatabase` when you want to construct a database asynchronously (for instance, if
+  you first need to find a file before you can open a database).
+
+### Breaking changes
+- __THIS LIKELY AFFECTS YOUR APP:__ Removed the `transaction` parameter for callbacks
+  in transactions and `beforeOpen` callbacks. So, instead of writing
+  ```dart
+  transaction((t) async {
+    await t.update(table)...;
+  });
+  ```
+  simply write
+  ```dart
+  transaction(() async {
+    await update(table)...;
+  });
+  ```
+  Similarly, instead of using `onOpen: (db, details) async {...}`, use
+  `onOpen: (details) async {...}`. You don't have to worry about calling methods on
+  your database instead of a transaction objects. They will be delegated automatically.
+  
+  On a similar note, we also removed the `operateOn` parameter from compiled queries.
+- Compiled queries that return only a single column (e.g. `SELECT COUNT(*) FROM users`)
+  will just return their value (in this case, an `int`) now. Moor no longer generates a 
+  new class in that case.
+- Removed `MigrationStrategy.onFinished`. Use `beforeOpen` instead.
+- Compiled sql queries starting with an underscore will now generate private match queries.
+  Previously, the query `_allUsers` would generate a `watchAllUsers` method, that has been
+  adopted to `_watchAllUsers`. The `generate_private_watch_methods` builder option, which
+  backported this fix to older versions, has thus been removed.
+- Removed `InsertStatement.insertOrReplace`. Use `insert(data, orReplace: true)` instead.
+
+## 1.7.2
+- Fixed a race condition that caused the database to be opened multiple times on slower devices.
+  This problem was introduced in `1.7.0` and was causing problems during migrations.
+
+## 1.7.1
+- Better documentation on `getSingle` and `watchSingle` for queries.
+- Fix `INTEGER NOT NULL PRIMARY KEY` wrongly requiring a value during insert (this never affected
+  `AUTOINCREMENT` columns, and only affects columns declared in a `.moor` file)
+
+## 1.7.0
 - Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)
 for details on how to use this feature.
 - Transactions now roll back when not completed successfully, they also rethrow the exception

@@ -38,11 +38,12 @@ enum TokenType {
   exists,
   collate,
 
-  questionMark,
+  questionMarkVariable,
   colon,
-  // todo at and dollarSign are currently not used
+  colonVariable,
+  // todo at is not used at the moment
   at,
-  dollarSign,
+  dollarSignVariable,
 
   stringLiteral,
   numberLiteral,
@@ -57,6 +58,8 @@ enum TokenType {
   select,
   delete,
   update,
+  insert,
+  into,
   distinct,
   all,
   from,
@@ -124,6 +127,7 @@ enum TokenType {
   unique,
   check,
   $default,
+  $values,
   conflict,
   references,
   cascade,
@@ -132,11 +136,19 @@ enum TokenType {
   action,
 
   semicolon,
+  comment,
   eof,
+
+  /// Moor specific token, used to declare a type converters
+  mapped,
+  inlineDart,
+  import,
 }
 
 const Map<String, TokenType> keywords = {
   'SELECT': TokenType.select,
+  'INSERT': TokenType.insert,
+  'INTO': TokenType.into,
   'COLLATE': TokenType.collate,
   'DISTINCT': TokenType.distinct,
   'UPDATE': TokenType.update,
@@ -224,10 +236,26 @@ const Map<String, TokenType> keywords = {
   'OTHERS': TokenType.others,
   'TIES': TokenType.ties,
   'WINDOW': TokenType.window,
+  'VALUES': TokenType.$values,
+};
+
+/// Maps [TokenType]s which are keywords to their lexeme.
+final reverseKeywords = {
+  for (var entry in keywords.entries) entry.value: entry.key,
+  for (var entry in moorKeywords.entries) entry.value: entry.key,
+};
+
+const Map<String, TokenType> moorKeywords = {
+  'MAPPED': TokenType.mapped,
+  'IMPORT': TokenType.import,
 };
 
 class Token {
   final TokenType type;
+
+  /// Whether this token should be invisible to the parser. We use this for
+  /// comment tokens.
+  bool get invisibleToParser => false;
 
   final FileSpan span;
   String get lexeme => span.text;
@@ -254,6 +282,11 @@ class IdentifierToken extends Token {
   /// Whether this identifier was escaped by putting it in "double ticks".
   final bool escaped;
 
+  /// Whether this identifier token is synthetic. We sometimes convert
+  /// [KeywordToken]s to identifiers if they're unambiguous, in which case
+  /// [synthetic] will be true on this token because it was not scanned as such.
+  final bool synthetic;
+
   String get identifier {
     if (escaped) {
       return lexeme.substring(1, lexeme.length - 1);
@@ -262,8 +295,78 @@ class IdentifierToken extends Token {
     }
   }
 
-  const IdentifierToken(this.escaped, FileSpan span)
+  const IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
       : super(TokenType.identifier, span);
+}
+
+abstract class VariableToken extends Token {
+  VariableToken(TokenType type, FileSpan span) : super(type, span);
+}
+
+class QuestionMarkVariableToken extends Token {
+  /// The explicit index, if this variable was of the form `?123`. Otherwise
+  /// null.
+  final int explicitIndex;
+
+  QuestionMarkVariableToken(FileSpan span, this.explicitIndex)
+      : super(TokenType.questionMarkVariable, span);
+}
+
+class ColonVariableToken extends Token {
+  final String name;
+
+  ColonVariableToken(FileSpan span, this.name)
+      : super(TokenType.colonVariable, span);
+}
+
+class DollarSignVariableToken extends Token {
+  final String name;
+
+  DollarSignVariableToken(FileSpan span, this.name)
+      : super(TokenType.dollarSignVariable, span);
+}
+
+/// Inline Dart appearing in a create table statement. Only parsed when the moor
+/// extensions are enabled. Dart code is wrapped in backticks.
+class InlineDartToken extends Token {
+  InlineDartToken(FileSpan span) : super(TokenType.inlineDart, span);
+
+  String get dartCode {
+    // strip the backticks
+    return lexeme.substring(1, lexeme.length - 1);
+  }
+}
+
+/// Used for tokens that are keywords. We use this special class without any
+/// additional properties to ease syntax highlighting, as it allows us to find
+/// the keywords easily.
+class KeywordToken extends Token {
+  /// Whether this token has been used as an identifier while parsing.
+  bool isIdentifier;
+
+  KeywordToken(TokenType type, FileSpan span) : super(type, span);
+
+  IdentifierToken convertToIdentifier() {
+    isIdentifier = true;
+
+    return IdentifierToken(false, span, synthetic: false);
+  }
+}
+
+enum CommentMode { line, cStyle }
+
+/// A comment, either started with -- or with /*.
+class CommentToken extends Token {
+  final CommentMode mode;
+
+  /// The content of this comment, excluding the "--", "/*", "*/".
+  final String content;
+
+  @override
+  final bool invisibleToParser = true;
+
+  CommentToken(this.mode, this.content, FileSpan span)
+      : super(TokenType.comment, span);
 }
 
 class TokenizerError {

@@ -9,6 +9,7 @@ part 'clauses/ordering.dart';
 
 part 'common/queryables.dart';
 part 'common/renamable.dart';
+part 'common/tuple.dart';
 
 part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
@@ -18,14 +19,19 @@ part 'expressions/literals.dart';
 part 'expressions/reference.dart';
 part 'expressions/simple.dart';
 part 'expressions/subquery.dart';
-part 'expressions/tuple.dart';
 part 'expressions/variables.dart';
+
+part 'moor/declared_statement.dart';
+part 'moor/import_statement.dart';
+part 'moor/inline_dart.dart';
+part 'moor/moor_file.dart';
 
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
 
 part 'statements/create_table.dart';
 part 'statements/delete.dart';
+part 'statements/insert.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 part 'statements/update.dart';
@@ -48,10 +54,18 @@ abstract class AstNode {
   /// nodes.
   int get firstPosition => first.span.start.offset;
 
-  /// The last position that belongs to node, exclusive. Not set for all nodes.
+  /// The (exclusive) last index of this node in the source. In other words, the
+  /// first index that is _not_ a part of this node. Not set for all nodes.
   int get lastPosition => last.span.end.offset;
 
-  FileSpan get span => first.span.expand(last.span);
+  FileSpan get span {
+    if (!hasSpan) return null;
+    return first.span.expand(last.span);
+  }
+
+  /// Whether a source span has been set on this node. The span describes what
+  /// range in the source code is covered by this node.
+  bool get hasSpan => first != null && last != null;
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.
   void setSpan(Token first, Token last) {
@@ -67,6 +81,12 @@ abstract class AstNode {
       yield node;
       node = node.parent;
     }
+  }
+
+  /// Returns an iterable containing `this` node and all [parents].
+  Iterable<AstNode> get selfAndParents sync* {
+    yield this;
+    yield* parents;
   }
 
   /// Recursively returns all descendants of this node, e.g. its children, their
@@ -133,6 +153,7 @@ abstract class AstNode {
 abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
   T visitResultColumn(ResultColumn e);
+  T visitInsertStatement(InsertStatement e);
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
@@ -163,7 +184,7 @@ abstract class AstVisitor<T> {
   T visitExists(ExistsExpression e);
   T visitCaseExpression(CaseExpression e);
   T visitWhen(WhenComponent e);
-  T visitTuple(TupleExpression e);
+  T visitTuple(Tuple e);
   T visitInExpression(InExpression e);
 
   T visitAggregateExpression(AggregateExpression e);
@@ -172,6 +193,11 @@ abstract class AstVisitor<T> {
 
   T visitNumberedVariable(NumberedVariable e);
   T visitNamedVariable(ColonNamedVariable e);
+
+  T visitMoorFile(MoorFile e);
+  T visitMoorImportStatement(ImportStatement e);
+  T visitMoorDeclaredStatement(DeclaredStatement e);
+  T visitDartPlaceholder(DartPlaceholder e);
 }
 
 /// Visitor that walks down the entire tree, visiting all children in order.
@@ -201,7 +227,7 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitWhen(WhenComponent e) => visitChildren(e);
 
   @override
-  T visitTuple(TupleExpression e) => visitChildren(e);
+  T visitTuple(Tuple e) => visitChildren(e);
 
   @override
   T visitInExpression(InExpression e) => visitChildren(e);
@@ -249,6 +275,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
   T visitSelectStatement(SelectStatement e) => visitChildren(e);
 
   @override
+  T visitInsertStatement(InsertStatement e) => visitChildren(e);
+
+  @override
   T visitDeleteStatement(DeleteStatement e) => visitChildren(e);
 
   @override
@@ -280,6 +309,18 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitFrameSpec(FrameSpec e) => visitChildren(e);
+
+  @override
+  T visitMoorFile(MoorFile e) => visitChildren(e);
+
+  @override
+  T visitMoorImportStatement(ImportStatement e) => visitChildren(e);
+
+  @override
+  T visitMoorDeclaredStatement(DeclaredStatement e) => visitChildren(e);
+
+  @override
+  T visitDartPlaceholder(DartPlaceholder e) => visitChildren(e);
 
   @protected
   T visitChildren(AstNode e) {

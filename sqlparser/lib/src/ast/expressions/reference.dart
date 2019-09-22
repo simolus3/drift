@@ -11,6 +11,8 @@ class Reference extends Expression with ReferenceOwner {
   final String tableName;
   final String columnName;
 
+  Column get resolvedColumn => resolved as Column;
+
   Reference({this.tableName, this.columnName});
 
   @override
@@ -22,5 +24,14 @@ class Reference extends Expression with ReferenceOwner {
   @override
   bool contentEquals(Reference other) {
     return other.tableName == tableName && other.columnName == columnName;
+  }
+
+  @override
+  String toString() {
+    if (tableName != null) {
+      return '$tableName.$columnName';
+    } else {
+      return columnName;
+    }
   }
 }

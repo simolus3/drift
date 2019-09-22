@@ -1,10 +1,17 @@
 ---
-title: "Custom queries"
+title: "(Legacy) Custom queries"
 weight: 10
 description: Let moor generate Dart from your SQL statements
 aliases:
   - /queries/custom
 ---
+
+{{% alert title="Outdated feature" color="warning" %}}
+With moor 2.0, we moved the new `.moor` files out of preview and added some powerful features to them.
+They are easier to use than the approaches described here. While these features will continue to
+be supported, moor files will get better tooling support in the future and we recommend to
+migrate. See [their api]({{%relref "moor_files.md"%}}) for details.
+{{% /alert %}}
 
 Altough moor includes a fluent api that can be used to model most statements, advanced
 features like `GROUP BY` statements or window functions are not yet supported. You can
@@ -38,6 +45,15 @@ an auto-updating stream).
 Queries can have parameters in them by using the `?` or `:name` syntax. When your queries contains parameters,
 moor will figure out an appropriate type for them and include them in the generated methods. For instance,
 `'categoryById': 'SELECT * FROM categories WHERE id = :id'` will generate the method `categoryById(int id)`.
+
+{{% alert title="On table names" color="info" %}}
+To use this feature, it's helpful to know how Dart tables are named in sql. For tables that don't
+override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
+called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
+called `user_address_information`. The same rule applies to column getters without an explicit name.
+Tables and columns declared in [Moor files]({{< relref "moor_files.md" >}}) will always have the
+name you specified.
+{{% /alert %}}
 
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for 
 [daos]({{< relref "../Advanced Features/daos.md" >}}),

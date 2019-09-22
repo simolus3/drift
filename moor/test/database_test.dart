@@ -15,9 +15,11 @@ class _FakeDb extends GeneratedDatabase {
       onUpgrade: (m, from, to) async {
         await m.issueCustomQuery('updated from $from to $to');
       },
-      beforeOpen: (db, details) async {
-        await db.customSelect(
-            'opened: ${details.versionBefore} to ${details.versionNow}');
+      beforeOpen: (details) async {
+        // this fake select query is verified via mocks
+        await customSelectQuery(
+                'opened: ${details.versionBefore} to ${details.versionNow}')
+            .get();
       },
     );
   }

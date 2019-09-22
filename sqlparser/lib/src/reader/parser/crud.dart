@@ -130,9 +130,11 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.identifier)) {
       // ignore the schema name, it's not supported. Besides that, we're on the
       // first branch in the diagram here
-      final tableName = (_previous as IdentifierToken).identifier;
+      final firstToken = _previous as IdentifierToken;
+      final tableName = firstToken.identifier;
       final alias = _as();
-      return TableReference(tableName, alias?.identifier);
+      return TableReference(tableName, alias?.identifier)
+        ..setSpan(firstToken, _previous);
     }
     return null;
   }
@@ -270,22 +272,44 @@ mixin CrudParser on ParserBase {
     return declarations;
   }
 
-  OrderBy _orderBy() {
+  OrderByBase _orderBy() {
     if (_matchOne(TokenType.order)) {
+      final orderToken = _previous;
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
-      final terms = <OrderingTerm>[];
+      final terms = <OrderingTermBase>[];
       do {
         terms.add(_orderingTerm());
       } while (_matchOne(TokenType.comma));
-      return OrderBy(terms: terms);
+
+      // If we only hit a single ordering term and that term is a Dart
+      // placeholder, we can upgrade that term to a full order by placeholder.
+      // This gives users more control at runtime (they can specify multiple
+      // terms).
+      if (terms.length == 1 && terms.single is DartOrderingTermPlaceholder) {
+        final termPlaceholder = terms.single as DartOrderingTermPlaceholder;
+        return DartOrderByPlaceholder(name: termPlaceholder.name)
+          ..setSpan(termPlaceholder.first, termPlaceholder.last);
+      }
+
+      return OrderBy(terms: terms)..setSpan(orderToken, _previous);
     }
     return null;
   }
 
-  OrderingTerm _orderingTerm() {
+  OrderingTermBase _orderingTerm() {
     final expr = expression();
+    final mode = _orderingModeOrNull();
 
-    return OrderingTerm(expression: expr, orderingMode: _orderingModeOrNull());
+    // if there is no ASC or DESC after a Dart placeholder, we can upgrade the
+    // expression to an ordering term placeholder and let users define the mode
+    // at runtime.
+    if (mode == null && expr is DartExpressionPlaceholder) {
+      return DartOrderingTermPlaceholder(name: expr.name)
+        ..setSpan(expr.first, expr.last);
+    }
+
+    return OrderingTerm(expression: expr, orderingMode: mode)
+      ..setSpan(expr.first, _previous);
   }
 
   @override
@@ -301,8 +325,10 @@ mixin CrudParser on ParserBase {
 
   /// Parses a [Limit] clause, or returns null if there is no limit token after
   /// the current position.
-  Limit _limit() {
+  LimitBase _limit() {
     if (!_matchOne(TokenType.limit)) return null;
+
+    final limitToken = _previous;
 
     // Unintuitive, it's "$amount OFFSET $offset", but "$offset, $amount"
     // the order changes between the separator tokens.
@@ -311,18 +337,29 @@ mixin CrudParser on ParserBase {
     if (_matchOne(TokenType.comma)) {
       final separator = _previous;
       final count = expression();
-      return Limit(count: count, offsetSeparator: separator, offset: first);
+      return Limit(count: count, offsetSeparator: separator, offset: first)
+        ..setSpan(limitToken, _previous);
     } else if (_matchOne(TokenType.offset)) {
       final separator = _previous;
       final offset = expression();
-      return Limit(count: first, offsetSeparator: separator, offset: offset);
+      return Limit(count: first, offsetSeparator: separator, offset: offset)
+        ..setSpan(limitToken, _previous);
     } else {
-      return Limit(count: first);
+      // no offset or comma was parsed (so just LIMIT $expr). In that case, we
+      // want to provide additional flexibility to the user by interpreting the
+      // expression as a whole limit clause.
+      if (first is DartExpressionPlaceholder) {
+        return DartLimitPlaceholder(name: first.name)
+          ..setSpan(limitToken, _previous);
+      }
+      return Limit(count: first)..setSpan(limitToken, _previous);
     }
   }
 
   DeleteStatement _deleteStmt() {
     if (!_matchOne(TokenType.delete)) return null;
+    final deleteToken = _previous;
+
     _consume(TokenType.from, 'Expected a FROM here');
 
     final table = _tableReference();
@@ -335,11 +372,14 @@ mixin CrudParser on ParserBase {
       where = expression();
     }
 
-    return DeleteStatement(from: table, where: where);
+    return DeleteStatement(from: table, where: where)
+      ..setSpan(deleteToken, _previous);
   }
 
   UpdateStatement _update() {
     if (!_matchOne(TokenType.update)) return null;
+    final updateToken = _previous;
+
     FailureMode failureMode;
     if (_matchOne(TokenType.or)) {
       failureMode = UpdateStatement.failureModeFromToken(_advance().type);
@@ -358,12 +398,85 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.equal, 'Expected = after the column name');
       final expr = expression();
 
-      set.add(SetComponent(column: reference, expression: expr));
+      set.add(SetComponent(column: reference, expression: expr)
+        ..setSpan(columnName, _previous));
     } while (_matchOne(TokenType.comma));
 
     final where = _where();
     return UpdateStatement(
-        or: failureMode, table: table, set: set, where: where);
+        or: failureMode, table: table, set: set, where: where)
+      ..setSpan(updateToken, _previous);
+  }
+
+  InsertStatement _insertStmt() {
+    if (!_match(const [TokenType.insert, TokenType.replace])) return null;
+
+    final firstToken = _previous;
+    InsertMode insertMode;
+    if (_previous.type == TokenType.insert) {
+      // insert modes can have a failure clause (INSERT OR xxx)
+      if (_matchOne(TokenType.or)) {
+        const tokensToModes = {
+          TokenType.replace: InsertMode.insertOrReplace,
+          TokenType.rollback: InsertMode.insertOrRollback,
+          TokenType.abort: InsertMode.insertOrAbort,
+          TokenType.fail: InsertMode.insertOrFail,
+          TokenType.ignore: InsertMode.insertOrIgnore
+        };
+
+        if (_match(tokensToModes.keys)) {
+          insertMode = tokensToModes[_previous.type];
+        } else {
+          _error(
+              'After the INSERT OR, expected an insert mode (REPLACE, ROLLBACK, etc.)');
+        }
+      } else {
+        insertMode = InsertMode.insert;
+      }
+    } else {
+      // if it wasn't an insert, it must have been a replace
+      insertMode = InsertMode.replace;
+    }
+    assert(insertMode != null);
+    _consume(TokenType.into, 'Expected INSERT INTO');
+
+    final table = _tableReference();
+    final targetColumns = <Reference>[];
+
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final columnRef = _consumeIdentifier('Expected a column');
+        targetColumns.add(Reference(columnName: columnRef.identifier)
+          ..setSpan(columnRef, columnRef));
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen,
+          'Expected clpsing parenthesis after column list');
+    }
+    final source = _insertSource();
+
+    return InsertStatement(
+      mode: insertMode,
+      table: table,
+      targetColumns: targetColumns,
+      source: source,
+    )..setSpan(firstToken, _previous);
+  }
+
+  InsertSource _insertSource() {
+    if (_matchOne(TokenType.$values)) {
+      final values = <Tuple>[];
+      do {
+        // it will be a tuple, we don't turn on "orSubQuery"
+        values.add(_consumeTuple() as Tuple);
+      } while (_matchOne(TokenType.comma));
+      return ValuesSource(values);
+    } else if (_matchOne(TokenType.$default)) {
+      _consume(TokenType.$values, 'Expected DEFAULT VALUES');
+      return const DefaultValues();
+    } else {
+      return SelectInsertSource(select());
+    }
   }
 
   @override
@@ -372,7 +485,7 @@ mixin CrudParser on ParserBase {
     final leftParen = _previous;
 
     String baseWindowName;
-    OrderBy orderBy;
+    OrderByBase orderBy;
 
     final partitionBy = <Expression>[];
     if (_matchOne(TokenType.identifier)) {

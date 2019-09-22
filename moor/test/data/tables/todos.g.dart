@@ -6,7 +6,7 @@ part of 'todos.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String title;
@@ -113,11 +113,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TodoEntry &&
-          other.id == id &&
-          other.title == title &&
-          other.content == content &&
-          other.targetDate == targetDate &&
-          other.category == category);
+          other.id == this.id &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.targetDate == this.targetDate &&
+          other.category == this.category);
 }
 
 class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
@@ -133,6 +133,13 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
+  TodosTableCompanion.insert({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    @required String content,
+    this.targetDate = const Value.absent(),
+    this.category = const Value.absent(),
+  }) : content = Value(content);
   TodosTableCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -159,7 +166,8 @@ class $TodosTableTable extends TodosTable
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -347,7 +355,9 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Category && other.id == id && other.description == description);
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -357,6 +367,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String description,
+  }) : description = Value(description);
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -375,7 +389,8 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _descriptionMeta =
@@ -547,11 +562,11 @@ class User extends DataClass implements Insertable<User> {
   bool operator ==(other) =>
       identical(this, other) ||
       (other is User &&
-          other.id == id &&
-          other.name == name &&
-          other.isAwesome == isAwesome &&
-          other.profilePicture == profilePicture &&
-          other.creationTime == creationTime);
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isAwesome == this.isAwesome &&
+          other.profilePicture == this.profilePicture &&
+          other.creationTime == this.creationTime);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -567,6 +582,14 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePicture = const Value.absent(),
     this.creationTime = const Value.absent(),
   });
+  UsersCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    this.isAwesome = const Value.absent(),
+    @required Uint8List profilePicture,
+    this.creationTime = const Value.absent(),
+  })  : name = Value(name),
+        profilePicture = Value(profilePicture);
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -592,7 +615,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -779,7 +803,9 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is SharedTodo && other.todo == todo && other.user == user);
+      (other is SharedTodo &&
+          other.todo == this.todo &&
+          other.user == this.user);
 }
 
 class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
@@ -789,6 +815,11 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     this.todo = const Value.absent(),
     this.user = const Value.absent(),
   });
+  SharedTodosCompanion.insert({
+    @required int todo,
+    @required int user,
+  })  : todo = Value(todo),
+        user = Value(user);
   SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
     return SharedTodosCompanion(
       todo: todo ?? this.todo,
@@ -961,9 +992,9 @@ class TableWithoutPKData extends DataClass
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TableWithoutPKData &&
-          other.notReallyAnId == notReallyAnId &&
-          other.someFloat == someFloat &&
-          other.custom == custom);
+          other.notReallyAnId == this.notReallyAnId &&
+          other.someFloat == this.someFloat &&
+          other.custom == this.custom);
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
@@ -975,6 +1006,13 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.someFloat = const Value.absent(),
     this.custom = const Value.absent(),
   });
+  TableWithoutPKCompanion.insert({
+    @required int notReallyAnId,
+    @required double someFloat,
+    @required MyCustomObject custom,
+  })  : notReallyAnId = Value(notReallyAnId),
+        someFloat = Value(someFloat),
+        custom = Value(custom);
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
@@ -1149,13 +1187,17 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is PureDefault && other.id == id && other.txt == txt);
+      (other is PureDefault && other.id == this.id && other.txt == this.txt);
 }
 
 class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   final Value<int> id;
   final Value<String> txt;
   const PureDefaultsCompanion({
+    this.id = const Value.absent(),
+    this.txt = const Value.absent(),
+  });
+  PureDefaultsCompanion.insert({
     this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
@@ -1177,7 +1219,8 @@ class $PureDefaultsTable extends PureDefaults
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
@@ -1243,32 +1286,6 @@ class $PureDefaultsTable extends PureDefaults
   }
 }
 
-class AllTodosWithCategoryResult {
-  final int id;
-  final String title;
-  final String content;
-  final DateTime targetDate;
-  final int category;
-  final int catId;
-  final String catDesc;
-  AllTodosWithCategoryResult({
-    this.id,
-    this.title,
-    this.content,
-    this.targetDate,
-    this.category,
-    this.catId,
-    this.catDesc,
-  });
-}
-
-class FindCustomResult {
-  final MyCustomObject custom;
-  FindCustomResult({
-    this.custom,
-  });
-}
-
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
   $TodosTableTable _todosTable;
@@ -1299,33 +1316,28 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
-        variables: []).then((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
-  }
-
-  Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
-    return customSelectStream(
+  Selectable<AllTodosWithCategoryResult> allTodosWithCategoryQuery() {
+    return customSelectQuery(
         'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
         variables: [],
         readsFrom: {
           categories,
           todosTable
-        }).map((rows) => rows.map(_rowToAllTodosWithCategoryResult).toList());
+        }).map(_rowToAllTodosWithCategoryResult);
   }
 
-  Future<int> deleteTodoById(
-      int var1,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customUpdate(
+  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory() {
+    return allTodosWithCategoryQuery().get();
+  }
+
+  Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
+    return allTodosWithCategoryQuery().watch();
+  }
+
+  Future<int> deleteTodoById(int var1) {
+    return customUpdate(
       'DELETE FROM todos WHERE id = ?',
-      variables: [
-        Variable.withInt(var1),
-      ],
+      variables: [Variable.withInt(var1)],
       updates: {todosTable},
     );
   }
@@ -1340,84 +1352,61 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Future<List<TodoEntry>> withIn(
-      String var1,
-      String var2,
-      List<int> var3,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    var $highestIndex = 3;
-    final expandedvar3 = $expandVar($highestIndex, var3.length);
-    $highestIndex += var3.length;
-    return (operateOn ?? this).customSelect(
+  Selectable<TodoEntry> withInQuery(String var1, String var2, List<int> var3) {
+    var $arrayStartIndex = 3;
+    final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
+    $arrayStartIndex += var3.length;
+    return customSelectQuery(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
           Variable.withString(var1),
           Variable.withString(var2),
-          for (var $ in var3) Variable.withInt($),
-        ]).then((rows) => rows.map(_rowToTodoEntry).toList());
+          for (var $ in var3) Variable.withInt($)
+        ],
+        readsFrom: {
+          todosTable
+        }).map(_rowToTodoEntry);
+  }
+
+  Future<List<TodoEntry>> withIn(String var1, String var2, List<int> var3) {
+    return withInQuery(var1, var2, var3).get();
   }
 
   Stream<List<TodoEntry>> watchWithIn(
       String var1, String var2, List<int> var3) {
-    var $highestIndex = 3;
-    final expandedvar3 = $expandVar($highestIndex, var3.length);
-    $highestIndex += var3.length;
-    return customSelectStream(
-        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
-        variables: [
-          Variable.withString(var1),
-          Variable.withString(var2),
-          for (var $ in var3) Variable.withInt($),
-        ],
-        readsFrom: {
-          todosTable
-        }).map((rows) => rows.map(_rowToTodoEntry).toList());
+    return withInQuery(var1, var2, var3).watch();
   }
 
-  Future<List<TodoEntry>> search(
-      int id,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
+  Selectable<TodoEntry> searchQuery(int id) {
+    return customSelectQuery(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
-        variables: [
-          Variable.withInt(id),
-        ]).then((rows) => rows.map(_rowToTodoEntry).toList());
+        variables: [Variable.withInt(id)],
+        readsFrom: {todosTable}).map(_rowToTodoEntry);
+  }
+
+  Future<List<TodoEntry>> search(int id) {
+    return searchQuery(id).get();
   }
 
   Stream<List<TodoEntry>> watchSearch(int id) {
-    return customSelectStream(
-        'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
-        variables: [
-          Variable.withInt(id),
-        ],
-        readsFrom: {
-          todosTable
-        }).map((rows) => rows.map(_rowToTodoEntry).toList());
+    return searchQuery(id).watch();
   }
 
-  FindCustomResult _rowToFindCustomResult(QueryRow row) {
-    return FindCustomResult(
-      custom:
-          $TableWithoutPKTable.$converter0.mapToDart(row.readString('custom')),
-    );
-  }
-
-  Future<List<FindCustomResult>> findCustom(
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
-        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
-        variables: []).then((rows) => rows.map(_rowToFindCustomResult).toList());
-  }
-
-  Stream<List<FindCustomResult>> watchFindCustom() {
-    return customSelectStream(
+  Selectable<MyCustomObject> findCustomQuery() {
+    return customSelectQuery(
             'SELECT custom FROM table_without_p_k WHERE some_float < 10',
             variables: [],
             readsFrom: {tableWithoutPK})
-        .map((rows) => rows.map(_rowToFindCustomResult).toList());
+        .map((QueryRow row) => $TableWithoutPKTable.$converter0
+            .mapToDart(row.readString('custom')));
+  }
+
+  Future<List<MyCustomObject>> findCustom() {
+    return findCustomQuery().get();
+  }
+
+  Stream<List<MyCustomObject>> watchFindCustom() {
+    return findCustomQuery().watch();
   }
 
   @override
@@ -1429,6 +1418,47 @@ abstract class _$TodoDb extends GeneratedDatabase {
         tableWithoutPK,
         pureDefaults
       ];
+}
+
+class AllTodosWithCategoryResult {
+  final int id;
+  final String title;
+  final String content;
+  final DateTime targetDate;
+  final int category;
+  final int catId;
+  final String catDesc;
+  AllTodosWithCategoryResult({
+    this.id,
+    this.title,
+    this.content,
+    this.targetDate,
+    this.category,
+    this.catId,
+    this.catDesc,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(
+          title.hashCode,
+          $mrjc(
+              content.hashCode,
+              $mrjc(
+                  targetDate.hashCode,
+                  $mrjc(category.hashCode,
+                      $mrjc(catId.hashCode, catDesc.hashCode)))))));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is AllTodosWithCategoryResult &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.content == this.content &&
+          other.targetDate == this.targetDate &&
+          other.category == this.category &&
+          other.catId == this.catId &&
+          other.catDesc == this.catDesc);
 }
 
 // **************************************************************************
@@ -1449,27 +1479,18 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
     );
   }
 
-  Future<List<TodoEntry>> todosForUser(
-      int user,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customSelect(
+  Selectable<TodoEntry> todosForUserQuery(int user) {
+    return customSelectQuery(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [
-          Variable.withInt(user),
-        ]).then((rows) => rows.map(_rowToTodoEntry).toList());
+        variables: [Variable.withInt(user)],
+        readsFrom: {todosTable, sharedTodos, users}).map(_rowToTodoEntry);
+  }
+
+  Future<List<TodoEntry>> todosForUser(int user) {
+    return todosForUserQuery(user).get();
   }
 
   Stream<List<TodoEntry>> watchTodosForUser(int user) {
-    return customSelectStream(
-        'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [
-          Variable.withInt(user),
-        ],
-        readsFrom: {
-          todosTable,
-          sharedTodos,
-          users
-        }).map((rows) => rows.map(_rowToTodoEntry).toList());
+    return todosForUserQuery(user).watch();
   }
 }

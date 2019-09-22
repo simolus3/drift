@@ -21,6 +21,15 @@ class ColumnDefinition extends AstNode {
   bool contentEquals(ColumnDefinition other) {
     return other.columnName == columnName && other.typeName == typeName;
   }
+
+  /// Finds a constraint of type [T], or null, if none is set.
+  T findConstraint<T extends ColumnConstraint>() {
+    final typedConstraints = constraints.whereType<T>().iterator;
+    if (typedConstraints.moveNext()) {
+      return typedConstraints.current;
+    }
+    return null;
+  }
 }
 
 /// https://www.sqlite.org/syntax/column-constraint.html
@@ -40,6 +49,7 @@ abstract class ColumnConstraint extends AstNode {
     T Function(Default) isDefault,
     T Function(CollateConstraint) collate,
     T Function(ForeignKeyColumnConstraint) foreignKey,
+    T Function(MappedBy) mappedBy,
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
@@ -55,6 +65,8 @@ abstract class ColumnConstraint extends AstNode {
       return collate?.call(this as CollateConstraint);
     } else if (this is ForeignKeyColumnConstraint) {
       return foreignKey?.call(this as ForeignKeyColumnConstraint);
+    } else if (this is MappedBy) {
+      return mappedBy?.call(this as MappedBy);
     } else {
       throw Exception('Did not expect $runtimeType as a ColumnConstraint');
     }
@@ -73,6 +85,9 @@ enum ConflictClause { rollback, abort, fail, ignore, replace }
 
 class NotNull extends ColumnConstraint {
   final ConflictClause onConflict;
+
+  Token not;
+  Token $null;
 
   NotNull(String name, {this.onConflict}) : super(name);
 
@@ -163,4 +178,21 @@ class ForeignKeyColumnConstraint extends ColumnConstraint {
 
   @override
   Iterable<AstNode> get childNodes => [clause];
+}
+
+/// A `MAPPED BY` constraint, which is only parsed for moor files. It can be
+/// used to declare a type converter for this column.
+class MappedBy extends ColumnConstraint {
+  /// The Dart expression creating the type converter we use to map this token.
+  final InlineDartToken mapper;
+
+  MappedBy(String name, this.mapper) : super(name);
+
+  @override
+  bool _equalToConstraint(MappedBy other) {
+    return other.mapper.dartCode == mapper.dartCode;
+  }
+
+  @override
+  final Iterable<AstNode> childNodes = const [];
 }

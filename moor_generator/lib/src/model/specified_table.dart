@@ -35,10 +35,14 @@ class SpecifiedTable {
     // directly because there is no user defined parent class.
     // So, turn CREATE TABLE users into something called "Users" instead of
     // "$UsersTable".
-    if (_overriddenName != null) {
-      return _overriddenName;
+    final name = _overriddenName ?? tableInfoNameForTableClass(_baseName);
+    if (name == dartTypeName) {
+      // resolve clashes if the table info class has the same name as the data
+      // class. This can happen because the data class name can be specified by
+      // the user.
+      return '${name}Table';
     }
-    return tableInfoNameForTableClass(_baseName);
+    return name;
   }
 
   String get updateCompanionName => _updateCompanionName(_baseName);
@@ -60,7 +64,11 @@ class SpecifiedTable {
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
-  const SpecifiedTable(
+  /// The set of tables referenced somewhere in the declaration of this table,
+  /// for instance by using a `REFERENCES` column constraint.
+  final Set<SpecifiedTable> references = {};
+
+  SpecifiedTable(
       {this.fromClass,
       this.columns,
       this.sqlName,
@@ -75,6 +83,19 @@ class SpecifiedTable {
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
+
+  String get displayName {
+    if (isFromSql) {
+      return sqlName;
+    } else {
+      return fromClass.displayName;
+    }
+  }
+
+  @override
+  String toString() {
+    return 'SpecifiedTable: $displayName';
+  }
 }
 
 String _dbFieldName(String className) => ReCase(className).camelCase;

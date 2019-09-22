@@ -1,7 +1,10 @@
 part of '../ast.dart';
 
-class DeleteStatement extends Statement with CrudStatement {
+class DeleteStatement extends Statement
+    with CrudStatement
+    implements HasWhereClause {
   final TableReference from;
+  @override
   final Expression where;
 
   DeleteStatement({@required this.from, this.where});

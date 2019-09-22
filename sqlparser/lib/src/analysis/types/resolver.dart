@@ -29,11 +29,16 @@ class TypeResolver {
     return calculated;
   }
 
+  /// Manually writes the [result] for the [Typeable] [t].
+  void markResult(Typeable t, ResolveResult result) {
+    _results.putIfAbsent(t, () => result);
+  }
+
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);
-    } else if (t is Variable) {
-      return inferType(t);
+    } else if (t is Variable || t is DartExpressionPlaceholder) {
+      return inferType(t as Expression);
     } else if (t is Expression) {
       return resolveExpression(t);
     }
@@ -57,7 +62,7 @@ class TypeResolver {
         // todo probably needs to be nullable when coming from a join?
         return ResolveResult(column.type);
       } else if (column is ExpressionColumn) {
-        return resolveExpression(column.expression);
+        return resolveOrInfer(column.expression);
       }
 
       throw StateError('Unknown column $column');
@@ -280,7 +285,7 @@ class TypeResolver {
 
         // If this appears in a tuple, e.g. test IN (?). The "(?)" will be an
         // array. Of course, the individual entry is not, so reset that state.
-        if (parent is TupleExpression) {
+        if (parent is Tuple) {
           return inferredType.mapResult((r) => r.toArray(false));
         }
         return inferredType;
@@ -292,6 +297,8 @@ class TypeResolver {
         // appears as part of a bounded window definition:
         // RANGE BETWEEN <expr> PRECEDING AND <expr> FOLLOWING
         return const ResolveResult(ResolvedType(type: BasicType.int));
+      } else if (parent is HasWhereClause && e == parent.where) {
+        return const ResolveResult(ResolvedType.bool());
       }
 
       return const ResolveResult.unknown();
@@ -323,7 +330,7 @@ class TypeResolver {
         return resolveExpression(otherNode as Expression);
       }
     } else if (parent is Parentheses ||
-        parent is TupleExpression ||
+        parent is Tuple ||
         parent is UnaryExpression) {
       return const ResolveResult.needsContext();
     } else if (parent is Invocation) {

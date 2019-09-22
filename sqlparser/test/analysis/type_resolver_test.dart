@@ -46,6 +46,19 @@ void main() {
     });
   });
 
+  test('handles VALUES clause in insert statements', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+    final context = engine.analyze('INSERT INTO demo VALUES (?, ?), (?, ?)');
+
+    final variables =
+        context.root.allDescendants.whereType<Variable>().toList();
+
+    expect(context.typeOf(variables[0]), ResolveResult(id.type));
+    expect(context.typeOf(variables[1]), ResolveResult(content.type));
+    expect(context.typeOf(variables[2]), ResolveResult(id.type));
+    expect(context.typeOf(variables[3]), ResolveResult(content.type));
+  });
+
   test('handles nth_value', () {
     final ctx = SqlEngine().analyze("SELECT nth_value('string', ?1) = ?2");
     final variables = ctx.root.allDescendants.whereType<Variable>().iterator;
@@ -59,5 +72,16 @@ void main() {
 
     expect(ctx.typeOf(secondVar),
         equals(const ResolveResult(ResolvedType(type: BasicType.text))));
+  });
+
+  test('can infer types for dart placeholder', () {
+    final ctx = (SqlEngine(useMoorExtensions: true)..registerTable(demoTable))
+        .analyze(r'SELECT * FROM demo WHERE $expr');
+
+    final dartExpr =
+        ctx.root.allDescendants.whereType<DartPlaceholder>().single;
+
+    expect(ctx.typeOf(dartExpr as Expression),
+        const ResolveResult(ResolvedType.bool()));
   });
 }

@@ -1,24 +1,27 @@
-import 'package:moor_generator/src/parser/moor/moor_analyzer.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:test_api/test_api.dart';
 
 void main() {
   final content = '''
+import 'package:my_package/some_file.dart';
+import 'relative_file.moor';
+  
 CREATE TABLE users(
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   name VARCHAR NOT NULL CHECK(LENGTH(name) BETWEEN 5 AND 30)
 );
+
+usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25
   ''';
 
-  test('extracts table structure from .moor files', () async {
-    final analyzer = MoorAnalyzer(content);
-    final result = await analyzer.analyze();
+  test('parses standalone .moor files', () async {
+    final parseStep = ParseMoorStep(null, null, content);
+    final result = await parseStep.parseFile();
 
-    expect(result.errors, isEmpty);
+    expect(parseStep.errors.errors, isEmpty);
 
-    final table =
-        result.parsedFile.declaredTables.single.extractTable(TypeMapper());
-
+    final table = result.declaredTables.single;
     expect(table.sqlName, 'users');
+    expect(table.columns.map((c) => c.name.name), ['id', 'name']);
   });
 }

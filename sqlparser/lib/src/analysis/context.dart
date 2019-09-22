@@ -29,4 +29,12 @@ class AnalysisContext {
   /// Obtains the result of any typeable component. See the information at
   /// [types] on important [Typeable]s.
   ResolveResult typeOf(Typeable t) => types.resolveOrInfer(t);
+
+  /// Compares two [AstNode]s by their first position in the query.
+  static int compareNodesByOrder(AstNode first, AstNode second) {
+    if (first.first == null || second.first == null) {
+      return 0; // position not set. should we throw in that case?
+    }
+    return first.firstPosition.compareTo(second.firstPosition);
+  }
 }

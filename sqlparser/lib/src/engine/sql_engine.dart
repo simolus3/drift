@@ -1,5 +1,8 @@
+import 'dart:collection';
+
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -8,7 +11,12 @@ class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
 
-  SqlEngine();
+  /// Moor extends the sql grammar a bit to support type converters and other
+  /// features. Enabling this flag will make this engine parse sql with these
+  /// extensions enabled.
+  final bool useMoorExtensions;
+
+  SqlEngine({this.useMoorExtensions = false});
 
   /// Registers the [table], which means that it can later be used in sql
   /// statements.
@@ -27,8 +35,13 @@ class SqlEngine {
 
   /// Tokenizes the [source] into a list list [Token]s. Each [Token] contains
   /// information about where it appears in the [source] and a [TokenType].
+  ///
+  /// Note that the list might be tokens that should be
+  /// [Token.invisibleToParser], if you're passing them to a [Parser] directly,
+  /// you need to filter them. When using the methods in this class, this will
+  /// be taken care of automatically.
   List<Token> tokenize(String source) {
-    final scanner = Scanner(source);
+    final scanner = Scanner(source, scanMoorTokens: useMoorExtensions);
     final tokens = scanner.scanTokens();
 
     if (scanner.errors.isNotEmpty) {
@@ -41,28 +54,28 @@ class SqlEngine {
   /// Parses the [sql] statement into an AST-representation.
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
-    final parser = Parser(tokens);
+    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
+    final parser = Parser(tokensForParser, useMoor: useMoorExtensions);
 
     final stmt = parser.statement();
-    return ParseResult._(stmt, parser.errors, sql);
+    return ParseResult._(stmt, tokens, parser.errors, sql, null);
   }
 
-  /// Parses multiple sql statements, separated by a semicolon. All
-  /// [ParseResult] entries will have the same [ParseResult.errors], but the
-  /// [ParseResult.sql] will only refer to the substring creating a statement.
-  List<ParseResult> parseMultiple(String sql) {
-    final tokens = tokenize(sql);
-    final parser = Parser(tokens);
+  /// Parses a `.moor` file, which can consist of multiple statements and
+  /// additional components like import statements.
+  ParseResult parseMoorFile(String content) {
+    assert(useMoorExtensions);
 
-    final stmts = parser.statements();
+    final autoComplete = AutoCompleteEngine();
+    final tokens = tokenize(content);
+    final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
+    final parser =
+        Parser(tokensForParser, useMoor: true, autoComplete: autoComplete);
 
-    return stmts.map((statement) {
-      final first = statement.firstPosition;
-      final last = statement.lastPosition;
+    final moorFile = parser.moorFile();
 
-      final source = sql.substring(first, last);
-      return ParseResult._(statement, parser.errors, source);
-    }).toList();
+    return ParseResult._(
+        moorFile, tokens, parser.errors, content, autoComplete);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned
@@ -84,9 +97,27 @@ class SqlEngine {
   /// [registerTable] before calling this method.
   AnalysisContext analyzeParsed(ParseResult result) {
     final node = result.rootNode;
-    const SetParentVisitor().startAtRoot(node);
 
     final context = AnalysisContext(node, result.sql);
+    _analyzeContext(context);
+
+    return context;
+  }
+
+  /// Analyzes the given [node], which should be a [CrudStatement].
+  /// The [AnalysisContext] enhances the AST by reporting type hints and errors.
+  ///
+  /// The analyzer needs to know all the available tables to resolve references
+  /// and result columns, so all known tables should be registered using
+  /// [registerTable] before calling this method.
+  AnalysisContext analyzeNode(AstNode node, String file) {
+    final context = AnalysisContext(node, file);
+    _analyzeContext(context);
+    return context;
+  }
+
+  void _analyzeContext(AnalysisContext context) {
+    final node = context.root;
     final scope = _constructRootScope();
 
     try {
@@ -102,8 +133,6 @@ class SqlEngine {
       // todo should we do now? AFAIK, everything that causes an exception
       // is added as an error contained in the context.
     }
-
-    return context;
   }
 }
 
@@ -113,6 +142,10 @@ class ParseResult {
   /// The topmost node in the sql AST that was parsed.
   final AstNode rootNode;
 
+  /// The tokens that were scanned in the source file, including those that are
+  /// [Token.invisibleToParser].
+  final List<Token> tokens;
+
   /// A list of all errors that occurred during parsing. [ParsingError.toString]
   /// returns a helpful description of what went wrong, along with the position
   /// where the error occurred.
@@ -121,5 +154,50 @@ class ParseResult {
   /// The sql source that created the AST at [rootNode].
   final String sql;
 
-  ParseResult._(this.rootNode, this.errors, this.sql);
+  /// The engine which can be used to handle auto-complete requests on this
+  /// result.
+  final AutoCompleteEngine autoCompleteEngine;
+
+  ParseResult._(this.rootNode, this.tokens, this.errors, this.sql,
+      this.autoCompleteEngine) {
+    const SetParentVisitor().startAtRoot(rootNode);
+  }
+
+  /// Attempts to find the most relevant (bottom-most in the AST) nodes that
+  /// intersects with the source range from [offset] to [offset] + [length].
+  List<AstNode> findNodesAtPosition(int offset, {int length = 0}) {
+    if (tokens.isEmpty || rootNode == null) return const [];
+
+    final candidates = <AstNode>{};
+    final unchecked = Queue<AstNode>();
+    unchecked.add(rootNode);
+
+    while (unchecked.isNotEmpty) {
+      final node = unchecked.removeFirst();
+
+      final span = node.span;
+      final start = span.start.offset;
+      final end = span.end.offset;
+
+      final hasIntersection = !(end < offset || start > offset + length);
+      if (hasIntersection) {
+        // this node matches. As we want to find the bottom-most node in the AST
+        // that matches, this means that the parent is no longer a candidate.
+        candidates.add(node);
+        candidates.remove(node.parent);
+
+        // assume that the span of a node is a superset of the span of any
+        // child, so each child could potentially be interesting.
+        unchecked.addAll(node.childNodes);
+      }
+    }
+
+    return candidates.toList();
+  }
+
+  /// Returns the lexeme that created an AST [node] (which should be a child of
+  /// [rootNode], e.g appear in this result).
+  String lexemeOfNode(AstNode node) {
+    return sql.substring(node.firstPosition, node.lastPosition);
+  }
 }

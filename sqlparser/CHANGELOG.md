@@ -1,3 +1,7 @@
+## 0.2.0
+- Parse `CREATE TABLE` statements
+- Extract schema information from parsed create table statements with `SchemaFromCreateTable`.
+
 ## 0.1.2
 - parse `COLLATE` expressions
 - fix wrong order in parsed `LIMIT` clauses

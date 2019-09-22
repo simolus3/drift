@@ -4,6 +4,9 @@ import 'package:sqlparser/src/reader/tokenizer/utils.dart';
 
 class Scanner {
   final String source;
+
+  /// Whether to scan tokens that are only relevant for moor.
+  final bool scanMoorTokens;
   final SourceFile _file;
 
   final List<Token> tokens = [];
@@ -21,7 +24,8 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(this.source) : _file = SourceFile.fromString(source);
+  Scanner(this.source, {this.scanMoorTokens = false})
+      : _file = SourceFile.fromString(source);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {
@@ -57,13 +61,22 @@ class Scanner {
         _addToken(TokenType.plus);
         break;
       case '-':
-        _addToken(TokenType.minus);
+        if (_match('-')) {
+          _lineComment();
+        } else {
+          _addToken(TokenType.minus);
+        }
         break;
       case '*':
         _addToken(TokenType.star);
         break;
       case '/':
-        _addToken(TokenType.slash);
+        if (_match('*')) {
+          _cStyleComment();
+        } else {
+          _addToken(TokenType.slash);
+        }
+
         break;
       case '%':
         _addToken(TokenType.percent);
@@ -108,10 +121,31 @@ class Scanner {
         break;
 
       case '?':
-        _addToken(TokenType.questionMark);
+        // if the next chars are numbers, this is an explicitly index variable
+        final buffer = StringBuffer();
+        while (!_isAtEnd && isDigit(_peek())) {
+          buffer.write(_nextChar());
+        }
+
+        int explicitIndex;
+        if (buffer.isNotEmpty) {
+          explicitIndex = int.parse(buffer.toString());
+        }
+
+        tokens.add(QuestionMarkVariableToken(_currentSpan, explicitIndex));
         break;
       case ':':
-        _addToken(TokenType.colon);
+        final name = _matchColumnName();
+        if (name == null) {
+          _addToken(TokenType.colon);
+        } else {
+          tokens.add(ColonVariableToken(_currentSpan, ':$name'));
+        }
+
+        break;
+      case r'$':
+        final name = _matchColumnName();
+        tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
       case ';':
         _addToken(TokenType.semicolon);
@@ -131,6 +165,13 @@ class Scanner {
         // todo sqlite also allows string literals with double ticks, we don't
         _identifier(escapedInQuotes: true);
         break;
+      case '`':
+        if (scanMoorTokens) {
+          _inlineDart();
+        } else {
+          _unexpectedToken();
+        }
+        break;
       case ' ':
       case '\t':
       case '\n':
@@ -143,10 +184,14 @@ class Scanner {
         } else if (canStartColumnName(char)) {
           _identifier();
         } else {
-          errors.add(TokenizerError('Unexpected character.', _currentLocation));
+          _unexpectedToken();
         }
         break;
     }
+  }
+
+  void _unexpectedToken() {
+    errors.add(TokenizerError('Unexpected character.', _currentLocation));
   }
 
   String _nextChar() {
@@ -306,10 +351,73 @@ class Scanner {
       // not escaped, so it could be a keyword
       final text = _currentSpan.text.toUpperCase();
       if (keywords.containsKey(text)) {
-        _addToken(keywords[text]);
+        tokens.add(KeywordToken(keywords[text], _currentSpan));
+      } else if (scanMoorTokens && moorKeywords.containsKey(text)) {
+        tokens.add(KeywordToken(moorKeywords[text], _currentSpan));
       } else {
         tokens.add(IdentifierToken(false, _currentSpan));
       }
     }
+  }
+
+  String _matchColumnName() {
+    if (_isAtEnd || !canStartColumnName(_peek())) return null;
+
+    final buffer = StringBuffer()..write(_nextChar());
+    while (!_isAtEnd && continuesColumnName(_peek())) {
+      buffer.write(_nextChar());
+    }
+
+    return buffer.toString();
+  }
+
+  void _inlineDart() {
+    // inline starts with a `, we just need to find the matching ` that
+    // terminates this token.
+    while (_peek() != '`' && !_isAtEnd) {
+      _nextChar();
+    }
+
+    if (_isAtEnd) {
+      errors.add(
+          TokenizerError('Unterminated inline Dart code', _currentLocation));
+    } else {
+      // consume the `
+      _nextChar();
+      tokens.add(InlineDartToken(_currentSpan));
+    }
+  }
+
+  /// Scans a line comment after the -- has already been read.
+  void _lineComment() {
+    final contentBuilder = StringBuffer();
+    while (!_isAtEnd && _peek() != '\n') {
+      contentBuilder.write(_nextChar());
+    }
+
+    tokens.add(CommentToken(
+        CommentMode.line, contentBuilder.toString(), _currentSpan));
+  }
+
+  /// Scans a /* ... */ comment after the first /* has already been read.
+  /// Note that in sqlite, these comments don't have to be terminated - they
+  /// will be closed by the end of input without causing a parsing error.
+  void _cStyleComment() {
+    final contentBuilder = StringBuffer();
+    while (!_isAtEnd) {
+      if (_match('*')) {
+        if (!_isAtEnd && _match('/')) {
+          break;
+        } else {
+          // write the * we otherwise forgot to write
+          contentBuilder.write('*');
+        }
+      } else {
+        contentBuilder.write(_nextChar());
+      }
+    }
+
+    tokens.add(CommentToken(
+        CommentMode.cStyle, contentBuilder.toString(), _currentSpan));
   }
 }

@@ -110,7 +110,7 @@ class SpecifiedColumn {
   /// table has declared an `IntColumn`, the matching dart type name would be [int].
   String get dartTypeName {
     if (typeConverter != null) {
-      return typeConverter.mappedType?.name;
+      return typeConverter.mappedType?.displayName;
     }
     return variableTypeName;
   }
@@ -143,6 +143,14 @@ class SpecifiedColumn {
         ColumnType.real: 'GeneratedRealColumn',
       }[type];
 
+  /// Whether this column is required for insert statements, meaning that a
+  /// non-absent value must be provided for an insert statement to be valid.
+  bool get requiredDuringInsert {
+    final aliasForPk = type == ColumnType.integer &&
+        features.any((f) => f is PrimaryKey || f is AutoIncrement);
+    return !nullable && defaultArgument == null && !aliasForPk;
+  }
+
   /// The class inside the moor library that represents the same sql type as
   /// this column.
   String get sqlTypeName => sqlTypes[type];
@@ -162,6 +170,11 @@ class SpecifiedColumn {
 
 abstract class ColumnFeature {
   const ColumnFeature();
+}
+
+/// A `PRIMARY KEY` column constraint.
+class PrimaryKey extends ColumnFeature {
+  const PrimaryKey();
 }
 
 class AutoIncrement extends ColumnFeature {

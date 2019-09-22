@@ -1,5 +1,5 @@
-import 'package:moor_generator/src/parser/sql/query_handler.dart';
-import 'package:moor_generator/src/parser/sql/type_mapping.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 

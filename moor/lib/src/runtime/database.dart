@@ -12,6 +12,9 @@ import 'package:moor/src/runtime/statements/update.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 
+typedef _CustomWriter<T> = Future<T> Function(
+    QueryExecutor e, String sql, List<dynamic> vars);
+
 /// Class that runs queries to a subset of all available queries in a database.
 ///
 /// This comes in handy to structure large amounts of database code better: The
@@ -111,6 +114,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// although it is very likely that the user meant to call it on the
   /// [Transaction] t. We can detect this by calling the function passed to
   /// `transaction` in a forked [Zone] storing the transaction in
+  @protected
   bool get topLevel => false;
 
   /// We can detect when a user called methods on the wrong [QueryEngine]
@@ -169,32 +173,59 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// You can use the [updates] parameter so that moor knows which tables are
   /// affected by your query. All select streams that depend on a table
   /// specified there will then issue another query.
+  @protected
+  @visibleForTesting
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
+    return _customWrite(query, variables, updates, (executor, sql, vars) {
+      return executor.runUpdate(sql, vars);
+    });
+  }
+
+  /// Executes a custom insert statement and returns the last inserted rowid.
+  ///
+  /// You can tell moor which tables your query is going to affect by using the
+  /// [updates] parameter. Query-streams running on any of these tables will
+  /// then be re-run.
+  @protected
+  @visibleForTesting
+  Future<int> customInsert(String query,
+      {List<Variable> variables = const [], Set<TableInfo> updates}) {
+    return _customWrite(query, variables, updates, (executor, sql, vars) {
+      return executor.runInsert(sql, vars);
+    });
+  }
+
+  /// Common logic for [customUpdate] and [customInsert] which takes care of
+  /// mapping the variables, running the query and optionally informing the
+  /// stream-queries.
+  Future<T> _customWrite<T>(String query, List<Variable> variables,
+      Set<TableInfo> updates, _CustomWriter<T> writer) async {
     final engine = _resolvedEngine;
     final executor = engine.executor;
 
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
-    final affectedRows = await executor
-        .doWhenOpened((_) => executor.runUpdate(query, mappedArgs));
+    final result =
+        await executor.doWhenOpened((e) => writer(e, query, mappedArgs));
 
     if (updates != null) {
       await engine.streamQueries.handleTableUpdates(updates);
     }
 
-    return affectedRows;
+    return result;
   }
 
   /// Executes a custom select statement once. To use the variables, mark them
   /// with a "?" in your [query]. They will then be changed to the appropriate
   /// value.
+  @protected
+  @visibleForTesting
+  @Deprecated('use customSelectQuery(...).get() instead')
   Future<List<QueryRow>> customSelect(String query,
       {List<Variable> variables = const []}) async {
-    return CustomSelectStatement(
-            query, variables, <TableInfo>{}, _resolvedEngine)
-        .get();
+    return customSelectQuery(query, variables: variables).get();
   }
 
   /// Creates a stream from a custom select statement.To use the variables, mark
@@ -202,15 +233,36 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// appropriate value. The stream will re-emit items when any table in
   /// [readsFrom] changes, so be sure to set it to the set of tables your query
   /// reads data from.
+  @protected
+  @visibleForTesting
+  @Deprecated('use customSelectQuery(...).watch() instead')
   Stream<List<QueryRow>> customSelectStream(String query,
       {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
-    final tables = readsFrom ?? <TableInfo>{};
-    final statement =
-        CustomSelectStatement(query, variables, tables, _resolvedEngine);
-    return statement.watch();
+    return customSelectQuery(query, variables: variables, readsFrom: readsFrom)
+        .watch();
+  }
+
+  /// Creates a custom select statement from the given sql [query]. To run the
+  /// query once, use [Selectable.get]. For an auto-updating streams, set the
+  /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
+  /// know the query will never emit more than one row, you can also use
+  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
+  /// directly or wrapping it into a list.
+  ///
+  /// If you use variables in your query (for instance with "?"), they will be
+  /// bound to the [variables] you specify on this query.
+  @protected
+  @visibleForTesting
+  Selectable<QueryRow> customSelectQuery(String query,
+      {List<Variable> variables = const [],
+      Set<TableInfo> readsFrom = const {}}) {
+    readsFrom ??= {};
+    return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
   }
 
   /// Executes the custom sql [statement] on the database.
+  @protected
+  @visibleForTesting
   Future<void> customStatement(String statement) {
     return _resolvedEngine.executor.runCustom(statement);
   }
@@ -226,10 +278,12 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     might be different than that of the "global" database instance.
   ///  2. Nested transactions are not supported. Creating another transaction
   ///     inside a transaction returns the parent transaction.
-  Future transaction(Future Function(QueryEngine transaction) action) async {
+  @protected
+  @visibleForTesting
+  Future transaction(Future Function() action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {
-      return action(resolved);
+      return action();
     }
 
     final executor = resolved.executor;
@@ -240,7 +294,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       return _runEngineZoned(transaction, () async {
         var success = false;
         try {
-          await action(transaction);
+          await action();
           success = true;
         } catch (e) {
           await transactionExecutor.rollback();
@@ -265,6 +319,22 @@ mixin QueryEngine on DatabaseConnectionUser {
   Future<T> _runEngineZoned<T>(
       QueryEngine engine, Future<T> Function() calculation) {
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: engine});
+  }
+
+  /// Will be used by generated code to resolve inline Dart expressions in sql.
+  @protected
+  GenerationContext $write(Component component) {
+    final context = GenerationContext.fromDb(this);
+
+    // we don't want ORDER BY clauses to write the ORDER BY tokens because those
+    // are already declared in sql
+    if (component is OrderBy) {
+      component.writeInto(context, writeOrderBy: false);
+    } else {
+      component.writeInto(context);
+    }
+
+    return context;
   }
 }
 
@@ -322,13 +392,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   Future<void> beforeOpenCallback(
       QueryExecutor executor, OpeningDetails details) async {
     final migration = _resolvedMigration;
-    if (migration.onFinished != null) {
-      await migration.onFinished();
-    }
+
     if (migration.beforeOpen != null) {
       final engine = BeforeOpenEngine(this, executor);
       await _runEngineZoned(engine, () {
-        return migration.beforeOpen(engine, details);
+        return migration.beforeOpen(details);
       });
     }
   }

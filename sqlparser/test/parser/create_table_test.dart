@@ -1,5 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test_core/test_core.dart';
 
 import '../common_data.dart';
@@ -113,6 +114,26 @@ void main() {
           )
         ],
       ),
+    );
+  });
+
+  test('parses MAPPED BY expressions when in moor mode', () {
+    const stmt = 'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)';
+    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
+
+    enforceEqual(
+      parsed,
+      CreateTableStatement(tableName: 'a', columns: [
+        ColumnDefinition(
+          columnName: 'b',
+          typeName: null,
+          constraints: [
+            NotNull(null),
+            MappedBy(null, inlineDart('Mapper()')),
+            PrimaryKeyColumn(null),
+          ],
+        ),
+      ]),
     );
   });
 }

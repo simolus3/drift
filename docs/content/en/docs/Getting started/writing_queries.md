@@ -4,6 +4,7 @@ linkTitle: "Writing queries"
 description: Learn how to write database queries in pure Dart with moor
 aliases:
  - /queries/
+weight: 100
 ---
 
 {{% pageinfo %}}
@@ -55,6 +56,20 @@ Future<List<TodoEntry>> sortEntriesAlphabetically() {
 ```
 You can also reverse the order by setting the `mode` property of the `OrderingTerm` to
 `OrderingMode.desc`.
+
+### Single values
+If you now a query is never going to return more than one row, wrapping the result in a `List`
+can be tedious. Moor lets you work around that with `getSingle` and `watchSingle`:
+```dart
+Stream<TodoEntry> entryById(int id) {
+  return (select(todos)..where((t) => t.id.equals(id))).watchSingle();
+}
+```
+If an entry with the provided id exists, it will be sent to the stream. Otherwise,
+`null` will be added to stream. If a query used with `watchSingle` ever returns
+more than one entry (which is impossible in this case), an error will be added
+instead.
+
 ## Updates and deletes
 You can use the generated classes to update individual fields of any row:
 ```dart
@@ -88,6 +103,21 @@ Future feelingLazy() {
 __⚠️ Caution:__ If you don't explicitly add a `where` clause on updates or deletes, 
 the statement will affect all rows in the table!
 
+{{% alert title="Entries, companions - why do we need all of this?"  %}}
+You might have noticed that we used a `TodosCompanion` for the first update instead of
+just passing a `TodoEntry`. Moor generates the `TodoEntry` class (also called _data
+class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
+prefer to use companions. In the example above, we only set the the `category` column,
+so we used a companion. 
+Why is that necessary? If a field was set to `null`, we wouldn't know whether we need 
+to set that column back to null in the database or if we should just leave it unchanged.
+Fields in the companions have a special `Value.absent()` state which makes this explicit.
+
+Companions also have a special constructor for inserts - all columns which don't have
+a default value and aren't nullable are marked `@required` on that constructor. This makes
+companions easier to use for inserts because you know which fields to set.
+{{% /alert %}}
+
 ## Inserts
 You can very easily insert any valid object into tables. As some values can be absent
 (like default values that we don't have to set explicitly), we again use the 
@@ -110,3 +140,6 @@ addTodoEntry(
 If a column is nullable or has a default value (this includes auto-increments), the field
 can be omitted. All other fields must be set and non-null. The `insert` method will throw
 otherwise.
+
+Multiple inserts can be batched by using `insertAll` - it takes a list of companions instead
+of a single companion.

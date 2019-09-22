@@ -1,0 +1,22 @@
+name: moor_ffi
+description: "Experimental sqlite bindings using dart:ffi"
+version: 0.0.1
+author: Simon Binder <oss@simonbinder.eu>
+homepage: https://github.com/simolus3/moor/tree/develop/moor_ffi
+issue_tracker: https://github.com/simolus3/moor/issues
+
+environment:
+  sdk: ">=2.5.0-dev <2.6.0"
+
+dependencies:
+  moor: ">=1.7.0 <2.1.0"
+
+dev_dependencies:
+  test: ^1.6.0
+  path: ^1.6.0
+
+flutter:
+  plugin:
+    # the flutter.plugin key needs to exists so that this project gets recognized as a plugin when imported. We need to
+    # get recognized as a plugin so that our build scripts are executed.
+    foo: bar

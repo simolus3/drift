@@ -3,4 +3,4 @@ targets:
     builders:
       moor_generator:
         options:
-          generate_private_watch_methods: true
+          override_hash_and_equals_in_result_sets: true

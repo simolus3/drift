@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:tests/tests.dart';
 import 'package:test/test.dart';
 import 'package:moor_flutter/moor_flutter.dart';
@@ -27,7 +28,9 @@ class SqfliteExecutor extends TestExecutor {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runAllTests(SqfliteExecutor());
 
   // Additional integration test for flutter: Test loading a database from asset

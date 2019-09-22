@@ -118,13 +118,20 @@ class BetweenExpression extends Expression {
   bool contentEquals(BetweenExpression other) => other.not == not;
 }
 
-/// `$left$ IN $inside`
+/// `$left$ IN $inside`.
 class InExpression extends Expression {
   final bool not;
   final Expression left;
+
+  /// The right-hand part: Contains the set of values [left] will be tested
+  /// against. From the sqlite grammar, we support [Tuple] and a [SubQuery].
+  /// We also support a [Variable] as syntax sugar - it will be expanded into a
+  /// tuple of variables at runtime.
   final Expression inside;
 
-  InExpression({this.not = false, @required this.left, @required this.inside});
+  InExpression({this.not = false, @required this.left, @required this.inside}) {
+    assert(inside is Tuple || inside is Variable || inside is SubQuery);
+  }
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);
@@ -158,8 +165,4 @@ class Parentheses extends Expression {
 
   @override
   bool contentEquals(Parentheses other) => true;
-
-  TupleExpression get asTuple {
-    return TupleExpression(expressions: [expression]);
-  }
 }

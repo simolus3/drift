@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
@@ -7,9 +8,54 @@ import 'package:sqlparser/sqlparser.dart';
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
 
+/// Represents the declaration of a compile-time query that will be analyzed
+/// by moor_generator.
+///
+/// The subclasses [DeclaredDartQuery] and [DeclaredMoorQuery] contain
+/// information about the declared statement, only the name is common for both
+/// declaration methods.
+/// In the `analyze` step, a [DeclaredQuery] is turned into a resolved
+/// [SqlQuery], which contains information about the affected tables and what
+/// columns are returned.
+abstract class DeclaredQuery {
+  final String name;
+
+  DeclaredQuery(this.name);
+}
+
+/// A [DeclaredQuery] parsed from a Dart file by reading a constant annotation.
+class DeclaredDartQuery extends DeclaredQuery {
+  final String sql;
+
+  DeclaredDartQuery(String name, this.sql) : super(name);
+}
+
+/// A [DeclaredQuery] read from a `.moor` file, where the AST is already
+/// available.
+class DeclaredMoorQuery extends DeclaredQuery {
+  final AstNode query;
+  ParsedMoorFile file;
+
+  DeclaredMoorQuery(String name, this.query) : super(name);
+
+  factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
+    final name = stmt.name;
+    final query = stmt.statement;
+    return DeclaredMoorQuery(name, query);
+  }
+}
+
 abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;
+  List<AnalysisError> lints;
+
+  /// Whether this query was declared in a `.moor` file.
+  ///
+  /// For those kind of queries, we don't generate `get` and `watch` methods and
+  /// instead only generate a single method returning a selectable.
+  bool declaredInMoorFile = false;
+
   String get sql => fromContext.sql;
 
   /// The variables that appear in the [sql] query. We support three kinds of
@@ -28,9 +74,23 @@ abstract class SqlQuery {
   ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
   ///    AND c IN ?1`. In other words, we can expand an array without worrying
   ///    about the variables that appear after that array.
-  final List<FoundVariable> variables;
+  List<FoundVariable> variables;
 
-  SqlQuery(this.name, this.fromContext, this.variables);
+  /// The placeholders in this query which are bound and converted to sql at
+  /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
+  /// going to be a [FoundDartPlaceholder] with the type
+  /// [DartPlaceholderType.expression] and [ColumnType.boolean]. We will
+  /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
+  List<FoundDartPlaceholder> placeholders;
+
+  /// Union of [variables] and [elements], but in the order in which they
+  /// appear inside the query.
+  final List<FoundElement> elements;
+
+  SqlQuery(this.name, this.fromContext, this.elements) {
+    variables = elements.whereType<FoundVariable>().toList();
+    placeholders = elements.whereType<FoundDartPlaceholder>().toList();
+  }
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -41,20 +101,27 @@ class SqlSelectQuery extends SqlQuery {
     if (resultSet.matchingTable != null) {
       return resultSet.matchingTable.dartTypeName;
     }
+
+    if (resultSet.singleColumn) {
+      return resultSet.columns.single.dartType;
+    }
+
     return '${ReCase(name).pascalCase}Result';
   }
 
   SqlSelectQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.readsFrom, this.resultSet)
-      : super(name, fromContext, variables);
+      List<FoundElement> elements, this.readsFrom, this.resultSet)
+      : super(name, fromContext, elements);
 }
 
 class UpdatingQuery extends SqlQuery {
   final List<SpecifiedTable> updates;
+  final bool isInsert;
 
   UpdatingQuery(String name, AnalysisContext fromContext,
-      List<FoundVariable> variables, this.updates)
-      : super(name, fromContext, variables);
+      List<FoundElement> elements, this.updates,
+      {this.isInsert = false})
+      : super(name, fromContext, elements);
 }
 
 class InferredResultSet {
@@ -66,6 +133,15 @@ class InferredResultSet {
   final Map<ResultColumn, String> _dartNames = {};
 
   InferredResultSet(this.matchingTable, this.columns);
+
+  /// Whether a new class needs to be written to store the result of this query.
+  /// We don't need to do that for queries which return an existing table model
+  /// or if they only return exactly one column.
+  bool get needsOwnClass => matchingTable == null && columns.length > 1;
+
+  /// Whether this query returns a single column that should be returned
+  /// directly.
+  bool get singleColumn => matchingTable == null && columns.length == 1;
 
   void forceDartNames(Map<ResultColumn, String> names) {
     _dartNames
@@ -111,14 +187,33 @@ class ResultColumn {
   final UsedTypeConverter converter;
 
   ResultColumn(this.name, this.type, this.nullable, {this.converter});
+
+  /// The dart type that can store a result of this column.
+  String get dartType {
+    if (converter != null) {
+      return converter.mappedType.displayName;
+    } else {
+      return dartTypeNames[type];
+    }
+  }
+}
+
+/// Something in the query that needs special attention when generating code,
+/// such as variables or Dart placeholders.
+abstract class FoundElement {
+  String get dartParameterName;
+
+  /// The type of this element on the generated method.
+  String get parameterType;
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
-class FoundVariable {
+class FoundVariable extends FoundElement {
   /// The (unique) index of this variable in the sql query. For instance, the
   /// query `SELECT * FROM tbl WHERE a = ? AND b = :xyz OR c = :xyz` contains
   /// three [Variable]s in its AST, but only two [FoundVariable]s, where the
-  /// `?` will have index 1 and (both) `:xyz` variables will have index 2.
+  /// `?` will have index 1 and (both) `:xyz` variables will have index 2. We
+  /// only report one [FoundVariable] per index.
   int index;
 
   /// The name of this variable, or null if it's not a named variable.
@@ -142,6 +237,7 @@ class FoundVariable {
     assert(variable.resolvedIndex == index);
   }
 
+  @override
   String get dartParameterName {
     if (name != null) {
       return name.replaceAll(_illegalChars, '');
@@ -149,4 +245,58 @@ class FoundVariable {
       return 'var${variable.resolvedIndex}';
     }
   }
+
+  @override
+  String get parameterType {
+    final innerType = dartTypeNames[type] ?? 'dynamic';
+    if (isArray) {
+      return 'List<$innerType>';
+    }
+    return innerType;
+  }
+}
+
+enum DartPlaceholderType {
+  expression,
+  limit,
+  orderByTerm,
+  orderBy,
+}
+
+/// A Dart placeholder that will be bound at runtime.
+class FoundDartPlaceholder extends FoundElement {
+  final DartPlaceholderType type;
+
+  /// If [type] is [DartPlaceholderType.expression] and the expression could be
+  /// resolved, this is the type of that expression.
+  final ColumnType columnType;
+
+  final String name;
+  DartPlaceholder astNode;
+
+  FoundDartPlaceholder(this.type, this.columnType, this.name);
+
+  @override
+  String get parameterType {
+    switch (type) {
+      case DartPlaceholderType.expression:
+        if (columnType == null) return 'Expression';
+
+        final dartType = dartTypeNames[columnType];
+        final sqlImplType = sqlTypes[columnType];
+        return 'Expression<$dartType, $sqlImplType>';
+        break;
+      case DartPlaceholderType.limit:
+        return 'Limit';
+      case DartPlaceholderType.orderByTerm:
+        return 'OrderingTerm';
+      case DartPlaceholderType.orderBy:
+        return 'OrderBy';
+    }
+
+    throw AssertionError('cant happen, all branches covered');
+  }
+
+  @override
+  String get dartParameterName => name;
 }

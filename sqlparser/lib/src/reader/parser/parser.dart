@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:sqlparser/src/ast/ast.dart';
+import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'crud.dart';
@@ -43,9 +44,19 @@ class ParsingError implements Exception {
 abstract class ParserBase {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
+  final AutoCompleteEngine autoComplete;
+
+  /// Whether to enable the extensions moor makes to the sql grammar.
+  final bool enableMoorExtensions;
+
   int _current = 0;
 
-  ParserBase(this.tokens);
+  ParserBase(this.tokens, this.enableMoorExtensions, this.autoComplete);
+
+  void _suggestHint(HintDescription description) {
+    final tokenBefore = _current == 0 ? null : _previous;
+    autoComplete?.addHint(Hint(tokenBefore, description));
+  }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
   Token get _peek => tokens[_current];
@@ -119,12 +130,22 @@ abstract class ParserBase {
     _error(message);
   }
 
-  IdentifierToken _consumeIdentifier(String message) {
+  /// Consumes an identifier. If [lenient] is true and the next token is not
+  /// an identifier but rather a [KeywordToken], that token will be converted
+  /// to an identifier.
+  IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
+    if (lenient && _peek is KeywordToken) {
+      return (_advance() as KeywordToken).convertToIdentifier();
+    }
     return _consume(TokenType.identifier, message) as IdentifierToken;
   }
 
   // Common operations that we are referenced very often
   Expression expression();
+
+  /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
+  /// (in brackets) will be accepted as well.
+  Expression _consumeTuple({bool orSubQuery = false});
 
   /// Parses a [SelectStatement], or returns null if there is no select token
   /// after the current position.
@@ -140,33 +161,149 @@ abstract class ParserBase {
   WindowDefinition _windowDefinition();
 }
 
-// todo better error handling and synchronisation, like it's done here:
-// https://craftinginterpreters.com/parsing-expressions.html#synchronizing-a-recursive-descent-parser
-
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
-  Parser(List<Token> tokens) : super(tokens);
+  Parser(List<Token> tokens,
+      {bool useMoor = false, AutoCompleteEngine autoComplete})
+      : super(tokens, useMoor, autoComplete);
 
-  Statement statement({bool expectEnd = true}) {
+  // todo remove this and don't be that lazy in moorFile()
+  var _lastStmtHadParsingError = false;
+
+  Statement statement() {
     final first = _peek;
-    final stmt = select() ?? _deleteStmt() ?? _update() ?? _createTable();
+    Statement stmt = _crud();
+    stmt ??= _createTable();
+
+    if (enableMoorExtensions) {
+      stmt ??= _import() ?? _declaredStatement();
+    }
 
     if (stmt == null) {
       _error('Expected a sql statement to start here');
     }
 
-    _matchOne(TokenType.semicolon);
-    if (!_isAtEnd && expectEnd) {
+    if (_matchOne(TokenType.semicolon)) {
+      stmt.semicolon = _previous;
+    }
+
+    if (!_isAtEnd) {
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
   }
 
-  List<Statement> statements() {
-    final stmts = <Statement>[];
-    while (!_isAtEnd) {
-      stmts.add(statement(expectEnd: false));
+  CrudStatement _crud() {
+    // writing select() ?? _deleteStmt() and so on doesn't cast to CrudStatement
+    // for some reason.
+    CrudStatement stmt = select();
+    stmt ??= _deleteStmt();
+    stmt ??= _update();
+    stmt ??= _insertStmt();
+
+    return stmt;
+  }
+
+  MoorFile moorFile() {
+    final first = _peek;
+    final foundComponents = <PartOfMoorFile>[];
+
+    // (we try again if the last statement had a parsing error)
+
+    // first, parse import statements
+    for (var stmt = _parseAsStatement(_import);
+        stmt != null || _lastStmtHadParsingError;
+        stmt = _parseAsStatement(_import)) {
+      foundComponents.add(stmt);
     }
-    return stmts;
+
+    // next, table declarations
+    for (var stmt = _parseAsStatement(_createTable);
+        stmt != null || _lastStmtHadParsingError;
+        stmt = _parseAsStatement(_createTable)) {
+      foundComponents.add(stmt);
+    }
+
+    // finally, declared statements
+    for (var stmt = _parseAsStatement(_declaredStatement);
+        stmt != null || _lastStmtHadParsingError;
+        stmt = _parseAsStatement(_declaredStatement)) {
+      foundComponents.add(stmt);
+    }
+
+    if (!_isAtEnd) {
+      _error('Expected the file to end here.');
+    }
+
+    foundComponents.removeWhere((c) => c == null);
+
+    final file = MoorFile(foundComponents);
+    if (foundComponents.isNotEmpty) {
+      file.setSpan(first, _previous);
+    } else {
+      file.setSpan(first, first); // empty file
+    }
+    return file;
+  }
+
+  ImportStatement _import() {
+    if (_matchOne(TokenType.import)) {
+      final importToken = _previous;
+      final import = _consume(TokenType.stringLiteral,
+              'Expected import file as a string literal (single quoted)')
+          as StringLiteralToken;
+
+      return ImportStatement(import.value)
+        ..importToken = importToken
+        ..importString = import;
+    }
+    return null;
+  }
+
+  DeclaredStatement _declaredStatement() {
+    if (_check(TokenType.identifier) || _peek is KeywordToken) {
+      final name = _consumeIdentifier('Expected a name for a declared query',
+          lenient: true);
+      final colon =
+          _consume(TokenType.colon, 'Expected colon (:) followed by a query');
+
+      final stmt = _crud();
+
+      return DeclaredStatement(name.identifier, stmt)
+        ..identifier = name
+        ..colon = colon;
+    }
+
+    return null;
+  }
+
+  /// Invokes [parser], sets the appropriate source span and attaches a
+  /// semicolon if one exists.
+  T _parseAsStatement<T extends Statement>(T Function() parser) {
+    _lastStmtHadParsingError = false;
+    final first = _peek;
+    T result;
+    try {
+      result = parser();
+    } on ParsingError catch (_) {
+      _lastStmtHadParsingError = true;
+      // the error is added to the list errors, so ignore. We skip to the next
+      // semicolon to parse the next statement.
+      _synchronize();
+    }
+
+    if (result == null) return null;
+
+    if (_matchOne(TokenType.semicolon)) {
+      result.semicolon = _previous;
+    }
+
+    result.setSpan(first, _previous);
+    return result;
+  }
+
+  void _synchronize() {
+    // fast-forward to the token after th next semicolon
+    while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
 }

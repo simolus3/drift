@@ -33,16 +33,16 @@ void main() {
 
   test("transactions don't allow creating streams", () {
     expect(() async {
-      await db.transaction((t) async {
-        t.select(db.users).watch();
+      await db.transaction(() async {
+        db.select(db.users).watch();
       });
     }, throwsStateError);
   });
 
   test('nested transactions use the outer transaction', () async {
-    await db.transaction((t) async {
-      await t.transaction((t2) async {
-        expect(t2, equals(t));
+    await db.transaction(() async {
+      await db.transaction(() async {
+        // todo how can we test that these are really equal?
       });
 
       // the outer callback has not completed yet, so shouldn't send
@@ -55,7 +55,7 @@ void main() {
   test('code in callback uses transaction', () async {
     // notice how we call .select on the database, but it should be called on
     // transaction executor.
-    await db.transaction((_) async {
+    await db.transaction(() async {
       await db.select(db.users).get();
     });
 
@@ -65,7 +65,7 @@ void main() {
 
   test('transactions rollback after errors', () async {
     final exception = Exception('oh no');
-    final future = db.transaction((_) async {
+    final future = db.transaction(() async {
       throw exception;
     });
 
@@ -79,8 +79,8 @@ void main() {
     when(executor.transactions.runUpdate(any, any))
         .thenAnswer((_) => Future.value(2));
 
-    await db.transaction((t) async {
-      await t
+    await db.transaction(() async {
+      await db
           .update(db.users)
           .write(const UsersCompanion(name: Value('Updated name')));
 
@@ -95,7 +95,7 @@ void main() {
   });
 
   test('the database is opened before starting a transaction', () async {
-    await db.transaction((t) async {
+    await db.transaction(() async {
       verify(executor.doWhenOpened(any));
     });
   });

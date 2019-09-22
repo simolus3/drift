@@ -59,10 +59,9 @@ class Database extends _$Database {
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      beforeOpen: (engine, details) async {
+      beforeOpen: (details) async {
         // populate data
-        await engine
-            .into(categories)
+        await into(categories)
             .insert(const CategoriesCompanion(description: Value('Sweets')));
       },
     );

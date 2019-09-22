@@ -8,7 +8,8 @@ void transactionTests(TestExecutor executor) {
   test('transactions write data', () async {
     final db = Database(executor.createExecutor());
 
-    await db.transaction((_) async {
+    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+    await db.transaction(() async {
       final florianId = await db.writeUser(People.florian);
 
       final dash = await db.getUserById(People.dashId);
@@ -18,10 +19,10 @@ void transactionTests(TestExecutor executor) {
     });
 
     final countResult = await db.userCount();
-    expect(countResult.single.cOUNTid, 4);
+    expect(countResult.single, 4);
 
     final friendsResult = await db.amountOfGoodFriends(People.dashId);
-    expect(friendsResult.single.count, 1);
+    expect(friendsResult.single, 1);
 
     await db.close();
   });
@@ -30,7 +31,8 @@ void transactionTests(TestExecutor executor) {
     final db = Database(executor.createExecutor());
 
     try {
-      await db.transaction((_) async {
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      await db.transaction(() async {
         final florianId = await db.writeUser(People.florian);
 
         final dash = await db.getUserById(People.dashId);
@@ -43,10 +45,10 @@ void transactionTests(TestExecutor executor) {
     } on Exception catch (_) {}
 
     final countResult = await db.userCount();
-    expect(countResult.single.cOUNTid, 3); // only the default folks
+    expect(countResult.single, 3); // only the default folks
 
     final friendsResult = await db.amountOfGoodFriends(People.dashId);
-    expect(friendsResult.single.count, 0); // no friendship was inserted
+    expect(friendsResult.single, 0); // no friendship was inserted
 
     await db.close();
   });

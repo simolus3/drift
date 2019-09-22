@@ -13,6 +13,7 @@ export 'package:moor/src/dsl/database.dart';
 
 export 'package:moor/src/runtime/components/join.dart'
     show innerJoin, leftOuterJoin, crossJoin;
+export 'package:moor/src/runtime/components/limit.dart';
 export 'package:moor/src/runtime/components/order_by.dart';
 export 'package:moor/src/runtime/executor/executor.dart';
 export 'package:moor/src/types/type_system.dart';
@@ -34,3 +35,4 @@ export 'package:moor/src/runtime/migration.dart';
 export 'package:moor/src/runtime/exceptions.dart';
 export 'package:moor/src/utils/expand_variables.dart';
 export 'package:moor/src/utils/hash.dart';
+export 'package:moor/src/utils/lazy_database.dart';

@@ -1,6 +1,11 @@
 part of '../ast.dart';
 
-class Limit extends AstNode {
+/// Base for limit statements. Without moor extensions, only [Limit] will be
+/// parsed. With moor extensions, a [DartLimitPlaceholder] can be emitted as
+/// well.
+abstract class LimitBase implements AstNode {}
+
+class Limit extends AstNode implements LimitBase {
   Expression count;
   Token offsetSeparator; // can either be OFFSET or just a comma
   Expression offset;

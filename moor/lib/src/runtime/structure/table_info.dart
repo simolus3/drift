@@ -11,14 +11,13 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
 
   /// The primary key of this table. Can be null or empty if no custom primary
   /// key has been specified.
+  ///
+  /// Additional to the [Table.primaryKey] columns declared by an user, this
+  /// also contains auto-increment integers, which are primary key by default.
   Set<GeneratedColumn> get $primaryKey => null;
 
-  // The "primaryKey" is what users define on their table classes, the
-  // "$primaryKey" is what moor generates in the implementation table info
-  // classes. Having two of them is pretty pointless, we're going to remove
-  // the "$primaryKey$ getter in Moor 2.0. Until then, let's make sure they're
-  // consistent for classes from CREATE TABLE statements, where the info class
-  // and the table class is the same thing but primaryKey isn't overriden.
+  // ensure the primaryKey getter is consistent with $primarKey, which can
+  // contain additional columns.
   @override
   Set<Column> get primaryKey => $primaryKey;
 

@@ -75,6 +75,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
          WHERE (f.first_user = :user OR f.second_user = :user)''',
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
+    'usersById': 'SELECT * FROM users WHERE id IN ?',
   },
 )
 class Database extends _$Database {
@@ -98,7 +99,7 @@ class Database extends _$Database {
           await m.createTable(friendships);
         }
       },
-      beforeOpen: (_, details) async {
+      beforeOpen: (details) async {
         if (details.wasCreated) {
           await into(users)
               .insertAll([People.dash, People.duke, People.gopher]);
@@ -108,10 +109,11 @@ class Database extends _$Database {
   }
 
   Future<void> deleteUser(User user, {bool fail = false}) {
-    return transaction((_) async {
+    return transaction(() async {
       final id = user.id;
-      delete(friendships)
-          .where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id)));
+      await (delete(friendships)
+            ..where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id))))
+          .go();
 
       if (fail) {
         throw Exception('oh no, the query misteriously failed!');

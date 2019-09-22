@@ -1,16 +1,19 @@
 part of '../ast.dart';
 
-class SelectStatement extends Statement with CrudStatement, ResultSet {
+class SelectStatement extends Statement
+    with CrudStatement, ResultSet
+    implements HasWhereClause {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;
 
+  @override
   final Expression where;
   final GroupBy groupBy;
   final List<NamedWindowDeclaration> windowDeclarations;
 
-  final OrderBy orderBy;
-  final Limit limit;
+  final OrderByBase orderBy;
+  final LimitBase limit;
 
   /// The resolved list of columns returned by this select statements. Not
   /// available from the parse tree, will be set later by the analyzer.

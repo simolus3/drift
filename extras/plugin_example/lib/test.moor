@@ -1,0 +1,14 @@
+import 'first.dart';
+import 'second.dart';
+import 'last.dart';
+
+CREATE TABLE playground (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR NOT NULL
+);
+
+unknownColumn: SELECT * FROM playground WHERE bar = 'foo';
+syntaxError: SELECT 3 + FROM playground;
+lints: INSERT INTO playground DEFAULT VALUES;
+variables: SELECT * FROM playground WHERE id BETWEEN :foo AND :bar;
+dartTemplate: SELECT * FROM playground WHERE $predicate ORDER BY $ordering;

@@ -2,9 +2,12 @@ part of 'parser.dart';
 
 mixin SchemaParser on ParserBase {
   CreateTableStatement _createTable() {
+    _suggestHint(
+        const HintDescription.tokens([TokenType.create, TokenType.table]));
     if (!_matchOne(TokenType.create)) return null;
     final first = _previous;
 
+    _suggestHint(HintDescription.token(TokenType.table));
     _consume(TokenType.table, 'Expected TABLE keyword here');
 
     var ifNotExists = false;
@@ -15,10 +18,11 @@ mixin SchemaParser on ParserBase {
       ifNotExists = true;
     }
 
-    final tableIdentifier = _consumeIdentifier('Expected a table name');
+    final tableIdentifier =
+        _consumeIdentifier('Expected a table name', lenient: true);
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
-    _consume(
+    final leftParen = _consume(
         TokenType.leftParen, 'Expected opening parenthesis to list columns');
 
     final columns = <ColumnDefinition>[];
@@ -41,7 +45,8 @@ mixin SchemaParser on ParserBase {
       }
     } while (_matchOne(TokenType.comma));
 
-    _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    final rightParen =
+        _consume(TokenType.rightParen, 'Expected closing parenthesis');
 
     var withoutRowId = false;
     if (_matchOne(TokenType.without)) {
@@ -50,13 +55,25 @@ mixin SchemaParser on ParserBase {
       withoutRowId = true;
     }
 
+    String overriddenName;
+    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+      overriddenName = _consumeIdentifier(
+              'Expected the name for the data class',
+              lenient: true)
+          .identifier;
+    }
+
     return CreateTableStatement(
       ifNotExists: ifNotExists,
       tableName: tableIdentifier.identifier,
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
-    )..setSpan(first, _previous);
+      overriddenDataClassName: overriddenName,
+    )
+      ..setSpan(first, _previous)
+      ..openingBracket = leftParen
+      ..closingBracket = rightParen;
   }
 
   ColumnDefinition _columnDefinition() {
@@ -121,10 +138,14 @@ mixin SchemaParser on ParserBase {
         ..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.not)) {
-      _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
+      final notToken = _previous;
+      final nullToken =
+          _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
 
       return NotNull(resolvedName, onConflict: _conflictClauseOrNull())
-        ..setSpan(first, _previous);
+        ..setSpan(first, _previous)
+        ..not = notToken
+        ..$null = nullToken;
     }
     if (_matchOne(TokenType.unique)) {
       return UniqueColumn(resolvedName, _conflictClauseOrNull())
@@ -151,6 +172,15 @@ mixin SchemaParser on ParserBase {
     if (_peek.type == TokenType.references) {
       final clause = _foreignKeyClause();
       return ForeignKeyColumnConstraint(resolvedName, clause)
+        ..setSpan(first, _previous);
+    }
+    if (enableMoorExtensions && _matchOne(TokenType.mapped)) {
+      _consume(TokenType.by, 'Expected a MAPPED BY constraint');
+
+      final dartExpr = _consume(
+          TokenType.inlineDart, 'Expected Dart expression in backticks');
+
+      return MappedBy(resolvedName, dartExpr as InlineDartToken)
         ..setSpan(first, _previous);
     }
 
@@ -204,7 +234,8 @@ mixin SchemaParser on ParserBase {
 
   String _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
-      final name = _consumeIdentifier('Expect a name for the constraint here');
+      final name = _consumeIdentifier('Expect a name for the constraint here',
+          lenient: true);
       return name.identifier;
     }
     return null;

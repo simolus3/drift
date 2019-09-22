@@ -20,15 +20,20 @@ mixin ExpressionParser on ParserBase {
 
   Expression _case() {
     if (_matchOne(TokenType.$case)) {
+      final caseToken = _previous;
+
       final base = _check(TokenType.when) ? null : _or();
       final whens = <WhenComponent>[];
       Expression $else;
 
       while (_matchOne(TokenType.when)) {
+        final whenToken = _previous;
+
         final whenExpr = _or();
         _consume(TokenType.then, 'Expected THEN');
         final then = _or();
-        whens.add(WhenComponent(when: whenExpr, then: then));
+        whens.add(WhenComponent(when: whenExpr, then: then)
+          ..setSpan(whenToken, _previous));
       }
 
       if (_matchOne(TokenType.$else)) {
@@ -36,7 +41,8 @@ mixin ExpressionParser on ParserBase {
       }
 
       _consume(TokenType.end, 'Expected END to finish the case operator');
-      return CaseExpression(whens: whens, base: base, elseExpr: $else);
+      return CaseExpression(whens: whens, base: base, elseExpr: $else)
+        ..setSpan(caseToken, _previous);
     }
 
     return _or();
@@ -52,7 +58,8 @@ mixin ExpressionParser on ParserBase {
     while (_match(types)) {
       final operator = _previous;
       final right = higherPrecedence();
-      expression = BinaryExpression(expression, operator, right);
+      expression = BinaryExpression(expression, operator, right)
+        ..setSpan(expression.first, _previous);
     }
     return expression;
   }
@@ -67,14 +74,9 @@ mixin ExpressionParser on ParserBase {
       final not = _matchOne(TokenType.not);
       _matchOne(TokenType.$in);
 
-      var inside = _equals();
-      if (inside is Parentheses) {
-        // if we have something like x IN (3), then (3) is a tuple and not a
-        // parenthesis. We can only know this from the context unfortunately
-        inside = (inside as Parentheses).asTuple;
-      }
-
-      return InExpression(left: left, inside: inside, not: not);
+      final inside = _variableOrNull() ?? _consumeTuple(orSubQuery: true);
+      return InExpression(left: left, inside: inside, not: not)
+        ..setSpan(left.first, _previous);
     }
 
     return left;
@@ -85,6 +87,7 @@ mixin ExpressionParser on ParserBase {
   /// expressions.
   Expression _equals() {
     var expression = _comparison();
+    final first = expression.first;
 
     final ops = const [
       TokenType.equal,
@@ -110,15 +113,18 @@ mixin ExpressionParser on ParserBase {
         final upper = _comparison();
 
         expression = BetweenExpression(
-            not: not, check: expression, lower: lower, upper: upper);
+            not: not, check: expression, lower: lower, upper: upper)
+          ..setSpan(first, _previous);
       } else if (_match(ops)) {
         final operator = _previous;
         if (operator.type == TokenType.$is) {
           final not = _match(const [TokenType.not]);
           // special case: is not expression
-          expression = IsExpression(not, expression, _comparison());
+          expression = IsExpression(not, expression, _comparison())
+            ..setSpan(first, _previous);
         } else {
-          expression = BinaryExpression(expression, operator, _comparison());
+          expression = BinaryExpression(expression, operator, _comparison())
+            ..setSpan(first, _previous);
         }
       } else if (_checkAnyWithNot(stringOps)) {
         final not = _matchOne(TokenType.not);
@@ -136,7 +142,8 @@ mixin ExpressionParser on ParserBase {
             left: expression,
             operator: operator,
             right: right,
-            escape: escape);
+            escape: escape)
+          ..setSpan(first, _previous);
       } else {
         break; // no matching operator with this precedence was found
       }
@@ -181,14 +188,17 @@ mixin ExpressionParser on ParserBase {
     ])) {
       final operator = _previous;
       final expression = _unary();
-      return UnaryExpression(operator, expression);
+      return UnaryExpression(operator, expression)
+        ..setSpan(operator, expression.last);
     } else if (_matchOne(TokenType.exists)) {
+      final existsToken = _previous;
       _consume(
           TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
       final selectStmt = select();
       _consume(TokenType.rightParen,
           'Expected closing paranthesis to finish EXISTS expression');
-      return ExistsExpression(select: selectStmt);
+      return ExistsExpression(select: selectStmt)
+        ..setSpan(existsToken, _previous);
     }
 
     return _postfix();
@@ -248,42 +258,24 @@ mixin ExpressionParser on ParserBase {
     final literal = _literalOrNull();
     if (literal != null) return literal;
 
+    final variable = _variableOrNull();
+    if (variable != null) return variable;
+
     final token = _advance();
     final type = token.type;
     switch (type) {
       case TokenType.leftParen:
-        // Opening brackets could be three things: An inner select statement
-        // (SELECT ...), a parenthesised expression, or a tuple of expressions
-        // (a, b, c).
+        // An opening bracket in the context of an expression could either be
+        // an inner select statement or a parenthesised expression.
         final left = token;
         if (_peek.type == TokenType.select) {
           final stmt = select();
           _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return SubQuery(select: stmt);
+          return SubQuery(select: stmt)..setSpan(left, _previous);
         } else {
-          // alright, it's either a tuple or just parenthesis. A tuple can be
-          // empty, so if the next statement is the closing bracket we're done
-          if (_matchOne(TokenType.rightParen)) {
-            return TupleExpression(expressions: [])..setSpan(left, _previous);
-          }
-
           final expr = expression();
-
-          // Are we witnessing a tuple?
-          if (_check(TokenType.comma)) {
-            // we are, add expressions as long as we see commas
-            final exprs = [expr];
-            while (_matchOne(TokenType.comma)) {
-              exprs.add(expression());
-            }
-
-            _consume(TokenType.rightParen, 'Expected a closing bracket');
-            return TupleExpression(expressions: exprs);
-          } else {
-            // we aren't, so that'll just be parentheses.
-            _consume(TokenType.rightParen, 'Expected a closing bracket');
-            return Parentheses(left, expr, token);
-          }
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return Parentheses(left, expr, token)..setSpan(left, _previous);
         }
         break;
       case TokenType.identifier:
@@ -313,23 +305,14 @@ mixin ExpressionParser on ParserBase {
           return Reference(columnName: first.identifier)..setSpan(first, first);
         }
         break;
-      case TokenType.questionMark:
-        final mark = token;
-
-        if (_matchOne(TokenType.numberLiteral)) {
-          final number = _previous;
-          return NumberedVariable(mark, _parseNumber(number.lexeme).toInt())
-            ..setSpan(mark, number);
-        } else {
-          return NumberedVariable(mark, null)..setSpan(mark, mark);
+      case TokenType.dollarSignVariable:
+        if (enableMoorExtensions) {
+          final typedToken = token as DollarSignVariableToken;
+          return DartExpressionPlaceholder(name: typedToken.name)
+            ..token = typedToken
+            ..setSpan(token, token);
         }
         break;
-      case TokenType.colon:
-        final colon = token;
-        final identifier = _consume(TokenType.identifier,
-            'Expected an identifier for the named variable') as IdentifierToken;
-        final content = identifier.identifier;
-        return ColonNamedVariable(':$content')..setSpan(colon, identifier);
       default:
         break;
     }
@@ -337,6 +320,17 @@ mixin ExpressionParser on ParserBase {
     // nothing found -> issue error. Step back to revert the _advance() above
     _stepBack();
     _error('Could not parse this expression');
+  }
+
+  Variable _variableOrNull() {
+    if (_matchOne(TokenType.questionMarkVariable)) {
+      return NumberedVariable(_previous as QuestionMarkVariableToken)
+        ..setSpan(_previous, _previous);
+    } else if (_matchOne(TokenType.colonVariable)) {
+      return ColonNamedVariable(_previous as ColonVariableToken)
+        ..setSpan(_previous, _previous);
+    }
+    return null;
   }
 
   FunctionParameters _functionParameters() {
@@ -390,5 +384,31 @@ mixin ExpressionParser on ParserBase {
       windowDefinition: window,
       windowName: windowName,
     )..setSpan(name, _previous);
+  }
+
+  @override
+  Expression _consumeTuple({bool orSubQuery = false}) {
+    final firstToken =
+        _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
+    final expressions = <Expression>[];
+
+    final subQuery = select();
+    if (subQuery == null) {
+      // no sub query found. read expressions that form the tuple.
+      // tuples can be empty `()`, so only start parsing values when it's not
+      if (_peek.type != TokenType.rightParen) {
+        do {
+          expressions.add(expression());
+        } while (_matchOne(TokenType.comma));
+      }
+
+      _consume(
+          TokenType.rightParen, 'Expected right parenthesis to close tuple');
+      return Tuple(expressions: expressions)..setSpan(firstToken, _previous);
+    } else {
+      _consume(TokenType.rightParen,
+          'Expected right parenthesis to finish subquery');
+      return SubQuery(select: subQuery)..setSpan(firstToken, _previous);
+    }
   }
 }

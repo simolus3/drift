@@ -4,8 +4,6 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 
-import 'update.dart';
-
 class InsertStatement<D extends DataClass> {
   @protected
   final QueryEngine database;
@@ -70,19 +68,6 @@ class InsertStatement<D extends DataClass> {
       await e.runBatched(batchedStatements);
     });
     database.markTablesUpdated({table});
-  }
-
-  /// Updates the row with the same primary key in the database or creates one
-  /// if it doesn't exist.
-  ///
-  /// Behaves similar to [UpdateStatement.replace], meaning that all fields from
-  /// [entity] will be written to override rows with the same primary key, which
-  /// includes setting columns with null values back to null.
-  ///
-  /// However, if no such row exists, a new row will be written instead.
-  @Deprecated('Use insert with orReplace: true instead')
-  Future<void> insertOrReplace(Insertable<D> entity) async {
-    return await insert(entity, orReplace: true);
   }
 
   GenerationContext _createContext(Insertable<D> entry, bool replace) {
