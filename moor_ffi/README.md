@@ -1,28 +1,27 @@
 # moor_ffi
 
-Experimental bindings to sqlite by using `dart:ffi`. This library contains utils to make
+Experimental Dart bindings to sqlite by using `dart:ffi`. This library contains utils to make
 integration with [moor](https://pub.dev/packages/moor) easier, but it can also be used
-as a standalone package.
+as a standalone package. It also doesn't depend on Flutter, so it can be used on Dart VM
+applications as well.
 
 ## Warnings
 At the moment, `dart:ffi` is in preview and there will be breaking changes that this
 library has to adapt to. This library has been tested on Dart `2.5.0`.
+If you're using a development Dart version (this can include any Flutter channels that
+are not `stable`), this library might not work.
 
-If you're using a development Dart version (this includes Flutter channels that are not
-`stable`), this library might not work.
-
-If you just want to use moor, using the [moor_flutter](https://pub.dev/packages/moor_flutter)
-package is the better option at the moment.
+Also, please don't use this library on production apps yet.
 
 ## Supported platforms
-You can make this library work on any platform that let's you obtain a `DynamicLibrary`
-from which moor_ffi loads the functions (see below).
+You can make this library work on any platform that lets you obtain a `DynamicLibrary`
+in which sqlite's symbols are available (see below).
 
-Out of the box, this libraries supports all platforms where `sqlite3` is installed:
+Out of the box, this library supports all platforms where `sqlite3` is installed:
 - iOS: Yes 
 - macOS: Yes
 - Linux: Available on most distros
-- Windows: When the user has installed sqlite (they probably have)
+- Windows: Additional setup is required
 - Android: Yes when used with Flutter
 
 This library works with and without Flutter. 
@@ -33,7 +32,7 @@ we need to compile sqlite.
 
 ### On other platforms
 Using this library on platforms that are not supported out of the box is fairly 
-straightforward. For instance, if you release your own `sqlite3.so` with your application,
+straightforward. For instance, if you release your own `sqlite3.so` next to your application,
 you could use
 ```dart
 import 'dart:ffi';
@@ -54,14 +53,14 @@ DynamicLibrary _openOnLinux() {
   return DynamicLibrary.open(libraryNextToScript.path);
 }
 ```
-Just be sure to first override the behavior and then opening the database. Further,
-if you want to use the isolate api, you can only use a static method or top-level
-function to open the library.
+Just be sure to first override the behavior and then open the database. Further,
+if you want to use the isolate api, you can only use a static method or a top-level
+function to open the library. For Windows, a similar setup with a `sqlite3.dll` library
+should work.
 
 ### Supported datatypes
-This library supports `null`, `int`, other `num`s (converted to double),
-`String` and `Uint8List` to bind args. Returned columns from select statements
-will have the same types.
+This library supports `null`, `int`, `double`, `String` and `Uint8List` to bind args.
+Returned columns from select statements will have the same types.
 
 ## Using without moor
 ```dart
@@ -75,15 +74,12 @@ void main() {
 ```
 
 You can also use an asynchronous API on a background isolate by using `IsolateDb.openFile`
-or `IsolateDb.openMemory`, respectively. be aware that the asynchronous API is much slower,
+or `IsolateDb.openMemory`, respectively. Be aware that the asynchronous API is much slower,
 but it moves work out of the UI isolate.
 
 Be sure to __always__ call `Database.close` to avoid memory leaks!
 
-## Migrating from moor_flutter
-__Note__: For production apps, please use `moor_flutter` until this package
-reaches a stable version.
-
+## Using with moor
 Add both `moor` and `moor_ffi` to your pubspec, the `moor_flutter` dependency can be dropped.
 
 ```yaml
@@ -100,5 +96,5 @@ In all other project files that use moor apis (e.g. a `Value` class for companio
 
 Finally, replace usages of `FlutterQueryExecutor` with `VmDatabase`.
 
-Note that, at the moment, there is no counterpart for `FlutterQueryExecutor.inDatabasePath` and that the async API using
-a background isolate is not available yet. Both shortcomings with be fixed by the upcoming moor 2.0 release.
+Note that, at the moment, there is no direct counterpart for `FlutterQueryExecutor.inDatabasePath`
+and that the async API using a background isolate is not available for moor yet.

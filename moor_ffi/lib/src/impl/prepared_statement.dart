@@ -59,10 +59,11 @@ class PreparedStatement implements BasePreparedStatement {
       case Types.SQLITE_FLOAT:
         return bindings.sqlite3_column_double(_stmt, index);
       case Types.SQLITE_TEXT:
+        final length = bindings.sqlite3_column_bytes(_stmt, index);
         return bindings
             .sqlite3_column_text(_stmt, index)
             .load<CBlob>()
-            .readString();
+            .readAsStringWithLength(length);
       case Types.SQLITE_BLOB:
         final length = bindings.sqlite3_column_bytes(_stmt, index);
         return bindings

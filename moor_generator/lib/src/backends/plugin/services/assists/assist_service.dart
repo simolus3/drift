@@ -37,6 +37,12 @@ abstract class _AssistOnNodeContributor<T extends AstNode> {
   const _AssistOnNodeContributor();
 
   void contribute(AssistCollector collector, T node, String path);
+
+  SourceEdit replaceNode(AstNode node, String text) {
+    final start = node.firstPosition;
+    final length = node.lastPosition - start;
+    return SourceEdit(start, length, text);
+  }
 }
 
 class AssistId {

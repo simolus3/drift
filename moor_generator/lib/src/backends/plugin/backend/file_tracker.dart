@@ -76,6 +76,13 @@ class FileTracker {
     }
   }
 
+  /// Manually remove the [file] from the backlog. As the plugin is still very
+  /// unstable, we use this on unexpected errors so that we just move on to the
+  /// next file if there is a problem.
+  void removePending(TrackedFile file) {
+    _pendingWork.remove(file);
+  }
+
   void dispose() {
     _computations.close();
   }

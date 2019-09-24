@@ -80,7 +80,14 @@ mixin SchemaParser on ParserBase {
     final name = _consume(TokenType.identifier, 'Expected a column name')
         as IdentifierToken;
 
-    final typeName = _typeName();
+    final typeTokens = _typeName();
+    String typeName;
+
+    if (typeTokens != null) {
+      final typeSpan = typeTokens.first.span.expand(typeTokens.last.span);
+      typeName = typeSpan.text;
+    }
+
     final constraints = <ColumnConstraint>[];
     ColumnConstraint constraint;
     while ((constraint = _columnConstraint(orNull: true)) != null) {
@@ -91,19 +98,21 @@ mixin SchemaParser on ParserBase {
       columnName: name.identifier,
       typeName: typeName,
       constraints: constraints,
-    )..setSpan(name, _previous);
+    )
+      ..setSpan(name, _previous)
+      ..typeNames = typeTokens;
   }
 
-  String _typeName() {
+  List<Token> _typeName() {
     // sqlite doesn't really define what a type name is and has very loose rules
     // at turning them into a type affinity. We support this pattern:
     // typename = identifier [ "(" { identifier | comma | number_literal } ")" ]
     if (!_matchOne(TokenType.identifier)) return null;
 
-    final typeNameBuilder = StringBuffer(_previous.lexeme);
+    final typeNames = [_previous];
 
     if (_matchOne(TokenType.leftParen)) {
-      typeNameBuilder.write('(');
+      typeNames.add(_previous);
 
       const inBrackets = [
         TokenType.identifier,
@@ -111,14 +120,15 @@ mixin SchemaParser on ParserBase {
         TokenType.numberLiteral
       ];
       while (_match(inBrackets)) {
-        typeNameBuilder..write(' ')..write(_previous.lexeme);
+        typeNames.add(_previous);
       }
 
       _consume(TokenType.rightParen,
           'Expected closing paranthesis to finish type name');
+      typeNames.add(_previous);
     }
 
-    return typeNameBuilder.toString();
+    return typeNames;
   }
 
   ColumnConstraint _columnConstraint({bool orNull = false}) {
@@ -127,10 +137,13 @@ mixin SchemaParser on ParserBase {
     final resolvedName = _constraintNameOrNull();
 
     if (_matchOne(TokenType.primary)) {
+      _suggestHint(HintDescription.token(TokenType.key));
       _consume(TokenType.key, 'Expected KEY to complete PRIMARY KEY clause');
 
       final mode = _orderingModeOrNull();
       final conflict = _conflictClauseOrNull();
+
+      _suggestHint(HintDescription.token(TokenType.autoincrement));
       final hasAutoInc = _matchOne(TokenType.autoincrement);
 
       return PrimaryKeyColumn(resolvedName,
@@ -138,6 +151,8 @@ mixin SchemaParser on ParserBase {
         ..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.not)) {
+      _suggestHint(HintDescription.token(TokenType.$null));
+
       final notToken = _previous;
       final nullToken =
           _consume(TokenType.$null, 'Expected NULL to complete NOT NULL');
@@ -249,6 +264,7 @@ mixin SchemaParser on ParserBase {
   }
 
   ConflictClause _conflictClauseOrNull() {
+    _suggestHint(HintDescription.token(TokenType.on));
     if (_matchOne(TokenType.on)) {
       _consume(TokenType.conflict,
           'Expected CONFLICT to complete ON CONFLICT clause');
@@ -260,6 +276,7 @@ mixin SchemaParser on ParserBase {
         TokenType.ignore: ConflictClause.ignore,
         TokenType.replace: ConflictClause.replace,
       };
+      _suggestHint(HintDescription.tokens(modes.keys.toList()));
 
       if (_match(modes.keys)) {
         return modes[_previous.type];
@@ -284,7 +301,10 @@ mixin SchemaParser on ParserBase {
 
     ReferenceAction onDelete, onUpdate;
 
+    _suggestHint(HintDescription.token(TokenType.on));
     while (_matchOne(TokenType.on)) {
+      _suggestHint(
+          const HintDescription.tokens([TokenType.delete, TokenType.update]));
       if (_matchOne(TokenType.delete)) {
         onDelete = _referenceAction();
       } else if (_matchOne(TokenType.update)) {

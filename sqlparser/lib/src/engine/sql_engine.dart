@@ -66,8 +66,9 @@ class SqlEngine {
   ParseResult parseMoorFile(String content) {
     assert(useMoorExtensions);
 
-    final autoComplete = AutoCompleteEngine();
     final tokens = tokenize(content);
+    final autoComplete = AutoCompleteEngine(tokens);
+
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
     final parser =
         Parser(tokensForParser, useMoor: true, autoComplete: autoComplete);

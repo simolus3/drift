@@ -4,7 +4,9 @@ Currently, we support
 
 - showing errors in moor files
 - outline
-- (kinda) folding
+- folding
+- (very, very limited) autocomplete
+-  some quickfixes to make columns nullable or non-null
 
 ## Setup
 To use this plugin, you'll need to perform these steps once. It is assumed that you

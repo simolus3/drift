@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../runners.dart';
+import '../ffi_test.dart';
 
 void main(TestedDatabase db) {
   test('can set the user version on a database', () async {
