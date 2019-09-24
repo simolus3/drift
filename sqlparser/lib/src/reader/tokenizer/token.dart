@@ -260,7 +260,10 @@ class Token {
   final FileSpan span;
   String get lexeme => span.text;
 
-  const Token(this.type, this.span);
+  /// The index of this [Token] in the list of tokens scanned.
+  int index;
+
+  Token(this.type, this.span);
 
   @override
   String toString() {
@@ -274,7 +277,7 @@ class StringLiteralToken extends Token {
   /// sqlite allows binary strings (x'literal') which are interpreted as blobs.
   final bool binary;
 
-  const StringLiteralToken(this.value, FileSpan span, {this.binary = false})
+  StringLiteralToken(this.value, FileSpan span, {this.binary = false})
       : super(TokenType.stringLiteral, span);
 }
 
@@ -295,7 +298,7 @@ class IdentifierToken extends Token {
     }
   }
 
-  const IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
+  IdentifierToken(this.escaped, FileSpan span, {this.synthetic = false})
       : super(TokenType.identifier, span);
 }
 

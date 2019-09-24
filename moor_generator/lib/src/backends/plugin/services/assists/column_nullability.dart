@@ -9,9 +9,9 @@ class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
     final notNull = node.findConstraint<NotNull>();
 
     if (notNull == null) {
-      // there is no not-null constraint on this column, suggest to add one at
-      // the end of the definition
-      final end = node.lastPosition;
+      // there is no not-null constraint on this column, suggest to add one
+      // after the type name
+      final end = node.typeNames.last.span.end.offset;
       final id = AssistId.makeNotNull;
 
       collector.addAssist(PrioritizedSourceChange(
@@ -34,9 +34,7 @@ class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
       collector.addAssist(PrioritizedSourceChange(
         id.priority,
         SourceChange('Make this column nullable', id: id.id, edits: [
-          SourceFileEdit(path, -1, edits: [
-            SourceEdit(notNull.firstPosition, notNull.lastPosition, '')
-          ])
+          SourceFileEdit(path, -1, edits: [replaceNode(notNull, '')])
         ]),
       ));
     }

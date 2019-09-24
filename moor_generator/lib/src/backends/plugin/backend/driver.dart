@@ -80,9 +80,15 @@ class MoorDriver implements AnalysisDriverGeneric {
       }
       final backendTask = _createTask(mostImportantFile.file.uri);
 
-      final task = session.startTask(backendTask);
-      await task.runTask();
-      _tracker.handleTaskCompleted(task);
+      try {
+        final task = session.startTask(backendTask);
+        await task.runTask();
+        _tracker.handleTaskCompleted(task);
+      } catch (e, s) {
+        Logger.root.warning(
+            'Error while working on ${mostImportantFile.file.uri}', e, s);
+        _tracker.removePending(mostImportantFile);
+      }
     } finally {
       _isWorking = false;
     }
@@ -141,11 +147,16 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   /// Waits for the file at [path] to be parsed.
   Future<FoundFile> waitFileParsed(String path) {
-    _scheduler.notify(this);
-
     final found = pathToFoundFile(path);
 
-    return completedFiles()
-        .firstWhere((file) => file == found && file.isParsed);
+    if (found.isParsed) {
+      return Future.value(found);
+    } else {
+      _scheduler.notify(this);
+      final found = pathToFoundFile(path);
+
+      return completedFiles()
+          .firstWhere((file) => file == found && file.isParsed);
+    }
   }
 }

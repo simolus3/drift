@@ -6,6 +6,9 @@ class ColumnDefinition extends AstNode {
   final String typeName;
   final List<ColumnConstraint> constraints;
 
+  /// The tokens there were involved in defining the type of this column.
+  List<Token> typeNames;
+
   ColumnDefinition(
       {@required this.columnName,
       @required this.typeName,
