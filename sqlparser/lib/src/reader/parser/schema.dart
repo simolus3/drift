@@ -80,13 +80,13 @@ mixin SchemaParser on ParserBase {
     final name = _consume(TokenType.identifier, 'Expected a column name')
         as IdentifierToken;
 
-    final typeNames = _typeName();
-    if (typeNames == null) {
-      _error('Expected a type name here');
-    }
+    final typeTokens = _typeName();
+    String typeName;
 
-    final typeSpan = typeNames.first.span.expand(typeNames.last.span);
-    final typeName = typeSpan.text;
+    if (typeTokens != null) {
+      final typeSpan = typeTokens.first.span.expand(typeTokens.last.span);
+      typeName = typeSpan.text;
+    }
 
     final constraints = <ColumnConstraint>[];
     ColumnConstraint constraint;
@@ -100,7 +100,7 @@ mixin SchemaParser on ParserBase {
       constraints: constraints,
     )
       ..setSpan(name, _previous)
-      ..typeNames = typeNames;
+      ..typeNames = typeTokens;
   }
 
   List<Token> _typeName() {
