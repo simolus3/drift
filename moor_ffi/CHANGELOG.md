@@ -1,3 +1,3 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+- Initial release. Contains standalone bindings and a moor implementation.
