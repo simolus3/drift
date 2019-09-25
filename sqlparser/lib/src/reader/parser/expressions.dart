@@ -279,13 +279,14 @@ mixin ExpressionParser on ParserBase {
           ..token = typedToken
           ..setSpan(_previous, _previous);
       }
-    } else if (_checkLenientIdentifier()) {
+    } else if (_checkIdentifier()) {
       final first = _consumeIdentifier(
           'This error message should never be displayed. Please report.');
 
       // could be table.column, function(...) or just column
       if (_matchOne(TokenType.dot)) {
-        final second = _consumeIdentifier('Expected a column name here');
+        final second =
+            _consumeIdentifier('Expected a column name here', lenient: true);
         return Reference(
             tableName: first.identifier, columnName: second.identifier)
           ..setSpan(first, second);

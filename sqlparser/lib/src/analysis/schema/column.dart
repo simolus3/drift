@@ -13,7 +13,8 @@ class TableColumn extends Column {
   @override
   final String name;
 
-  /// The type of this column, which is immediately available.
+  /// The type of this column, which is available before any resolution happens
+  /// (we know if from the table).
   final ResolvedType type;
 
   /// The column constraints set on this column.
@@ -38,4 +39,16 @@ class ExpressionColumn extends Column {
   final Expression expression;
 
   ExpressionColumn({@required this.name, this.expression});
+}
+
+/// The result column of a [CompoundSelectStatement].
+class CompoundSelectColumn extends Column {
+  /// The column in [CompoundSelectStatement.base] each of the
+  /// [CompoundSelectStatement.additional] that contributed to this column.
+  final List<Column> columns;
+
+  CompoundSelectColumn(this.columns);
+
+  @override
+  String get name => columns.first.name;
 }

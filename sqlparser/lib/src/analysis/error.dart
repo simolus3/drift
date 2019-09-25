@@ -59,5 +59,6 @@ enum AnalysisErrorType {
   synctactic,
 
   unknownFunction,
+  compoundColumnCountMismatch,
   other,
 }

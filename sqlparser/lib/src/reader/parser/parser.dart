@@ -103,11 +103,12 @@ abstract class ParserBase {
 
   /// Returns whether the next token is an [TokenType.identifier] or a
   /// [KeywordToken]. If this method returns true, calling [_consumeIdentifier]
-  /// with the lenient parameter will now throw.
-  bool _checkLenientIdentifier() {
+  /// with same [lenient] parameter will now throw.
+  bool _checkIdentifier({bool lenient = false}) {
     final next = _peek;
-    return next.type == TokenType.identifier ||
-        (next is KeywordToken && next.canConvertToIdentifier());
+    if (next.type == TokenType.identifier) return true;
+
+    return next is KeywordToken && (next.canConvertToIdentifier() || lenient);
   }
 
   Token _advance() {
@@ -130,10 +131,11 @@ abstract class ParserBase {
   }
 
   /// Consumes an identifier.
-  IdentifierToken _consumeIdentifier(String message) {
+  IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
     final next = _peek;
-    // non-standard keywords can be parsed as an identifier
-    if (next is KeywordToken && next.canConvertToIdentifier()) {
+    // non-standard keywords can be parsed as an identifier, we allow all
+    // keywords when lenient is true
+    if (next is KeywordToken && (next.canConvertToIdentifier() || lenient)) {
       return (_advance() as KeywordToken).convertToIdentifier();
     }
     return _consume(TokenType.identifier, message) as IdentifierToken;
