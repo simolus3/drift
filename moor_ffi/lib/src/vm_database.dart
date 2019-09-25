@@ -7,13 +7,18 @@ class VmDatabase extends DelegatedDatabase {
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
-  factory VmDatabase(File file, {bool logStatements = false}) {
-    return VmDatabase._(_VmDelegate(file), logStatements);
+  ///
+  /// If [background] is enabled (defaults to false), the database will be
+  /// opened on a background isolate. This is much slower, but reduces work on
+  /// the UI thread.
+  factory VmDatabase(File file,
+      {bool logStatements = false, bool background = false}) {
+    return VmDatabase._(_VmDelegate(file, background), logStatements);
   }
 
-  /// Creates a database won't persist its changes on disk.
+  /// Creates an in-memory database won't persist its changes on disk.
   factory VmDatabase.memory({bool logStatements = false}) {
-    return VmDatabase._(_VmDelegate(null), logStatements);
+    return VmDatabase._(_VmDelegate(null, false), logStatements);
   }
 }
 
@@ -21,8 +26,9 @@ class _VmDelegate extends DatabaseDelegate {
   BaseDatabase _db;
 
   final File file;
+  final bool background;
 
-  _VmDelegate(this.file);
+  _VmDelegate(this.file, this.background);
 
   @override
   final TransactionDelegate transactionDelegate = const NoTransactionDelegate();
@@ -34,10 +40,18 @@ class _VmDelegate extends DatabaseDelegate {
   Future<bool> get isOpen => Future.value(_db != null);
 
   @override
-  Future<void> open([GeneratedDatabase db]) {
+  Future<void> open([GeneratedDatabase db]) async {
     if (file != null) {
-      _db = Database.openFile(file);
+      if (background) {
+        _db = await IsolateDb.openFile(file);
+      } else {
+        _db = Database.openFile(file);
+      }
     } else {
+      assert(
+          !background,
+          "moor_ffi doesn't support in-memory databases on a background "
+          'isolate');
       _db = Database.memory();
     }
     versionDelegate = _VmVersionDelegate(_db);
