@@ -1,8 +1,14 @@
 part of '../ast.dart';
 
-class SelectStatement extends Statement
-    with CrudStatement, ResultSet
-    implements HasWhereClause {
+abstract class BaseSelectStatement extends Statement
+    with CrudStatement, ResultSet {
+  /// The resolved list of columns returned by this select statements. Not
+  /// available from the parse tree, will be set later by the analyzer.
+  @override
+  List<Column> resolvedColumns;
+}
+
+class SelectStatement extends BaseSelectStatement implements HasWhereClause {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;
@@ -14,11 +20,6 @@ class SelectStatement extends Statement
 
   final OrderByBase orderBy;
   final LimitBase limit;
-
-  /// The resolved list of columns returned by this select statements. Not
-  /// available from the parse tree, will be set later by the analyzer.
-  @override
-  List<Column> resolvedColumns;
 
   SelectStatement(
       {this.distinct = false,
@@ -51,6 +52,36 @@ class SelectStatement extends Statement
   @override
   bool contentEquals(SelectStatement other) {
     return other.distinct == distinct;
+  }
+}
+
+class CompoundSelectStatement extends BaseSelectStatement {
+  final SelectStatement base;
+  final List<CompoundSelectPart> additional;
+
+  // the grammar under https://www.sqlite.org/syntax/compound-select-stmt.html
+  // defines an order by and limit clause on this node, but we parse them as
+  // part of the last compound select statement in [additional]
+
+  CompoundSelectStatement({
+    @required this.base,
+    this.additional = const [],
+  });
+
+  @override
+  Iterable<AstNode> get childNodes {
+    return [base, ...additional];
+  }
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) {
+    return visitor.visitCompoundSelectStatement(this);
+  }
+
+  @override
+  bool contentEquals(CompoundSelectStatement other) {
+    // this class doesn't contain anything but child nodes
+    return true;
   }
 }
 
@@ -109,4 +140,33 @@ class GroupBy extends AstNode {
   bool contentEquals(GroupBy other) {
     return true; // Defined via child nodes
   }
+}
+
+enum CompoundSelectMode {
+  union,
+  unionAll,
+  intersect,
+  except,
+}
+
+class CompoundSelectPart extends AstNode {
+  final CompoundSelectMode mode;
+  final SelectStatement select;
+
+  /// The first token of this statement, so either union, intersect or except.
+  Token firstModeToken;
+
+  /// The "ALL" token, if this is a "UNION ALL" part
+  Token allToken;
+
+  CompoundSelectPart({@required this.mode, @required this.select});
+
+  @override
+  Iterable<AstNode> get childNodes => [select];
+
+  @override
+  T accept<T>(AstVisitor<T> visitor) => visitor.visitCompoundSelectPart(this);
+
+  @override
+  bool contentEquals(CompoundSelectPart other) => mode == other.mode;
 }

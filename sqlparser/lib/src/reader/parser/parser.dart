@@ -146,12 +146,13 @@ abstract class ParserBase {
   /// (in brackets) will be accepted as well.
   Expression _consumeTuple({bool orSubQuery = false});
 
-  /// Parses a [SelectStatement], or returns null if there is no select token
-  /// after the current position.
+  /// Parses a [BaseSelectStatement], which is either a [SelectStatement] or a
+  /// [CompoundSelectStatement]. If [noCompound] is set to true, the parser will
+  /// only attempt to parse a [SelectStatement].
   ///
   /// See also:
   /// https://www.sqlite.org/lang_select.html
-  SelectStatement select();
+  BaseSelectStatement select({bool noCompound});
 
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();

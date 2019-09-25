@@ -2,7 +2,35 @@ part of 'parser.dart';
 
 mixin CrudParser on ParserBase {
   @override
-  SelectStatement select() {
+  BaseSelectStatement select({bool noCompound}) {
+    if (noCompound == true) {
+      return _selectNoCompound();
+    } else {
+      final first = _selectNoCompound();
+      final parts = <CompoundSelectPart>[];
+
+      while (true) {
+        final part = _compoundSelectPart();
+        if (part != null) {
+          parts.add(part);
+        } else {
+          break;
+        }
+      }
+
+      if (parts.isEmpty) {
+        // no compound parts, just return the simple select statement
+        return first;
+      } else {
+        return CompoundSelectStatement(
+          base: first,
+          additional: parts,
+        )..setSpan(first.first, _previous);
+      }
+    }
+  }
+
+  SelectStatement _selectNoCompound() {
     if (!_match(const [TokenType.select])) return null;
     final selectToken = _previous;
 
@@ -36,6 +64,35 @@ mixin CrudParser on ParserBase {
       orderBy: orderBy,
       limit: limit,
     )..setSpan(selectToken, _previous);
+  }
+
+  CompoundSelectPart _compoundSelectPart() {
+    if (_match(
+        const [TokenType.union, TokenType.intersect, TokenType.except])) {
+      final firstModeToken = _previous;
+      var mode = const {
+        TokenType.union: CompoundSelectMode.union,
+        TokenType.intersect: CompoundSelectMode.intersect,
+        TokenType.except: CompoundSelectMode.except,
+      }[firstModeToken.type];
+      Token allToken;
+
+      if (firstModeToken.type == TokenType.union && _matchOne(TokenType.all)) {
+        allToken = _previous;
+        mode = CompoundSelectMode.unionAll;
+      }
+
+      final select = _selectNoCompound();
+
+      return CompoundSelectPart(
+        mode: mode,
+        select: select,
+      )
+        ..firstModeToken = firstModeToken
+        ..allToken = allToken
+        ..setSpan(firstModeToken, _previous);
+    }
+    return null;
   }
 
   /// Parses a [ResultColumn] or throws if none is found.
@@ -114,7 +171,7 @@ mixin CrudParser on ParserBase {
     if (tableRef != null) {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
-      final innerStmt = select();
+      final innerStmt = _selectNoCompound();
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
@@ -475,7 +532,7 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return const DefaultValues();
     } else {
-      return SelectInsertSource(select());
+      return SelectInsertSource(_selectNoCompound());
     }
   }
 

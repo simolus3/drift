@@ -152,6 +152,8 @@ abstract class AstNode {
 
 abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
+  T visitCompoundSelectStatement(CompoundSelectStatement e);
+  T visitCompoundSelectPart(CompoundSelectPart e);
   T visitResultColumn(ResultColumn e);
   T visitInsertStatement(InsertStatement e);
   T visitDeleteStatement(DeleteStatement e);
@@ -273,6 +275,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitSelectStatement(SelectStatement e) => visitChildren(e);
+
+  @override
+  T visitCompoundSelectStatement(CompoundSelectStatement e) => visitChildren(e);
+
+  @override
+  T visitCompoundSelectPart(CompoundSelectPart e) => visitChildren(e);
 
   @override
   T visitInsertStatement(InsertStatement e) => visitChildren(e);

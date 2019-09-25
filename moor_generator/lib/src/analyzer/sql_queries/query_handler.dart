@@ -20,7 +20,7 @@ class QueryHandler {
   Iterable<FoundVariable> get _foundVariables =>
       _foundElements.whereType<FoundVariable>();
 
-  SelectStatement get _select => context.root as SelectStatement;
+  BaseSelectStatement get _select => context.root as BaseSelectStatement;
 
   QueryHandler(this.name, this.context, this.mapper);
 
@@ -39,7 +39,7 @@ class QueryHandler {
 
   SqlQuery _mapToMoor() {
     final root = context.root;
-    if (root is SelectStatement) {
+    if (root is BaseSelectStatement) {
       return _handleSelect();
     } else if (root is UpdateStatement ||
         root is DeleteStatement ||
