@@ -26,6 +26,9 @@ class QueryWriter {
   MoorOptions get options => scope.writer.options;
   StringBuffer _buffer;
 
+  bool get _newSelectableMode =>
+      query.declaredInMoorFile || options.compactQueryMethods;
+
   final Set<String> _writtenMappingMethods;
 
   QueryWriter(this.query, this.scope, this._writtenMappingMethods) {
@@ -68,7 +71,7 @@ class QueryWriter {
 
     _writeSelectStatementCreator();
 
-    if (!query.declaredInMoorFile) {
+    if (!_newSelectableMode) {
       _writeOneTimeReader();
       _writeStreamReader();
     }
@@ -79,7 +82,7 @@ class QueryWriter {
   }
 
   String _nameOfCreationMethod() {
-    if (query.declaredInMoorFile) {
+    if (_newSelectableMode) {
       return query.name;
     } else {
       return '${query.name}Query';

@@ -42,6 +42,15 @@ class EntryWithCategory {
   tables: [Todos, Categories],
   queries: {
     '_resetCategory': 'UPDATE todos SET category = NULL WHERE category = ?',
+    '_categoriesWithCount': '''
+     SELECT
+       c.id,
+       c.desc,
+       (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount
+     FROM categories c
+     UNION ALL
+     SELECT null, null, (SELECT COUNT(*) FROM todos WHERE category IS NULL)
+     ''',
   },
 )
 class Database extends _$Database {
@@ -89,26 +98,15 @@ class Database extends _$Database {
   }
 
   Stream<List<CategoryWithCount>> categoriesWithCount() {
-    // select all categories and load how many associated entries there are for
-    // each category
-    return customSelectQuery(
-      'SELECT c.id, c.desc, '
-      '(SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount '
-      'FROM categories c '
-      'UNION ALL SELECT null, null, '
-      '(SELECT COUNT(*) FROM todos WHERE category IS NULL)',
-      readsFrom: {todos, categories},
-    ).watch().map((rows) {
-      // when we have the result set, map each row to the data class
-      return rows.map((row) {
-        final hasId = row.data['id'] != null;
+    // the _categoriesWithCount method has been generated automatically based
+    // on the query declared in the @UseMoor annotation
+    return _categoriesWithCount().map((row) {
+      final hasId = row.id != null;
+      final category =
+          hasId ? Category(id: row.id, description: row.desc) : null;
 
-        return CategoryWithCount(
-          hasId ? Category.fromData(row.data, this) : null,
-          row.readInt('amount'),
-        );
-      }).toList();
-    });
+      return CategoryWithCount(category, row.amount);
+    }).watch();
   }
 
   /// Watches all entries in the given [category]. If the category is null, all
