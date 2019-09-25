@@ -11,7 +11,7 @@ part 'schema/references.dart';
 part 'schema/table.dart';
 
 part 'steps/column_resolver.dart';
-part 'steps/reference_finder.dart';
+part 'steps/prepare_ast.dart';
 part 'steps/reference_resolver.dart';
 part 'steps/set_parent_visitor.dart';
 part 'steps/type_resolver.dart';

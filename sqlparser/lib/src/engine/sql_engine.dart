@@ -122,7 +122,7 @@ class SqlEngine {
     final scope = _constructRootScope();
 
     try {
-      ReferenceFinder(globalScope: scope).start(node);
+      AstPreparingVisitor(globalScope: scope, context: context).start(node);
 
       if (node is CrudStatement) {
         node

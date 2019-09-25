@@ -55,6 +55,9 @@ enum AnalysisErrorType {
   referencedUnknownColumn,
   ambiguousReference,
 
+  /// Note that most syntax errors are reported as [ParsingError]
+  synctactic,
+
   unknownFunction,
   other,
 }
