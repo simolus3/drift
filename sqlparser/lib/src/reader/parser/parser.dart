@@ -101,21 +101,20 @@ abstract class ParserBase {
     return _peek.type == type;
   }
 
+  /// Returns whether the next token is an [TokenType.identifier] or a
+  /// [KeywordToken]. If this method returns true, calling [_consumeIdentifier]
+  /// with the lenient parameter will now throw.
+  bool _checkLenientIdentifier() {
+    final next = _peek;
+    return next.type == TokenType.identifier ||
+        (next is KeywordToken && next.canConvertToIdentifier());
+  }
+
   Token _advance() {
     if (!_isAtEnd) {
       _current++;
     }
     return _previous;
-  }
-
-  /// Steps back a token. This needs to be used very carefully. We basically
-  /// only use it in [ExpressionParser._primary] because we unconditionally
-  /// [_advance] in there and we'd like to report more accurate errors when no
-  /// matching token was found.
-  void _stepBack() {
-    if (_current != null) {
-      _current--;
-    }
   }
 
   @alwaysThrows
@@ -130,11 +129,11 @@ abstract class ParserBase {
     _error(message);
   }
 
-  /// Consumes an identifier. If [lenient] is true and the next token is not
-  /// an identifier but rather a [KeywordToken], that token will be converted
-  /// to an identifier.
-  IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
-    if (lenient && _peek is KeywordToken) {
+  /// Consumes an identifier.
+  IdentifierToken _consumeIdentifier(String message) {
+    final next = _peek;
+    // non-standard keywords can be parsed as an identifier
+    if (next is KeywordToken && next.canConvertToIdentifier()) {
       return (_advance() as KeywordToken).convertToIdentifier();
     }
     return _consume(TokenType.identifier, message) as IdentifierToken;
@@ -262,8 +261,7 @@ class Parser extends ParserBase
 
   DeclaredStatement _declaredStatement() {
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
-      final name = _consumeIdentifier('Expected a name for a declared query',
-          lenient: true);
+      final name = _consumeIdentifier('Expected a name for a declared query');
       final colon =
           _consume(TokenType.colon, 'Expected colon (:) followed by a query');
 

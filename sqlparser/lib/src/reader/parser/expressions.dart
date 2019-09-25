@@ -261,64 +261,51 @@ mixin ExpressionParser on ParserBase {
     final variable = _variableOrNull();
     if (variable != null) return variable;
 
-    final token = _advance();
-    final type = token.type;
-    switch (type) {
-      case TokenType.leftParen:
-        // An opening bracket in the context of an expression could either be
-        // an inner select statement or a parenthesised expression.
-        final left = token;
-        if (_peek.type == TokenType.select) {
-          final stmt = select();
-          _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return SubQuery(select: stmt)..setSpan(left, _previous);
-        } else {
-          final expr = expression();
-          _consume(TokenType.rightParen, 'Expected a closing bracket');
-          return Parentheses(left, expr, token)..setSpan(left, _previous);
-        }
-        break;
-      case TokenType.identifier:
-        // could be table.column, function(...) or just column
-        final first = token as IdentifierToken;
+    if (_matchOne(TokenType.leftParen)) {
+      final left = _previous;
+      if (_peek.type == TokenType.select) {
+        final stmt = select();
+        _consume(TokenType.rightParen, 'Expected a closing bracket');
+        return SubQuery(select: stmt)..setSpan(left, _previous);
+      } else {
+        final expr = expression();
+        _consume(TokenType.rightParen, 'Expected a closing bracket');
+        return Parentheses(left, expr, _previous)..setSpan(left, _previous);
+      }
+    } else if (_matchOne(TokenType.dollarSignVariable)) {
+      if (enableMoorExtensions) {
+        final typedToken = _previous as DollarSignVariableToken;
+        return DartExpressionPlaceholder(name: typedToken.name)
+          ..token = typedToken
+          ..setSpan(_previous, _previous);
+      }
+    } else if (_checkLenientIdentifier()) {
+      final first = _consumeIdentifier(
+          'This error message should never be displayed. Please report.');
 
-        if (_matchOne(TokenType.dot)) {
-          final second =
-              _consume(TokenType.identifier, 'Expected a column name here')
-                  as IdentifierToken;
-          return Reference(
-              tableName: first.identifier, columnName: second.identifier)
-            ..setSpan(first, second);
-        } else if (_matchOne(TokenType.leftParen)) {
-          final parameters = _functionParameters();
-          final rightParen = _consume(TokenType.rightParen,
-              'Expected closing bracket after argument list');
+      // could be table.column, function(...) or just column
+      if (_matchOne(TokenType.dot)) {
+        final second = _consumeIdentifier('Expected a column name here');
+        return Reference(
+            tableName: first.identifier, columnName: second.identifier)
+          ..setSpan(first, second);
+      } else if (_matchOne(TokenType.leftParen)) {
+        final parameters = _functionParameters();
+        final rightParen = _consume(TokenType.rightParen,
+            'Expected closing bracket after argument list');
 
-          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-            return _aggregate(first, parameters);
-          }
+        if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+          return _aggregate(first, parameters);
+        }
 
-          return FunctionExpression(
-              name: first.identifier, parameters: parameters)
-            ..setSpan(first, rightParen);
-        } else {
-          return Reference(columnName: first.identifier)..setSpan(first, first);
-        }
-        break;
-      case TokenType.dollarSignVariable:
-        if (enableMoorExtensions) {
-          final typedToken = token as DollarSignVariableToken;
-          return DartExpressionPlaceholder(name: typedToken.name)
-            ..token = typedToken
-            ..setSpan(token, token);
-        }
-        break;
-      default:
-        break;
+        return FunctionExpression(
+            name: first.identifier, parameters: parameters)
+          ..setSpan(first, rightParen);
+      } else {
+        return Reference(columnName: first.identifier)..setSpan(first, first);
+      }
     }
 
-    // nothing found -> issue error. Step back to revert the _advance() above
-    _stepBack();
     _error('Could not parse this expression');
   }
 

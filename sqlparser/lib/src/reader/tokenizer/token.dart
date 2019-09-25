@@ -349,6 +349,11 @@ class KeywordToken extends Token {
 
   KeywordToken(TokenType type, FileSpan span) : super(type, span);
 
+  bool canConvertToIdentifier() {
+    // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.
+    return type == TokenType.join;
+  }
+
   IdentifierToken convertToIdentifier() {
     isIdentifier = true;
 
