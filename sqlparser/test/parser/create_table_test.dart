@@ -1,7 +1,7 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
-import 'package:test_core/test_core.dart';
+import 'package:test/test.dart';
 
 import '../common_data.dart';
 import 'utils.dart';

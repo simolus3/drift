@@ -1,6 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 void main() {
   final nullable = GeneratedDateTimeColumn('name', null, true);

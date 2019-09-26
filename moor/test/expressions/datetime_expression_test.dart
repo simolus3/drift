@@ -1,7 +1,7 @@
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 typedef Expression<int, IntType> _Extractor(
     Expression<DateTime, DateTimeType> d);

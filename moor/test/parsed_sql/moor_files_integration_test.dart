@@ -1,5 +1,5 @@
 import 'package:moor/moor.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 import '../data/tables/custom_tables.dart';
 import '../data/utils/mocks.dart';

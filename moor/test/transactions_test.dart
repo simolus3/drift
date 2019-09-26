@@ -14,7 +14,7 @@ test/data/utils/mocks.dart 22:20                                              Mo
 package:mockito/src/mock.dart 128:22                                          MockExecutor.noSuchMethod
  */
 
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 import 'package:moor/moor.dart';
 
 import 'data/tables/todos.dart';

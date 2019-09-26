@@ -27,7 +27,6 @@ dependencies:
   sqlparser: ^0.2.0
 dev_dependencies:
   test: ^1.6.0
-  test_api: ^0.2.0
   test_core: ^0.2.0
   build_runner: ^1.6.7
   built_value_generator: ^6.3.0
