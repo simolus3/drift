@@ -34,6 +34,21 @@ class TypeResolver {
     _results.putIfAbsent(t, () => result);
   }
 
+  bool _canResolve(Typeable t) {
+    if (t is Column) return true;
+    // neither a column nor an expression. Can't resolve that
+    if (t is! Expression) return false;
+
+    final expr = t as Expression;
+    // if this expression contains a variable we didn't resolve yet, we can't
+    // be sure that we can resolve the entire expression.
+    final containsVariable = expr.selfAndDescendants.any((node) =>
+        (node is Variable || node is DartExpressionPlaceholder) &&
+        !_results.containsKey(node));
+
+    return !containsVariable;
+  }
+
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);
@@ -314,10 +329,17 @@ class TypeResolver {
         parent is BinaryExpression ||
         parent is BetweenExpression ||
         parent is CaseExpression) {
-      final relevant = parent.childNodes
-          .lastWhere((node) => node is Expression && node != argument);
-      final resolved = resolveExpression(relevant as Expression);
+      final relevant = parent.childNodes.lastWhere((node) {
+        return node != argument &&
+            node is Typeable &&
+            _canResolve(node as Typeable);
+      }, orElse: () => null);
 
+      if (relevant == null) {
+        return const ResolveResult.unknown();
+      }
+
+      final resolved = justResolve(relevant as Typeable);
       // if we have "a x IN argument" expression, the argument will be an array
       if (parent is InExpression && argument == parent.inside) {
         return resolved.mapResult((r) => r.toArray(true));

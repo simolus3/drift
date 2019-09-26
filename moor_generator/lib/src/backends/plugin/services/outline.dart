@@ -48,7 +48,9 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitColumnDefinition(ColumnDefinition e) {
-    _startElement(ElementKind.FIELD, e.columnName, e)..returnType = e.typeName;
+    // we use parameters instead of returnType because VS Code doesn't show
+    // the return type but we'd really like it to be shown
+    _startElement(ElementKind.FIELD, e.columnName, e)..parameters = e.typeName;
 
     super.visitChildren(e);
     collector.endElement();

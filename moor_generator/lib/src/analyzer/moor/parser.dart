@@ -34,6 +34,7 @@ class MoorParser {
 
     for (var error in result.errors) {
       step.reportError(ErrorInMoorFile(
+        severity: Severity.error,
         span: error.token.span,
         message: error.message,
       ));

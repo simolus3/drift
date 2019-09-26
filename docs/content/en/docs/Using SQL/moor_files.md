@@ -10,7 +10,8 @@ aliases:
 Moor files are a new feature that lets you write all your database code in SQL - moor will generate typesafe APIs for them.
 
 ## Getting started
-To use this feature, lets create two files: `database.dart` and `tables.moor`. The Dart file is pretty straightforward:
+To use this feature, lets create two files: `database.dart` and `tables.moor`. The Dart file only contains the minimum code
+to setup the database:
 ```dart
 import 'package:moor/moor.dart';
 
@@ -47,13 +48,14 @@ deleteById: DELETE FROM todos WHERE id = :id;
 watchAllTodos: SELECT * FROM todos;
 ```
 
-After running the build runner, moor will write the `database.g.dart`
+After running the build runner with `flutter pub run build_runner build`,
+moor will write the `database.g.dart`
 file which contains the `_$MoorDb` superclass. Let's take a look at
 what we got:
 
 - Generated data classes (`Todo` and `Category`), and companion versions
   for inserts (see [Dart Interop](#dart-interop) for info). By default,
-  we strip a trailing "s" from the table name for the class. That's why 
+  moor strips a trailing "s" from the table name for the class. That's why 
   we used `AS Category` on the second table - it would have been called
   `Categorie` otherwise.
 - Methods to run the queries:
@@ -111,11 +113,13 @@ All tables reachable from the other file will then also be visible in
 the current file and to the database that `includes` it. Importing
 Dart files into a moor file will also work - then, all the tables
 declared via Dart tables can be used inside queries.
+We support both relative imports and the `package:` imports you
+know from Dart.
 
 ## Dart interop
 Moor files work perfectly together with moor's existing Dart API:
 
-- you can write Dart queries for moor files:
+- you can write Dart queries for tables declared in a moor file:
 ```dart
 Future<void> insert(TodosCompanion companion) async {
       await into(todos).insert(companion);
@@ -126,8 +130,10 @@ Future<void> insert(TodosCompanion companion) async {
 - generated methods for queries can be used in transactions, they work 
   together with auto-updating queries, etc.
 
-You can make most of both SQL and Dart by "Dart Templates", which is a
-Dart expression that gets inlined to a query. To use them, declare a 
+### Dart components in SQL
+
+You can make most of both SQL and Dart with "Dart Templates", which is a
+Dart expression that gets inlined to a query at runtime. To use them, declare a 
 $-variable in a query:
 ```sql
 _filterTodos: SELECT * FROM todos WHERE $predicate;
@@ -139,10 +145,25 @@ Stream<List<Todo>> watchInCategory(int category) {
     return _filterTodos(todos.category.equals(category)).watch();
 }
 ```
-This feature works for
+This lets you write a single SQL query and dynamically apply a predicate at runtime!
+This feature also works for
 
 - expressions
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
+
+## Supported statements
+At the moment, the following statements can appear in a `.moor` file.
+
+- `import 'other.moor'`: Import all tables and queries declared in the other file
+   into the current file.
+- DDL statements (`CREATE TABLE`): Declares a table. We don't currently support indices and views,
+   [#162](https://github.com/simolus3/moor/issues/162) tracks support for that.
+- Query statements: We support `INSERT`, `SELECT`, `UPDATE` and `DELETE` statements.
+
+All imports must come before DDL statements, and those must come before the named queries.
+
+If you need support for another statement, or if moor rejects a query you think is valid, please
+create an issue!

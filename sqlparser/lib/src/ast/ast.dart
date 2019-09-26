@@ -98,6 +98,13 @@ abstract class AstNode {
     }
   }
 
+  /// Returns an iterable that fields yields this node, followed by
+  /// [allDescendants].
+  Iterable<AstNode> get selfAndDescendants sync* {
+    yield this;
+    yield* allDescendants;
+  }
+
   final Map<Type, dynamic> _metadata = {};
 
   /// Returns the metadata of type [T] that might have been set on this node, or

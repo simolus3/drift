@@ -4,7 +4,7 @@ We use [Docsy](https://github.com/google/docsy), a Hugo theme for this website. 
 [here](https://www.docsy.dev/docs/getting-started/).
 
 To work on the documentation, first cd into this directory, then run `git submodule update --init --recursive` and
- `npm install`.
+ `npm install`. To update the dependencies, run `git pull --recurse-submodules`-
 
 ## Running the website locally
 After the setup, it's just a simple
