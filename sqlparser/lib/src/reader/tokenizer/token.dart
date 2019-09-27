@@ -257,6 +257,9 @@ const Map<String, TokenType> moorKeywords = {
   'IMPORT': TokenType.import,
 };
 
+/// Returns true if the [type] belongs to a keyword
+bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
+
 class Token {
   final TokenType type;
 

@@ -53,9 +53,24 @@ abstract class ParserBase {
 
   ParserBase(this.tokens, this.enableMoorExtensions, this.autoComplete);
 
+  bool get _reportAutoComplete => autoComplete != null;
+
   void _suggestHint(HintDescription description) {
     final tokenBefore = _current == 0 ? null : _previous;
     autoComplete?.addHint(Hint(tokenBefore, description));
+  }
+
+  void _suggestHintForTokens(Iterable<TokenType> types) {
+    final relevant =
+        types.where(isKeyword).map((type) => HintDescription.token(type));
+    final description = CombinedDescription()..descriptions.addAll(relevant);
+    _suggestHint(description);
+  }
+
+  void _suggestHintForToken(TokenType type) {
+    if (isKeyword(type)) {
+      _suggestHint(HintDescription.token(type));
+    }
   }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
@@ -64,6 +79,7 @@ abstract class ParserBase {
   Token get _previous => tokens[_current - 1];
 
   bool _match(Iterable<TokenType> types) {
+    if (_reportAutoComplete) _suggestHintForTokens(types);
     for (var type in types) {
       if (_check(type)) {
         _advance();
@@ -74,6 +90,7 @@ abstract class ParserBase {
   }
 
   bool _matchOne(TokenType type) {
+    if (_reportAutoComplete) _suggestHintForToken(type);
     if (_check(type)) {
       _advance();
       return true;
