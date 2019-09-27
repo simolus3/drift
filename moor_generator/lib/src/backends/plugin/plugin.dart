@@ -5,6 +5,7 @@ import 'package:analyzer_plugin/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
+import 'package:analyzer_plugin/plugin/navigation_mixin.dart';
 import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
@@ -12,6 +13,7 @@ import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
+import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
@@ -19,6 +21,7 @@ import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
 import 'package:moor_generator/src/backends/plugin/services/folding.dart';
 import 'package:moor_generator/src/backends/plugin/services/highlights.dart';
+import 'package:moor_generator/src/backends/plugin/services/navigation.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
@@ -31,7 +34,8 @@ class MoorPlugin extends ServerPlugin
         HighlightsMixin,
         FoldingMixin,
         CompletionMixin,
-        AssistsMixin {
+        AssistsMixin,
+        NavigationMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
   }
@@ -154,7 +158,23 @@ class MoorPlugin extends ServerPlugin
     final driver = _moorDriverForPath(path);
     final file = await driver.waitFileParsed(path);
 
-    return MoorAssistRequest(
+    return MoorRequestAtPosition(
+        file, parameters.length, parameters.offset, resourceProvider);
+  }
+
+  @override
+  List<NavigationContributor> getNavigationContributors(String path) {
+    return const [MoorNavigationContributor()];
+  }
+
+  @override
+  Future<NavigationRequest> getNavigationRequest(
+      plugin.AnalysisGetNavigationParams parameters) async {
+    final path = parameters.file;
+    final driver = _moorDriverForPath(path);
+    final file = await driver.waitFileParsed(path);
+
+    return MoorRequestAtPosition(
         file, parameters.length, parameters.offset, resourceProvider);
   }
 }

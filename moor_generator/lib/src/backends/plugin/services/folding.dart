@@ -28,7 +28,7 @@ class _FoldingVisitor extends RecursiveVisitor<void> {
     // construct a folding region for import statements
     final imports = e.imports.toList();
     if (imports.length > 1) {
-      final first = imports[1].firstPosition;
+      final first = imports.first.firstPosition;
       final last = imports.last.lastPosition;
 
       collector.addRegion(first, last - first, FoldingKind.DIRECTIVES);
