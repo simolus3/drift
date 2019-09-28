@@ -19,6 +19,7 @@ class TableParser {
       dartTypeName: _readDartTypeName(element),
       primaryKey: await _readPrimaryKey(element, columns),
     );
+    table.declaration = TableDeclaration(table, base.step.file, element, null);
 
     var index = 0;
     for (var converter in table.converters) {

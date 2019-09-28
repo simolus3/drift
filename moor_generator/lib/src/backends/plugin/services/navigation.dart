@@ -1,8 +1,9 @@
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/column_declaration.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:moor_generator/src/backends/plugin/utils/ast_to_location.dart';
+import 'package:moor_generator/src/backends/plugin/utils/span_utils.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -31,7 +32,11 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
     final offset = span.start.offset;
     final length = span.end.offset - offset;
 
-    collector.addRegion(offset, length, kind, target);
+    // The client only wants the navigation target for a single region, but
+    // we always scan the whole file. Only report if there is an intersection
+    if (intersect(span, request.span)) {
+      collector.addRegion(offset, length, kind, target);
+    }
   }
 
   @override
@@ -47,7 +52,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    super.visitChildren(e);
+    visitChildren(e);
   }
 
   @override
@@ -71,6 +76,21 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    super.visitChildren(e);
+    visitChildren(e);
+  }
+
+  @override
+  void visitQueryable(Queryable e) {
+    if (e is TableReference) {
+      final resolved = e.resolved;
+
+      if (resolved is Table) {
+        final declaration = resolved.meta<TableDeclaration>();
+        _reportForSpan(
+            e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
+      }
+    }
+
+    visitChildren(e);
   }
 }

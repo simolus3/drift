@@ -1,5 +1,5 @@
 import 'package:built_value/built_value.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/column_declaration.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';

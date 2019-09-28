@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
@@ -9,6 +10,8 @@ class SpecifiedTable {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
+
+  TableDeclaration declaration;
 
   /// If [fromClass] is null, another source to use when determining the name
   /// of this table in generated Dart code.

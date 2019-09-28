@@ -22,7 +22,7 @@ abstract class ResultSet implements ResolvesToResultSet {
 
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
-class Table with ResultSet, VisibleToChildren {
+class Table with ResultSet, VisibleToChildren, HasMetaMixin {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
   final String name;
@@ -36,12 +36,16 @@ class Table with ResultSet, VisibleToChildren {
   /// Additional constraints set on this table.
   final List<TableConstraint> tableConstraints;
 
+  /// The ast node that created this table
+  final CreateTableStatement definition;
+
   /// Constructs a table from the known [name] and [resolvedColumns].
   Table(
       {@required this.name,
       this.resolvedColumns,
       this.withoutRowId = false,
-      this.tableConstraints = const []}) {
+      this.tableConstraints = const [],
+      this.definition}) {
     for (var column in resolvedColumns) {
       column.table = this;
     }

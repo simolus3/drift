@@ -4,7 +4,7 @@ import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'meta/column_declaration.dart';
+import 'meta/declarations.dart';
 
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
@@ -29,6 +29,7 @@ class TypeMapper {
     }
 
     final engineTable = Table(name: table.sqlName, resolvedColumns: columns);
+    engineTable.setMeta<TableDeclaration>(table.declaration);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
   }

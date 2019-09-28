@@ -7,6 +7,7 @@ import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:source_span/source_span.dart';
 
 mixin _MoorBaseRequest {
   FoundFile get file;
@@ -66,6 +67,14 @@ class MoorRequestAtPosition
 
   @override
   final ResourceProvider resourceProvider;
+
+  SourceSpan get span {
+    return SourceSpan(
+      SourceLocation(offset),
+      SourceLocation(offset + length),
+      'x' * length,
+    );
+  }
 
   MoorRequestAtPosition(
       this.file, this.length, this.offset, this.resourceProvider);

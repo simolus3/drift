@@ -1,5 +1,5 @@
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/column_declaration.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
@@ -96,7 +96,7 @@ class CreateTableReader {
       }
     }
 
-    return SpecifiedTable(
+    final specifiedTable = SpecifiedTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
@@ -108,6 +108,10 @@ class CreateTableReader {
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
     );
+
+    return specifiedTable
+      ..declaration =
+          TableDeclaration(specifiedTable, step.file, null, table.definition);
   }
 
   UsedTypeConverter _readTypeConverter(MappedBy mapper) {
