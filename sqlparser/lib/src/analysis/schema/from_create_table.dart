@@ -20,7 +20,7 @@ class SchemaFromCreateTable {
     return TableColumn(
       definition.columnName,
       resolvedType,
-      constraints: definition.constraints,
+      definition: definition,
     );
   }
 

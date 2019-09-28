@@ -1,3 +1,5 @@
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/column_declaration.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
@@ -10,8 +12,9 @@ import 'package:sqlparser/sqlparser.dart';
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
   final CreateTableStatement stmt;
+  final Step step;
 
-  CreateTableReader(this.stmt);
+  CreateTableReader(this.stmt, this.step);
 
   SpecifiedTable extractTable(TypeMapper mapper) {
     final table = SchemaFromCreateTable().read(stmt);
@@ -67,6 +70,10 @@ class CreateTableReader {
         defaultArgument: defaultValue,
         typeConverter: converter,
       );
+
+      final declaration =
+          ColumnDeclaration(parsed, step.file, null, column.definition);
+      parsed.declaration = declaration;
 
       foundColumns[column.name] = parsed;
       if (isPrimaryKey) {

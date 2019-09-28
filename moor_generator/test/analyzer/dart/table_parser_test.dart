@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
@@ -83,6 +84,8 @@ void main() {
           table.columns.singleWhere((col) => col.name.name == 'id');
 
       expect(idColumn.name, equals(ColumnName.implicitly('id')));
+      expect(idColumn.declaration.dartDeclaration,
+          const TypeMatcher<PropertyAccessorElement>());
     });
 
     test('should use explicit name, if it exists', () async {

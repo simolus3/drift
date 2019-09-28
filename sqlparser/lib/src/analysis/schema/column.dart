@@ -1,11 +1,11 @@
 part of '../analysis.dart';
 
 /// A column that appears in a [ResultSet]. Has a type and a name.
-abstract class Column with Referencable implements Typeable {
+abstract class Column with Referencable, HasMetaMixin implements Typeable {
   /// The name of this column in the result set.
   String get name;
 
-  const Column();
+  Column();
 }
 
 /// A column that is part of a table.
@@ -21,12 +21,15 @@ class TableColumn extends Column {
   ///
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
-  final List<ColumnConstraint> constraints;
+  List<ColumnConstraint> get constraints => definition.constraints;
+
+  /// The definition in the AST that was used to create this column model.
+  final ColumnDefinition definition;
 
   /// The table this column belongs to.
   Table table;
 
-  TableColumn(this.name, this.type, {this.constraints = const []});
+  TableColumn(this.name, this.type, {this.definition});
 }
 
 /// A column that is created by an expression. For instance, in the select
