@@ -1,12 +1,14 @@
 // ignore_for_file: implementation_imports
 import 'dart:async';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/backends/plugin/backend/driver_synchronizer.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/backend/plugin_backend.dart';
 
@@ -20,10 +22,10 @@ class MoorDriver implements AnalysisDriverGeneric {
   /// unsaved files.
   final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
+  final DriverSynchronizer _synchronizer = DriverSynchronizer();
 
   /* late final */ MoorSession session;
   StreamSubscription _fileChangeSubscription;
-  bool _isWorking = false;
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider) {
@@ -68,11 +70,9 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   Future<void> performWork() async {
-    if (_isWorking) return;
-
-    _isWorking = true;
-
-    try {
+    if (_synchronizer.hasPausedWork) {
+      await _synchronizer.resumePaused();
+    } else {
       final mostImportantFile = _tracker.fileWithHighestPriority;
       if (mostImportantFile.file?.isAnalyzed ?? false) {
         Logger.root.fine('Blocked attempt to work on fully analyzed file');
@@ -82,15 +82,13 @@ class MoorDriver implements AnalysisDriverGeneric {
 
       try {
         final task = session.startTask(backendTask);
-        await task.runTask();
+        await _synchronizer.safeRunTask(task);
         _tracker.handleTaskCompleted(task);
       } catch (e, s) {
         Logger.root.warning(
             'Error while working on ${mostImportantFile.file.uri}', e, s);
         _tracker.removePending(mostImportantFile);
       }
-    } finally {
-      _isWorking = false;
     }
   }
 
@@ -102,6 +100,14 @@ class MoorDriver implements AnalysisDriverGeneric {
 
     final file = _resourceProvider.getFile(path);
     return file.exists ? file.readAsStringSync() : '';
+  }
+
+  Future<LibraryElement> resolveDart(String path) async {
+    final result = await _synchronizer.useDartDriver(() {
+      return dartDriver.currentSession.getUnitElement(path);
+    });
+
+    return result.element.enclosingElement;
   }
 
   bool doesFileExist(String path) {
@@ -133,6 +139,9 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   AnalysisDriverPriority get workPriority {
+    final overridden = _synchronizer.overriddenPriority;
+    if (overridden != null) return overridden;
+
     if (_tracker.hasWork) {
       final mostImportant = _tracker.fileWithHighestPriority;
       return mostImportant.currentPriority;

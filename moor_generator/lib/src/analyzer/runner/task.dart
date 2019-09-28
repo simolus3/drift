@@ -83,6 +83,11 @@ class Task {
 
         parsed.resolvedImports = <ImportStatement, FoundFile>{};
         for (var import in parsed.imports) {
+          if (import.importedFile == null) {
+            // invalid import statement, this can happen as the user is typing
+            continue;
+          }
+
           final found = session.resolve(file, import.importedFile);
           if (!await backend.exists(found.uri)) {
             step.reportError(ErrorInMoorFile(

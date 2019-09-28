@@ -38,9 +38,10 @@ class PluginTask extends BackendTask {
   }
 
   @override
-  Future<LibraryElement> resolveDart(Uri uri) {
+  Future<LibraryElement> resolveDart(Uri uri) async {
     final path = driver.absolutePath(uri, base: entrypoint);
-    return driver.dartDriver.currentSession.getLibraryByUri(path);
+
+    return await driver.resolveDart(path);
   }
 
   @override
