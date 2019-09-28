@@ -13,6 +13,7 @@ mixin _MoorBaseRequest {
 
   bool get isMoor => file.type == FileType.moor;
   bool get isMoorAndParsed => isMoor && file.isParsed;
+  bool get isMoorAndAnalyzed => isMoor && file.isAnalyzed;
 
   String get path => file.uri.path;
 
