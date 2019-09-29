@@ -53,7 +53,7 @@ TODO: Describe ffi port
 
 ### Minor changes
 - a `Constant<String>` can now be written to SQL, it used to throw before. This is useful
-  if you need default values for strings columns.
+  if you need default values for strings columns. This also works for `BLOBS`.
 - new `LazyDatabase` when you want to construct a database asynchronously (for instance, if
   you first need to find a file before you can open a database).
 
