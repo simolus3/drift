@@ -17,7 +17,7 @@ void main() {
 
   group('Migrations', () {
     test('creates all tables', () async {
-      await Migrator(db, mockQueryExecutor).createAllTables();
+      await db.handleDatabaseCreation(executor: mockQueryExecutor);
 
       // should create todos, categories, users and shared_todos table
       verify(mockQueryExecutor.call(
