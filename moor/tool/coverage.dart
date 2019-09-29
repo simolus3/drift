@@ -7,9 +7,7 @@ import 'package:coverage/coverage.dart';
 import 'package:path/path.dart';
 
 Future<void> main(List<String> args) async {
-  // First, generate the build script, see
-  // https://github.com/dart-lang/build/blob/3208cfe94c475ed3e1ec44c227aadaddaeac263d/build_runner/bin/build_runner.dart#L65
-  Pub.run('build_runner', arguments: ['generate-build-script']);
+  Pub.run('build_runner', arguments: ['build', '--delete-conflicting-outputs']);
 
   // Next, run the test script in another dart process that has the vm services
   // enabled.

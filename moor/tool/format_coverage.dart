@@ -2,12 +2,10 @@ import 'dart:io';
 
 import 'package:coverage/coverage.dart';
 
+// note that this script will be run from the parent directory (the root of the
+// moor repo)
 Future main() async {
-  Directory.current = Directory.current.parent;
-
-  final resolver = Resolver(
-    packagesPath: 'moor/.packages',
-  );
+  final resolver = Resolver(packagesPath: 'moor/.packages');
 
   final coverage = await parseCoverage([
     File('moor/coverage.json'),
@@ -19,7 +17,6 @@ Future main() async {
     resolver,
     reportOn: [
       'moor/lib/',
-      'moor_generator/lib',
       'sqlparser/lib',
     ],
     basePath: '.',

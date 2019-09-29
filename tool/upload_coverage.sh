@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# The formatter is in the moor directory
-pushd moor
-dart tool/format_coverage.dart
-popd
+dart moor/tool/format_coverage.dart --packages=moor/.packages
 
 bash <(curl -s https://codecov.io/bash) -f lcov.info
