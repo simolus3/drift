@@ -26,6 +26,7 @@ Future main() async {
     basePath: '.',
   ).format(sqlCoverage);
 
-  final output = moorWithFixesPaths.join('\n') + lcov;
+  // ignore: prefer_interpolation_to_compose_strings
+  final output = moorWithFixesPaths.join('\n') + '\n' + lcov;
   File('lcov.info').writeAsStringSync(output);
 }
