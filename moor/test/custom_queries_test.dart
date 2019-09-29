@@ -29,6 +29,32 @@ void main() {
     });
   });
 
+  test('custom select reads values', () async {
+    final time = DateTime(2019, 10, 1);
+    final unix = time.millisecondsSinceEpoch ~/ 1000;
+
+    when(executor.runSelect(any, any)).thenAnswer((i) {
+      return Future.value([
+        <String, dynamic>{
+          'bool': true,
+          'int': 3,
+          'double': 3.14,
+          'dateTime': unix,
+          'blob': Uint8List.fromList([1, 2, 3]),
+        }
+      ]);
+    });
+
+    final rows = await db.customSelectQuery('').get();
+    final row = rows.single;
+
+    expect(row.readBool('bool'), isTrue);
+    expect(row.readInt('int'), 3);
+    expect(row.readDouble('double'), 3.14);
+    expect(row.readDateTime('dateTime'), time);
+    expect(row.readBlob('blob'), Uint8List.fromList([1, 2, 3]));
+  });
+
   test('custom update informs stream queries', () async {
     await db.customUpdate('UPDATE tbl SET a = ?',
         variables: [Variable.withString('hi')], updates: {db.users});
