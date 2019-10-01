@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:moor_generator/src/model/specified_table.dart';

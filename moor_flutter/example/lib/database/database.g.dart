@@ -6,7 +6,7 @@ part of 'database.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps
+// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String content;
@@ -89,18 +89,16 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      $mrjc(
-          $mrjc($mrjc(0, id.hashCode), content.hashCode), targetDate.hashCode),
-      category.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode,
+      $mrjc(content.hashCode, $mrjc(targetDate.hashCode, category.hashCode))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
       (other is TodoEntry &&
-          other.id == id &&
-          other.content == content &&
-          other.targetDate == targetDate &&
-          other.category == category);
+          other.id == this.id &&
+          other.content == this.content &&
+          other.targetDate == this.targetDate &&
+          other.category == this.category);
 }
 
 class TodosCompanion extends UpdateCompanion<TodoEntry> {
@@ -114,6 +112,24 @@ class TodosCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   });
+  TodosCompanion.insert({
+    this.id = const Value.absent(),
+    @required String content,
+    this.targetDate = const Value.absent(),
+    this.category = const Value.absent(),
+  }) : content = Value(content);
+  TodosCompanion copyWith(
+      {Value<int> id,
+      Value<String> content,
+      Value<DateTime> targetDate,
+      Value<int> category}) {
+    return TodosCompanion(
+      id: id ?? this.id,
+      content: content ?? this.content,
+      targetDate: targetDate ?? this.targetDate,
+      category: category ?? this.category,
+    );
+  }
 }
 
 class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
@@ -125,7 +141,8 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _contentMeta = const VerificationMeta('content');
@@ -287,11 +304,13 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc($mrjc(0, id.hashCode), description.hashCode));
+  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
-      (other is Category && other.id == id && other.description == description);
+      (other is Category &&
+          other.id == this.id &&
+          other.description == this.description);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -301,6 +320,16 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    @required String description,
+  }) : description = Value(description);
+  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      description: description ?? this.description,
+    );
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -313,7 +342,8 @@ class $CategoriesTable extends Categories
   @override
   GeneratedIntColumn get id => _id ??= _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false, hasAutoIncrement: true);
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _descriptionMeta =
@@ -388,19 +418,40 @@ abstract class _$Database extends GeneratedDatabase {
   $TodosTable get todos => _todos ??= $TodosTable(this);
   $CategoriesTable _categories;
   $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
-  Future<int> _resetCategory(
-      int var1,
-      {@Deprecated('No longer needed with Moor 1.6 - see the changelog for details')
-          QueryEngine operateOn}) {
-    return (operateOn ?? this).customUpdate(
+  Future<int> _resetCategory(int var1) {
+    return customUpdate(
       'UPDATE todos SET category = NULL WHERE category = ?',
-      variables: [
-        Variable.withInt(var1),
-      ],
+      variables: [Variable.withInt(var1)],
       updates: {todos},
     );
   }
 
+  CategoriesWithCountResult _rowToCategoriesWithCountResult(QueryRow row) {
+    return CategoriesWithCountResult(
+      id: row.readInt('id'),
+      desc: row.readString('desc'),
+      amount: row.readInt('amount'),
+    );
+  }
+
+  Selectable<CategoriesWithCountResult> _categoriesWithCount() {
+    return customSelectQuery(
+        'SELECT\n       c.id,\n       c.desc,\n       (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount\n     FROM categories c\n     UNION ALL\n     SELECT null, null, (SELECT COUNT(*) FROM todos WHERE category IS NULL)',
+        variables: [],
+        readsFrom: {categories, todos}).map(_rowToCategoriesWithCountResult);
+  }
+
   @override
   List<TableInfo> get allTables => [todos, categories];
+}
+
+class CategoriesWithCountResult {
+  final int id;
+  final String desc;
+  final int amount;
+  CategoriesWithCountResult({
+    this.id,
+    this.desc,
+    this.amount,
+  });
 }

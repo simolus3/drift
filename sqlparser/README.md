@@ -1,12 +1,16 @@
 # sqlparser
 
-An sql parser and static analyzer, written in pure Dart. At the moment, this library only targets
-the sqlite dialect and some advanced features aren't supported yet.
+Sql parser and static analyzer written in Dart. At the moment, this library targets the
+sqlite dialect only.
 
 ## Features
-This library can parse most statements and perform type analysis for parameters and returned
-columns. It supports joins, `group by`, nested sql statements, updates and deletes, and more.
-### Just parsing
+This library can parse most sql statements and perform static analysis. We can resolve
+what type a column in a `SELECT` statement has, infer types for variables, find
+semantic errors and more.
+
+This library supports most features, including joins, `group by`, nested and compound sql
+statements, window functions and foreign keys.
+### Using the parser
 You can parse the abstract syntax tree of sqlite statements with `SqlEngine.parse`.
 ```dart
 import 'package:sqlparser/sqlparser.dart';
@@ -34,7 +38,7 @@ Given information about all tables and a sql statement, this library can:
    tables / columns, uses undefined functions, etc.)
 
 To use the analyzer, first register all known tables via `SqlEngine.registerTable`. Then,
-`SqlEngine.analyze(sql)` gives you an `AnalysisContext` which contains an annotated ast and information
+`SqlEngine.analyze(sql)` gives you an `AnalysisContext` which contains an annotated AST and information
 about errors. The type of result columns and expressions can be inferred by using 
 `AnalysisContext.typeOf()`. Here's an example:
 
@@ -65,7 +69,6 @@ package to generate type-safe methods from sql.
 Most on this list is just not supported yet because I didn't found a use case for 
 them yet. If you need them, just leave an issue and I'll try to implement them soon.
 
-- Compound select statements (`UNION` / `INTERSECT`) are not supported yet
 - Common table expressions are not supported
 - Some advanced expressions, like `CAST`s aren't supported yet.
 - An `UPSERT` clause is not yet supported on insert statements

@@ -13,7 +13,7 @@ how to get started. You can watch it [here](https://youtu.be/zpWsedYMczM).
 
 
 ## Adding the dependency
-First, let's add moor to your project's `pubspec.yaml`.
+First, lets add moor to your project's `pubspec.yaml`.
 At the moment, the current version of `moor_flutter` is [![Flutter version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dartlang.org/packages/moor_flutter) and the current version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
 
 ```yaml

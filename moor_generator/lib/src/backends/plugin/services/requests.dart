@@ -3,14 +3,18 @@ import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
+import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:source_span/source_span.dart';
 
 mixin _MoorBaseRequest {
   FoundFile get file;
 
-  bool get isMoorAndParsed => file.type == FileType.moor && file.isParsed;
+  bool get isMoor => file.type == FileType.moor;
+  bool get isMoorAndParsed => isMoor && file.isParsed;
+  bool get isMoorAndAnalyzed => isMoor && file.isAnalyzed;
 
   String get path => file.uri.path;
 
@@ -49,7 +53,9 @@ class MoorCompletionRequest extends CompletionRequest with _MoorBaseRequest {
   MoorCompletionRequest(this.offset, this.resourceProvider, this.file);
 }
 
-class MoorAssistRequest extends AssistRequest with _MoorBaseRequest {
+class MoorRequestAtPosition
+    with _MoorBaseRequest
+    implements AssistRequest, NavigationRequest {
   @override
   final FoundFile file;
 
@@ -62,5 +68,14 @@ class MoorAssistRequest extends AssistRequest with _MoorBaseRequest {
   @override
   final ResourceProvider resourceProvider;
 
-  MoorAssistRequest(this.file, this.length, this.offset, this.resourceProvider);
+  SourceSpan get span {
+    return SourceSpan(
+      SourceLocation(offset),
+      SourceLocation(offset + length),
+      'x' * length,
+    );
+  }
+
+  MoorRequestAtPosition(
+      this.file, this.length, this.offset, this.resourceProvider);
 }

@@ -1,6 +1,6 @@
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:
-The `.moor` files can now have their own imports and queries, you can embed Dart in sql queries
+`.moor` files can now have their own imports and queries, you can embed Dart in sql queries
 using the new templates feature and we have a prototype of a pure-Dart SQL IDE ready.
 Finally, we also removed a variety of deprecated features. See the breaking changes
 section to learn what components are affected and what alternatives are available.
@@ -28,7 +28,7 @@ Stream<User> loadUserById(int id) {
 }
 ```
 
-Moor files can also import other moor files by using an `import 'other.moor';'` statement at the 
+Moor files can also import other moor files by using an `import 'other.moor';` statement at the 
 top. Then, all tables defined in `other.moor` will also be available to the current file.
 
 Moor takes Dart and SQL interop even further with the new "Dart in SQL templates". You can define
@@ -49,12 +49,15 @@ And finally, we now generate better query code when queries only return a single
 generating a whole new class for that, we simply return the value directly.
 
 #### Experimental ffi support
-TODO: Describe ffi port
+We released an experimental version of moor built on top of `dart:ffi`. It works
+cross-platform and is much, much faster than `moor_flutter`. It you want to try
+it out, read the docs [here](https://moor.simonbinder.eu/docs/other-engines/vm/).
 
 ### Minor changes
 - a `Constant<String>` can now be written to SQL, it used to throw before. This is useful
-  if you need default values for strings columns.
-- new `LazyDatabase` when you want to construct a database asynchronously (for instance, if
+  if you need default values for strings columns. This also works for `BLOBS` 
+  (`Constant<Uint8List>`).
+- new `LazyDatabase` for when you want to construct a database asynchronously (for instance, if
   you first need to find a file before you can open a database).
 
 ### Breaking changes
@@ -85,6 +88,7 @@ TODO: Describe ffi port
   adopted to `_watchAllUsers`. The `generate_private_watch_methods` builder option, which
   backported this fix to older versions, has thus been removed.
 - Removed `InsertStatement.insertOrReplace`. Use `insert(data, orReplace: true)` instead.
+- Removed the diff util and `MoorAnimatedList`. Use a third party library for that.
 
 ## 1.7.2
 - Fixed a race condition that caused the database to be opened multiple times on slower devices.

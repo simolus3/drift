@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:moor/src/utils/single_transformer.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('transforms simple values', () {

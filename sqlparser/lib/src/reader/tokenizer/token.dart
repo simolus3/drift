@@ -114,6 +114,10 @@ enum TokenType {
   ignore,
   set,
 
+  union,
+  intersect,
+  except,
+
   create,
   table,
   $if,
@@ -237,6 +241,9 @@ const Map<String, TokenType> keywords = {
   'TIES': TokenType.ties,
   'WINDOW': TokenType.window,
   'VALUES': TokenType.$values,
+  'UNION': TokenType.union,
+  'INTERSECT': TokenType.intersect,
+  'EXCEPT': TokenType.except,
 };
 
 /// Maps [TokenType]s which are keywords to their lexeme.
@@ -249,6 +256,9 @@ const Map<String, TokenType> moorKeywords = {
   'MAPPED': TokenType.mapped,
   'IMPORT': TokenType.import,
 };
+
+/// Returns true if the [type] belongs to a keyword
+bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 
 class Token {
   final TokenType type;
@@ -348,6 +358,11 @@ class KeywordToken extends Token {
   bool isIdentifier;
 
   KeywordToken(TokenType type, FileSpan span) : super(type, span);
+
+  bool canConvertToIdentifier() {
+    // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.
+    return type == TokenType.join;
+  }
 
   IdentifierToken convertToIdentifier() {
     isIdentifier = true;

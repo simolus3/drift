@@ -12,10 +12,16 @@ void setupLogger(MoorPlugin plugin) {
 
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((LogRecord rec) {
-    if (rec.level >= Level.INFO) {
-      final isFatal = rec.level > Level.WARNING;
+    if (rec.level >= Level.WARNING) {
+      // when we send analysis errors, some tooling prompts users to create an
+      // issue on the Dart SDK repo for that. We're responsible for the problem
+      // though, so tell the user to not annoy the Dart Team with this.
+      final message = 'PLEASE DO NOT REPORT THIS ON dart-lang/sdk! '
+          'This should be reported via https://github.com/simolus3/moor/issues/new '
+          'instead. Message was ${rec.message}, error ${rec.error}';
+
       final error =
-          PluginErrorParams(isFatal, rec.message, rec.stackTrace.toString());
+          PluginErrorParams(false, message, rec.stackTrace.toString());
 
       plugin.channel.sendNotification(error.toNotification());
     }

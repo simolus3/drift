@@ -1,6 +1,6 @@
 name: moor_generator
 description: Dev-dependency to generate table and dataclasses together with the moor package.
-version: 1.7.1
+version: 2.0.0
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
@@ -13,7 +13,7 @@ environment:
 
 dependencies:
   analyzer: '>=0.36.4 <0.39.0'
-  analyzer_plugin:
+  analyzer_plugin: ^0.1.0
   collection: ^1.14.0
   recase: ^2.0.1
   built_value: ^6.3.0
@@ -22,12 +22,11 @@ dependencies:
   build: ^1.1.0
   logging: '>=0.11.0 <1.0.0'
   build_config: '>=0.3.1 <1.0.0'
-  moor: ^1.7.1
+  moor: ^2.0.0
   meta: ^1.1.0
   sqlparser: ^0.2.0
 dev_dependencies:
   test: ^1.6.0
-  test_api: ^0.2.0
   test_core: ^0.2.0
   build_runner: ^1.6.7
   built_value_generator: ^6.3.0

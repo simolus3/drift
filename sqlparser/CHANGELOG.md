@@ -1,3 +1,9 @@
+## 0.3.0
+- parse compound select statements
+- scan comment tokens
+- experimental auto-complete engine (only supports a tiny subset based on the grammar only)
+- some features that are specific to moor
+
 ## 0.2.0
 - Parse `CREATE TABLE` statements
 - Extract schema information from parsed create table statements with `SchemaFromCreateTable`.

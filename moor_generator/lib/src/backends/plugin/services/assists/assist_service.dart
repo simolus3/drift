@@ -13,7 +13,7 @@ class AssistService implements AssistContributor {
 
   @override
   void computeAssists(AssistRequest request, AssistCollector collector) {
-    final moorRequest = request as MoorAssistRequest;
+    final moorRequest = request as MoorRequestAtPosition;
 
     if (moorRequest.isMoorAndParsed) {
       final parseResult = moorRequest.parsedMoor.parseResult;

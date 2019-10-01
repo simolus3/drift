@@ -1,5 +1,5 @@
 import 'package:moor_generator/src/writer/utils/hash_code.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('hash code for no fields', () {

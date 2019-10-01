@@ -168,6 +168,7 @@ class _TransactionExecutor extends TransactionExecutor
   Future<void> send() async {
     if (_sendOnCommit != null) {
       await runCustom(_sendOnCommit, const []);
+      _db.delegate.isInTransaction = false;
     }
 
     _sendCalled.complete();

@@ -1,5 +1,5 @@
 import 'package:moor/moor.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
@@ -18,6 +18,7 @@ void main() {
   test('generates insert statements', () async {
     await db.into(db.todosTable).insert(const TodosTableCompanion(
           content: Value('Implement insert statements'),
+          title: Value.absent(),
         ));
 
     verify(executor.runInsert('INSERT INTO todos (content) VALUES (?)',
@@ -111,16 +112,21 @@ void main() {
     verify(streamQueries.handleTableUpdates({db.users}));
   });
 
-  test('enforces data integrity', () {
-    expect(
-      db.into(db.todosTable).insert(
+  test('enforces data integrity', () async {
+    InvalidDataException exception;
+    try {
+      await db.into(db.todosTable).insert(
             const TodosTableCompanion(
               // not declared as nullable in table definition
               content: Value(null),
             ),
-          ),
-      throwsA(const TypeMatcher<InvalidDataException>()),
-    );
+          );
+      fail('inserting invalid data did not throw');
+    } on InvalidDataException catch (e) {
+      exception = e;
+    }
+
+    expect(exception.toString(), startsWith('InvalidDataException'));
   });
 
   test('reports auto-increment id', () async {

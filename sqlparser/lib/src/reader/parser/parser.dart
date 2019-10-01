@@ -53,9 +53,24 @@ abstract class ParserBase {
 
   ParserBase(this.tokens, this.enableMoorExtensions, this.autoComplete);
 
+  bool get _reportAutoComplete => autoComplete != null;
+
   void _suggestHint(HintDescription description) {
     final tokenBefore = _current == 0 ? null : _previous;
     autoComplete?.addHint(Hint(tokenBefore, description));
+  }
+
+  void _suggestHintForTokens(Iterable<TokenType> types) {
+    final relevant =
+        types.where(isKeyword).map((type) => HintDescription.token(type));
+    final description = CombinedDescription()..descriptions.addAll(relevant);
+    _suggestHint(description);
+  }
+
+  void _suggestHintForToken(TokenType type) {
+    if (isKeyword(type)) {
+      _suggestHint(HintDescription.token(type));
+    }
   }
 
   bool get _isAtEnd => _peek.type == TokenType.eof;
@@ -64,6 +79,7 @@ abstract class ParserBase {
   Token get _previous => tokens[_current - 1];
 
   bool _match(Iterable<TokenType> types) {
+    if (_reportAutoComplete) _suggestHintForTokens(types);
     for (var type in types) {
       if (_check(type)) {
         _advance();
@@ -74,6 +90,7 @@ abstract class ParserBase {
   }
 
   bool _matchOne(TokenType type) {
+    if (_reportAutoComplete) _suggestHintForToken(type);
     if (_check(type)) {
       _advance();
       return true;
@@ -101,21 +118,21 @@ abstract class ParserBase {
     return _peek.type == type;
   }
 
+  /// Returns whether the next token is an [TokenType.identifier] or a
+  /// [KeywordToken]. If this method returns true, calling [_consumeIdentifier]
+  /// with same [lenient] parameter will now throw.
+  bool _checkIdentifier({bool lenient = false}) {
+    final next = _peek;
+    if (next.type == TokenType.identifier) return true;
+
+    return next is KeywordToken && (next.canConvertToIdentifier() || lenient);
+  }
+
   Token _advance() {
     if (!_isAtEnd) {
       _current++;
     }
     return _previous;
-  }
-
-  /// Steps back a token. This needs to be used very carefully. We basically
-  /// only use it in [ExpressionParser._primary] because we unconditionally
-  /// [_advance] in there and we'd like to report more accurate errors when no
-  /// matching token was found.
-  void _stepBack() {
-    if (_current != null) {
-      _current--;
-    }
   }
 
   @alwaysThrows
@@ -130,11 +147,12 @@ abstract class ParserBase {
     _error(message);
   }
 
-  /// Consumes an identifier. If [lenient] is true and the next token is not
-  /// an identifier but rather a [KeywordToken], that token will be converted
-  /// to an identifier.
+  /// Consumes an identifier.
   IdentifierToken _consumeIdentifier(String message, {bool lenient = false}) {
-    if (lenient && _peek is KeywordToken) {
+    final next = _peek;
+    // non-standard keywords can be parsed as an identifier, we allow all
+    // keywords when lenient is true
+    if (next is KeywordToken && (next.canConvertToIdentifier() || lenient)) {
       return (_advance() as KeywordToken).convertToIdentifier();
     }
     return _consume(TokenType.identifier, message) as IdentifierToken;
@@ -147,12 +165,13 @@ abstract class ParserBase {
   /// (in brackets) will be accepted as well.
   Expression _consumeTuple({bool orSubQuery = false});
 
-  /// Parses a [SelectStatement], or returns null if there is no select token
-  /// after the current position.
+  /// Parses a [BaseSelectStatement], which is either a [SelectStatement] or a
+  /// [CompoundSelectStatement]. If [noCompound] is set to true, the parser will
+  /// only attempt to parse a [SelectStatement].
   ///
   /// See also:
   /// https://www.sqlite.org/lang_select.html
-  SelectStatement select();
+  BaseSelectStatement select({bool noCompound});
 
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
@@ -262,8 +281,7 @@ class Parser extends ParserBase
 
   DeclaredStatement _declaredStatement() {
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
-      final name = _consumeIdentifier('Expected a name for a declared query',
-          lenient: true);
+      final name = _consumeIdentifier('Expected a name for a declared query');
       final colon =
           _consume(TokenType.colon, 'Expected colon (:) followed by a query');
 

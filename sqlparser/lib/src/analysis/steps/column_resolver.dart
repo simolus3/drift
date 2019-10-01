@@ -16,6 +16,44 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
+  void visitCompoundSelectStatement(CompoundSelectStatement e) {
+    // first, visit all children so that the compound parts have their columns
+    // resolved
+    visitChildren(e);
+
+    final columnSets = [
+      e.base.resolvedColumns,
+      for (var part in e.additional) part.select.resolvedColumns
+    ];
+
+    // each select statement must return the same amount of columns
+    final amount = columnSets.first.length;
+    for (var i = 1; i < columnSets.length; i++) {
+      if (columnSets[i].length != amount) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.compoundColumnCountMismatch,
+          relevantNode: e,
+          message: 'The parts of this compound statement return different '
+              'amount of columns',
+        ));
+        break;
+      }
+    }
+
+    final resolved = <CompoundSelectColumn>[];
+
+    // merge all columns at each position into a CompoundSelectColumn
+    for (var i = 0; i < amount; i++) {
+      final columnsAtThisIndex = [
+        for (var set in columnSets) if (set.length > i) set[i]
+      ];
+
+      resolved.add(CompoundSelectColumn(columnsAtThisIndex));
+    }
+    e.resolvedColumns = resolved;
+  }
+
+  @override
   void visitUpdateStatement(UpdateStatement e) {
     final table = _resolveTableReference(e.table);
     e.scope.availableColumns = table.resolvedColumns;

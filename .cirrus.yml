@@ -13,4 +13,5 @@ task:
   analyze_script: tool/analyze.sh
   test_moor_script: tool/test_moor.sh
   test_sqlparser_script: tool/test_sqlparser.sh
-#  format_coverage_script: tool/upload_coverage.sh
+  test_moor_generator_script: tool/test_generator.sh
+  format_coverage_script: tool/upload_coverage.sh

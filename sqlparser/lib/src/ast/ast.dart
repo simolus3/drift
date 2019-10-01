@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/analysis/analysis.dart';
+import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
@@ -37,7 +38,7 @@ part 'statements/statement.dart';
 part 'statements/update.dart';
 
 /// A node in the abstract syntax tree of an SQL statement.
-abstract class AstNode {
+abstract class AstNode with HasMetaMixin {
   /// The parent of this node, or null if this is the root node. Will be set
   /// by the analyzer after the tree has been parsed.
   AstNode parent;
@@ -98,23 +99,11 @@ abstract class AstNode {
     }
   }
 
-  final Map<Type, dynamic> _metadata = {};
-
-  /// Returns the metadata of type [T] that might have been set on this node, or
-  /// null if none was found.
-  /// Nodes can have arbitrary annotations on them set via [setMeta] and
-  /// obtained via [meta]. This mechanism is used to, for instance, attach
-  /// variable scopes to a subtree.
-  T meta<T>() {
-    return _metadata[T] as T;
-  }
-
-  /// Sets the metadata of type [T] to the specified [value].
-  /// Nodes can have arbitrary annotations on them set via [setMeta] and
-  /// obtained via [meta]. This mechanism is used to, for instance, attach
-  /// variable scopes to a subtree.
-  void setMeta<T>(T value) {
-    _metadata[T] = value;
+  /// Returns an iterable that fields yields this node, followed by
+  /// [allDescendants].
+  Iterable<AstNode> get selfAndDescendants sync* {
+    yield this;
+    yield* allDescendants;
   }
 
   /// The [ReferenceScope], which contains available tables, column references
@@ -152,6 +141,8 @@ abstract class AstNode {
 
 abstract class AstVisitor<T> {
   T visitSelectStatement(SelectStatement e);
+  T visitCompoundSelectStatement(CompoundSelectStatement e);
+  T visitCompoundSelectPart(CompoundSelectPart e);
   T visitResultColumn(ResultColumn e);
   T visitInsertStatement(InsertStatement e);
   T visitDeleteStatement(DeleteStatement e);
@@ -273,6 +264,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitSelectStatement(SelectStatement e) => visitChildren(e);
+
+  @override
+  T visitCompoundSelectStatement(CompoundSelectStatement e) => visitChildren(e);
+
+  @override
+  T visitCompoundSelectPart(CompoundSelectPart e) => visitChildren(e);
 
   @override
   T visitInsertStatement(InsertStatement e) => visitChildren(e);

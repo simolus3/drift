@@ -1,5 +1,6 @@
 import 'package:moor/moor.dart';
-import 'package:test_api/test_api.dart';
+import 'package:moor/src/runtime/components/join.dart';
+import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
@@ -112,5 +113,20 @@ void main() {
 
     verify(executor.runSelect(
         argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
+  });
+
+  test('injects custom error message when a table is used multiple times',
+      () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
+
+    MoorWrappedException wrappedException;
+    try {
+      await db.select(db.todosTable).join([crossJoin(db.todosTable)]).get();
+      fail('expected this to throw');
+    } on MoorWrappedException catch (e) {
+      wrappedException = e;
+    }
+
+    expect(wrappedException.toString(), contains('possible cause'));
   });
 }

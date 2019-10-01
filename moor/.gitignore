@@ -31,6 +31,10 @@ doc/api/
 android/
 ios/
 
+# coverage
+test/.test_coverage.dart
+coverage_badge.svg
+
 ### Intellij ###
 .idea/**/*
 # End of https://www.gitignore.io/api/dart,intellij

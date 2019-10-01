@@ -26,7 +26,7 @@ class MoorParser {
         step.inlineDartResolver.importStatements.add(importStmt.importedFile);
         importStatements.add(importStmt);
       } else if (parsedStmt is CreateTableStatement) {
-        createdReaders.add(CreateTableReader(parsedStmt));
+        createdReaders.add(CreateTableReader(parsedStmt, step));
       } else if (parsedStmt is DeclaredStatement) {
         queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
       }
@@ -34,6 +34,7 @@ class MoorParser {
 
     for (var error in result.errors) {
       step.reportError(ErrorInMoorFile(
+        severity: Severity.error,
         span: error.token.span,
         message: error.message,
       ));

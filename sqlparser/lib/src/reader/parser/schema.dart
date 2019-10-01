@@ -18,8 +18,7 @@ mixin SchemaParser on ParserBase {
       ifNotExists = true;
     }
 
-    final tableIdentifier =
-        _consumeIdentifier('Expected a table name', lenient: true);
+    final tableIdentifier = _consumeIdentifier('Expected a table name');
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     final leftParen = _consume(
@@ -57,10 +56,8 @@ mixin SchemaParser on ParserBase {
 
     String overriddenName;
     if (enableMoorExtensions && _matchOne(TokenType.as)) {
-      overriddenName = _consumeIdentifier(
-              'Expected the name for the data class',
-              lenient: true)
-          .identifier;
+      overriddenName =
+          _consumeIdentifier('Expected the name for the data class').identifier;
     }
 
     return CreateTableStatement(
@@ -249,8 +246,7 @@ mixin SchemaParser on ParserBase {
 
   String _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
-      final name = _consumeIdentifier('Expect a name for the constraint here',
-          lenient: true);
+      final name = _consumeIdentifier('Expect a name for the constraint here');
       return name.identifier;
     }
     return null;

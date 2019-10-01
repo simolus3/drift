@@ -65,6 +65,28 @@ used to construct common queries.
 
 ## Workflows
 
+### Debugging the analyzer plugin
+The analyzer plugin (branded as "SQL IDE" to users) can be run in isolation, which makes
+debugging easier. Note: Port 9999 has to be free for this to work, but you can change the
+port defined in the two files below.
+
+To debug the plugin, do the following:
+1. In `moor/tools/analyzer_plugin/bin/plugin.dart`, set `useDebuggingVariant` to true.
+2. Run `moor_generator/lib/plugin.dart` as a regular Dart VM app (this can be debugged).
+3. (optional) Make sure the analysis server picks up the updated version of the analysis
+   plugin by deleting the `~/.dartServer/.plugin_manager` folder.
+4. Open a project that uses the plugin, for instance via `code extras/plugin_example`.
+
+More details are available under `extras/plugin_example/README.md`.
+
+### Debugging the builder
+
+To debug the builder, run `pub run build_runner generate-build-script` in the `moor`
+subdirectory (or any other directory you want to use as an input). This will generate
+a `.dart_tool/build/entrypoint/build.dart`. That file can be run and debugged as a
+regular Dart VM app. Be sure to pass something like `build -v` as program arguments
+and use the input package as a working directory.
+
 ### Releasing to pub
 Minor changes will be published directly, no special steps are necessary. For major
 updates that span multiple versions, we should follow these steps
@@ -77,7 +99,8 @@ updates that span multiple versions, we should follow these steps
    on moor `1.x` as well to ensure users will always `pub get` moor packages that are compatible
    with each other.
 3. Comment out the `dependency_overrides` section in `moor`, `moor/tool/analyzer_plugin`, `moor_flutter`,
-   `moor_generator` and `sqlparser`.
+   `moor_generator` and `sqlparser`. Make sure that `useDebuggingVariant` is false in the
+   analyzer plugin.
 4. Publish packages in this order to avoid scoring penalties caused by versions not existing:
    1. `moor`
    2. `moor_generator`

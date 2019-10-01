@@ -8,6 +8,7 @@ class SchemaFromCreateTable {
       resolvedColumns: [for (var def in stmt.columns) _readColumn(def)],
       withoutRowId: stmt.withoutRowId,
       tableConstraints: stmt.tableConstraints,
+      definition: stmt,
     );
   }
 
@@ -20,7 +21,7 @@ class SchemaFromCreateTable {
     return TableColumn(
       definition.columnName,
       resolvedType,
-      constraints: definition.constraints,
+      definition: definition,
     );
   }
 

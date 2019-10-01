@@ -121,7 +121,7 @@ abstract class Selectable<T> {
     return watch().transform(singleElements());
   }
 
-  /// Maps this selectable by using [mapper].
+  /// Maps this selectable by the [mapper] function.
   ///
   /// Each entry emitted by this [Selectable] will be transformed by the
   /// [mapper] and then emitted to the selectable returned.

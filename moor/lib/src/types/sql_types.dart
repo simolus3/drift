@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:convert/convert.dart';
+
 part 'custom_type.dart';
 
 /// A type that can be mapped from Dart to sql. The generic type parameter here
@@ -118,12 +120,14 @@ class BlobType extends SqlType<Uint8List> {
   mapFromDatabaseResponse(response) => response as Uint8List;
 
   @override
-  String mapToSqlConstant(content) {
-    throw UnimplementedError("Blobs can't be mapped to sql literals");
+  String mapToSqlConstant(Uint8List content) {
+    // BLOB literals are string literals containing hexadecimal data and
+    // preceded by a single "x" or "X" character. Example: X'53514C697465'
+    return "x'${hex.encode(content)}'";
   }
 
   @override
-  mapToSqlVariable(content) => content;
+  mapToSqlVariable(Uint8List content) => content;
 }
 
 class RealType extends SqlType<double> {

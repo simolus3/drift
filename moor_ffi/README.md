@@ -96,5 +96,4 @@ In all other project files that use moor apis (e.g. a `Value` class for companio
 
 Finally, replace usages of `FlutterQueryExecutor` with `VmDatabase`.
 
-Note that, at the moment, there is no direct counterpart for `FlutterQueryExecutor.inDatabasePath`
-and that the async API using a background isolate is not available for moor yet.
+Note that, at the moment, there is no direct counterpart for `FlutterQueryExecutor.inDatabasePath`.

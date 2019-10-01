@@ -29,7 +29,15 @@ class AutoCompleteEngine {
     } else {
       // ensure that the hints list stays sorted by offset
       final position = _lastHintBefore(hint.offset);
-      _hints.insert(position + 1, hint);
+      final hintBefore = _hints[position];
+
+      // if we already have a hint at this position, merge them together
+      if (hintBefore.before == hint.before) {
+        hintBefore.description =
+            hintBefore.description.mergeWith(hint.description);
+      } else {
+        _hints.insert(position + 1, hint);
+      }
     }
   }
 
@@ -100,7 +108,7 @@ class Hint {
 
   int get offset => before?.span?.end?.offset ?? 0;
 
-  final HintDescription description;
+  HintDescription description;
 
   Hint(this.before, this.description);
 }

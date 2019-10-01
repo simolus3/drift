@@ -1,5 +1,5 @@
 import 'package:moor/moor.dart' as moor;
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 const _exampleUnixSqlite = 1550172560;
 const _exampleUnixMillis = 1550172560000;

@@ -1,4 +1,5 @@
 import 'package:built_value/built_value.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';
@@ -75,6 +76,10 @@ class SpecifiedColumn {
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
   final String dartGetterName;
+
+  /// The declaration of this column, contains information about where this
+  /// column was created in source code.
+  ColumnDeclaration declaration;
 
   /// The sql type of this column
   final ColumnType type;
@@ -155,7 +160,7 @@ class SpecifiedColumn {
   /// this column.
   String get sqlTypeName => sqlTypes[type];
 
-  const SpecifiedColumn({
+  SpecifiedColumn({
     this.type,
     this.dartGetterName,
     this.name,

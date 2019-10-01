@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:moor/src/web/binary_string_conversion.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 void main() {
   final data = Uint8List(256 * 2);

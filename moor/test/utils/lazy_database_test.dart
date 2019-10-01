@@ -1,6 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:pedantic/pedantic.dart';
-import 'package:test_api/test_api.dart';
+import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 import '../data/utils/mocks.dart';

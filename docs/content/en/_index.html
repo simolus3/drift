@@ -32,17 +32,19 @@ that allows you run fluent queries on your data.
 [Get started now]({{< ref "/docs/Getting started/_index.md" >}})
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fas fa-database" title="Prefer SQL? Moor got you covered!" url="https://moor.simonbinder.eu/queries/custom" %}}
-Moor contains a powerful sql parser and analyzer, allowing it to create typesafe APIs for all your sql queries. All queries are
+{{% blocks/feature icon="fas fa-database" title="Prefer SQL? Moor got you covered!" %}}
+Moor contains a powerful sql parser and analyzer, allowing it to create typesafe APIs for all your sql queries. All sql queries are
 validated and analyzed during build-time, so moor can provide hints about potential errors quickly and generate efficient mapping
 code.
+
+[Learn more]({{< ref "/docs/Using SQL/_index.md" >}})
 {{% /blocks/feature %}}
 
 
 {{% blocks/feature icon="fas fa-star" title="And much more!" %}}
-Moor can also provide auto-updating streams emitting new results when the underlying data changes.
-Moor makes dealing with transactions easy (no special parameter to pass around everywhere), lets
-your write modular database code with DAOs and much more.
+Moor provides auto-updating `Streams` for all your queries, makes dealing with transactions and migrations easy
+and lets your write modular database code with DAOs. We even have a [sql IDE](too) builtin to the project
+When using moor, working with databases in Dart is fun!
 
 {{% /blocks/feature %}}
 {{< /blocks/section >}}

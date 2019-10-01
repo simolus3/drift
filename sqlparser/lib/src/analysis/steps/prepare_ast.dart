@@ -1,17 +1,20 @@
 part of '../analysis.dart';
 
-/// Walks the AST and
+/// Prepares the AST for further analysis. This visitor:
 /// - attaches the global scope containing table names and builtin functions
-/// - creates [ReferenceScope] for sub-queries
+/// - creates [ReferenceScope]s for sub-queries
 /// - in each scope, registers every table or subquery that can be referenced to
 ///   the local [ReferenceScope].
 /// - determines the [Variable.resolvedIndex] for each [Variable] in this
 ///   statement.
-class ReferenceFinder extends RecursiveVisitor<void> {
+/// - reports syntactic errors that aren't handled in the parser to keep that
+///   implementation simpler.
+class AstPreparingVisitor extends RecursiveVisitor<void> {
   final ReferenceScope globalScope;
   final List<Variable> _foundVariables = [];
+  final AnalysisContext context;
 
-  ReferenceFinder({@required this.globalScope});
+  AstPreparingVisitor({@required this.globalScope, this.context});
 
   void start(AstNode root) {
     root
@@ -44,6 +47,40 @@ class ReferenceFinder extends RecursiveVisitor<void> {
 
     for (var windowDecl in e.windowDeclarations) {
       e.scope.register(windowDecl.name, windowDecl);
+    }
+
+    // only the last statement in a compound select statement may have an order
+    // by or a limit clause
+    if (e.parent is CompoundSelectPart || e.parent is CompoundSelectStatement) {
+      bool isLast;
+      if (e.parent is CompoundSelectPart) {
+        final part = e.parent as CompoundSelectPart;
+        final compoundSelect = part.parent as CompoundSelectStatement;
+
+        final index = compoundSelect.additional.indexOf(part);
+        isLast = index == compoundSelect.additional.length - 1;
+      } else {
+        // if the parent is the compound select statement, this select query is
+        // the [CompoundSelectStatement.base], so definitely not the last query.
+        isLast = false;
+      }
+
+      if (!isLast) {
+        if (e.limit != null) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.synctactic,
+            message: 'Limit clause must appear in the last compound statement',
+            relevantNode: e.limit,
+          ));
+        }
+        if (e.orderBy != null) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.synctactic,
+            message: 'Order by clause must appear in the compound statement',
+            relevantNode: e.orderBy,
+          ));
+        }
+      }
     }
 
     visitChildren(e);

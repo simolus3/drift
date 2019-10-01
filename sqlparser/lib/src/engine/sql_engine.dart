@@ -107,6 +107,8 @@ class SqlEngine {
 
   /// Analyzes the given [node], which should be a [CrudStatement].
   /// The [AnalysisContext] enhances the AST by reporting type hints and errors.
+  /// The [file] should contain the full SQL source code that was used to parse
+  /// the [node].
   ///
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
@@ -122,7 +124,7 @@ class SqlEngine {
     final scope = _constructRootScope();
 
     try {
-      ReferenceFinder(globalScope: scope).start(node);
+      AstPreparingVisitor(globalScope: scope, context: context).start(node);
 
       if (node is CrudStatement) {
         node

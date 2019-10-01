@@ -179,7 +179,7 @@ class ColumnParser {
           sqlType: columnType);
     }
 
-    return SpecifiedColumn(
+    final column = SpecifiedColumn(
         type: columnType,
         dartGetterName: getter.name.name,
         name: name,
@@ -189,6 +189,10 @@ class ColumnParser {
         features: foundFeatures,
         defaultArgument: foundDefaultExpression?.toSource(),
         typeConverter: converter);
+
+    final declaration =
+        ColumnDeclaration(column, base.step.file, element, null);
+    return column..declaration = declaration;
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

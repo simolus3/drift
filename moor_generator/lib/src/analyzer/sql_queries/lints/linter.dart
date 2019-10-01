@@ -103,7 +103,7 @@ class _LintingVisitor extends RecursiveVisitor<void> {
           .any((t) => t.name.toUpperCase() == c.name.name.toUpperCase()));
 
       if (notPresent.isNotEmpty) {
-        final msg = notPresent.join(', ');
+        final msg = notPresent.map((c) => c.name.name).join(', ');
 
         linter.lints.add(AnalysisError(
           type: AnalysisErrorType.other,
