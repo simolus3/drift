@@ -66,7 +66,7 @@ to install any additional extensions.
 
 Moor lets you write query code faster with helpful actions.
 {{% /blocks/feature %}}
-{{% blocks/feature icon="fas fa-brain" title="Smart warnings" %}}
+{{% blocks/feature icon="fas fa-exclamation-circle" title="Smart warnings" %}}
 ![](warning.png)
 
 Moor analyzes statements as you write them and reports errors right away. 

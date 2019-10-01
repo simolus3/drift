@@ -3,14 +3,13 @@ version: 1.0.0
 description: This pubspec is a part of moor and determines the version of the moor analyzer to load
 
 dependencies:
-#  moor_generator:
-  web_socket_channel: ^1.0.15
+ moor_generator:
+ web_socket_channel: ^1.0.15
 
-# To work on this plugin, you need to add the absolute paths here. Relative paths aren't supported yet
-# https://github.com/dart-lang/sdk/issues/35281
+# These overrides are only needed when working on the plugin with useDebuggingVariant = false (not recommended)
 
 #dependency_overrides:
-#  moor_generator:
-#    path: /home/simon/IdeaProjects/moor/moor_generator
-#  sqlparser:
-#    path: /home/simon/IdeaProjects/moor/sqlparser
+# moor_generator:
+#  path: /home/simon/IdeaProjects/moor/moor_generator
+# sqlparser:
+#  path: /home/simon/IdeaProjects/moor/sqlparser
