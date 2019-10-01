@@ -1,13 +1,20 @@
 ---
-title: Moor v2
+title: Version 2.0
 layout: home
 ---
 
 {{< blocks/cover title="Moor 2.0: Supercharged SQL for Dart" image_anchor="top" height="min" color="indigo" >}}
 <div class="mx-auto">
     <p class="lead mt-5">
-        Learn everything about Dart-SQL interop, the SQL IDE, experimental ffi support and everything new in moor
+        Learn everything about Dart-SQL interop, the SQL IDE, experimental ffi support and all things new in moor
     </p>
+
+    <a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs" >}}">
+		Get started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
+	</a>
+	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="{{< relref "/docs/Getting started/starting_with_sql.md" >}}">
+		Migrate an existing project <i class="fas fa-code ml-2 "></i>
+	</a>
 </div>
 {{< /blocks/cover >}}
 
@@ -21,13 +28,18 @@ more flexibility when writing database code.
 {{% /blocks/lead %}}
 
 {{< blocks/section color="light" >}}
-{{% blocks/feature icon="fas fa-puzzle-piece" title="Improved type inference" %}}
-The new type inference engine provides more accurate results on complex expressions like window
-functions. We also generate simpler methods for queries that only return one column.
+{{% blocks/feature icon="fas fa-database" title="Pure SQL API" %}}
+The new `.moor` files have been updated and can now hold both `CREATE TABLE` statements
+and queries you define. Moor will then generate typesafe Dart APIs based on your tables
+and statements.
+
+[Get started with SQL and moor]({{< ref "../docs/Getting started/starting_with_sql.md" >}})
 {{% /blocks/feature %}}
-{{% blocks/feature icon="fas fa-database" title="Parser improvements" %}}
+{{% blocks/feature icon="fas fa-plus" title="Analyzer improvements" %}}
 We now support more advanced features like compound select statements and window functions,
-including detailed static analysis and lints.
+including detailed static analysis and lints. The updated type inference engine provides
+better results on complex expressions. We also generate simpler methods for queries that only
+return one column.
 {{% /blocks/feature %}}
 {{% blocks/feature icon="fas fa-code-branch" title="Dart-SQL interop" %}}
 Declare tables in Dart, write your queries in SQL. Or do it the other way around. Or do it all in Dart.
@@ -95,7 +107,8 @@ _Please not that the package is still in preview_
 {{< blocks/section color="dark" type="section" >}}
 ## Try moor now
 
-- To get started with moor, follow our [getting started guide](ref "../docs/Getting started/_index.md") here.
-- To get started with SQL in moor, or to migrate an project to moor, follow our __TODO: Write migration guide__
+- To get started with moor, follow our [getting started guide]({{< ref "../docs/Getting started/_index.md" >}}) here.
+- To get started with SQL in moor, or to migrate an existing project to moor, follow our
+ [migration guide]({{< ref "../docs/Getting started/starting_with_sql.md" >}})
 
 {{< /blocks/section >}}

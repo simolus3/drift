@@ -13,7 +13,7 @@ Moor files are a new feature that lets you write all your database code in SQL -
 To use this feature, lets create two files: `database.dart` and `tables.moor`. The Dart file only contains the minimum code
 to setup the database:
 ```dart
-import 'package:moor/moor.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 
 part 'database.g.dart';
 
