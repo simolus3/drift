@@ -129,7 +129,7 @@ void main() {
       expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
     });
 
-    test('get multiple times', () {
+    test('get multiple times', () async {
       final resultRows = <List<Map<String, dynamic>>>[
         [_dataOfTodoEntry],
         [],
@@ -141,12 +141,15 @@ void main() {
         return Future.value(resultRows[_currentRow++]);
       });
 
-      expectLater(db.select(db.todosTable).watchSingle(),
+      final expectation = expectLater(db.select(db.todosTable).watchSingle(),
           emitsInOrder([_todoEntry, null, emitsError(anything)]));
 
-      db
-        ..markTablesUpdated({db.todosTable})
-        ..markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      db.markTablesUpdated({db.todosTable});
+
+      await expectation;
     });
   });
 }

@@ -14,18 +14,20 @@ void main() {
     db = TodoDb(executor);
   });
 
-  test('streams fetch when the first listener attaches', () {
+  test('streams fetch when the first listener attaches', () async {
     final stream = db.select(db.users).watch();
 
     verifyNever(executor.runSelect(any, any));
 
     stream.listen((_) {});
 
+    await pumpEventQueue(times: 1);
     verify(executor.runSelect(any, any)).called(1);
   });
 
   test('streams fetch when the underlying data changes', () async {
     db.select(db.users).watch().listen((_) {});
+    await pumpEventQueue(times: 1);
 
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);
@@ -39,6 +41,7 @@ void main() {
     final second = db.alias(db.users, 'two');
 
     db.select(first).watch().listen((_) {});
+    await pumpEventQueue(times: 1);
 
     db.markTablesUpdated({second});
     await pumpEventQueue(times: 1);
@@ -50,17 +53,51 @@ void main() {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
     final first = (db.select(db.users).watch());
-    expect(first, emits(isEmpty));
+    await expectLater(first, emits(isEmpty));
 
     clearInteractions(executor);
 
     final second = (db.select(db.users).watch());
-    expect(second, emits(isEmpty));
+    await expectLater(second, emits(isEmpty));
 
-    await pumpEventQueue(times: 1);
     // calling executor.dialect is ok, it's needed to construct the statement
     verify(executor.dialect);
     verifyNoMoreInteractions(executor);
+  });
+
+  group('updating clears cached data', () {
+    test('when an older stream is no longer listened to', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+      final first = db.select(db.categories).watch();
+      await first.first; // subscribe to first stream, then drop subscription
+
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+            {'id': 1, 'description': 'd'}
+          ]));
+      await db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: 'd'));
+
+      final second = db.select(db.categories).watch();
+      expect(second.first, completion(isNotEmpty));
+    });
+
+    test('when an older stream is still listened to', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+      final first = db.select(db.categories).watch();
+      final subscription = first.listen((_) {});
+
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+            {'id': 1, 'description': 'd'}
+          ]));
+      await db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: 'd'));
+
+      final second = db.select(db.categories).watch();
+      expect(second.first, completion(isNotEmpty));
+      await subscription.cancel();
+    });
   });
 
   test('every stream instance can be listened to', () async {
@@ -72,7 +109,7 @@ void main() {
     await first.first; // will listen to stream, then cancel
     await pumpEventQueue(times: 1); // give cancel event time to propagate
 
-    final checkEmits = expectLater(second, emitsInOrder([[], []]));
+    final checkEmits = expectLater(second, emitsInOrder([[]]));
 
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);
@@ -99,6 +136,7 @@ void main() {
     await stream.first; // listen to stream, then cancel
     await pumpEventQueue(); // should remove the stream from the cache
     await stream.first; // listen again
+    await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(2);
   });

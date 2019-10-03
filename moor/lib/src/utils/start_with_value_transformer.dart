@@ -21,21 +21,21 @@ class StartWithValueTransformer<T> extends StreamTransformerBase<T, T> {
 
     controller
       ..onListen = () {
-        final data = _value();
-        if (data != null) {
-          // Dart's stream contract specifies that listeners are only notified
-          // after the .listen() code completes. So, we add the initial data in
-          // a later microtask.
-          scheduleMicrotask(() {
+        // Dart's stream contract specifies that listeners are only notified
+        // after the .listen() code completes. So, we add the initial data in
+        // a later microtask.
+        scheduleMicrotask(() {
+          final data = _value();
+          if (data != null) {
             controller.add(data);
-          });
-        }
+          }
 
-        subscription = stream.listen(
-          controller.add,
-          onError: controller.addError,
-          onDone: controller.close,
-        );
+          subscription = stream.listen(
+            controller.add,
+            onError: controller.addError,
+            onDone: controller.close,
+          );
+        });
       }
       ..onCancel = () {
         // not using a tear-off here because subscription.cancel is null before
