@@ -1,3 +1,8 @@
+## 2.0.0
+- Rewritten generator with looser coupling to the build package
+- Implementation of an SQL IDE as analyzer plugin
+- Support `sqlparser` 0.3.0 and updated grammar for `moor` files
+
 ## 1.7.1
 - Drop support for analyzer versions `<0.36.4`. They weren't supported in version 1.7.0 either, but
   the `pubspec.yaml` did not specify this correctly.
