@@ -39,6 +39,7 @@ void main() {
     final second = db.alias(db.users, 'two');
 
     db.select(first).watch().listen((_) {});
+    await pumpEventQueue(times: 1);
 
     db.markTablesUpdated({second});
     await pumpEventQueue(times: 1);
@@ -57,10 +58,44 @@ void main() {
     final second = (db.select(db.users).watch());
     expect(second, emits(isEmpty));
 
-    await pumpEventQueue(times: 1);
     // calling executor.dialect is ok, it's needed to construct the statement
     verify(executor.dialect);
     verifyNoMoreInteractions(executor);
+  });
+
+  group('updating clears cached data', () {
+    test('when an older stream is no longer listened to', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+      final first = db.select(db.categories).watch();
+      await first.first; // subscribe to first stream, then drop subscription
+
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+            {'id': 1, 'description': 'd'}
+          ]));
+      await db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: 'd'));
+
+      final second = db.select(db.categories).watch();
+      expect(second.first, completion(isNotEmpty));
+    });
+
+    test('when an older stream is still listened to', () async {
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+      final first = db.select(db.categories).watch();
+      final subscription = first.listen((_) {});
+
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+            {'id': 1, 'description': 'd'}
+          ]));
+      await db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: 'd'));
+
+      final second = db.select(db.categories).watch();
+      expect(second.first, completion(isNotEmpty));
+      await subscription.cancel();
+    });
   });
 
   test('every stream instance can be listened to', () async {
@@ -99,6 +134,7 @@ void main() {
     await stream.first; // listen to stream, then cancel
     await pumpEventQueue(); // should remove the stream from the cache
     await stream.first; // listen again
+    await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(2);
   });

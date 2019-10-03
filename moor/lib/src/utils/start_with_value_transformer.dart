@@ -21,16 +21,18 @@ class StartWithValueTransformer<T> extends StreamTransformerBase<T, T> {
 
     controller
       ..onListen = () {
-        final data = _value();
-        if (data != null) {
-          // Dart's stream contract specifies that listeners are only notified
-          // after the .listen() code completes. So, we add the initial data in
-          // a later microtask.
-          scheduleMicrotask(() {
+        // Dart's stream contract specifies that listeners are only notified
+        // after the .listen() code completes. So, we add the initial data in
+        // a later microtask.
+        scheduleMicrotask(() {
+          final data = _value();
+          if (data != null) {
             controller.add(data);
-          });
-        }
+          }
+        });
 
+        // the .listen will run in a later microtask, so the cached data would
+        // still be added first.
         subscription = stream.listen(
           controller.add,
           onError: controller.addError,

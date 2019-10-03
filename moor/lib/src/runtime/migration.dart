@@ -56,7 +56,9 @@ class Migrator {
 
   /// Creates all tables specified for the database, if they don't exist
   Future<void> createAllTables() async {
-    return Future.wait(_db.allTables.map(createTable));
+    for (var table in _db.allTables) {
+      await createTable(table);
+    }
   }
 
   GenerationContext _createContext() {

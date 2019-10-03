@@ -263,8 +263,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Executes the custom sql [statement] on the database.
   @protected
   @visibleForTesting
-  Future<void> customStatement(String statement) {
-    return _resolvedEngine.executor.runCustom(statement);
+  Future<void> customStatement(String statement, [List<dynamic> args]) {
+    return _resolvedEngine.executor.runCustom(statement, args);
   }
 
   /// Executes [action] in a transaction, which means that all its queries and
@@ -366,15 +366,24 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     executor?.databaseInfo = this;
   }
 
-  /// Creates a migrator with the provided query executor. We sometimes can't
-  /// use the regular [GeneratedDatabase.executor] because migration happens
-  /// before that executor is ready.
-  Migrator _createMigrator(SqlExecutor executor) => Migrator(this, executor);
+  /// Creates a [Migrator] with the provided query executor. Migrators generate
+  /// sql statements to create or drop tables.
+  ///
+  /// This api is mainly used internally in moor, for instance in
+  /// [handleDatabaseCreation] and [handleDatabaseVersionChange]. However, it
+  /// can also be used if you need to create tables manually and outside of a
+  /// [MigrationStrategy]. For almost all use cases, overriding [migration]
+  /// should suffice.
+  @protected
+  Migrator createMigrator([SqlExecutor executor]) {
+    final actualExecutor = executor ?? customStatement;
+    return Migrator(this, actualExecutor);
+  }
 
   /// Handles database creation by delegating the work to the [migration]
   /// strategy. This method should not be called by users.
   Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
-    final migrator = _createMigrator(executor);
+    final migrator = createMigrator(executor);
     return _resolvedMigration.onCreate(migrator);
   }
 
@@ -382,7 +391,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// strategy. This method should not be called by users.
   Future<void> handleDatabaseVersionChange(
       {@required SqlExecutor executor, int from, int to}) {
-    final migrator = _createMigrator(executor);
+    final migrator = createMigrator(executor);
     return _resolvedMigration.onUpgrade(migrator, from, to);
   }
 

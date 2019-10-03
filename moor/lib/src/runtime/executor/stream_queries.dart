@@ -61,8 +61,14 @@ class StreamKey {
 /// them when needed.
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
+
+  // Why is this stream synchronous? We want to dispatch table updates before
+  // the future from the query completes. This allows streams to invalidate
+  // their cached data before the user can send another query.
+  // There shouldn't be a problem as this stream is not exposed in any user-
+  // facing api.
   final StreamController<Set<String>> _updatedTableNames =
-      StreamController.broadcast();
+      StreamController.broadcast(sync: true);
 
   StreamQueryStore();
 
@@ -151,13 +157,23 @@ class QueryStream<T> {
     final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
     _tablesChangedSubscription = _store._updatedTableNames.stream
         .where((changed) => changed.any(names.contains))
-        .listen((_) => fetchAndEmitData());
+        .listen((_) {
+      // table has changed, invalidate cache
+      _lastData = null;
+      fetchAndEmitData();
+    });
   }
 
   void _onCancel() {
     // last listener gone, dispose
     _tablesChangedSubscription?.cancel();
     _tablesChangedSubscription = null;
+
+    // we don't listen for table updates anymore, and we're guaranteed to
+    // re-fetch data after a new listener comes in. We can't know if the table
+    // was updated in the meantime, but let's delete the cached data just in
+    // case
+    _lastData = null;
 
     _store.markAsClosed(this);
   }
