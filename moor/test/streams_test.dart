@@ -14,20 +14,18 @@ void main() {
     db = TodoDb(executor);
   });
 
-  test('streams fetch when the first listener attaches', () async {
+  test('streams fetch when the first listener attaches', () {
     final stream = db.select(db.users).watch();
 
     verifyNever(executor.runSelect(any, any));
 
     stream.listen((_) {});
 
-    await pumpEventQueue(times: 1);
     verify(executor.runSelect(any, any)).called(1);
   });
 
   test('streams fetch when the underlying data changes', () async {
     db.select(db.users).watch().listen((_) {});
-    await pumpEventQueue(times: 1);
 
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);
@@ -53,12 +51,12 @@ void main() {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
     final first = (db.select(db.users).watch());
-    await expectLater(first, emits(isEmpty));
+    expect(first, emits(isEmpty));
 
     clearInteractions(executor);
 
     final second = (db.select(db.users).watch());
-    await expectLater(second, emits(isEmpty));
+    expect(second, emits(isEmpty));
 
     // calling executor.dialect is ok, it's needed to construct the statement
     verify(executor.dialect);
@@ -109,7 +107,7 @@ void main() {
     await first.first; // will listen to stream, then cancel
     await pumpEventQueue(times: 1); // give cancel event time to propagate
 
-    final checkEmits = expectLater(second, emitsInOrder([[]]));
+    final checkEmits = expectLater(second, emitsInOrder([[], []]));
 
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);

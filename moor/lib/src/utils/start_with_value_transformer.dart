@@ -29,13 +29,15 @@ class StartWithValueTransformer<T> extends StreamTransformerBase<T, T> {
           if (data != null) {
             controller.add(data);
           }
-
-          subscription = stream.listen(
-            controller.add,
-            onError: controller.addError,
-            onDone: controller.close,
-          );
         });
+
+        // the .listen will run in a later microtask, so the cached data would
+        // still be added first.
+        subscription = stream.listen(
+          controller.add,
+          onError: controller.addError,
+          onDone: controller.close,
+        );
       }
       ..onCancel = () {
         // not using a tear-off here because subscription.cancel is null before
