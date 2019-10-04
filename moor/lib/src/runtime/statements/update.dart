@@ -4,8 +4,10 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 
+/// Represents an `UPDATE` statement in sql.
 class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
+  /// Used internally by moor, construct an update statement
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 

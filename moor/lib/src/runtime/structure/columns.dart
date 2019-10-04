@@ -19,6 +19,8 @@ const VerificationResult _invalidNull = VerificationResult.failure(
 abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// The sql name of this column.
   final String $name;
+
+  /// [$name], but escaped if it's an sql keyword.
   String get escapedName => escapeIfNeeded($name);
 
   /// The name of the table that contains this column
@@ -36,6 +38,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// specified. Can be null if no default value is set.
   final Expression<T, S> defaultValue;
 
+  /// Used by generated code.
   GeneratedColumn(this.$name, this.tableName, this.$nullable,
       {this.$customConstraints, this.defaultValue});
 
@@ -67,6 +70,9 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
     }
   }
 
+  /// Writes custom constraints that are supported by the Dart api from moor
+  /// (e.g. a `CHECK` for bool columns to ensure that the value is indeed either
+  /// 0 or 1).
   @visibleForOverriding
   void writeCustomConstraints(StringBuffer into) {}
 
@@ -108,11 +114,16 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   }
 }
 
+/// Implementation for [TextColumn].
 class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     implements TextColumn {
+  /// Optional. The minimum text length.
   final int minTextLength;
+
+  /// Optional. The maximum text length.
   final int maxTextLength;
 
+  /// Used by generated code.
   GeneratedTextColumn(
     String name,
     String tableName,
@@ -155,8 +166,10 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
   }
 }
 
+/// Implementation for [BoolColumn].
 class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
     implements BoolColumn {
+  /// Used by generated code
   GeneratedBoolColumn(String name, String tableName, bool nullable,
       {String $customConstraints, Expression<bool, BoolType> defaultValue})
       : super(name, tableName, nullable,
@@ -171,6 +184,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
   }
 }
 
+/// Implementation for [IntColumn]
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     with ComparableExpr
     implements IntColumn {
@@ -190,6 +204,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   @override
   final String typeName = 'INTEGER';
 
+  /// Used by generated code.
   GeneratedIntColumn(
     String name,
     String tableName,
@@ -217,9 +232,11 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
   }
 }
 
+/// Implementation for [DateTimeColumn].
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
     with ComparableExpr
     implements DateTimeColumn {
+  /// Used by generated code.
   GeneratedDateTimeColumn(
     String $name,
     String tableName,
@@ -233,8 +250,10 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
   String get typeName => 'INTEGER'; // date-times are stored as unix-timestamps
 }
 
+/// Implementation for [BlobColumn]
 class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
     implements BlobColumn {
+  /// Used by generated code.
   GeneratedBlobColumn(String $name, String tableName, bool $nullable,
       {String $customConstraints, Expression<Uint8List, BlobType> defaultValue})
       : super($name, tableName, $nullable,
@@ -244,9 +263,11 @@ class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
   final String typeName = 'BLOB';
 }
 
+/// Implementation for [RealColumn]
 class GeneratedRealColumn extends GeneratedColumn<double, RealType>
     with ComparableExpr
     implements RealColumn {
+  /// Used by generated code
   GeneratedRealColumn(
     String $name,
     String tableName,

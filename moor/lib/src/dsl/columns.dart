@@ -3,8 +3,11 @@ import 'dart:typed_data';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 
+/// Base class for columns in sql. The [T] type refers to the type a value of
+/// this column will have in Dart, [S] is the mapping class from moor.
 abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
 
+/// A column that stores int values.
 abstract class IntColumn extends Column<int, IntType> implements IntExpression {
 }
 
@@ -155,6 +158,8 @@ class ColumnBuilder<
   ResultColumn call() => null;
 }
 
+/// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
+/// for details.
 class IntColumnBuilder
     extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
   /// Enables auto-increment for this column, which will also make this column
@@ -162,15 +167,23 @@ class IntColumnBuilder
   IntColumnBuilder autoIncrement() => this;
 }
 
+/// Tells the generator to build an [BoolColumn]. See the docs at
+/// [ColumnBuilder] for details.
 class BoolColumnBuilder
     extends ColumnBuilder<BoolColumnBuilder, BoolColumn, BoolType, bool> {}
 
+/// Tells the generator to build an [BlobColumn]. See the docs at
+/// [ColumnBuilder] for details.
 class BlobColumnBuilder
     extends ColumnBuilder<BlobColumnBuilder, BlobColumn, BlobType, Uint8List> {}
 
+/// Tells the generator to build an [RealColumn]. See the docs at
+/// [ColumnBuilder] for details.
 class RealColumnBuilder
     extends ColumnBuilder<RealColumnBuilder, RealColumn, RealType, num> {}
 
+/// Tells the generator to build an [TextColumn]. See the docs at
+/// [ColumnBuilder] for details.
 class TextColumnBuilder
     extends ColumnBuilder<TextColumnBuilder, TextColumn, StringType, String> {
   /// Puts a constraint on the minimum and maximum length of text that can be
@@ -182,6 +195,8 @@ class TextColumnBuilder
   TextColumnBuilder withLength({int min, int max}) => this;
 }
 
+/// Tells the generator to build an [DateTimeColumn]. See the docs at
+/// [ColumnBuilder] for details.
 class DateTimeColumnBuilder extends ColumnBuilder<DateTimeColumnBuilder,
     DateTimeColumn, DateTimeType, DateTime> {}
 

@@ -5,9 +5,13 @@ import 'package:moor/src/types/sql_types.dart';
 /// A `text LIKE pattern` expression that will be true if the first expression
 /// matches the pattern given by the second expression.
 class LikeOperator extends Expression<bool, BoolType> {
+  /// The target expression that will be tested
   final Expression<String, StringType> target;
+
+  /// The regex-like expression to test the [target] against.
   final Expression<String, StringType> regex;
 
+  /// Perform a like operator with the target and the regex.
   LikeOperator(this.target, this.regex);
 
   @override
@@ -41,9 +45,14 @@ enum Collate {
 
 /// A `text COLLATE collate` expression in sqlite.
 class CollateOperator extends Expression<String, StringType> {
+  /// The expression on which the collate function will be run
   final Expression inner;
+
+  /// The [Collate] to use.
   final Collate collate;
 
+  /// Constructs a collate expression on the [inner] expression and the
+  /// [Collate].
   CollateOperator(this.inner, this.collate);
 
   @override

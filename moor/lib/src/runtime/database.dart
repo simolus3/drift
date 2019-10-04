@@ -26,9 +26,11 @@ abstract class DatabaseAccessor<T extends GeneratedDatabase>
   @override
   final bool topLevel = true;
 
+  /// The main database instance for this dao
   @protected
   final T db;
 
+  /// Used internally by moor
   DatabaseAccessor(this.db) : super.delegate(db);
 }
 
@@ -47,10 +49,14 @@ abstract class DatabaseConnectionUser {
   @protected
   StreamQueryStore streamQueries;
 
+  /// Constructs a database connection user, which is responsible to store query
+  /// streams, wrap the underlying executor and perform type mapping.
   DatabaseConnectionUser(this.typeSystem, this.executor, {this.streamQueries}) {
     streamQueries ??= StreamQueryStore();
   }
 
+  /// Creates another [DatabaseConnectionUser] by referencing the implementation
+  /// from the [other] user.
   DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
       {SqlTypeSystem typeSystem,
       QueryExecutor executor,
@@ -360,6 +366,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// A list of tables specified in this database.
   List<TableInfo> get allTables;
 
+  /// Used by generated code
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})
       : super(types, executor, streamQueries: streamStore) {

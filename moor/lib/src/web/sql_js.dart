@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 Completer<SqlJsModule> _moduleCompleter;
 
+/// Calls the `initSqlJs` function from the native sql.js library.
 Future<SqlJsModule> initSqlJs() {
   if (_moduleCompleter != null) {
     return _moduleCompleter.future;
@@ -36,10 +37,12 @@ void _handleModuleResolved(dynamic module) {
   _moduleCompleter.complete(SqlJsModule._(module as JsObject));
 }
 
+/// `sql.js` module from the underlying library
 class SqlJsModule {
   final JsObject _obj;
   SqlJsModule._(this._obj);
 
+  /// Constructs a new [SqlJsDatabase], optionally from the [data] blob.
   SqlJsDatabase createDatabase([Uint8List data]) {
     final dbObj = _createInternally(data);
     assert(() {
@@ -62,19 +65,23 @@ class SqlJsModule {
   }
 }
 
+/// Dart wrapper around a sql database provided by the sql.js library.
 class SqlJsDatabase {
   final JsObject _obj;
   SqlJsDatabase._(this._obj);
 
+  /// Calls `prepare` on the underlying js api
   PreparedStatement prepare(String sql) {
     final obj = _obj.callMethod('prepare', [sql]) as JsObject;
     return PreparedStatement._(obj);
   }
 
+  /// Calls `run(sql)` on the underlying js api
   void run(String sql) {
     _obj.callMethod('run', [sql]);
   }
 
+  /// Calls `run(sql, args)` on the underlying js api
   void runWithArgs(String sql, List<dynamic> args) {
     final ar = JsArray.from(args);
     _obj.callMethod('run', [sql, ar]);
@@ -98,15 +105,19 @@ class SqlJsDatabase {
     return data.first as int;
   }
 
+  /// Runs `export` on the underlying js api
   Uint8List export() {
     return _obj.callMethod('export') as Uint8List;
   }
 
+  /// Runs `close` on the underlying js api
   void close() {
     _obj.callMethod('close');
   }
 }
 
+/// Dart api wrapping an underlying prepared statement object from the sql.js
+/// library.
 class PreparedStatement {
   final JsObject _obj;
   PreparedStatement._(this._obj);
@@ -116,10 +127,12 @@ class PreparedStatement {
     _obj.callMethod('bind', [JsArray.from(args)]);
   }
 
+  /// Performs `step` on the underlying js api
   bool step() {
     return _obj.callMethod('step') as bool;
   }
 
+  /// Reads the current from the underlying js api
   List<dynamic> currentRow() {
     return _obj.callMethod('get') as JsArray;
   }
@@ -130,6 +143,7 @@ class PreparedStatement {
     return (_obj.callMethod('getColumnNames') as JsArray).cast<String>();
   }
 
+  /// Calls `free` on the underlying js api
   void free() {
     _obj.callMethod('free');
   }

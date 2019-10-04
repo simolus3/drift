@@ -96,6 +96,8 @@ class UseDao {
   @experimental
   final Set<String> include;
 
+  /// Annotation for a class to declare it as an dao. See [UseDao] and the
+  /// referenced documentation on how to use daos with moor.
   const UseDao(
       {@required this.tables,
       this.queries = const {},

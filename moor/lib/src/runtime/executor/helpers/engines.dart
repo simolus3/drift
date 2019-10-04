@@ -220,6 +220,7 @@ class _BeforeOpeningExecutor extends QueryExecutor
 /// A database engine (implements [QueryExecutor]) that delegated the relevant
 /// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
+  /// The [DatabaseDelegate] to send queries to.
   final DatabaseDelegate delegate;
 
   @override
@@ -235,6 +236,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   final Lock _openingLock = Lock();
 
+  /// Constructs a delegated database by providing the [delegate].
   DelegatedDatabase(this.delegate,
       {this.logStatements, this.isSequential = false}) {
     // not using default value because it's commonly set to null

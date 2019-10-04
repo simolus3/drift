@@ -1,7 +1,10 @@
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
+/// Runs multiple statements transactionally.
 class Transaction extends DatabaseConnectionUser with QueryEngine {
+  /// Constructs a transaction executor from the [other] user and the underlying
+  /// [executor].
   Transaction(DatabaseConnectionUser other, TransactionExecutor executor)
       : super.delegate(
           other,
@@ -9,6 +12,8 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
           streamQueries: _TransactionStreamStore(other.streamQueries),
         );
 
+  /// Instructs the underlying executor to execute this instructions. Batched
+  /// table updates will also be send to the stream query store.
   Future complete() async {
     final streams = streamQueries as _TransactionStreamStore;
     await (executor as TransactionExecutor).send();

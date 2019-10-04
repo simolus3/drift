@@ -109,6 +109,7 @@ abstract class QueryDelegate {
 ///
 /// Clients may not extend, implement or mix-in this class directly.
 abstract class TransactionDelegate {
+  /// Const constructor on superclass
   const TransactionDelegate();
 }
 
@@ -127,6 +128,9 @@ class NoTransactionDelegate extends TransactionDelegate {
   /// database engine.
   final String rollback;
 
+  /// Construct a transaction delegate indicating that native transactions
+  /// aren't supported and need to be emulated by issuing statements and
+  /// locking the database.
   const NoTransactionDelegate({
     this.start = 'BEGIN TRANSACTION',
     this.commit = 'COMMIT TRANSACTION',
@@ -137,6 +141,7 @@ class NoTransactionDelegate extends TransactionDelegate {
 /// A [TransactionDelegate] for database APIs which do support creating and
 /// managing transactions themselves.
 abstract class SupportedTransactionDelegate extends TransactionDelegate {
+  /// Constant constructor on superclass
   const SupportedTransactionDelegate();
 
   /// Start a transaction, which we assume implements [QueryEngine], and call
@@ -150,11 +155,14 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
 ///
 /// Clients may not extend, implement or mix-in this class directly.
 abstract class DbVersionDelegate {
+  /// Constant constructor on superclass
   const DbVersionDelegate();
 }
 
 /// A database that doesn't support setting schema versions.
 class NoVersionDelegate extends DbVersionDelegate {
+  /// Delegate indicating that the underlying database does not support schema
+  /// versions.
   const NoVersionDelegate();
 }
 
@@ -163,11 +171,13 @@ class OnOpenVersionDelegate extends DbVersionDelegate {
   /// Function that returns with the current schema version.
   final Future<int> Function() loadSchemaVersion;
 
+  /// See [OnOpenVersionDelegate].
   const OnOpenVersionDelegate(this.loadSchemaVersion);
 }
 
 /// A database that supports setting the schema version at any time.
 abstract class DynamicVersionDelegate extends DbVersionDelegate {
+  /// See [DynamicVersionDelegate]
   const DynamicVersionDelegate();
 
   /// Load the current schema version stored in this database.

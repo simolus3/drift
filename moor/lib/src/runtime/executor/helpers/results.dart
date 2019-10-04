@@ -9,12 +9,16 @@ class QueryResult {
 
   Map<String, int> _columnIndexes;
 
+  /// Constructs a [QueryResult] by specifying the order of column names in
+  /// [columnNames] and the associated data in [rows].
   QueryResult(this.columnNames, this.rows) {
     _columnIndexes = {
       for (var column in columnNames) column: columnNames.lastIndexOf(column)
     };
   }
 
+  /// Converts the [rows] into [columnNames] and raw data [QueryResult.rows].
+  /// We assume that each map in [rows] has the same keys.
   factory QueryResult.fromRows(List<Map<String, dynamic>> rows) {
     if (rows.isEmpty) {
       return QueryResult(const [], const []);

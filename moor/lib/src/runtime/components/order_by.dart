@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 
+/// Describes how to order rows
 enum OrderingMode {
   /// Ascending ordering mode (lowest items first)
   asc,
@@ -24,6 +25,8 @@ class OrderingTerm extends Component {
   /// The ordering mode (ascending or descending).
   final OrderingMode mode;
 
+  /// Creates an ordering term by the [expression] and the [mode] (defaults to
+  /// ascending).
   OrderingTerm({@required this.expression, this.mode = OrderingMode.asc});
 
   @override
@@ -39,8 +42,12 @@ class OrderingTerm extends Component {
 /// the later terms only being considered if the first term considers two rows
 /// equal.
 class OrderBy extends Component {
+  /// The list of ordering terms to respect. Terms appearing earlier in this
+  /// list are more important, the others will only considered when two rows
+  /// are equal by the first [OrderingTerm].
   final List<OrderingTerm> terms;
 
+  /// Constructs an order by clause by the [terms].
   OrderBy(this.terms);
 
   @override

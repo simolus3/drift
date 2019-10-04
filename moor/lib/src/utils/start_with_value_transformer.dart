@@ -9,6 +9,8 @@ typedef LatestValue<T> = T Function();
 class StartWithValueTransformer<T> extends StreamTransformerBase<T, T> {
   final LatestValue<T> _value;
 
+  /// Constructs a stream transformer that will emit what's returned by [_value]
+  /// to new listeners.
   StartWithValueTransformer(this._value);
 
   @override

@@ -11,17 +11,23 @@ import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:moor/src/runtime/statements/query.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
+/// Signature of a function that generates an [OrderingTerm] when provided with
+/// a table.
 typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 
+/// A `SELECT` statement that operates on more than one table.
 class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult> {
+  /// Used internally by moor, users should use [SimpleSelectStatement.join]
+  /// instead.
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins)
       : super(database, table);
 
   final List<Join> _joins;
 
+  /// The tables this select statement reads from
   @visibleForOverriding
   Set<TableInfo> get watchedTables => _tables.toSet();
 
@@ -170,9 +176,12 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 class SimpleSelectStatement<T extends Table, D extends DataClass>
     extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D> {
+  /// Used internally by moor, users will want to call [QueryEngine.select]
+  /// instead.
   SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
+  /// The tables this select statement reads from.
   @visibleForOverriding
   Set<TableInfo> get watchedTables => {table};
 

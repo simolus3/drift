@@ -11,16 +11,26 @@ import 'package:moor/src/utils/single_transformer.dart';
 /// Statement that operates with data that already exists (select, delete,
 /// update).
 abstract class Query<T extends Table, D extends DataClass> {
+  /// The database this statement should be sent to.
   @protected
   QueryEngine database;
+
+  /// The (main) table this query operates on.
   TableInfo<T, D> table;
 
+  /// Used internally by moor. Users should use the appropriate methods on
+  /// [QueryEngine] instead.
   Query(this.database, this.table);
 
+  /// The `WHERE` clause for this statement
   @protected
   Where whereExpr;
+
+  /// The `ORDER BY` clause for this statement
   @protected
   OrderBy orderByExpr;
+
+  /// The `LIMIT` clause for this statement.
   @protected
   Limit limitExpr;
 

@@ -108,6 +108,9 @@ updates that span multiple versions, we should follow these steps
  
 The `sqlparser` library can be published independently from moor.
 
+Significant updates to more than one package, or updates to the `moor` package, should get
+their own tag in git!
+
 ### Building the documentation
 We use hugo and docsy to build the documentation. The [readme](docs/README.md) contains everything
 you need to know go get started.

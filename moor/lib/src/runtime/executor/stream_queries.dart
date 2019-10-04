@@ -7,6 +7,9 @@ import 'package:moor/src/utils/start_with_value_transformer.dart';
 
 const _listEquality = ListEquality<dynamic>();
 
+// This is an internal moor library that's never exported to users.
+// ignore_for_file: public_member_api_docs
+
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
 class QueryStreamFetcher<T> {

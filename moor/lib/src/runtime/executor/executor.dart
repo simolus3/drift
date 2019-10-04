@@ -15,6 +15,9 @@ import 'package:moor/src/utils/hash.dart';
 /// engine to use with moor and run into issues, please consider creating an
 /// issue.
 abstract class QueryExecutor {
+  /// The higher-level database class attached to this executor. This
+  /// information can be used to read the [GeneratedDatabase.schemaVersion] when
+  /// opening the database.
   GeneratedDatabase databaseInfo;
 
   /// The [SqlDialect] to use for this database engine.
@@ -75,6 +78,7 @@ class BatchedStatement {
   /// variables that should be bound to the [sql] statement.
   final List<List<dynamic>> variables;
 
+  /// Constructs a batched statement from the [sql] and the set of [variables].
   BatchedStatement(this.sql, this.variables);
 
   @override

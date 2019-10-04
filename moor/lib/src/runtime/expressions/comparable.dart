@@ -1,12 +1,20 @@
 import 'package:moor/moor.dart';
 import 'expression.dart';
 
+// todo: Can we replace these classes with an extension on expression?
+
+/// An [Expression] that operates on ints. Declared as a class so that we can
+/// mixin [ComparableExpr].
 abstract class IntExpression extends Expression<int, IntType>
     implements ComparableExpr<int, IntType> {}
 
+/// An [Expression] that operates on doubles. Declared as a class so that we can
+/// mixin [ComparableExpr].
 abstract class DoubleExpression extends Expression<double, RealType>
     implements ComparableExpr<double, RealType> {}
 
+/// An [Expression] that operates on datetimes. Declared as a class so that we
+/// can mixin [ComparableExpr].
 abstract class DateTimeExpression extends Expression<DateTime, DateTimeType>
     implements ComparableExpr<DateTime, DateTimeType> {}
 

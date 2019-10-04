@@ -4,6 +4,7 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 
 /// Used internally by moor.
 class BeforeOpenEngine extends DatabaseConnectionUser with QueryEngine {
+  /// Used internally by moor.
   BeforeOpenEngine(DatabaseConnectionUser other, QueryExecutor executor)
       : super.delegate(
           other,

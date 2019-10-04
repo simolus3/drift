@@ -117,6 +117,8 @@ abstract class Table {
 /// used.
 /// {@template}
 class DataClassName {
+  /// The overridden name to use when generating the data class for a table.
+  /// {@macro moor:custom_data_class}
   final String name;
 
   /// Customize the data class name for a given table.

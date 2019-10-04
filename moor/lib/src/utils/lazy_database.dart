@@ -16,6 +16,8 @@ class LazyDatabase extends QueryExecutor {
   /// opened for the first time.
   final DatabaseOpener opener;
 
+  /// Declares a [LazyDatabase] that will run [opener] when the database is
+  /// first requested to be opened.
   LazyDatabase(this.opener);
 
   @override

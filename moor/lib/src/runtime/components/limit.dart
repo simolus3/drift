@@ -9,6 +9,8 @@ class Limit extends Component {
   /// included in the result.
   final int offset;
 
+  /// Construct a limit clause from the [amount] of rows to include an a
+  /// nullable [offset].
   Limit(this.amount, this.offset);
 
   @override

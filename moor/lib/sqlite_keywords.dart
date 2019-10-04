@@ -1,7 +1,9 @@
 /// Provides utilities around sql keywords, like optional escaping etc.
 library moor.sqlite_keywords;
 
-// https://www.sqlite.org/lang_keywords.html
+/// Contains a set of all sqlite keywords, according to
+/// https://www.sqlite.org/lang_keywords.html. Moor will use this list to
+/// escape keywords.
 const sqliteKeywords = {
   'ABORT',
   'ACTION',
@@ -141,8 +143,11 @@ const sqliteKeywords = {
   'WITHOUT'
 };
 
+/// Returns whether [s] is an sql keyword by comparing it to the
+/// [sqliteKeywords].
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 
+/// Escapes [s] by wrapping it in backticks if it's an sqlite keyword.
 String escapeIfNeeded(String s) {
   if (isSqliteKeyword(s)) return '`$s`';
   return s;

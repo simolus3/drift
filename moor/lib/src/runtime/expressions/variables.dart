@@ -7,8 +7,10 @@ import 'package:moor/src/types/sql_types.dart';
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.
 class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
+  /// The Dart value that will be sent to the database
   final T value;
 
+  /// Constructs a new variable from the [value].
   const Variable(this.value);
 
   /// Creates a variable that holds the specified boolean.
@@ -64,8 +66,10 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
 /// by writing them into the sql statements. For most cases, consider using
 /// [Variable] instead.
 class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
+  /// Constructs a new constant (sql literal) holding the [value].
   const Constant(this.value);
 
+  /// The value that will be converted to an sql literal.
   final T value;
 
   @override

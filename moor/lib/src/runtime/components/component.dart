@@ -13,7 +13,14 @@ abstract class Component {
 /// An enumeration of database systems supported by moor. Only
 /// [SqlDialect.sqlite] is officially supported, all others are in an
 /// experimental state at the moment.
-enum SqlDialect { sqlite, mysql }
+enum SqlDialect {
+  /// Use sqlite's sql dialect. This is the default option and the only
+  /// officially supported dialect at the moment.
+  sqlite,
+
+  /// (currently unsupported)
+  mysql
+}
 
 /// Contains information about a query while it's being constructed.
 class GenerationContext {
@@ -23,8 +30,14 @@ class GenerationContext {
   /// queries.
   bool hasMultipleTables = false;
 
+  /// The [SqlTypeSystem] to use when mapping variables to values that the
+  /// underlying database understands.
   final SqlTypeSystem typeSystem;
+
+  /// The [SqlDialect] that should be respected when generating the query.
   final SqlDialect dialect;
+
+  /// The actual [QueryExecutor] that's going to execute the generated query.
   final QueryExecutor executor;
 
   final List<dynamic> _boundVariables = [];
@@ -36,6 +49,8 @@ class GenerationContext {
   /// All variables ("?" in sql) that were added to this context.
   final List<Variable> introducedVariables = [];
 
+  /// Returns the amount of variables that have been introduced when writing
+  /// this query.
   int get amountOfVariables => boundVariables.length;
 
   /// The string buffer contains the sql query as it's being constructed.
@@ -44,11 +59,15 @@ class GenerationContext {
   /// Gets the generated sql statement
   String get sql => buffer.toString();
 
+  /// Constructs a [GenerationContext] by copying the relevant fields from the
+  /// database.
   GenerationContext.fromDb(QueryEngine database)
       : typeSystem = database.typeSystem,
         executor = database.executor,
         dialect = database.executor?.dialect ?? SqlDialect.sqlite;
 
+  /// Constructs a custom [GenerationContext] by setting the fields manually.
+  /// See [GenerationContext.fromDb] for a more convenient factory.
   GenerationContext(this.typeSystem, this.executor,
       {this.dialect = SqlDialect.sqlite});
 

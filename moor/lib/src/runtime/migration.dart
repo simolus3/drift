@@ -5,7 +5,10 @@ import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/structure/columns.dart';
 import 'package:moor/src/runtime/structure/table_info.dart';
 
+/// Signature of a function that will be invoked when a database is created.
 typedef Future<void> OnCreate(Migrator m);
+
+/// Signature of a function that will be invoked when a database is upgraded.
 typedef Future<void> OnUpgrade(Migrator m, int from, int to);
 
 /// Signature of a function that's called after a migration has finished and the
@@ -24,6 +27,8 @@ Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
         "but didn't provide a strategy for schema updates. Please do that by "
         'adapting the migrations getter in your database class.');
 
+/// Handles database migrations by delegating work to [OnCreate] and [OnUpgrade]
+/// methods.
 class MigrationStrategy {
   /// Executes when the database is opened for the first time.
   final OnCreate onCreate;
@@ -38,6 +43,8 @@ class MigrationStrategy {
   /// created or set sqlite `PRAGMAS` that you need.
   final OnBeforeOpen beforeOpen;
 
+  /// Construct a migration strategy from the provided [onCreate] and
+  /// [onUpgrade] methods.
   MigrationStrategy({
     this.onCreate = _defaultOnCreate,
     this.onUpgrade = _defaultOnUpdate,
@@ -48,10 +55,12 @@ class MigrationStrategy {
 /// A function that executes queries and ignores what they return.
 typedef Future<void> SqlExecutor(String sql, [List<dynamic> args]);
 
+/// Runs migrations declared by a [MigrationStrategy].
 class Migrator {
   final GeneratedDatabase _db;
   final SqlExecutor _executor;
 
+  /// Used internally by moor when opening the database.
   Migrator(this._db, this._executor);
 
   /// Creates all tables specified for the database, if they don't exist
@@ -164,6 +173,7 @@ class OpeningDetails {
   /// Whether a schema upgrade was performed while opening the database.
   bool get hadUpgrade => !wasCreated && versionBefore != versionNow;
 
+  /// Used internally by moor when opening a database.
   const OpeningDetails(this.versionBefore, this.versionNow);
 }
 

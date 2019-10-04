@@ -4,12 +4,18 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 
+/// Represents an insert statements
 class InsertStatement<D extends DataClass> {
+  /// The database to use then executing this statement
   @protected
   final QueryEngine database;
+
+  /// The table we're inserting into
   @protected
   final TableInfo<Table, D> table;
 
+  /// Constructs an insert statement from the database and the table. Used
+  /// internally by moor.
   InsertStatement(this.database, this.table);
 
   /// Inserts a row constructed from the fields in [entity].

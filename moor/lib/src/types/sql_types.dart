@@ -7,6 +7,7 @@ part 'custom_type.dart';
 /// A type that can be mapped from Dart to sql. The generic type parameter here
 /// denotes the resolved dart type.
 abstract class SqlType<T> {
+  /// Constant constructor so that subclasses can be constant
   const SqlType();
 
   /// Maps the [content] to a value that we can send together with a prepared
@@ -24,6 +25,7 @@ abstract class SqlType<T> {
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
 class BoolType extends SqlType<bool> {
+  /// Constant constructor used by the type system
   const BoolType();
 
   @override
@@ -50,7 +52,9 @@ class BoolType extends SqlType<bool> {
   }
 }
 
+/// Mapper for string values in sql.
 class StringType extends SqlType<String> {
+  /// Constant constructor used by the type system
   const StringType();
 
   @override
@@ -71,7 +75,9 @@ class StringType extends SqlType<String> {
   mapToSqlVariable(String content) => content;
 }
 
+/// Maps [int] values from and to sql
 class IntType extends SqlType<int> {
+  /// Constant constructor used by the type system
   const IntType();
 
   @override
@@ -86,7 +92,9 @@ class IntType extends SqlType<int> {
   }
 }
 
+/// Maps [DateTime] values from and to sql
 class DateTimeType extends SqlType<DateTime> {
+  /// Constant constructor used by the type system
   const DateTimeType();
 
   @override
@@ -113,7 +121,9 @@ class DateTimeType extends SqlType<DateTime> {
   }
 }
 
+/// Maps [Uint8List] values from and to sql
 class BlobType extends SqlType<Uint8List> {
+  /// Constant constructor used by the type system
   const BlobType();
 
   @override
@@ -130,7 +140,9 @@ class BlobType extends SqlType<Uint8List> {
   mapToSqlVariable(Uint8List content) => content;
 }
 
+/// Maps [double] values from and to sql
 class RealType extends SqlType<double> {
+  /// Constant constructor used by the type system
   const RealType();
 
   @override

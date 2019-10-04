@@ -8,6 +8,7 @@ class Where extends Component {
   /// the result.
   final Expression<bool, BoolType> predicate;
 
+  /// Construct a [Where] clause from its [predicate].
   Where(this.predicate);
 
   @override

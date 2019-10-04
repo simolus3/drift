@@ -3,6 +3,7 @@ part of 'package:moor/moor_web.dart';
 /// Experimental moor backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
+  /// A database executor that works on the web.
   WebDatabase(String name, {bool logStatements = false})
       : super(_WebDelegate(name),
             logStatements: logStatements, isSequential: true);

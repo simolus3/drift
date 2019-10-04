@@ -10,8 +10,10 @@ import 'package:moor/src/runtime/expressions/expression.dart';
 ///  - [currentDate] and [currentDateAndTime], which use a [CustomExpression]
 ///  internally.
 class CustomExpression<D, S extends SqlType<D>> extends Expression<D, S> {
+  /// The SQL of this expression
   final String content;
 
+  /// Constructs a custom expression by providing the raw sql [content].
   const CustomExpression(this.content);
 
   @override

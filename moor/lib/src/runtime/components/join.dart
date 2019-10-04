@@ -2,7 +2,17 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/expressions/expression.dart';
 
-enum JoinType { inner, leftOuter, cross }
+/// A type for a [Join] (e.g. inner, outer).
+enum JoinType {
+  /// Perform an inner join, see the [innerJoin] function for details.
+  inner,
+
+  /// Perform a (left) outer join, see also [leftOuterJoin]
+  leftOuter,
+
+  /// Perform a full cross join, see also [crossJoin].
+  cross
+}
 
 const Map<JoinType, String> _joinKeywords = {
   JoinType.inner: 'INNER',
@@ -10,11 +20,20 @@ const Map<JoinType, String> _joinKeywords = {
   JoinType.cross: 'CROSS',
 };
 
+/// Used internally by moor when calling [SimpleSelectStatement.join].
 class Join<T extends Table, D extends DataClass> extends Component {
+  /// The [JoinType] of this join.
   final JoinType type;
+
+  /// The [TableInfo] that will be added to the query
   final TableInfo<T, D> table;
+
+  /// For joins that aren't [JoinType.cross], contains an additional predicate
+  /// that must be matched for the join.
   final Expression<bool, BoolType> on;
 
+  /// Constructs a [Join] by providing the relevant fields. [on] is optional for
+  /// [JoinType.cross].
   Join(this.type, this.table, this.on);
 
   @override
