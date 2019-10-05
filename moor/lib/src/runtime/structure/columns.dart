@@ -176,7 +176,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
-  final String typeName = 'BOOLEAN';
+  final String typeName = 'INTEGER';
 
   @override
   void writeCustomConstraints(StringBuffer into) {

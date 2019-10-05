@@ -61,4 +61,22 @@ void main() {
 
     expect(table.tableConstraints, hasLength(2));
   });
+
+  test('supports booleans when moor extensions are enabled', () {
+    final engine = SqlEngine(useMoorExtensions: true);
+    final stmt = engine.parse('''
+    CREATE TABLE foo (
+      a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL
+    )
+    ''').rootNode;
+
+    final table = SchemaFromCreateTable(moorExtensions: true)
+        .read(stmt as CreateTableStatement);
+    expect(table.resolvedColumns.map((c) => c.type), const [
+      ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: true),
+      ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
+      ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
+      ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: false),
+    ]);
+  });
 }

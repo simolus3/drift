@@ -8,7 +8,9 @@ import 'relative_file.moor';
   
 CREATE TABLE users(
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-  name VARCHAR NOT NULL CHECK(LENGTH(name) BETWEEN 5 AND 30)
+  name VARCHAR NOT NULL CHECK(LENGTH(name) BETWEEN 5 AND 30),
+  field BOOLEAN,
+  another DATETIME
 );
 
 usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25
@@ -22,6 +24,9 @@ usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25
 
     final table = result.declaredTables.single;
     expect(table.sqlName, 'users');
-    expect(table.columns.map((c) => c.name.name), ['id', 'name']);
+    expect(table.columns.map((c) => c.name.name),
+        ['id', 'name', 'field', 'another']);
+    expect(table.columns.map((c) => c.dartTypeName),
+        ['int', 'String', 'bool', 'DateTime']);
   });
 }

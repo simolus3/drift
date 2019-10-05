@@ -22,7 +22,9 @@ create table config (
 
 CREATE TABLE mytable (
     someid INTEGER NOT NULL PRIMARY KEY,
-    sometext TEXT
+    sometext TEXT,
+    somebool BOOLEAN,
+    somedate DATETIME
 );
 
 readConfig: SELECT * FROM config WHERE config_key = ?;

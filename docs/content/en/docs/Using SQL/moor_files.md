@@ -97,6 +97,15 @@ invalid.
 variable can clash with the explicit index, which is why moor forbids
 it. Of course, `id IN ? OR title = ?` will work as expected.
 
+## Supported column types
+
+We use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_column_affinity)
+to determine the column type based on the declared type name.
+
+Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
+`bool` or `DateTime` as their Dart counterpart. Both will be 
+written as an `INTEGER` column when the table gets created.
+
 ## Imports
 {{% alert title="Limited support" %}}
 > Importing a moor file from another moor file will work as expected. 

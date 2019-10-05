@@ -2,6 +2,8 @@
 
 - Introduced `isBetween` and `isBetweenValues` methods for comparable expressions (int, double, datetime)
   to check values for both an upper and lower bound
+- Automatically map `BOOLEAN` and `DATETIME` columns declared in a sql file to the appropriate type
+  (both used to be `double` before).
 
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:

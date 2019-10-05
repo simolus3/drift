@@ -21,7 +21,9 @@ const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL PRIMARY KEY, '
-    'sometext VARCHAR);';
+    'sometext VARCHAR, '
+    'somebool INTEGER, '
+    'somedate INTEGER);';
 
 void main() {
   // see ../data/tables/tables.moor

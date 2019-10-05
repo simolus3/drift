@@ -57,5 +57,10 @@ Make sure that your project depends on moor 2.0 or later. Then
 Unfortunately, we can't support IntelliJ and Android Studio yet. Please vote on
 [this issue](https://youtrack.jetbrains.com/issue/WEB-41424) to help us here!
 
+As a workaround, you can configure IntellIJ to recognize moor files as sql. Moor-only
+features like imports and Dart templates will report errors, but the rest of the
+syntax works well. See [this comment](https://github.com/simolus3/moor/issues/150#issuecomment-538582696)
+on how to set this up.
+
 If you're looking for support for an other IDE that uses the Dart analysis server,
 please create an issue. We can probably make that happen.

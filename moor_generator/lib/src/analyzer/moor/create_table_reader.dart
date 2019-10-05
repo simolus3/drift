@@ -17,7 +17,7 @@ class CreateTableReader {
   CreateTableReader(this.stmt, this.step);
 
   SpecifiedTable extractTable(TypeMapper mapper) {
-    final table = SchemaFromCreateTable().read(stmt);
+    final table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
 
     final foundColumns = <String, SpecifiedColumn>{};
     final primaryKey = <SpecifiedColumn>{};

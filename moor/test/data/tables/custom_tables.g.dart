@@ -645,16 +645,25 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 class MytableData extends DataClass implements Insertable<MytableData> {
   final int someid;
   final String sometext;
-  MytableData({@required this.someid, this.sometext});
+  final bool somebool;
+  final DateTime somedate;
+  MytableData(
+      {@required this.someid, this.sometext, this.somebool, this.somedate});
   factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
+    final boolType = db.typeSystem.forDartType<bool>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return MytableData(
       someid: intType.mapFromDatabaseResponse(data['${effectivePrefix}someid']),
       sometext: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
+      somebool:
+          boolType.mapFromDatabaseResponse(data['${effectivePrefix}somebool']),
+      somedate: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}somedate']),
     );
   }
   factory MytableData.fromJson(Map<String, dynamic> json,
@@ -662,6 +671,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     return MytableData(
       someid: serializer.fromJson<int>(json['someid']),
       sometext: serializer.fromJson<String>(json['sometext']),
+      somebool: serializer.fromJson<bool>(json['somebool']),
+      somedate: serializer.fromJson<DateTime>(json['somedate']),
     );
   }
   @override
@@ -670,6 +681,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     return {
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String>(sometext),
+      'somebool': serializer.toJson<bool>(somebool),
+      'somedate': serializer.toJson<DateTime>(somedate),
     };
   }
 
@@ -681,47 +694,74 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       sometext: sometext == null && nullToAbsent
           ? const Value.absent()
           : Value(sometext),
+      somebool: somebool == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somebool),
+      somedate: somedate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somedate),
     ) as T;
   }
 
-  MytableData copyWith({int someid, String sometext}) => MytableData(
+  MytableData copyWith(
+          {int someid, String sometext, bool somebool, DateTime somedate}) =>
+      MytableData(
         someid: someid ?? this.someid,
         sometext: sometext ?? this.sometext,
+        somebool: somebool ?? this.somebool,
+        somedate: somedate ?? this.somedate,
       );
   @override
   String toString() {
     return (StringBuffer('MytableData(')
           ..write('someid: $someid, ')
-          ..write('sometext: $sometext')
+          ..write('sometext: $sometext, ')
+          ..write('somebool: $somebool, ')
+          ..write('somedate: $somedate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(someid.hashCode, sometext.hashCode));
+  int get hashCode => $mrjf($mrjc(someid.hashCode,
+      $mrjc(sometext.hashCode, $mrjc(somebool.hashCode, somedate.hashCode))));
   @override
   bool operator ==(other) =>
       identical(this, other) ||
       (other is MytableData &&
           other.someid == this.someid &&
-          other.sometext == this.sometext);
+          other.sometext == this.sometext &&
+          other.somebool == this.somebool &&
+          other.somedate == this.somedate);
 }
 
 class MytableCompanion extends UpdateCompanion<MytableData> {
   final Value<int> someid;
   final Value<String> sometext;
+  final Value<bool> somebool;
+  final Value<DateTime> somedate;
   const MytableCompanion({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
+    this.somebool = const Value.absent(),
+    this.somedate = const Value.absent(),
   });
   MytableCompanion.insert({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
+    this.somebool = const Value.absent(),
+    this.somedate = const Value.absent(),
   });
-  MytableCompanion copyWith({Value<int> someid, Value<String> sometext}) {
+  MytableCompanion copyWith(
+      {Value<int> someid,
+      Value<String> sometext,
+      Value<bool> somebool,
+      Value<DateTime> somedate}) {
     return MytableCompanion(
       someid: someid ?? this.someid,
       sometext: sometext ?? this.sometext,
+      somebool: somebool ?? this.somebool,
+      somedate: somedate ?? this.somedate,
     );
   }
 }
@@ -746,8 +786,24 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
         $customConstraints: '');
   }
 
+  final VerificationMeta _someboolMeta = const VerificationMeta('somebool');
+  GeneratedBoolColumn _somebool;
+  GeneratedBoolColumn get somebool => _somebool ??= _constructSomebool();
+  GeneratedBoolColumn _constructSomebool() {
+    return GeneratedBoolColumn('somebool', $tableName, true,
+        $customConstraints: '');
+  }
+
+  final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
+  GeneratedDateTimeColumn _somedate;
+  GeneratedDateTimeColumn get somedate => _somedate ??= _constructSomedate();
+  GeneratedDateTimeColumn _constructSomedate() {
+    return GeneratedDateTimeColumn('somedate', $tableName, true,
+        $customConstraints: '');
+  }
+
   @override
-  List<GeneratedColumn> get $columns => [someid, sometext];
+  List<GeneratedColumn> get $columns => [someid, sometext, somebool, somedate];
   @override
   Mytable get asDslTable => this;
   @override
@@ -770,6 +826,18 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
     } else if (sometext.isRequired && isInserting) {
       context.missing(_sometextMeta);
     }
+    if (d.somebool.present) {
+      context.handle(_someboolMeta,
+          somebool.isAcceptableValue(d.somebool.value, _someboolMeta));
+    } else if (somebool.isRequired && isInserting) {
+      context.missing(_someboolMeta);
+    }
+    if (d.somedate.present) {
+      context.handle(_somedateMeta,
+          somedate.isAcceptableValue(d.somedate.value, _somedateMeta));
+    } else if (somedate.isRequired && isInserting) {
+      context.missing(_somedateMeta);
+    }
     return context;
   }
 
@@ -789,6 +857,12 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
     }
     if (d.sometext.present) {
       map['sometext'] = Variable<String, StringType>(d.sometext.value);
+    }
+    if (d.somebool.present) {
+      map['somebool'] = Variable<bool, BoolType>(d.somebool.value);
+    }
+    if (d.somedate.present) {
+      map['somedate'] = Variable<DateTime, DateTimeType>(d.somedate.value);
     }
     return map;
   }

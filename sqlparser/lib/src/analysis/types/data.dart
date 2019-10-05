@@ -63,6 +63,11 @@ class ResolvedType {
 /// [ResolvedType.hint] to [IsBoolean].
 abstract class TypeHint {
   const TypeHint();
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+  @override
+  bool operator ==(other) => other.runtimeType == runtimeType;
 }
 
 /// Type hint to mark that this type will contain a boolean value.
