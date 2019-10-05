@@ -35,3 +35,7 @@ At the moment, moor supports these options:
    to convert it to a `Stream` and `Future`, the two later methods only exist for backwards
    compatibility. When this flag is enabled, moor won't write them at all. This will be the only
    option in moor 3.0
+* `skip_verification_code`: Generated tables contain a significant chunk of code to verify integrity
+  of inserted data and report detailed errors when the integrity is violated. If you're only using
+  inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
+  generated code.

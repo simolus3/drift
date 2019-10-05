@@ -192,12 +192,16 @@ class TableWriter {
 
   void _writeColumnVerificationMeta(SpecifiedColumn column) {
     // final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
-    _buffer
-      ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
-      ..write("const VerificationMeta('${column.dartGetterName}');\n");
+    if (!scope.writer.options.skipVerificationCode) {
+      _buffer
+        ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
+        ..write("const VerificationMeta('${column.dartGetterName}');\n");
+    }
   }
 
   void _writeValidityCheckMethod() {
+    if (scope.writer.options.skipVerificationCode) return;
+
     _buffer
       ..write('@override\nVerificationContext validateIntegrity'
           '(${table.updateCompanionName} d, {bool isInserting = false}) {\n')

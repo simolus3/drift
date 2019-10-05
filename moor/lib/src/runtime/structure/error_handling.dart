@@ -34,10 +34,18 @@ class VerificationResult {
 
 /// Used internally by moor for integrity checks.
 class VerificationContext {
-  final Map<VerificationMeta, VerificationResult> _errors = {};
+  final Map<VerificationMeta, VerificationResult> _errors;
 
   /// Used internally by moor
   bool get dataValid => _errors.isEmpty;
+
+  /// Creates a verification context, which stores the individual integrity
+  /// check results. Used by generated code.
+  VerificationContext() : _errors = {};
+
+  /// Constructs a verification context that can't be used to report error. This
+  /// is used internally by moor if integrity checks have been disabled.
+  const VerificationContext.notEnabled() : _errors = const {};
 
   /// Used internally by moor when inserting
   void handle(VerificationMeta meta, VerificationResult result) {

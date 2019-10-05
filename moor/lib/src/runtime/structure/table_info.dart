@@ -45,7 +45,11 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
   VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance,
-      {bool isInserting = false});
+      {bool isInserting = false}) {
+    // default behavior when users chose to not verify the integrity (build time
+    // option)
+    return const VerificationContext.notEnabled();
+  }
 
   /// Maps the given update companion to a [Map] that can be inserted into sql.
   /// The keys should represent the column name in sql, the values the

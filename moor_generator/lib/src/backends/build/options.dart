@@ -4,9 +4,13 @@ class MoorOptions {
   final bool generateFromJsonStringConstructor;
   final bool overrideHashAndEqualsInResultSets;
   final bool compactQueryMethods;
+  final bool skipVerificationCode;
 
-  MoorOptions(this.generateFromJsonStringConstructor,
-      this.overrideHashAndEqualsInResultSets, this.compactQueryMethods);
+  MoorOptions(
+      this.generateFromJsonStringConstructor,
+      this.overrideHashAndEqualsInResultSets,
+      this.compactQueryMethods,
+      this.skipVerificationCode);
 
   factory MoorOptions.fromBuilder(Map<String, dynamic> config) {
     final writeFromString =
@@ -18,12 +22,16 @@ class MoorOptions {
     final compactQueryMethods =
         config['compact_query_methods'] as bool ?? false;
 
-    return MoorOptions(
-        writeFromString, overrideInResultSets, compactQueryMethods);
+    final skipVerificationCode =
+        config['skip_verification_code'] as bool ?? false;
+
+    return MoorOptions(writeFromString, overrideInResultSets,
+        compactQueryMethods, skipVerificationCode);
   }
 
   const MoorOptions.defaults()
       : generateFromJsonStringConstructor = false,
         overrideHashAndEqualsInResultSets = false,
-        compactQueryMethods = false;
+        compactQueryMethods = false,
+        skipVerificationCode = false;
 }
