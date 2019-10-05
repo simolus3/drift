@@ -34,12 +34,12 @@ class NoId extends DataClass implements Insertable<NoId> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<NoId>>(bool nullToAbsent) {
+  NoIdsCompanion createCompanion(bool nullToAbsent) {
     return NoIdsCompanion(
       payload: payload == null && nullToAbsent
           ? const Value.absent()
           : Value(payload),
-    ) as T;
+    );
   }
 
   NoId copyWith({Uint8List payload}) => NoId(
@@ -166,11 +166,11 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<WithDefault>>(bool nullToAbsent) {
+  WithDefaultsCompanion createCompanion(bool nullToAbsent) {
     return WithDefaultsCompanion(
       a: a == null && nullToAbsent ? const Value.absent() : Value(a),
       b: b == null && nullToAbsent ? const Value.absent() : Value(b),
-    ) as T;
+    );
   }
 
   WithDefault copyWith({String a, int b}) => WithDefault(
@@ -326,13 +326,12 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<WithConstraint>>(
-      bool nullToAbsent) {
+  WithConstraintsCompanion createCompanion(bool nullToAbsent) {
     return WithConstraintsCompanion(
       a: a == null && nullToAbsent ? const Value.absent() : Value(a),
       b: b == null && nullToAbsent ? const Value.absent() : Value(b),
       c: c == null && nullToAbsent ? const Value.absent() : Value(c),
-    ) as T;
+    );
   }
 
   WithConstraint copyWith({String a, int b, double c}) => WithConstraint(
@@ -510,7 +509,7 @@ class Config extends DataClass implements Insertable<Config> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Config>>(bool nullToAbsent) {
+  ConfigCompanion createCompanion(bool nullToAbsent) {
     return ConfigCompanion(
       configKey: configKey == null && nullToAbsent
           ? const Value.absent()
@@ -518,7 +517,7 @@ class Config extends DataClass implements Insertable<Config> {
       configValue: configValue == null && nullToAbsent
           ? const Value.absent()
           : Value(configValue),
-    ) as T;
+    );
   }
 
   Config copyWith({String configKey, String configValue}) => Config(
@@ -687,7 +686,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<MytableData>>(bool nullToAbsent) {
+  MytableCompanion createCompanion(bool nullToAbsent) {
     return MytableCompanion(
       someid:
           someid == null && nullToAbsent ? const Value.absent() : Value(someid),
@@ -700,7 +699,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       somedate: somedate == null && nullToAbsent
           ? const Value.absent()
           : Value(somedate),
-    ) as T;
+    );
   }
 
   MytableData copyWith(

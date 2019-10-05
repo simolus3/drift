@@ -60,7 +60,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
+  TodosTableCompanion createCompanion(bool nullToAbsent) {
     return TodosTableCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       title:
@@ -74,7 +74,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
-    ) as T;
+    );
   }
 
   TodoEntry copyWith(
@@ -328,13 +328,13 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
+  CategoriesCompanion createCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
-    ) as T;
+    );
   }
 
   Category copyWith({int id, String description}) => Category(
@@ -510,7 +510,7 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<User>>(bool nullToAbsent) {
+  UsersCompanion createCompanion(bool nullToAbsent) {
     return UsersCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
@@ -523,7 +523,7 @@ class User extends DataClass implements Insertable<User> {
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
           : Value(creationTime),
-    ) as T;
+    );
   }
 
   User copyWith(
@@ -778,11 +778,11 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<SharedTodo>>(bool nullToAbsent) {
+  SharedTodosCompanion createCompanion(bool nullToAbsent) {
     return SharedTodosCompanion(
       todo: todo == null && nullToAbsent ? const Value.absent() : Value(todo),
       user: user == null && nullToAbsent ? const Value.absent() : Value(user),
-    ) as T;
+    );
   }
 
   SharedTodo copyWith({int todo, int user}) => SharedTodo(
@@ -954,8 +954,7 @@ class TableWithoutPKData extends DataClass
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<TableWithoutPKData>>(
-      bool nullToAbsent) {
+  TableWithoutPKCompanion createCompanion(bool nullToAbsent) {
     return TableWithoutPKCompanion(
       notReallyAnId: notReallyAnId == null && nullToAbsent
           ? const Value.absent()
@@ -965,7 +964,7 @@ class TableWithoutPKData extends DataClass
           : Value(someFloat),
       custom:
           custom == null && nullToAbsent ? const Value.absent() : Value(custom),
-    ) as T;
+    );
   }
 
   TableWithoutPKData copyWith(
@@ -1162,11 +1161,11 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<PureDefault>>(bool nullToAbsent) {
+  PureDefaultsCompanion createCompanion(bool nullToAbsent) {
     return PureDefaultsCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       txt: txt == null && nullToAbsent ? const Value.absent() : Value(txt),
-    ) as T;
+    );
   }
 
   PureDefault copyWith({int id, String txt}) => PureDefault(

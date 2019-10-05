@@ -217,18 +217,18 @@ class DataClassWriter {
   }
 
   void _writeCompanionOverride() {
-    // T createCompanion<T extends UpdateCompanion>(bool nullToAbsent)
+    // TableCompanion createCompanion(bool nullToAbsent)
 
     final companionClass = table.updateCompanionName;
-    _buffer.write('@override\nT createCompanion<T extends UpdateCompanion'
-        '<${table.dartTypeName}>>('
-        'bool nullToAbsent) {\n return $companionClass(');
+    _buffer.write('@override\n'
+        '$companionClass createCompanion(bool nullToAbsent) {\n'
+        'return $companionClass(');
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
       _buffer.write('$getter: $getter == null && nullToAbsent ? '
           'const Value.absent() : Value($getter),');
     }
-    _buffer.write(') as T;}\n');
+    _buffer.write(');}\n');
   }
 }

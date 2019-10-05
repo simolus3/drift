@@ -39,13 +39,13 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
+  CategoriesCompanion createCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
-    ) as T;
+    );
   }
 
   Category copyWith({int id, String description}) => Category(
@@ -216,7 +216,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Recipe>>(bool nullToAbsent) {
+  RecipesCompanion createCompanion(bool nullToAbsent) {
     return RecipesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       title:
@@ -227,7 +227,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
-    ) as T;
+    );
   }
 
   Recipe copyWith({int id, String title, String instructions, int category}) =>
@@ -449,14 +449,14 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Ingredient>>(bool nullToAbsent) {
+  IngredientsCompanion createCompanion(bool nullToAbsent) {
     return IngredientsCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       caloriesPer100g: caloriesPer100g == null && nullToAbsent
           ? const Value.absent()
           : Value(caloriesPer100g),
-    ) as T;
+    );
   }
 
   Ingredient copyWith({int id, String name, int caloriesPer100g}) => Ingredient(
@@ -655,8 +655,7 @@ class IngredientInRecipe extends DataClass
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<IngredientInRecipe>>(
-      bool nullToAbsent) {
+  IngredientInRecipesCompanion createCompanion(bool nullToAbsent) {
     return IngredientInRecipesCompanion(
       recipe:
           recipe == null && nullToAbsent ? const Value.absent() : Value(recipe),
@@ -666,7 +665,7 @@ class IngredientInRecipe extends DataClass
       amountInGrams: amountInGrams == null && nullToAbsent
           ? const Value.absent()
           : Value(amountInGrams),
-    ) as T;
+    );
   }
 
   IngredientInRecipe copyWith(

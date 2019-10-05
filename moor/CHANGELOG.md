@@ -4,6 +4,7 @@
   to check values for both an upper and lower bound
 - Automatically map `BOOLEAN` and `DATETIME` columns declared in a sql file to the appropriate type
   (both used to be `double` before).
+- __Breaking__: Remove the type parameter from `Insertable.createCompanion`.
 
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:
