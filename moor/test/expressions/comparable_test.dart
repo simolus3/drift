@@ -48,4 +48,24 @@ void main() {
       });
     });
   });
+
+  group('between', () {
+    test('other expressions', () {
+      final low = GeneratedIntColumn('low', null, false);
+      final high = GeneratedIntColumn('high', null, false);
+
+      final ctx = GenerationContext.fromDb(db);
+      expression.isBetween(low, high).writeInto(ctx);
+
+      expect(ctx.sql, 'col BETWEEN low AND high');
+    });
+
+    test('values', () {
+      final ctx = GenerationContext.fromDb(db);
+      expression.isBetweenValues(3, 15).writeInto(ctx);
+
+      expect(ctx.sql, 'col BETWEEN ? AND ?');
+      expect(ctx.boundVariables, [3, 15]);
+    });
+  });
 }

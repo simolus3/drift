@@ -1,4 +1,5 @@
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/components/component.dart';
 import 'expression.dart';
 
 // todo: Can we replace these classes with an extension on expression?
@@ -62,4 +63,58 @@ mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// equal to he other value.
   Expression<bool, BoolType> isSmallerOrEqualValue(DT other) =>
       isSmallerOrEqual(Variable(other));
+
+  /// Returns an expression evaluating to true if this expression is between
+  /// [lower] and [higher] (both inclusive).
+  ///
+  /// If [not] is set, the expression will be negated. To compare this
+  /// expression against two values, see
+  Expression<bool, BoolType> isBetween(
+      Expression<DT, ST> lower, Expression<DT, ST> higher,
+      {bool not = false}) {
+    return _BetweenExpression(
+        target: this, lower: lower, higher: higher, not: not);
+  }
+
+  /// Returns an expression evaluating to true if this expression is between
+  /// [lower] and [higher] (both inclusive).
+  ///
+  /// If [not] is set, the expression will be negated.
+  Expression<bool, BoolType> isBetweenValues(DT lower, DT higher,
+      {bool not = false}) {
+    return _BetweenExpression(
+      target: this,
+      lower: Variable<DT, ST>(lower),
+      higher: Variable<DT, ST>(higher),
+      not: not,
+    );
+  }
+}
+
+class _BetweenExpression extends Expression<bool, BoolType> {
+  final Expression target;
+
+  /// Whether to negate this between expression
+  final bool not;
+
+  final Expression lower;
+  final Expression higher;
+
+  _BetweenExpression(
+      {@required this.target,
+      @required this.lower,
+      @required this.higher,
+      this.not = false});
+
+  @override
+  void writeInto(GenerationContext context) {
+    target.writeInto(context);
+
+    if (not) context.buffer.write(' NOT');
+    context.buffer.write(' BETWEEN ');
+
+    lower.writeInto(context);
+    context.buffer.write(' AND ');
+    higher.writeInto(context);
+  }
 }

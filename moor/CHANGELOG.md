@@ -1,3 +1,8 @@
+## upcoming release
+
+- Introduced `isBetween` and `isBetweenValues` methods for comparable expressions (int, double, datetime)
+  to check values for both an upper and lower bound
+
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:
 `.moor` files can now have their own imports and queries, you can embed Dart in sql queries
