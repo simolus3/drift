@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.4.0 <3.0.0'
 
 dependencies:
-  moor: ^1.6.0
+  moor: ^2.0.0
   sqflite:
     git:
       url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
