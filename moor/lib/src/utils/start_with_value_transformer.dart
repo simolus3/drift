@@ -15,38 +15,39 @@ class StartWithValueTransformer<T> extends StreamTransformerBase<T, T> {
 
   @override
   Stream<T> bind(Stream<T> stream) {
-    // we're setting sync to true because we're proxying events
-    final controller = StreamController<T>.broadcast(sync: true);
+    return _StartWithValueStream(_value, stream);
+  }
+}
 
-    // ignore: cancel_subscriptions
-    StreamSubscription subscription;
+class _StartWithValueStream<T> extends Stream<T> {
+  final LatestValue<T> _value;
+  final Stream<T> _inner;
 
-    controller
-      ..onListen = () {
-        // Dart's stream contract specifies that listeners are only notified
-        // after the .listen() code completes. So, we add the initial data in
-        // a later microtask.
-        scheduleMicrotask(() {
-          final data = _value();
-          if (data != null) {
-            controller.add(data);
-          }
-        });
+  _StartWithValueStream(this._value, this._inner);
 
-        // the .listen will run in a later microtask, so the cached data would
-        // still be added first.
-        subscription = stream.listen(
-          controller.add,
-          onError: controller.addError,
-          onDone: controller.close,
-        );
+  @override
+  StreamSubscription<T> listen(void Function(T event) onData,
+      {Function onError, void Function() onDone, bool cancelOnError}) {
+    var didReceiveData = false;
+    final wrappedCallback = (T event) {
+      didReceiveData = true;
+      onData?.call(event);
+    };
+
+    final subscription = _inner.listen(wrappedCallback,
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+
+    final data = _value();
+    // Dart's stream contract specifies that listeners are only notified
+    // after the .listen() code completes. So, we add the initial data in
+    // a later microtask.
+    scheduleMicrotask(() {
+      if (data != null && !didReceiveData) {
+        onData?.call(data);
+        didReceiveData = true;
       }
-      ..onCancel = () {
-        // not using a tear-off here because subscription.cancel is null before
-        // onListen has been called
-        subscription?.cancel();
-      };
+    });
 
-    return controller.stream;
+    return subscription;
   }
 }

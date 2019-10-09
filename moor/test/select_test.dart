@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:moor/moor.dart';
+import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
@@ -142,7 +142,7 @@ void main() {
       });
 
       expectLater(db.select(db.todosTable).watchSingle(),
-          emitsInOrder([_todoEntry, null, emitsError(anything)]));
+          emitsInOrder([_todoEntry, isNull, emitsError(anything)]));
 
       db
         ..markTablesUpdated({db.todosTable})

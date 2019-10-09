@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
@@ -64,6 +65,7 @@ class StreamKey {
 /// them when needed.
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
+  final HashSet<StreamKey> _keysPendingRemoval = HashSet<StreamKey>();
 
   // Why is this stream synchronous? We want to dispatch table updates before
   // the future from the query completes. This allows streams to invalidate
@@ -106,16 +108,23 @@ class StreamQueryStore {
 
   void markAsClosed(QueryStream stream) {
     final key = stream._fetcher.key;
+    _keysPendingRemoval.add(key);
+
     scheduleMicrotask(() {
       // if no other subscriber was found during this event iteration, remove
       // the stream from the cache.
-      _activeKeyStreams.remove(key);
+      if (_keysPendingRemoval.contains(key)) {
+        _keysPendingRemoval.remove(key);
+        _activeKeyStreams.remove(key);
+      }
     });
   }
 
   void markAsOpened(QueryStream stream) {
     final key = stream._fetcher.key;
+
     if (key != null) {
+      _keysPendingRemoval.remove(key);
       _activeKeyStreams[key] = stream;
     }
   }

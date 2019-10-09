@@ -115,15 +115,17 @@ void main() {
     await checkEmits;
   });
 
-  test('streams can be reused after a listener detaches', () async {
+  test('same stream instance can be listened to multiple times', () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
     final stream = db.select(db.users).watch();
 
-    await stream.first; // listen to stream, then cancel
-    await stream.first; // listen again
+    final firstSub = stream.take(2).listen(null); // will listen forever
+    final second = await stream.first;
 
-    verify(executor.runSelect(any, any)).called(1); // cached, only called once
+    expect(second, isEmpty);
+    verify(executor.runSelect(any, any)).called(1);
+    await firstSub.cancel();
   });
 
   test('streams are disposed when not listening for a while', () async {
