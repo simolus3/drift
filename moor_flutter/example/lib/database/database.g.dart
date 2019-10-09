@@ -54,7 +54,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<TodoEntry>>(bool nullToAbsent) {
+  TodosCompanion createCompanion(bool nullToAbsent) {
     return TodosCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       content: content == null && nullToAbsent
@@ -66,7 +66,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
-    ) as T;
+    );
   }
 
   TodoEntry copyWith(
@@ -281,13 +281,13 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Category>>(bool nullToAbsent) {
+  CategoriesCompanion createCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
-    ) as T;
+    );
   }
 
   Category copyWith({int id, String description}) => Category(
@@ -413,7 +413,7 @@ class $CategoriesTable extends Categories
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
+  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   $TodosTable _todos;
   $TodosTable get todos => _todos ??= $TodosTable(this);
   $CategoriesTable _categories;
