@@ -223,8 +223,8 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// See also:
   ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
   ///  construct a [Join].
-  ///  - [GeneratedDatabase.alias], which can be used to build statements that
-  ///  refer to the same table multiple times.
+  ///  - [DatabaseConnectionUser.alias], which can be used to build statements
+  ///  that refer to the same table multiple times.
   JoinedSelectStatement join(List<Join> joins) {
     final statement = JoinedSelectStatement(database, table, joins);
 

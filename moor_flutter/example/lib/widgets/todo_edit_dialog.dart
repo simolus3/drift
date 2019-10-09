@@ -45,7 +45,7 @@ class _TodoEditDialogState extends State<TodoEditDialog> {
         children: [
           TextField(
             controller: textController,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'What needs to be done?',
               helperText: 'Content of entry',
             ),
@@ -53,7 +53,7 @@ class _TodoEditDialogState extends State<TodoEditDialog> {
           Row(
             children: <Widget>[
               Text(formattedDate),
-              Spacer(),
+              const Spacer(),
               IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: () async {

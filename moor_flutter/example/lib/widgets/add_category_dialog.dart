@@ -27,7 +27,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
             TextField(
               controller: _controller,
               autofocus: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Name of the category',
               ),
               onSubmitted: (_) => _addEntry(),

@@ -23,7 +23,7 @@ class DatabaseWriter {
     final className = '_\$${db.fromClass.name}';
     dbScope.leaf().write(
         'abstract class $className extends GeneratedDatabase {\n'
-        '$className(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e); \n');
+        '$className(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e); \n');
 
     final tableGetters = <String>[];
 

@@ -47,7 +47,7 @@ void main() {
     setUp(() {
       executor = MockExecutor();
       queryExecutor = MockQueryExecutor();
-      db = _FakeDb(const SqlTypeSystem.withDefaults(), executor);
+      db = _FakeDb(SqlTypeSystem.defaultInstance, executor);
     });
 
     test('onCreate', () async {

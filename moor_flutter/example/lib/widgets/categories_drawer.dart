@@ -35,7 +35,7 @@ class CategoriesDrawer extends StatelessWidget {
               },
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Row(
             children: <Widget>[
               FlatButton(
@@ -89,7 +89,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
     // also show a delete button if the category can be deleted
     if (category != null) {
       rowContent.addAll([
-        Spacer(),
+        const Spacer(),
         IconButton(
           icon: const Icon(Icons.delete_outline),
           color: Colors.red,

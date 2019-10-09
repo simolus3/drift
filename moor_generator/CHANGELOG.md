@@ -1,3 +1,8 @@
+## upcoming release
+
+- Escape `\r` characters in generated Dart literals
+- Fix for [an analyzer bug on constant expressions](https://dartbug.com/38658) in generated code
+
 ## 1.7.1
 - Drop support for analyzer versions `<0.36.4`. They weren't supported in version 1.7.0 either, but
   the `pubspec.yaml` did not specify this correctly.

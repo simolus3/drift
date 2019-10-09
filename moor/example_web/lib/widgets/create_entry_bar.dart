@@ -24,7 +24,7 @@ class _CreateEntryBarState extends State<CreateEntryBar> {
           child: TextField(
             controller: _controller,
             onSubmitted: (_) => _submit(),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
             ),
           ),

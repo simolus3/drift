@@ -45,7 +45,7 @@ class _EntryCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: [
           Text(entry.content),
-          Spacer(),
+          const Spacer(),
           Checkbox(
             value: entry.done,
             onChanged: (checked) {

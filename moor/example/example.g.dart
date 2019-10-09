@@ -831,7 +831,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
+  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   $CategoriesTable _categories;
   $CategoriesTable get categories => _categories ??= $CategoriesTable(this);
   $RecipesTable _recipes;

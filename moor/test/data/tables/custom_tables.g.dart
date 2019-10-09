@@ -876,8 +876,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
-  _$CustomTablesDb(QueryExecutor e)
-      : super(const SqlTypeSystem.withDefaults(), e);
+  _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   NoIds _noIds;
   NoIds get noIds => _noIds ??= NoIds(this);
   WithDefaults _withDefaults;

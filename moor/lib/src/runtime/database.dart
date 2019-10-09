@@ -124,8 +124,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   bool get topLevel => false;
 
   /// We can detect when a user called methods on the wrong [QueryEngine]
-  /// (e.g. calling [GeneratedDatabase.into] in a transaction, where
-  /// [Transaction.into] should have been called instead). See the documentation
+  /// (e.g. calling [QueryEngine.into] in a transaction, where
+  /// [QueryEngine.into] should have been called instead). See the documentation
   /// of [topLevel] on how this works.
   QueryEngine get _resolvedEngine {
     if (!topLevel) {

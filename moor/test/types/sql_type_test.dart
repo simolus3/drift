@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('types map null values to null', () {
-    final typeSystem = const SqlTypeSystem.withDefaults();
+    const typeSystem = SqlTypeSystem.defaultInstance;
 
     for (var type in typeSystem.types) {
       expect(type.mapToSqlVariable(null), isNull,

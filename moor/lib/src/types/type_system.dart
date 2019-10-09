@@ -20,6 +20,12 @@ class SqlTypeSystem {
           RealType(),
         ]);
 
+  /// Constant field of [SqlTypeSystem.withDefaults()]. This field exists as a
+  /// workaround for an analyzer bug: https://dartbug.com/38658
+  ///
+  /// Used internally by generated code.
+  static const defaultInstance = SqlTypeSystem.withDefaults();
+
   /// Returns the appropriate sql type for the dart type provided as the
   /// generic parameter.
   SqlType<T> forDartType<T>() {

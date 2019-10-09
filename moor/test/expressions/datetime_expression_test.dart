@@ -20,7 +20,7 @@ void main() {
 
   expectedResults.forEach((key, value) {
     test('should extract field', () {
-      final ctx = GenerationContext(const SqlTypeSystem.withDefaults(), null);
+      final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
       key(column).writeInto(ctx);
 
       expect(ctx.sql, value);
