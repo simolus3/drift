@@ -3,6 +3,11 @@
 - Escape `\r` characters in generated Dart literals
 - Fix for [an analyzer bug on constant expressions](https://dartbug.com/38658) in generated code
 
+## 2.0.0
+- Rewritten generator with looser coupling to the build package
+- Implementation of an SQL IDE as analyzer plugin
+- Support `sqlparser` 0.3.0 and updated grammar for `moor` files
+
 ## 1.7.1
 - Drop support for analyzer versions `<0.36.4`. They weren't supported in version 1.7.0 either, but
   the `pubspec.yaml` did not specify this correctly.
@@ -15,8 +20,8 @@
 ## 1.6.0+2
 - Generate code to expand array variables
 
-_The +1 release has no changes to 1.6.0, there were issues while uploading to pub. +2
-tightens the analyzer dependency to avoid compilation errors_
+_The +1 release has no changes to 1.6.0, there were issues while uploading to pub. +2 fixes
+delivers on the promise of supporting the analyze 0.37_
 
 ## 1.5.0
 - Parse custom queries and write generated mapping code.
