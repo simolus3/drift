@@ -99,4 +99,9 @@ void main() {
       verify(executor.doWhenOpened(any));
     });
   });
+
+  test('transaction return value', () async {
+    final actual = await db.transaction(() async => 1);
+    expect(actual, 1);
+  });
 }

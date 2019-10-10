@@ -13,7 +13,7 @@ class BeforeOpenEngine extends DatabaseConnectionUser with QueryEngine {
 
   @override
   @alwaysThrows
-  Future transaction(Function action) {
+  Future<T> transaction<T>(Function action) {
     throw UnsupportedError("Transactions can't be started inside beforeOpen");
   }
 }
