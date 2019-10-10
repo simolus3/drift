@@ -4,6 +4,7 @@
   to check values for both an upper and lower bound
 - Automatically map `BOOLEAN` and `DATETIME` columns declared in a sql file to the appropriate type
   (both used to be `double` before).
+- Fix streams not emitting cached data when listening multiple times
 - __Breaking__: Remove the type parameter from `Insertable.createCompanion` (it was declared as an
   internal method)
 

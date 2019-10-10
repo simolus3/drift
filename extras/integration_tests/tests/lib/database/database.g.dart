@@ -75,7 +75,7 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<User>>(bool nullToAbsent) {
+  UsersCompanion createCompanion(bool nullToAbsent) {
     return UsersCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
@@ -88,7 +88,7 @@ class User extends DataClass implements Insertable<User> {
       preferences: preferences == null && nullToAbsent
           ? const Value.absent()
           : Value(preferences),
-    ) as T;
+    );
   }
 
   User copyWith(
@@ -359,7 +359,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   }
 
   @override
-  T createCompanion<T extends UpdateCompanion<Friendship>>(bool nullToAbsent) {
+  FriendshipsCompanion createCompanion(bool nullToAbsent) {
     return FriendshipsCompanion(
       firstUser: firstUser == null && nullToAbsent
           ? const Value.absent()
@@ -370,7 +370,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
       reallyGoodFriends: reallyGoodFriends == null && nullToAbsent
           ? const Value.absent()
           : Value(reallyGoodFriends),
-    ) as T;
+    );
   }
 
   Friendship copyWith(
@@ -536,7 +536,7 @@ class $FriendshipsTable extends Friendships
 }
 
 abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(const SqlTypeSystem.withDefaults(), e);
+  _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   $UsersTable _users;
   $UsersTable get users => _users ??= $UsersTable(this);
   $FriendshipsTable _friendships;

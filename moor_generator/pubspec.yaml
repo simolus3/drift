@@ -13,7 +13,7 @@ environment:
 
 dependencies:
   analyzer: '>=0.36.4 <0.39.0'
-  analyzer_plugin: ^0.1.0
+  analyzer_plugin: '>=0.1.0 <0.3.0'
   collection: ^1.14.0
   recase: ^2.0.1
   built_value: ^6.3.0
