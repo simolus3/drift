@@ -286,22 +286,23 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     inside a transaction returns the parent transaction.
   @protected
   @visibleForTesting
-  Future transaction(Future Function() action) async {
+  Future<T> transaction<T>(Future<T> Function() action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {
       return action();
     }
 
     final executor = resolved.executor;
-    await executor.doWhenOpened((executor) {
+    return await executor.doWhenOpened((executor) {
       final transactionExecutor = executor.beginTransaction();
       final transaction = Transaction(this, transactionExecutor);
 
       return _runEngineZoned(transaction, () async {
         var success = false;
         try {
-          await action();
+          final result = await action();
           success = true;
+          return result;
         } catch (e) {
           await transactionExecutor.rollback();
 
