@@ -1,3 +1,5 @@
+@Tags(['analyzer'])
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';

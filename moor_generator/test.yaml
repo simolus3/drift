@@ -1,0 +1,3 @@
+tags:
+  # Tests that spawn a Dart analyzer
+  analyzer:
