@@ -4,6 +4,9 @@
 - experimental auto-complete engine (only supports a tiny subset based on the grammar only)
 - some features that are specific to moor
 
+__0.3.0+1__: Accept `\r` characters as whitespace
+
+
 ## 0.2.0
 - Parse `CREATE TABLE` statements
 - Extract schema information from parsed create table statements with `SchemaFromCreateTable`.

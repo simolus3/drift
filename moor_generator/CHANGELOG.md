@@ -1,7 +1,8 @@
-## upcoming release
+## 2.0.1
 
 - Escape `\r` characters in generated Dart literals
 - Fix for [an analyzer bug on constant expressions](https://dartbug.com/38658) in generated code
+- Small adaptions in generated code for moor version 2.0.1
 
 ## 2.0.0
 - Rewritten generator with looser coupling to the build package

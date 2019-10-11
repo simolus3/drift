@@ -1,4 +1,4 @@
-## upcoming release
+## 2.0.1
 
 - Introduced `isBetween` and `isBetweenValues` methods for comparable expressions (int, double, datetime)
   to check values for both an upper and lower bound
