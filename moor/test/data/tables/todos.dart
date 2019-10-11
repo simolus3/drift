@@ -2,12 +2,15 @@ import 'package:moor/moor.dart';
 
 part 'todos.g.dart';
 
+mixin AutoIncrement on Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
 @DataClassName('TodoEntry')
-class TodosTable extends Table {
+class TodosTable extends Table with AutoIncrement {
   @override
   String get tableName => 'todos';
 
-  IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
   TextColumn get content => text()();
   @JsonKey('target_date')
@@ -16,8 +19,7 @@ class TodosTable extends Table {
   IntColumn get category => integer().nullable()();
 }
 
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
+class Users extends Table with AutoIncrement {
   TextColumn get name => text().withLength(min: 6, max: 32)();
   BoolColumn get isAwesome => boolean().withDefault(const Constant(true))();
 
@@ -27,8 +29,7 @@ class Users extends Table {
 }
 
 @DataClassName('Category')
-class Categories extends Table {
-  IntColumn get id => integer().autoIncrement()();
+class Categories extends Table with AutoIncrement {
   TextColumn get description =>
       text().named('desc').customConstraint('NOT NULL UNIQUE')();
 }
@@ -54,8 +55,7 @@ class TableWithoutPK extends Table {
   TextColumn get custom => text().map(const CustomConverter())();
 }
 
-class PureDefaults extends Table {
-  IntColumn get id => integer().autoIncrement()();
+class PureDefaults extends Table with AutoIncrement {
   TextColumn get txt => text().nullable()();
 }
 
