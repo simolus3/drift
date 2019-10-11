@@ -110,13 +110,21 @@ class TableParser {
   }
 
   Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
-    final columns = element.allSupertypes
+    final columnNames = element.allSupertypes
         .map((t) => t.element)
         .followedBy([element])
         .expand((e) => e.fields)
-        .where((field) => isColumn(field.type) && field.getter != null);
+        .where((field) => isColumn(field.type) && field.getter != null)
+        .map((field) => field.name)
+        .toSet();
 
-    return Future.wait(columns.map((field) async {
+    final fields = columnNames.map((name) {
+      final getter = element.getGetter(name) ??
+          element.lookUpInheritedConcreteGetter(name, element.library);
+      return getter.variable;
+    });
+
+    return Future.wait(fields.map((field) async {
       final resolved = await base.loadElementDeclaration(field.getter);
       final node = resolved.node as MethodDeclaration;
 

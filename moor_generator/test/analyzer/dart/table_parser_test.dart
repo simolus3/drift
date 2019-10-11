@@ -53,7 +53,7 @@ void main() {
       }
       
       class Foos extends HasNameTable with IntIdTable {
-        
+        TextColumn get name => text().nullable()();
       }
       '''
     });
@@ -159,6 +159,7 @@ void main() {
   test('handles inheritance in column definitions', () async {
     final table = await parse('Foos');
 
+    expect(table.columns, hasLength(2));
     expect(table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
   });
 }
