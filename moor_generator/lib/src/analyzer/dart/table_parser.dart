@@ -110,7 +110,10 @@ class TableParser {
   }
 
   Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
-    final columns = element.fields
+    final columns = element.allSupertypes
+        .map((t) => t.element)
+        .followedBy([element])
+        .expand((e) => e.fields)
         .where((field) => isColumn(field.type) && field.getter != null);
 
     return Future.wait(columns.map((field) async {

@@ -1,3 +1,8 @@
+## unreleased
+
+- Accept inheritance in table definitions (e.g. if an abstract class declared as `IntColumn get foo => integer()()`,
+  tables inheriting from that class will also have a `foo` column)
+
 ## 2.0.1
 
 - Escape `\r` characters in generated Dart literals

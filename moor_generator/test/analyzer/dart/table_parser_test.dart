@@ -43,6 +43,18 @@ void main() {
          String constructTableName() => 'my-table-name';
          String get tableName => constructTableName();
       }
+      
+      mixin IntIdTable on Table {
+        IntColumn get id => integer().autoIncrement()();
+      }
+      
+      abstract class HasNameTable extends Table {
+        TextColumn get name => text()();
+      }
+      
+      class Foos extends HasNameTable with IntIdTable {
+        
+      }
       '''
     });
   });
@@ -142,5 +154,11 @@ void main() {
 
     expect(table.primaryKey, containsAll(table.columns));
     expect(table.columns.any((column) => column.hasAI), isFalse);
+  });
+
+  test('handles inheritance in column definitions', () async {
+    final table = await parse('Foos');
+
+    expect(table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
   });
 }
