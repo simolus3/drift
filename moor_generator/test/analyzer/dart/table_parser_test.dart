@@ -55,6 +55,16 @@ void main() {
       class Foos extends HasNameTable with IntIdTable {
         TextColumn get name => text().nullable()();
       }
+      
+      class Socks extends Table {
+        TextColumn get name => text()();
+        IntColumn get id => integer().autoIncrement()();
+      }
+      
+      class ArchivedSocks extends Socks {
+        TextColumn get archivedBy => text()();
+        DateTimeColumn get archivedOn => dateTime()();
+      }
       '''
     });
   });
@@ -156,10 +166,25 @@ void main() {
     expect(table.columns.any((column) => column.hasAI), isFalse);
   });
 
-  test('handles inheritance in column definitions', () async {
-    final table = await parse('Foos');
+  group('inheritance', () {
+    test('from abstract classes or mixins', () async {
+      final table = await parse('Foos');
 
-    expect(table.columns, hasLength(2));
-    expect(table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
+      expect(table.columns, hasLength(2));
+      expect(
+          table.columns.map((c) => c.name.name), containsAll(['id', 'name']));
+    });
+
+    test('from regular classes', () async {
+      final socks = await parse('Socks');
+      final archivedSocks = await parse('ArchivedSocks');
+
+      expect(socks.columns, hasLength(2));
+      expect(socks.columns.map((c) => c.name.name), ['name', 'id']);
+
+      expect(archivedSocks.columns, hasLength(4));
+      expect(archivedSocks.columns.map((c) => c.name.name),
+          ['name', 'id', 'archived_by', 'archived_on']);
+    });
   });
 }
