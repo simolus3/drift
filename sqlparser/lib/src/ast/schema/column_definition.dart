@@ -199,3 +199,22 @@ class MappedBy extends ColumnConstraint {
   @override
   final Iterable<AstNode> childNodes = const [];
 }
+
+/// A `JSON KEY xyz` constraint which, which is only parsed for moor files.
+class JsonKey extends ColumnConstraint {
+  Token json;
+  Token key;
+  IdentifierToken jsonNameToken;
+
+  @override
+  final Iterable<AstNode> childNodes = const [];
+
+  String get jsonKey => jsonNameToken.identifier;
+
+  JsonKey(String name, this.jsonNameToken) : super(name);
+
+  @override
+  bool _equalToConstraint(JsonKey other) {
+    return other.jsonKey == jsonKey;
+  }
+}

@@ -147,6 +147,7 @@ enum TokenType {
   mapped,
   inlineDart,
   import,
+  json,
 }
 
 const Map<String, TokenType> keywords = {
@@ -255,6 +256,7 @@ final reverseKeywords = {
 const Map<String, TokenType> moorKeywords = {
   'MAPPED': TokenType.mapped,
   'IMPORT': TokenType.import,
+  'JSON': TokenType.json,
 };
 
 /// Returns true if the [type] belongs to a keyword
@@ -361,7 +363,7 @@ class KeywordToken extends Token {
 
   bool canConvertToIdentifier() {
     // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.
-    return type == TokenType.join;
+    return type == TokenType.join || moorKeywords.values.contains(type);
   }
 
   IdentifierToken convertToIdentifier() {

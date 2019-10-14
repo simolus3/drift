@@ -117,7 +117,7 @@ void main() {
     );
   });
 
-  test('parses MAPPED BY expressions when in moor mode', () {
+  test('parses MAPPED BY constraints when in moor mode', () {
     const stmt = 'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)';
     final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
 
@@ -134,6 +134,30 @@ void main() {
           ],
         ),
       ]),
+    );
+  });
+
+  test('parses JSON KEY constraints in moor mode', () {
+    const stmt = 'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")';
+    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
+
+    enforceEqual(
+      parsed,
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: 'INTEGER',
+            constraints: [
+              JsonKey(
+                null,
+                identifier('my_json_key'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   });
 }

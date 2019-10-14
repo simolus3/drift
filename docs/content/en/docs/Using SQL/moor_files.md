@@ -139,6 +139,11 @@ Future<void> insert(TodosCompanion companion) async {
 - generated methods for queries can be used in transactions, they work 
   together with auto-updating queries, etc.
 
+If you're using the `fromJson` and `toJson` methods in the generated
+Dart classes and need to change the name of a column in json, you can
+do that with the `JSON KEY` column constraints, so `id INT NOT NULL JSON KEY userId`
+would generate a column serialized as "userId" in json.
+
 ### Dart components in SQL
 
 You can make most of both SQL and Dart with "Dart Templates", which is a

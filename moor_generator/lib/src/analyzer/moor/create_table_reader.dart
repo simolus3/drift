@@ -31,6 +31,7 @@ class CreateTableReader {
       final moorType = mapper.resolvedToMoor(column.type);
       UsedTypeConverter converter;
       String defaultValue;
+      String overriddenJsonKey;
 
       for (var constraint in column.constraints) {
         if (constraint is PrimaryKeyColumn) {
@@ -53,6 +54,11 @@ class CreateTableReader {
           // don't write MAPPED BY constraints when creating the table
           continue;
         }
+        if (constraint is JsonKey) {
+          overriddenJsonKey = constraint.jsonKey;
+          // those are moor-specific as well, don't write them
+          continue;
+        }
 
         if (constraintWriter.isNotEmpty) {
           constraintWriter.write(' ');
@@ -69,6 +75,7 @@ class CreateTableReader {
         customConstraints: constraintWriter.toString(),
         defaultArgument: defaultValue,
         typeConverter: converter,
+        overriddenJsonName: overriddenJsonKey,
       );
 
       final declaration =

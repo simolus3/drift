@@ -195,6 +195,17 @@ mixin SchemaParser on ParserBase {
       return MappedBy(resolvedName, dartExpr as InlineDartToken)
         ..setSpan(first, _previous);
     }
+    if (enableMoorExtensions && _matchOne(TokenType.json)) {
+      final jsonToken = _previous;
+      final keyToken =
+          _consume(TokenType.key, 'Expected a JSON KEY constraint');
+      final name = _consumeIdentifier('Expected a name for for the json key');
+
+      return JsonKey(resolvedName, name)
+        ..setSpan(first, _previous)
+        ..json = jsonToken
+        ..key = keyToken;
+    }
 
     // no known column constraint matched. If orNull is set and we're not
     // guaranteed to be in a constraint clause (started with CONSTRAINT), we
