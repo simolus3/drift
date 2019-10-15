@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:moor_ffi/src/ffi/utils.dart';
+import 'package:ffi/ffi.dart' as ffi;
 
 /// Pointer to arbitrary blobs in C.
 class CBlob extends Struct<CBlob> {
@@ -11,7 +12,7 @@ class CBlob extends Struct<CBlob> {
   int data;
 
   static Pointer<CBlob> allocate(Uint8List blob) {
-    final str = Pointer<Uint8>.allocate(count: blob.length);
+    final str = ffi.allocate<Uint8>(count: blob.length);
 
     final asList = str.asExternalTypedData(count: blob.length) as Uint8List;
     asList.setAll(0, blob);

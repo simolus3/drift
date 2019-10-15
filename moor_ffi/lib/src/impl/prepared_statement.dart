@@ -95,7 +95,7 @@ class PreparedStatement implements BasePreparedStatement {
       _bound = false;
     }
     for (var pointer in _allocatedWhileBinding) {
-      pointer.free();
+      pointer.$free();
     }
     _allocatedWhileBinding.clear();
   }
