@@ -219,7 +219,7 @@ class DataClassWriter {
   void _writeCompanionOverride() {
     // TableCompanion createCompanion(bool nullToAbsent)
 
-    final companionClass = table.updateCompanionName;
+    final companionClass = table.getNameForCompanionClass(scope.options);
     _buffer.write('@override\n'
         '$companionClass createCompanion(bool nullToAbsent) {\n'
         'return $companionClass(');

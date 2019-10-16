@@ -50,6 +50,8 @@ class Scope extends _Node {
   final DartScope scope;
   final Writer writer;
 
+  MoorOptions get options => writer.options;
+
   Scope({@required Scope parent, Writer writer})
       : scope = parent?.scope?.nextLevel ?? DartScope.library,
         writer = writer ?? parent?.writer,

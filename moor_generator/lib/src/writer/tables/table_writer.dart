@@ -98,7 +98,7 @@ class TableWriter {
     // Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance)
     _buffer
       ..write('@override\nMap<String, Variable> entityToSql('
-          '${table.updateCompanionName} d) {\n')
+          '${table.getNameForCompanionClass(scope.options)} d) {\n')
       ..write('final map = <String, Variable> {};');
 
     for (var column in table.columns) {
@@ -204,7 +204,8 @@ class TableWriter {
 
     _buffer
       ..write('@override\nVerificationContext validateIntegrity'
-          '(${table.updateCompanionName} d, {bool isInserting = false}) {\n')
+          '(${table.getNameForCompanionClass(scope.options)} d, '
+          '{bool isInserting = false}) {\n')
       ..write('final context = VerificationContext();\n');
 
     for (var column in table.columns) {

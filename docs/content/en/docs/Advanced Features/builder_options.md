@@ -6,7 +6,7 @@ description: >-
 
 The `moor_generator` package has some options that control how the 
 code is generated. Note that, in most cases, the default settings
-should be sufficient.
+should be sufficient. See the section on recommended settings below.
 
 To use the options, create a `build.yaml` file in the root of your project (e.g. next
 to your `pubspec.yaml`):
@@ -39,3 +39,16 @@ At the moment, moor supports these options:
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
   generated code.
+* `use_data_class_name_for_companions`: By default, the name for [companion classes]({{< relref "../Getting started/writing_queries.md#updates-and-deletes" >}})
+  is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
+  a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
+  this case).
+
+## Recommended options
+
+In general, we recommend not enabling these options unless you need to. There are two exceptions though:
+
+- `compact_query_methods`: We recommend enabling this flag because it generates less code and it will
+  be the only option in the next breaking upgrade.
+- `skip_verification_code`: You can remove a significant portion of generated code with this option. The 
+  downside is that error messages when inserting invalid data will be less specific.

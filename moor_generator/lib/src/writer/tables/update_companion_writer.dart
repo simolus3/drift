@@ -13,7 +13,7 @@ class UpdateCompanionWriter {
   }
 
   void write() {
-    _buffer.write('class ${table.updateCompanionName} '
+    _buffer.write('class ${table.getNameForCompanionClass(scope.options)} '
         'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields();
     _writeConstructor();
@@ -31,7 +31,7 @@ class UpdateCompanionWriter {
   }
 
   void _writeConstructor() {
-    _buffer.write('const ${table.updateCompanionName}({');
+    _buffer.write('const ${table.getNameForCompanionClass(scope.options)}({');
 
     for (var column in table.columns) {
       _buffer.write('this.${column.dartGetterName} = const Value.absent(),');
@@ -48,7 +48,7 @@ class UpdateCompanionWriter {
 
     // can't be constant because we use initializers (this.a = Value(a)).
     // for a parameter a which is only potentially constant.
-    _buffer.write('${table.updateCompanionName}.insert({');
+    _buffer.write('${table.getNameForCompanionClass(scope.options)}.insert({');
 
     // Say we had two required columns a and c, and an optional column b.
     // .insert({
@@ -87,7 +87,9 @@ class UpdateCompanionWriter {
   }
 
   void _writeCopyWith() {
-    _buffer.write('${table.updateCompanionName} copyWith({');
+    _buffer
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write(' copyWith({');
     var first = true;
     for (var column in table.columns) {
       if (!first) {
@@ -99,7 +101,7 @@ class UpdateCompanionWriter {
 
     _buffer
       ..write('}) {\n') //
-      ..write('return ${table.updateCompanionName}(');
+      ..write('return ${table.getNameForCompanionClass(scope.options)}(');
     for (var column in table.columns) {
       final name = column.dartGetterName;
       _buffer.write('$name: $name ?? this.$name,');

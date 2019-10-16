@@ -1,4 +1,5 @@
 import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
@@ -48,7 +49,11 @@ class SpecifiedTable {
     return name;
   }
 
-  String get updateCompanionName => _updateCompanionName(_baseName);
+  String getNameForCompanionClass(MoorOptions options) {
+    final baseName =
+        options.useDataClassNameForCompanions ? dartTypeName : _baseName;
+    return '${baseName}Companion';
+  }
 
   /// The set of primary keys, if they have been explicitly defined by
   /// overriding `primaryKey` in the table class. `null` if the primary key has
@@ -104,5 +109,3 @@ class SpecifiedTable {
 String _dbFieldName(String className) => ReCase(className).camelCase;
 
 String tableInfoNameForTableClass(String className) => '\$${className}Table';
-
-String _updateCompanionName(String className) => '${className}Companion';

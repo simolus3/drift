@@ -5,12 +5,14 @@ class MoorOptions {
   final bool overrideHashAndEqualsInResultSets;
   final bool compactQueryMethods;
   final bool skipVerificationCode;
+  final bool useDataClassNameForCompanions;
 
-  MoorOptions(
-      this.generateFromJsonStringConstructor,
-      this.overrideHashAndEqualsInResultSets,
-      this.compactQueryMethods,
-      this.skipVerificationCode);
+  const MoorOptions(
+      {this.generateFromJsonStringConstructor = false,
+      this.overrideHashAndEqualsInResultSets = false,
+      this.compactQueryMethods = false,
+      this.skipVerificationCode = false,
+      this.useDataClassNameForCompanions = false});
 
   factory MoorOptions.fromBuilder(Map<String, dynamic> config) {
     final writeFromString =
@@ -25,13 +27,15 @@ class MoorOptions {
     final skipVerificationCode =
         config['skip_verification_code'] as bool ?? false;
 
-    return MoorOptions(writeFromString, overrideInResultSets,
-        compactQueryMethods, skipVerificationCode);
-  }
+    final dataClassNamesForCompanions =
+        config['use_data_class_name_for_companions'] as bool ?? false;
 
-  const MoorOptions.defaults()
-      : generateFromJsonStringConstructor = false,
-        overrideHashAndEqualsInResultSets = false,
-        compactQueryMethods = false,
-        skipVerificationCode = false;
+    return MoorOptions(
+      generateFromJsonStringConstructor: writeFromString,
+      overrideHashAndEqualsInResultSets: overrideInResultSets,
+      compactQueryMethods: compactQueryMethods,
+      skipVerificationCode: skipVerificationCode,
+      useDataClassNameForCompanions: dataClassNamesForCompanions,
+    );
+  }
 }

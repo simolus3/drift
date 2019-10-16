@@ -2,6 +2,8 @@
 
 - Accept inheritance in table definitions (e.g. if an abstract class declared as `IntColumn get foo => integer()()`,
   tables inheriting from that class will also have a `foo` column)
+- New `use_data_class_name_for_companions` option that will make the name of the companion
+  based on the data class name (uses table name by default).
 
 ## 2.0.1
 
