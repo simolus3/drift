@@ -6,13 +6,15 @@ class MoorOptions {
   final bool compactQueryMethods;
   final bool skipVerificationCode;
   final bool useDataClassNameForCompanions;
+  final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
 
   const MoorOptions(
       {this.generateFromJsonStringConstructor = false,
       this.overrideHashAndEqualsInResultSets = false,
       this.compactQueryMethods = false,
       this.skipVerificationCode = false,
-      this.useDataClassNameForCompanions = false});
+      this.useDataClassNameForCompanions = false,
+      this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false});
 
   factory MoorOptions.fromBuilder(Map<String, dynamic> config) {
     final writeFromString =
@@ -30,12 +32,19 @@ class MoorOptions {
     final dataClassNamesForCompanions =
         config['use_data_class_name_for_companions'] as bool ?? false;
 
+    final useColumnNameAsJsonKeyForMoor =
+        config['use_column_name_as_json_key_when_defined_in_moor_file']
+                as bool ??
+            false;
+
     return MoorOptions(
       generateFromJsonStringConstructor: writeFromString,
       overrideHashAndEqualsInResultSets: overrideInResultSets,
       compactQueryMethods: compactQueryMethods,
       skipVerificationCode: skipVerificationCode,
       useDataClassNameForCompanions: dataClassNamesForCompanions,
+      useColumnNameAsJsonKeyWhenDefinedInMoorFile:
+          useColumnNameAsJsonKeyForMoor,
     );
   }
 }

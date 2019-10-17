@@ -4,6 +4,8 @@
   tables inheriting from that class will also have a `foo` column)
 - New `use_data_class_name_for_companions` option that will make the name of the companion
   based on the data class name (uses table name by default).
+- New `use_column_name_as_json_key_when_defined_in_moor_file` option to use the column name
+  instead of the Dart getter name as json key for columns declared in moor files
 
 ## 2.0.1
 

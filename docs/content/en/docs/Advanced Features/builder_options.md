@@ -43,12 +43,17 @@ At the moment, moor supports these options:
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
+* `use_column_name_as_json_key_when_defined_in_moor_file`: When serializing columns declared inside a 
+  `.moor` file from and to json, use their sql name instead of the generated Dart getter name
+  (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
+  This will be the only option in moor 3.0. You can always override the json key by using a `JSON KEY`
+  column constraint (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`)
 
 ## Recommended options
 
-In general, we recommend not enabling these options unless you need to. There are two exceptions though:
+In general, we recommend not enabling these options unless you need to. There are some exceptions though:
 
-- `compact_query_methods`: We recommend enabling this flag because it generates less code and it will
-  be the only option in the next breaking upgrade.
+- `compact_query_methods` and `use_column_name_as_json_key_when_defined_in_moor_file`: We recommend enabling 
+  both flags for new projects because they'll be the only option in the next breaking release.
 - `skip_verification_code`: You can remove a significant portion of generated code with this option. The 
-  downside is that error messages when inserting invalid data will be less specific.
+  downside is that error messages when inserting invalid data will be less specific. 

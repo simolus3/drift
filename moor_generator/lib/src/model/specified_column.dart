@@ -1,5 +1,6 @@
 import 'package:built_value/built_value.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 
 part 'specified_column.g.dart';
@@ -81,6 +82,9 @@ class SpecifiedColumn {
   /// column was created in source code.
   ColumnDeclaration declaration;
 
+  /// Whether this column was declared inside a moor file.
+  bool get declaredInMoorFile => declaration?.isDefinedInMoorFile ?? false;
+
   /// The sql type of this column
   final ColumnType type;
 
@@ -89,7 +93,13 @@ class SpecifiedColumn {
 
   /// An (optional) name to use as a json key instead of the [dartGetterName].
   final String overriddenJsonName;
-  String get jsonKey => overriddenJsonName ?? dartGetterName;
+  String getJsonKey([MoorOptions options = const MoorOptions()]) {
+    if (overriddenJsonName != null) return overriddenJsonName;
+
+    final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
+        declaredInMoorFile;
+    return useColumnName ? name.name : dartGetterName;
+  }
 
   /// Whether the user has explicitly declared this column to be nullable, the
   /// default is false

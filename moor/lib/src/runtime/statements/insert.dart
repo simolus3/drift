@@ -25,7 +25,7 @@ class InsertStatement<D extends DataClass> {
   /// thrown.
   ///
   /// If [orReplace] is true and a row with the same primary key already exists,
-  /// the columns of that row will be updated and now new row will be written.
+  /// the columns of that row will be updated and no new row will be written.
   /// Otherwise, an exception will be thrown.
   ///
   /// If the table contains an auto-increment column, the generated value will

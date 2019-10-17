@@ -495,16 +495,16 @@ class Config extends DataClass implements Insertable<Config> {
   factory Config.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return Config(
-      configKey: serializer.fromJson<String>(json['configKey']),
-      configValue: serializer.fromJson<String>(json['configValue']),
+      configKey: serializer.fromJson<String>(json['config_key']),
+      configValue: serializer.fromJson<String>(json['config_value']),
     );
   }
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
     return {
-      'configKey': serializer.toJson<String>(configKey),
-      'configValue': serializer.toJson<String>(configValue),
+      'config_key': serializer.toJson<String>(configKey),
+      'config_value': serializer.toJson<String>(configValue),
     };
   }
 

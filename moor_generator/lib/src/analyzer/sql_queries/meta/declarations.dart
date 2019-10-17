@@ -26,6 +26,10 @@ class ColumnDeclaration extends BaseDeclaration {
   /// The moor version of the declared column.
   final SpecifiedColumn column;
 
+  /// Whether this declaration is from a moor file (e.g. inside a `CREATE TABLE`
+  /// statement).
+  bool get isDefinedInMoorFile => moorDeclaration != null;
+
   ColumnDeclaration(this.column, FoundFile declarationFile,
       Element dartDeclaration, AstNode moorDeclaration)
       : super(declarationFile, dartDeclaration, moorDeclaration);

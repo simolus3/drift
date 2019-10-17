@@ -117,7 +117,7 @@ class DataClassWriter {
 
     for (var column in table.columns) {
       final getter = column.dartGetterName;
-      final jsonKey = column.jsonKey;
+      final jsonKey = column.getJsonKey(scope.options);
       final type = column.dartTypeName;
 
       _buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
@@ -141,7 +141,7 @@ class DataClassWriter {
         '\n return {');
 
     for (var column in table.columns) {
-      final name = column.jsonKey;
+      final name = column.getJsonKey(scope.options);
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
       final value = needsThis ? 'this.$getter' : getter;
