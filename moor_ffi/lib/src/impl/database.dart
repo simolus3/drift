@@ -37,10 +37,10 @@ class Database implements BaseDatabase {
 
     final resultCode =
         bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullptr.cast());
-    final dbPointer = dbOut.load<Pointer<types.Database>>();
+    final dbPointer = dbOut.value;
 
-    dbOut.$free();
-    pathC.$free();
+    dbOut.free();
+    pathC.free();
 
     if (resultCode == Errors.SQLITE_OK) {
       return Database._(dbPointer);
@@ -94,14 +94,14 @@ class Database implements BaseDatabase {
     final result =
         bindings.sqlite3_exec(_db, sqlPtr, nullptr, nullptr, errorOut);
 
-    sqlPtr.$free();
+    sqlPtr.free();
 
-    final errorPtr = errorOut.load<Pointer<CBlob>>();
-    errorOut.$free();
+    final errorPtr = errorOut.value;
+    errorOut.free();
 
     String errorMsg;
-    if (!isNullPointer(errorPtr)) {
-      errorMsg = errorPtr.load<CBlob>().readString();
+    if (!errorPtr.isNullPointer) {
+      errorMsg = errorPtr.readString();
       // the message was allocated from sqlite, we need to free it
       bindings.sqlite3_free(errorPtr.cast());
     }
@@ -120,10 +120,10 @@ class Database implements BaseDatabase {
 
     final resultCode =
         bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, nullptr.cast());
-    sqlPtr.$free();
+    sqlPtr.free();
 
-    final stmt = stmtOut.load<Pointer<types.Statement>>();
-    stmtOut.$free();
+    final stmt = stmtOut.value;
+    stmtOut.free();
 
     if (resultCode != Errors.SQLITE_OK) {
       // we don't need to worry about freeing the statement. If preparing the
