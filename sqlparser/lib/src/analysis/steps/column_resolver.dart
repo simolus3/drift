@@ -131,7 +131,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
         String name;
 
         if (expression is Reference) {
-          column = ReferenceExpressionColumn(expression);
+          column = ReferenceExpressionColumn(expression,
+              overriddenName: resultColumn.as);
           if (resultColumn.as != null) name = resultColumn.as;
         } else {
           name = _nameOfResultColumn(resultColumn);

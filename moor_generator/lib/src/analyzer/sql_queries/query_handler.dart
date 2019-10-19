@@ -124,7 +124,7 @@ class QueryHandler {
 
       // we have established that all columns in resultEntryToColumn do appear
       // in the moor table. Now check for set equality.
-      if (resultEntryToColumn.length != moorTable.columns.length) {
+      if (rawColumns.length != moorTable.columns.length) {
         matches = false;
       }
 

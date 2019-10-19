@@ -12,7 +12,7 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
   @override
   void visitChildren(AstNode e) {
     // called for every ast node, so we implement this here
-    if (e is Expression) {
+    if (e is Expression && !types.needsToBeInferred(e)) {
       types.resolveExpression(e);
     } else if (e is SelectStatement) {
       e.resolvedColumns.forEach(types.resolveColumn);
@@ -41,8 +41,12 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
           }
         }
       }
-    }
 
-    visitChildren(e);
+      // we already handled the source tuples, don't visit them
+      visitChildren(e.table);
+      e.targetColumns.forEach(visitChildren);
+    } else {
+      visitChildren(e);
+    }
   }
 }

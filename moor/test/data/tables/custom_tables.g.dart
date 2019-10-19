@@ -926,6 +926,22 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToConfig);
   }
 
+  ReadRowIdResult _rowToReadRowIdResult(QueryRow row) {
+    return ReadRowIdResult(
+      rowid: row.readInt('rowid'),
+      configKey: row.readString('config_key'),
+      configValue: row.readString('config_value'),
+    );
+  }
+
+  Selectable<ReadRowIdResult> readRowId(Expression<int, IntType> expr) {
+    final generatedexpr = $write(expr);
+    return customSelectQuery(
+        'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
+        variables: [...generatedexpr.introducedVariables],
+        readsFrom: {config}).map(_rowToReadRowIdResult);
+  }
+
   Future<int> writeConfig(String key, String value) {
     return customInsert(
       'REPLACE INTO config VALUES (:key, :value)',
@@ -937,4 +953,25 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   @override
   List<TableInfo> get allTables =>
       [noIds, withDefaults, withConstraints, config, mytable];
+}
+
+class ReadRowIdResult {
+  final int rowid;
+  final String configKey;
+  final String configValue;
+  ReadRowIdResult({
+    this.rowid,
+    this.configKey,
+    this.configValue,
+  });
+  @override
+  int get hashCode => $mrjf(
+      $mrjc(rowid.hashCode, $mrjc(configKey.hashCode, configValue.hashCode)));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is ReadRowIdResult &&
+          other.rowid == this.rowid &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue);
 }

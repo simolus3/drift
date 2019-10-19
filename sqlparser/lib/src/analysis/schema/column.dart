@@ -98,9 +98,12 @@ class ReferenceExpressionColumn extends ExpressionColumn {
   Reference get reference => expression as Reference;
 
   @override
-  String get name => reference.resolvedColumn.name;
+  String get name => overriddenName ?? reference.resolvedColumn?.name;
 
-  ReferenceExpressionColumn(Reference ref) : super(name: null, expression: ref);
+  final String overriddenName;
+
+  ReferenceExpressionColumn(Reference ref, {this.overriddenName})
+      : super(name: null, expression: ref);
 }
 
 /// The result column of a [CompoundSelectStatement].

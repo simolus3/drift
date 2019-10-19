@@ -49,10 +49,14 @@ class TypeResolver {
     return !containsVariable;
   }
 
+  bool needsToBeInferred(Typeable t) {
+    return t is Variable || t is DartExpressionPlaceholder;
+  }
+
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);
-    } else if (t is Variable || t is DartExpressionPlaceholder) {
+    } else if (needsToBeInferred(t)) {
       return inferType(t as Expression);
     } else if (t is Expression) {
       return resolveExpression(t);

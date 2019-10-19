@@ -68,7 +68,8 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
 
     // handle aliases to rowids, see https://www.sqlite.org/lang_createtable.html#rowid
     if (aliasesForRowId.contains(name.toLowerCase()) && !withoutRowId) {
-      return _rowIdColumn ?? RowId();
+      return _rowIdColumn ?? RowId()
+        ..table = this;
     }
     return null;
   }
