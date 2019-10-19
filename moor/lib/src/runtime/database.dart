@@ -34,9 +34,13 @@ abstract class DatabaseAccessor<T extends GeneratedDatabase>
   DatabaseAccessor(this.db) : super.delegate(db);
 }
 
-/// Manages a [QueryExecutor] and optionally an own [SqlTypeSystem] or
-/// [StreamQueryStore] to send queries to the database.
-abstract class DatabaseConnectionUser {
+/// A database connection managed by moor. Contains three components:
+/// - a [SqlTypeSystem], which is responsible to map between Dart types and
+///   values understood by the database engine.
+/// - a [QueryExecutor], which runs sql commands
+/// - a [StreamQueryStore], which dispatches table changes to listening queries,
+///   on which the auto-updating queries are based.
+class DatabaseConnection {
   /// The type system to use with this database. The type system is responsible
   /// for mapping Dart objects into sql expressions and vice-versa.
   final SqlTypeSystem typeSystem;
@@ -45,15 +49,42 @@ abstract class DatabaseConnectionUser {
   final QueryExecutor executor;
 
   /// Manages active streams from select statements.
+  final StreamQueryStore streamQueries;
+
+  /// Constructs a raw database connection from the three components.
+  DatabaseConnection(this.typeSystem, this.executor, this.streamQueries);
+
+  /// Constructs a [DatabaseConnection] from the [QueryExecutor] by using the
+  /// default type system and a new [StreamQueryStore].
+  DatabaseConnection.fromExecutor(this.executor)
+      : typeSystem = SqlTypeSystem.defaultInstance,
+        streamQueries = StreamQueryStore();
+}
+
+/// Manages a [DatabaseConnection] to send queries to the database.
+abstract class DatabaseConnectionUser {
+  /// The database connection used by this [DatabaseConnectionUser].
+  @protected
+  final DatabaseConnection connection;
+
+  /// The type system to use with this database. The type system is responsible
+  /// for mapping Dart objects into sql expressions and vice-versa.
+  SqlTypeSystem get typeSystem => connection.typeSystem;
+
+  /// The executor to use when queries are executed.
+  QueryExecutor get executor => connection.executor;
+
+  /// Manages active streams from select statements.
   @visibleForTesting
   @protected
-  StreamQueryStore streamQueries;
+  StreamQueryStore get streamQueries => connection.streamQueries;
 
   /// Constructs a database connection user, which is responsible to store query
   /// streams, wrap the underlying executor and perform type mapping.
-  DatabaseConnectionUser(this.typeSystem, this.executor, {this.streamQueries}) {
-    streamQueries ??= StreamQueryStore();
-  }
+  DatabaseConnectionUser(SqlTypeSystem typeSystem, QueryExecutor executor,
+      {StreamQueryStore streamQueries})
+      : connection = DatabaseConnection(
+            typeSystem, executor, streamQueries ?? StreamQueryStore());
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.
@@ -61,9 +92,15 @@ abstract class DatabaseConnectionUser {
       {SqlTypeSystem typeSystem,
       QueryExecutor executor,
       StreamQueryStore streamQueries})
-      : typeSystem = typeSystem ?? other.typeSystem,
-        executor = executor ?? other.executor,
-        streamQueries = streamQueries ?? other.streamQueries;
+      : connection = DatabaseConnection(
+          typeSystem ?? other.connection.typeSystem,
+          executor ?? other.connection.executor,
+          streamQueries ?? other.connection.streamQueries,
+        );
+
+  /// Constructs a [DatabaseConnectionUser] that will use the provided
+  /// [DatabaseConnection].
+  DatabaseConnectionUser.fromConnection(this.connection);
 
   /// Marks the tables as updated. This method will be called internally
   /// whenever a update, delete or insert statement is issued on the database.
@@ -421,5 +458,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await executor.close();
+  }
+
+  /// Creates another instance of this [GeneratedDatabase] that uses the
+  /// [connection] instead of the current connection.
+  GeneratedDatabase cloneWith(DatabaseConnection connection) {
+    throw UnimplementedError();
   }
 }
