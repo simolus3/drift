@@ -67,7 +67,8 @@ class QueryHandler {
     final tableFinder = ReferencedTablesVisitor();
     _select.accept(tableFinder);
     _foundTables = tableFinder.foundTables;
-    final moorTables = _foundTables.map(mapper.tableToMoor).toList();
+    final moorTables =
+        _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
 
     return SqlSelectQuery(
         name, context, _foundElements, moorTables, _inferResultSet());
@@ -99,6 +100,12 @@ class QueryHandler {
     if (candidatesForSingleTable.length == 1) {
       final table = candidatesForSingleTable.single;
       final moorTable = mapper.tableToMoor(table);
+
+      if (moorTable == null) {
+        // References a table not declared in any moor api (dart or moor file).
+        // This can happen for internal sqlite tables
+        return InferredResultSet(null, columns);
+      }
 
       final resultEntryToColumn = <ResultColumn, String>{};
       var matches = true;

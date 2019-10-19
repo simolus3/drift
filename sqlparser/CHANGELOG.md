@@ -1,5 +1,6 @@
 ## unreleased
 - Handle special `rowid`, `oid`, `__rowid__` references
+- Support references to `sqlite_master` and `sqlite_sequence` tables
 
 ## 0.3.0
 - parse compound select statements
