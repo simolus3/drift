@@ -42,6 +42,16 @@ class ReferenceResolver extends RecursiveVisitor<void> {
           e.resolved = column;
         }
       }
+    } else if (aliasesForRowId.contains(e.columnName.toLowerCase())) {
+      // special case for aliases to a rowid
+      final column = _resolveRowIdAlias(e);
+
+      if (column == null) {
+        context.reportError(AnalysisError(
+            type: AnalysisErrorType.referencedUnknownColumn, relevantNode: e));
+      } else {
+        e.resolved = column;
+      }
     } else {
       // find any column with the referenced name.
       // todo special case for USING (...) in joins?
@@ -65,6 +75,24 @@ class ReferenceResolver extends RecursiveVisitor<void> {
     }
 
     visitChildren(e);
+  }
+
+  Column _resolveRowIdAlias(Reference e) {
+    // to resolve those aliases when they're not bound to a table, the
+    // surrounding select statement may only read from one table
+    final select = e.parents.firstWhere((node) => node is SelectStatement,
+        orElse: () => null) as SelectStatement;
+
+    if (select == null) return null;
+    if (select.from.length != 1 || select.from.single is! TableReference) {
+      return null;
+    }
+
+    final table = (select.from.single as TableReference).resolved as Table;
+    if (table == null) return null;
+
+    // table.findColumn contains logic to resolve row id aliases
+    return table.findColumn(e.columnName);
   }
 
   @override

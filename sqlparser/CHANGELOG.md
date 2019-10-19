@@ -1,3 +1,6 @@
+## unreleased
+- Handle special `rowid`, `oid`, `__rowid__` references
+
 ## 0.3.0
 - parse compound select statements
 - scan comment tokens

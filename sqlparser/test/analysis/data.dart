@@ -1,6 +1,14 @@
 import 'package:sqlparser/sqlparser.dart';
 
-final id = TableColumn('id', const ResolvedType(type: BasicType.int));
+final id = TableColumn(
+  'id',
+  const ResolvedType(type: BasicType.int),
+  definition: ColumnDefinition(
+    columnName: 'id',
+    typeName: 'INTEGER',
+    constraints: [PrimaryKeyColumn(null)],
+  ),
+);
 final content =
     TableColumn('content', const ResolvedType(type: BasicType.text));
 

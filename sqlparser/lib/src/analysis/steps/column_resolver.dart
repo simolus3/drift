@@ -126,14 +126,23 @@ class ColumnResolver extends RecursiveVisitor<void> {
           usedColumns.addAll(availableColumns);
         }
       } else if (resultColumn is ExpressionResultColumn) {
-        final name = _nameOfResultColumn(resultColumn);
-        final column =
-            ExpressionColumn(name: name, expression: resultColumn.expression);
+        final expression = resultColumn.expression;
+        Column column;
+        String name;
+
+        if (expression is Reference) {
+          column = ReferenceExpressionColumn(expression);
+          if (resultColumn.as != null) name = resultColumn.as;
+        } else {
+          name = _nameOfResultColumn(resultColumn);
+          column =
+              ExpressionColumn(name: name, expression: resultColumn.expression);
+        }
 
         usedColumns.add(column);
 
         // make this column available if there is no other with the same name
-        if (!availableColumns.any((c) => c.name == name)) {
+        if (name != null && !availableColumns.any((c) => c.name == name)) {
           availableColumns.add(column);
         }
       }

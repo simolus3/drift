@@ -1,5 +1,9 @@
 part of '../analysis.dart';
 
+/// The aliases which can be used to refer to the rowid of a table. See
+/// https://www.sqlite.org/lang_createtable.html#rowid
+const aliasesForRowId = ['rowid', 'oid', '_rowid_'];
+
 /// Something that will resolve to an [ResultSet] when referred to via
 /// the [ReferenceScope].
 abstract class ResolvesToResultSet with Referencable {
@@ -39,6 +43,8 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
   /// The ast node that created this table
   final CreateTableStatement definition;
 
+  TableColumn _rowIdColumn;
+
   /// Constructs a table from the known [name] and [resolvedColumns].
   Table(
       {@required this.name,
@@ -48,6 +54,22 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
       this.definition}) {
     for (var column in resolvedColumns) {
       column.table = this;
+
+      if (_rowIdColumn == null && column.isAliasForRowId()) {
+        _rowIdColumn = column;
+      }
     }
+  }
+
+  @override
+  Column findColumn(String name) {
+    final defaultSearch = super.findColumn(name);
+    if (defaultSearch != null) return defaultSearch;
+
+    // handle aliases to rowids, see https://www.sqlite.org/lang_createtable.html#rowid
+    if (aliasesForRowId.contains(name.toLowerCase()) && !withoutRowId) {
+      return _rowIdColumn ?? RowId();
+    }
+    return null;
   }
 }
