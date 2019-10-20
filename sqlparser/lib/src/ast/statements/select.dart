@@ -95,7 +95,7 @@ abstract class ResultColumn extends AstNode {
 class StarResultColumn extends ResultColumn {
   final String tableName;
 
-  StarResultColumn(this.tableName);
+  StarResultColumn([this.tableName]);
 
   @override
   Iterable<AstNode> get childNodes => const [];

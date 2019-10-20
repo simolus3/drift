@@ -120,6 +120,7 @@ enum TokenType {
 
   create,
   table,
+  trigger,
   $if,
   without,
   rowid,
@@ -138,6 +139,14 @@ enum TokenType {
   restrict,
   no,
   action,
+
+  before,
+  after,
+  instead,
+  of,
+  $for,
+  each,
+  begin,
 
   semicolon,
   comment,
@@ -209,6 +218,7 @@ const Map<String, TokenType> keywords = {
   'IGNORE': TokenType.ignore,
   'CREATE': TokenType.create,
   'TABLE': TokenType.table,
+  'TRIGGER': TokenType.trigger,
   'IF': TokenType.$if,
   'WITHOUT': TokenType.without,
   'ROWID': TokenType.rowid,
@@ -245,6 +255,13 @@ const Map<String, TokenType> keywords = {
   'UNION': TokenType.union,
   'INTERSECT': TokenType.intersect,
   'EXCEPT': TokenType.except,
+  'BEFORE': TokenType.before,
+  'AFTER': TokenType.after,
+  'INSTEAD': TokenType.instead,
+  'OF': TokenType.of,
+  'FOR': TokenType.$for,
+  'EACH': TokenType.each,
+  'BEGIN': TokenType.begin,
 };
 
 /// Maps [TokenType]s which are keywords to their lexeme.

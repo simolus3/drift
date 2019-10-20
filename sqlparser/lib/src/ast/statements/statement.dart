@@ -14,4 +14,4 @@ abstract class HasWhereClause extends Statement {
 }
 
 /// Marker mixin for statements that change the table structure.
-mixin SchemaStatement on Statement {}
+mixin SchemaStatement on Statement implements PartOfMoorFile {}

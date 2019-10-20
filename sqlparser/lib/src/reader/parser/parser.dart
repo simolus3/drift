@@ -178,6 +178,9 @@ abstract class ParserBase {
 
   /// https://www.sqlite.org/syntax/window-defn.html
   WindowDefinition _windowDefinition();
+
+  /// Parses a block, which consists of statements between `BEGIN` and `END`.
+  Block _consumeBlock();
 }
 
 class Parser extends ParserBase
@@ -192,7 +195,7 @@ class Parser extends ParserBase
   Statement statement() {
     final first = _peek;
     Statement stmt = _crud();
-    stmt ??= _createTable();
+    stmt ??= _create();
 
     if (enableMoorExtensions) {
       stmt ??= _import() ?? _declaredStatement();
@@ -237,9 +240,9 @@ class Parser extends ParserBase
     }
 
     // next, table declarations
-    for (var stmt = _parseAsStatement(_createTable);
+    for (var stmt = _parseAsStatement(_create);
         stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_createTable)) {
+        stmt = _parseAsStatement(_create)) {
       foundComponents.add(stmt);
     }
 
@@ -320,8 +323,27 @@ class Parser extends ParserBase
     return result;
   }
 
+  @override
+  Block _consumeBlock() {
+    final begin = _consume(TokenType.begin, 'Expected BEGIN');
+    final stmts = <CrudStatement>[];
+
+    for (var stmt = _parseAsStatement(_crud);
+        stmt != null || _lastStmtHadParsingError;
+        stmt = _parseAsStatement(_crud)) {
+      stmts.add(stmt);
+    }
+
+    final end = _consume(TokenType.end, 'Expected END');
+
+    return Block(stmts)
+      ..setSpan(begin, end)
+      ..begin = begin
+      ..end = end;
+  }
+
   void _synchronize() {
-    // fast-forward to the token after th next semicolon
+    // fast-forward to the token after the next semicolon
     while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
 }

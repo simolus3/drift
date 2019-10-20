@@ -1,22 +1,28 @@
 part of 'parser.dart';
 
 mixin SchemaParser on ParserBase {
-  CreateTableStatement _createTable() {
-    _suggestHint(
-        const HintDescription.tokens([TokenType.create, TokenType.table]));
+  SchemaStatement _create() {
     if (!_matchOne(TokenType.create)) return null;
+
+    if (_check(TokenType.table)) {
+      return _createTable();
+    } else if (_check(TokenType.trigger)) {
+      return _createTrigger();
+    }
+
+    return null;
+  }
+
+  /// Parses a `CREATE TABLE` statement, assuming that the `CREATE` token has
+  /// already been matched.
+  CreateTableStatement _createTable() {
     final first = _previous;
+    assert(first.type == TokenType.create);
 
     _suggestHint(HintDescription.token(TokenType.table));
     _consume(TokenType.table, 'Expected TABLE keyword here');
 
-    var ifNotExists = false;
-
-    if (_matchOne(TokenType.$if)) {
-      _consume(TokenType.not, 'Expected IF to be followed by NOT EXISTS');
-      _consume(TokenType.exists, 'Expected IF NOT to be followed by EXISTS');
-      ifNotExists = true;
-    }
+    final ifNotExists = _ifNotExists();
 
     final tableIdentifier = _consumeIdentifier('Expected a table name');
 
@@ -71,6 +77,92 @@ mixin SchemaParser on ParserBase {
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
       ..closingBracket = rightParen;
+  }
+
+  /// Parses a "CREATE TRIGGER" statement, assuming that the create token has
+  /// already been consumed.
+  CreateTriggerStatement _createTrigger() {
+    final create = _previous;
+    assert(create.type == TokenType.create);
+
+    if (!_matchOne(TokenType.trigger)) return null;
+
+    final ifNotExists = _ifNotExists();
+    final trigger = _consumeIdentifier('Expected a name for the identifier');
+
+    TriggerMode mode;
+    if (_matchOne(TokenType.before)) {
+      mode = TriggerMode.before;
+    } else if (_matchOne(TokenType.after)) {
+      mode = TriggerMode.after;
+    } else {
+      const msg = 'Expected BEFORE, AFTER or INSTEAD OF';
+      _consume(TokenType.instead, msg);
+      _consume(TokenType.of, msg);
+      mode = TriggerMode.insteadOf;
+    }
+
+    TriggerTarget target;
+    if (_matchOne(TokenType.delete)) {
+      target = const DeleteTarget();
+    } else if (_matchOne(TokenType.insert)) {
+      target = const InsertTarget();
+    } else {
+      _consume(
+          TokenType.update, 'Expected DELETE, INSERT or UPDATE as a trigger');
+      final names = <Reference>[];
+
+      if (_matchOne(TokenType.of)) {
+        do {
+          final name = _consumeIdentifier('Expected column name in ON clause');
+          final reference = Reference(columnName: name.identifier)
+            ..setSpan(name, name);
+          names.add(reference);
+        } while (_matchOne(TokenType.comma));
+      }
+
+      target = UpdateTarget(names);
+    }
+
+    _consume(TokenType.on, 'Expected ON');
+    final nameToken = _consumeIdentifier('Expected a table name');
+    final tableRef = TableReference(nameToken.identifier)
+      ..setSpan(nameToken, nameToken);
+
+    if (_matchOne(TokenType.$for)) {
+      const msg = 'Expected FOR EACH ROW';
+      _consume(TokenType.each, msg);
+      _consume(TokenType.row, msg);
+    }
+
+    Expression when;
+    if (_matchOne(TokenType.when)) {
+      when = expression();
+    }
+
+    final block = _consumeBlock();
+
+    return CreateTriggerStatement(
+      ifNotExists: ifNotExists,
+      triggerName: trigger.identifier,
+      mode: mode,
+      target: target,
+      onTable: tableRef,
+      when: when,
+      action: block,
+    )
+      ..setSpan(create, _previous)
+      ..triggerNameToken = trigger;
+  }
+
+  /// Parses `IF NOT EXISTS` | epsilon
+  bool _ifNotExists() {
+    if (_matchOne(TokenType.$if)) {
+      _consume(TokenType.not, 'Expected IF to be followed by NOT EXISTS');
+      _consume(TokenType.exists, 'Expected IF NOT to be followed by EXISTS');
+      return true;
+    }
+    return false;
   }
 
   ColumnDefinition _columnDefinition() {

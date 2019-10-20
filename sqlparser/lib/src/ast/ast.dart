@@ -30,7 +30,9 @@ part 'moor/moor_file.dart';
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
 
+part 'statements/block.dart';
 part 'statements/create_table.dart';
+part 'statements/create_trigger.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
 part 'statements/select.dart';
@@ -148,6 +150,8 @@ abstract class AstVisitor<T> {
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
+  T visitCreateTriggerStatement(CreateTriggerStatement e);
+  T visitBlock(Block e);
 
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
@@ -282,6 +286,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitCreateTableStatement(CreateTableStatement e) => visitChildren(e);
+
+  @override
+  T visitCreateTriggerStatement(CreateTriggerStatement e) => visitChildren(e);
+
+  @override
+  T visitBlock(Block e) => visitChildren(e);
 
   @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);
