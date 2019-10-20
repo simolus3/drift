@@ -270,7 +270,11 @@ mixin QueryEngine on DatabaseConnectionUser {
   @protected
   @visibleForTesting
   Future<void> customStatement(String statement, [List<dynamic> args]) {
-    return _resolvedEngine.executor.runCustom(statement, args);
+    final engine = _resolvedEngine;
+
+    return engine.executor.doWhenOpened((executor) {
+      return executor.runCustom(statement, args);
+    });
   }
 
   /// Executes [action] in a transaction, which means that all its queries and

@@ -29,6 +29,10 @@ class MockExecutor extends Mock implements QueryExecutor {
       assert(_opened);
       return Future.value(0);
     });
+    when(runCustom(any, any)).thenAnswer((_) {
+      assert(_opened);
+      return Future.value(0);
+    });
     when(beginTransaction()).thenAnswer((_) {
       assert(_opened);
       return transactions;

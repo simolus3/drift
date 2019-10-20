@@ -1,3 +1,7 @@
+## unreleased
+
+- Fix crash when `customStatement` is the first operation used on a database ([#199](https://github.com/simolus3/moor/issues/199))
+
 ## 2.0.1
 
 - Introduced `isBetween` and `isBetweenValues` methods for comparable expressions (int, double, datetime)
