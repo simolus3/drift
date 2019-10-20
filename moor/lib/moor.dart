@@ -26,6 +26,7 @@ export 'package:moor/src/runtime/statements/update.dart';
 export 'package:moor/src/runtime/statements/insert.dart';
 export 'package:moor/src/runtime/statements/delete.dart';
 export 'package:moor/src/runtime/structure/columns.dart';
+export 'package:moor/src/runtime/structure/entities.dart';
 export 'package:moor/src/runtime/structure/error_handling.dart';
 export 'package:moor/src/runtime/structure/table_info.dart';
 export 'package:moor/src/runtime/data_class.dart';

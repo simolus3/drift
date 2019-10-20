@@ -4,7 +4,8 @@ import 'package:moor/src/runtime/expressions/variables.dart';
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [D] is the type of the data class
 /// generated from the table.
-mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
+mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
+    implements DatabaseSchemaEntity {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
@@ -29,6 +30,9 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// be aliased.
   String get actualTableName;
 
+  @override
+  String get entityName => actualTableName;
+
   /// The table name, optionally suffixed with the alias if one exists. This
   /// can be used in select statements, as it returns something like "users u"
   /// for a table called users that has been aliased as "u".
@@ -40,6 +44,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
     }
   }
 
+  /// All columns defined in this table.
   List<GeneratedColumn> get $columns;
 
   /// Validates that the given entity can be inserted into this table, meaning

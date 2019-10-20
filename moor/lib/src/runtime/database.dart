@@ -371,6 +371,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// A list of tables specified in this database.
   List<TableInfo> get allTables;
 
+  /// All entities (tables, views, triggers, indexes) that are declared in this
+  /// database.
+  List<DatabaseSchemaEntity> get allEntities => allTables;
+
   /// Used by generated code
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})
