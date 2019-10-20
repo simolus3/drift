@@ -99,7 +99,8 @@ class TypeResolver {
         return resolveExpression(expr.inner);
       } else if (expr is Parentheses) {
         return resolveExpression(expr.expression);
-      } else if (expr is Variable) {
+      } else if (expr is Variable || expr is Tuple) {
+        // todo we can probably resolve tuples by looking at their content
         return const ResolveResult.needsContext();
       } else if (expr is Reference) {
         return resolveColumn(expr.resolved as Column);
@@ -173,7 +174,8 @@ class TypeResolver {
   ResolveResult resolveFunctionCall(Invocation call) {
     return _cache((Invocation call) {
       final parameters = _expandParameters(call);
-      final firstNullable = justResolve(parameters.first).nullable;
+      final firstNullable =
+          parameters.isEmpty ? false : justResolve(parameters.first).nullable;
       final anyNullable = parameters.map(justResolve).any((r) => r.nullable);
 
       switch (call.name.toLowerCase()) {

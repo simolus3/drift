@@ -110,7 +110,7 @@ void main() {
     final engine = SqlEngine()..registerTable(demoTable);
 
     final context = engine.analyze('''
-SELECT current_row() OVER wnd FROM demo
+SELECT row_number() OVER wnd FROM demo
   WINDOW wnd AS (PARTITION BY content GROUPS CURRENT ROW EXCLUDE TIES)
     ''');
 
