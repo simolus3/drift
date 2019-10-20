@@ -1,7 +1,3 @@
-## unreleased
-
-- Fix crash when `customStatement` is the first operation used on a database ([#199](https://github.com/simolus3/moor/issues/199))
-
 ## 2.0.1
 
 - Introduced `isBetween` and `isBetweenValues` methods for comparable expressions (int, double, datetime)
@@ -11,6 +7,9 @@
 - Fix streams not emitting cached data when listening multiple times
 - __Breaking__: Remove the type parameter from `Insertable.createCompanion` (it was declared as an
   internal method)
+  
+__2.0.1+1__: Fix crash when `customStatement` is the first operation used on a database 
+([#199](https://github.com/simolus3/moor/issues/199))
 
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:
