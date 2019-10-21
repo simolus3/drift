@@ -21,7 +21,7 @@ typedef Future<void> OnMigrationFinished();
 /// populate initial data or issue `PRAGMA` statements that you want to use.
 typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 
-Future<void> _defaultOnCreate(Migrator m) => m.createAllTables();
+Future<void> _defaultOnCreate(Migrator m) => m.createAll();
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
     throw Exception("You've bumped the schema version for your moor database "
         "but didn't provide a strategy for schema updates. Please do that by "
@@ -64,9 +64,24 @@ class Migrator {
   Migrator(this._db, this._executor);
 
   /// Creates all tables specified for the database, if they don't exist
+  @Deprecated('Use createAll() instead')
   Future<void> createAllTables() async {
     for (var table in _db.allTables) {
       await createTable(table);
+    }
+  }
+
+  /// Creates all tables, triggers, views, indexes and everything else defined
+  /// in the database, if they don't exist.
+  Future<void> createAll() async {
+    for (var entity in _db.allEntities) {
+      if (entity is TableInfo) {
+        await createTable(entity);
+      } else if (entity is Trigger) {
+        await createTrigger(entity);
+      } else {
+        throw AssertionError('Unknown entity: $entity');
+      }
     }
   }
 
@@ -132,6 +147,11 @@ class Migrator {
     context.buffer.write(';');
 
     return issueCustomQuery(context.sql, context.boundVariables);
+  }
+
+  /// Executes the `CREATE TRIGGER` statement that created the [trigger].
+  Future<void> createTrigger(Trigger trigger) {
+    return issueCustomQuery(trigger.createTriggerStmt);
   }
 
   /// Deletes the table with the given name. Note that this function does not

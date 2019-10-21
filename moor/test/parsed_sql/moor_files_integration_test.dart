@@ -25,19 +25,26 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'somebool INTEGER, '
     'somedate INTEGER);';
 
+const _createMyTrigger = '''
+CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
+    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
+END;''';
+
 void main() {
   // see ../data/tables/tables.moor
-  test('creates tables as specified in .moor files', () async {
+  test('creates entities as specified in .moor files', () async {
     final mockExecutor = MockExecutor();
+
     final mockQueryExecutor = MockQueryExecutor();
     final db = CustomTablesDb(mockExecutor);
-    await Migrator(db, mockQueryExecutor).createAllTables();
+    await Migrator(db, mockQueryExecutor).createAll();
 
     verify(mockQueryExecutor.call(_createNoIds, []));
     verify(mockQueryExecutor.call(_createWithDefaults, []));
     verify(mockQueryExecutor.call(_createWithConstraints, []));
     verify(mockQueryExecutor.call(_createConfig, []));
     verify(mockQueryExecutor.call(_createMyTable, []));
+    verify(mockQueryExecutor.call(_createMyTrigger));
   });
 
   test('infers primary keys correctly', () async {
