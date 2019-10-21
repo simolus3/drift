@@ -888,6 +888,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   ConfigTable get config => _config ??= ConfigTable(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
+  Trigger _myTrigger;
+  Trigger get myTrigger => _myTrigger ??= Trigger(
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
+      'my_trigger');
   Config _rowToConfig(QueryRow row) {
     return Config(
       configKey: row.readString('config_key'),
@@ -953,6 +957,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   @override
   List<TableInfo> get allTables =>
       [noIds, withDefaults, withConstraints, config, mytable];
+  @override
+  List<DatabaseSchemaEntity> get allEntities =>
+      [noIds, withDefaults, withConstraints, config, mytable, myTrigger];
 }
 
 class ReadRowIdResult {

@@ -866,6 +866,9 @@ abstract class _$Database extends GeneratedDatabase {
   @override
   List<TableInfo> get allTables =>
       [categories, recipes, ingredients, ingredientInRecipes];
+  @override
+  List<DatabaseSchemaEntity> get allEntities =>
+      [categories, recipes, ingredients, ingredientInRecipes];
 }
 
 class TotalWeightResult {

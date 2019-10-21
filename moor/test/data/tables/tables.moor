@@ -27,6 +27,10 @@ CREATE TABLE mytable (
     somedate DATETIME
 );
 
+CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
+    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
+END;
+
 readConfig: SELECT * FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;

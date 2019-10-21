@@ -1,4 +1,6 @@
 import 'package:moor_generator/src/model/specified_db_classes.dart';
+import 'package:moor_generator/src/model/specified_entities.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/queries/query_writer.dart';
 import 'package:moor_generator/src/writer/tables/table_writer.dart';
 import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
@@ -26,6 +28,7 @@ class DatabaseWriter {
         '$className(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e); \n');
 
     final tableGetters = <String>[];
+    final entityGetters = <String>[];
 
     for (var table in db.allTables) {
       tableGetters.add(table.tableFieldName);
@@ -37,6 +40,21 @@ class DatabaseWriter {
         returnType: tableClassName,
         code: '$tableClassName(this)',
       );
+    }
+    entityGetters.addAll(tableGetters);
+
+    for (var otherEntity in db.otherEntities) {
+      entityGetters.add(otherEntity.dartFieldName);
+
+      if (otherEntity is SpecifiedTrigger) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: otherEntity.dartFieldName,
+          returnType: 'Trigger',
+          code: 'Trigger(${asDartLiteral(otherEntity.sql)}, '
+              '${asDartLiteral(otherEntity.name)})',
+        );
+      }
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
@@ -63,6 +81,9 @@ class DatabaseWriter {
     dbScope.leaf()
       ..write('@override\nList<TableInfo> get allTables => [')
       ..write(tableGetters.join(','))
+      ..write('];\n')
+      ..write('@override\nList<DatabaseSchemaEntity> get allEntities => [')
+      ..write(entityGetters.join(','))
       ..write('];\n}');
   }
 }

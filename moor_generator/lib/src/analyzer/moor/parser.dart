@@ -19,6 +19,7 @@ class MoorParser {
     final createdReaders = <CreateTableReader>[];
     final queryDeclarations = <DeclaredMoorQuery>[];
     final importStatements = <ImportStatement>[];
+    final otherComponents = <PartOfMoorFile>[];
 
     for (var parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
@@ -29,6 +30,8 @@ class MoorParser {
         createdReaders.add(CreateTableReader(parsedStmt, step));
       } else if (parsedStmt is DeclaredStatement) {
         queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+      } else if (parsedStmt is CreateTriggerStatement) {
+        otherComponents.add(parsedStmt);
       }
     }
 
@@ -54,6 +57,7 @@ class MoorParser {
       queries: queryDeclarations,
       imports: importStatements,
       tableDeclarations: tableDeclarations,
+      otherComponents: otherComponents,
     );
     for (var decl in queryDeclarations) {
       decl.file = analyzedFile;

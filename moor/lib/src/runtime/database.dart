@@ -369,6 +369,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
 
   /// A list of tables specified in this database.
+  // todo: Replace all usages with allEntities.whereType()
   List<TableInfo> get allTables;
 
   /// All entities (tables, views, triggers, indexes) that are declared in this

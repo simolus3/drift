@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/model/specified_entities.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 
@@ -41,7 +42,15 @@ class SpecifiedDao extends SpecifiedDbAccessor {
 class SpecifiedDatabase extends SpecifiedDbAccessor {
   final List<DartType> daos;
 
-  SpecifiedDatabase(ClassElement fromClass, List<SpecifiedTable> tables,
-      this.daos, List<String> includes, List<DeclaredQuery> queries)
-      : super(fromClass, tables, includes, queries);
+  /// Other entities (such as triggers or components) that are available to this
+  /// database.
+  List<SpecifiedEntity> otherEntities;
+
+  SpecifiedDatabase(
+    ClassElement fromClass,
+    List<SpecifiedTable> tables,
+    this.daos,
+    List<String> includes,
+    List<DeclaredQuery> queries,
+  ) : super(fromClass, tables, includes, queries);
 }

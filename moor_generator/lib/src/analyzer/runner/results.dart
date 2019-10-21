@@ -36,6 +36,10 @@ class ParsedMoorFile extends FileResult {
   final List<ImportStatement> imports;
   final List<DeclaredQuery> queries;
 
+  /// Schema component that are neither tables nor queries. This can include
+  /// triggers or indexes.
+  final List<PartOfMoorFile> otherComponents;
+
   List<SqlQuery> resolvedQueries;
   Map<CreateTableStatement, SpecifiedTable> tableDeclarations;
   Map<ImportStatement, FoundFile> resolvedImports;
@@ -44,6 +48,7 @@ class ParsedMoorFile extends FileResult {
       {List<SpecifiedTable> declaredTables = const [],
       this.queries = const [],
       this.imports = const [],
+      this.otherComponents = const [],
       this.tableDeclarations = const {}})
       : super(declaredTables);
 }

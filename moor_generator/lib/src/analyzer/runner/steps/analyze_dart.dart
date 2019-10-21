@@ -34,10 +34,12 @@ class AnalyzeDartStep extends AnalyzingStep {
         ));
       }
 
-      final availableQueries = transitiveImports
+      final transitiveMoorFiles = transitiveImports
           .map((f) => f.currentResult)
-          .whereType<ParsedMoorFile>()
-          .expand((f) => f.resolvedQueries);
+          .whereType<ParsedMoorFile>();
+
+      final availableQueries =
+          transitiveMoorFiles.expand((f) => f.resolvedQueries);
 
       final parser = SqlParser(this, availableTables, accessor.queries);
       parser.parse();
@@ -46,6 +48,21 @@ class AnalyzeDartStep extends AnalyzingStep {
 
       accessor.resolvedQueries =
           availableQueries.followedBy(parser.foundQueries).toList();
+
+      if (accessor is SpecifiedDatabase) {
+        accessor.otherEntities = transitiveMoorFiles.expand((file) {
+          return file.otherComponents.map((component) {
+            final declaration = BaseDeclaration(null, null, component);
+
+            if (component is CreateTriggerStatement) {
+              return SpecifiedTrigger(
+                  component.triggerName, component.span.text, declaration);
+            }
+
+            throw AssertionError('Unexpected component: $component');
+          });
+        }).toList();
+      }
     }
   }
 }

@@ -1417,6 +1417,15 @@ abstract class _$TodoDb extends GeneratedDatabase {
         tableWithoutPK,
         pureDefaults
       ];
+  @override
+  List<DatabaseSchemaEntity> get allEntities => [
+        todosTable,
+        categories,
+        users,
+        sharedTodos,
+        tableWithoutPK,
+        pureDefaults
+      ];
 }
 
 class AllTodosWithCategoryResult {

@@ -332,7 +332,7 @@ class Parser extends ParserBase
     for (var stmt = _parseAsStatement(_crud);
         stmt != null || _lastStmtHadParsingError;
         stmt = _parseAsStatement(_crud)) {
-      stmts.add(stmt);
+      if (stmt != null) stmts.add(stmt);
     }
 
     final end = _consume(TokenType.end, 'Expected END');
