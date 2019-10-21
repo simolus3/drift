@@ -136,7 +136,7 @@ abstract class ParserBase {
   }
 
   @alwaysThrows
-  void _error(String message) {
+  Null _error(String message) {
     final error = ParsingError(_peek, message);
     errors.add(error);
     throw error;
@@ -210,17 +210,6 @@ class Parser extends ParserBase
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
-  }
-
-  CrudStatement _crud() {
-    // writing select() ?? _deleteStmt() and so on doesn't cast to CrudStatement
-    // for some reason.
-    CrudStatement stmt = select();
-    stmt ??= _deleteStmt();
-    stmt ??= _update();
-    stmt ??= _insertStmt();
-
-    return stmt;
   }
 
   MoorFile moorFile() {

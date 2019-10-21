@@ -38,7 +38,7 @@ class TableReference extends TableOrSubquery
   @override
   final String as;
 
-  TableReference(this.tableName, this.as);
+  TableReference(this.tableName, [this.as]);
 
   @override
   Iterable<AstNode> get childNodes => const [];

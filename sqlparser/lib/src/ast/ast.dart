@@ -7,6 +7,7 @@ import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
+part 'clauses/with.dart';
 
 part 'common/queryables.dart';
 part 'common/renamable.dart';
@@ -149,6 +150,8 @@ abstract class AstVisitor<T> {
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
 
+  T visitWithClause(WithClause e);
+  T visitCommonTableExpression(CommonTableExpression e);
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
   T visitLimit(Limit e);
@@ -306,6 +309,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitFrameSpec(FrameSpec e) => visitChildren(e);
+
+  @override
+  T visitWithClause(WithClause e) => visitChildren(e);
+
+  @override
+  T visitCommonTableExpression(CommonTableExpression e) => visitChildren(e);
 
   @override
   T visitMoorFile(MoorFile e) => visitChildren(e);
