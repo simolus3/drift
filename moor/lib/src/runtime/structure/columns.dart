@@ -180,7 +180,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 
   @override
   void writeCustomConstraints(StringBuffer into) {
-    into.write(' CHECK (${$name} in (0, 1))');
+    into.write(' CHECK ($escapedName in (0, 1))');
   }
 }
 
