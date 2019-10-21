@@ -42,6 +42,20 @@ void main() {
           id: 113,
           content: 'Done',
         ),
+        mode: InsertMode.insertOrReplace);
+
+    verify(executor.runInsert(
+        'INSERT OR REPLACE INTO todos (id, content) VALUES (?, ?)',
+        [113, 'Done']));
+  });
+
+  test('generates insert or replace statements with legacy parameter',
+      () async {
+    await db.into(db.todosTable).insert(
+        TodoEntry(
+          id: 113,
+          content: 'Done',
+        ),
         orReplace: true);
 
     verify(executor.runInsert(
