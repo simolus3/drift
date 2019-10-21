@@ -114,6 +114,7 @@ abstract class ParserBase {
   }
 
   bool _check(TokenType type) {
+    if (_reportAutoComplete) _suggestHintForToken(type);
     if (_isAtEnd) return false;
     return _peek.type == type;
   }

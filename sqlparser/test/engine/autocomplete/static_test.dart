@@ -3,14 +3,24 @@ import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('suggests a CREATE TABLE statements for an empty file', () {
+  test('suggests a CREATE an empty file', () {
     final engine = SqlEngine(useMoorExtensions: true);
     final parseResult = engine.parseMoorFile('');
 
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE TABLE')));
+    expect(suggestions.suggestions, contains(hasCode('CREATE')));
+  });
+
+  test('suggests CREATE TABLE completion after CREATE', () async {
+    final engine = SqlEngine(useMoorExtensions: true);
+    final parseResult = engine.parseMoorFile('CREATE ');
+
+    final suggestions = parseResult.autoCompleteEngine.suggestCompletions(7);
+
+    expect(suggestions.anchor, 7);
+    expect(suggestions.suggestions, contains(hasCode('TABLE')));
   });
 
   test('suggests completions for started expressions', () {
@@ -20,7 +30,7 @@ void main() {
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE TABLE')));
+    expect(suggestions.suggestions, contains(hasCode('CREATE')));
   });
 }
 
