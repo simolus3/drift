@@ -55,6 +55,22 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
+  void visitCommonTableExpression(CommonTableExpression e) {
+    visitChildren(e);
+
+    final resolved = e.as.resolvedColumns;
+    final names = e.columnNames;
+    if (names != null && resolved != null && names.length != resolved.length) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.cteColumnCountMismatch,
+        message: 'This CTE declares ${names.length} columns, but its select '
+            'statement actually returns ${resolved.length}.',
+        relevantNode: e,
+      ));
+    }
+  }
+
+  @override
   void visitUpdateStatement(UpdateStatement e) {
     final table = _resolveTableReference(e.table);
     e.scope.availableColumns = table.resolvedColumns;
@@ -129,23 +145,25 @@ class ColumnResolver extends RecursiveVisitor<void> {
       } else if (resultColumn is ExpressionResultColumn) {
         final expression = resultColumn.expression;
         Column column;
-        String name;
 
         if (expression is Reference) {
           column = ReferenceExpressionColumn(expression,
               overriddenName: resultColumn.as);
-          if (resultColumn.as != null) name = resultColumn.as;
         } else {
-          name = _nameOfResultColumn(resultColumn);
+          final name = _nameOfResultColumn(resultColumn);
           column =
               ExpressionColumn(name: name, expression: resultColumn.expression);
         }
 
         usedColumns.add(column);
 
-        // make this column available if there is no other with the same name
-        if (name != null && !availableColumns.any((c) => c.name == name)) {
-          availableColumns.add(column);
+        if (resultColumn.as != null) {
+          // make this column available for references if there is no other
+          // column with the same name
+          final name = resultColumn.as;
+          if (!availableColumns.any((c) => c.name == name)) {
+            availableColumns.add(column);
+          }
         }
       }
     }

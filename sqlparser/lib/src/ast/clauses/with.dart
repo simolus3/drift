@@ -20,7 +20,7 @@ class WithClause extends AstNode {
   bool contentEquals(WithClause other) => other.recursive == recursive;
 }
 
-class CommonTableExpression extends AstNode with ResultSet {
+class CommonTableExpression extends AstNode with ResultSet, VisibleToChildren {
   final String cteTableName;
 
   /// If this common table expression has explicit column names, e.g. with
@@ -31,6 +31,8 @@ class CommonTableExpression extends AstNode with ResultSet {
 
   Token asToken;
   IdentifierToken tableNameToken;
+
+  List<CommonTableExpressionColumn> _cachedColumns;
 
   CommonTableExpression(
       {@required this.cteTableName, this.columnNames, @required this.as});
@@ -51,18 +53,27 @@ class CommonTableExpression extends AstNode with ResultSet {
   @override
   List<Column> get resolvedColumns {
     final columnsOfSelect = as.resolvedColumns;
-    if (columnsOfSelect == null || columnNames == null) return columnsOfSelect;
 
-    // adapt names of result columns to the [columnNames] declared here
-    final mappedColumns = <Column>[];
-    for (var i = 0; i < columnNames.length; i++) {
-      final name = columnNames[i];
+    // we don't override column names, so just return the columns declared by
+    // the select statement
+    if (columnNames == null) return columnsOfSelect;
 
-      if (i < columnsOfSelect.length) {
-        final selectColumn = columnsOfSelect[i];
-        mappedColumns.add(CommonTableExpressionColumn(name, selectColumn));
+    _cachedColumns ??= columnNames
+        .map((name) => CommonTableExpressionColumn(name, null))
+        .toList();
+
+    if (columnsOfSelect != null) {
+      // bind the CommonTableExpressionColumn to the real underlying column
+      // returned by the select statement
+
+      for (var i = 0; i < _cachedColumns.length; i++) {
+        if (i < columnsOfSelect.length) {
+          final selectColumn = columnsOfSelect[i];
+          _cachedColumns[i].innerColumn = selectColumn;
+        }
       }
     }
-    return mappedColumns;
+
+    return _cachedColumns;
   }
 }

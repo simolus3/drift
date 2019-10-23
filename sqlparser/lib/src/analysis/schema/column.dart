@@ -129,8 +129,12 @@ class CompoundSelectColumn extends Column with DelegatedColumn {
 class CommonTableExpressionColumn extends Column with DelegatedColumn {
   @override
   final String name;
+
   @override
-  final Column innerColumn;
+  Column innerColumn;
+
+  // note that innerColumn is mutable because the column might not be known
+  // during all analysis phases.
 
   CommonTableExpressionColumn(this.name, this.innerColumn);
 }
