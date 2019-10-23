@@ -82,9 +82,8 @@ class TypeResolver {
         return ResolveResult(column.type);
       } else if (column is ExpressionColumn) {
         return resolveOrInfer(column.expression);
-      } else if (column is CompoundSelectColumn) {
-        // todo maybe use a type that matches every column in here?
-        return resolveColumn(column.columns.first);
+      } else if (column is DelegatedColumn) {
+        return resolveColumn(column.innerColumn);
       }
 
       throw StateError('Unknown column $column');

@@ -20,7 +20,7 @@ class WithClause extends AstNode {
   bool contentEquals(WithClause other) => other.recursive == recursive;
 }
 
-class CommonTableExpression extends AstNode {
+class CommonTableExpression extends AstNode with ResultSet {
   final String cteTableName;
 
   /// If this common table expression has explicit column names, e.g. with
@@ -46,5 +46,23 @@ class CommonTableExpression extends AstNode {
   @override
   bool contentEquals(CommonTableExpression other) {
     return other.cteTableName == cteTableName;
+  }
+
+  @override
+  List<Column> get resolvedColumns {
+    final columnsOfSelect = as.resolvedColumns;
+    if (columnsOfSelect == null || columnNames == null) return columnsOfSelect;
+
+    // adapt names of result columns to the [columnNames] declared here
+    final mappedColumns = <Column>[];
+    for (var i = 0; i < columnNames.length; i++) {
+      final name = columnNames[i];
+
+      if (i < columnsOfSelect.length) {
+        final selectColumn = columnsOfSelect[i];
+        mappedColumns.add(CommonTableExpressionColumn(name, selectColumn));
+      }
+    }
+    return mappedColumns;
   }
 }

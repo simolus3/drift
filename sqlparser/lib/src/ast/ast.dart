@@ -138,6 +138,14 @@ abstract class AstNode with HasMetaMixin {
   /// type. The "content" refers to anything stored only in this node, children
   /// are ignored.
   bool contentEquals(covariant AstNode other);
+
+  @override
+  String toString() {
+    if (hasSpan) {
+      return '$runtimeType: ${span.text}';
+    }
+    return super.toString();
+  }
 }
 
 abstract class AstVisitor<T> {

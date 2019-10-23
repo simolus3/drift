@@ -106,8 +106,16 @@ class ReferenceExpressionColumn extends ExpressionColumn {
       : super(name: null, expression: ref);
 }
 
+/// A column that wraps another column.
+mixin DelegatedColumn on Column {
+  Column get innerColumn;
+
+  @override
+  String get name => innerColumn.name;
+}
+
 /// The result column of a [CompoundSelectStatement].
-class CompoundSelectColumn extends Column {
+class CompoundSelectColumn extends Column with DelegatedColumn {
   /// The column in [CompoundSelectStatement.base] each of the
   /// [CompoundSelectStatement.additional] that contributed to this column.
   final List<Column> columns;
@@ -115,5 +123,14 @@ class CompoundSelectColumn extends Column {
   CompoundSelectColumn(this.columns);
 
   @override
-  String get name => columns.first.name;
+  Column get innerColumn => columns.first;
+}
+
+class CommonTableExpressionColumn extends Column with DelegatedColumn {
+  @override
+  final String name;
+  @override
+  final Column innerColumn;
+
+  CommonTableExpressionColumn(this.name, this.innerColumn);
 }

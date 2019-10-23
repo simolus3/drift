@@ -10,7 +10,7 @@ mixin CrudParser on ParserBase {
       return _deleteStmt(withClause);
     } else if (_check(TokenType.update)) {
       return _update(withClause);
-    } else if (_check(TokenType.insert)) {
+    } else if (_check(TokenType.insert) || _check(TokenType.replace)) {
       return _insertStmt(withClause);
     }
     return null;

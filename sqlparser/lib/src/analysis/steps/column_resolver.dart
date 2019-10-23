@@ -11,8 +11,9 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
   @override
   void visitSelectStatement(SelectStatement e) {
-    _resolveSelect(e);
+    // visit children first so that common table expressions are resolved
     visitChildren(e);
+    _resolveSelect(e);
   }
 
   @override
@@ -168,9 +169,9 @@ class ColumnResolver extends RecursiveVisitor<void> {
     return span;
   }
 
-  Table _resolveTableReference(TableReference r) {
+  ResultSet _resolveTableReference(TableReference r) {
     final scope = r.scope;
-    final resolvedTable = scope.resolve<Table>(r.tableName, orElse: () {
+    final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
       final available = scope.allOf<Table>().map((t) => t.name);
 
       context.reportError(UnresolvedReferenceError(
