@@ -161,6 +161,28 @@ class _MappedSelectable<S, T> extends Selectable<T> {
 
 mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
     on Query<T, D> {
+  /// Makes this statement only include rows that match the [filter].
+  ///
+  /// For instance, if you have a table users with an id column, you could
+  /// select a user with a specific id by using
+  /// ```dart
+  /// (select(users)..where((u) => u.id.equals(42))).watchSingle()
+  /// ```
+  ///
+  /// Please note that this [where] call is different to [Iterable.where] and
+  /// [Stream.where] in the sense that [filter] will NOT be called for each
+  /// row. Instead, it will only be called once (with the underlying table as
+  /// parameter). The result [Expression] will be written as a SQL string and
+  /// sent to the underlying database engine. The filtering does not happen in
+  /// Dart.
+  /// If a where condition has already been set before, the resulting filter
+  /// will be the conjunction of both calls.
+  ///
+  /// For more information, see:
+  ///  - The docs on [expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/),
+  ///    which explains how to express most SQL expressions in Dart.
+  /// If you want to remove duplicate rows from a query, use the `distinct`
+  /// parameter on [QueryEngine.select].
   void where(Expression<bool, BoolType> filter(T tbl)) {
     final predicate = filter(table.asDslTable);
 
@@ -212,6 +234,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
   }
 }
 
+/// Mixin to provide the high-level [limit] methods for users.
 mixin LimitContainerMixin<T extends Table, D extends DataClass> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not

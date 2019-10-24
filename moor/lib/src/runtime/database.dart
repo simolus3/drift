@@ -156,17 +156,43 @@ mixin QueryEngine on DatabaseConnectionUser {
           TableInfo<Tbl, R> table) =>
       UpdateStatement(_resolvedEngine, table);
 
-  /// Starts a query on the given table. Queries can be limited with an limit
-  /// or a where clause and can either return a current snapshot or a continuous
-  /// stream of data
+  /// Starts a query on the given table.
+  ///
+  /// In moor, queries are commonly used as a builder by chaining calls on them
+  /// using the `..` syntax from Dart. For instance, to load the 10 oldest users
+  /// with an 'S' in their name, you could use:
+  /// ```dart
+  /// Future<List<User>> oldestUsers() {
+  ///   return (
+  ///     select(users)
+  ///       ..where((u) => u.name.like('%S%'))
+  ///       ..orderBy([(u) => OrderingTerm(
+  ///         expression: u.id,
+  ///         mode: OrderingMode.asc
+  ///       )])
+  ///       ..limit(10)
+  ///   ).get();
+  /// }
+  /// ```
+  ///
+  /// The [distinct] parameter (defaults to false) can be used to remove
+  /// duplicate rows from the result set.
+  ///
+  /// For more information on queries, see the
+  /// [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/).
   @protected
   @visibleForTesting
   SimpleSelectStatement<T, R> select<T extends Table, R extends DataClass>(
-      TableInfo<T, R> table) {
-    return SimpleSelectStatement<T, R>(_resolvedEngine, table);
+      TableInfo<T, R> table,
+      {bool distinct = false}) {
+    return SimpleSelectStatement<T, R>(_resolvedEngine, table,
+        distinct: distinct);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
+  ///
+  /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
+  /// for more details and example on how delete statements work.
   @protected
   @visibleForTesting
   DeleteStatement<T, D> delete<T extends Table, D extends DataClass>(

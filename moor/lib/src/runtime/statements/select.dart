@@ -19,10 +19,15 @@ typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
 class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult> {
+  /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
+  /// rows from the result set.
+  final bool distinct;
+
   /// Used internally by moor, users should use [SimpleSelectStatement.join]
   /// instead.
   JoinedSelectStatement(
-      QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins)
+      QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
+      [this.distinct = false])
       : super(database, table);
 
   final List<Join> _joins;
@@ -38,7 +43,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   @override
   void writeStartPart(GenerationContext ctx) {
     ctx.hasMultipleTables = true;
-    ctx.buffer.write('SELECT ');
+    ctx.buffer..write(_beginOfSelect(distinct))..write(' ');
 
     var isFirst = true;
     for (var table in _tables) {
@@ -176,9 +181,14 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 class SimpleSelectStatement<T extends Table, D extends DataClass>
     extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D> {
+  /// Whether duplicate rows should be eliminated from the result (this is a
+  /// `SELECT DISTINCT` statement in sql). Defaults to false.
+  final bool distinct;
+
   /// Used internally by moor, users will want to call [QueryEngine.select]
   /// instead.
-  SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table)
+  SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table,
+      {this.distinct = false})
       : super(database, table);
 
   /// The tables this select statement reads from.
@@ -187,7 +197,9 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
 
   @override
   void writeStartPart(GenerationContext ctx) {
-    ctx.buffer.write('SELECT * FROM ${table.tableWithAlias}');
+    ctx.buffer
+      ..write(_beginOfSelect(distinct))
+      ..write(' * FROM ${table.tableWithAlias}');
   }
 
   @override
@@ -226,7 +238,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   ///  - [DatabaseConnectionUser.alias], which can be used to build statements
   ///  that refer to the same table multiple times.
   JoinedSelectStatement join(List<Join> joins) {
-    final statement = JoinedSelectStatement(database, table, joins);
+    final statement = JoinedSelectStatement(database, table, joins, distinct);
 
     if (whereExpr != null) {
       statement.where(whereExpr.predicate);
@@ -267,6 +279,10 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
 
     return database.createStream(fetcher);
   }
+}
+
+String _beginOfSelect(bool distinct) {
+  return distinct ? 'SELECT DISTINCT' : 'SELECT';
 }
 
 /// A select statement that is constructed with a raw sql prepared statement
