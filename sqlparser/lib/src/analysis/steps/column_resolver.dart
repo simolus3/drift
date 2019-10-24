@@ -95,8 +95,12 @@ class ColumnResolver extends RecursiveVisitor<void> {
   void _handle(Queryable queryable, List<Column> availableColumns) {
     queryable.when(
       isTable: (table) {
-        _resolveTableReference(table);
-        availableColumns.addAll(table.resultSet.resolvedColumns);
+        final resolved = _resolveTableReference(table);
+        if (resolved != null) {
+          // an error will be logged when resolved is null, so the != null check
+          // is fine and avoids crashes
+          availableColumns.addAll(table.resultSet.resolvedColumns);
+        }
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
