@@ -1,4 +1,4 @@
-import 'package:moor/src/types/sql_types.dart';
+part of 'sql_types.dart';
 
 /// Manages the set of [SqlType] known to a database. It's also responsible for
 /// returning the appropriate sql type for a given dart type.

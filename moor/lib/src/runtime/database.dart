@@ -4,7 +4,6 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/before_open.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
-import 'package:moor/src/types/type_system.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 

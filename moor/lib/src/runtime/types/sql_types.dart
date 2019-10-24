@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 
 part 'custom_type.dart';
+part 'type_system.dart';
 
 /// A type that can be mapped from Dart to sql. The generic type parameter here
 /// denotes the resolved dart type.
