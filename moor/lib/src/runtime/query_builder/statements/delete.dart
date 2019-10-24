@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/statements/query.dart';
-import 'package:moor/src/runtime/structure/table_info.dart';
+part of '../query_builder.dart';
 
 /// A `DELETE` statement in sql
 class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>

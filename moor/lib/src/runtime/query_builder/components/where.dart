@@ -1,6 +1,4 @@
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/types/sql_types.dart';
+part of '../query_builder.dart';
 
 /// A where clause in a select, update or delete statement.
 class Where extends Component {

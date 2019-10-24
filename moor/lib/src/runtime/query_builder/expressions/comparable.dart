@@ -1,6 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'expression.dart';
+part of '../query_builder.dart';
 
 // todo: Can we replace these classes with an extension on expression?
 
@@ -23,7 +21,7 @@ mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
   Expression<bool, BoolType> isBiggerThan(Expression<DT, ST> other) {
-    return Comparison(this, ComparisonOperator.more, other);
+    return _Comparison(this, _ComparisonOperator.more, other);
   }
 
   /// Returns an expression that is true if this expression is strictly bigger
@@ -34,7 +32,7 @@ mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other expression.
   Expression<bool, BoolType> isBiggerOrEqual(Expression<DT, ST> other) {
-    return Comparison(this, ComparisonOperator.moreOrEqual, other);
+    return _Comparison(this, _ComparisonOperator.moreOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is bigger than or
@@ -45,7 +43,7 @@ mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
   Expression<bool, BoolType> isSmallerThan(Expression<DT, ST> other) {
-    return Comparison(this, ComparisonOperator.less, other);
+    return _Comparison(this, _ComparisonOperator.less, other);
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
@@ -56,7 +54,7 @@ mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
   Expression<bool, BoolType> isSmallerOrEqual(Expression<DT, ST> other) {
-    return Comparison(this, ComparisonOperator.lessOrEqual, other);
+    return _Comparison(this, _ComparisonOperator.lessOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is smaller than or

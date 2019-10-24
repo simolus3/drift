@@ -1,9 +1,7 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// A type for a [Join] (e.g. inner, outer).
-enum JoinType {
+enum _JoinType {
   /// Perform an inner join, see the [innerJoin] function for details.
   inner,
 
@@ -14,27 +12,30 @@ enum JoinType {
   cross
 }
 
-const Map<JoinType, String> _joinKeywords = {
-  JoinType.inner: 'INNER',
-  JoinType.leftOuter: 'LEFT OUTER',
-  JoinType.cross: 'CROSS',
+const Map<_JoinType, String> _joinKeywords = {
+  _JoinType.inner: 'INNER',
+  _JoinType.leftOuter: 'LEFT OUTER',
+  _JoinType.cross: 'CROSS',
 };
 
 /// Used internally by moor when calling [SimpleSelectStatement.join].
+///
+/// You should use [innerJoin], [leftOuterJoin] or [crossJoin] to obtain a
+/// [Join] instance.
 class Join<T extends Table, D extends DataClass> extends Component {
-  /// The [JoinType] of this join.
-  final JoinType type;
+  /// The [_JoinType] of this join.
+  final _JoinType type;
 
   /// The [TableInfo] that will be added to the query
   final TableInfo<T, D> table;
 
-  /// For joins that aren't [JoinType.cross], contains an additional predicate
+  /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
   final Expression<bool, BoolType> on;
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
-  /// [JoinType.cross].
-  Join(this.type, this.table, this.on);
+  /// [_JoinType.cross].
+  Join._(this.type, this.table, this.on);
 
   @override
   void writeInto(GenerationContext context) {
@@ -43,7 +44,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
     context.buffer.write(table.tableWithAlias);
 
-    if (type != JoinType.cross) {
+    if (type != _JoinType.cross) {
       context.buffer.write(' ON ');
       on.writeInto(context);
     }
@@ -56,7 +57,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
 Join innerJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool, BoolType> on) {
-  return Join(JoinType.inner, other, on);
+  return Join._(_JoinType.inner, other, on);
 }
 
 /// Creates a sql left outer join that can be used in
@@ -66,7 +67,7 @@ Join innerJoin<T extends Table, D extends DataClass>(
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
 Join leftOuterJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool, BoolType> on) {
-  return Join(JoinType.leftOuter, other, on);
+  return Join._(_JoinType.leftOuter, other, on);
 }
 
 /// Creates a sql cross join that can be used in
@@ -75,5 +76,5 @@ Join leftOuterJoin<T extends Table, D extends DataClass>(
 /// See also:
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
 Join crossJoin<T, D>(TableInfo other) {
-  return Join(JoinType.cross, other, null);
+  return Join._(_JoinType.cross, other, null);
 }

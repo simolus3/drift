@@ -2,13 +2,9 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/executor/before_open.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/types/type_system.dart';
-import 'package:moor/src/runtime/statements/delete.dart';
-import 'package:moor/src/runtime/statements/select.dart';
-import 'package:moor/src/runtime/statements/update.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 

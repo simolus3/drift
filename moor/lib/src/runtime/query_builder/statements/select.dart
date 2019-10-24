@@ -1,15 +1,4 @@
-import 'dart:async';
-
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/components/join.dart';
-import 'package:moor/src/runtime/components/where.dart';
-import 'package:moor/src/runtime/database.dart';
-import 'package:moor/src/runtime/executor/stream_queries.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/runtime/statements/query.dart';
-import 'package:moor/src/runtime/structure/table_info.dart';
+part of '../query_builder.dart';
 
 /// Signature of a function that generates an [OrderingTerm] when provided with
 /// a table.

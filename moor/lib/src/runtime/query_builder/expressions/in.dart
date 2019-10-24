@@ -1,7 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/types/sql_types.dart';
+part of '../query_builder.dart';
 
 /// An expression that is true if the given [expression] resolves to any of the
 /// values in [values].

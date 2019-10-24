@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:moor/src/runtime/components/component.dart';
+import 'package:moor/backends.dart';
 import 'package:moor/src/runtime/database.dart';
 import 'package:moor/src/utils/hash.dart';
 

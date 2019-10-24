@@ -1,4 +1,4 @@
-import 'package:moor/src/runtime/components/component.dart';
+part of '../query_builder.dart';
 
 /// A limit clause inside a select, update or delete statement.
 class Limit extends Component {

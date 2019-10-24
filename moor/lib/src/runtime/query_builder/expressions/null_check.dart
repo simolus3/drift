@@ -1,6 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// Expression that is true if the inner expression resolves to a null value.
 Expression<bool, BoolType> isNull(Expression inner) => _NullCheck(inner, true);

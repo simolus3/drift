@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
+part of '../query_builder.dart';
 
 /// Represents an insert statements
 class InsertStatement<D extends DataClass> {

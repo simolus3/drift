@@ -1,8 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/types/sql_types.dart';
+part of '../query_builder.dart';
 
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.

@@ -1,12 +1,4 @@
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/components/limit.dart';
-import 'package:moor/src/runtime/components/order_by.dart';
-import 'package:moor/src/runtime/components/where.dart';
-import 'package:moor/src/runtime/expressions/custom.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/utils/single_transformer.dart';
+part of '../query_builder.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
@@ -221,7 +213,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
       // custom expression that references the column
       final columnExpression = CustomExpression(entry.key);
       final comparison =
-          Comparison(columnExpression, ComparisonOperator.equal, entry.value);
+          _Comparison(columnExpression, _ComparisonOperator.equal, entry.value);
 
       if (predicate == null) {
         predicate = comparison;

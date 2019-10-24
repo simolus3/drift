@@ -1,10 +1,8 @@
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/types/sql_types.dart';
+part of '../query_builder.dart';
 
 /// A `text LIKE pattern` expression that will be true if the first expression
 /// matches the pattern given by the second expression.
-class LikeOperator extends Expression<bool, BoolType> {
+class _LikeOperator extends Expression<bool, BoolType> {
   /// The target expression that will be tested
   final Expression<String, StringType> target;
 
@@ -12,7 +10,7 @@ class LikeOperator extends Expression<bool, BoolType> {
   final Expression<String, StringType> regex;
 
   /// Perform a like operator with the target and the regex.
-  LikeOperator(this.target, this.regex);
+  _LikeOperator(this.target, this.regex);
 
   @override
   void writeInto(GenerationContext context) {
@@ -44,7 +42,7 @@ enum Collate {
 }
 
 /// A `text COLLATE collate` expression in sqlite.
-class CollateOperator extends Expression<String, StringType> {
+class _CollateOperator extends Expression<String, StringType> {
   /// The expression on which the collate function will be run
   final Expression inner;
 
@@ -53,7 +51,7 @@ class CollateOperator extends Expression<String, StringType> {
 
   /// Constructs a collate expression on the [inner] expression and the
   /// [Collate].
-  CollateOperator(this.inner, this.collate);
+  _CollateOperator(this.inner, this.collate);
 
   @override
   void writeInto(GenerationContext context) {

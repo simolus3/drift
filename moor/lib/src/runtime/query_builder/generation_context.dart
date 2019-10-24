@@ -1,26 +1,4 @@
-import 'package:moor/moor.dart';
-
-/// A component is anything that can appear in a sql query.
-abstract class Component {
-  /// Writes this component into the [context] by writing to its
-  /// [GenerationContext.buffer] or by introducing bound variables. When writing
-  /// into the buffer, no whitespace around the this component should be
-  /// introduced. When a component consists of multiple composed component, it's
-  /// responsible for introducing whitespace between its child components.
-  void writeInto(GenerationContext context);
-}
-
-/// An enumeration of database systems supported by moor. Only
-/// [SqlDialect.sqlite] is officially supported, all others are in an
-/// experimental state at the moment.
-enum SqlDialect {
-  /// Use sqlite's sql dialect. This is the default option and the only
-  /// officially supported dialect at the moment.
-  sqlite,
-
-  /// (currently unsupported)
-  mysql
-}
+part of 'query_builder.dart';
 
 /// Contains information about a query while it's being constructed.
 class GenerationContext {

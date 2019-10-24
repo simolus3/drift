@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/structure/columns.dart';
-import 'package:moor/src/runtime/structure/table_info.dart';
+part of 'query_builder.dart';
 
 /// Signature of a function that will be invoked when a database is created.
 typedef Future<void> OnCreate(Migrator m);

@@ -1,15 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
-import 'package:moor/src/runtime/expressions/text.dart';
-import 'package:moor/src/runtime/expressions/variables.dart';
-import 'package:moor/src/types/sql_types.dart';
-import 'package:moor/sqlite_keywords.dart';
-
-import 'error_handling.dart';
+part of '../query_builder.dart';
 
 const VerificationResult _invalidNull = VerificationResult.failure(
     "This column is not nullable and doesn't have a default value. "
@@ -137,11 +126,11 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 
   @override
   Expression<bool, BoolType> like(String pattern) =>
-      LikeOperator(this, Variable<String, StringType>(pattern));
+      _LikeOperator(this, Variable<String, StringType>(pattern));
 
   @override
   Expression<String, StringType> collate(Collate collate) {
-    return CollateOperator(this, collate);
+    return _CollateOperator(this, collate);
   }
 
   @override

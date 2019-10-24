@@ -1,6 +1,4 @@
-import 'package:meta/meta.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// Describes how to order rows
 enum OrderingMode {

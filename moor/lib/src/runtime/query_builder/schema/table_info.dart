@@ -1,5 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/expressions/variables.dart';
+part of '../query_builder.dart';
 
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [D] is the type of the data class

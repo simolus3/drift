@@ -1,6 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// A custom expression that can appear in a sql statement.
 /// The [CustomExpression.content] will be written into the query without any

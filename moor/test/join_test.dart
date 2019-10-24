@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/join.dart';
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';

@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
 
 /// Base class for columns in sql. The [T] type refers to the type a value of
 /// this column will have in Dart, [S] is the mapping class from moor.

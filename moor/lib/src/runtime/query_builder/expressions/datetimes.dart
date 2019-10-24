@@ -1,7 +1,4 @@
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/custom.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// Extracts the (UTC) year from the given expression that resolves
 /// to a datetime.

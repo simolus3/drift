@@ -1,7 +1,4 @@
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/types/sql_types.dart';
+part of '../query_builder.dart';
 
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual
@@ -16,19 +13,20 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
 
   /// Whether this expression is equal to the given expression.
   Expression<bool, BoolType> equalsExp(Expression<D, T> compare) =>
-      Comparison.equal(this, compare);
+      _Comparison.equal(this, compare);
 
   /// Whether this column is equal to the given value, which must have a fitting
   /// type. The [compare] value will be written
   /// as a variable using prepared statements, so there is no risk of
   /// an SQL-injection.
   Expression<bool, BoolType> equals(D compare) =>
-      Comparison.equal(this, Variable<D, T>(compare));
+      _Comparison.equal(this, Variable<D, T>(compare));
 }
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class InfixOperator<D, T extends SqlType<D>> extends Expression<D, T> {
+abstract class _InfixOperator<D, T extends SqlType<D>>
+    extends Expression<D, T> {
   /// The left-hand side of this expression
   Expression get left;
 
@@ -40,7 +38,6 @@ abstract class InfixOperator<D, T extends SqlType<D>> extends Expression<D, T> {
 
   /// Whether we should put parentheses around the [left] and [right]
   /// expressions.
-  @visibleForOverriding
   bool get placeBrackets => true;
 
   @override
@@ -65,8 +62,8 @@ abstract class InfixOperator<D, T extends SqlType<D>> extends Expression<D, T> {
   }
 }
 
-/// Defines the possible comparison operators that can appear in a [Comparison].
-enum ComparisonOperator {
+/// Defines the possible comparison operators that can appear in a [_Comparison].
+enum _ComparisonOperator {
   /// '<' in sql
   less,
 
@@ -84,13 +81,13 @@ enum ComparisonOperator {
 }
 
 /// An expression that compares two child expressions.
-class Comparison extends InfixOperator<bool, BoolType> {
-  static const Map<ComparisonOperator, String> _operatorNames = {
-    ComparisonOperator.less: '<',
-    ComparisonOperator.lessOrEqual: '<=',
-    ComparisonOperator.equal: '=',
-    ComparisonOperator.moreOrEqual: '>=',
-    ComparisonOperator.more: '>'
+class _Comparison extends _InfixOperator<bool, BoolType> {
+  static const Map<_ComparisonOperator, String> _operatorNames = {
+    _ComparisonOperator.less: '<',
+    _ComparisonOperator.lessOrEqual: '<=',
+    _ComparisonOperator.equal: '=',
+    _ComparisonOperator.moreOrEqual: '>=',
+    _ComparisonOperator.more: '>'
   };
 
   @override
@@ -99,7 +96,7 @@ class Comparison extends InfixOperator<bool, BoolType> {
   final Expression right;
 
   /// The operator to use for this comparison
-  final ComparisonOperator op;
+  final _ComparisonOperator op;
 
   @override
   final bool placeBrackets = false;
@@ -109,8 +106,8 @@ class Comparison extends InfixOperator<bool, BoolType> {
 
   /// Constructs a comparison from the [left] and [right] expressions to compare
   /// and the [ComparisonOperator] [op].
-  Comparison(this.left, this.op, this.right);
+  _Comparison(this.left, this.op, this.right);
 
-  /// Like [Comparison(left, op, right)], but uses [ComparisonOperator.equal].
-  Comparison.equal(this.left, this.right) : op = ComparisonOperator.equal;
+  /// Like [Comparison(left, op, right)], but uses [_ComparisonOperator.equal].
+  _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
 }

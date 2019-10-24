@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of '../query_builder.dart';
 
 /// Represents an `UPDATE` statement in sql.
 class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
