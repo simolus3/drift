@@ -25,10 +25,12 @@ part 'expressions/variables.dart';
 part 'schema/columns.dart';
 part 'schema/table_info.dart';
 
+part 'statements/select/custom_select.dart';
+part 'statements/select/select.dart';
+part 'statements/select/select_with_join.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
 part 'statements/query.dart';
-part 'statements/select.dart';
 part 'statements/update.dart';
 
 part 'generation_context.dart';
