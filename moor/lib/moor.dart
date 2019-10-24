@@ -7,10 +7,7 @@ export 'dart:typed_data' show Uint8List;
 // appropriate
 export 'package:meta/meta.dart' show required;
 
-export 'package:moor/src/dsl/table.dart';
-export 'package:moor/src/dsl/columns.dart';
-export 'package:moor/src/dsl/database.dart';
-
+export 'package:moor/src/dsl/dsl.dart';
 export 'package:moor/src/runtime/query_builder/query_builder.dart';
 
 export 'package:moor/src/runtime/executor/executor.dart';
