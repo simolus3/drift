@@ -116,8 +116,8 @@ navbar_logo = false
 	url = "mailto:oss@simonbinder.eu"
 	icon = "fa fa-envelope"
 [[params.links.user]]
-	name = "Contact me via gitter"
-	url = "https://gitter.im/simolus3"
+	name = "Room in gitter"
+	url = "https://gitter.im/moor-dart/community"
 	icon = "fab fa-gitter"
 [[params.links.user]]
 	name = "Project on GitHub"
