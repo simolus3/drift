@@ -85,7 +85,7 @@ class ValuesSource extends InsertSource {
 
 /// Inserts the rows returned by [stmt].
 class SelectInsertSource extends InsertSource {
-  final SelectStatement stmt;
+  final BaseSelectStatement stmt;
 
   SelectInsertSource(this.stmt);
 

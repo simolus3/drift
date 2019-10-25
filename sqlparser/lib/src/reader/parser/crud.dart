@@ -66,6 +66,15 @@ mixin CrudParser on ParserBase {
       ..withToken = withToken;
   }
 
+  /// Parses a select statement as defined in [the sqlite documentation][s-d],
+  /// which means that compound selects and a with clause is supported.
+  ///
+  /// [s-d]: https://sqlite.org/syntax/select-stmt.html
+  BaseSelectStatement _defaultSelect() {
+    final clause = _withClause();
+    return select(withClause: clause);
+  }
+
   @override
   BaseSelectStatement select({bool noCompound, WithClause withClause}) {
     if (noCompound == true) {
@@ -245,13 +254,15 @@ mixin CrudParser on ParserBase {
     if (tableRef != null) {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
+      final first = _previous;
       final innerStmt = _selectNoCompound();
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
       final alias = _as();
       return SelectStatementAsSource(
-          statement: innerStmt, as: alias?.identifier);
+          statement: innerStmt, as: alias?.identifier)
+        ..setSpan(first, _previous);
     }
 
     _error('Expected a table name or a nested select statement');
@@ -279,6 +290,8 @@ mixin CrudParser on ParserBase {
     final joins = <Join>[];
 
     while (operator != null) {
+      final first = _peekNext;
+
       final subquery = _tableOrSubquery();
       final constraint = _joinConstraint();
       JoinOperator resolvedOperator;
@@ -301,7 +314,7 @@ mixin CrudParser on ParserBase {
         operator: resolvedOperator,
         query: subquery,
         constraint: constraint,
-      ));
+      )..setSpan(first, _previous));
 
       // parse the next operator, if there is more than one join
       if (_matchOne(TokenType.comma)) {
@@ -311,7 +324,8 @@ mixin CrudParser on ParserBase {
       }
     }
 
-    return JoinClause(primary: start, joins: joins);
+    return JoinClause(primary: start, joins: joins)
+      ..setSpan(start.first, _previous);
   }
 
   /// Parses https://www.sqlite.org/syntax/join-operator.html, minus the comma.
@@ -371,6 +385,8 @@ mixin CrudParser on ParserBase {
 
   GroupBy _groupBy() {
     if (_matchOne(TokenType.group)) {
+      final groupToken = _previous;
+
       _consume(TokenType.by, 'Expected a "BY"');
       final by = <Expression>[];
       Expression having;
@@ -383,7 +399,7 @@ mixin CrudParser on ParserBase {
         having = expression();
       }
 
-      return GroupBy(by: by, having: having);
+      return GroupBy(by: by, having: having)..setSpan(groupToken, _previous);
     }
     return null;
   }
@@ -614,7 +630,8 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return const DefaultValues();
     } else {
-      return SelectInsertSource(_selectNoCompound());
+      return SelectInsertSource(
+          _defaultSelect() ?? _error('Expeced a select statement'));
     }
   }
 
