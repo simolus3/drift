@@ -66,11 +66,8 @@ mixin CrudParser on ParserBase {
       ..withToken = withToken;
   }
 
-  /// Parses a select statement as defined in [the sqlite documentation][s-d],
-  /// which means that compound selects and a with clause is supported.
-  ///
-  /// [s-d]: https://sqlite.org/syntax/select-stmt.html
-  BaseSelectStatement _defaultSelect() {
+  @override
+  BaseSelectStatement _fullSelect() {
     final clause = _withClause();
     return select(withClause: clause);
   }
@@ -82,6 +79,17 @@ mixin CrudParser on ParserBase {
     } else {
       final firstTokenOfBase = _peek;
       final first = _selectNoCompound(withClause);
+
+      if (first == null) {
+        // _selectNoCompound returns null if there's no select statement at the
+        // current position. That's fine if we didn't encounter an with clause
+        // already
+        if (withClause != null) {
+          _error('Expected a SELECT statement to follow the WITH clause here');
+        }
+        return null;
+      }
+
       final parts = <CompoundSelectPart>[];
 
       while (true) {
@@ -631,7 +639,7 @@ mixin CrudParser on ParserBase {
       return const DefaultValues();
     } else {
       return SelectInsertSource(
-          _defaultSelect() ?? _error('Expeced a select statement'));
+          _fullSelect() ?? _error('Expeced a select statement'));
     }
   }
 

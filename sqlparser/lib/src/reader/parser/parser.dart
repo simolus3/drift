@@ -169,9 +169,18 @@ abstract class ParserBase {
   /// [CompoundSelectStatement]. If [noCompound] is set to true, the parser will
   /// only attempt to parse a [SelectStatement].
   ///
+  /// This method doesn't parse WITH clauses, most users would probably want to
+  /// use [_fullSelect] instead.
+  ///
   /// See also:
   /// https://www.sqlite.org/lang_select.html
   BaseSelectStatement select({bool noCompound});
+
+  /// Parses a select statement as defined in [the sqlite documentation][s-d],
+  /// which means that compound selects and a with clause is supported.
+  ///
+  /// [s-d]: https://sqlite.org/syntax/select-stmt.html
+  BaseSelectStatement _fullSelect();
 
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
