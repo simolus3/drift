@@ -52,6 +52,10 @@ abstract class AstNode with HasMetaMixin {
   /// all nodes.
   Token last;
 
+  /// Whether this ast node is synthetic, meaning that it doesn't appear in the
+  /// actual source.
+  bool synthetic;
+
   /// The first index in the source that belongs to this node. Not set for all
   /// nodes.
   int get firstPosition => first.span.start.offset;

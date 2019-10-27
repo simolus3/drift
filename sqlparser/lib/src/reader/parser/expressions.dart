@@ -266,9 +266,8 @@ mixin ExpressionParser on ParserBase {
 
       final selectStmt = _fullSelect(); // returns null if there's no select
       if (selectStmt != null) {
-        final stmt = select(noCompound: true) as SelectStatement;
         _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return SubQuery(select: stmt)..setSpan(left, _previous);
+        return SubQuery(select: selectStmt)..setSpan(left, _previous);
       } else {
         final expr = expression();
         _consume(TokenType.rightParen, 'Expected a closing bracket');
@@ -382,7 +381,8 @@ mixin ExpressionParser on ParserBase {
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
 
-    final subQuery = _fullSelect();
+    // if desired, attempt to parse select statement
+    final subQuery = orSubQuery ? _fullSelect() : null;
     if (subQuery == null) {
       // no sub query found. read expressions that form the tuple.
       // tuples can be empty `()`, so only start parsing values when it's not

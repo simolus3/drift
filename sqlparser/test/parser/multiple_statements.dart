@@ -4,38 +4,35 @@ import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   test('can parse multiple statements', () {
     final sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
-    final tokens = Scanner(sql).scanTokens();
-    final moorFile = Parser(tokens).moorFile();
 
-    final statements = moorFile.statements;
-
-    enforceEqual(
-      statements[0],
-      DeclaredStatement(
-        'a',
-        UpdateStatement(
-          table: TableReference('tbl', null),
-          set: [
-            SetComponent(
-              column: Reference(columnName: 'a'),
-              expression: Reference(columnName: 'b'),
-            ),
-          ],
+    testMoorFile(
+      sql,
+      MoorFile([
+        DeclaredStatement(
+          'a',
+          UpdateStatement(
+            table: TableReference('tbl', null),
+            set: [
+              SetComponent(
+                column: Reference(columnName: 'a'),
+                expression: Reference(columnName: 'b'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    enforceEqual(
-      statements[1],
-      DeclaredStatement(
-        'b',
-        SelectStatement(
-          columns: [StarResultColumn(null)],
-          from: [TableReference('tbl', null)],
+        DeclaredStatement(
+          'b',
+          SelectStatement(
+            columns: [StarResultColumn(null)],
+            from: [TableReference('tbl', null)],
+          ),
         ),
-      ),
+      ]),
     );
   });
 

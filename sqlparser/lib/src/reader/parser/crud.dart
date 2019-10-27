@@ -674,7 +674,7 @@ mixin CrudParser on ParserBase {
       baseWindowName: baseWindowName,
       partitionBy: partitionBy,
       orderBy: orderBy,
-      frameSpec: spec ?? FrameSpec(),
+      frameSpec: spec ?? (FrameSpec()..synthetic = true),
     )..setSpan(leftParen, _previous);
   }
 

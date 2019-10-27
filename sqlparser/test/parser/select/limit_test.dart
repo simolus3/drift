@@ -12,6 +12,7 @@ void main() {
           .parse('SELECT * FROM test LIMIT 5 * 3')
           .rootNode as SelectStatement;
 
+      enforceHasSpan(select);
       enforceEqual(
         select.limit,
         Limit(
@@ -29,6 +30,7 @@ void main() {
           .parse('SELECT * FROM test LIMIT 10 OFFSET 2')
           .rootNode as SelectStatement;
 
+      enforceHasSpan(select);
       enforceEqual(
         select.limit,
         Limit(
@@ -46,6 +48,7 @@ void main() {
           .parse('SELECT * FROM test LIMIT 10, 2')
           .rootNode as SelectStatement;
 
+      enforceHasSpan(select);
       enforceEqual(
         select.limit,
         Limit(

@@ -11,6 +11,7 @@ void main() {
         .parse("SELECT * FROM test GROUP BY country HAVING country LIKE '%G%'")
         .rootNode as SelectStatement;
 
+    enforceHasSpan(stmt);
     return enforceEqual(
       stmt.groupBy,
       GroupBy(
