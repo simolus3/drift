@@ -51,17 +51,17 @@ to run the statements.
 Starting from moor 1.5, you can use the `beforeOpen` parameter in the `MigrationStrategy` which will be called after
 migrations, but after any other queries are run. You could use it to populate data after the database has been created:
 ```dart
-beforeOpen: (db, details) async {
+beforeOpen: (details) async {
     if (details.wasCreated) {
-      final workId = await db.into(categories).insert(Category(description: 'Work'));
+      final workId = await into(categories).insert(Category(description: 'Work'));
     
-      await db.into(todos).insert(TodoEntry(
+      await into(todos).insert(TodoEntry(
             content: 'A first todo entry',
             category: null,
             targetDate: DateTime.now(),
       ));
     
-      await db.into(todos).insert(
+      await into(todos).insert(
             TodoEntry(
               content: 'Rework persistence code',
               category: workId,
@@ -72,12 +72,20 @@ beforeOpen: (db, details) async {
 ```
 You could also activate pragma statements that you need:
 ```dart
-beforeOpen: (db, details) async {
+beforeOpen: (details) async {
   if (details.wasCreated) {
     // ...
   }
-  await db.customStatement('PRAGMA foreign_keys = ON');
+  await customStatement('PRAGMA foreign_keys = ON');
 }
 ```
-It is important that you run these queries on `db` explicitly. Failing to do so causes a deadlock which prevents the
-database from being opened.
+
+## During development
+
+During development, you might be changing your schema very often and don't want to write migrations for that
+yet. You can just delete your apps' data and reinstall the app - the database will be deleted and all tables
+will be created again. Please note that uninstalling is not enough sometimes - Android might have backed up
+the database file and will re-create it when installing the app again.
+
+You can also delete and re-create all tables everytime your app is opened, see [this comment](https://github.com/simolus3/moor/issues/188#issuecomment-542682912)
+on how that can be achieved.

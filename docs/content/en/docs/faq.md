@@ -41,6 +41,13 @@ If you're strict on keeping your business logic out of the widget layer, you pro
 framework like `kiwi` or `get_it` to instantiate services and view models. Creating a singleton instance of `MyDatabase`
 in your favorite dependency injection framework for flutter hence solves this problem for you.
 
+## Why am I getting no such table errors?
+
+If you add another table after your app has already been installed, you need to write a [migration]({{< relref "Advanced Features/migrations.md" >}})
+that covers creating that table. If you're in the process of developing your app and want to use un- and reinstall your app
+instead of writing migrations, that's fine too. Please note that your apps data might be backed up on Android, so
+manually deleting your app's data instead of a reinstall is necessary on some devices.
+
 ## How does moor compare to X?
 There are a variety of good persistence libraries for Dart and Flutter.
 
