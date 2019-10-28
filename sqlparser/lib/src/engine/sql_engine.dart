@@ -7,6 +7,8 @@ import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
+import 'builtin_tables.dart';
+
 class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
@@ -16,7 +18,10 @@ class SqlEngine {
   /// extensions enabled.
   final bool useMoorExtensions;
 
-  SqlEngine({this.useMoorExtensions = false});
+  SqlEngine({this.useMoorExtensions = false}) {
+    registerTable(sqliteMaster);
+    registerTable(sqliteSequence);
+  }
 
   /// Registers the [table], which means that it can later be used in sql
   /// statements.
@@ -132,9 +137,8 @@ class SqlEngine {
           ..accept(ReferenceResolver(context))
           ..accept(TypeResolvingVisitor(context));
       }
-    } catch (e) {
-      // todo should we do now? AFAIK, everything that causes an exception
-      // is added as an error contained in the context.
+    } catch (_) {
+      rethrow;
     }
   }
 }

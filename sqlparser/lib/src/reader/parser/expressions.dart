@@ -194,7 +194,7 @@ mixin ExpressionParser on ParserBase {
       final existsToken = _previous;
       _consume(
           TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
-      final selectStmt = select(noCompound: true) as SelectStatement;
+      final selectStmt = _fullSelect() ?? _error('Expected a select statement');
       _consume(TokenType.rightParen,
           'Expected closing paranthesis to finish EXISTS expression');
       return ExistsExpression(select: selectStmt)
@@ -263,10 +263,11 @@ mixin ExpressionParser on ParserBase {
 
     if (_matchOne(TokenType.leftParen)) {
       final left = _previous;
-      if (_peek.type == TokenType.select) {
-        final stmt = select(noCompound: true) as SelectStatement;
+
+      final selectStmt = _fullSelect(); // returns null if there's no select
+      if (selectStmt != null) {
         _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return SubQuery(select: stmt)..setSpan(left, _previous);
+        return SubQuery(select: selectStmt)..setSpan(left, _previous);
       } else {
         final expr = expression();
         _consume(TokenType.rightParen, 'Expected a closing bracket');
@@ -380,7 +381,8 @@ mixin ExpressionParser on ParserBase {
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
 
-    final subQuery = select(noCompound: true) as SelectStatement;
+    // if desired, attempt to parse select statement
+    final subQuery = orSubQuery ? _fullSelect() : null;
     if (subQuery == null) {
       // no sub query found. read expressions that form the tuple.
       // tuples can be empty `()`, so only start parsing values when it's not

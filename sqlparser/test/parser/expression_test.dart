@@ -146,8 +146,8 @@ void main() {
         final tokens = scanner.scanTokens();
         final parser = Parser(tokens);
         final expression = parser.expression();
-        enforceHasSpan(expression);
 
+        enforceHasSpan(expression);
         enforceEqual(expression, expected);
       });
     });

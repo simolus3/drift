@@ -38,7 +38,9 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
     final scope = e.scope;
 
     if (isInFROM) {
-      final forked = scope.effectiveRoot.createChild();
+      final surroundingSelect =
+          e.parents.firstWhere((node) => node is BaseSelectStatement).scope;
+      final forked = surroundingSelect.createSibling();
       e.scope = forked;
     } else {
       final forked = scope.createChild();
@@ -126,6 +128,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
   }
 
   @override
+  void visitCommonTableExpression(CommonTableExpression e) {
+    e.scope.register(e.cteTableName, e);
+    visitChildren(e);
+  }
+
+  @override
   void visitNumberedVariable(NumberedVariable e) {
     _foundVariables.add(e);
     visitChildren(e);
@@ -169,5 +177,19 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
         variable.resolvedIndex = index;
       }
     }
+  }
+
+  void _forkScope(AstNode node) {
+    node.scope = node.scope.createChild();
+  }
+
+  @override
+  void visitChildren(AstNode e) {
+    // hack to fork scopes on statements (selects are handled above)
+    if (e is Statement && e is! SelectStatement) {
+      _forkScope(e);
+    }
+
+    super.visitChildren(e);
   }
 }

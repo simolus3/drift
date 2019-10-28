@@ -31,8 +31,9 @@ void main() {
 
   group('SELECT statements are generated', () {
     test('for simple statements', () {
-      db.select(db.users).get();
-      verify(executor.runSelect('SELECT * FROM users;', argThat(isEmpty)));
+      db.select(db.users, distinct: true).get();
+      verify(executor.runSelect(
+          'SELECT DISTINCT * FROM users;', argThat(isEmpty)));
     });
 
     test('with limit statements', () {

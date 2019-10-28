@@ -1,5 +1,4 @@
-import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
+part of 'dsl.dart';
 
 /// Use this class as an annotation to inform moor_generator that a database
 /// class should be generated using the specified [UseMoor.tables].

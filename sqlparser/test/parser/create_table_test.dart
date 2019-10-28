@@ -1,6 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
 import '../common_data.dart';
@@ -118,11 +117,8 @@ void main() {
   });
 
   test('parses MAPPED BY constraints when in moor mode', () {
-    const stmt = 'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)';
-    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
-
-    enforceEqual(
-      parsed,
+    testStatement(
+      'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)',
       CreateTableStatement(tableName: 'a', columns: [
         ColumnDefinition(
           columnName: 'b',
@@ -134,15 +130,13 @@ void main() {
           ],
         ),
       ]),
+      moorMode: true,
     );
   });
 
   test('parses JSON KEY constraints in moor mode', () {
-    const stmt = 'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")';
-    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
-
-    enforceEqual(
-      parsed,
+    testStatement(
+      'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")',
       CreateTableStatement(
         tableName: 'a',
         columns: [
@@ -158,6 +152,7 @@ void main() {
           ),
         ],
       ),
+      moorMode: true,
     );
   });
 }

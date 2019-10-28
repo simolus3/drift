@@ -73,4 +73,10 @@ void main() {
     // shouldn't call stream queries - we didn't set the updates parameter
     verifyNever(streamQueries.handleTableUpdates(any));
   });
+
+  test('custom statement', () async {
+    // regression test for https://github.com/simolus3/moor/issues/199 - the
+    // mock will throw when used before opening
+    expect(db.customStatement('UPDATE tbl SET a = b'), completes);
+  });
 }

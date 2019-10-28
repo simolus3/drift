@@ -49,10 +49,14 @@ class TypeResolver {
     return !containsVariable;
   }
 
+  bool needsToBeInferred(Typeable t) {
+    return t is Variable || t is DartExpressionPlaceholder;
+  }
+
   ResolveResult resolveOrInfer(Typeable t) {
     if (t is Column) {
       return resolveColumn(t);
-    } else if (t is Variable || t is DartExpressionPlaceholder) {
+    } else if (needsToBeInferred(t)) {
       return inferType(t as Expression);
     } else if (t is Expression) {
       return resolveExpression(t);
@@ -78,9 +82,8 @@ class TypeResolver {
         return ResolveResult(column.type);
       } else if (column is ExpressionColumn) {
         return resolveOrInfer(column.expression);
-      } else if (column is CompoundSelectColumn) {
-        // todo maybe use a type that matches every column in here?
-        return resolveColumn(column.columns.first);
+      } else if (column is DelegatedColumn) {
+        return resolveColumn(column.innerColumn);
       }
 
       throw StateError('Unknown column $column');
@@ -95,7 +98,8 @@ class TypeResolver {
         return resolveExpression(expr.inner);
       } else if (expr is Parentheses) {
         return resolveExpression(expr.expression);
-      } else if (expr is Variable) {
+      } else if (expr is Variable || expr is Tuple) {
+        // todo we can probably resolve tuples by looking at their content
         return const ResolveResult.needsContext();
       } else if (expr is Reference) {
         return resolveColumn(expr.resolved as Column);
@@ -169,7 +173,8 @@ class TypeResolver {
   ResolveResult resolveFunctionCall(Invocation call) {
     return _cache((Invocation call) {
       final parameters = _expandParameters(call);
-      final firstNullable = justResolve(parameters.first).nullable;
+      final firstNullable =
+          parameters.isEmpty ? false : justResolve(parameters.first).nullable;
       final anyNullable = parameters.map(justResolve).any((r) => r.nullable);
 
       switch (call.name.toLowerCase()) {

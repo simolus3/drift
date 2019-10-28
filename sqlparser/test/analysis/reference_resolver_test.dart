@@ -10,7 +10,8 @@ void main() {
     final engine = SqlEngine()..registerTable(demoTable);
 
     final context =
-        engine.analyze('SELECT id, d.content, *, 3 + 4 FROM demo AS d');
+        engine.analyze('SELECT id, d.content, *, 3 + 4 FROM demo AS d '
+            'WHERE _rowid_ = 3');
 
     final select = context.root as SelectStatement;
     final resolvedColumns = select.resolvedColumns;
@@ -35,6 +36,9 @@ void main() {
     expect((firstColumn.expression as Reference).resolved, id);
     expect((secondColumn.expression as Reference).resolved, content);
     expect(from.resolved, demoTable);
+
+    final where = select.where as BinaryExpression;
+    expect((where.left as Reference).resolved, id);
   });
 
   test('resolves the column for order by clauses', () {
@@ -58,6 +62,28 @@ void main() {
         Reference(tableName: 'd', columnName: 'id'),
       ),
     );
+  });
+
+  group('reports correct column name for rowid aliases', () {
+    final engine = SqlEngine()
+      ..registerTable(demoTable)
+      ..registerTable(anotherTable);
+
+    test('when virtual id', () {
+      final context = engine.analyze('SELECT oid, _rowid_ FROM tbl');
+      final select = context.root as SelectStatement;
+      final resolvedColumns = select.resolvedColumns;
+
+      expect(resolvedColumns.map((c) => c.name), ['rowid', 'rowid']);
+    });
+
+    test('when alias to actual column', () {
+      final context = engine.analyze('SELECT oid, _rowid_ FROM demo');
+      final select = context.root as SelectStatement;
+      final resolvedColumns = select.resolvedColumns;
+
+      expect(resolvedColumns.map((c) => c.name), ['id', 'id']);
+    });
   });
 
   test('resolves sub-queries', () {
@@ -84,7 +110,7 @@ void main() {
     final engine = SqlEngine()..registerTable(demoTable);
 
     final context = engine.analyze('''
-SELECT current_row() OVER wnd FROM demo
+SELECT row_number() OVER wnd FROM demo
   WINDOW wnd AS (PARTITION BY content GROUPS CURRENT ROW EXCLUDE TIES)
     ''');
 

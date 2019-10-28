@@ -7,6 +7,7 @@ import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
+part 'clauses/with.dart';
 
 part 'common/queryables.dart';
 part 'common/renamable.dart';
@@ -50,6 +51,10 @@ abstract class AstNode with HasMetaMixin {
   /// The last token that appears in this node. This information is not set for
   /// all nodes.
   Token last;
+
+  /// Whether this ast node is synthetic, meaning that it doesn't appear in the
+  /// actual source.
+  bool synthetic;
 
   /// The first index in the source that belongs to this node. Not set for all
   /// nodes.
@@ -137,6 +142,14 @@ abstract class AstNode with HasMetaMixin {
   /// type. The "content" refers to anything stored only in this node, children
   /// are ignored.
   bool contentEquals(covariant AstNode other);
+
+  @override
+  String toString() {
+    if (hasSpan) {
+      return '$runtimeType: ${span.text}';
+    }
+    return super.toString();
+  }
 }
 
 abstract class AstVisitor<T> {
@@ -149,6 +162,8 @@ abstract class AstVisitor<T> {
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
 
+  T visitWithClause(WithClause e);
+  T visitCommonTableExpression(CommonTableExpression e);
   T visitOrderBy(OrderBy e);
   T visitOrderingTerm(OrderingTerm e);
   T visitLimit(Limit e);
@@ -306,6 +321,12 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitFrameSpec(FrameSpec e) => visitChildren(e);
+
+  @override
+  T visitWithClause(WithClause e) => visitChildren(e);
+
+  @override
+  T visitCommonTableExpression(CommonTableExpression e) => visitChildren(e);
 
   @override
   T visitMoorFile(MoorFile e) => visitChildren(e);

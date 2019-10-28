@@ -1,5 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
 import 'utils.dart';
@@ -19,12 +18,8 @@ all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 
 void main() {
   test('parses moor files', () {
-    final parsed = SqlEngine(useMoorExtensions: true).parseMoorFile(content);
-    final file = parsed.rootNode;
-    enforceHasSpan(file);
-
-    enforceEqual(
-      file,
+    testMoorFile(
+      content,
       MoorFile([
         ImportStatement('other.dart'),
         ImportStatement('another.moor'),

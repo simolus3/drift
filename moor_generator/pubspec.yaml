@@ -12,7 +12,9 @@ environment:
   sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=0.36.4 <0.39.0'
+  # todo it looks like we're not using any apis removed in 0.40.0, but I couldn't verify that (neither analyzer_plugin
+  # nor build supports 0.40.0 yet)
+  analyzer: '>=0.36.4 <0.40.0'
   analyzer_plugin: '>=0.1.0 <0.3.0'
   collection: ^1.14.0
   recase: ^2.0.1

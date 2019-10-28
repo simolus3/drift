@@ -1,7 +1,6 @@
 import 'dart:async' show FutureOr;
 import 'dart:typed_data' show Uint8List;
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/executor/helpers/results.dart';
 
 /// An interface that supports sending database queries. Used as a backend for

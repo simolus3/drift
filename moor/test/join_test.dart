@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/join.dart';
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
@@ -48,7 +47,7 @@ void main() {
       ]);
     });
 
-    final result = await db.select(todos).join([
+    final result = await db.select(todos, distinct: true).join([
       leftOuterJoin(categories, categories.id.equalsExp(todos.category))
     ]).get();
 
@@ -67,6 +66,8 @@ void main() {
 
     expect(
         row.readTable(categories), Category(id: 3, description: 'description'));
+
+    verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
 
   test('reports null when no data is available', () async {

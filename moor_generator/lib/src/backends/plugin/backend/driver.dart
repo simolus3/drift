@@ -122,8 +122,7 @@ class MoorDriver implements AnalysisDriverGeneric {
     final factory = dartDriver.sourceFactory;
     final baseSource = base == null ? null : factory.forUri2(base);
 
-    final source =
-        dartDriver.sourceFactory.resolveUri(baseSource, reference.toString());
+    final source = factory.resolveUri(baseSource, reference.toString());
     return source.fullName;
   }
 

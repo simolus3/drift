@@ -44,6 +44,10 @@ class ReferenceScope {
     return ReferenceScope(this, root: effectiveRoot);
   }
 
+  ReferenceScope createSibling() {
+    return parent.createChild();
+  }
+
   /// Registers something that can be referenced in this and child scopes.
   void register(String identifier, Referencable ref) {
     _references.putIfAbsent(identifier.toUpperCase(), () => []).add(ref);

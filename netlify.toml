@@ -3,10 +3,13 @@
 [build]
   base = "docs"
   publish = "docs/public"
-  command = 'git submodule update --init --recursive && HUGO_ENV="production" hugo'
+  command = 'git submodule update --init --recursive && hugo'
 
 [[redirects]]
   from = "https://moor.netlify.com/*"
   to = "https://moor.simonbinder.eu/:splat"
   status = 301
   force = true
+
+[context.production]
+  environment = { HUGO_ENV="production" }

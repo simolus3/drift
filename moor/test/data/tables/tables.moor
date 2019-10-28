@@ -30,3 +30,5 @@ CREATE TABLE mytable (
 readConfig: SELECT * FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
+
+readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;

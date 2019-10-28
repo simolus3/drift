@@ -61,22 +61,37 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       final resolved = e.resolved;
 
       if (resolved is Column) {
-        // if we know the declaration because the file was analyzed - use that
-        final declaration = resolved.meta<ColumnDeclaration>();
-        if (declaration != null) {
-          final location = locationOfDeclaration(declaration);
-          _reportForSpan(e.span, ElementKind.FIELD, location);
-        } else if (declaration is ExpressionColumn) {
-          // expression references don't have an explicit declaration, but they
-          // reference an expression that we can target
-          final expr = (declaration as ExpressionColumn).expression;
-          final target = locationOfNode(request.file, expr);
-          _reportForSpan(e.span, ElementKind.LOCAL_VARIABLE, target);
+        final locations = _locationOfColumn(resolved);
+        for (final declaration in locations) {
+          _reportForSpan(e.span, ElementKind.FIELD, declaration);
         }
       }
     }
 
     visitChildren(e);
+  }
+
+  Iterable<Location> _locationOfColumn(Column column) sync* {
+    final declaration = column.meta<ColumnDeclaration>();
+    if (declaration != null) {
+      // the column was declared in a table and we happen to know where the
+      // declaration is - point to that declaration.
+      final location = locationOfDeclaration(declaration);
+      yield location;
+    } else if (column is ExpressionColumn) {
+      // expression references don't have an explicit declaration, but they
+      // reference an expression that we can target
+      final expr = (declaration as ExpressionColumn).expression;
+      yield locationOfNode(request.file, expr);
+    } else if (column is CompoundSelectColumn) {
+      // a compound select column consists of multiple column declarations -
+      // let's use all of them
+      yield* column.columns.where((c) => c != null).expand(_locationOfColumn);
+    } else if (column is DelegatedColumn) {
+      if (column.innerColumn != null) {
+        yield* _locationOfColumn(column.innerColumn);
+      }
+    }
   }
 
   @override

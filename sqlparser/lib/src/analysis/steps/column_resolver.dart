@@ -11,8 +11,9 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
   @override
   void visitSelectStatement(SelectStatement e) {
-    _resolveSelect(e);
+    // visit children first so that common table expressions are resolved
     visitChildren(e);
+    _resolveSelect(e);
   }
 
   @override
@@ -54,6 +55,22 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
+  void visitCommonTableExpression(CommonTableExpression e) {
+    visitChildren(e);
+
+    final resolved = e.as.resolvedColumns;
+    final names = e.columnNames;
+    if (names != null && resolved != null && names.length != resolved.length) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.cteColumnCountMismatch,
+        message: 'This CTE declares ${names.length} columns, but its select '
+            'statement actually returns ${resolved.length}.',
+        relevantNode: e,
+      ));
+    }
+  }
+
+  @override
   void visitUpdateStatement(UpdateStatement e) {
     final table = _resolveTableReference(e.table);
     e.scope.availableColumns = table.resolvedColumns;
@@ -78,8 +95,12 @@ class ColumnResolver extends RecursiveVisitor<void> {
   void _handle(Queryable queryable, List<Column> availableColumns) {
     queryable.when(
       isTable: (table) {
-        _resolveTableReference(table);
-        availableColumns.addAll(table.resultSet.resolvedColumns);
+        final resolved = _resolveTableReference(table);
+        if (resolved != null) {
+          // an error will be logged when resolved is null, so the != null check
+          // is fine and avoids crashes
+          availableColumns.addAll(table.resultSet.resolvedColumns);
+        }
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
@@ -126,15 +147,27 @@ class ColumnResolver extends RecursiveVisitor<void> {
           usedColumns.addAll(availableColumns);
         }
       } else if (resultColumn is ExpressionResultColumn) {
-        final name = _nameOfResultColumn(resultColumn);
-        final column =
-            ExpressionColumn(name: name, expression: resultColumn.expression);
+        final expression = resultColumn.expression;
+        Column column;
+
+        if (expression is Reference) {
+          column = ReferenceExpressionColumn(expression,
+              overriddenName: resultColumn.as);
+        } else {
+          final name = _nameOfResultColumn(resultColumn);
+          column =
+              ExpressionColumn(name: name, expression: resultColumn.expression);
+        }
 
         usedColumns.add(column);
 
-        // make this column available if there is no other with the same name
-        if (!availableColumns.any((c) => c.name == name)) {
-          availableColumns.add(column);
+        if (resultColumn.as != null) {
+          // make this column available for references if there is no other
+          // column with the same name
+          final name = resultColumn.as;
+          if (!availableColumns.any((c) => c.name == name)) {
+            availableColumns.add(column);
+          }
         }
       }
     }
@@ -158,9 +191,9 @@ class ColumnResolver extends RecursiveVisitor<void> {
     return span;
   }
 
-  Table _resolveTableReference(TableReference r) {
+  ResultSet _resolveTableReference(TableReference r) {
     final scope = r.scope;
-    final resolvedTable = scope.resolve<Table>(r.tableName, orElse: () {
+    final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
       final available = scope.allOf<Table>().map((t) => t.name);
 
       context.reportError(UnresolvedReferenceError(

@@ -1,6 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
 import 'package:test/test.dart';
 
 typedef Expression<int, IntType> _Extractor(
