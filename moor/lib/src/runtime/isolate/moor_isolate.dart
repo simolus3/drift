@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:moor/moor.dart';
-import 'package:moor/moor_web.dart';
 import 'communication.dart';
 
 part 'client.dart';
@@ -34,13 +33,21 @@ class MoorIsolate {
   /// Identifier for the server isolate that we can connect to.
   final ServerKey _server;
 
-  MoorIsolate._(this._server);
+  final Isolate _isolate;
+
+  MoorIsolate._(this._server, this._isolate);
 
   /// Connects to this [MoorIsolate] from another isolate. All operations on the
   /// returned [DatabaseConnection] will be executed on a background isolate.
-  Future<DatabaseConnection> connect() async {
-    final client = await _MoorClient.connect(this);
+  /// Setting the [isolateDebugLog] is only helpful when debugging moor itself.
+  Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
+    final client = await _MoorClient.connect(this, isolateDebugLog);
     return client._connection;
+  }
+
+  /// Calls [Isolate.kill] on the underlying isolate.
+  void kill() {
+    _isolate.kill();
   }
 
   /// Creates a new [MoorIsolate] on a background thread.
@@ -57,9 +64,10 @@ class MoorIsolate {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 
-    await Isolate.spawn(_startMoorIsolate, [receiveServer.sendPort, opener]);
+    final isolate = await Isolate.spawn(
+        _startMoorIsolate, [receiveServer.sendPort, opener]);
     final key = await keyFuture as ServerKey;
-    return MoorIsolate._(key);
+    return MoorIsolate._(key, isolate);
   }
 
   /// Creates a [MoorIsolate] in the [Isolate.current] isolate. The returned
@@ -68,7 +76,7 @@ class MoorIsolate {
   /// connection which operations are all executed on this isolate.
   static MoorIsolate inCurrent(DatabaseOpener opener) {
     final server = _MoorServer(opener);
-    return MoorIsolate._(server.key);
+    return MoorIsolate._(server.key, Isolate.current);
   }
 }
 

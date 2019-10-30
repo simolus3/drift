@@ -19,9 +19,10 @@ class _MoorClient {
     _channel.setRequestHandler(_handleRequest);
   }
 
-  static Future<_MoorClient> connect(MoorIsolate isolate) async {
-    final connection =
-        await IsolateCommunication.connectAsClient(isolate._server);
+  static Future<_MoorClient> connect(
+      MoorIsolate isolate, bool isolateDebugLog) async {
+    final connection = await IsolateCommunication.connectAsClient(
+        isolate._server, isolateDebugLog);
 
     final typeSystem =
         await connection.request<SqlTypeSystem>(_NoArgsRequest.getTypeSystem);
@@ -34,19 +35,19 @@ class _MoorClient {
     if (payload is _NoArgsRequest) {
       switch (payload) {
         case _NoArgsRequest.runOnCreate:
-          connectedDb.handleDatabaseCreation(executor: executor);
-          return null;
+          return connectedDb.handleDatabaseCreation(executor: executor);
         default:
           throw UnsupportedError('This operation must be run on the server');
       }
     } else if (payload is _RunOnUpgrade) {
-      connectedDb.handleDatabaseVersionChange(
+      return connectedDb.handleDatabaseVersionChange(
         executor: executor,
         from: payload.versionBefore,
         to: payload.versionNow,
       );
     } else if (payload is _RunBeforeOpen) {
-      connectedDb.beforeOpenCallback(_connection.executor, payload.details);
+      return connectedDb.beforeOpenCallback(
+          _connection.executor, payload.details);
     }
   }
 }
@@ -110,5 +111,11 @@ class _IsolateQueryExecutor extends QueryExecutor {
   @override
   Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
     return _runRequest(_StatementMethod.select, statement, args);
+  }
+
+  @override
+  Future<void> close() {
+    client._channel.close();
+    return Future.value();
   }
 }

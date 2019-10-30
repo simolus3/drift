@@ -41,7 +41,25 @@ class _MoorServer {
     } else if (payload is _SetSchemaVersion) {
       _fakeDb.schemaVersion = payload.schemaVersion;
       return null;
+    } else if (payload is _ExecuteQuery) {
+      return _runQuery(payload.method, payload.sql, payload.args);
     }
+  }
+
+  Future<dynamic> _runQuery(_StatementMethod method, String sql, List args) {
+    final executor = connection.executor;
+    switch (method) {
+      case _StatementMethod.custom:
+        return executor.runCustom(sql, args);
+      case _StatementMethod.deleteOrUpdate:
+        return executor.runDelete(sql, args);
+      case _StatementMethod.insert:
+        return executor.runInsert(sql, args);
+      case _StatementMethod.select:
+        return executor.runSelect(sql, args);
+    }
+
+    throw AssertionError("Unknown _StatementMethod, this can't happen.");
   }
 }
 

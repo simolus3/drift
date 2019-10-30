@@ -30,6 +30,11 @@ class _ExecuteQuery {
   final List<dynamic> args;
 
   _ExecuteQuery(this.method, this.sql, this.args);
+
+  @override
+  String toString() {
+    return '$method: $sql with $args';
+  }
 }
 
 /// Sent from the client to notify the server of the

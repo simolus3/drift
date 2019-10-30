@@ -10,8 +10,9 @@ class IsolateCommunication {
   /// The [SendPort] used to send messages to the peer.
   final SendPort sendPort;
 
-  /// The [ReceivePort] used to receive messages from the peer.
-  final ReceivePort receivePort;
+  /// The input stream of this channel. This could be a [ReceivePort].
+  final Stream<dynamic> input;
+  StreamSubscription _inputSubscription;
 
   // note that there are two IsolateCommunication instances in each connection,
   // and each of them has an independent _currentRequestId field!
@@ -20,8 +21,10 @@ class IsolateCommunication {
   final Map<int, Completer> _pendingRequests = {};
   final StreamController<Request> _incomingRequests = StreamController();
 
-  IsolateCommunication._(this.sendPort, this.receivePort) {
-    receivePort.listen(_handleMessage);
+  final bool _debugLog;
+
+  IsolateCommunication._(this.sendPort, this.input, [this._debugLog = false]) {
+    _inputSubscription = input.listen(_handleMessage);
   }
 
   /// Returns a future that resolves when this communication channel was closed,
@@ -33,25 +36,27 @@ class IsolateCommunication {
 
   /// Establishes an [IsolateCommunication] by connecting to the [Server] which
   /// emitted the [key].
-  static Future<IsolateCommunication> connectAsClient(ServerKey key) async {
+  static Future<IsolateCommunication> connectAsClient(ServerKey key,
+      [bool debugLog = false]) async {
     final clientReceive = ReceivePort();
+    final stream = clientReceive.asBroadcastStream();
 
     key.openConnectionPort
         .send(_ClientConnectionRequest(clientReceive.sendPort));
 
-    final response = (await clientReceive.first) as _ServerConnectionResponse;
+    final response = (await stream.first) as _ServerConnectionResponse;
 
-    return IsolateCommunication._(response.sendPort, clientReceive);
+    return IsolateCommunication._(response.sendPort, stream, debugLog);
   }
 
   /// Closes the connection to the server.
   void close() {
-    sendPort.send(_ConnectionClose());
+    _send(_ConnectionClose());
     _closeLocally();
   }
 
   void _closeLocally() {
-    receivePort.close();
+    _inputSubscription?.cancel();
     _closeCompleter.complete();
 
     for (var pending in _pendingRequests.values) {
@@ -61,6 +66,10 @@ class IsolateCommunication {
   }
 
   void _handleMessage(dynamic msg) {
+    if (_debugLog) {
+      print('[IN]: $msg');
+    }
+
     if (msg is _ConnectionClose) {
       _closeLocally();
     } else if (msg is _Response) {
@@ -79,6 +88,8 @@ class IsolateCommunication {
 
         _pendingRequests.remove(msg.requestId);
       }
+    } else if (msg is Request) {
+      _incomingRequests.add(msg);
     }
   }
 
@@ -89,28 +100,40 @@ class IsolateCommunication {
     final completer = Completer<T>();
 
     _pendingRequests[id] = completer;
-    sendPort.send(Request._(_currentRequestId++, request));
+    _send(Request._(id, request));
     return completer.future;
+  }
+
+  void _send(dynamic msg) {
+    if (_debugLog) {
+      print('[OUT]: $msg');
+    }
+    sendPort.send(msg);
   }
 
   /// Sends a response for a handled [Request].
   void respond(Request request, dynamic response) {
-    sendPort.send(_Response(request.id, response));
+    _send(_Response(request.id, response));
   }
 
   /// Sends an erroneous response for a [Request].
   void respondError(Request request, dynamic error, [StackTrace trace]) {
-    sendPort.send(_ErrorResponse(request.id, error, trace.toString()));
+    _send(_ErrorResponse(request.id, error, trace.toString()));
   }
 
   /// Utility that listens to [incomingRequests] and invokes the [handler] on
   /// each request, sending the result back to the originating client. If
-  /// [handler] throws, the error will be re-directed to the client.
+  /// [handler] throws, the error will be re-directed to the client. If
+  /// [handler] returns a [Future], it will be awaited.
   void setRequestHandler(dynamic Function(Request) handler) {
     incomingRequests.listen((request) {
       try {
         final result = handler(request);
-        respond(request, result);
+        if (result is Future) {
+          result.then((value) => respond(request, value));
+        } else {
+          respond(request, result);
+        }
       } catch (e, s) {
         respondError(request, e, s);
       }
@@ -213,6 +236,11 @@ class Request {
   final dynamic payload;
 
   Request._(this.id, this.payload);
+
+  @override
+  String toString() {
+    return 'request (id = $id): $payload';
+  }
 }
 
 class _Response {
@@ -220,6 +248,11 @@ class _Response {
   final dynamic response;
 
   _Response(this.requestId, this.response);
+
+  @override
+  String toString() {
+    return 'response (id = $requestId): $response';
+  }
 }
 
 class _ErrorResponse extends _Response {
@@ -229,4 +262,9 @@ class _ErrorResponse extends _Response {
 
   _ErrorResponse(int requestId, dynamic error, [this.stackTrace])
       : super(requestId, error);
+
+  @override
+  String toString() {
+    return 'error response (id = $requestId): $error at $stackTrace';
+  }
 }
