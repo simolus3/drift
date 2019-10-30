@@ -7,28 +7,22 @@ class VmDatabase extends DelegatedDatabase {
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
-  ///
-  /// If [background] is enabled (defaults to false), the database will be
-  /// opened on a background isolate. This is much slower, but reduces work on
-  /// the UI thread.
-  factory VmDatabase(File file,
-      {bool logStatements = false, bool background = false}) {
-    return VmDatabase._(_VmDelegate(file, background), logStatements);
+  factory VmDatabase(File file, {bool logStatements = false}) {
+    return VmDatabase._(_VmDelegate(file), logStatements);
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
   factory VmDatabase.memory({bool logStatements = false}) {
-    return VmDatabase._(_VmDelegate(null, false), logStatements);
+    return VmDatabase._(_VmDelegate(null), logStatements);
   }
 }
 
 class _VmDelegate extends DatabaseDelegate {
-  BaseDatabase _db;
+  Database _db;
 
   final File file;
-  final bool background;
 
-  _VmDelegate(this.file, this.background);
+  _VmDelegate(this.file);
 
   @override
   final TransactionDelegate transactionDelegate = const NoTransactionDelegate();
@@ -42,16 +36,8 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<void> open([GeneratedDatabase db]) async {
     if (file != null) {
-      if (background) {
-        _db = await IsolateDb.openFile(file);
-      } else {
-        _db = Database.openFile(file);
-      }
+      _db = Database.openFile(file);
     } else {
-      assert(
-          !background,
-          "moor_ffi doesn't support in-memory databases on a background "
-          'isolate');
       _db = Database.memory();
     }
     versionDelegate = _VmVersionDelegate(_db);
@@ -61,10 +47,10 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<void> runBatched(List<BatchedStatement> statements) async {
     for (var stmt in statements) {
-      final prepared = await _db.prepare(stmt.sql);
+      final prepared = _db.prepare(stmt.sql);
 
       for (var boundVars in stmt.variables) {
-        await prepared.execute(boundVars);
+        prepared.execute(boundVars);
       }
 
       prepared.close();
@@ -75,11 +61,11 @@ class _VmDelegate extends DatabaseDelegate {
 
   Future _runWithArgs(String statement, List<dynamic> args) async {
     if (args.isEmpty) {
-      await _db.execute(statement);
+      _db.execute(statement);
     } else {
-      final stmt = await _db.prepare(statement);
-      await stmt.execute(args);
-      await stmt.close();
+      final stmt = _db.prepare(statement);
+      stmt.execute(args);
+      stmt.close();
     }
   }
 
@@ -91,27 +77,27 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<int> runInsert(String statement, List args) async {
     await _runWithArgs(statement, args);
-    return await _db.getLastInsertId();
+    return _db.getLastInsertId();
   }
 
   @override
   Future<int> runUpdate(String statement, List args) async {
     await _runWithArgs(statement, args);
-    return await _db.getUpdatedRows();
+    return _db.getUpdatedRows();
   }
 
   @override
   Future<QueryResult> runSelect(String statement, List args) async {
-    final stmt = await _db.prepare(statement);
-    final result = await stmt.select(args);
-    await stmt.close();
+    final stmt = _db.prepare(statement);
+    final result = stmt.select(args);
+    stmt.close();
 
     return Future.value(QueryResult(result.columnNames, result.rows));
   }
 }
 
 class _VmVersionDelegate extends DynamicVersionDelegate {
-  final BaseDatabase database;
+  final Database database;
 
   _VmVersionDelegate(this.database);
 
@@ -119,8 +105,8 @@ class _VmVersionDelegate extends DynamicVersionDelegate {
   Future<int> get schemaVersion => Future.value(database.userVersion());
 
   @override
-  Future<void> setSchemaVersion(int version) async {
-    await database.setUserVersion(version);
+  Future<void> setSchemaVersion(int version) {
+    database.setUserVersion(version);
     return Future.value();
   }
 }
