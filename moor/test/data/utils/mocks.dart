@@ -81,3 +81,9 @@ abstract class SqlExecutorAsClass {
 }
 
 class MockQueryExecutor extends Mock implements SqlExecutorAsClass {}
+
+DatabaseConnection createConnection(QueryExecutor executor,
+    [StreamQueryStore streams]) {
+  return DatabaseConnection(
+      SqlTypeSystem.defaultInstance, executor, streams ?? StreamQueryStore());
+}

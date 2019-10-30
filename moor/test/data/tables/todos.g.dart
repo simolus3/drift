@@ -1287,6 +1287,7 @@ class $PureDefaultsTable extends PureDefaults
 
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$TodoDb.connect(DatabaseConnection c) : super.connect(c);
   $TodosTableTable _todosTable;
   $TodosTableTable get todosTable => _todosTable ??= $TodosTableTable(this);
   $CategoriesTable _categories;

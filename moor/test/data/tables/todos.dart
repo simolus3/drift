@@ -100,6 +100,7 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
 )
 class TodoDb extends _$TodoDb {
   TodoDb(QueryExecutor e) : super(e);
+  TodoDb.connect(DatabaseConnection connection) : super.connect(connection);
 
   @override
   MigrationStrategy get migration => MigrationStrategy();

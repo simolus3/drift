@@ -21,9 +21,14 @@ class DatabaseWriter {
     final dbScope = scope.child();
 
     final className = '_\$${db.fromClass.name}';
-    dbScope.leaf().write(
-        'abstract class $className extends GeneratedDatabase {\n'
+    final firstLeaf = dbScope.leaf();
+    firstLeaf.write('abstract class $className extends GeneratedDatabase {\n'
         '$className(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e); \n');
+
+    if (dbScope.options.generateConnectConstructor) {
+      firstLeaf.write(
+          '$className.connect(DatabaseConnection c): super.connect(c); \n');
+    }
 
     final tableGetters = <String>[];
 

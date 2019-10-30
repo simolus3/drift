@@ -7,6 +7,7 @@ class MoorOptions {
   final bool skipVerificationCode;
   final bool useDataClassNameForCompanions;
   final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
+  final bool generateConnectConstructor;
 
   const MoorOptions(
       {this.generateFromJsonStringConstructor = false,
@@ -14,7 +15,8 @@ class MoorOptions {
       this.compactQueryMethods = false,
       this.skipVerificationCode = false,
       this.useDataClassNameForCompanions = false,
-      this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false});
+      this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
+      this.generateConnectConstructor = false});
 
   factory MoorOptions.fromBuilder(Map<String, dynamic> config) {
     final writeFromString =
@@ -37,6 +39,9 @@ class MoorOptions {
                 as bool ??
             false;
 
+    final generateConnectConstructor =
+        config['generate_connect_constructor'] as bool ?? false;
+
     return MoorOptions(
       generateFromJsonStringConstructor: writeFromString,
       overrideHashAndEqualsInResultSets: overrideInResultSets,
@@ -45,6 +50,7 @@ class MoorOptions {
       useDataClassNameForCompanions: dataClassNamesForCompanions,
       useColumnNameAsJsonKeyWhenDefinedInMoorFile:
           useColumnNameAsJsonKeyForMoor,
+      generateConnectConstructor: generateConnectConstructor,
     );
   }
 }

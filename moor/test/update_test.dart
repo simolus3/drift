@@ -14,7 +14,9 @@ void main() {
   setUp(() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
-    db = TodoDb(executor)..streamQueries = streamQueries;
+
+    final connection = createConnection(executor, streamQueries);
+    db = TodoDb.connect(connection);
   });
 
   group('generates update statements', () {
