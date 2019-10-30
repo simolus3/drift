@@ -1,29 +1,56 @@
 part of 'moor_isolate.dart';
 
-abstract class _Message {}
+/// A request without further parameters
+enum _NoArgsRequest {
+  /// Sent from the client to the server. The server will reply with the
+  /// [SqlTypeSystem] of the [_MoorServer.connection] it's managing.
+  getTypeSystem,
 
-abstract class _Request extends _Message {
-  /// An id for this request that is unique per client.
-  int id;
+  /// Sent from the client to the server. The server will reply with
+  /// [QueryExecutor.ensureOpen], based on the [_MoorServer.connection].
+  ensureOpen,
+
+  /// Sent from the server to a client. The client should run the on create
+  /// method of the attached database
+  runOnCreate,
 }
 
-abstract class _Response extends _Message {
-  /// The [_Request.id] from the request this is response to.
-  int id;
+enum _StatementMethod {
+  custom,
+  deleteOrUpdate,
+  insert,
+  select,
 }
 
-/// A notification is only sent from the server
-abstract class _Notification extends _Message {}
+/// Sent from the client to run a sql query. The server replies with the
+/// result.
+class _ExecuteQuery {
+  final _StatementMethod method;
+  final String sql;
+  final List<dynamic> args;
 
-class _ClientHello extends _Message {
-  /// The [SendPort] used by the server to send messages to this client.
-  final SendPort sendMsgToClient;
-
-  _ClientHello(this.sendMsgToClient);
+  _ExecuteQuery(this.method, this.sql, this.args);
 }
 
-class _ServerHello extends _Message {
-  final SendPort sendToServer;
+/// Sent from the client to notify the server of the
+/// [GeneratedDatabase.schemaVersion] used by the attached database.
+class _SetSchemaVersion {
+  final int schemaVersion;
 
-  _ServerHello(this.sendToServer);
+  _SetSchemaVersion(this.schemaVersion);
+}
+
+/// Sent from the server to the client. The client should run a database upgrade
+/// migration.
+class _RunOnUpgrade {
+  final int versionBefore;
+  final int versionNow;
+
+  _RunOnUpgrade(this.versionBefore, this.versionNow);
+}
+
+class _RunBeforeOpen {
+  final OpeningDetails details;
+
+  _RunBeforeOpen(this.details);
 }

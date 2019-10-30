@@ -1,50 +1,80 @@
 part of 'moor_isolate.dart';
 
-/// A "server" runs in an [Isolate] and takes requests from "client" isolates.
-class _Server {
-  /// The [ReceivePort] used to establish connections with new clients. This is
-  /// the pendant to [MoorIsolate._connectToDb].
-  ReceivePort _connectionRequest;
+class _MoorServer {
+  final Server server;
 
-  DatabaseConnection _connection;
+  DatabaseConnection connection;
+  _FakeDatabase _fakeDb;
 
-  final List<_ConnectedClient> _clients = [];
+  ServerKey get key => server.key;
 
-  _Server(DatabaseOpener opener, SendPort sendPort) {
-    _connection = opener();
-
-    _connectionRequest = ReceivePort();
-    _connectionRequest.listen(_handleConnectionRequest);
-    sendPort.send(_connectionRequest.sendPort);
-  }
-
-  void _handleConnectionRequest(dynamic message) {
-    if (message is! _ClientHello) {
-      throw AssertionError('Unexpected initial message from client: $message');
-      // we can't replay this to the client because we don't have a SendPort
-    }
-
-    final sendToClient = (message as _ClientHello).sendMsgToClient;
-    final receive = ReceivePort();
-    final client = _ConnectedClient(receive, sendToClient);
-
-    receive.listen((data) {
-      if (data is _Request) {
-        _handleRequest(client, data);
-      }
-      // todo send error message to client when it sends something that isn't
-      // a request
+  _MoorServer(DatabaseOpener opener) : server = Server() {
+    server.openedConnections.listen((connection) {
+      connection.setRequestHandler(_handleRequest);
     });
+    connection = opener();
 
-    sendToClient.send(_ServerHello(receive.sendPort));
+    _fakeDb = _FakeDatabase(connection, this);
+    connection.executor.databaseInfo = _fakeDb;
   }
 
-  void _handleRequest(_ConnectedClient client, _Request request) {}
+  /// Returns the first connected client, or null if no client is connected.
+  IsolateCommunication get firstClient {
+    final channels = server.currentChannels;
+    return channels.isEmpty ? null : channels.first;
+  }
+
+  dynamic _handleRequest(Request r) {
+    final payload = r.payload;
+
+    if (payload is _NoArgsRequest) {
+      switch (payload) {
+        case _NoArgsRequest.getTypeSystem:
+          return connection.typeSystem;
+        case _NoArgsRequest.ensureOpen:
+          return connection.executor.ensureOpen();
+        // the following are requests which are handled on the client side
+        case _NoArgsRequest.runOnCreate:
+          throw UnsupportedError(
+              'This operation needs to be run on the client');
+      }
+    } else if (payload is _SetSchemaVersion) {
+      _fakeDb.schemaVersion = payload.schemaVersion;
+      return null;
+    }
+  }
 }
 
-class _ConnectedClient {
-  final ReceivePort receiveFromClient;
-  final SendPort sendToClient;
+/// A mock database so that the [QueryExecutor] which is running on a background
+/// isolate can have the [QueryExecutor.databaseInfo] set. The query executor
+/// uses that to set the schema version and to run migration callbacks. For a
+/// server, all of that is delegated via clients.
+class _FakeDatabase extends GeneratedDatabase {
+  final _MoorServer server;
 
-  _ConnectedClient(this.receiveFromClient, this.sendToClient);
+  _FakeDatabase(DatabaseConnection connection, this.server)
+      : super.connect(connection);
+
+  @override
+  final List<TableInfo<Table, DataClass>> allTables = const [];
+
+  @override
+  int schemaVersion = 0; // will be overridden by client requests
+
+  @override
+  Future<void> handleDatabaseCreation({SqlExecutor executor}) {
+    return server.firstClient.request(_NoArgsRequest.runOnCreate);
+  }
+
+  @override
+  Future<void> handleDatabaseVersionChange(
+      {SqlExecutor executor, int from, int to}) {
+    return server.firstClient.request(_RunOnUpgrade(from, to));
+  }
+
+  @override
+  Future<void> beforeOpenCallback(
+      QueryExecutor executor, OpeningDetails details) {
+    return server.firstClient.request(_RunBeforeOpen(details));
+  }
 }

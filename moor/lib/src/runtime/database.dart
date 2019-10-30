@@ -436,6 +436,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     executor?.databaseInfo = this;
   }
 
+  /// Used by generated code to connect to a database that is already open.
+  GeneratedDatabase.connect(DatabaseConnection connection)
+      : super.fromConnection(connection);
+
   /// Creates a [Migrator] with the provided query executor. Migrators generate
   /// sql statements to create or drop tables.
   ///

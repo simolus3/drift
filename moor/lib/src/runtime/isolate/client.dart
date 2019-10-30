@@ -1,46 +1,114 @@
 part of 'moor_isolate.dart';
 
-class _Client {
-  int _requestId = 0;
-  final ReceivePort _receive = ReceivePort();
+class _MoorClient {
+  final IsolateCommunication _channel;
+  final SqlTypeSystem typeSystem;
 
-  SendPort _send;
-  Completer _initConnectionCompleter;
+  DatabaseConnection _connection;
 
-  final Map<int, Completer<_Response>> _pendingRequests = {};
+  GeneratedDatabase get connectedDb => _connection.executor.databaseInfo;
 
-  _Client() {
-    _receive.listen(_handleResponse);
-    _receive.close();
+  SqlExecutor get executor => _connection.executor.runCustom;
+
+  _MoorClient(this._channel, this.typeSystem) {
+    _connection = DatabaseConnection(
+      typeSystem,
+      _IsolateQueryExecutor(this),
+      null,
+    );
+    _channel.setRequestHandler(_handleRequest);
   }
 
-  Future<T> _sendRequest<T extends _Response>(_Request request) {
-    final id = _requestId++;
-    final completer = Completer<_Response>();
-    _pendingRequests[id] = completer;
+  static Future<_MoorClient> connect(MoorIsolate isolate) async {
+    final connection =
+        await IsolateCommunication.connectAsClient(isolate._server);
 
-    _send.send(request);
-    return completer.future.then((r) => r as T);
+    final typeSystem =
+        await connection.request<SqlTypeSystem>(_NoArgsRequest.getTypeSystem);
+    return _MoorClient(connection, typeSystem);
   }
 
-  Future<T> _connectVia<T extends GeneratedDatabase>(
-      MoorIsolate isolate) async {
-    _initConnectionCompleter = Completer();
+  dynamic _handleRequest(Request request) {
+    final payload = request.payload;
 
-    final initialSendPort = isolate._connectToDb;
-    initialSendPort.send(_ClientHello(_receive.sendPort));
-
-    await _initConnectionCompleter.future;
-    // todo construct new database by forking
-    return null;
-  }
-
-  void _handleResponse(dynamic response) {
-    if (response is _ServerHello) {
-      _send = response.sendToServer;
-      _initConnectionCompleter.complete();
-    } else if (response is _Response) {
-      _pendingRequests[response]?.complete(response);
+    if (payload is _NoArgsRequest) {
+      switch (payload) {
+        case _NoArgsRequest.runOnCreate:
+          connectedDb.handleDatabaseCreation(executor: executor);
+          return null;
+        default:
+          throw UnsupportedError('This operation must be run on the server');
+      }
+    } else if (payload is _RunOnUpgrade) {
+      connectedDb.handleDatabaseVersionChange(
+        executor: executor,
+        from: payload.versionBefore,
+        to: payload.versionNow,
+      );
+    } else if (payload is _RunBeforeOpen) {
+      connectedDb.beforeOpenCallback(_connection.executor, payload.details);
     }
+  }
+}
+
+class _IsolateQueryExecutor extends QueryExecutor {
+  final _MoorClient client;
+
+  _IsolateQueryExecutor(this.client);
+
+  @override
+  set databaseInfo(GeneratedDatabase db) {
+    super.databaseInfo = db;
+    client._channel.request(_SetSchemaVersion(db.schemaVersion));
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw UnsupportedError(
+        'Transactions are not currently supported over isolates');
+  }
+
+  @override
+  Future<bool> ensureOpen() {
+    return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
+  }
+
+  @override
+  Future<void> runBatched(List<BatchedStatement> statements) async {
+    // todo optimize this case
+    for (var stmt in statements) {
+      for (var boundArgs in stmt.variables) {
+        await runCustom(stmt.sql, boundArgs);
+      }
+    }
+  }
+
+  Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
+    return client._channel.request<T>(_ExecuteQuery(method, sql, args));
+  }
+
+  @override
+  Future<void> runCustom(String statement, [List args]) {
+    return _runRequest(_StatementMethod.custom, statement, args);
+  }
+
+  @override
+  Future<int> runDelete(String statement, List args) {
+    return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List args) {
+    return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
+  }
+
+  @override
+  Future<int> runInsert(String statement, List args) {
+    return _runRequest(_StatementMethod.insert, statement, args);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+    return _runRequest(_StatementMethod.select, statement, args);
   }
 }

@@ -79,7 +79,7 @@ abstract class Table {
   BoolColumnBuilder boolean() => null;
 
   /// Use this as the body of a getter to declare a column that holds date and
-  /// time.
+  /// time. Note that [DateTime] values are stored on a second-accuracy.
   /// Example (inside the body of a table class):
   /// ```
   /// DateTimeColumn get accountCreatedAt => dateTime()();

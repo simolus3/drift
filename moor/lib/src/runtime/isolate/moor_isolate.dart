@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:moor/moor.dart';
+import 'package:moor/moor_web.dart';
+import 'communication.dart';
 
 part 'client.dart';
 part 'protocol.dart';
@@ -26,19 +28,57 @@ typedef DatabaseOpener = DatabaseConnection Function();
 /// See also:
 /// - [Isolate], for general information on multi threading in Dart.
 /// - TODO: Write documentation tutorial for this on the website
+///   also todo: Is MoorIsolate really a name we want to keep? It's not really
+///   an isolate
 class MoorIsolate {
-  /// The [SendPort] created by the background isolate running the db. We'll use
-  /// this port to initialize a connection to the background isolate. Further
-  /// communication happens across a port that is specific for each client
-  /// isolate.
-  SendPort _connectToDb;
+  /// Identifier for the server isolate that we can connect to.
+  final ServerKey _server;
 
-  static Future<MoorIsolate> spawn() {}
+  MoorIsolate._(this._server);
 
-  static MoorIsolate inCurrent() {}
-
-  Future<T> connect<T extends GeneratedDatabase>() {
-    final client = _Client();
-    return client._connectVia(this);
+  /// Connects to this [MoorIsolate] from another isolate. All operations on the
+  /// returned [DatabaseConnection] will be executed on a background isolate.
+  Future<DatabaseConnection> connect() async {
+    final client = await _MoorClient.connect(this);
+    return client._connection;
   }
+
+  /// Creates a new [MoorIsolate] on a background thread.
+  ///
+  /// The [opener] function will be used to open the [DatabaseConnection] used
+  /// by the isolate. Most implementations are likely to use
+  /// [DatabaseConnection.fromExecutor] instead of providing stream queries and
+  /// the type system manually.
+  ///
+  /// Because [opener] will be called on another isolate with its own memory,
+  /// it must either be a top-level member or a static class method.
+  static Future<MoorIsolate> spawn(DatabaseOpener opener) async {
+    // todo: API to terminate the spawned isolate?
+    final receiveServer = ReceivePort();
+    final keyFuture = receiveServer.first;
+
+    await Isolate.spawn(_startMoorIsolate, [receiveServer.sendPort, opener]);
+    final key = await keyFuture as ServerKey;
+    return MoorIsolate._(key);
+  }
+
+  /// Creates a [MoorIsolate] in the [Isolate.current] isolate. The returned
+  /// [MoorIsolate] is an object than can be sent across isolates - any other
+  /// isolate can then use [MoorIsolate.connect] to obtain a special database
+  /// connection which operations are all executed on this isolate.
+  static MoorIsolate inCurrent(DatabaseOpener opener) {
+    final server = _MoorServer(opener);
+    return MoorIsolate._(server.key);
+  }
+}
+
+/// Creates a [_MoorServer] and sends the resulting [ServerKey] over a
+/// [SendPort]. The [args] param must have two parameters, the first one being
+/// a [SendPort] and the second one being a [DatabaseOpener].
+void _startMoorIsolate(List args) {
+  final sendPort = args[0] as SendPort;
+  final opener = args[1] as DatabaseOpener;
+
+  final server = _MoorServer(opener);
+  sendPort.send(server.key);
 }
