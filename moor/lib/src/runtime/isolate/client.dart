@@ -3,6 +3,7 @@ part of 'moor_isolate.dart';
 class _MoorClient {
   final IsolateCommunication _channel;
   final SqlTypeSystem typeSystem;
+  _IsolateStreamQueryStore _streamStore;
 
   DatabaseConnection _connection;
 
@@ -11,10 +12,12 @@ class _MoorClient {
   SqlExecutor get executor => _connection.executor.runCustom;
 
   _MoorClient(this._channel, this.typeSystem) {
+    _streamStore = _IsolateStreamQueryStore(this);
+
     _connection = DatabaseConnection(
       typeSystem,
       _IsolateQueryExecutor(this),
-      null,
+      _streamStore,
     );
     _channel.setRequestHandler(_handleRequest);
   }
@@ -48,6 +51,8 @@ class _MoorClient {
     } else if (payload is _RunBeforeOpen) {
       return connectedDb.beforeOpenCallback(
           _connection.executor, payload.details);
+    } else if (payload is _NotifyTablesUpdated) {
+      _streamStore.handleTableUpdatesByName(payload.updatedTables.toSet());
     }
   }
 }
@@ -117,5 +122,20 @@ class _IsolateQueryExecutor extends QueryExecutor {
   Future<void> close() {
     client._channel.close();
     return Future.value();
+  }
+}
+
+class _IsolateStreamQueryStore extends StreamQueryStore {
+  final _MoorClient client;
+
+  _IsolateStreamQueryStore(this.client);
+
+  @override
+  Future<void> handleTableUpdates(Set<TableInfo> tables) {
+    // we're not calling super.handleTableUpdates because the server will send
+    // a notification of those tables to all clients, including the one who sent
+    // this. When we get that reply, we update the tables.
+    return client._channel.request(
+        _NotifyTablesUpdated(tables.map((t) => t.actualTableName).toList()));
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'communication.dart';
 
 part 'client.dart';

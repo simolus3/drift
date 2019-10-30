@@ -43,6 +43,10 @@ class _MoorServer {
       return null;
     } else if (payload is _ExecuteQuery) {
       return _runQuery(payload.method, payload.sql, payload.args);
+    } else if (payload is _NotifyTablesUpdated) {
+      for (var connected in server.currentChannels) {
+        connected.request(payload);
+      }
     }
   }
 

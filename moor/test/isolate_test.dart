@@ -11,7 +11,7 @@ void main() {
 
   setUp(() async {
     isolate = await MoorIsolate.spawn(_backgroundConnection);
-    isolateConnection = await isolate.connect(isolateDebugLog: false);
+    isolateConnection = await isolate.connect(isolateDebugLog: true);
   });
 
   tearDown(() {
@@ -24,6 +24,20 @@ void main() {
 
     final result = await database.select(database.todosTable).get();
     expect(result, isEmpty);
+  });
+
+  test('stream queries work as expected', () async {
+    final database = TodoDb.connect(isolateConnection);
+    final initialCompanion = TodosTableCompanion.insert(content: 'my content');
+
+    final stream = database.select(database.todosTable).watchSingle();
+    final expectation = expectLater(
+      stream,
+      emitsInOrder([null, TodoEntry(id: 1, content: 'my content')]),
+    );
+
+    await database.into(database.todosTable).insert(initialCompanion);
+    await expectation;
   });
 }
 

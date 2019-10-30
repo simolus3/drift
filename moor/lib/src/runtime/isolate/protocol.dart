@@ -54,8 +54,19 @@ class _RunOnUpgrade {
   _RunOnUpgrade(this.versionBefore, this.versionNow);
 }
 
+/// Sent from the server to the client when it should run the before open
+/// callback.
 class _RunBeforeOpen {
   final OpeningDetails details;
 
   _RunBeforeOpen(this.details);
+}
+
+/// Sent to notify that a previous query has updated some tables. When a server
+/// receives this message, it replies with `null` but forwards a new request
+/// with this payload to all connected clients.
+class _NotifyTablesUpdated {
+  final List<String> updatedTables;
+
+  _NotifyTablesUpdated(this.updatedTables);
 }

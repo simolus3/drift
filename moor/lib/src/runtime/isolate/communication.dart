@@ -129,6 +129,7 @@ class IsolateCommunication {
     incomingRequests.listen((request) {
       try {
         final result = handler(request);
+
         if (result is Future) {
           result.then((value) => respond(request, value));
         } else {

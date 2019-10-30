@@ -103,7 +103,13 @@ class StreamQueryStore {
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
   Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    _updatedTableNames.add(tables.map((t) => t.actualTableName).toSet());
+    handleTableUpdatesByName(tables.map((t) => t.actualTableName).toSet());
+  }
+
+  /// Handles updates on tables by their name. All queries reading from any of
+  /// the tables in [updatedTableNames] will fetch their data again.
+  void handleTableUpdatesByName(Set<String> updatedTableNames) {
+    _updatedTableNames.add(updatedTableNames);
   }
 
   void markAsClosed(QueryStream stream) {
