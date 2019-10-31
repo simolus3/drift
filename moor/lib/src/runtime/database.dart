@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/executor/before_open.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
@@ -475,15 +474,13 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// is used internally by database implementations and should not be called by
   /// users.
   Future<void> beforeOpenCallback(
-      QueryExecutor executor, OpeningDetails details) async {
+      QueryExecutor executor, OpeningDetails details) {
     final migration = _resolvedMigration;
 
     if (migration.beforeOpen != null) {
-      final engine = BeforeOpenEngine(this, executor);
-      await _runEngineZoned(engine, () {
-        return migration.beforeOpen(details);
-      });
+      return migration.beforeOpen(details);
     }
+    return Future.value();
   }
 
   /// Closes this database and releases associated resources.

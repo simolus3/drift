@@ -189,33 +189,6 @@ class _TransactionExecutor extends TransactionExecutor
   }
 }
 
-class _BeforeOpeningExecutor extends QueryExecutor
-    with _ExecutorWithQueryDelegate {
-  final DelegatedDatabase db;
-
-  @override
-  QueryDelegate get impl => db.delegate;
-
-  @override
-  bool get isSequential => db.isSequential;
-
-  @override
-  bool get logStatements => db.logStatements;
-
-  _BeforeOpeningExecutor(this.db);
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw Exception(
-        "Transactions can't be started in the before open callback");
-  }
-
-  @override
-  Future<bool> ensureOpen() {
-    return Future.value(true);
-  }
-}
-
 /// A database engine (implements [QueryExecutor]) that delegated the relevant
 /// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
@@ -301,6 +274,6 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   }
 
   Future<void> _runBeforeOpen(OpeningDetails d) {
-    return databaseInfo.beforeOpenCallback(_BeforeOpeningExecutor(this), d);
+    return databaseInfo.beforeOpenCallback(this, d);
   }
 }
