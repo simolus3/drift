@@ -135,7 +135,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Whether this connection user is "top level", e.g. there is no parent
   /// connection user. We consider a [GeneratedDatabase] and a
   /// [DatabaseAccessor] to be top-level, while a [Transaction] or a
-  /// [BeforeOpenEngine] aren't.
+  /// [BeforeOpenRunner] aren't.
   ///
   /// If any query method is called on a [topLevel] database user, we check if
   /// it could instead be delegated to a child executor. For instance, consider
@@ -478,7 +478,10 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     final migration = _resolvedMigration;
 
     if (migration.beforeOpen != null) {
-      return migration.beforeOpen(details);
+      return _runEngineZoned(
+        BeforeOpenRunner(this, executor),
+        () => migration.beforeOpen(details),
+      );
     }
     return Future.value();
   }
@@ -486,11 +489,5 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await executor.close();
-  }
-
-  /// Creates another instance of this [GeneratedDatabase] that uses the
-  /// [connection] instead of the current connection.
-  GeneratedDatabase cloneWith(DatabaseConnection connection) {
-    throw UnimplementedError();
   }
 }

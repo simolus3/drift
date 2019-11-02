@@ -2,6 +2,8 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
 /// Runs multiple statements transactionally.
+///
+/// Moor users should use [QueryEngine.transaction] to use this api.
 class Transaction extends DatabaseConnectionUser with QueryEngine {
   /// Constructs a transaction executor from the [other] user and the underlying
   /// [executor].
@@ -45,4 +47,15 @@ class _TransactionStreamStore extends StreamQueryStore {
   Future dispatchUpdates() {
     return parent.handleTableUpdates(affectedTables);
   }
+}
+
+/// Special query engine to run the [MigrationStrategy.beforeOpen] callback.
+///
+/// To use this api, moor users should use the [MigrationStrategy.beforeOpen]
+/// parameter inside the [GeneratedDatabase.migration] getter.
+class BeforeOpenRunner extends DatabaseConnectionUser with QueryEngine {
+  /// Creates a [BeforeOpenRunner] from the [database] and the special
+  /// [executor] running the queries.
+  BeforeOpenRunner(DatabaseConnectionUser database, QueryExecutor executor)
+      : super.delegate(database, executor: executor);
 }

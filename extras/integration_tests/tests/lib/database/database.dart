@@ -101,8 +101,11 @@ class Database extends _$Database {
       },
       beforeOpen: (details) async {
         if (details.wasCreated) {
-          await into(users)
-              .insertAll([People.dash, People.duke, People.gopher]);
+          // make sure that transactions can be used in the beforeOpen callback.
+          await transaction(() {
+            return into(users)
+                .insertAll([People.dash, People.duke, People.gopher]);
+          });
         }
       },
     );
