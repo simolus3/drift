@@ -38,8 +38,7 @@ class InsertStatement<D extends DataClass> {
       'If the mode parameter is set on insertAll, orReplace must be null or '
       'false',
     );
-    _validateIntegrity(entity);
-    final ctx = _createContext(entity, _resolveMode(mode, orReplace));
+    final ctx = createContext(entity, _resolveMode(mode, orReplace));
 
     return await database.executor.doWhenOpened((e) async {
       final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
@@ -56,6 +55,7 @@ class InsertStatement<D extends DataClass> {
   /// By default, an exception will be thrown if another row with the same
   /// primary key already exists. This behavior can be overridden with [mode],
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
+  @Deprecated('Call batch() on a generated database, then use Batch.insertAll')
   Future<void> insertAll(
     List<Insertable<D>> rows, {
     @Deprecated('Use mode: InsertMode.replace instead') bool orReplace = false,
@@ -72,9 +72,7 @@ class InsertStatement<D extends DataClass> {
     // not included. So, we have a map for sql -> list of variables which we can
     // then turn into prepared statements
     for (var row in rows) {
-      _validateIntegrity(row);
-
-      final ctx = _createContext(row, _resolveMode(mode, orReplace));
+      final ctx = createContext(row, _resolveMode(mode, orReplace));
       statements.putIfAbsent(ctx.sql, () => []).add(ctx);
     }
 
@@ -89,7 +87,12 @@ class InsertStatement<D extends DataClass> {
     database.markTablesUpdated({table});
   }
 
-  GenerationContext _createContext(Insertable<D> entry, InsertMode mode) {
+  /// Creates a [GenerationContext] which contains the sql necessary to run an
+  /// insert statement fro the [entry] with the [mode].
+  ///
+  /// This method is used internally by moor. Consider using [insert] instead.
+  GenerationContext createContext(Insertable<D> entry, InsertMode mode) {
+    _validateIntegrity(entry);
     final map = table.entityToSql(entry.createCompanion(true))
       ..removeWhere((_, value) => value == null);
 

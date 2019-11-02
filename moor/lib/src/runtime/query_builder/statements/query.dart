@@ -32,7 +32,10 @@ abstract class Query<T extends Table, D extends DataClass> {
   void writeStartPart(GenerationContext ctx);
 
   /// Constructs the query that can then be sent to the database executor.
-  @protected
+  ///
+  /// This is used internally by moor to run the query. Users should use the
+  /// other methods explained in the [documentation][moor-docs].
+  /// [moor-docs]: https://moor.simonbinder.eu/docs/getting-started/writing_queries/
   GenerationContext constructQuery() {
     final ctx = GenerationContext.fromDb(database);
     var needsWhitespace = false;

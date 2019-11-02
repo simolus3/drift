@@ -50,11 +50,15 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   /// The fields that are null on the [entity] object will not be changed by
   /// this operation, they will be ignored.
   ///
+  /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
+  /// run, but all the validations are still in place. This is mainly used
+  /// internally by moor.
+  ///
   /// Returns the amount of rows that have been affected by this operation.
   ///
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
-  Future<int> write(Insertable<D> entity) async {
+  Future<int> write(Insertable<D> entity, {bool dontExecute = false}) async {
     final companion = entity.createCompanion(true);
     table.validateIntegrity(companion).throwIfInvalid(entity);
 
@@ -66,6 +70,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
       return Future.value(0);
     }
 
+    if (dontExecute) return -1;
     return await _performQuery();
   }
 
@@ -80,6 +85,10 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   /// will be reset to null. This behavior is different to [write], which simply
   /// ignores such fields without changing them in the database.
   ///
+  /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
+  /// run, but all the validations are still in place. This is mainly used
+  /// internally by moor.
+  ///
   /// Returns true if a row was affected by this operation.
   ///
   /// See also:
@@ -87,7 +96,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   ///    null values in the entity.
   ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
   ///  similar to this method but creates a new row if none exists.
-  Future<bool> replace(Insertable<D> entity) async {
+  Future<bool> replace(Insertable<D> entity, {bool dontExecute = false}) async {
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
     final companion = entity.createCompanion(false);
@@ -122,6 +131,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     // Don't update the primary key
     _updatedFields.removeWhere((key, _) => primaryKeys.contains(key));
 
+    if (dontExecute) return false;
     final updatedRows = await _performQuery();
     return updatedRows != 0;
   }

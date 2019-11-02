@@ -4,6 +4,8 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
+part 'batch.dart';
+
 const _zoneRootUserKey = #DatabaseConnectionUser;
 
 typedef _CustomWriter<T> = Future<T> Function(
@@ -377,6 +379,43 @@ mixin QueryEngine on DatabaseConnectionUser {
         }
       });
     });
+  }
+
+  /// Runs statements inside a batch.
+  ///
+  /// A batch can only run a subset of statements, and those statements must be
+  /// called on the [Batch] instance. The statements aren't executed with a call
+  /// to [Batch]. Instead, all generated queries are queued up and are then run
+  /// and executed atomically.
+  /// Typically, running bulk updates (so a lot of similar statements) over a
+  /// [Batch] is much faster than running them via the [GeneratedDatabase]
+  /// directly.
+  ///
+  /// An example that inserts users in a batch:
+  /// ```dart
+  ///  await batch((b) {
+  ///    b.insertAll(
+  ///      todos,
+  ///      [
+  ///        TodosCompanion.insert(content: 'Use batches'),
+  ///        TodosCompanion.insert(content: 'Have fun'),
+  ///      ],
+  ///    );
+  ///  });
+  /// ```
+  @protected
+  @visibleForTesting
+  Future<void> batch(Function(Batch) runInBatch) {
+    final resolved = _resolvedEngine;
+    if (resolved is Transaction) {
+      // we use runBatched in the implementation, which is always run as top
+      // level with sqflite.
+      throw UnsupportedError('Batches cannot be used inside a transaction');
+    }
+
+    final batch = Batch._(resolved);
+    runInBatch(batch);
+    return batch._commit();
   }
 
   /// Runs [calculation] in a forked [Zone] that has its [_resolvedEngine] set

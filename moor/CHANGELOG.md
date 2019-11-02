@@ -2,6 +2,7 @@
 
 - Fix crash when `customStatement` is the first operation used on a database ([#199](https://github.com/simolus3/moor/issues/199))
 - Allow transactions inside a `beforeOpen` callback
+- New `batch` method on generated databases to execute multiple queries in a single batch
 
 ## 2.0.1
 
