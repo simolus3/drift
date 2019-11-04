@@ -72,6 +72,7 @@ void main() {
   });
 
   test('runs bulk inserts', () async {
+    // ignore: deprecated_member_use_from_same_package
     await db.into(db.todosTable).insertAll(const [
       TodosTableCompanion(content: Value('a')),
       TodosTableCompanion(title: Value('title'), content: Value('b')),
@@ -95,6 +96,7 @@ void main() {
   });
 
   test('runs bulk inserts with OR REPLACE', () async {
+    // ignore: deprecated_member_use_from_same_package
     await db.into(db.todosTable).insertAll(const [
       TodosTableCompanion(content: Value('a')),
       TodosTableCompanion(title: Value('title'), content: Value('b')),

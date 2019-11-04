@@ -126,7 +126,7 @@ void main() {
           table.columns.singleWhere((col) => col.name.name == 'user_name');
 
       expect(idColumn.features,
-          contains(LimitingTextLength.withLength(min: 6, max: 32)));
+          contains(LimitingTextLength(minLength: 6, maxLength: 32)));
     });
 
     test('should only parse max length when relevant', () async {
@@ -134,8 +134,7 @@ void main() {
       final idColumn =
           table.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
 
-      expect(
-          idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
+      expect(idColumn.features, contains(LimitingTextLength(maxLength: 100)));
     });
 
     test('parses custom constraints', () async {

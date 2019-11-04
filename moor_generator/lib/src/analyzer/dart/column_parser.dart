@@ -112,9 +112,9 @@ class ColumnParser {
           final minArg = base.findNamedArgument(args, 'min');
           final maxArg = base.findNamedArgument(args, 'max');
 
-          foundFeatures.add(LimitingTextLength.withLength(
-            min: base.readIntLiteral(minArg, () {}),
-            max: base.readIntLiteral(maxArg, () {}),
+          foundFeatures.add(LimitingTextLength(
+            minLength: base.readIntLiteral(minArg, () {}),
+            maxLength: base.readIntLiteral(maxArg, () {}),
           ));
           break;
         case _methodAutoIncrement:

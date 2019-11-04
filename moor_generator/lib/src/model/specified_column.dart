@@ -1,34 +1,38 @@
-import 'package:built_value/built_value.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
-
-part 'specified_column.g.dart';
 
 enum ColumnType { integer, text, boolean, datetime, blob, real }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
 /// call in the column builder dsl.
-abstract class ColumnName implements Built<ColumnName, ColumnNameBuilder> {
+class ColumnName {
   /// A column name is implicit if it has been looked up with the associated
   /// field name in the table class. It's explicit if `.named()` was called in
   /// the column builder.
-  bool get implicit;
+  final bool implicit;
 
-  String get name;
+  final String name;
 
-  ColumnName._();
+  ColumnName.implicitly(this.name) : implicit = true;
+  ColumnName.explicitly(this.name) : implicit = false;
 
-  factory ColumnName([updates(ColumnNameBuilder b)]) = _$ColumnName;
+  @override
+  int get hashCode => name.hashCode + implicit.hashCode * 31;
 
-  factory ColumnName.implicitly(String name) => ColumnName((b) => b
-    ..implicit = true
-    ..name = name);
+  @override
+  bool operator ==(other) {
+    if (other.runtimeType != runtimeType) return false;
+    // ignore: test_types_in_equals
+    final typedOther = other as ColumnName;
+    return typedOther.implicit == implicit && typedOther.name == name;
+  }
 
-  factory ColumnName.explicitly(String name) => ColumnName((b) => b
-    ..implicit = false
-    ..name = name);
+  @override
+  String toString() {
+    return 'ColumnName($name, implicit = $implicit)';
+  }
 }
 
 const Map<ColumnType, String> dartTypeNames = {
@@ -206,23 +210,24 @@ class AutoIncrement extends ColumnFeature {
   int get hashCode => 1337420;
 }
 
-abstract class LimitingTextLength extends ColumnFeature
-    implements Built<LimitingTextLength, LimitingTextLengthBuilder> {
-  @nullable
-  int get minLength;
+class LimitingTextLength extends ColumnFeature {
+  final int minLength;
 
-  @nullable
-  int get maxLength;
+  final int maxLength;
 
-  LimitingTextLength._();
+  LimitingTextLength({this.minLength, this.maxLength});
 
-  factory LimitingTextLength(void updates(LimitingTextLengthBuilder b)) =
-      _$LimitingTextLength;
+  @override
+  int get hashCode => minLength.hashCode ^ maxLength.hashCode;
 
-  factory LimitingTextLength.withLength({int min, int max}) =>
-      LimitingTextLength((b) => b
-        ..minLength = min
-        ..maxLength = max);
+  @override
+  bool operator ==(other) {
+    if (other.runtimeType != runtimeType) return false;
+    // ignore: test_types_in_equals
+    final typedOther = other as LimitingTextLength;
+    return typedOther.minLength == minLength &&
+        typedOther.maxLength == maxLength;
+  }
 }
 
 class Reference extends ColumnFeature {
