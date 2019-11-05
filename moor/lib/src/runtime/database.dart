@@ -467,6 +467,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// A list of tables specified in this database.
   List<TableInfo> get allTables;
 
+  /// A [Type] can't be sent across isolates. Instances of this class shouldn't
+  /// be sent over isolates either, so let's keep a reference to a [Type] that
+  /// definitely prohibits this.
+  final Type _$dontSendThisOverIsolates = Null;
+
   /// Used by generated code
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})

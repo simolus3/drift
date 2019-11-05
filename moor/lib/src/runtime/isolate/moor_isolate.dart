@@ -27,9 +27,8 @@ typedef DatabaseOpener = DatabaseConnection Function();
 ///
 /// See also:
 /// - [Isolate], for general information on multi threading in Dart.
-/// - TODO: Write documentation tutorial for this on the website
-///   also todo: Is MoorIsolate really a name we want to keep? It's not really
-///   an isolate
+/// - The [detailed documentation](https://moor.simonbinder.eu/docs/advanced-features/isolates),
+///   which provides example codes on how to use this api.
 class MoorIsolate {
   /// Identifier for the server isolate that we can connect to.
   final ServerKey _server;
@@ -46,11 +45,6 @@ class MoorIsolate {
     return client._connection;
   }
 
-  /// Calls [Isolate.kill] on the underlying isolate.
-  void kill() {
-    _isolate.kill();
-  }
-
   /// Creates a new [MoorIsolate] on a background thread.
   ///
   /// The [opener] function will be used to open the [DatabaseConnection] used
@@ -61,7 +55,6 @@ class MoorIsolate {
   /// Because [opener] will be called on another isolate with its own memory,
   /// it must either be a top-level member or a static class method.
   static Future<MoorIsolate> spawn(DatabaseOpener opener) async {
-    // todo: API to terminate the spawned isolate?
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 

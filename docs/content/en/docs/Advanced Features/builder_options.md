@@ -48,6 +48,8 @@ At the moment, moor supports these options:
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   This will be the only option in moor 3.0. You can always override the json key by using a `JSON KEY`
   column constraint (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`)
+* `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{< relref "isolates.md" >}}).
+  This is a build option because isolates are still experimental. This will be the default option eventually.
 
 ## Recommended options
 

@@ -1,13 +1,9 @@
 ---
-title: Dart VM (using ffi)
-description: Experimental version of moor using `dart:ffi`
+title: Dart VM (Desktop support)
+description: Run moor on both mobile and desktops
 ---
 
-## Warnings and supported platforms
-
-Please note that `dart:ffi` is in "preview" at the moment and that there will be breaking
-changes. Using the `moor_ffi` package on non-stable Dart or Flutter versions can break.
-Also, please don't use the package for production apps yet.
+## Supported versions
 
 At the moment, `moor_ffi` supports iOS, macOS and Android out of the box. Most Linux
 Distros have sqlite available as a shared library, those are supported as well. 
@@ -40,15 +36,12 @@ DynamicLibrary _openOnLinux() {
 
 ## Migrating from moor_flutter to moor_ffi
 
-__Again__: If you're only looking for Android and iOS support, `moor_flutter` is the
-right library to use. 
-
 1. Adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
    add both the `moor` and `moor_ffi` dependencies:
    ```yaml
    dependencies:
      moor: ^2.0.0
-     moor_ffi: ^0.0.1
+     moor_ffi: ^0.2.0
    dev_dependencies:
      moor_generator: ^2.0.0
    ```
@@ -73,6 +66,6 @@ right library to use.
        return VmDatabase(file);
    })
    ```
-   __Important warning__: `FlutterQueryExecutor.inDatabaseFolder` may use a different folder on Android, which
-   can cause data loss. This documentation will provide a better migration guide once `moor_ffi` is stable.
+   __Important warning__: On Android, `FlutterQueryExecutor.inDatabaseFolder` may use a different folder than
+   `getApplicationDocumentsDirectory()` which can cause data loss.
    Please create an issue if you need guidance on this soon.
