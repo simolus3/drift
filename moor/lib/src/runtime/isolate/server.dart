@@ -4,6 +4,8 @@ class _MoorServer {
   final Server server;
 
   DatabaseConnection connection;
+  final Map<int, TransactionExecutor> _transactions = {};
+  int _currentTransaction = 0;
   _FakeDatabase _fakeDb;
 
   ServerKey get key => server.key;
@@ -33,6 +35,8 @@ class _MoorServer {
           return connection.typeSystem;
         case _NoArgsRequest.ensureOpen:
           return connection.executor.ensureOpen();
+        case _NoArgsRequest.startTransaction:
+          return _spawnTransaction();
         // the following are requests which are handled on the client side
         case _NoArgsRequest.runOnCreate:
           throw UnsupportedError(
@@ -42,16 +46,25 @@ class _MoorServer {
       _fakeDb.schemaVersion = payload.schemaVersion;
       return null;
     } else if (payload is _ExecuteQuery) {
-      return _runQuery(payload.method, payload.sql, payload.args);
+      return _runQuery(
+          payload.method, payload.sql, payload.args, payload.transactionId);
+    } else if (payload is _ExecuteBatchedStatement) {
+      return connection.executor.runBatched(payload.stmts);
     } else if (payload is _NotifyTablesUpdated) {
       for (var connected in server.currentChannels) {
         connected.request(payload);
       }
+    } else if (payload is _RunTransactionAction) {
+      return _transactionControl(payload.control, payload.transactionId);
     }
   }
 
-  Future<dynamic> _runQuery(_StatementMethod method, String sql, List args) {
-    final executor = connection.executor;
+  Future<dynamic> _runQuery(
+      _StatementMethod method, String sql, List args, int transactionId) {
+    final executor = transactionId != null
+        ? _transactions[transactionId]
+        : connection.executor;
+
     switch (method) {
       case _StatementMethod.custom:
         return executor.runCustom(sql, args);
@@ -64,6 +77,25 @@ class _MoorServer {
     }
 
     throw AssertionError("Unknown _StatementMethod, this can't happen.");
+  }
+
+  int _spawnTransaction() {
+    final id = _currentTransaction++;
+    _transactions[id] = connection.executor.beginTransaction();
+    return id;
+  }
+
+  Future<void> _transactionControl(
+      _TransactionControl action, int transactionId) {
+    final transaction = _transactions[transactionId];
+    _transactions.remove(transactionId);
+    switch (action) {
+      case _TransactionControl.commit:
+        return transaction.send();
+      case _TransactionControl.rollback:
+        return transaction.rollback();
+    }
+    throw AssertionError("Can't happen");
   }
 }
 

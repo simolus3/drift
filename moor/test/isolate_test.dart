@@ -39,6 +39,18 @@ void main() {
     await database.into(database.todosTable).insert(initialCompanion);
     await expectation;
   });
+
+  test('can start transactions', () async {
+    final database = TodoDb.connect(isolateConnection);
+    final initialCompanion = TodosTableCompanion.insert(content: 'my content');
+
+    await database.transaction(() async {
+      await database.into(database.todosTable).insert(initialCompanion);
+    });
+
+    final result = await database.select(database.todosTable).get();
+    expect(result, isNotEmpty);
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

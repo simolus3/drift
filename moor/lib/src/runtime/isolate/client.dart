@@ -57,36 +57,15 @@ class _MoorClient {
   }
 }
 
-class _IsolateQueryExecutor extends QueryExecutor {
+abstract class _BaseExecutor extends QueryExecutor {
   final _MoorClient client;
+  int _transactionId;
 
-  _IsolateQueryExecutor(this.client);
-
-  @override
-  set databaseInfo(GeneratedDatabase db) {
-    super.databaseInfo = db;
-    client._channel.request(_SetSchemaVersion(db.schemaVersion));
-  }
+  _BaseExecutor(this.client);
 
   @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError(
-        'Transactions are not currently supported over isolates');
-  }
-
-  @override
-  Future<bool> ensureOpen() {
-    return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
-  }
-
-  @override
-  Future<void> runBatched(List<BatchedStatement> statements) async {
-    // todo optimize this case
-    for (var stmt in statements) {
-      for (var boundArgs in stmt.variables) {
-        await runCustom(stmt.sql, boundArgs);
-      }
-    }
+  Future<void> runBatched(List<BatchedStatement> statements) {
+    return client._channel.request(_ExecuteBatchedStatement(statements));
   }
 
   Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
@@ -117,11 +96,72 @@ class _IsolateQueryExecutor extends QueryExecutor {
   Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
     return _runRequest(_StatementMethod.select, statement, args);
   }
+}
+
+class _IsolateQueryExecutor extends _BaseExecutor {
+  _IsolateQueryExecutor(_MoorClient client) : super(client);
+
+  @override
+  set databaseInfo(GeneratedDatabase db) {
+    super.databaseInfo = db;
+    client._channel.request(_SetSchemaVersion(db.schemaVersion));
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    return _TransactionIsolateExecutor(client);
+  }
+
+  @override
+  Future<bool> ensureOpen() {
+    return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
+  }
 
   @override
   Future<void> close() {
     client._channel.close();
     return Future.value();
+  }
+}
+
+class _TransactionIsolateExecutor extends _BaseExecutor
+    implements TransactionExecutor {
+  _TransactionIsolateExecutor(_MoorClient client) : super(client);
+
+  bool _pendingOpen = false;
+
+  // nested transactions aren't supported
+  @override
+  TransactionExecutor beginTransaction() => null;
+
+  @override
+  Future<bool> ensureOpen() {
+    if (_transactionId == null && !_pendingOpen) {
+      _pendingOpen = true;
+      return _openAtServer().then((_) => true);
+    }
+    return Future.value(true);
+  }
+
+  Future _openAtServer() async {
+    _transactionId =
+        await client._channel.request(_NoArgsRequest.startTransaction) as int;
+    _pendingOpen = false;
+  }
+
+  Future<void> _sendAction(_TransactionControl action) {
+    return client._channel
+        .request(_RunTransactionAction(action, _transactionId));
+  }
+
+  @override
+  Future<void> rollback() {
+    return _sendAction(_TransactionControl.rollback);
+  }
+
+  @override
+  Future<void> send() {
+    return _sendAction(_TransactionControl.commit);
   }
 }
 
@@ -135,6 +175,8 @@ class _IsolateStreamQueryStore extends StreamQueryStore {
     // we're not calling super.handleTableUpdates because the server will send
     // a notification of those tables to all clients, including the one who sent
     // this. When we get that reply, we update the tables.
+    // Note that we're not running into an infinite feedback loop because the
+    // client will call handleTableUpdatesByName. That's kind of a hack.
     return client._channel.request(
         _NotifyTablesUpdated(tables.map((t) => t.actualTableName).toList()));
   }
