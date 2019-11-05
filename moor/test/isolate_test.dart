@@ -11,12 +11,12 @@ void main() {
 
   setUp(() async {
     isolate = await MoorIsolate.spawn(_backgroundConnection);
-    isolateConnection = await isolate.connect(isolateDebugLog: true);
+    isolateConnection = await isolate.connect(isolateDebugLog: false);
   });
 
   tearDown(() {
     isolateConnection.executor.close();
-    isolate.kill();
+    return isolate.shutdownAll();
   });
 
   test('can open database and send requests', () async {

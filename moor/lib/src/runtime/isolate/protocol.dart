@@ -18,6 +18,10 @@ enum _NoArgsRequest {
   /// integer, which serves as an identifier for the transaction in
   /// [_ExecuteQuery.transactionId].
   startTransaction,
+
+  /// Close the background isolate, disconnect all clients, release all
+  /// associated resources
+  terminateAll,
 }
 
 enum _StatementMethod {

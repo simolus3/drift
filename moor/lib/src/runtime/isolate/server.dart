@@ -37,6 +37,10 @@ class _MoorServer {
           return connection.executor.ensureOpen();
         case _NoArgsRequest.startTransaction:
           return _spawnTransaction();
+        case _NoArgsRequest.terminateAll:
+          server.close();
+          Isolate.current.kill();
+          break;
         // the following are requests which are handled on the client side
         case _NoArgsRequest.runOnCreate:
           throw UnsupportedError(

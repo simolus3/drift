@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:pedantic/pedantic.dart';
+
 /// An isolate communication setup where there's a single "server" isolate that
 /// communicates with a varying amount of "client" isolates.
 ///
@@ -46,7 +48,12 @@ class IsolateCommunication {
 
     final response = (await stream.first) as _ServerConnectionResponse;
 
-    return IsolateCommunication._(response.sendPort, stream, debugLog);
+    final communication =
+        IsolateCommunication._(response.sendPort, stream, debugLog);
+
+    unawaited(communication.closed.then((_) => clientReceive.close()));
+
+    return communication;
   }
 
   /// Closes the connection to the server.
@@ -183,6 +190,10 @@ class Server {
   void close() {
     _openConnectionPort.close();
     _opened.close();
+
+    for (var connected in currentChannels) {
+      connected.close();
+    }
   }
 
   void _handleMessageOnConnectionPort(dynamic message) {
@@ -199,6 +210,7 @@ class Server {
 
       communication.closed.whenComplete(() {
         currentChannels.remove(communication);
+        receiveFromClient.close();
       });
     }
   }

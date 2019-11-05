@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:pedantic/pedantic.dart';
 import 'communication.dart';
 
 part 'client.dart';
@@ -33,9 +34,7 @@ class MoorIsolate {
   /// Identifier for the server isolate that we can connect to.
   final ServerKey _server;
 
-  final Isolate _isolate;
-
-  MoorIsolate._(this._server, this._isolate);
+  MoorIsolate._(this._server);
 
   /// Connects to this [MoorIsolate] from another isolate. All operations on the
   /// returned [DatabaseConnection] will be executed on a background isolate.
@@ -43,6 +42,21 @@ class MoorIsolate {
   Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
     final client = await _MoorClient.connect(this, isolateDebugLog);
     return client._connection;
+  }
+
+  /// Stops the background isolate and disconnects all [DatabaseConnection]s
+  /// created.
+  /// If you only want to disconnect a database connection created via
+  /// [connect], use [GeneratedDatabase.close] instead.
+  Future<void> shutdownAll() async {
+    final connection = await IsolateCommunication.connectAsClient(_server);
+    unawaited(connection.request(_NoArgsRequest.terminateAll).then((_) {},
+        onError: (_) {
+      // the background isolate is closed before it gets a chance to reply
+      // to the terminateAll request. Ignore the error
+    }));
+
+    await connection.closed;
   }
 
   /// Creates a new [MoorIsolate] on a background thread.
@@ -58,10 +72,9 @@ class MoorIsolate {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 
-    final isolate = await Isolate.spawn(
-        _startMoorIsolate, [receiveServer.sendPort, opener]);
+    await Isolate.spawn(_startMoorIsolate, [receiveServer.sendPort, opener]);
     final key = await keyFuture as ServerKey;
-    return MoorIsolate._(key, isolate);
+    return MoorIsolate._(key);
   }
 
   /// Creates a [MoorIsolate] in the [Isolate.current] isolate. The returned
@@ -70,7 +83,7 @@ class MoorIsolate {
   /// connection which operations are all executed on this isolate.
   static MoorIsolate inCurrent(DatabaseOpener opener) {
     final server = _MoorServer(opener);
-    return MoorIsolate._(server.key, Isolate.current);
+    return MoorIsolate._(server.key);
   }
 }
 
