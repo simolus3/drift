@@ -1,5 +1,6 @@
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/src/ffi/blob.dart';
+import 'package:moor_ffi/src/ffi/utils.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -7,7 +8,7 @@ void main() {
     final content = 'Hasta Mañana';
     final blob = CBlob.allocateString(content);
 
-    expect(blob.load<CBlob>().readString(), content);
+    expect(blob.readString(), content);
     blob.free();
   });
 
@@ -15,7 +16,7 @@ void main() {
     final data = List.generate(256, (x) => x);
     final blob = CBlob.allocate(Uint8List.fromList(data));
 
-    expect(blob.load<CBlob>().read(256), data);
+    expect(blob.readBytes(256), data);
     blob.free();
   });
 }

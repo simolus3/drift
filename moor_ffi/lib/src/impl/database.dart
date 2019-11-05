@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:moor_ffi/database.dart';
 import 'package:moor_ffi/src/api/result.dart';
 import 'package:moor_ffi/src/bindings/constants.dart';
@@ -31,12 +32,12 @@ class Database implements BaseDatabase {
 
   /// Opens an sqlite3 database from a filename.
   factory Database.open(String fileName) {
-    final dbOut = Pointer<Pointer<types.Database>>.allocate();
+    final dbOut = allocate<Pointer<types.Database>>();
     final pathC = CBlob.allocateString(fileName);
 
     final resultCode =
         bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullptr.cast());
-    final dbPointer = dbOut.load<Pointer<types.Database>>();
+    final dbPointer = dbOut.value;
 
     dbOut.free();
     pathC.free();
@@ -88,19 +89,19 @@ class Database implements BaseDatabase {
     _ensureOpen();
 
     final sqlPtr = CBlob.allocateString(sql);
-    final errorOut = Pointer<Pointer<CBlob>>.allocate();
+    final errorOut = allocate<Pointer<CBlob>>();
 
     final result =
         bindings.sqlite3_exec(_db, sqlPtr, nullptr, nullptr, errorOut);
 
     sqlPtr.free();
 
-    final errorPtr = errorOut.load<Pointer<CBlob>>();
+    final errorPtr = errorOut.value;
     errorOut.free();
 
     String errorMsg;
-    if (!isNullPointer(errorPtr)) {
-      errorMsg = errorPtr.load<CBlob>().readString();
+    if (!errorPtr.isNullPointer) {
+      errorMsg = errorPtr.readString();
       // the message was allocated from sqlite, we need to free it
       bindings.sqlite3_free(errorPtr.cast());
     }
@@ -114,14 +115,14 @@ class Database implements BaseDatabase {
   PreparedStatement prepare(String sql) {
     _ensureOpen();
 
-    final stmtOut = Pointer<Pointer<types.Statement>>.allocate();
+    final stmtOut = allocate<Pointer<types.Statement>>();
     final sqlPtr = CBlob.allocateString(sql);
 
     final resultCode =
         bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, nullptr.cast());
     sqlPtr.free();
 
-    final stmt = stmtOut.load<Pointer<types.Statement>>();
+    final stmt = stmtOut.value;
     stmtOut.free();
 
     if (resultCode != Errors.SQLITE_OK) {

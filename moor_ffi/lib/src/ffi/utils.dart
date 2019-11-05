@@ -1,3 +1,11 @@
 import 'dart:ffi';
 
-bool isNullPointer<T extends NativeType>(Pointer<T> ptr) => ptr == nullptr;
+import 'package:ffi/ffi.dart' as ffi;
+
+extension FreePointerExtension on Pointer {
+  bool get isNullPointer => this == nullptr;
+
+  void free() {
+    ffi.free(this);
+  }
+}

@@ -40,8 +40,7 @@ class PreparedStatement implements BasePreparedStatement {
 
     for (var i = 0; i < columnCount; i++) {
       // name pointer doesn't need to be disposed, that happens when we finalize
-      names[i] =
-          bindings.sqlite3_column_name(_stmt, i).load<CBlob>().readString();
+      names[i] = bindings.sqlite3_column_name(_stmt, i).readString();
     }
 
     while (_step() == Errors.SQLITE_ROW) {
@@ -62,14 +61,10 @@ class PreparedStatement implements BasePreparedStatement {
         final length = bindings.sqlite3_column_bytes(_stmt, index);
         return bindings
             .sqlite3_column_text(_stmt, index)
-            .load<CBlob>()
             .readAsStringWithLength(length);
       case Types.SQLITE_BLOB:
         final length = bindings.sqlite3_column_bytes(_stmt, index);
-        return bindings
-            .sqlite3_column_blob(_stmt, index)
-            .load<CBlob>()
-            .read(length);
+        return bindings.sqlite3_column_blob(_stmt, index).readBytes(length);
       case Types.SQLITE_NULL:
       default:
         return null;

@@ -12,11 +12,11 @@ class SqliteException implements Exception {
     // hold the error message string is managed internally. The application does
     // not need to worry about freeing the result."
     // https://www.sqlite.org/c3ref/errcode.html
-    final dbMessage = bindings.sqlite3_errmsg(db).load<CBlob>().readString();
+    final dbMessage = bindings.sqlite3_errmsg(db).readString();
 
     String explanation;
     if (code != null) {
-      explanation = bindings.sqlite3_errstr(code).load<CBlob>().readString();
+      explanation = bindings.sqlite3_errstr(code).readString();
     }
 
     return SqliteException(dbMessage, explanation);

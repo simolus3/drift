@@ -1,7 +1,8 @@
-## unreleased
+## 0.2.0
 
 - Remove the `background` flag from the moor apis provided by this package. Use the moor isolate api
   instead.
+- Support Dart 2.6, drop support for older versions
 
 ## 0.0.1
 
