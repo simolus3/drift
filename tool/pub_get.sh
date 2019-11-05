@@ -18,3 +18,9 @@ cd ..
 cd sqlparser
 echo $(pwd)
 pub upgrade
+cd ..
+
+cd moor_ffi
+echo $(pwd)
+pub upgrade
+cd ..
