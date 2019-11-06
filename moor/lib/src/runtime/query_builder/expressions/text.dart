@@ -1,5 +1,21 @@
 part of '../query_builder.dart';
 
+/// Defines methods that operate on a column storing [String] values.
+extension StringExpressionOperators on Column<String, StringType> {
+  /// Whether this column matches the given pattern. For details on what patters
+  /// are valid and how they are interpreted, check out
+  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
+  Expression<bool, BoolType> like(String regex) {
+    return _LikeOperator(this, Variable.withString(regex));
+  }
+
+  /// Uses the given [collate] sequence when comparing this column to other
+  /// values.
+  Expression<String, StringType> collate(Collate collate) {
+    return _CollateOperator(this, collate);
+  }
+}
+
 /// A `text LIKE pattern` expression that will be true if the first expression
 /// matches the pattern given by the second expression.
 class _LikeOperator extends Expression<bool, BoolType> {

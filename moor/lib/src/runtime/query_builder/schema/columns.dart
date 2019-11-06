@@ -125,15 +125,6 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
-  Expression<bool, BoolType> like(String pattern) =>
-      _LikeOperator(this, Variable<String, StringType>(pattern));
-
-  @override
-  Expression<String, StringType> collate(Collate collate) {
-    return _CollateOperator(this, collate);
-  }
-
-  @override
   final String typeName = 'VARCHAR';
 
   @override
@@ -175,7 +166,6 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 
 /// Implementation for [IntColumn]
 class GeneratedIntColumn extends GeneratedColumn<int, IntType>
-    with ComparableExpr
     implements IntColumn {
   /// Whether this column was declared to be a primary key via a column
   /// constraint. The only way to do this in Dart is with
@@ -223,7 +213,6 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 
 /// Implementation for [DateTimeColumn].
 class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
-    with ComparableExpr
     implements DateTimeColumn {
   /// Used by generated code.
   GeneratedDateTimeColumn(
@@ -254,7 +243,6 @@ class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
 
 /// Implementation for [RealColumn]
 class GeneratedRealColumn extends GeneratedColumn<double, RealType>
-    with ComparableExpr
     implements RealColumn {
   /// Used by generated code
   GeneratedRealColumn(

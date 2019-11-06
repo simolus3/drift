@@ -116,7 +116,7 @@ class Database extends _$Database {
     return transaction(() async {
       final id = user.id;
       await (delete(friendships)
-            ..where((f) => or(f.firstUser.equals(id), f.secondUser.equals(id))))
+            ..where((f) => f.firstUser.equals(id) | f.secondUser.equals(id)))
           .go();
 
       if (fail) {

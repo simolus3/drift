@@ -85,7 +85,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     if (whereExpr == null) {
       whereExpr = Where(predicate);
     } else {
-      whereExpr = Where(and(whereExpr.predicate, predicate));
+      whereExpr = Where(whereExpr.predicate & predicate);
     }
   }
 

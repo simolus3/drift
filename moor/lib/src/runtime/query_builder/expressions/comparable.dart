@@ -1,23 +1,8 @@
 part of '../query_builder.dart';
 
-// todo: Can we replace these classes with an extension on expression?
-
-/// An [Expression] that operates on ints. Declared as a class so that we can
-/// mixin [ComparableExpr].
-abstract class IntExpression extends Expression<int, IntType>
-    implements ComparableExpr<int, IntType> {}
-
-/// An [Expression] that operates on doubles. Declared as a class so that we can
-/// mixin [ComparableExpr].
-abstract class DoubleExpression extends Expression<double, RealType>
-    implements ComparableExpr<double, RealType> {}
-
-/// An [Expression] that operates on datetimes. Declared as a class so that we
-/// can mixin [ComparableExpr].
-abstract class DateTimeExpression extends Expression<DateTime, DateTimeType>
-    implements ComparableExpr<DateTime, DateTimeType> {}
-
-mixin ComparableExpr<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
+/// Defines extension functions to express comparisons in sql
+extension ComparableExpr<DT, ST extends SqlType<DT>, Comparable>
+    on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
   Expression<bool, BoolType> isBiggerThan(Expression<DT, ST> other) {

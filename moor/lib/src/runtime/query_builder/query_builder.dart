@@ -2,7 +2,10 @@
 // at runtime.
 
 import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
+// todo we're hiding the extensions because the analyzer complains about
+// ambigous extensions (once via import, once via part of), even though they're
+// the same. We should probably file a bug report.
+import 'package:moor/moor.dart' hide BooleanExpressionOperators;
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/utils/single_transformer.dart';

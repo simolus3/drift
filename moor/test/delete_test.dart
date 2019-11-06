@@ -28,7 +28,7 @@ void main() {
 
     test('for complex components', () async {
       await (db.delete(db.users)
-            ..where((u) => or(not(u.isAwesome), u.id.isSmallerThanValue(100))))
+            ..where((u) => u.isAwesome.not() | u.id.isSmallerThanValue(100)))
           .go();
 
       verify(executor.runDelete(

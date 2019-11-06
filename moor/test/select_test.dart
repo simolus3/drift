@@ -66,7 +66,7 @@ void main() {
     test('with complex predicates', () {
       (db.select(db.users)
             ..where((u) =>
-                and(not(u.name.equals('Dash')), (u.id.isBiggerThanValue(12)))))
+                u.name.equals('Dash').not() & u.id.isBiggerThanValue(12)))
           .get();
 
       verify(executor.runSelect(

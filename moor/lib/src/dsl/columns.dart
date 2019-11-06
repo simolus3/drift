@@ -5,36 +5,24 @@ part of 'dsl.dart';
 abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
 
 /// A column that stores int values.
-abstract class IntColumn extends Column<int, IntType> implements IntExpression {
-}
+abstract class IntColumn extends Column<int, IntType> {}
 
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
 abstract class BoolColumn extends Column<bool, BoolType> {}
 
 /// A column that stores text.
-abstract class TextColumn extends Column<String, StringType> {
-  /// Whether this column matches the given pattern. For details on what patters
-  /// are valid and how they are interpreted, check out
-  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool, BoolType> like(String regex);
-
-  /// Uses the given [collate] sequence when comparing this column to other
-  /// values.
-  Expression<String, StringType> collate(Collate collate);
-}
+abstract class TextColumn extends Column<String, StringType> {}
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime, DateTimeType>
-    implements DateTimeExpression {}
+abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
 abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 
 /// A column that stores floating point numeric values.
-abstract class RealColumn extends Column<double, RealType>
-    implements DoubleExpression {}
+abstract class RealColumn extends Column<double, RealType> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
@@ -94,9 +82,10 @@ class ColumnBuilder<
   /// has been specified.
   ///
   /// Note: Unless most other methods used to declare tables, the parameter
-  /// [e] which denotes the default expression, doesn't have to be constant.
-  /// Particularly, you can use methods like [and], [or] and [not] to form
-  /// expressions here.
+  /// [e] which denotes the default expression, doesn't have to be a Dart
+  /// constant.
+  /// Particularly, you can use operators like those defined in
+  /// [BooleanExpressionOperators] to form expressions here.
   ///
   /// If you need a column that just stores a static default value, you could
   /// use this method with a [Constant]:

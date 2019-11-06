@@ -23,6 +23,10 @@ abstract class SqlType<T> {
   T mapFromDatabaseResponse(dynamic response);
 }
 
+/// A marker interface for [SqlType]s that can be compared using the comparison
+/// operators in sql.
+abstract class ComparableType {}
+
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
 class BoolType extends SqlType<bool> {
@@ -77,7 +81,7 @@ class StringType extends SqlType<String> {
 }
 
 /// Maps [int] values from and to sql
-class IntType extends SqlType<int> {
+class IntType extends SqlType<int> implements ComparableType {
   /// Constant constructor used by the type system
   const IntType();
 
@@ -94,7 +98,7 @@ class IntType extends SqlType<int> {
 }
 
 /// Maps [DateTime] values from and to sql
-class DateTimeType extends SqlType<DateTime> {
+class DateTimeType extends SqlType<DateTime> implements ComparableType {
   /// Constant constructor used by the type system
   const DateTimeType();
 
@@ -123,7 +127,7 @@ class DateTimeType extends SqlType<DateTime> {
 }
 
 /// Maps [Uint8List] values from and to sql
-class BlobType extends SqlType<Uint8List> {
+class BlobType extends SqlType<Uint8List> implements ComparableType {
   /// Constant constructor used by the type system
   const BlobType();
 
@@ -142,7 +146,7 @@ class BlobType extends SqlType<Uint8List> {
 }
 
 /// Maps [double] values from and to sql
-class RealType extends SqlType<double> {
+class RealType extends SqlType<double> implements ComparableType {
   /// Constant constructor used by the type system
   const RealType();
 

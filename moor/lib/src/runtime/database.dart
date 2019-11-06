@@ -470,6 +470,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// A [Type] can't be sent across isolates. Instances of this class shouldn't
   /// be sent over isolates either, so let's keep a reference to a [Type] that
   /// definitely prohibits this.
+  // ignore: unused_field
   final Type _$dontSendThisOverIsolates = Null;
 
   /// Used by generated code
