@@ -62,6 +62,19 @@ abstract class _InfixOperator<D, T extends SqlType<D>>
   }
 }
 
+class _BaseInfixOperator<D, T extends SqlType<D>> extends _InfixOperator<D, T> {
+  @override
+  final Expression<D, T> left;
+
+  @override
+  final String operator;
+
+  @override
+  final Expression<D, T> right;
+
+  _BaseInfixOperator(this.left, this.operator, this.right);
+}
+
 /// Defines the possible comparison operators that can appear in a [_Comparison].
 enum _ComparisonOperator {
   /// '<' in sql
@@ -110,4 +123,16 @@ class _Comparison extends _InfixOperator<bool, BoolType> {
 
   /// Like [Comparison(left, op, right)], but uses [_ComparisonOperator.equal].
   _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
+}
+
+class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
+  final Expression<DT, ST> inner;
+
+  _UnaryMinus(this.inner);
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer.write('-');
+    inner.writeInto(context);
+  }
 }

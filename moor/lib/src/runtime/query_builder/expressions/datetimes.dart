@@ -30,6 +30,8 @@ Expression<int, IntType> minute(Expression<DateTime, DateTimeType> date) =>
 Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
     _StrftimeSingleFieldExpression('%S', date);
 
+// todo: Add difference and unixSeconds method, also convert to extension
+
 /// A sql expression that evaluates to the current date represented as a unix
 /// timestamp. The hour, minute and second fields will be set to 0.
 const Expression<DateTime, DateTimeType> currentDate =
@@ -44,6 +46,10 @@ class _CustomDateTimeExpression
     extends CustomExpression<DateTime, DateTimeType> {
   const _CustomDateTimeExpression(String content) : super(content);
 }
+
+/// Provides expressions to extract information from date time values, or to
+/// calculate the difference between datetimes.
+extension DateTimeExpressions on Expression<DateTime, DateTimeType> {}
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.

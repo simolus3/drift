@@ -347,8 +347,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///     might be different than that of the "global" database instance.
   ///  2. Nested transactions are not supported. Creating another transaction
   ///     inside a transaction returns the parent transaction.
-  @protected
-  @visibleForTesting
   Future<T> transaction<T>(Future<T> Function() action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {

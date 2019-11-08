@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' hide BooleanExpressionOperators;
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:moor/src/runtime/types/sql_types.dart';
 import 'package:moor/src/utils/single_transformer.dart';
 
 part 'components/join.dart';
@@ -13,6 +14,7 @@ part 'components/limit.dart';
 part 'components/order_by.dart';
 part 'components/where.dart';
 
+part 'expressions/algebra.dart';
 part 'expressions/bools.dart';
 part 'expressions/comparable.dart';
 part 'expressions/custom.dart';

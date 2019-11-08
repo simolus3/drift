@@ -25,7 +25,15 @@ abstract class SqlType<T> {
 
 /// A marker interface for [SqlType]s that can be compared using the comparison
 /// operators in sql.
-abstract class ComparableType {}
+abstract class ComparableType<T> extends SqlType<T> {}
+
+/// A marker interface for [SqlType]s that have a `+` operator.
+abstract class Monoid<T> extends SqlType<T> {}
+
+/// A marker interface for [SqlType]s that support all basic arithmetic
+/// operators (`+`, `-`, `*` and `/`) while also being a [ComparableType]
+abstract class FullArithmetic<T> extends Monoid<T>
+    implements ComparableType<T> {}
 
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
@@ -58,7 +66,7 @@ class BoolType extends SqlType<bool> {
 }
 
 /// Mapper for string values in sql.
-class StringType extends SqlType<String> {
+class StringType extends SqlType<String> implements Monoid<String> {
   /// Constant constructor used by the type system
   const StringType();
 
@@ -81,7 +89,7 @@ class StringType extends SqlType<String> {
 }
 
 /// Maps [int] values from and to sql
-class IntType extends SqlType<int> implements ComparableType {
+class IntType extends SqlType<int> implements FullArithmetic<int> {
   /// Constant constructor used by the type system
   const IntType();
 
@@ -98,7 +106,8 @@ class IntType extends SqlType<int> implements ComparableType {
 }
 
 /// Maps [DateTime] values from and to sql
-class DateTimeType extends SqlType<DateTime> implements ComparableType {
+class DateTimeType extends SqlType<DateTime>
+    implements ComparableType<DateTime> {
   /// Constant constructor used by the type system
   const DateTimeType();
 
@@ -127,7 +136,7 @@ class DateTimeType extends SqlType<DateTime> implements ComparableType {
 }
 
 /// Maps [Uint8List] values from and to sql
-class BlobType extends SqlType<Uint8List> implements ComparableType {
+class BlobType extends SqlType<Uint8List> {
   /// Constant constructor used by the type system
   const BlobType();
 
@@ -146,7 +155,7 @@ class BlobType extends SqlType<Uint8List> implements ComparableType {
 }
 
 /// Maps [double] values from and to sql
-class RealType extends SqlType<double> implements ComparableType {
+class RealType extends SqlType<double> implements FullArithmetic<double> {
   /// Constant constructor used by the type system
   const RealType();
 

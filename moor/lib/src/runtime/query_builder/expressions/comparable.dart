@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Defines extension functions to express comparisons in sql
-extension ComparableExpr<DT, ST extends SqlType<DT>, Comparable>
+extension ComparableExpr<DT, ST extends ComparableType<DT>>
     on Expression<DT, ST> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
