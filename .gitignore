@@ -2,3 +2,7 @@
 **/*.iml
 
 lcov.info
+
+.packages
+pubspec.lock
+.dart_tool/

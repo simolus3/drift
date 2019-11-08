@@ -32,8 +32,7 @@ android/
 ios/
 
 # coverage
-test/.test_coverage.dart
-coverage_badge.svg
+coverage/
 
 ### Intellij ###
 .idea/**/*

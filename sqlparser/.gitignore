@@ -10,4 +10,4 @@ build/
 # Directory created by dartdoc
 doc/api/
 
-coverage.json
+coverage/

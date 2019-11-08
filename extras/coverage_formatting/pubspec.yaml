@@ -1,0 +1,7 @@
+name: coverage_formatting
+publish_to: none
+description: Tool used for the CI to format VM coverage jsons to LCOV files
+
+dependencies:
+  coverage: '>=0.13.3'
+  path: ^1.6.4
