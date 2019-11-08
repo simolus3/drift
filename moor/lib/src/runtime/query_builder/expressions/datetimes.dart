@@ -44,6 +44,9 @@ const Expression<DateTime, DateTimeType> currentDateAndTime =
 
 class _CustomDateTimeExpression
     extends CustomExpression<DateTime, DateTimeType> {
+  @override
+  final Precedence precedence = Precedence.primary;
+
   const _CustomDateTimeExpression(String content) : super(content);
 }
 

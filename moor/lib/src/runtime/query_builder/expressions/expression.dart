@@ -7,6 +7,10 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
+  /// The precedence of this expression. This can be used to automatically put
+  /// parentheses around expressions as needed.
+  Precedence get precedence => Precedence.unknown;
+
   /// Whether this expression is a literal. Some use-sites need to put
   /// parentheses around non-literals.
   bool get isLiteral => false;
@@ -21,6 +25,107 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
   /// an SQL-injection.
   Expression<bool, BoolType> equals(D compare) =>
       _Comparison.equal(this, Variable<D, T>(compare));
+
+  /// Writes this expression into the [GenerationContext], assuming that there's
+  /// an outer expression with [precedence]. If the [Expression.precedence] of
+  /// `this` expression is lower, it will be wrapped in
+  ///
+  /// See also:
+  ///  - [Component.writeInto], which doesn't take any precedence relation into
+  ///  account.
+  void writeAroundPrecedence(GenerationContext context, Precedence precedence) {
+    if (this.precedence < precedence) {
+      context.buffer.write('(');
+      writeInto(context);
+      context.buffer.write(')');
+    } else {
+      writeInto(context);
+    }
+  }
+
+  /// If this [Expression] wraps an [inner] expression, this utility method can
+  /// be used inside [writeInto] to write that inner expression while wrapping
+  /// it in parentheses if necessary.
+  @protected
+  void writeInner(GenerationContext ctx, Expression inner) {
+    assert(precedence != Precedence.unknown,
+        "Expressions with unknown precedence shouldn't have inner expressions");
+    inner.writeAroundPrecedence(ctx, precedence);
+  }
+}
+
+/// Used to order the precedence of sql expressions so that we can avoid
+/// unnecessary parens when generating sql statements.
+class Precedence implements Comparable<Precedence> {
+  /// Higher means higher precedence.
+  final int _value;
+
+  const Precedence._(this._value);
+
+  @override
+  int compareTo(Precedence other) {
+    return _value.compareTo(other._value);
+  }
+
+  @override
+  int get hashCode => _value;
+
+  @override
+  bool operator ==(other) {
+    // runtimeType comparison isn't necessary, the private constructor prevents
+    // subclasses
+    return other is Precedence && other._value == _value;
+  }
+
+  /// Returns true if this [Precedence] is lower than [other].
+  bool operator <(Precedence other) => compareTo(other) < 0;
+
+  /// Returns true if this [Precedence] is lower or equal to [other].
+  bool operator <=(Precedence other) => compareTo(other) <= 0;
+
+  /// Returns true if this [Precedence] is higher than [other].
+  bool operator >(Precedence other) => compareTo(other) > 0;
+
+  /// Returns true if this [Precedence] is higher or equal to [other].
+  bool operator >=(Precedence other) => compareTo(other) >= 0;
+
+  /// Precedence is unknown, assume lowest. This can be used for a
+  /// [CustomExpression] to always put parens around it.
+  static const Precedence unknown = Precedence._(-1);
+
+  /// Precedence for the `OR` operator in sql
+  static const Precedence or = Precedence._(10);
+
+  /// Precedence for the `AND` operator in sql
+  static const Precedence and = Precedence._(11);
+
+  /// Precedence for most of the comparisons operators in sql, including
+  /// equality, is (not) checks, in, like, glob, match, regexp.
+  static const Precedence comparisonEq = Precedence._(12);
+
+  /// Precedence for the <, <=, >, >= operators in sql
+  static const Precedence comparison = Precedence._(13);
+
+  /// Precedence for bitwise operators in sql
+  static const Precedence bitwise = Precedence._(14);
+
+  /// Precedence for the (binary) plus and minus operators in sql
+  static const Precedence plusMinus = Precedence._(15);
+
+  /// Precedence for the *, / and % operators in sql
+  static const Precedence mulDivide = Precedence._(16);
+
+  /// Precedence for the || operator in sql
+  static const Precedence stringConcatenation = Precedence._(17);
+
+  /// Precedence for unary operators in sql
+  static const Precedence unary = Precedence._(20);
+
+  /// Precedence for postfix operators (like collate) in sql
+  static const Precedence postfix = Precedence._(21);
+
+  /// Highest precedence in sql, used for variables and literals.
+  static const Precedence primary = Precedence._(100);
 }
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
@@ -36,29 +141,13 @@ abstract class _InfixOperator<D, T extends SqlType<D>>
   /// The sql operator to write
   String get operator;
 
-  /// Whether we should put parentheses around the [left] and [right]
-  /// expressions.
-  bool get placeBrackets => true;
-
   @override
   void writeInto(GenerationContext context) {
-    _placeBracketIfNeeded(context, true);
-
-    left.writeInto(context);
-
-    _placeBracketIfNeeded(context, false);
+    writeInner(context, left);
     context.writeWhitespace();
     context.buffer.write(operator);
     context.writeWhitespace();
-    _placeBracketIfNeeded(context, true);
-
-    right.writeInto(context);
-
-    _placeBracketIfNeeded(context, false);
-  }
-
-  void _placeBracketIfNeeded(GenerationContext context, bool open) {
-    if (placeBrackets) context.buffer.write(open ? '(' : ')');
+    writeInner(context, right);
   }
 }
 
@@ -72,7 +161,11 @@ class _BaseInfixOperator<D, T extends SqlType<D>> extends _InfixOperator<D, T> {
   @override
   final Expression<D, T> right;
 
-  _BaseInfixOperator(this.left, this.operator, this.right);
+  @override
+  final Precedence precedence;
+
+  _BaseInfixOperator(this.left, this.operator, this.right,
+      {this.precedence = Precedence.unknown});
 }
 
 /// Defines the possible comparison operators that can appear in a [_Comparison].
@@ -112,10 +205,16 @@ class _Comparison extends _InfixOperator<bool, BoolType> {
   final _ComparisonOperator op;
 
   @override
-  final bool placeBrackets = false;
+  String get operator => _operatorNames[op];
 
   @override
-  String get operator => _operatorNames[op];
+  Precedence get precedence {
+    if (op == _ComparisonOperator.equal) {
+      return Precedence.comparisonEq;
+    } else {
+      return Precedence.comparison;
+    }
+  }
 
   /// Constructs a comparison from the [left] and [right] expressions to compare
   /// and the [ComparisonOperator] [op].
@@ -129,6 +228,9 @@ class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
   final Expression<DT, ST> inner;
 
   _UnaryMinus(this.inner);
+
+  @override
+  Precedence get precedence => Precedence.unary;
 
   @override
   void writeInto(GenerationContext context) {

@@ -6,6 +6,9 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   /// The Dart value that will be sent to the database
   final T value;
 
+  @override
+  final Precedence precedence = Precedence.primary;
+
   /// Constructs a new variable from the [value].
   const Variable(this.value);
 
@@ -64,6 +67,9 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
 class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
   /// Constructs a new constant (sql literal) holding the [value].
   const Constant(this.value);
+
+  @override
+  final Precedence precedence = Precedence.primary;
 
   /// The value that will be converted to an sql literal.
   final T value;

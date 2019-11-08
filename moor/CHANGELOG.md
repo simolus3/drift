@@ -8,6 +8,7 @@
 - Allow transactions inside a `beforeOpen` callback
 - New `batch` method on generated databases to execute multiple queries in a single batch
 - Experimental support to run moor on a background isolate
+- Reduce use of parentheses in SQL code generated at runtime
 
 ## 2.0.1
 

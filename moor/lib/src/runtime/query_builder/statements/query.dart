@@ -204,19 +204,23 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
         'UpdateStatement.write respectively. In that case, you need to use a '
         'custom where statement.');
 
-    final primaryKeys = table.$primaryKey.map((c) => c.$name);
+    final primaryKeyColumns = Map.fromEntries(table.$primaryKey.map((column) {
+      return MapEntry(column.$name, column);
+    }));
 
     final updatedFields = table.entityToSql(d.createCompanion(false));
-    // Extract values of the primary key as they are needed for the where clause
+    // Construct a map of [GeneratedColumn] to [Variable] where each column is
+    // a primary key and the associated value was extracted from d.
     final primaryKeyValues = Map.fromEntries(updatedFields.entries
-        .where((entry) => primaryKeys.contains(entry.key)));
+            .where((entry) => primaryKeyColumns.containsKey(entry.key)))
+        .map((columnName, value) {
+      return MapEntry(primaryKeyColumns[columnName], value);
+    });
 
     Expression<bool, BoolType> predicate;
     for (var entry in primaryKeyValues.entries) {
-      // custom expression that references the column
-      final columnExpression = CustomExpression(entry.key);
       final comparison =
-          _Comparison(columnExpression, _ComparisonOperator.equal, entry.value);
+          _Comparison(entry.key, _ComparisonOperator.equal, entry.value);
 
       if (predicate == null) {
         predicate = comparison;

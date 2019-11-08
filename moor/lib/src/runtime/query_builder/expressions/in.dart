@@ -20,11 +20,14 @@ class _InExpression<X extends SqlType<T>, T>
   final Iterable<T> _values;
   final bool _not;
 
+  @override
+  Precedence get precedence => Precedence.comparisonEq;
+
   _InExpression(this._expression, this._values, this._not);
 
   @override
   void writeInto(GenerationContext context) {
-    _expression.writeInto(context);
+    writeInner(context, _expression);
 
     if (_not) {
       context.buffer.write(' NOT');

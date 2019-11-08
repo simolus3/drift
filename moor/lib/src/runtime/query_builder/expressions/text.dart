@@ -25,14 +25,17 @@ class _LikeOperator extends Expression<bool, BoolType> {
   /// The regex-like expression to test the [target] against.
   final Expression<String, StringType> regex;
 
+  @override
+  final Precedence precedence = Precedence.comparisonEq;
+
   /// Perform a like operator with the target and the regex.
   _LikeOperator(this.target, this.regex);
 
   @override
   void writeInto(GenerationContext context) {
-    target.writeInto(context);
+    writeInner(context, target);
     context.buffer.write(' LIKE ');
-    regex.writeInto(context);
+    writeInner(context, regex);
   }
 }
 
@@ -65,13 +68,16 @@ class _CollateOperator extends Expression<String, StringType> {
   /// The [Collate] to use.
   final Collate collate;
 
+  @override
+  final Precedence precedence = Precedence.postfix;
+
   /// Constructs a collate expression on the [inner] expression and the
   /// [Collate].
   _CollateOperator(this.inner, this.collate);
 
   @override
   void writeInto(GenerationContext context) {
-    inner.writeInto(context);
+    writeInner(context, inner);
     context.buffer..write(' COLLATE ')..write(_operatorNames[collate]);
   }
 

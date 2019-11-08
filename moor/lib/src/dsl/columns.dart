@@ -2,7 +2,10 @@ part of 'dsl.dart';
 
 /// Base class for columns in sql. The [T] type refers to the type a value of
 /// this column will have in Dart, [S] is the mapping class from moor.
-abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
+abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {
+  @override
+  final Precedence precedence = Precedence.primary;
+}
 
 /// A column that stores int values.
 abstract class IntColumn extends Column<int, IntType> {}

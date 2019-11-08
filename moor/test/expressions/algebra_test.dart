@@ -10,11 +10,12 @@ void main() {
   final s2 = GeneratedTextColumn('s2', 'tbl', true);
 
   test('arithmetic test', () {
-    _expectSql(i1 + i2 * i1, '(i1) + ((i2) * (i1))');
+    _expectSql(i1 + i2 * i1, 'i1 + i2 * i1');
+    _expectSql((i1 + i2) * i1, '(i1 + i2) * i1');
   });
 
   test('string concatenation', () {
-    _expectSql(s1 + s2, '(s1) || (s2)');
+    _expectSql(s1 + s2, 's1 || s2');
   });
 }
 

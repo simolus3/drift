@@ -77,6 +77,10 @@ extension ComparableExpr<DT, ST extends ComparableType<DT>>
 class _BetweenExpression extends Expression<bool, BoolType> {
   final Expression target;
 
+  // https://www.sqlite.org/lang_expr.html#between
+  @override
+  final Precedence precedence = Precedence.comparisonEq;
+
   /// Whether to negate this between expression
   final bool not;
 
@@ -91,13 +95,13 @@ class _BetweenExpression extends Expression<bool, BoolType> {
 
   @override
   void writeInto(GenerationContext context) {
-    target.writeInto(context);
+    writeInner(context, target);
 
     if (not) context.buffer.write(' NOT');
     context.buffer.write(' BETWEEN ');
 
-    lower.writeInto(context);
+    writeInner(context, lower);
     context.buffer.write(' AND ');
-    higher.writeInto(context);
+    writeInner(context, higher);
   }
 }

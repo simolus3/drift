@@ -12,11 +12,14 @@ class _NullCheck extends Expression<bool, BoolType> {
   final Expression _inner;
   final bool _isNull;
 
+  @override
+  final Precedence precedence = Precedence.comparisonEq;
+
   _NullCheck(this._inner, this._isNull);
 
   @override
   void writeInto(GenerationContext context) {
-    _inner.writeInto(context);
+    writeInner(context, _inner);
 
     context.buffer.write(' IS ');
     if (!_isNull) {

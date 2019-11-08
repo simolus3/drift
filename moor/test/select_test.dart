@@ -70,7 +70,7 @@ void main() {
           .get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users WHERE (NOT name = ?) AND (id > ?);',
+          'SELECT * FROM users WHERE NOT (name = ?) AND id > ?;',
           ['Dash', 12]));
     });
 

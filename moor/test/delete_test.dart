@@ -32,14 +32,14 @@ void main() {
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE (NOT is_awesome) OR (id < ?);', [100]));
+          'DELETE FROM users WHERE NOT is_awesome OR id < ?;', [100]));
     });
 
     test('to delete an entity via a dataclasss', () async {
       await db.delete(db.sharedTodos).delete(SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
-          'DELETE FROM shared_todos WHERE (todo = ?) AND (user = ?);', [3, 2]));
+          'DELETE FROM shared_todos WHERE todo = ? AND user = ?;', [3, 2]));
     });
   });
 
