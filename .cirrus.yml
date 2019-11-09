@@ -1,6 +1,6 @@
 # Run tasks with the dart SDK installed by default
 container:
-  image: "google/dart:latest"
+  dockerfile: tool/Dockerfile
 
 # We're currently not running tests with coverage because the free cirrus containers run out of memory :(
 

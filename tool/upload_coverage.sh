@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 pushd extras/coverage_formatting
-pub upgrade
+pub upgrade --no-precompile
 popd
 
 dart extras/coverage_formatting/bin/coverage.dart
