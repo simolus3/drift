@@ -12,16 +12,6 @@ extension MonoidExpr<DT, ST extends Monoid<DT>> on Expression<DT, ST> {
   }
 }
 
-/// Defines the `+` operator as a concatenation for string expressions.
-extension StringMonoidExpr on Expression<String, StringType> {
-  /// Performs a string concatenation in sql by appending [other] to `this`.
-  Expression<String, StringType> operator +(
-      Expression<String, StringType> other) {
-    return _BaseInfixOperator(this, '||', other,
-        precedence: Precedence.stringConcatenation);
-  }
-}
-
 /// Defines the `-`, `*` and `/` operators on sql expressions that support it.
 extension ArithmeticExpr<DT, ST extends FullArithmetic<DT>>
     on Expression<DT, ST> {

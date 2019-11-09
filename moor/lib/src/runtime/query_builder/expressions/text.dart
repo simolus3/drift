@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Defines methods that operate on a column storing [String] values.
-extension StringExpressionOperators on Column<String, StringType> {
+extension StringExpressionOperators on Expression<String, StringType> {
   /// Whether this column matches the given pattern. For details on what patters
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
@@ -13,6 +13,41 @@ extension StringExpressionOperators on Column<String, StringType> {
   /// values.
   Expression<String, StringType> collate(Collate collate) {
     return _CollateOperator(this, collate);
+  }
+
+  /// Performs a string concatenation in sql by appending [other] to `this`.
+  Expression<String, StringType> operator +(
+      Expression<String, StringType> other) {
+    return _BaseInfixOperator(this, '||', other,
+        precedence: Precedence.stringConcatenation);
+  }
+
+  /// Calls the sqlite function `UPPER` on `this` string. Please note that, in
+  /// most sqlite installations, this only affects ascii chars.
+  ///
+  /// See also:
+  ///  - https://www.w3resource.com/sqlite/core-functions-upper.php
+  Expression<String, StringType> upper() {
+    return _FunctionCallExpression('UPPER', [this]);
+  }
+
+  /// Calls the sqlite function `LOWER` on `this` string. Please note that, in
+  /// most sqlite installations, this only affects ascii chars.
+  ///
+  /// See also:
+  ///  - https://www.w3resource.com/sqlite/core-functions-lower.php
+  Expression<String, StringType> lower() {
+    return _FunctionCallExpression('LOWER', [this]);
+  }
+
+  /// Calls the sqlite function `LENGTH` on `this` string, which counts the
+  /// number of characters in this string. Note that, in most sqlite
+  /// installations, [length] may not support all unicode rules.
+  ///
+  /// See also:
+  ///  - https://www.w3resource.com/sqlite/core-functions-length.php
+  Expression<int, IntType> get length {
+    return _FunctionCallExpression('LENGTH', [this]);
   }
 }
 

@@ -263,3 +263,30 @@ class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
     return inner.writeInto(context);
   }
 }
+
+class _FunctionCallExpression<R, S extends SqlType<R>>
+    extends Expression<R, S> {
+  final String functionName;
+  final List<Expression> arguments;
+
+  @override
+  final Precedence precedence = Precedence.primary;
+
+  _FunctionCallExpression(this.functionName, this.arguments);
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer..write(functionName)..write('(');
+
+    var first = true;
+    for (final arg in arguments) {
+      if (!first) {
+        context.buffer.write(', ');
+      }
+      arg.writeInto(context);
+      first = false;
+    }
+
+    context.buffer.write(')');
+  }
+}
