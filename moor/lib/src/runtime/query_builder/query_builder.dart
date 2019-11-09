@@ -3,7 +3,8 @@
 
 import 'package:meta/meta.dart';
 // hidden because of https://github.com/dart-lang/sdk/issues/39262
-import 'package:moor/moor.dart' hide BooleanExpressionOperators;
+import 'package:moor/moor.dart'
+    hide BooleanExpressionOperators, DateTimeExpressions;
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/types/sql_types.dart';

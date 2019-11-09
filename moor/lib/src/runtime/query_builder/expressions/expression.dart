@@ -26,6 +26,13 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
   Expression<bool, BoolType> equals(D compare) =>
       _Comparison.equal(this, Variable<D, T>(compare));
 
+  /// Casts this expression to an expression with [D] and [T] parameter without
+  /// changing what's written with [writeInto]. In particular, using [dartCast]
+  /// will __NOT__ generate a `CAST` expression in sql.
+  Expression<D2, T2> dartCast<D2, T2 extends SqlType<D2>>() {
+    return _CastExpression<D, D2, T, T2>(this);
+  }
+
   /// Writes this expression into the [GenerationContext], assuming that there's
   /// an outer expression with [precedence]. If the [Expression.precedence] of
   /// `this` expression is lower, it will be wrapped in
@@ -236,5 +243,23 @@ class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
   void writeInto(GenerationContext context) {
     context.buffer.write('-');
     inner.writeInto(context);
+  }
+}
+
+class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
+    extends Expression<D2, S2> {
+  final Expression<D1, S1> inner;
+
+  _CastExpression(this.inner);
+
+  @override
+  Precedence get precedence => inner.precedence;
+
+  @override
+  bool get isLiteral => inner.isLiteral;
+
+  @override
+  void writeInto(GenerationContext context) {
+    return inner.writeInto(context);
   }
 }
