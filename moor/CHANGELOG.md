@@ -9,6 +9,7 @@
 - New `batch` method on generated databases to execute multiple queries in a single batch
 - Experimental support to run moor on a background isolate
 - Reduce use of parentheses in SQL code generated at runtime
+- Query streams now emit errors that happened while running the query
 
 ## 2.0.1
 
