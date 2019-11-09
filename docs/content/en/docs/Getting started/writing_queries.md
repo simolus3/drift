@@ -42,7 +42,7 @@ stream using `watch()`.
 You can apply filters to a query by calling `where()`. The where method takes a function that
 should map the given table to an `Expression` of boolean. A common way to create such expression
 is by using `equals` on expressions. Integer columns can also be compared with `isBiggerThan`
-and `isSmallerThan`. You can compose expressions using `and(a, b), or(a, b)` and `not(a)`.
+and `isSmallerThan`. You can compose expressions using `a & b, a | b` and `a.not()`.
 ### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
 the amount of rows to return and an optional offset.

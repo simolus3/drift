@@ -1,7 +1,13 @@
 ## unreleased
 
 - New extension methods to simplify the Dart api!
-  - Use `&`, `or` and `.not()` to combine boolean expressions
+  - Use `&`, `or` and `.not()` to combine boolean expressions.
+    ```dart
+    // OLD
+    select(animals)..where((a) => and(not(a.isMammal), a.amountOfLegs.equals(4)))
+    // NEW:
+    select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4))
+    ```
   - Arithmetic: New `+`, `-`, `*` and `/` operators for int and double sql expressions
   - New `+` operator for string concatenation
 - Fix crash when `customStatement` is the first operation used on a database ([#199](https://github.com/simolus3/moor/issues/199))
@@ -10,6 +16,7 @@
 - Experimental support to run moor on a background isolate
 - Reduce use of parentheses in SQL code generated at runtime
 - Query streams now emit errors that happened while running the query
+- Upgraded the sql parser which now supports `WITH` clauses in moor files
 
 ## 2.0.1
 

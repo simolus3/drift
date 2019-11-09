@@ -43,11 +43,9 @@ Make sure that your project depends on moor 2.0 or later. Then
    set to true. Contrary to its name, that flag turns on the plugin system, so you
    don't need to worry about angular.
 2. Tell Dart Code to analyze moor files as well. Add this to your `settings.json`:
-   ```json
-   "dart.additionalAnalyzerFileExtensions": [
-        "moor"
-    ]
-    ```
+```json
+"dart.additionalAnalyzerFileExtensions": ["moor"]
+```
 3. Finally, close and reopen your IDE so that the analysis server is restarted. The analysis server will
    then load the moor plugin and start providing analysis results for `.moor` files. Loading the plugin
    can take some time (around a minute for the first time).

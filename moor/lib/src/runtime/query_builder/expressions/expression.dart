@@ -29,8 +29,22 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
   /// Casts this expression to an expression with [D] and [T] parameter without
   /// changing what's written with [writeInto]. In particular, using [dartCast]
   /// will __NOT__ generate a `CAST` expression in sql.
+  ///
+  /// This method is used internally by moor.
   Expression<D2, T2> dartCast<D2, T2 extends SqlType<D2>>() {
     return _CastExpression<D, D2, T, T2>(this);
+  }
+
+  /// An expression that is true if `this` resolves to any of the values in
+  /// [values].
+  Expression<bool, BoolType> isIn(Iterable<D> values) {
+    return _InExpression(this, values, false);
+  }
+
+  /// An expression that is true if `this` does not resolve to any of the values
+  /// in [values].
+  Expression<bool, BoolType> isNotIn(Iterable<D> values) {
+    return _InExpression(this, values, true);
   }
 
   /// Writes this expression into the [GenerationContext], assuming that there's

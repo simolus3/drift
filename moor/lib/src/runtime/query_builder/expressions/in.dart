@@ -2,14 +2,20 @@ part of '../query_builder.dart';
 
 /// An expression that is true if the given [expression] resolves to any of the
 /// values in [values].
+@Deprecated('Use Expression.isIn instead')
 Expression<bool, BoolType> isIn<X extends SqlType<T>, T>(
     Expression<T, X> expression, Iterable<T> values,
     {bool not = false}) {
-  return _InExpression(expression, values, not);
+  if (not == false) {
+    return expression.isNotIn(values);
+  } else {
+    return expression.isIn(values);
+  }
 }
 
 /// An expression that is true if the given [expression] does not resolve to any
 /// of the values in [values].
+@Deprecated('Use Expression.isNotIn instead')
 Expression<bool, BoolType> isNotIn<X extends SqlType<T>, T>(
         Expression<T, X> expression, Iterable<T> values) =>
     isIn(expression, values, not: true);
