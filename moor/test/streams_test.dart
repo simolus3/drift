@@ -141,6 +141,15 @@ void main() {
     verify(executor.runSelect(any, any)).called(2);
   });
 
+  test('stream emits error when loading the query throws', () {
+    final exception = Exception('stub');
+    when(executor.runSelect(any, any))
+        .thenAnswer((_) => Future.error(exception));
+
+    final result = db.customSelectQuery('select 1').watch().first;
+    expectLater(result, throwsA(exception));
+  });
+
   group('stream keys', () {
     final keyA = StreamKey('SELECT * FROM users;', [], User);
     final keyB = StreamKey('SELECT * FROM users;', [], User);

@@ -194,11 +194,18 @@ class QueryStream<T> {
     // Fetch data if it's needed, publish that data if it's possible.
     if (!_controller.hasListener) return;
 
-    final data = await _fetcher.fetchData();
-    _lastData = data;
+    T data;
 
-    if (!_controller.isClosed) {
-      _controller.add(data);
+    try {
+      data = await _fetcher.fetchData();
+      _lastData = data;
+      if (!_controller.isClosed) {
+        _controller.add(data);
+      }
+    } catch (e, s) {
+      if (!_controller.isClosed) {
+        _controller.addError(e, s);
+      }
     }
   }
 }
