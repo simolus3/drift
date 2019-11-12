@@ -29,6 +29,11 @@ class Category extends DataClass implements Insertable<Category> {
       description: serializer.fromJson<String>(json['description']),
     );
   }
+  factory Category.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      Category.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -204,6 +209,10 @@ class Recipe extends DataClass implements Insertable<Recipe> {
       category: serializer.fromJson<int>(json['category']),
     );
   }
+  factory Recipe.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      Recipe.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -438,6 +447,11 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
       caloriesPer100g: serializer.fromJson<int>(json['caloriesPer100g']),
     );
   }
+  factory Ingredient.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      Ingredient.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -644,6 +658,11 @@ class IngredientInRecipe extends DataClass
       amountInGrams: serializer.fromJson<int>(json['amountInGrams']),
     );
   }
+  factory IngredientInRecipe.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      IngredientInRecipe.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {

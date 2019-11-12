@@ -6,7 +6,7 @@ part of '../query_builder.dart';
 Expression<bool, BoolType> isIn<X extends SqlType<T>, T>(
     Expression<T, X> expression, Iterable<T> values,
     {bool not = false}) {
-  if (not == false) {
+  if (not == true) {
     return expression.isNotIn(values);
   } else {
     return expression.isIn(values);

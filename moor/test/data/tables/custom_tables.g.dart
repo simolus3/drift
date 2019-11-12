@@ -25,6 +25,10 @@ class NoId extends DataClass implements Insertable<NoId> {
       payload: serializer.fromJson<Uint8List>(json['payload']),
     );
   }
+  factory NoId.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -156,6 +160,11 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
       b: serializer.fromJson<int>(json['b']),
     );
   }
+  factory WithDefault.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      WithDefault.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -315,6 +324,11 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       c: serializer.fromJson<double>(json['c']),
     );
   }
+  factory WithConstraint.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      WithConstraint.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -499,6 +513,10 @@ class Config extends DataClass implements Insertable<Config> {
       configValue: serializer.fromJson<String>(json['config_value']),
     );
   }
+  factory Config.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -674,6 +692,11 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       somedate: serializer.fromJson<DateTime>(json['somedate']),
     );
   }
+  factory MytableData.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      MytableData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {

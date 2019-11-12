@@ -47,6 +47,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       category: serializer.fromJson<int>(json['category']),
     );
   }
+  factory TodoEntry.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      TodoEntry.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -318,6 +323,11 @@ class Category extends DataClass implements Insertable<Category> {
       description: serializer.fromJson<String>(json['description']),
     );
   }
+  factory Category.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      Category.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -497,6 +507,10 @@ class User extends DataClass implements Insertable<User> {
       creationTime: serializer.fromJson<DateTime>(json['creationTime']),
     );
   }
+  factory User.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      User.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -768,6 +782,11 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
       user: serializer.fromJson<int>(json['user']),
     );
   }
+  factory SharedTodo.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      SharedTodo.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -943,6 +962,11 @@ class TableWithoutPKData extends DataClass
       custom: serializer.fromJson<MyCustomObject>(json['custom']),
     );
   }
+  factory TableWithoutPKData.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      TableWithoutPKData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
@@ -1151,6 +1175,11 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       txt: serializer.fromJson<String>(json['txt']),
     );
   }
+  factory PureDefault.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      PureDefault.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {

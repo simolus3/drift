@@ -1,7 +1,7 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
-import '../data/tables/todos.dart';
+import '../data/utils/expect_generated.dart';
 
 void main() {
   final i1 = GeneratedIntColumn('i1', 'tbl', true);
@@ -10,18 +10,15 @@ void main() {
   final s2 = GeneratedTextColumn('s2', 'tbl', true);
 
   test('arithmetic test', () {
-    _expectSql(i1 + i2 * i1, 'i1 + i2 * i1');
-    _expectSql((i1 + i2) * i1, '(i1 + i2) * i1');
+    (i1 + i2 * i1).expectGenerates('i1 + i2 * i1');
+    (i1 + i2 * i1).expectGenerates('i1 + i2 * i1');
+    ((i1 + i2) * i1).expectGenerates('(i1 + i2) * i1');
+    (i1 - i2).expectGenerates('i1 - i2');
+    (i1 - -i2).expectGenerates('i1 - -i2');
+    (i1 / i2).expectGenerates('i1 / i2');
   });
 
   test('string concatenation', () {
-    _expectSql(s1 + s2, 's1 || s2');
+    (s1 + s2).expectGenerates('s1 || s2');
   });
-}
-
-void _expectSql(Expression e, String expected) {
-  final ctx = GenerationContext.fromDb(TodoDb(null));
-  e.writeInto(ctx);
-
-  expect(ctx.sql, expected);
 }
