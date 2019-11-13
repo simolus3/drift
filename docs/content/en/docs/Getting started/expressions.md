@@ -72,8 +72,8 @@ To obtain the current date or the current time as an expression, use the `curren
 and `currentDateAndTime` constants provided by moor.
 
 ## `IN` and `NOT IN`
-You can check whether an expression is in a list of values by using the `isIn` andd `isNotIn`
-method:
+You can check whether an expression is in a list of values by using the `isIn` and `isNotIn`
+methods:
 ```dart
 select(animals)..where((a) => a.amountOfLegs.isIn([3, 7, 4, 2]);
 ```

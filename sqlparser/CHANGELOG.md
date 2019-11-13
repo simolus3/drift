@@ -1,4 +1,4 @@
-## unreleased
+## 0.4.0
 - Support common table expressions
 - Handle special `rowid`, `oid`, `__rowid__` references
 - Support references to `sqlite_master` and `sqlite_sequence` tables

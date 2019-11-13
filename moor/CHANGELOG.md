@@ -1,4 +1,4 @@
-## unreleased
+## 2.1.0
 
 - New extension methods to simplify the Dart api!
   - Use `&`, `or` and `.not()` to combine boolean expressions.
@@ -17,6 +17,7 @@
 - Reduce use of parentheses in SQL code generated at runtime
 - Query streams now emit errors that happened while running the query
 - Upgraded the sql parser which now supports `WITH` clauses in moor files
+- Internal refactorings on the runtime query builder
 
 ## 2.0.1
 

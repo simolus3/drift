@@ -1,6 +1,6 @@
 ---
 title: Dart VM (Desktop support)
-description: Run moor on both mobile and desktops
+description: Run moor on both mobile and desktop
 ---
 
 ## Supported versions
@@ -67,5 +67,5 @@ DynamicLibrary _openOnLinux() {
    })
    ```
    __Important warning__: On Android, `FlutterQueryExecutor.inDatabaseFolder` may use a different folder than
-   `getApplicationDocumentsDirectory()` which can cause data loss.
+   `getApplicationDocumentsDirectory()` which can cause data loss when migrating.
    Please create an issue if you need guidance on this soon.

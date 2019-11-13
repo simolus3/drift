@@ -1,4 +1,4 @@
-## unreleased
+## 2.1.0
 
 - Accept inheritance in table definitions (e.g. if an abstract class declared as `IntColumn get foo => integer()()`,
   tables inheriting from that class will also have a `foo` column)
