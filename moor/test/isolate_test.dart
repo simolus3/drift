@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:moor/isolate.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/moor_ffi.dart';
@@ -6,17 +8,44 @@ import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 
 void main() {
+  // Using the MoorIsolate apis without actually running on a background isolate
+  // is pointless, but we can't collect coverage for background isolates:
+  // https://github.com/dart-lang/test/issues/1108
+  group('in same isolate', () {
+    MoorIsolate spawnInSame() {
+      return MoorIsolate.inCurrent(_backgroundConnection);
+    }
+
+    _runTests(spawnInSame, false);
+  });
+
+  group('in background isolate', () {
+    Future<MoorIsolate> spawnBackground() {
+      return MoorIsolate.spawn(_backgroundConnection);
+    }
+
+    _runTests(spawnBackground, true);
+  });
+}
+
+void _runTests(
+    FutureOr<MoorIsolate> Function() spawner, bool terminateIsolate) {
   MoorIsolate isolate;
   DatabaseConnection isolateConnection;
 
   setUp(() async {
-    isolate = await MoorIsolate.spawn(_backgroundConnection);
+    isolate = await spawner();
     isolateConnection = await isolate.connect(isolateDebugLog: false);
   });
 
   tearDown(() {
     isolateConnection.executor.close();
-    return isolate.shutdownAll();
+
+    if (terminateIsolate) {
+      return isolate.shutdownAll();
+    } else {
+      return Future.value();
+    }
   });
 
   test('can open database and send requests', () async {
