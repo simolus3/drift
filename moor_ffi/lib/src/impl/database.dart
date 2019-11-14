@@ -16,7 +16,8 @@ part 'prepared_statement.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
 
-class Database implements BaseDatabase {
+/// A opened sqlite database.
+class Database {
   final Pointer<types.Database> _db;
   final List<PreparedStatement> _preparedStmt = [];
   bool _isClosed = false;
@@ -56,7 +57,9 @@ class Database implements BaseDatabase {
     }
   }
 
-  @override
+  /// Closes this database connection and releases the resources it uses. If
+  /// an error occurs while closing the database, an exception will be thrown.
+  /// The allocated memory will be freed either way.
   void close() {
     // close all prepared statements first
     _isClosed = true;
@@ -84,7 +87,8 @@ class Database implements BaseDatabase {
     }
   }
 
-  @override
+  /// Executes the [sql] statement and ignores the result. Will throw if an
+  /// error occurs while executing.
   void execute(String sql) {
     _ensureOpen();
 
@@ -111,7 +115,7 @@ class Database implements BaseDatabase {
     }
   }
 
-  @override
+  /// Prepares the [sql] statement.
   PreparedStatement prepare(String sql) {
     _ensureOpen();
 
@@ -137,7 +141,7 @@ class Database implements BaseDatabase {
     return prepared;
   }
 
-  @override
+  /// Get the application defined version of this database.
   int userVersion() {
     final stmt = prepare('PRAGMA user_version');
     final result = stmt.select();
@@ -146,18 +150,19 @@ class Database implements BaseDatabase {
     return result.first.columnAt(0) as int;
   }
 
-  @override
+  /// Update the application defined version of this database.
   void setUserVersion(int version) {
     execute('PRAGMA user_version = $version');
   }
 
-  @override
+  /// Returns the amount of rows affected by the last INSERT, UPDATE or DELETE
+  /// statement.
   int getUpdatedRows() {
     _ensureOpen();
     return bindings.sqlite3_changes(_db);
   }
 
-  @override
+  /// Returns the row-id of the last inserted row.
   int getLastInsertId() {
     _ensureOpen();
     return bindings.sqlite3_last_insert_rowid(_db);
