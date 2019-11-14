@@ -115,9 +115,13 @@ class PreparedStatement {
 
           bindings.sqlite3_bind_text(_stmt, i, ptr, -1, nullptr);
         } else if (param is Uint8List) {
-          // todo we just have a null pointer param.isEmpty. I guess we have
-          // to use sqlite3_bind_zeroblob for that?
-          final ptr = CBlob.allocate(param);
+          // avoid binding a null-pointer, as sqlite would treat that as NULL
+          // in sql which is different from x''
+          final ptr = param.isNotEmpty
+              ? CBlob.allocate(param)
+              : CBlob.allocateString('');
+
+          assert(!ptr.isNullPointer);
           _allocatedWhileBinding.add(ptr);
 
           bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length, nullptr);

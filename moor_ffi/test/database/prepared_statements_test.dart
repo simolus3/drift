@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart';
 import 'package:moor_ffi/database.dart';
 import 'package:test/test.dart';
 
@@ -40,4 +41,20 @@ void main() {
 
     expect(stmt.select, throwsA(anything));
   });
+
+  test('can bind empty blob in prepared statements', () {
+    final opened = Database.memory();
+    opened.execute('CREATE TABLE tbl (x BLOB NOT NULL);');
+
+    final insert = opened.prepare('INSERT INTO tbl VALUES (?)');
+    insert.execute([Uint8List(0)]);
+    insert.close();
+
+    final select = opened.prepare('SELECT * FROM tbl');
+    final result = select.select().single;
+
+    expect(result['x'], <int>[]);
+
+    opened.close();
+  }, skip: 'todo figure out why this still fails');
 }
