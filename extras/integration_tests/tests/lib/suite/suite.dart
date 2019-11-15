@@ -14,6 +14,8 @@ abstract class TestExecutor {
 }
 
 void runAllTests(TestExecutor executor) {
+  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
   tearDown(() async {
     await executor.deleteData();
   });

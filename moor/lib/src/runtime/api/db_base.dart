@@ -1,5 +1,14 @@
 part of 'runtime_api.dart';
 
+/// Keep track of how many databases have been opened for a given database
+/// type.
+/// We get a number of error reports of "moor not generating tables" that have
+/// their origin in users opening multiple instances of their database. This
+/// can cause a race conditions when the second [GeneratedDatabase] is opening a
+/// underlying [DatabaseConnection] that is already opened but doesn't have the
+/// tables created.
+Map<Type, int> _openedDbCount = {};
+
 /// A base class for all generated databases.
 abstract class GeneratedDatabase extends DatabaseConnectionUser
     with QueryEngine {
@@ -33,12 +42,38 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       {StreamQueryStore streamStore})
       : super(types, executor, streamQueries: streamStore) {
     executor?.databaseInfo = this;
+    assert(_handleInstantiated());
   }
 
   /// Used by generated code to connect to a database that is already open.
   GeneratedDatabase.connect(DatabaseConnection connection)
       : super.fromConnection(connection) {
     connection?.executor?.databaseInfo = this;
+    assert(_handleInstantiated());
+  }
+
+  bool _handleInstantiated() {
+    if (!_openedDbCount.containsKey(runtimeType) ||
+        moorRuntimeOptions.dontWarnAboutMultipleDatabases) {
+      _openedDbCount[runtimeType] = 1;
+      return true;
+    }
+    final count = ++_openedDbCount[runtimeType];
+    if (count > 1) {
+      print(
+        'WARNING (moor): It looks like you\'ve created the database '
+        '$runtimeType multiple times. When these two databases use the same '
+        'QueryExecutor, race conditions will ocur and might corrupt the '
+        'database. \n'
+        'Try to follow the advice at https://moor.simonbinder.eu/faq/#using-the-database '
+        'or, if you know what you\'re doing, set moorRuntimeOptions.dontWarnAboutMultipleDatabases = true\n'
+        'Here is the stacktrace from when the database was opened a second '
+        'time:\n${StackTrace.current}\n'
+        'This warning will only appear on debug builds.',
+      );
+    }
+
+    return true;
   }
 
   /// Creates a [Migrator] with the provided query executor. Migrators generate
@@ -89,5 +124,6 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await executor.close();
+    _openedDbCount[runtimeType]--;
   }
 }

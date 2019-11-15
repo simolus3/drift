@@ -99,8 +99,12 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   },
 )
 class TodoDb extends _$TodoDb {
-  TodoDb(QueryExecutor e) : super(e);
-  TodoDb.connect(DatabaseConnection connection) : super.connect(connection);
+  TodoDb(QueryExecutor e) : super(e) {
+    moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  }
+  TodoDb.connect(DatabaseConnection connection) : super.connect(connection) {
+    moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy();

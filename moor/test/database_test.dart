@@ -32,6 +32,8 @@ class _FakeDb extends GeneratedDatabase {
 }
 
 void main() {
+  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
   test('status of OpeningDetails', () {
     expect(const OpeningDetails(null, 1).wasCreated, true);
     expect(const OpeningDetails(2, 4).wasCreated, false);
