@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:moor/backends.dart';
-import 'package:moor/src/runtime/database.dart';
+import 'package:moor/moor.dart' show GeneratedDatabase;
 import 'package:moor/src/utils/hash.dart';
 
 /// A query executor is responsible for executing statements on a database and

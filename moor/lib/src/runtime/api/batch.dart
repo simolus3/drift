@@ -1,4 +1,4 @@
-part of 'database.dart';
+part of 'runtime_api.dart';
 
 /// Contains operations to run queries in a batched mode. This can be much more
 /// efficient when running a lot of similar queries at the same time, making

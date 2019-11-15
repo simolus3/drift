@@ -14,7 +14,7 @@ export 'package:moor/src/runtime/executor/executor.dart';
 export 'package:moor/src/runtime/executor/transactions.dart';
 export 'package:moor/src/runtime/data_verification.dart';
 export 'package:moor/src/runtime/data_class.dart';
-export 'package:moor/src/runtime/database.dart';
+export 'package:moor/src/runtime/api/runtime_api.dart';
 export 'package:moor/src/runtime/types/sql_types.dart'
     hide ComparableType, Monoid, FullArithmetic;
 export 'package:moor/src/runtime/exceptions.dart';
