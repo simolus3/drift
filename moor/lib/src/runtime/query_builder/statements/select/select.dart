@@ -77,6 +77,10 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
     return statement;
   }
 
+  JoinedSelectStatement addColumns(List<Expression> expressions) {
+    return join(const [])..addColumns(expressions);
+  }
+
   /// Orders the result by the given clauses. The clauses coming first in the
   /// list have a higher priority, the later clauses are only considered if the
   /// first clause considers two rows to be equal.
@@ -116,9 +120,10 @@ String _beginOfSelect(bool distinct) {
 /// multiple entities.
 class TypedResult {
   /// Creates the result from the parsed table data.
-  TypedResult(this._parsedData, this.rawData);
+  TypedResult(this._parsedData, this.rawData, [this._parsedExpressions]);
 
   final Map<TableInfo, dynamic> _parsedData;
+  final Map<Expression, dynamic> _parsedExpressions;
 
   /// The raw data contained in this row.
   final QueryRow rawData;
@@ -126,5 +131,14 @@ class TypedResult {
   /// Reads all data that belongs to the given [table] from this row.
   D readTable<T extends Table, D extends DataClass>(TableInfo<T, D> table) {
     return _parsedData[table] as D;
+  }
+
+  /// Reads a single column from an [expr].
+  /// todo expand documentation
+  D read<D, T extends SqlType<D>>(Expression<D, T> expr) {
+    if (_parsedExpressions != null) {
+      return _parsedExpressions[expr] as D;
+    }
+    return null;
   }
 }

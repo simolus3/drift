@@ -73,6 +73,11 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
         "Expressions with unknown precedence shouldn't have inner expressions");
     inner.writeAroundPrecedence(ctx, precedence);
   }
+
+  /// Finds the runtime implementation of [T] in the provided [types].
+  SqlType<D> findType(SqlTypeSystem types) {
+    return types.forDartType<D>();
+  }
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid

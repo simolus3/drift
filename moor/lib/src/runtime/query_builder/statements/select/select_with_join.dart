@@ -1,21 +1,41 @@
 part of '../../query_builder.dart';
 
 /// A `SELECT` statement that operates on more than one table.
+// this is called JoinedSelectStatement for legacy reasons - we also use it
+// when custom expressions are used as result columns. Basically, it stores
+// queries that are more complex than SimpleSelectStatement
 class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult> {
-  /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
-  /// rows from the result set.
-  final bool distinct;
-
   /// Used internally by moor, users should use [SimpleSelectStatement.join]
   /// instead.
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
       [this.distinct = false])
-      : super(database, table);
+      : super(database, table) {
+    // use all columns across all tables as result column for this query
+    _selectedColumns ??=
+        _tables.expand((t) => t.$columns).cast<Expression>().toList();
+  }
 
+  /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
+  /// rows from the result set.
+  final bool distinct;
   final List<Join> _joins;
+
+  /// All columns that we're selecting from.
+  List<Expression> _selectedColumns;
+
+  /// The `AS` aliases generated for each column that isn't from a table.
+  ///
+  /// Each table column can be uniquely identified by its (potentially aliased)
+  /// table and its name. So a column named `id` in a table called `users` would
+  /// be written as `users.id AS "users.id"`. These columns will NOT be written
+  /// into this map.
+  ///
+  /// Other expressions used as columns will be included here. There just named
+  /// in increasing order, so something like `AS c3`.
+  final Map<Expression, String> _columnAliases = {};
 
   /// The tables this select statement reads from
   @visibleForOverriding
@@ -30,27 +50,22 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     ctx.hasMultipleTables = true;
     ctx.buffer..write(_beginOfSelect(distinct))..write(' ');
 
-    var isFirst = true;
-    for (var table in _tables) {
-      for (var column in table.$columns) {
-        if (!isFirst) {
-          ctx.buffer.write(', ');
-        }
-
-        // We run into problems when two tables have a column with the same name
-        // as we then wouldn't know which column is which. So, we create a
-        // column alias that matches what is expected by the mapping function
-        // in _getWithQuery by prefixing the table name.
-        // We might switch to parsing via the index of the column in a row in
-        // the future, but that's the solution for now.
-
-        column.writeInto(ctx);
-        ctx.buffer.write(' AS "');
-        column.writeInto(ctx, ignoreEscape: true);
-        ctx.buffer.write('"');
-
-        isFirst = false;
+    for (var i = 0; i < _selectedColumns.length; i++) {
+      if (i != 0) {
+        ctx.buffer.write(', ');
       }
+
+      final column = _selectedColumns[i];
+      String chosenAlias;
+      if (column is GeneratedColumn) {
+        chosenAlias = '${column.tableName}.${column.$name}';
+      } else {
+        chosenAlias = 'c$i';
+        _columnAliases[column] = chosenAlias;
+      }
+
+      column.writeInto(ctx);
+      ctx.buffer..write(' AS "')..write(chosenAlias)..write('"');
     }
 
     ctx.buffer.write(' FROM ${table.tableWithAlias}');
@@ -94,6 +109,18 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     orderByExpr = OrderBy(terms);
   }
 
+  /// Adds a custom expression to the query.
+  ///
+  /// The database will evaluate the [Expression] for each row found for this
+  /// query. The value of the expression can be extracted from the [TypedResult]
+  /// by passing it to [TypedResult.read].
+  ///
+  /// See also:
+  ///  - The docs on expressions: https://moor.simonbinder.eu/docs/getting-started/expressions/
+  void addColumns(Iterable<Expression> expressions) {
+    _selectedColumns.addAll(expressions);
+  }
+
   @override
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
@@ -131,19 +158,28 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     final tables = _tables;
 
     return results.map((row) {
-      final map = <TableInfo, dynamic>{};
+      final readTables = <TableInfo, dynamic>{};
+      final readColumns = <Expression, dynamic>{};
 
-      for (var table in tables) {
+      for (final table in tables) {
         final prefix = '${table.$tableName}.';
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-          map[table] = table.map(row, tablePrefix: table.$tableName);
+          readTables[table] = table.map(row, tablePrefix: table.$tableName);
         } else {
-          map[table] = null;
+          readTables[table] = null;
         }
       }
 
-      return TypedResult(map, QueryRow(row, database));
+      for (final aliasedColumn in _columnAliases.entries) {
+        final expr = aliasedColumn.key;
+        final value = row[aliasedColumn.value];
+
+        final type = expr.findType(ctx.typeSystem);
+        readColumns[expr] = type.mapFromDatabaseResponse(value);
+      }
+
+      return TypedResult(readTables, QueryRow(row, database), readColumns);
     }).toList();
   }
 

@@ -12,21 +12,26 @@ environment:
   sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  # todo it looks like we're not using any apis removed in 0.40.0, but I couldn't verify that (neither analyzer_plugin
-  # nor build supports 0.40.0 yet)
-  analyzer: '>=0.36.4 <0.40.0'
-  analyzer_plugin: '>=0.1.0 <0.3.0'
   collection: ^1.14.0
   recase: ^2.0.1
-  source_gen: ^0.9.4
-  source_span: ^1.5.5
-  build: ^1.1.0
-  logging: '>=0.11.0 <1.0.0'
-  build_config: '>=0.3.1 <1.0.0'
-  moor: ^2.0.1
   meta: ^1.1.0
   path: ^1.6.0
+  logging: '>=0.11.0 <1.0.0'
+
+  # Moor-specific analysis
+  moor: ^2.0.1
   sqlparser: ^0.4.0
+
+  # Dart analysis
+  analyzer: '>=0.36.4 <0.40.0'
+  analyzer_plugin: '>=0.1.0 <0.3.0'
+  source_span: ^1.5.5
+
+  # Build system
+  build: ^1.1.0
+  build_config: '>=0.3.1 <1.0.0'
+  source_gen: ^0.9.4
+
 dev_dependencies:
   test: ^1.6.0
   test_core: ^0.2.0

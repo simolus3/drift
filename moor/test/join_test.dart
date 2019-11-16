@@ -116,6 +116,31 @@ void main() {
         argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
   });
 
+  test('supports custom columns and results', () async {
+    final categories = db.alias(db.categories, 'c');
+    final descriptionLength = categories.description.length;
+
+    final query = db.select(categories).addColumns([descriptionLength]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'c.id': 3, 'c.desc': 'Description', 'c2': 11}
+      ];
+    });
+
+    final result = await query.getSingle();
+
+    verify(executor.runSelect(
+      'SELECT c.id AS "c.id", c.`desc` AS "c.desc", LENGTH(c.`desc`) AS "c2" '
+      'FROM categories c;',
+      [],
+    ));
+
+    expect(result.readTable(categories),
+        equals(Category(id: 3, description: 'Description')));
+    expect(result.read(descriptionLength), 11);
+  });
+
   test('injects custom error message when a table is used multiple times',
       () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));
