@@ -71,6 +71,8 @@ If an entry with the provided id exists, it will be sent to the stream. Otherwis
 more than one entry (which is impossible in this case), an error will be added
 instead.
 
+If you need more complex queries with joins or custom columns, see [this site]({{< relref "../Advanced Features/joins.md" >}}).
+
 ## Updates and deletes
 You can use the generated classes to update individual fields of any row:
 ```dart

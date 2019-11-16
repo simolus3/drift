@@ -1,3 +1,15 @@
+## unreleased
+
+- Support custom expressions from selects in the Dart API:
+  ```dart
+  final currentBalance = accounts.income - accounts.expenses;
+  select(accounts).addColumns([currentBalance]).map((row) {
+    Account account = row.readTable(accounts);
+    int balanceOfAccount = row.read(currentBalance);
+    return ...
+  }).get();
+  ```
+
 ## 2.1.0
 
 - New extension methods to simplify the Dart api!
