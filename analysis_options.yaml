@@ -77,6 +77,7 @@ linter:
     - unnecessary_getters_setters
     - unnecessary_lambdas
     - unnecessary_new
+    - unnecessary_const
     - unnecessary_null_aware_assignments
     - unnecessary_statements
     - unnecessary_this

@@ -36,36 +36,44 @@ DynamicLibrary _openOnLinux() {
 
 ## Migrating from moor_flutter to moor_ffi
 
-1. Adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
-   add both the `moor` and `moor_ffi` dependencies:
-   ```yaml
-   dependencies:
-     moor: ^2.0.0
-     moor_ffi: ^0.2.0
-   dev_dependencies:
-     moor_generator: ^2.0.0
-   ```
-   Note: If you were using `FlutterQueryExecutor.inDatabasesFolder`, you should also depend
-   on `path_provider`. For desktop support of that library, see [this readme](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/flutter_plugins).
-2. Adapt your imports:
+If you're not running into a limitation that forces you to use `moor_ffi`, be aware
+that staying on `moor_flutter` is a more stable solution at the moment.
+
+First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
+add both the `moor` and `moor_ffi` dependencies:
+```yaml
+dependencies:
+ moor: ^2.0.0
+ moor_ffi: ^0.2.0
+ sqflite: ^1.1.7 # Still used to obtain the database location
+dev_dependencies:
+ moor_generator: ^2.0.0
+```
+
+Adapt your imports:
+
   - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
     with `package:moor_ffi/moor_ffi.dart`.
   - In all other files where you might have import `moor_flutter`, just import `package:moor/moor.dart`.
-3. Replace the executor. This code:
-   ```dart
-   FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite')
-   ```
-   can now be written as
-   ```dart
-   import 'package:path_provider/path_provider.dart';
-   import 'package:path/path.dart' as p;
+  
+Replace the executor. This code:
+```dart
+FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite')
+```
+can now be written as
+```dart
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:path/path.dart' as p;
 
-   LazyDatabase(() async {
-       final dbFolder = await getApplicationDocumentsDirectory();
-       final file = File(j.join(dbFolder.path, 'db.sqlite'));
-       return VmDatabase(file);
-   })
-   ```
-   __Important warning__: On Android, `FlutterQueryExecutor.inDatabaseFolder` may use a different folder than
-   `getApplicationDocumentsDirectory()` which can cause data loss when migrating.
-   Please create an issue if you need guidance on this soon.
+LazyDatabase(() async {
+   final dbFolder = await getDatabasesPath();
+   final file = File(j.join(dbFolder, 'db.sqlite'));
+   return VmDatabase(file);
+})
+```
+
+Note: If you haven't shipped a version with `moor_flutter` to your users yet, you can drop the dependency
+on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/flutter_plugins).
+Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
+`path_provider` on Android. This can cause data loss if you've already shipped a version using
+`moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.

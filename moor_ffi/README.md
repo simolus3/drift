@@ -1,17 +1,9 @@
 # moor_ffi
 
-Experimental Dart bindings to sqlite by using `dart:ffi`. This library contains utils to make
+Dart bindings to sqlite by using `dart:ffi`. This library contains utils to make
 integration with [moor](https://pub.dev/packages/moor) easier, but it can also be used
 as a standalone package. It also doesn't depend on Flutter, so it can be used on Dart VM
 applications as well.
-
-## Warnings
-At the moment, `dart:ffi` is in preview and there will be breaking changes that this
-library has to adapt to. This library has been tested on Dart `2.5.0`.
-If you're using a development Dart version (this can include any Flutter channels that
-are not `stable`), this library might not work.
-
-Also, please don't use this library on production apps yet.
 
 ## Supported platforms
 You can make this library work on any platform that lets you obtain a `DynamicLibrary`
@@ -24,7 +16,7 @@ Out of the box, this library supports all platforms where `sqlite3` is installed
 - Windows: Additional setup is required
 - Android: Yes when used with Flutter
 
-This library works with and without Flutter. 
+Unless explicitly noted, this library works with and without Flutter. 
 If you're using Flutter, this library will bundle `sqlite3` in your Android app. This 
 requires the Android NDK to be installed (You can get the NDK in the [SDK Manager](https://developer.android.com/studio/intro/update.html#sdk-manager)
 of Android Studio). Note that the first `flutter run` is going to take a very long time as
@@ -73,27 +65,39 @@ void main() {
 }
 ```
 
-You can also use an asynchronous API on a background isolate by using `IsolateDb.openFile`
-or `IsolateDb.openMemory`, respectively. Be aware that the asynchronous API is much slower,
-but it moves work out of the UI isolate.
-
 Be sure to __always__ call `Database.close` to avoid memory leaks!
 
 ## Using with moor
-Add both `moor` and `moor_ffi` to your pubspec, the `moor_flutter` dependency can be dropped.
+If you're migrating an existing project using `moor_flutter`, see the 
+[documentation](https://moor.simonbinder.eu/docs/other-engines/vm/#migrating-from-moor-flutter-to-moor-ffi).
 
+Add both `moor` and `moor_ffi` to your pubspec:
 ```yaml
 dependencies:
-  moor: ^1.7.0
-  moor_ffi: ^0.0.1
+  moor: ^2.0.0
+  moor_ffi: ^0.2.0
 dev_dependencies:
-  moor_generator: ^1.7.0
+  moor_generator: ^2.0.0
 ```
 
-In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
-with both `package:moor/moor.dart` and `package:moor_ffi/moor_ffi.dart`.
-In all other project files that use moor apis (e.g. a `Value` class for companions), just import `package:moor/moor.dart`.
+You can then use a `VmDatabase` as an executor:
+```dart
+@UseMoor(...)
+class MyDatabase extends _$MyDatabase {
 
-Finally, replace usages of `FlutterQueryExecutor` with `VmDatabase`.
+  MyDatabase(): super(VmDatabase(File('app.db')));
+}
+```
+If you need to find an appropriate directory for the database file, you can use the `LazyDatabase` wrapper
+from moor. It can be used to create the inner `VmDatabase` asynchronously:
+```dart
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
-Note that, at the moment, there is no direct counterpart for `FlutterQueryExecutor.inDatabasePath`.
+// use this instead of VmDatabase(...)
+LazyDatabase(() async {
+  final dbFolder = await getApplicationDocumentsDirectory();
+  final file = File(p.join(dbFolder.path, 'app.db'));
+  return VmDatabase(file);
+});
+```

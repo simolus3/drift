@@ -14,14 +14,14 @@ const _comparisonOperators = [
   TokenType.more,
   TokenType.moreEqual,
 ];
-const _binaryOperators = const [
+const _binaryOperators = [
   TokenType.shiftLeft,
   TokenType.shiftRight,
   TokenType.ampersand,
   TokenType.pipe,
 ];
 
-final _startOperators = const [
+const _startOperators = [
   TokenType.natural,
   TokenType.left,
   TokenType.inner,

@@ -13,8 +13,6 @@ even have a builtin IDE for SQL!
 - __📦 Modular__: Thanks to builtin support for daos and `import`s in sql files, moor helps you keep your database code simple.
 - __🛡️ Safe__: Moor generates typesafe code based on your tables and queries. If you make a mistake in your queries, moor will find it at compile time and
 provide helpful and descriptive lints.
-- __⚡ Fast__: Even though moor lets you write powerful queries, it can keep
-up with the performance of key-value stores like shared preferences and Hive. Moor is the only major persistence library with builtin threading support, allowing you to run database code across isolates with zero additional effort.
 - __Reactive__: Turn any sql query into an auto-updating stream! This includes complex queries across many tables
 - __⚙️ Cross-Platform support__: Moor works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/appleeducate/moor_shared) is a Flutter todo app that works on all platforms
 - __🗡️ Battle tested and production ready__: Moor is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.

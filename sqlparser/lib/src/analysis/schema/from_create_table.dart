@@ -62,8 +62,7 @@ class SchemaFromCreateTable {
         return const ResolvedType.bool();
       }
       if (upper.contains('DATE')) {
-        return const ResolvedType(
-            type: BasicType.int, hint: const IsDateTime());
+        return const ResolvedType(type: BasicType.int, hint: IsDateTime());
       }
     }
 

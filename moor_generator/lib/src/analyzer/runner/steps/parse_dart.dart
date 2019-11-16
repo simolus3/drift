@@ -7,9 +7,9 @@ part of '../steps.dart';
 ///
 /// Notably, this step does not analyze defined queries.
 class ParseDartStep extends Step {
-  static const _tableTypeChecker = const TypeChecker.fromRuntime(Table);
-  static const _useMoorChecker = const TypeChecker.fromRuntime(UseMoor);
-  static const _useDaoChecker = const TypeChecker.fromRuntime(UseDao);
+  static const _tableTypeChecker = TypeChecker.fromRuntime(Table);
+  static const _useMoorChecker = TypeChecker.fromRuntime(UseMoor);
+  static const _useDaoChecker = TypeChecker.fromRuntime(UseDao);
 
   final LibraryElement library;
 
