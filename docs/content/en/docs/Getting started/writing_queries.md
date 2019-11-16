@@ -59,7 +59,7 @@ You can also reverse the order by setting the `mode` property of the `OrderingTe
 `OrderingMode.desc`.
 
 ### Single values
-If you now a query is never going to return more than one row, wrapping the result in a `List`
+If you know a query is never going to return more than one row, wrapping the result in a `List`
 can be tedious. Moor lets you work around that with `getSingle` and `watchSingle`:
 ```dart
 Stream<TodoEntry> entryById(int id) {
