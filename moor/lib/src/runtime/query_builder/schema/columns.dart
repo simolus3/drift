@@ -101,6 +101,18 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   bool get isRequired {
     return !$nullable && defaultValue == null;
   }
+
+  @override
+  int get hashCode => $mrjf($mrjc(tableName.hashCode, $name.hashCode));
+
+  @override
+  bool operator ==(other) {
+    if (other.runtimeType != runtimeType) return false;
+
+    // ignore: test_types_in_equals
+    final typedOther = other as GeneratedColumn;
+    return typedOther.tableName == tableName && typedOther.$name == $name;
+  }
 }
 
 /// Implementation for [TextColumn].

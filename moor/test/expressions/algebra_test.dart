@@ -1,6 +1,7 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
+import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
@@ -16,6 +17,9 @@ void main() {
     (i1 - i2).expectGenerates('i1 - i2');
     (i1 - -i2).expectGenerates('i1 - -i2');
     (i1 / i2).expectGenerates('i1 / i2');
+
+    expectEquals(i1 + i2, i1 + i2);
+    expectNotEquals(i1 + i2, i2 + i1);
   });
 
   test('string concatenation', () {

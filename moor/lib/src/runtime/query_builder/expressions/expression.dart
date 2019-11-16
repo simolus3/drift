@@ -1,5 +1,7 @@
 part of '../query_builder.dart';
 
+const _equality = ListEquality();
+
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
@@ -38,13 +40,13 @@ abstract class Expression<D, T extends SqlType<D>> implements Component {
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
   Expression<bool, BoolType> isIn(Iterable<D> values) {
-    return _InExpression(this, values, false);
+    return _InExpression(this, values.toList(), false);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
   Expression<bool, BoolType> isNotIn(Iterable<D> values) {
-    return _InExpression(this, values, true);
+    return _InExpression(this, values.toList(), true);
   }
 
   /// Writes this expression into the [GenerationContext], assuming that there's
@@ -175,6 +177,18 @@ abstract class _InfixOperator<D, T extends SqlType<D>>
     context.writeWhitespace();
     writeInner(context, right);
   }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(left.hashCode, $mrjc(right.hashCode, operator.hashCode)));
+
+  @override
+  bool operator ==(other) {
+    return other is _InfixOperator &&
+        other.left == left &&
+        other.right == right &&
+        other.operator == operator;
+  }
 }
 
 class _BaseInfixOperator<D, T extends SqlType<D>> extends _InfixOperator<D, T> {
@@ -263,6 +277,14 @@ class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
     context.buffer.write('-');
     inner.writeInto(context);
   }
+
+  @override
+  int get hashCode => inner.hashCode * 5;
+
+  @override
+  bool operator ==(other) {
+    return other is _UnaryMinus && other.inner == inner;
+  }
 }
 
 class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
@@ -280,6 +302,14 @@ class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
   @override
   void writeInto(GenerationContext context) {
     return inner.writeInto(context);
+  }
+
+  @override
+  int get hashCode => inner.hashCode * 7;
+
+  @override
+  bool operator ==(other) {
+    return other is _CastExpression && other.inner == inner;
   }
 }
 
@@ -307,5 +337,16 @@ class _FunctionCallExpression<R, S extends SqlType<R>>
     }
 
     context.buffer.write(')');
+  }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(functionName.hashCode, _equality.hash(arguments)));
+
+  @override
+  bool operator ==(other) {
+    return other is _FunctionCallExpression &&
+        other.functionName == functionName &&
+        _equality.equals(other.arguments, arguments);
   }
 }

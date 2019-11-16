@@ -72,6 +72,16 @@ class _LikeOperator extends Expression<bool, BoolType> {
     context.buffer.write(' LIKE ');
     writeInner(context, regex);
   }
+
+  @override
+  int get hashCode => $mrjf($mrjc(target.hashCode, regex.hashCode));
+
+  @override
+  bool operator ==(other) {
+    return other is _LikeOperator &&
+        other.target == target &&
+        other.regex == regex;
+  }
 }
 
 /// Builtin collating functions from sqlite.
@@ -114,6 +124,16 @@ class _CollateOperator extends Expression<String, StringType> {
   void writeInto(GenerationContext context) {
     writeInner(context, inner);
     context.buffer..write(' COLLATE ')..write(_operatorNames[collate]);
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(inner.hashCode, collate.hashCode));
+
+  @override
+  bool operator ==(other) {
+    return other is _CollateOperator &&
+        other.inner == inner &&
+        other.collate == collate;
   }
 
   static const Map<Collate, String> _operatorNames = {

@@ -1,6 +1,8 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
+import '../data/utils/expect_equality.dart';
+
 // ignore_for_file: deprecated_member_use_from_same_package
 
 typedef Expression<int, IntType> _Extractor(
@@ -26,6 +28,8 @@ void main() {
         key(column).writeInto(ctx);
 
         expect(ctx.sql, value);
+
+        expectEquals(key(column), key(column));
       });
     });
   });

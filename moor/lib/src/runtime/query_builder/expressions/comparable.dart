@@ -104,4 +104,17 @@ class _BetweenExpression extends Expression<bool, BoolType> {
     context.buffer.write(' AND ');
     writeInner(context, higher);
   }
+
+  @override
+  int get hashCode => $mrjf($mrjc(target.hashCode,
+      $mrjc(lower.hashCode, $mrjc(higher.hashCode, not.hashCode))));
+
+  @override
+  bool operator ==(other) {
+    return other is _BetweenExpression &&
+        other.target == target &&
+        other.not == not &&
+        other.lower == lower &&
+        other.higher == higher;
+  }
 }

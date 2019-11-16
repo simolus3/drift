@@ -103,4 +103,14 @@ class _StrftimeSingleFieldExpression extends Expression<int, IntType> {
     date.writeInto(context);
     context.buffer.write(', "unixepoch") AS INTEGER)');
   }
+
+  @override
+  int get hashCode => $mrjf($mrjc(format.hashCode, date.hashCode));
+
+  @override
+  bool operator ==(other) {
+    return other is _StrftimeSingleFieldExpression &&
+        other.format == format &&
+        other.date == date;
+  }
 }

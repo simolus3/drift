@@ -6,6 +6,9 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   /// The Dart value that will be sent to the database
   final T value;
 
+  // note that we keep the identity hash/equals here because each variable would
+  // get its own index in sqlite and is thus different.
+
   @override
   final Precedence precedence = Precedence.primary;
 
@@ -81,5 +84,15 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
   void writeInto(GenerationContext context) {
     final type = context.typeSystem.forDartType<T>();
     context.buffer.write(type.mapToSqlConstant(value));
+  }
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other.runtimeType == runtimeType &&
+        // ignore: test_types_in_equals
+        (other as Constant<T, S>).value == value;
   }
 }

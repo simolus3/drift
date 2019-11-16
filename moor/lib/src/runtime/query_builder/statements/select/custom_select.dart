@@ -73,6 +73,11 @@ class CustomSelectStatement with Selectable<QueryRow> {
 /// For custom select statements, represents a row in the result set.
 class QueryRow {
   /// The raw data in this row.
+  ///
+  /// Note that the values in this map aren't mapped to Dart yet. For instance,
+  /// a [DateTime] would be stored as an [int] in [data] because that's the way
+  /// it's stored in the database. To read a value, use any of the [read]
+  /// methods.
   final Map<String, dynamic> data;
   final QueryEngine _db;
 

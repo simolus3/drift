@@ -109,14 +109,25 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     orderByExpr = OrderBy(terms);
   }
 
+  /// {@template moor_select_addColumns}
   /// Adds a custom expression to the query.
   ///
   /// The database will evaluate the [Expression] for each row found for this
   /// query. The value of the expression can be extracted from the [TypedResult]
   /// by passing it to [TypedResult.read].
   ///
+  /// As an example, we could calculate the length of a column on the database:
+  /// ```dart
+  /// final contentLength = todos.content.length;
+  /// final results = await select(todos).addColumns([contentLength]).get();
+  ///
+  /// // we can now read the result of a column added to addColumns
+  /// final lengthOfFirst = results.first.read(contentLength);
+  /// ```
+  ///
   /// See also:
   ///  - The docs on expressions: https://moor.simonbinder.eu/docs/getting-started/expressions/
+  /// {@endtemplate}
   void addColumns(Iterable<Expression> expressions) {
     _selectedColumns.addAll(expressions);
   }

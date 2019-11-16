@@ -3,6 +3,7 @@ import 'package:moor/moor.dart' as moor;
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../data/utils/expect_equality.dart';
 
 void main() {
   final innerExpression = GeneratedTextColumn('name', null, true);
@@ -23,5 +24,7 @@ void main() {
     expr.writeInto(context);
 
     expect(context.sql, 'name IS NOT NULL');
+
+    expectEquals(expr, moor.isNotNull(innerExpression));
   });
 }

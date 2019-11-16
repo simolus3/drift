@@ -55,4 +55,12 @@ class _NotExpression extends Expression<bool, BoolType> {
     context.buffer.write('NOT ');
     writeInner(context, inner);
   }
+
+  @override
+  int get hashCode => inner.hashCode << 1;
+
+  @override
+  bool operator ==(other) {
+    return other is _NotExpression && other.inner == inner;
+  }
 }

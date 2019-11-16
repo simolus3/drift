@@ -15,7 +15,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// also contains auto-increment integers, which are primary key by default.
   Set<GeneratedColumn> get $primaryKey => null;
 
-  // ensure the primaryKey getter is consistent with $primarKey, which can
+  // ensure the primaryKey getter is consistent with $primaryKey, which can
   // contain additional columns.
   @override
   Set<Column> get primaryKey => $primaryKey;

@@ -1,6 +1,7 @@
 // Mega compilation unit that includes all Dart apis related to generating SQL
 // at runtime.
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 // hidden because of https://github.com/dart-lang/sdk/issues/39262
 import 'package:moor/moor.dart'

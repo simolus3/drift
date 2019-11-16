@@ -2,6 +2,7 @@ import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../data/utils/expect_equality.dart';
 
 void main() {
   final expression = GeneratedIntColumn('col', null, false);
@@ -31,6 +32,8 @@ void main() {
         fn(compare).writeInto(ctx);
 
         expect(ctx.sql, 'col $value compare');
+
+        expectEquals(fn(compare), fn(compare));
       });
     });
   });

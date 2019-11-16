@@ -77,6 +77,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
     return statement;
   }
 
+  /// {@macro moor_select_addColumns}
   JoinedSelectStatement addColumns(List<Expression> expressions) {
     return join(const [])..addColumns(expressions);
   }
@@ -133,8 +134,10 @@ class TypedResult {
     return _parsedData[table] as D;
   }
 
-  /// Reads a single column from an [expr].
-  /// todo expand documentation
+  /// Reads a single column from an [expr]. The expression must have been added
+  /// as a column, for instance via [JoinedSelectStatement.addColumns].
+  ///
+  /// To access the underlying columns directly, use
   D read<D, T extends SqlType<D>>(Expression<D, T> expr) {
     if (_parsedExpressions != null) {
       return _parsedExpressions[expr] as D;

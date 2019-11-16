@@ -16,4 +16,14 @@ class CustomExpression<D, S extends SqlType<D>> extends Expression<D, S> {
 
   @override
   void writeInto(GenerationContext context) => context.buffer.write(content);
+
+  @override
+  int get hashCode => content.hashCode * 3;
+
+  @override
+  bool operator ==(other) {
+    return other.runtimeType == runtimeType &&
+        // ignore: test_types_in_equals
+        (other as CustomExpression).content == content;
+  }
 }

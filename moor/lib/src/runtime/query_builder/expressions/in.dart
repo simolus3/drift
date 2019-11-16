@@ -23,7 +23,7 @@ Expression<bool, BoolType> isNotIn<X extends SqlType<T>, T>(
 class _InExpression<X extends SqlType<T>, T>
     extends Expression<bool, BoolType> {
   final Expression<T, X> _expression;
-  final Iterable<T> _values;
+  final List<T> _values;
   final bool _not;
 
   @override
@@ -56,5 +56,17 @@ class _InExpression<X extends SqlType<T>, T>
     }
 
     context.buffer.write(')');
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(
+      _expression.hashCode, $mrjc(_equality.hash(_values), _not.hashCode)));
+
+  @override
+  bool operator ==(other) {
+    return other is _InExpression &&
+        other._expression == _expression &&
+        other._values == _values &&
+        other._not == _not;
   }
 }

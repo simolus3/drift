@@ -30,4 +30,14 @@ class _NullCheck extends Expression<bool, BoolType> {
     }
     context.buffer.write('NULL');
   }
+
+  @override
+  int get hashCode => $mrjf($mrjc(_inner.hashCode, _isNull.hashCode));
+
+  @override
+  bool operator ==(other) {
+    return other is _NullCheck &&
+        other._inner == _inner &&
+        other._isNull == _isNull;
+  }
 }
