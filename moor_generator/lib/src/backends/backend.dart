@@ -1,5 +1,5 @@
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 
@@ -27,8 +27,12 @@ abstract class BackendTask {
   Logger get log;
 
   Future<LibraryElement> resolveDart(Uri uri);
-  Future<CompilationUnit> parseSource(String dart);
+
   Future<String> readMoor(Uri uri);
+
+  Future<DartType> resolveTypeOf(Uri context, String dartExpression) {
+    throw UnsupportedError('Resolving dart expressions not supported');
+  }
 
   /// Checks whether a file at [uri] exists.
   Future<bool> exists(Uri uri);

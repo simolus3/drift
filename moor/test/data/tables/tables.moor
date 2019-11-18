@@ -1,3 +1,5 @@
+import 'converter.dart';
+
 CREATE TABLE no_ids (
     payload BLOB NOT NULL
 ) WITHOUT ROWID;
@@ -17,7 +19,8 @@ CREATE TABLE with_constraints (
 
 create table config (
     config_key TEXT not null primary key,
-    config_value TEXT
+    config_value TEXT,
+    sync_state INTEGER MAPPED BY `const SyncTypeConverter()`
 ) AS "Config";
 
 CREATE TABLE mytable (

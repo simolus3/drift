@@ -174,7 +174,7 @@ class ColumnParser {
     UsedTypeConverter converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
-          expression: createdTypeConverter,
+          expression: createdTypeConverter.toSource(),
           mappedType: typeConverterRuntime,
           sqlType: columnType);
     }

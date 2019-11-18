@@ -7,7 +7,6 @@ import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/moor/table_handler.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/analyzer/moor/inline_dart_resolver.dart';
 import 'package:moor_generator/src/analyzer/moor/parser.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/sql_parser.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
@@ -66,11 +65,6 @@ class _TestBackendTask extends BackendTask {
   Future<LibraryElement> resolveDart(Uri path) async {
     await backend._ready;
     return await backend._resolver.libraryFor(AssetId.resolve(path.toString()));
-  }
-
-  @override
-  Future<CompilationUnit> parseSource(String dart) {
-    return null;
   }
 
   @override

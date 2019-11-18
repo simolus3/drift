@@ -1,8 +1,22 @@
 builders:
+  preparing_builder:
+    import: "package:moor_generator/moor_generator.dart"
+    builder_factories: ["preparingBuilder"]
+    build_extensions: {".moor": [".temp.dart", ".dart_in_moor"]}
+    build_to: cache
+    auto_apply: dependents
+    applies_builders: ["moor_generator|moor_cleanup"]
+
   moor_generator:
     import: "package:moor_generator/moor_generator.dart"
     builder_factories: ["moorBuilder"]
     build_extensions: {".dart": [".moor.g.part"]}
     auto_apply: dependents
     build_to: cache
+    required_inputs: [".dart_in_moor"]
     applies_builders: ["source_gen|combining_builder"]
+
+post_process_builders:
+  moor_cleanup:
+    import: "package:moor_generator/moor_generator.dart"
+    builder_factory: "moorCleanup"

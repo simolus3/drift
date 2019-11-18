@@ -86,11 +86,22 @@ class SpecifiedTable {
       this.overrideWithoutRowId,
       this.overrideTableConstraints,
       this.overrideDontWriteConstraints})
-      : _overriddenName = overriddenName;
+      : _overriddenName = overriddenName {
+    _attachToConverters();
+  }
 
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
+
+  void _attachToConverters() {
+    var index = 0;
+    for (var converter in converters) {
+      converter
+        ..index = index++
+        ..table = this;
+    }
+  }
 
   String get displayName {
     if (isFromSql) {

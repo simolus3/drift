@@ -21,13 +21,6 @@ class TableParser {
     );
     table.declaration = TableDeclaration(table, base.step.file, element, null);
 
-    var index = 0;
-    for (var converter in table.converters) {
-      converter
-        ..index = index++
-        ..table = table;
-    }
-
     return table;
   }
 

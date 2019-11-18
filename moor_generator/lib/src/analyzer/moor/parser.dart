@@ -11,7 +11,7 @@ class MoorParser {
 
   MoorParser(this.step);
 
-  Future<ParsedMoorFile> parseAndAnalyze() {
+  Future<ParsedMoorFile> parseAndAnalyze() async {
     final result =
         SqlEngine(useMoorExtensions: true).parseMoorFile(step.content);
     final parsedFile = result.rootNode as MoorFile;
@@ -23,7 +23,6 @@ class MoorParser {
     for (var parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
-        step.inlineDartResolver.importStatements.add(importStmt.importedFile);
         importStatements.add(importStmt);
       } else if (parsedStmt is CreateTableStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
@@ -43,7 +42,7 @@ class MoorParser {
     final createdTables = <SpecifiedTable>[];
     final tableDeclarations = <CreateTableStatement, SpecifiedTable>{};
     for (var reader in createdReaders) {
-      final table = reader.extractTable(step.mapper);
+      final table = await reader.extractTable(step.mapper);
       createdTables.add(table);
       tableDeclarations[reader.stmt] = table;
     }
@@ -59,6 +58,6 @@ class MoorParser {
       decl.file = analyzedFile;
     }
 
-    return Future.value(analyzedFile);
+    return analyzedFile;
   }
 }

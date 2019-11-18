@@ -75,8 +75,8 @@ class TableWriter {
 
   void _writeConvertersAsStaticFields() {
     for (var converter in table.converters) {
-      final typeName = converter.typeOfConverter.displayName;
-      final code = converter.expression.toSource();
+      final typeName = converter.displayNameOfConverter;
+      final code = converter.expression;
       _buffer..write('static $typeName ${converter.fieldName} = $code;');
     }
   }

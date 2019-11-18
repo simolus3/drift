@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
@@ -12,11 +13,11 @@ import 'package:sqlparser/sqlparser.dart';
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
   final CreateTableStatement stmt;
-  final Step step;
+  final ParseMoorStep step;
 
   CreateTableReader(this.stmt, this.step);
 
-  SpecifiedTable extractTable(TypeMapper mapper) {
+  Future<SpecifiedTable> extractTable(TypeMapper mapper) async {
     final table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
 
     final foundColumns = <String, SpecifiedColumn>{};
@@ -50,8 +51,9 @@ class CreateTableReader {
         }
 
         if (constraint is MappedBy) {
-          converter = _readTypeConverter(constraint);
-          // don't write MAPPED BY constraints when creating the table
+          converter = await _readTypeConverter(moorType, constraint);
+          // don't write MAPPED BY constraints when creating the table, they're
+          // a convenience feature by the compiler
           continue;
         }
         if (constraint is JsonKey) {
@@ -121,8 +123,21 @@ class CreateTableReader {
           TableDeclaration(specifiedTable, step.file, null, table.definition);
   }
 
-  UsedTypeConverter _readTypeConverter(MappedBy mapper) {
-    // todo we need to somehow parse the dart expression and check types
-    return null;
+  Future<UsedTypeConverter> _readTypeConverter(
+      ColumnType sqlType, MappedBy mapper) async {
+    final code = mapper.mapper.dartCode;
+    final type = await step.task.backend.resolveTypeOf(step.file.uri, code);
+
+    // todo report lint for any of those cases or when resolveTypeOf throws
+    if (type is! InterfaceType) {
+      return null;
+    }
+
+    final interfaceType = type as InterfaceType;
+    // TypeConverter declares a "D mapToDart(S fromDb);". We need to know D
+    final typeInDart = interfaceType.getMethod('mapToDart').returnType;
+
+    return UsedTypeConverter(
+        expression: code, mappedType: typeInDart, sqlType: sqlType);
   }
 }
