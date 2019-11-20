@@ -8,8 +8,6 @@ import 'package:source_gen/source_gen.dart';
 
 part 'options.dart';
 
-final backendResource = Resource(() => BuildBackend());
-
 class MoorBuilder extends SharedPartBuilder {
   final MoorOptions options;
 
@@ -36,7 +34,7 @@ class MoorBuilder extends SharedPartBuilder {
   Writer createWriter() => Writer(options);
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
-    final backend = await step.fetchResource(backendResource);
+    final backend = BuildBackend();
     final backendTask = backend.createTask(step);
     final session = backend.session;
 
@@ -45,8 +43,6 @@ class MoorBuilder extends SharedPartBuilder {
     await task.runTask();
 
     task.printErrors();
-
-    await backendTask.finish(input);
 
     return input.currentResult as ParsedDartFile;
   }

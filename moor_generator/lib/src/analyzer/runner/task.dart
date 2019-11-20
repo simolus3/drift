@@ -133,6 +133,7 @@ class Task {
         }
         break;
       default:
+        assert(false, 'Unknown file type ${file.type}');
         break;
     }
 
