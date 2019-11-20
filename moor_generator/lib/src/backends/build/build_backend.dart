@@ -3,7 +3,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart' hide log;
 import 'package:build/build.dart' as build show log;
 import 'package:logging/logging.dart';
-import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 
 class BuildBackend extends Backend {
@@ -52,14 +51,5 @@ class BuildBackendTask extends BackendTask {
   @override
   Future<bool> exists(Uri uri) {
     return step.canRead(_resolve(uri));
-  }
-
-  Future finish(FoundFile inputFile) async {
-    // the result could be cached if it was calculated in a previous build step.
-    // we need to can canRead so that the build package can calculate the
-    // dependency graph correctly
-    for (var transitiveImport in backend.session.fileGraph.crawl(inputFile)) {
-      await step.canRead(_resolve(transitiveImport.uri));
-    }
   }
 }
