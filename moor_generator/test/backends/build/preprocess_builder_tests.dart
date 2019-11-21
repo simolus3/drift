@@ -5,15 +5,10 @@ import 'package:build_test/build_test.dart';
 import 'package:moor_generator/src/backends/build/preprocess_builder.dart';
 import 'package:test/test.dart';
 
-import '../../test_utils.dart';
-
 void main() {
   test('writes types from expressions in moor files', () async {
     final writer = InMemoryAssetWriter();
-    final reader = MultiAssetReader([
-      WrittenAssetsReader(writer),
-      await PackageAssetReader.currentIsolate(),
-    ]);
+    final reader = await PackageAssetReader.currentIsolate();
 
     await testBuilder(
       PreprocessBuilder(),
@@ -46,7 +41,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
     );
 
     final output =
-        await reader.readAsString(AssetId.parse('foo|main.dart_in_moor'));
+        utf8.decode(writer.assets[AssetId.parse('foo|main.dart_in_moor')]);
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {
