@@ -32,3 +32,12 @@ readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
+
+cfeTest: WITH RECURSIVE
+  cnt(x) AS (
+    SELECT 1
+      UNION ALL
+      SELECT x+1 FROM cnt
+      LIMIT 1000000
+    )
+  SELECT x FROM cnt;

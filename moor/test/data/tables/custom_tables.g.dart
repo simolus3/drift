@@ -966,6 +966,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToReadRowIdResult);
   }
 
+  Selectable<int> test() {
+    return customSelectQuery(
+        'WITH RECURSIVE\n  cnt(x) AS (\n    SELECT 1\n      UNION ALL\n      SELECT x+1 FROM cnt\n      LIMIT 1000000\n    )\n  SELECT x FROM cnt',
+        variables: [],
+        readsFrom: {}).map((QueryRow row) => row.readInt('x'));
+  }
+
   Future<int> writeConfig(String key, String value) {
     return customInsert(
       'REPLACE INTO config VALUES (:key, :value)',

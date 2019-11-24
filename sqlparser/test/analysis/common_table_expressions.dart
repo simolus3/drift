@@ -55,8 +55,10 @@ void main() {
 
     expect(context.errors, isEmpty);
     final select = context.root as SelectStatement;
-    final column = context.typeOf(select.resolvedColumns.single);
+    final column = select.resolvedColumns.single;
+    final type = context.typeOf(column);
 
-    expect(column.type, const ResolvedType(type: BasicType.int));
+    expect(type.type, const ResolvedType(type: BasicType.int));
+    expect(column.name, 'x');
   });
 }
