@@ -18,6 +18,11 @@ void main() {
     backend = TestBackend(
       {
         AssetId.parse('foo|lib/test.moor'): r'''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  bar VARCHAR NOT NULL
+);
+
 test:
 WITH RECURSIVE
   cnt(x) AS (
@@ -27,6 +32,9 @@ WITH RECURSIVE
     LIMIT 1000000
   )
   SELECT x FROM cnt;
+  
+test2:
+WITH alias(first, second) AS (SELECT * FROM foo) SELECT * FROM alias;
          ''',
       },
     );
@@ -50,9 +58,9 @@ WITH RECURSIVE
     expect(file.errors.errors, isEmpty);
 
     final result = file.currentResult as ParsedMoorFile;
-    final query = result.resolvedQueries.single as SqlSelectQuery;
+    final query = result.resolvedQueries.firstWhere((q) => q.name == 'test')
+        as SqlSelectQuery;
 
-    expect(query.name, 'test');
     expect(query.variables, isEmpty);
     expect(query.declaredInMoorFile, isTrue);
     expect(query.readsFrom, isEmpty);
@@ -62,5 +70,18 @@ WITH RECURSIVE
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.columns.map(resultSet.dartNameFor), ['x']);
     expect(resultSet.columns.map((c) => c.type), [ColumnType.integer]);
+  });
+
+  test('finds the underlying table when aliased through CFE', () {
+    final file = session.registerFile(Uri.parse('package:foo/test.moor'));
+    final result = file.currentResult as ParsedMoorFile;
+    final query = result.resolvedQueries.firstWhere((q) => q.name == 'test2')
+        as SqlSelectQuery;
+
+    final resultSet = query.resultSet;
+
+    expect(resultSet.matchingTable, isNotNull);
+    expect(resultSet.matchingTable.displayName, 'foo');
+    expect(resultSet.needsOwnClass, isFalse);
   });
 }
