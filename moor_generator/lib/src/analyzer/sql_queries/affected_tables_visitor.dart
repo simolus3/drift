@@ -18,9 +18,9 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void> {
   @override
   void visitQueryable(Queryable e) {
     if (e is TableReference) {
-      final table = e.resolved as Table;
-      if (table != null) {
-        foundTables.add(table);
+      final resolved = e.resolved;
+      if (resolved != null && resolved is Table) {
+        foundTables.add(resolved);
       }
     }
 

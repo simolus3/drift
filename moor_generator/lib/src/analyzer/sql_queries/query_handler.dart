@@ -156,8 +156,13 @@ class QueryHandler {
     } else if (c is ExpressionColumn) {
       final expression = c.expression;
       if (expression is Reference) {
-        return expression.resolved as TableColumn;
+        final resolved = expression.resolved;
+        if (resolved is Column) {
+          return _toTableColumn(resolved);
+        }
       }
+    } else if (c is DelegatedColumn) {
+      return _toTableColumn(c.innerColumn);
     }
     return null;
   }

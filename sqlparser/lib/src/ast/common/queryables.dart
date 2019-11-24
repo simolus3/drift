@@ -31,6 +31,10 @@ abstract class TableOrSubquery extends Queryable {}
 ///
 /// This is both referencable (if we have SELECT * FROM table t), other parts
 /// of the select statement can access "t") and a reference owner (the table).
+///
+/// Note that this doesn't necessarily resolve to a result set. It could also
+/// resolve to a common table expression or anything else defining a result
+/// set.
 class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet, VisibleToChildren {
