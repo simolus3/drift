@@ -1,3 +1,7 @@
+## unreleased
+
+- Better setup for compiling sqlite3 on Android
+
 ## 0.2.0
 
 - Remove the `background` flag from the moor apis provided by this package. Use the moor isolate api

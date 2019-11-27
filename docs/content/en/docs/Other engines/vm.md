@@ -77,3 +77,28 @@ on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](http
 Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
 `path_provider` on Android. This can cause data loss if you've already shipped a version using
 `moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
+
+## Used compile options on Android
+
+Note: Android is the only platform where moor_ffi will compile sqlite. The sqlite3 library from the system
+is used on all other platforms. The choosen options help reduce binary size by removing features not used by
+moor. Important options are marked in bold.
+
+- We use the `-O3` performance option
+- __SQLITE_DQS=0__: This will make sqlite not accept double-quoted strings (and instead parse them as identifiers). This matches
+  the behavior of moor and compiled queries
+- __SQLITE_THREADSAFE=0__: Since the majority of Flutter apps only use one isolate, thread safety is turned off. Note that you
+  can still use the [isolate api]({{<relref "../Advanced Features/isolates.md">}}) for background operations. As long as all
+  database accesses happen from the same thread, there's no problem.
+- SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by moor_ffi, so there's no point of having them.
+- SQLITE_MAX_EXPR_DEPTH=0: Disables maximum depth when sqlite parses expressions, which can make the parser faster.
+- `SQLITE_OMIT_AUTHORIZATION`, `SQLITE_OMIT_DECLTYPE`, __SQLITE_OMIT_DEPRECATED__, `SQLITE_OMIT_GET_TABLE`, `SQLITE_OMIT_LOAD_EXTENSION`,
+  `SQLITE_OMIT_PROGRESS_CALLBACK`, `SQLITE_OMIT_SHARED_CACHE`, `SQLITE_OMIT_TCL_VARIABLE`, `SQLITE_OMIT_TRACE`: Disables features not supported
+  by moor.
+- `SQLITE_USE_ALLOCA`: Allocate temporary memory on the stack
+- `SQLITE_UNTESTABLE`: Remove util functions that are only required to test sqlite3
+- `SQLITE_HAVE_ISNAN`: Use the `isnan` function from the system instead of the one shipped with sqlite3.
+- `SQLITE_ENABLE_FTS5`: Enable the [fts5](https://www.sqlite.org/fts5.html) engine for full-text search.
+- `SQLITE_ENABLE_JSON1`: Enable the [json1](https://www.sqlite.org/json1.html) extension for json support in sql query.
+
+For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).

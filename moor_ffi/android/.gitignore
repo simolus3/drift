@@ -9,4 +9,3 @@
 
 .externalNativeBuild/
 cpp/sqlite*
-sqlite_*.zip
