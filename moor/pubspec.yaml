@@ -27,8 +27,8 @@ dev_dependencies:
   test: ^1.9.0
   mockito: ^4.1.0
 
-#dependency_overrides:
-#  moor_generator:
-#    path: ../moor_generator
-#  sqlparser:
-#    path: ../sqlparser
+dependency_overrides:
+  moor_generator:
+    path: ../moor_generator
+  sqlparser:
+    path: ../sqlparser

@@ -39,7 +39,8 @@ void main() {
       ]);
     });
 
-    verify(executor.runBatched([
+    final transaction = executor.transactions;
+    verify(transaction.runBatched([
       BatchedStatement(
         'INSERT INTO todos (content) VALUES (?)',
         [
@@ -77,6 +78,7 @@ void main() {
     }, throwsA(const TypeMatcher<UnsupportedError>()));
 
     verifyNever(executor.runBatched(any));
+    verifyNever(executor.transactions.runBatched(any));
   });
 
   test('updates stream queries', () async {

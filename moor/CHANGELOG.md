@@ -10,6 +10,8 @@
   }).get();
   ```
 
+- Batches are now always sent in a transaction, this used to be implementation specific before
+
 ## 2.1.0
 
 - New extension methods to simplify the Dart api!

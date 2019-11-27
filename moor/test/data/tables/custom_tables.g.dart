@@ -966,7 +966,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToReadRowIdResult);
   }
 
-  Selectable<int> test() {
+  Selectable<int> cfeTest() {
     return customSelectQuery(
         'WITH RECURSIVE\n  cnt(x) AS (\n    SELECT 1\n      UNION ALL\n      SELECT x+1 FROM cnt\n      LIMIT 1000000\n    )\n  SELECT x FROM cnt',
         variables: [],

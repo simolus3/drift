@@ -95,13 +95,17 @@ class Batch {
     variableSet.add(ctx.boundVariables);
   }
 
-  Future<void> _commit() {
-    return _engine.executor.doWhenOpened((executor) async {
+  Future<void> _commit() async {
+    await _engine.executor.ensureOpen();
+
+    final transaction = _engine.executor.beginTransaction();
+    await transaction.doWhenOpened((executor) async {
       final statements = _createdStatements.entries.map((entry) {
         return BatchedStatement(entry.key, entry.value);
       }).toList();
       await executor.runBatched(statements);
-      _engine.markTablesUpdated(_affectedTables);
     });
+    await transaction.send();
+    _engine.markTablesUpdated(_affectedTables);
   }
 }
