@@ -9,10 +9,6 @@ buildscript {
     }
 }
 
-plugins {
-    id "de.undercouch.download" version "4.0.0"
-}
-
 group 'eu.simonbinder.moor_ffi'
 version '1.0'
 
@@ -49,14 +45,8 @@ android {
     }
 }
 
-task downloadSqlite(type: Download) {
-    src 'https://sqlite.org/2019/sqlite-amalgamation-3290000.zip'
-    dest 'sqlite_3290000.zip'
-    overwrite false
-}
-
-task extractSqlite(dependsOn: downloadSqlite, type: Copy) {
-    from zipTree(downloadSqlite.dest).matching {
+task extractSqlite(type: Copy) {
+    from zipTree('sqlite.zip').matching {
         include '*/sqlite3.c'
         eachFile { it.setPath(it.getName()) } // Don't use top-level folder in zip
     }
