@@ -258,7 +258,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// A batch can only run a subset of statements, and those statements must be
   /// called on the [Batch] instance. The statements aren't executed with a call
   /// to [Batch]. Instead, all generated queries are queued up and are then run
-  /// and executed atomically.
+  /// and executed atomically in a transaction.
   /// Typically, running bulk updates (so a lot of similar statements) over a
   /// [Batch] is much faster than running them via the [GeneratedDatabase]
   /// directly.

@@ -40,6 +40,8 @@ class Batch {
   /// By default, an exception will be thrown if another row with the same
   /// primary key already exists. This behavior can be overridden with [mode],
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
+  /// Using [insertAll] will not disable primary keys or any column constraint
+  /// checks.
   void insertAll<D extends DataClass>(
       TableInfo<Table, D> table, List<Insertable<D>> rows,
       {InsertMode mode}) {
