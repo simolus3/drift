@@ -2,6 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'options.g.dart';
 
+// note when working on this file: If you can't run the builder because
+// options.g.dart is missing, just re-create it from git. build_runner will
+// complain about existing outputs, let it delete the part file.
+
 /// Controllable options to define the behavior of the analyzer and the
 /// generator.
 @JsonSerializable(
@@ -48,6 +52,9 @@ class MoorOptions {
   @JsonKey(name: 'generate_connect_constructor')
   final bool generateConnectConstructor;
 
+  @JsonKey(name: 'sqlite_modules', defaultValue: [])
+  final List<SqlModule> modules;
+
   const MoorOptions(
       {this.generateFromJsonStringConstructor = false,
       this.overrideHashAndEqualsInResultSets = false,
@@ -55,8 +62,20 @@ class MoorOptions {
       this.skipVerificationCode = false,
       this.useDataClassNameForCompanions = false,
       this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
-      this.generateConnectConstructor = false});
+      this.generateConnectConstructor = false,
+      this.modules = const []});
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>
       _$MoorOptionsFromJson(json);
+}
+
+/// Set of sqlite modules that require special knowledge from the generator.
+enum SqlModule {
+  /// Enables support for the json1 module and its functions when parsing sql
+  /// queries.
+  json1,
+
+  /// Enables support for the fts5 module and its functions when parsing sql
+  /// queries.
+  fts5,
 }
