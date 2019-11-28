@@ -17,6 +17,7 @@ dependencies:
   meta: ^1.1.0
   path: ^1.6.0
   logging: '>=0.11.0 <1.0.0'
+  json_annotation: ^3.0.0
 
   # Moor-specific analysis
   moor: ^2.0.1
@@ -37,6 +38,7 @@ dev_dependencies:
   test_core: ^0.2.0
   build_runner: ^1.6.7
   build_test: ^0.10.0
+  json_serializable: ^3.0.0
 
 dependency_overrides:
   sqlparser:

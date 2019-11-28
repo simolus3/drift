@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:path/path.dart' as p;
+
+import 'options.dart';
 
 const _fileEndings = {
   '.moor': FileType.moor,

@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:moor_generator/src/backends/build/moor_builder.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 
 /// Manages a tree structure which we use to generate code.
 ///

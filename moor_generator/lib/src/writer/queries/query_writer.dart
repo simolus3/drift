@@ -1,6 +1,6 @@
 import 'dart:math' show max;
 
-import 'package:moor_generator/src/backends/build/moor_builder.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';

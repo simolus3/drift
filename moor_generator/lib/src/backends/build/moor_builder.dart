@@ -1,4 +1,5 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/build/build_backend.dart';
@@ -6,8 +7,6 @@ import 'package:moor_generator/src/backends/build/generators/dao_generator.dart'
 import 'package:moor_generator/src/backends/build/generators/moor_generator.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:source_gen/source_gen.dart';
-
-part 'options.dart';
 
 class MoorBuilder extends SharedPartBuilder {
   final MoorOptions options;
@@ -19,7 +18,7 @@ class MoorBuilder extends SharedPartBuilder {
       : super(generators, name);
 
   factory MoorBuilder(BuilderOptions options) {
-    final parsedOptions = MoorOptions.fromBuilder(options.config);
+    final parsedOptions = MoorOptions.fromJson(options.config);
 
     final generators = <Generator>[
       MoorGenerator(),

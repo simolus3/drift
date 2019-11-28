@@ -1,4 +1,4 @@
-import 'package:moor_generator/src/backends/build/moor_builder.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:test/test.dart';
 
