@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
+import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:path/path.dart' as p;
 
 const _fileEndings = {
@@ -14,11 +15,12 @@ const _fileEndings = {
 class MoorSession {
   final FileGraph fileGraph = FileGraph();
   final Backend backend;
+  final MoorOptions options;
 
   final _completedTasks = StreamController<Task>.broadcast();
   final _changedFiles = StreamController<List<FoundFile>>.broadcast();
 
-  MoorSession(this.backend);
+  MoorSession(this.backend, {this.options = const MoorOptions()});
 
   /// Stream that emits a [Task] that has been completed.
   Stream<Task> get completedTasks => _completedTasks.stream;

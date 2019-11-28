@@ -2,6 +2,7 @@ import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 
+/// The column types in sql.
 enum ColumnType { integer, text, boolean, datetime, blob, real }
 
 /// Name of a column. Contains additional info on whether the name was chosen

@@ -38,7 +38,7 @@ WITH alias(first, second) AS (SELECT * FROM foo) SELECT * FROM alias;
          ''',
       },
     );
-    session = backend.session;
+    session = MoorSession(backend);
   });
 
   setUp(() async {

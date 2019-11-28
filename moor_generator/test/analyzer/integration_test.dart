@@ -66,7 +66,7 @@ class ProgrammingLanguages extends Table {
       ''',
       },
     );
-    session = backend.session;
+    session = MoorSession(backend);
   });
 
   tearDownAll(() {

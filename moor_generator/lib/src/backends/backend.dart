@@ -1,20 +1,12 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
 
 /// A backend for the moor generator.
 ///
 /// Currently, we only have a backend based on the build package, but we can
 /// extend this to a backend for an analyzer plugin or a standalone tool.
 abstract class Backend {
-  MoorSession _session;
-  MoorSession get session => _session;
-
-  Backend() {
-    _session = MoorSession(this);
-  }
-
   /// Resolves an [import] statement from the context of a [base] uri. This
   /// should support both relative and `package:` imports.
   Uri resolve(Uri base, String import);

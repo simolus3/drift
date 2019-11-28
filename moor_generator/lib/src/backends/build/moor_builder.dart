@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/build/build_backend.dart';
 import 'package:moor_generator/src/backends/build/generators/dao_generator.dart';
 import 'package:moor_generator/src/backends/build/generators/moor_generator.dart';
@@ -10,6 +11,9 @@ part 'options.dart';
 
 class MoorBuilder extends SharedPartBuilder {
   final MoorOptions options;
+
+  final BuildBackend _backend = BuildBackend();
+  final Expando<MoorSession> _sessions = Expando();
 
   MoorBuilder._(List<Generator> generators, String name, this.options)
       : super(generators, name);
@@ -33,10 +37,17 @@ class MoorBuilder extends SharedPartBuilder {
 
   Writer createWriter() => Writer(options);
 
+  MoorSession _getSession(BuildStep step) {
+    if (_sessions[step] != null) {
+      return _sessions[step];
+    } else {
+      return _sessions[step] = MoorSession(_backend, options: options);
+    }
+  }
+
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
-    final backend = BuildBackend();
-    final backendTask = backend.createTask(step);
-    final session = backend.session;
+    final session = _getSession(step);
+    final backendTask = _backend.createTask(step);
 
     final input = session.registerFile(step.inputId.uri);
     final task = session.startTask(backendTask);

@@ -30,7 +30,7 @@ CREATE TABLE bars (
 );
       ''',
     });
-    session = backend.session;
+    session = MoorSession(backend);
   });
 
   tearDownAll(() {

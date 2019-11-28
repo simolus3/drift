@@ -31,7 +31,7 @@ class MoorDriver implements AnalysisDriverGeneric {
       this.contentOverlay, this._resourceProvider) {
     _scheduler.add(this);
     final backend = PluginBackend(this);
-    session = backend.session;
+    session = MoorSession(backend);
 
     _fileChangeSubscription =
         session.changedFiles.listen(_tracker.notifyFilesChanged);
