@@ -9,7 +9,8 @@
     return ...
   }).get();
   ```
-
+- Provide Dart apis for the json1 extension in the `package:moor/extensions/json1.dart` library. Note that
+  json1 is not supported on most platforms.
 - Batches are now always sent in a transaction, this used to be implementation specific before
 
 ## 2.1.0

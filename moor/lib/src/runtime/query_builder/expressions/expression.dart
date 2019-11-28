@@ -313,15 +313,24 @@ class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
   }
 }
 
-class _FunctionCallExpression<R, S extends SqlType<R>>
-    extends Expression<R, S> {
+/// A sql expression that calls a function.
+///
+/// This class is mainly used by moor internally. If you find yourself using
+/// this class, consider [creating an issue](https://github.com/simolus3/moor/issues/new)
+/// to request native support in moor.
+class FunctionCallExpression<R, S extends SqlType<R>> extends Expression<R, S> {
+  /// The name of the function to call
   final String functionName;
+
+  /// The arguments passed to the function, as expressions.
   final List<Expression> arguments;
 
   @override
   final Precedence precedence = Precedence.primary;
 
-  _FunctionCallExpression(this.functionName, this.arguments);
+  /// Constructs a function call expression in sql from the [functionName] and
+  /// the target [arguments].
+  FunctionCallExpression(this.functionName, this.arguments);
 
   @override
   void writeInto(GenerationContext context) {
@@ -345,7 +354,7 @@ class _FunctionCallExpression<R, S extends SqlType<R>>
 
   @override
   bool operator ==(other) {
-    return other is _FunctionCallExpression &&
+    return other is FunctionCallExpression &&
         other.functionName == functionName &&
         _equality.equals(other.arguments, arguments);
   }

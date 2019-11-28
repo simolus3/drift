@@ -47,10 +47,7 @@ class UseMoor {
   /// Defines the `.moor` files to include when building the table structure for
   /// this database. For details on how to integrate `.moor` files into your
   /// Dart code, see [the documentation](https://moor.simonbinder.eu/docs/using-sql/custom_tables/).
-  ///
-  /// Please note that this feature is experimental at the moment.
   /// {@endtemplate}
-  @experimental
   final Set<String> include;
 
   /// Use this class as an annotation to inform moor_generator that a database
@@ -59,7 +56,7 @@ class UseMoor {
     @required this.tables,
     this.daos = const [],
     this.queries = const {},
-    @experimental this.include = const {},
+    this.include = const {},
   });
 }
 
@@ -92,7 +89,6 @@ class UseDao {
   final Map<String, String> queries;
 
   /// {@macro moor_include_param}
-  @experimental
   final Set<String> include;
 
   /// Annotation for a class to declare it as an dao. See [UseDao] and the
@@ -100,5 +96,5 @@ class UseDao {
   const UseDao(
       {@required this.tables,
       this.queries = const {},
-      @experimental this.include = const {}});
+      this.include = const {}});
 }

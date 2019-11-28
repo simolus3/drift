@@ -28,7 +28,7 @@ extension StringExpressionOperators on Expression<String, StringType> {
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-upper.php
   Expression<String, StringType> upper() {
-    return _FunctionCallExpression('UPPER', [this]);
+    return FunctionCallExpression('UPPER', [this]);
   }
 
   /// Calls the sqlite function `LOWER` on `this` string. Please note that, in
@@ -37,7 +37,7 @@ extension StringExpressionOperators on Expression<String, StringType> {
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-lower.php
   Expression<String, StringType> lower() {
-    return _FunctionCallExpression('LOWER', [this]);
+    return FunctionCallExpression('LOWER', [this]);
   }
 
   /// Calls the sqlite function `LENGTH` on `this` string, which counts the
@@ -47,7 +47,7 @@ extension StringExpressionOperators on Expression<String, StringType> {
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-length.php
   Expression<int, IntType> get length {
-    return _FunctionCallExpression('LENGTH', [this]);
+    return FunctionCallExpression('LENGTH', [this]);
   }
 }
 
