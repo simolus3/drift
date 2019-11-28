@@ -61,7 +61,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     final count = ++_openedDbCount[runtimeType];
     if (count > 1) {
       print(
-        'WARNING (moor): It looks like you\'ve created the database '
+        'WARNING (moor): It looks like you\'ve created the database class'
         '$runtimeType multiple times. When these two databases use the same '
         'QueryExecutor, race conditions will ocur and might corrupt the '
         'database. \n'
@@ -124,6 +124,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await executor.close();
-    _openedDbCount[runtimeType]--;
+
+    if (_openedDbCount[runtimeType] != null) {
+      _openedDbCount[runtimeType]--;
+    }
   }
 }
