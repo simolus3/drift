@@ -18,10 +18,11 @@ class SqlParser {
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlParser(this.step, this.tables, this.definedQueries);
+  SqlParser(this.step, this.tables, this.definedQueries) {
+    _engine = step.task.session.spawnEngine();
+  }
 
   void _spawnEngine() {
-    _engine = SqlEngine();
     tables.map(_mapper.extractStructure).forEach(_engine.registerTable);
   }
 
@@ -34,20 +35,20 @@ class SqlParser {
 
       AnalysisContext context;
 
-      if (query is DeclaredDartQuery) {
-        final sql = query.sql;
-
-        try {
+      try {
+        if (query is DeclaredDartQuery) {
+          final sql = query.sql;
           context = _engine.analyze(sql);
-        } catch (e, s) {
-          step.reportError(MoorError(
-              severity: Severity.criticalError,
-              message: 'Error while trying to parse $name: $e, $s'));
-          return;
+        } else if (query is DeclaredMoorQuery) {
+          context =
+              _engine.analyzeNode(query.query, query.file.parseResult.sql);
+          declaredInMoor = true;
         }
-      } else if (query is DeclaredMoorQuery) {
-        context = _engine.analyzeNode(query.query, query.file.parseResult.sql);
-        declaredInMoor = true;
+      } catch (e, s) {
+        step.reportError(MoorError(
+            severity: Severity.criticalError,
+            message: 'Error while trying to parse $name: $e, $s'));
+        continue;
       }
 
       for (var error in context.errors) {

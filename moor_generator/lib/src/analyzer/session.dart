@@ -4,6 +4,7 @@ import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqlparser/sqlparser.dart';
 
 import 'options.dart';
 
@@ -31,6 +32,14 @@ class MoorSession {
   /// This is not supported on all backends (notably, not with `package:build`,
   /// which assumes immutable files during a build run).
   Stream<List<FoundFile>> get changedFiles => _changedFiles.stream;
+
+  /// Creates a properly configured [SqlEngine].
+  SqlEngine spawnEngine() {
+    return SqlEngine(
+      useMoorExtensions: true,
+      enableJson1Module: options.hasModule(SqlModule.json1),
+    );
+  }
 
   FileType _findFileType(String path) {
     final extension = p.extension(path);

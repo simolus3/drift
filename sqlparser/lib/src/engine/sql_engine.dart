@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
+import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -13,12 +14,11 @@ class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
 
-  /// Moor extends the sql grammar a bit to support type converters and other
-  /// features. Enabling this flag will make this engine parse sql with these
-  /// extensions enabled.
-  final bool useMoorExtensions;
+  /// Internal options for this sql engine.
+  final EngineOptions options;
 
-  SqlEngine({this.useMoorExtensions = false}) {
+  SqlEngine({bool useMoorExtensions = false, bool enableJson1Module = false})
+      : options = EngineOptions(useMoorExtensions, enableJson1Module) {
     registerTable(sqliteMaster);
     registerTable(sqliteSequence);
   }
@@ -46,7 +46,7 @@ class SqlEngine {
   /// you need to filter them. When using the methods in this class, this will
   /// be taken care of automatically.
   List<Token> tokenize(String source) {
-    final scanner = Scanner(source, scanMoorTokens: useMoorExtensions);
+    final scanner = Scanner(source, scanMoorTokens: options.useMoorExtensions);
     final tokens = scanner.scanTokens();
 
     if (scanner.errors.isNotEmpty) {
@@ -60,7 +60,7 @@ class SqlEngine {
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
-    final parser = Parser(tokensForParser, useMoor: useMoorExtensions);
+    final parser = Parser(tokensForParser, useMoor: options.useMoorExtensions);
 
     final stmt = parser.statement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
@@ -69,7 +69,7 @@ class SqlEngine {
   /// Parses a `.moor` file, which can consist of multiple statements and
   /// additional components like import statements.
   ParseResult parseMoorFile(String content) {
-    assert(useMoorExtensions);
+    assert(options.useMoorExtensions);
 
     final tokens = tokenize(content);
     final autoComplete = AutoCompleteEngine(tokens);
@@ -104,7 +104,7 @@ class SqlEngine {
   AnalysisContext analyzeParsed(ParseResult result) {
     final node = result.rootNode;
 
-    final context = AnalysisContext(node, result.sql);
+    final context = AnalysisContext(node, result.sql, options);
     _analyzeContext(context);
 
     return context;
@@ -119,7 +119,7 @@ class SqlEngine {
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
   AnalysisContext analyzeNode(AstNode node, String file) {
-    final context = AnalysisContext(node, file);
+    final context = AnalysisContext(node, file, options);
     _analyzeContext(context);
     return context;
   }

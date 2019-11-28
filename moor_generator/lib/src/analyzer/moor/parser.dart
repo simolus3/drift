@@ -12,8 +12,8 @@ class MoorParser {
   MoorParser(this.step);
 
   Future<ParsedMoorFile> parseAndAnalyze() {
-    final result =
-        SqlEngine(useMoorExtensions: true).parseMoorFile(step.content);
+    final engine = step.task.session.spawnEngine();
+    final result = engine.parseMoorFile(step.content);
     final parsedFile = result.rootNode as MoorFile;
 
     final createdReaders = <CreateTableReader>[];

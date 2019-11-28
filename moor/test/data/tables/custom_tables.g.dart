@@ -950,6 +950,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToConfig);
   }
 
+  Selectable<Config> findValidJsons() {
+    return customSelectQuery(
+        'SELECT * FROM config WHERE json_valid(config_value)',
+        variables: [],
+        readsFrom: {config}).map(_rowToConfig);
+  }
+
   ReadRowIdResult _rowToReadRowIdResult(QueryRow row) {
     return ReadRowIdResult(
       rowid: row.readInt('rowid'),

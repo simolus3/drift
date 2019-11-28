@@ -15,6 +15,9 @@ const _comparisonOperators = [
 
 class TypeResolver {
   final Map<Typeable, ResolveResult> _results = {};
+  final EngineOptions options;
+
+  TypeResolver(this.options);
 
   ResolveResult _cache<T extends Typeable>(
       ResolveResult Function(T param) resolver, T typeable) {
@@ -157,7 +160,9 @@ class TypeResolver {
     }, l);
   }
 
-  /// Expands the parameters
+  /// Returns the expanded parameters of a function [call]. When a
+  /// [StarFunctionParameter] is used, it's expanded to the
+  /// [ReferenceScope.availableColumns].
   List<Typeable> _expandParameters(Invocation call) {
     final sqlParameters = call.parameters;
     if (sqlParameters is ExprFunctionParameters) {
@@ -276,6 +281,34 @@ class TypeResolver {
             BasicType.int,
             BasicType.real
           ])).withNullable(true);
+      }
+
+      if (options.enableJson1) {
+        switch (call.name.toLowerCase()) {
+          case 'json':
+          case 'json_array':
+          case 'json_insert':
+          case 'json_replace':
+          case 'json_set':
+          case 'json_object':
+          case 'json_patch':
+          case 'json_remove':
+          case 'json_quote':
+          case 'json_group_array':
+          case 'json_group_object':
+            return const ResolveResult(ResolvedType(type: BasicType.text));
+          case 'json_type':
+            return const ResolveResult(
+                ResolvedType(type: BasicType.text, nullable: true));
+          case 'json_valid':
+            return const ResolveResult(ResolvedType.bool());
+          case 'json_extract':
+            // return unknown so that we don't hide the state error. In reality
+            // we have no idea what json_extract returns
+            return const ResolveResult.unknown();
+          case 'json_array_length':
+            return const ResolveResult(ResolvedType(type: BasicType.int));
+        }
       }
 
       throw StateError('Unknown function: ${call.name}');

@@ -20,21 +20,28 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
-          json, 'write_from_json_string_constructor', (v) => v as bool),
-      overrideHashAndEqualsInResultSets: $checkedConvert(
-          json, 'override_hash_and_equals_in_result_sets', (v) => v as bool),
+              json, 'write_from_json_string_constructor', (v) => v as bool) ??
+          false,
+      overrideHashAndEqualsInResultSets: $checkedConvert(json,
+              'override_hash_and_equals_in_result_sets', (v) => v as bool) ??
+          false,
       compactQueryMethods:
-          $checkedConvert(json, 'compact_query_methods', (v) => v as bool),
+          $checkedConvert(json, 'compact_query_methods', (v) => v as bool) ??
+              false,
       skipVerificationCode:
-          $checkedConvert(json, 'skip_verification_code', (v) => v as bool),
+          $checkedConvert(json, 'skip_verification_code', (v) => v as bool) ??
+              false,
       useDataClassNameForCompanions: $checkedConvert(
-          json, 'use_data_class_name_for_companions', (v) => v as bool),
+              json, 'use_data_class_name_for_companions', (v) => v as bool) ??
+          false,
       useColumnNameAsJsonKeyWhenDefinedInMoorFile: $checkedConvert(
-          json,
-          'use_column_name_as_json_key_when_defined_in_moor_file',
-          (v) => v as bool),
+              json,
+              'use_column_name_as_json_key_when_defined_in_moor_file',
+              (v) => v as bool) ??
+          false,
       generateConnectConstructor: $checkedConvert(
-          json, 'generate_connect_constructor', (v) => v as bool),
+              json, 'generate_connect_constructor', (v) => v as bool) ??
+          false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',

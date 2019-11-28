@@ -1,3 +1,6 @@
+## unreleased
+- Optionally support the `json1` module
+
 ## 0.4.0
 - Support common table expressions
 - Handle special `rowid`, `oid`, `__rowid__` references
