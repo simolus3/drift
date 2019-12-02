@@ -14,7 +14,7 @@ class MoorGenerator extends Generator implements BaseGenerator {
 
     if (parsed.declaredDatabases.isNotEmpty) {
       writer.leaf().write(
-          '// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this\n');
+          '// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this, always_specify_types, implicit_dynamic_parameter, sort_constructors_first, implicit_dynamic_map_literal, avoid_renaming_method_parameters, sort_constructors_first, lines_longer_than_80_chars\n');
     }
 
     for (var db in parsed.declaredDatabases) {
