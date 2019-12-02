@@ -157,4 +157,13 @@ void main() {
       completion(42),
     );
   });
+
+  test('escaped when column name is keyword', () async {
+    await db
+        .into(db.pureDefaults)
+        .insert(PureDefaultsCompanion.insert(txt: const Value('foo')));
+
+    verify(executor
+        .runInsert('INSERT INTO pure_defaults (`insert`) VALUES (?)', ['foo']));
+  });
 }

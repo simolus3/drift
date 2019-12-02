@@ -54,6 +54,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// The keys should represent the column name in sql, the values the
   /// corresponding values of the field. All fields of the [instance] which are
   /// present will be written, absent fields will be omitted.
+  /// Note that column names aren't escaped in the [Map.keys].
   Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance);
 
   /// Maps the given row returned by the database into the fitting data class.

@@ -1165,7 +1165,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     final stringType = db.typeSystem.forDartType<String>();
     return PureDefault(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}txt']),
+      txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}insert']),
     );
   }
   factory PureDefault.fromJson(Map<String, dynamic> json,
@@ -1257,7 +1257,7 @@ class $PureDefaultsTable extends PureDefaults
   GeneratedTextColumn get txt => _txt ??= _constructTxt();
   GeneratedTextColumn _constructTxt() {
     return GeneratedTextColumn(
-      'txt',
+      'insert',
       $tableName,
       true,
     );
@@ -1303,7 +1303,7 @@ class $PureDefaultsTable extends PureDefaults
       map['id'] = Variable<int, IntType>(d.id.value);
     }
     if (d.txt.present) {
-      map['txt'] = Variable<String, StringType>(d.txt.value);
+      map['insert'] = Variable<String, StringType>(d.txt.value);
     }
     return map;
   }

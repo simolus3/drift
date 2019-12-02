@@ -56,7 +56,8 @@ class TableWithoutPK extends Table {
 }
 
 class PureDefaults extends Table with AutoIncrement {
-  TextColumn get txt => text().nullable()();
+  // name after keyword to ensure it's escaped properly
+  TextColumn get txt => text().named('insert').nullable()();
 }
 
 // example object used for custom mapping
