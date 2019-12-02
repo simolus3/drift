@@ -106,9 +106,11 @@ class InsertStatement<D extends DataClass> {
     if (map.isEmpty) {
       ctx.buffer.write('DEFAULT VALUES');
     } else {
+      final columns = map.keys.map(escapeIfNeeded);
+
       ctx.buffer
         ..write('(')
-        ..write(map.keys.join(', '))
+        ..write(columns.join(', '))
         ..write(') ')
         ..write('VALUES (');
 
