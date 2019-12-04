@@ -2,9 +2,9 @@ import 'package:flutter/material.dart' hide Column;
 import 'package:flutter/widgets.dart' as f show Column;
 import 'package:moor_example/bloc.dart';
 import 'package:moor_example/database/database.dart';
-import 'package:moor_example/main.dart';
 import 'package:moor_example/widgets/categories_drawer.dart';
 import 'package:moor_example/widgets/todo_card.dart';
+import 'package:provider/provider.dart';
 
 // ignore_for_file: prefer_const_constructors
 
@@ -20,7 +20,7 @@ class HomeScreenState extends State<HomeScreen> {
   // we only use this to reset the input field at the bottom when a entry has been added
   final TextEditingController controller = TextEditingController();
 
-  TodoAppBloc get bloc => BlocProvider.provideBloc(context);
+  TodoAppBloc get bloc => Provider.of<TodoAppBloc>(context);
 
   @override
   Widget build(BuildContext context) {

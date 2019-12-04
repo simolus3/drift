@@ -9,8 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl:
-  cupertino_icons: ^0.1.2
+  provider: ^3.2.0
+  intl: ^0.16.0
   rxdart: 0.21.0
   moor_flutter: ^2.0.0
 
