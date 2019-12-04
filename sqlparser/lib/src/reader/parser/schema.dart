@@ -1,13 +1,12 @@
 part of 'parser.dart';
 
 mixin SchemaParser on ParserBase {
-  CreateTableStatement _createTable() {
-    _suggestHint(
-        const HintDescription.tokens([TokenType.create, TokenType.table]));
+  TableInducingStatement _createTable() {
     if (!_matchOne(TokenType.create)) return null;
     final first = _previous;
 
-    _suggestHint(HintDescription.token(TokenType.table));
+    final virtual = _matchOne(TokenType.virtual);
+
     _consume(TokenType.table, 'Expected TABLE keyword here');
 
     var ifNotExists = false;
@@ -19,6 +18,10 @@ mixin SchemaParser on ParserBase {
     }
 
     final tableIdentifier = _consumeIdentifier('Expected a table name');
+
+    if (virtual) {
+      return _virtualTable(first, ifNotExists, tableIdentifier.identifier);
+    }
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     final leftParen = _consume(
@@ -54,11 +57,7 @@ mixin SchemaParser on ParserBase {
       withoutRowId = true;
     }
 
-    String overriddenName;
-    if (enableMoorExtensions && _matchOne(TokenType.as)) {
-      overriddenName =
-          _consumeIdentifier('Expected the name for the data class').identifier;
-    }
+    final overriddenName = _overriddenDataClassName();
 
     return CreateTableStatement(
       ifNotExists: ifNotExists,
@@ -71,6 +70,81 @@ mixin SchemaParser on ParserBase {
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
       ..closingBracket = rightParen;
+  }
+
+  /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
+  /// <name>` tokens have already been read.
+  CreateVirtualTableStatement _virtualTable(
+      Token first, bool ifNotExists, String name) {
+    _consume(TokenType.using, 'Expected USING for virtual table declaration');
+    final moduleName = _consumeIdentifier('Expected a module name');
+    final args = <SourceSpanWithContext>[];
+
+    if (_matchOne(TokenType.leftParen)) {
+      // args can be just about anything, so we accept any token until the right
+      // parenthesis closing it of.
+      Token currentStart;
+      var levelOfParens = 0;
+
+      void addCurrent() {
+        if (currentStart == null) {
+          _error('Expected at least one token for the previous argument');
+        } else {
+          args.add(currentStart.span.expand(_previous.span));
+          currentStart = null;
+        }
+      }
+
+      while (true) {
+        // begin reading a single argument, which is stopped by a comma or
+        // maybe with a ), if the current depth is one
+        while (_peek.type != TokenType.rightParen &&
+            _peek.type != TokenType.comma) {
+          _advance();
+          if (_previous.type == TokenType.leftParen) {
+            levelOfParens++;
+          }
+          currentStart ??= _previous;
+        }
+
+        // if we just read the last ) of the argument list, finish. Otherwise
+        // just handle the ) and continue reading the same argument
+        if (_peek.type == TokenType.rightParen) {
+          levelOfParens--;
+          if (levelOfParens < 0) {
+            addCurrent();
+            _advance(); // consume the rightParen
+            break;
+          } else {
+            _advance(); // add the rightParen to the current argument
+            continue;
+          }
+        }
+
+        // finished while loop above, but not with a ), so it must be a comma
+        // that finishes the current argument
+        assert(_peek.type == TokenType.comma);
+        addCurrent();
+        _advance(); // consume the comma
+      }
+    }
+
+    final moorDataClassName = _overriddenDataClassName();
+    return CreateVirtualTableStatement(
+      ifNotExists: ifNotExists,
+      tableName: name,
+      moduleName: moduleName.identifier,
+      arguments: args,
+      overriddenDataClassName: moorDataClassName,
+    )..setSpan(first, _previous);
+  }
+
+  String _overriddenDataClassName() {
+    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+      return _consumeIdentifier('Expected the name for the data class')
+          .identifier;
+    }
+    return null;
   }
 
   ColumnDefinition _columnDefinition() {

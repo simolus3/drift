@@ -119,6 +119,7 @@ enum TokenType {
   except,
 
   create,
+  virtual,
   table,
   $if,
   $with,
@@ -249,6 +250,7 @@ const Map<String, TokenType> keywords = {
   'UNION': TokenType.union,
   'INTERSECT': TokenType.intersect,
   'EXCEPT': TokenType.except,
+  'VIRTUAL': TokenType.virtual,
 };
 
 /// Maps [TokenType]s which are keywords to their lexeme.

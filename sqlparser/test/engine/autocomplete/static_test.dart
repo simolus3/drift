@@ -10,7 +10,7 @@ void main() {
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE TABLE')));
+    expect(suggestions.suggestions, contains(hasCode('CREATE')));
   });
 
   test('suggests completions for started expressions', () {
@@ -20,7 +20,7 @@ void main() {
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE TABLE')));
+    expect(suggestions.suggestions, contains(hasCode('CREATE')));
   });
 }
 

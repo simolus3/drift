@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';

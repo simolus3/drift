@@ -161,6 +161,7 @@ abstract class AstVisitor<T> {
   T visitDeleteStatement(DeleteStatement e);
   T visitUpdateStatement(UpdateStatement e);
   T visitCreateTableStatement(CreateTableStatement e);
+  T visitCreateVirtualTableStatement(CreateVirtualTableStatement e);
 
   T visitWithClause(WithClause e);
   T visitCommonTableExpression(CommonTableExpression e);
@@ -297,6 +298,10 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitCreateTableStatement(CreateTableStatement e) => visitChildren(e);
+
+  @override
+  T visitCreateVirtualTableStatement(CreateVirtualTableStatement e) =>
+      visitChildren(e);
 
   @override
   T visitUnaryExpression(UnaryExpression e) => visitChildren(e);

@@ -155,4 +155,41 @@ void main() {
       moorMode: true,
     );
   });
+
+  test('parses CREATE VIRTUAL TABLE statement', () {
+    testStatement(
+      'CREATE VIRTUAL TABLE IF NOT EXISTS foo USING bar(a, b(), c) AS moor',
+      CreateVirtualTableStatement(
+        ifNotExists: true,
+        tableName: 'foo',
+        moduleName: 'bar',
+        arguments: [
+          fakeSpan('a'),
+          fakeSpan('b()'),
+          fakeSpan('c'),
+        ],
+        overriddenDataClassName: 'moor',
+      ),
+      moorMode: true,
+    );
+  });
+
+  test("can't have empty arguments in CREATE VIRTUAL TABLE", () {
+    final engine = SqlEngine();
+    expect(
+      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,)'),
+      throwsA(
+        const TypeMatcher<ParsingError>()
+            .having((e) => e.token.lexeme, 'fails at closing bracket', ')'),
+      ),
+    );
+
+    expect(
+      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,,b)'),
+      throwsA(
+        const TypeMatcher<ParsingError>()
+            .having((e) => e.token.lexeme, 'fails at next comma', ','),
+      ),
+    );
+  });
 }

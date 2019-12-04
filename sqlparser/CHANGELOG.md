@@ -1,5 +1,6 @@
 ## unreleased
 - Optionally support the `json1` module
+- Optionally support the `fts5` module
 
 ## 0.4.0
 - Support common table expressions
