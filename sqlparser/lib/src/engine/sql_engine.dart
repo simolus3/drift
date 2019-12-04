@@ -1,24 +1,32 @@
 import 'dart:collection';
 
-import 'package:sqlparser/src/analysis/analysis.dart';
-import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/engine/autocomplete/engine.dart';
+import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/engine/module/fts5.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
+import 'autocomplete/engine.dart';
 import 'builtin_tables.dart';
 
 class SqlEngine {
   /// All tables registered with [registerTable].
   final List<Table> knownTables = [];
+  final List<Module> _knownModules = [];
 
   /// Internal options for this sql engine.
   final EngineOptions options;
 
-  SqlEngine({bool useMoorExtensions = false, bool enableJson1Module = false})
+  SqlEngine(
+      {bool useMoorExtensions = false,
+      bool enableJson1Module = false,
+      bool enableFts5 = false})
       : options = EngineOptions(useMoorExtensions, enableJson1Module) {
+    if (enableFts5) {
+      const Fts5Extension().register(this);
+    }
+
     registerTable(sqliteMaster);
     registerTable(sqliteSequence);
   }
@@ -29,10 +37,18 @@ class SqlEngine {
     knownTables.add(table);
   }
 
+  void registerModule(Module module) {
+    _knownModules.add(module);
+  }
+
   ReferenceScope _constructRootScope() {
     final scope = ReferenceScope(null);
     for (var table in knownTables) {
       scope.register(table.name, table);
+    }
+
+    for (final module in _knownModules) {
+      scope.register(module.name, module);
     }
 
     return scope;

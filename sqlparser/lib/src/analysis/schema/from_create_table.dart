@@ -8,7 +8,18 @@ class SchemaFromCreateTable {
 
   SchemaFromCreateTable({this.moorExtensions = false});
 
-  Table read(CreateTableStatement stmt) {
+  Table read(TableInducingStatement stmt) {
+    if (stmt is CreateTableStatement) {
+      _readCreateTable(stmt);
+    } else if (stmt is CreateVirtualTableStatement) {
+      final module = stmt.scope.resolve<Module>(stmt.moduleName);
+      return module.parseTable(stmt);
+    }
+
+    throw AssertionError('Unknown table statement');
+  }
+
+  Table _readCreateTable(CreateTableStatement stmt) {
     return Table(
       name: stmt.tableName,
       resolvedColumns: [for (var def in stmt.columns) _readColumn(def)],

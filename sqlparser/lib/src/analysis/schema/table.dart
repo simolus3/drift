@@ -41,7 +41,7 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
   final List<TableConstraint> tableConstraints;
 
   /// The ast node that created this table
-  final CreateTableStatement definition;
+  final TableInducingStatement definition;
 
   TableColumn _rowIdColumn;
 

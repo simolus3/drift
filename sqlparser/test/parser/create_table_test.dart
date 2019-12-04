@@ -174,6 +174,17 @@ void main() {
     );
   });
 
+  test('parses CREATE VIRTUAL TABLE statement without args', () {
+    testStatement(
+      'CREATE VIRTUAL TABLE foo USING bar;',
+      CreateVirtualTableStatement(
+        tableName: 'foo',
+        moduleName: 'bar',
+        arguments: [],
+      ),
+    );
+  });
+
   test("can't have empty arguments in CREATE VIRTUAL TABLE", () {
     final engine = SqlEngine();
     expect(
