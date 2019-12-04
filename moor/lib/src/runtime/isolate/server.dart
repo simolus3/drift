@@ -55,7 +55,7 @@ class _MoorServer {
     } else if (payload is _ExecuteBatchedStatement) {
       return connection.executor.runBatched(payload.stmts);
     } else if (payload is _NotifyTablesUpdated) {
-      for (var connected in server.currentChannels) {
+      for (final connected in server.currentChannels) {
         connected.request(payload);
       }
     } else if (payload is _RunTransactionAction) {

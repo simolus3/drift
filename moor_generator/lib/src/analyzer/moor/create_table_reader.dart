@@ -22,7 +22,7 @@ class CreateTableReader {
     final foundColumns = <String, SpecifiedColumn>{};
     final primaryKey = <SpecifiedColumn>{};
 
-    for (var column in table.resolvedColumns) {
+    for (final column in table.resolvedColumns) {
       var isPrimaryKey = false;
       final features = <ColumnFeature>[];
       final sqlName = column.name;
@@ -33,7 +33,7 @@ class CreateTableReader {
       String defaultValue;
       String overriddenJsonKey;
 
-      for (var constraint in column.constraints) {
+      for (final constraint in column.constraints) {
         if (constraint is PrimaryKeyColumn) {
           isPrimaryKey = true;
           features.add(const PrimaryKey());
@@ -95,7 +95,7 @@ class CreateTableReader {
 
     final constraints = table.tableConstraints.map((c) => c.span.text).toList();
 
-    for (var keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
+    for (final keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
       if (keyConstraint.isPrimaryKey) {
         primaryKey.addAll(keyConstraint.indexedColumns
             .map((r) => foundColumns[r.columnName])

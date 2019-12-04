@@ -66,7 +66,7 @@ class IsolateCommunication {
     _inputSubscription?.cancel();
     _closeCompleter.complete();
 
-    for (var pending in _pendingRequests.values) {
+    for (final pending in _pendingRequests.values) {
       pending.completeError(StateError('connection closed'));
     }
     _pendingRequests.clear();
@@ -191,7 +191,7 @@ class Server {
     _openConnectionPort.close();
     _opened.close();
 
-    for (var connected in currentChannels) {
+    for (final connected in currentChannels) {
       connected.close();
     }
   }

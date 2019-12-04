@@ -21,7 +21,7 @@ class CustomExpression<D, S extends SqlType<D>> extends Expression<D, S> {
   int get hashCode => content.hashCode * 3;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other.runtimeType == runtimeType &&
         // ignore: test_types_in_equals
         (other as CustomExpression).content == content;

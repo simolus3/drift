@@ -65,7 +65,8 @@ void main() {
         OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
 
     verify(mock.runSelect(
-      'SELECT * FROM config WHERE config_key IN (?1, ?2) ORDER BY config_key ASC',
+      'SELECT * FROM config WHERE config_key IN (?1, ?2) '
+      'ORDER BY config_key ASC',
       ['a', 'b'],
     ));
   });

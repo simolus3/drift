@@ -111,7 +111,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
       },
       isJoin: (join) {
         _handle(join.primary, availableColumns);
-        for (var query in join.joins.map((j) => j.query)) {
+        for (final query in join.joins.map((j) => j.query)) {
           _handle(query, availableColumns);
         }
       },
@@ -120,7 +120,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
   void _resolveSelect(SelectStatement s) {
     final availableColumns = <Column>[];
-    for (var queryable in s.from) {
+    for (final queryable in s.from) {
       _handle(queryable, availableColumns);
     }
 
@@ -129,7 +129,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
     // a select statement can include everything from its sub queries as a
     // result, but also expressions that appear as result columns
-    for (var resultColumn in s.columns) {
+    for (final resultColumn in s.columns) {
       if (resultColumn is StarResultColumn) {
         if (resultColumn.tableName != null) {
           final tableResolver = scope

@@ -29,7 +29,7 @@ class WebSocketPluginServer implements PluginCommunicationChannel {
     _init();
   }
 
-  void _init() async {
+  Future<void> _init() async {
     server = await HttpServer.bind(address, port);
     print('listening on $address at port $port');
     server.transform(WebSocketTransformer()).listen(_handleClientAdded);
@@ -37,8 +37,8 @@ class WebSocketPluginServer implements PluginCommunicationChannel {
 
   void _handleClientAdded(WebSocket socket) {
     if (_currentClient != null) {
-      print(
-          'ignoring connection attempt because an active client already exists');
+      print('ignoring connection attempt because an active client already '
+          'exists');
       socket.close();
     } else {
       print('client connected');

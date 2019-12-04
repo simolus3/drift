@@ -49,7 +49,7 @@ const Expression<DateTime, DateTimeType> currentDateAndTime =
 class _CustomDateTimeExpression
     extends CustomExpression<DateTime, DateTimeType> {
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
   const _CustomDateTimeExpression(String content) : super(content);
 }
@@ -108,7 +108,7 @@ class _StrftimeSingleFieldExpression extends Expression<int, IntType> {
   int get hashCode => $mrjf($mrjc(format.hashCode, date.hashCode));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _StrftimeSingleFieldExpression &&
         other.format == format &&
         other.date == date;

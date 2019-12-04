@@ -233,9 +233,8 @@ class FoundVariable extends FoundElement {
   /// without having to look at other variables.
   final bool isArray;
 
-  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray) {
-    assert(variable.resolvedIndex == index);
-  }
+  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray)
+      : assert(variable.resolvedIndex == index);
 
   @override
   String get dartParameterName {

@@ -13,75 +13,162 @@ analyzer:
     # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround
     - ".dart_tool/build/entrypoint/build.dart"
     - "tool/**"
+
+# this should always include all rules. Those we don't use are commented out
 linter:
   rules:
-    - annotate_overrides
+# ERROR RULES
     - avoid_empty_else
-    - avoid_function_literals_in_foreach_calls
-    - avoid_init_to_null
-    - avoid_null_checks_in_equality_operators
+#    - avoid_print (all our prints can be turned off)
     - avoid_relative_lib_imports
+    - avoid_returning_null_for_future
+#    - avoid_slow_async_io
+    - avoid_types_as_parameter_names
+    - cancel_subscriptions
+    - close_sinks
+    - comment_references
+    - control_flow_in_finally
+#    - diagnostic_describe_all_properties (Flutter-specific, not relevant for us)
+    - empty_statements
+    - hash_and_equals
+#    - invariant_booleans (turned off because the lint rule is buggy)
+    - iterable_contains_unrelated_type
+    - list_remove_unrelated_type
+    - literal_only_boolean_expressions
+    - no_adjacent_strings_in_list
+    - no_duplicate_case_values
+#   - prefer_relative_imports (clashes with avoid_relative_lib_imports)
+#    - prefer_void_to_null (we do use Null as a type for alwaysThrows functions)
+    - test_types_in_equals
+    - throw_in_finally
+    - unnecessary_statements
+    - unrelated_type_equality_checks
+    - unsafe_html
+    - valid_regexps
+# STYLE RULES
+    - always_declare_return_types
+#    - always_put_control_body_on_new_line (we don't do this if it fits on the same line)
+#    - always_put_required_named_parameters_first (we just don't do this)
+#    - always_require_non_null_named_parameters (we don't use assert foo != null for parameters)
+#    - always_specify_types (we prefer to omit the type parameter when possible)
+    - annotate_overrides
+#    - avoid_annotating_with_dynamic (we prefer to make dynamic explicit)
+#    - avoid_as (we prefer to make explicit casts explicit!)
+    - avoid_bool_literals_in_conditional_expressions
+#    - avoid_catches_without_on_clauses (we have a lot of generic catches)
+    - avoid_catching_errors
+    - avoid_classes_with_only_static_members
+    - avoid_double_and_int_checks
+#    - avoid_equals_and_hash_code_on_mutable_classes (lint is to generic for transient fields)
+    - avoid_field_initializers_in_const_classes
+    - avoid_function_literals_in_foreach_calls
+#    - avoid_implementing_value_types (maybe we can consider turning this on?)
+    - avoid_init_to_null
+    - avoid_js_rounded_ints
+    - avoid_null_checks_in_equality_operators
+#    - avoid_positional_boolean_parameters (there pretty useful when there's only one boolean param)
+#    - avoid_private_typedef_functions (they're still useful)
+    - avoid_renaming_method_parameters
     - avoid_return_types_on_setters
     - avoid_returning_null
-    - avoid_types_as_parameter_names
+    - avoid_returning_null_for_void
+    - avoid_returning_this
+    - avoid_setters_without_getters
+    - avoid_shadowing_type_parameters
+    - avoid_single_cascade_in_expression_statements
+#    - avoid_types_on_closure_parameters (the interference isn't THAT good)
+#    - avoid_unnecessary_containers (Flutter-specific, not relevant here)
     - avoid_unused_constructor_parameters
+    - avoid_void_async
     - await_only_futures
+    - camel_case_extensions
     - camel_case_types
-    - cancel_subscriptions
-    - comment_references
+#    - cascade_invocations (sometimes the explicit notation is more readable)
     - constant_identifier_names
     - curly_braces_in_flow_control_structures
-    - control_flow_in_finally
     - directives_ordering
     - empty_catches
     - empty_constructor_bodies
-    - empty_statements
-    - hash_and_equals
+    - file_names
+#    - flutter_style_todos (Flutter-development specific, not relevant here)
     - implementation_imports
-    - invariant_booleans
-    - iterable_contains_unrelated_type
+    - join_return_with_assignment
     - library_names
     - library_prefixes
-    - list_remove_unrelated_type
-    - no_adjacent_strings_in_list
-    - no_duplicate_case_values
+    - lines_longer_than_80_chars
     - non_constant_identifier_names
     - null_closures
     - omit_local_variable_types
+#    - one_member_abstracts (there are cases where a one-member abstract class makes sense, see moor's Insertable)
     - only_throw_errors
     - overridden_fields
     - package_api_docs
-    - package_names
-    - package_prefixed_library_names
+#    - package_prefixed_library_names (this isn't java)
+#    - parameter_assignments (we regularly use this to set default values)
     - prefer_adjacent_string_concatenation
+    - prefer_asserts_in_initializer_lists
+#    - prefer_asserts_with_message (it's annoying to write messages for internal invariants)
     - prefer_collection_literals
     - prefer_conditional_assignment
     - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - prefer_constructors_over_static_methods
     - prefer_contains
+#    - prefer_double_quotes (we prefer single quotes)
     - prefer_equal_for_default_values
+#    - prefer_expression_function_bodies (for multiline expressions, this is ugly to format)
     - prefer_final_fields
+    - prefer_final_in_for_each
     - prefer_final_locals
+    - prefer_for_elements_to_map_fromIterable
+    - prefer_foreach
+    - prefer_function_declarations_over_variables
+    - prefer_generic_function_type_aliases
+    - prefer_if_elements_to_conditional_expressions
+    - prefer_if_null_operators
     - prefer_initializing_formals
+    - prefer_inlined_adds
+    - prefer_int_literals
     - prefer_interpolation_to_compose_strings
     - prefer_is_empty
     - prefer_is_not_empty
+#    - prefer_is_not_operator todo enable after upgrading to Dart 2.7.0
+    - prefer_iterable_whereType
+#    - prefer_mixin (todo we could consider enabling this)
+    - prefer_null_aware_operators
     - prefer_single_quotes
+    - prefer_spread_collections
     - prefer_typing_uninitialized_variables
+    - provide_deprecation_message
+    - public_member_api_docs
     - recursive_getters
     - slash_for_doc_comments
-    - test_types_in_equals
-    - throw_in_finally
+#    - sort_child_properties_last (Flutter specific)
+#    - sort_constructors_first (we don't do this)
+#    - sort_unnamed_constructors_first
+    - type_annotate_public_apis
     - type_init_formals
     - unawaited_futures
     - unnecessary_brace_in_string_interps
+    - unnecessary_const
+#    - unnecessary_final (we prefer final here)
     - unnecessary_getters_setters
     - unnecessary_lambdas
     - unnecessary_new
-    - unnecessary_const
     - unnecessary_null_aware_assignments
-    - unnecessary_statements
+    - unnecessary_null_in_if_null_operators
+    - unnecessary_overrides
+    - unnecessary_parenthesis
     - unnecessary_this
-    - unrelated_type_equality_checks
+#    - use_full_hex_values_for_flutter_colors (Flutter specific)
+    - use_function_type_syntax_for_parameters
     - use_rethrow_when_possible
-    - valid_regexps
-    - public_member_api_docs
+    - use_setters_to_change_properties
+    - use_string_buffers
+#    - use_to_and_as_if_applicable (false positive on operators)
+    - void_checks
+# PUB RULES
+    - package_names
+#   - sort_pub_dependencies (we prefer to group them by what they do)

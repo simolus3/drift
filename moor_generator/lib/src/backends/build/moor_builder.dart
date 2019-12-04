@@ -27,7 +27,7 @@ class MoorBuilder extends SharedPartBuilder {
 
     final builder = MoorBuilder._(generators, 'moor', parsedOptions);
 
-    for (var generator in generators.cast<BaseGenerator>()) {
+    for (final generator in generators.cast<BaseGenerator>()) {
       generator.builder = builder;
     }
 

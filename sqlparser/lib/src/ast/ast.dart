@@ -98,7 +98,7 @@ abstract class AstNode with HasMetaMixin {
   /// Recursively returns all descendants of this node, e.g. its children, their
   /// children and so on. The tree will be pre-order traversed.
   Iterable<AstNode> get allDescendants sync* {
-    for (var child in childNodes) {
+    for (final child in childNodes) {
       yield child;
       yield* child.allDescendants;
     }
@@ -347,7 +347,7 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @protected
   T visitChildren(AstNode e) {
-    for (var child in e.childNodes) {
+    for (final child in e.childNodes) {
       child.accept(this);
     }
     return null;

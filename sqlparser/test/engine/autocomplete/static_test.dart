@@ -24,7 +24,7 @@ void main() {
   });
 }
 
-dynamic hasCode(code) => SuggestionWithCode(code);
+dynamic hasCode(dynamic code) => SuggestionWithCode(code);
 
 class SuggestionWithCode extends Matcher {
   final Matcher codeMatcher;
@@ -37,7 +37,7 @@ class SuggestionWithCode extends Matcher {
   }
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     return item is Suggestion && codeMatcher.matches(item.code, matchState);
   }
 }

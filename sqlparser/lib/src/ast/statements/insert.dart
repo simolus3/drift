@@ -98,5 +98,5 @@ class DefaultValues extends InsertSource {
   const DefaultValues();
 
   @override
-  final Iterable<AstNode> childNodes = const [];
+  Iterable<AstNode> get childNodes => const [];
 }

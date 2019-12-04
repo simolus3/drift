@@ -8,8 +8,9 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Provider(
+    return Provider<TodoAppBloc>(
       create: (_) => TodoAppBloc(),
+      dispose: (_, bloc) => bloc.close(),
       child: MaterialApp(
         title: 'moor Demo',
         theme: ThemeData(

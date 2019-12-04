@@ -5,7 +5,7 @@ import '../data/utils/expect_equality.dart';
 
 // ignore_for_file: deprecated_member_use_from_same_package
 
-typedef Expression<int, IntType> _Extractor(
+typedef _Extractor = Expression<int, IntType> Function(
     Expression<DateTime, DateTimeType> d);
 
 /// Tests the top level [year], [month], ..., [second] methods

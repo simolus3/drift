@@ -34,7 +34,7 @@ class InlineDartResolver {
     final fakeDart = StringBuffer();
 
     fakeDart.write("import 'package:moor/moor.dart';\n");
-    for (var import in importStatements) {
+    for (final import in importStatements) {
       fakeDart.write("import '$import';\n");
     }
 

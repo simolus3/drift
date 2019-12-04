@@ -61,7 +61,7 @@ class _LintingVisitor extends RecursiveVisitor<void> {
     // First, check that the amount of values matches the declaration.
     e.source.when(
       isValues: (values) {
-        for (var tuple in values.values) {
+        for (final tuple in values.values) {
           if (tuple.expressions.length != targeted.length) {
             linter.lints.add(AnalysisError(
               type: AnalysisErrorType.other,

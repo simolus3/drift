@@ -99,7 +99,7 @@ class Precedence implements Comparable<Precedence> {
   int get hashCode => _value;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     // runtimeType comparison isn't necessary, the private constructor prevents
     // subclasses
     return other is Precedence && other._value == _value;
@@ -183,7 +183,7 @@ abstract class _InfixOperator<D, T extends SqlType<D>>
       $mrjf($mrjc(left.hashCode, $mrjc(right.hashCode, operator.hashCode)));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _InfixOperator &&
         other.left == left &&
         other.right == right &&
@@ -208,7 +208,8 @@ class _BaseInfixOperator<D, T extends SqlType<D>> extends _InfixOperator<D, T> {
       {this.precedence = Precedence.unknown});
 }
 
-/// Defines the possible comparison operators that can appear in a [_Comparison].
+/// Defines the possible comparison operators that can appear in a
+/// [_Comparison].
 enum _ComparisonOperator {
   /// '<' in sql
   less,
@@ -282,7 +283,7 @@ class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
   int get hashCode => inner.hashCode * 5;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _UnaryMinus && other.inner == inner;
   }
 }
@@ -308,7 +309,7 @@ class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
   int get hashCode => inner.hashCode * 7;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _CastExpression && other.inner == inner;
   }
 }
@@ -353,7 +354,7 @@ class FunctionCallExpression<R, S extends SqlType<R>> extends Expression<R, S> {
       $mrjf($mrjc(functionName.hashCode, _equality.hash(arguments)));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is FunctionCallExpression &&
         other.functionName == functionName &&
         _equality.equals(other.arguments, arguments);

@@ -110,7 +110,7 @@ class _BetweenExpression extends Expression<bool, BoolType> {
       $mrjc(lower.hashCode, $mrjc(higher.hashCode, not.hashCode))));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _BetweenExpression &&
         other.target == target &&
         other.not == not &&

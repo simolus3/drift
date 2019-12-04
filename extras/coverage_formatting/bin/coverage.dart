@@ -11,9 +11,11 @@ import 'dart:io';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 
-final outputFile = File('lcov.info');
+// ignore_for_file: avoid_print
 
-void main() async {
+final File outputFile = File('lcov.info');
+
+Future<void> main() async {
   if (outputFile.existsSync()) {
     outputFile.deleteSync();
   }

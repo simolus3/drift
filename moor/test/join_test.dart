@@ -21,8 +21,8 @@ void main() {
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT t.id AS "t.id", t.title AS "t.title", t.content AS "t.content", '
-        't.target_date AS "t.target_date", '
+        'SELECT t.id AS "t.id", t.title AS "t.title", '
+        't.content AS "t.content", t.target_date AS "t.target_date", '
         't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc" '
         'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
         argThat(isEmpty)));

@@ -37,7 +37,7 @@ class ResolvedType {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         other is ResolvedType &&
             other.type == type &&
@@ -53,7 +53,8 @@ class ResolvedType {
 
   @override
   String toString() {
-    return 'ResolvedType($type, hint: $hint, nullable: $nullable, array: $isArray)';
+    return 'ResolvedType($type, hint: $hint, nullable: $nullable, '
+        'array: $isArray)';
   }
 }
 
@@ -67,7 +68,7 @@ abstract class TypeHint {
   @override
   int get hashCode => runtimeType.hashCode;
   @override
-  bool operator ==(other) => other.runtimeType == runtimeType;
+  bool operator ==(dynamic other) => other.runtimeType == runtimeType;
 }
 
 /// Type hint to mark that this type will contain a boolean value.

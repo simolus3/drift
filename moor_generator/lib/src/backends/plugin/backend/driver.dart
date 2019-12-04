@@ -131,6 +131,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   @override
+  // ignore: avoid_setters_without_getters
   set priorityFiles(List<String> priorityPaths) {
     final found = priorityPaths.where(_ownsFile).map(pathToFoundFile);
     _tracker.setPriorityFiles(found);

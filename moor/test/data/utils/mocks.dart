@@ -6,7 +6,7 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 
 export 'package:mockito/mockito.dart';
 
-typedef Future<T> _EnsureOpenAction<T>(QueryExecutor e);
+typedef _EnsureOpenAction<T> = Future<T> Function(QueryExecutor e);
 
 class MockExecutor extends Mock implements QueryExecutor {
   final MockTransactionExecutor transactions = MockTransactionExecutor();
@@ -31,7 +31,7 @@ class MockExecutor extends Mock implements QueryExecutor {
     });
     when(runCustom(any, any)).thenAnswer((_) {
       assert(_opened);
-      return Future.value(0);
+      return Future.value();
     });
     when(beginTransaction()).thenAnswer((_) {
       assert(_opened);

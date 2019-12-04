@@ -22,7 +22,7 @@ class TableParser {
     table.declaration = TableDeclaration(table, base.step.file, element, null);
 
     var index = 0;
-    for (var converter in table.converters) {
+    for (final converter in table.converters) {
       converter
         ..index = index++
         ..table = table;
@@ -91,7 +91,7 @@ class TableParser {
     final parsedPrimaryKey = <SpecifiedColumn>{};
 
     if (expression is SetOrMapLiteral) {
-      for (var entry in expression.elements) {
+      for (final entry in expression.elements) {
         if (entry is Identifier) {
           final column = columns
               .singleWhere((column) => column.dartGetterName == entry.name);

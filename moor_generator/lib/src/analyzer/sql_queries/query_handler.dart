@@ -46,8 +46,8 @@ class QueryHandler {
         root is InsertStatement) {
       return _handleUpdate();
     } else {
-      throw StateError(
-          'Unexpected sql: Got $root, expected insert, select, update or delete');
+      throw StateError('Unexpected sql: Got $root, expected insert, select, '
+          'update or delete');
     }
   }
 
@@ -79,7 +79,7 @@ class QueryHandler {
     final columns = <ResultColumn>[];
     final rawColumns = _select.resolvedColumns;
 
-    for (var column in rawColumns) {
+    for (final column in rawColumns) {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
       UsedTypeConverter converter;
@@ -111,7 +111,7 @@ class QueryHandler {
       var matches = true;
 
       // go trough all columns of the table in question
-      for (var column in moorTable.columns) {
+      for (final column in moorTable.columns) {
         // check if this column from the table is present in the result set
         final tableColumn = table.findColumn(column.name.name);
         final inResultSet =

@@ -75,7 +75,7 @@ class MoorSession {
 
     // all files that transitively imported this files are no longer analyzed
     // because they depend on this file. They're still parsed though
-    for (var affected in fileGraph.crawl(file, transposed: true)) {
+    for (final affected in fileGraph.crawl(file, transposed: true)) {
       if (affected.state == FileState.analyzed) {
         affected.state = FileState.parsed;
       }

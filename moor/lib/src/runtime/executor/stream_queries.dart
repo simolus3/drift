@@ -52,7 +52,7 @@ class StreamKey {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other is StreamKey &&
             other.sql == sql &&
@@ -61,8 +61,8 @@ class StreamKey {
   }
 }
 
-/// Keeps track of active streams created from [SimpleSelectStatement]s and updates
-/// them when needed.
+/// Keeps track of active streams created from [SimpleSelectStatement]s and
+/// updates them when needed.
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey> _keysPendingRemoval = HashSet<StreamKey>();

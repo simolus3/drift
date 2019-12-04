@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart' as j;
 import 'package:moor/moor.dart';
 
-import 'package:tests/data/sample_data.dart';
+import 'package:tests/data/sample_data.dart' as people;
 
 part 'database.g.dart';
 
@@ -65,10 +65,12 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
 @UseMoor(
   tables: [Users, Friendships],
   queries: {
-    'mostPopularUsers':
-        'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
+    'mostPopularUsers': 'SELECT * FROM users u '
+        'ORDER BY (SELECT COUNT(*) FROM friendships '
+        'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
     'amountOfGoodFriends':
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
+        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
+            '(f.first_user = :user OR f.second_user = :user)',
     'friendsOf': '''SELECT u.* FROM friendships f
          INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND
            u.id != :user
@@ -103,7 +105,7 @@ class Database extends _$Database {
         if (details.wasCreated) {
           // make sure that transactions can be used in the beforeOpen callback.
           await transaction(() async {
-            for (var user in [People.dash, People.duke, People.gopher]) {
+            for (final user in [people.dash, people.duke, people.gopher]) {
               await into(users).insert(user);
             }
           });

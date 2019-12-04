@@ -55,7 +55,7 @@ class Task {
     final moorFiles = _analyzedFiles.where((f) => f.type == FileType.moor);
     final otherFiles = _analyzedFiles.where((f) => f.type != FileType.moor);
 
-    for (var file in moorFiles.followedBy(otherFiles)) {
+    for (final file in moorFiles.followedBy(otherFiles)) {
       file.errors.clearNonParsingErrors();
       await _analyze(file);
     }
@@ -82,7 +82,7 @@ class Task {
         file.currentResult = parsed;
 
         parsed.resolvedImports = <ImportStatement, FoundFile>{};
-        for (var import in parsed.imports) {
+        for (final import in parsed.imports) {
           if (import.importedFile == null) {
             // invalid import statement, this can happen as the user is typing
             continue;
@@ -112,10 +112,10 @@ class Task {
             .cast<SpecifiedDbAccessor>()
             .followedBy(parsed.declaredDatabases);
 
-        for (var accessor in daosAndDatabases) {
+        for (final accessor in daosAndDatabases) {
           final resolvedForAccessor = <FoundFile>[];
 
-          for (var import in accessor.includes) {
+          for (final import in accessor.includes) {
             final found = session.resolve(file, import);
             if (!await backend.exists(found.uri)) {
               step.reportError(ErrorInDartCode(
@@ -165,7 +165,7 @@ class Task {
             (available.currentResult as ParsedMoorFile).resolvedImports.values;
       }
 
-      for (var next in importsFromHere) {
+      for (final next in importsFromHere) {
         if (!found.contains(next) && !unhandled.contains(next)) {
           unhandled.add(next);
         }
@@ -197,7 +197,7 @@ class Task {
   }
 
   void _notifyFilesNeedWork(Iterable<FoundFile> files) {
-    for (var file in files) {
+    for (final file in files) {
       if (!_analyzedFiles.contains(file) && !_unhandled.contains(file)) {
         _unhandled.add(file);
       }
@@ -212,7 +212,7 @@ class Task {
       log.warning('There were some errors while running moor_generator on '
           '${backend.entrypoint}:');
 
-      for (var error in foundErrors) {
+      for (final error in foundErrors) {
         final printer = error.isError ? log.warning : log.info;
         error.writeDescription(printer);
       }

@@ -69,7 +69,7 @@ class _TestBackendTask extends BackendTask {
   }
 
   @override
-  Future<CompilationUnit> parseSource(String dart) {
+  Future<CompilationUnit> parseSource(String dart) async {
     return null;
   }
 

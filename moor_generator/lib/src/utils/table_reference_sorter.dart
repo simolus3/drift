@@ -10,7 +10,7 @@ import 'package:moor_generator/src/model/specified_table.dart';
 List<SpecifiedTable> sortTablesTopologically(Iterable<SpecifiedTable> tables) {
   final run = _SortRun();
 
-  for (var table in tables) {
+  for (final table in tables) {
     if (!run.didVisitAlready(table)) {
       run.previous[table] = null;
       _visit(table, run);
@@ -21,7 +21,7 @@ List<SpecifiedTable> sortTablesTopologically(Iterable<SpecifiedTable> tables) {
 }
 
 void _visit(SpecifiedTable table, _SortRun run) {
-  for (var reference in table.references) {
+  for (final reference in table.references) {
     if (run.result.contains(reference)) {
       // already handled, nothing to do
     } else if (run.previous.containsKey(reference)) {

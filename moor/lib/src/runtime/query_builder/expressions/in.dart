@@ -43,7 +43,7 @@ class _InExpression<X extends SqlType<T>, T>
     context.buffer.write('(');
 
     var first = true;
-    for (var value in _values) {
+    for (final value in _values) {
       final variable = Variable<T, X>(value);
 
       if (first) {
@@ -63,7 +63,7 @@ class _InExpression<X extends SqlType<T>, T>
       _expression.hashCode, $mrjc(_equality.hash(_values), _not.hashCode)));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other is _InExpression &&
         other._expression == _expression &&
         other._values == _values &&

@@ -16,7 +16,7 @@ class MoorCompletingContributor implements CompletionContributor {
         ..offset = results.anchor
         ..length = results.lengthBefore;
 
-      for (var suggestion in results.suggestions) {
+      for (final suggestion in results.suggestions) {
         collector.addSuggestion(CompletionSuggestion(
           CompletionSuggestionKind.KEYWORD,
           suggestion.relevance,

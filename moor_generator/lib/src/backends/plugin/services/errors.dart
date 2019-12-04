@@ -18,7 +18,7 @@ class ErrorService {
     final path = analyzedFile.uri.path;
 
     if (analyzedFile.isParsed) {
-      for (var error in analyzedFile.errors.errors) {
+      for (final error in analyzedFile.errors.errors) {
         // this is a parsing error, high severity
         final severity = error.isError
             ? AnalysisErrorSeverity.ERROR

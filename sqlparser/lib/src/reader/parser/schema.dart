@@ -95,7 +95,7 @@ mixin SchemaParser on ParserBase {
         }
       }
 
-      while (true) {
+      for (;;) {
         // begin reading a single argument, which is stopped by a comma or
         // maybe with a ), if the current depth is one
         while (_peek.type != TokenType.rightParen &&

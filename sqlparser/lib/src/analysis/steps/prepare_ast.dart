@@ -32,7 +32,8 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
     // defined in the outer scope. This is different from select statements
     // that work as expressions.
     // For instance, if you go to sqliteonline.com and issue the following
-    // query: "SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
+    // query: "SELECT * FROM demo d1,
+    //   (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
     // it won't work.
     final isInFROM = e.parent is Queryable;
     final scope = e.scope;
@@ -47,7 +48,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
       e.scope = forked;
     }
 
-    for (var windowDecl in e.windowDeclarations) {
+    for (final windowDecl in e.windowDeclarations) {
       e.scope.register(windowDecl.name, windowDecl);
     }
 
@@ -154,7 +155,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
     var largestAssigned = 0;
     final resolvedNames = <String, int>{};
 
-    for (var variable in _foundVariables) {
+    for (final variable in _foundVariables) {
       if (variable is NumberedVariable) {
         // if the variable has an explicit index (e.g ?123), then 123 is the
         // resolved index and the next variable will have index 124. Otherwise,
@@ -171,8 +172,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
         // index, but of course two variables with the same name must have the
         // same index.
         final index = resolvedNames.putIfAbsent(variable.name, () {
-          largestAssigned++;
-          return largestAssigned;
+          return ++largestAssigned;
         });
         variable.resolvedIndex = index;
       }

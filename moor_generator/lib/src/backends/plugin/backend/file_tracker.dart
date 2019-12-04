@@ -57,7 +57,7 @@ class FileTracker {
 
   void setPriorityFiles(Iterable<FoundFile> priority) {
     // remove prioritized flag from existing files
-    for (var file in _currentPriority) {
+    for (final file in _currentPriority) {
       file._prioritized = false;
       _notifyFilePriorityChanged(file);
     }
@@ -71,7 +71,7 @@ class FileTracker {
   }
 
   void handleTaskCompleted(Task task) {
-    for (var file in task.analyzedFiles) {
+    for (final file in task.analyzedFiles) {
       _notifyFilePriorityChanged(_addFile(file));
     }
   }

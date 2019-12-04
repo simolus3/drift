@@ -12,7 +12,8 @@ mixin Referencable {}
 /// A referencable which is still visible in child scopes. This doesn't apply to
 /// many things, basically only tables.
 ///
-/// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id) FROM demo AS out;"
+/// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id)
+/// FROM demo AS out;"
 /// is a valid sql query when the demo table has an id column. However,
 /// "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = d) FROM demo AS out;" is
 /// not, the "d" referencable is not visible for the child select statement.

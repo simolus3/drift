@@ -94,7 +94,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// .join([
   ///   leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
   /// ])
-  /// ..where(and(todos.name.like("%Important"), categories.name.equals("Work")));
+  /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
   /// ```
   void where(Expression<bool, BoolType> predicate) {
     if (whereExpr == null) {
@@ -156,7 +156,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
         return await e.runSelect(ctx.sql, ctx.boundVariables);
       } catch (e, s) {
         final foundTables = <String>{};
-        for (var table in _tables) {
+        for (final table in _tables) {
           if (!foundTables.add(table.$tableName)) {
             _warnAboutDuplicate(e, s, table);
           }

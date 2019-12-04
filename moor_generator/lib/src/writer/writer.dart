@@ -21,7 +21,7 @@ class Writer {
   String writeGenerated() => _leafNodes(_root).join();
 
   Iterable<StringBuffer> _leafNodes(Scope scope) sync* {
-    for (var child in scope._children) {
+    for (final child in scope._children) {
       if (child is _LeafNode) {
         yield child.buffer;
       } else if (child is Scope) {

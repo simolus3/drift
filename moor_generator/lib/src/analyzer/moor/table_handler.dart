@@ -15,7 +15,7 @@ class TableHandler {
   TableHandler(this.step, this.file, this.availableTables);
 
   void handle() {
-    for (var table in file.declaredTables) {
+    for (final table in file.declaredTables) {
       table.references.clear();
     }
 

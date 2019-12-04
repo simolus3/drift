@@ -43,7 +43,7 @@ class SqlEngine {
 
   ReferenceScope _constructRootScope() {
     final scope = ReferenceScope(null);
-    for (var table in knownTables) {
+    for (final table in knownTables) {
       scope.register(table.name, table);
     }
 

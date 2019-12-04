@@ -63,7 +63,7 @@ class Database {
   void close() {
     // close all prepared statements first
     _isClosed = true;
-    for (var stmt in _preparedStmt) {
+    for (final stmt in _preparedStmt) {
       stmt.close();
     }
 

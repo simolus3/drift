@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:tests/data/sample_data.dart';
+import 'package:tests/data/sample_data.dart' as people;
 import 'package:tests/database/database.dart';
 
 import 'suite.dart';
@@ -17,7 +17,7 @@ void migrationTests(TestExecutor executor) {
 
   test('saves and restores database', () async {
     var database = Database(executor.createExecutor(), schemaVersion: 1);
-    await database.writeUser(People.florian);
+    await database.writeUser(people.florian);
     await database.close();
 
     database = Database(executor.createExecutor(), schemaVersion: 2);

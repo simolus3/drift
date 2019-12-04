@@ -24,7 +24,7 @@ class _PluginProxy {
 
   _PluginProxy(this.sendToAnalysisServer);
 
-  void start() async {
+  Future<void> start() async {
     _channel = IOWebSocketChannel.connect('ws://localhost:9999');
     _receive = ReceivePort();
     sendToAnalysisServer.send(_receive.sendPort);

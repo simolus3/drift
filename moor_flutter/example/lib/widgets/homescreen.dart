@@ -17,7 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 /// Shows a list of todos and displays a text input to add another one
 class HomeScreenState extends State<HomeScreen> {
-  // we only use this to reset the input field at the bottom when a entry has been added
+  // we only use this to reset the input field at the bottom when a entry has
+  // been added
   final TextEditingController controller = TextEditingController();
 
   TodoAppBloc get bloc => Provider.of<TodoAppBloc>(context);
@@ -29,8 +30,6 @@ class HomeScreenState extends State<HomeScreen> {
         title: Text('Todo list'),
       ),
       drawer: CategoriesDrawer(),
-      // A moorAnimatedList automatically animates incoming and leaving items, we only
-      // have to tell it what data to display and how to turn data into widgets.
       body: StreamBuilder<List<EntryWithCategory>>(
         stream: bloc.homeScreenEntries,
         builder: (context, snapshot) {
@@ -52,10 +51,10 @@ class HomeScreenState extends State<HomeScreen> {
         },
       ),
       bottomSheet: Material(
-        elevation: 12.0,
+        elevation: 12,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8),
             child: f.Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

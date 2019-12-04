@@ -33,7 +33,7 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
       final targetTypes = e.resolvedTargetColumns.map(context.typeOf).toList();
       final source = e.source as ValuesSource;
 
-      for (var tuple in source.values) {
+      for (final tuple in source.values) {
         final expressions = tuple.expressions;
         for (var i = 0; i < min(expressions.length, targetTypes.length); i++) {
           if (i < targetTypes.length) {

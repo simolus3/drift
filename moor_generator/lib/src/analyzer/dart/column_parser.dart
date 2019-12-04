@@ -27,7 +27,8 @@ const String _methodMap = 'map';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
-    'columns are formed. If you have any questions, feel free to raise an issue.';
+    'columns are formed. If you have any questions, feel free to raise an '
+    'issue.';
 
 /// Parses a single column defined in a Dart table. These columns are a chain
 /// or [MethodInvocation]s. An example getter might look like this:
@@ -70,7 +71,7 @@ class ColumnParser {
 
     final foundFeatures = <ColumnFeature>[];
 
-    while (true) {
+    for (;;) {
       final methodName = remainingExpr.methodName.name;
 
       if (starters.contains(methodName)) {
@@ -158,7 +159,7 @@ class ColumnParser {
       }
 
       // We're not at a starting method yet, so we need to go deeper!
-      final inner = (remainingExpr.target) as MethodInvocation;
+      final inner = remainingExpr.target as MethodInvocation;
       remainingExpr = inner;
     }
 

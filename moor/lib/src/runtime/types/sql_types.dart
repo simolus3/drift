@@ -42,7 +42,7 @@ class BoolType extends SqlType<bool> {
   const BoolType();
 
   @override
-  bool mapFromDatabaseResponse(response) {
+  bool mapFromDatabaseResponse(dynamic response) {
     // ignore: avoid_returning_null
     if (response == null) return null;
     return response != 0;
@@ -57,7 +57,7 @@ class BoolType extends SqlType<bool> {
   }
 
   @override
-  mapToSqlVariable(bool content) {
+  dynamic mapToSqlVariable(bool content) {
     if (content == null) {
       return null;
     }
@@ -71,7 +71,7 @@ class StringType extends SqlType<String> implements Monoid<String> {
   const StringType();
 
   @override
-  String mapFromDatabaseResponse(response) => response?.toString();
+  String mapFromDatabaseResponse(dynamic response) => response?.toString();
 
   @override
   String mapToSqlConstant(String content) {
@@ -85,7 +85,7 @@ class StringType extends SqlType<String> implements Monoid<String> {
   }
 
   @override
-  mapToSqlVariable(String content) => content;
+  dynamic mapToSqlVariable(String content) => content;
 }
 
 /// Maps [int] values from and to sql
@@ -94,13 +94,13 @@ class IntType extends SqlType<int> implements FullArithmetic<int> {
   const IntType();
 
   @override
-  int mapFromDatabaseResponse(response) => response as int;
+  int mapFromDatabaseResponse(dynamic response) => response as int;
 
   @override
   String mapToSqlConstant(int content) => content?.toString() ?? 'NULL';
 
   @override
-  mapToSqlVariable(int content) {
+  dynamic mapToSqlVariable(int content) {
     return content;
   }
 }
@@ -112,7 +112,7 @@ class DateTimeType extends SqlType<DateTime>
   const DateTimeType();
 
   @override
-  DateTime mapFromDatabaseResponse(response) {
+  DateTime mapFromDatabaseResponse(dynamic response) {
     if (response == null) return null;
 
     final unixSeconds = response as int;
@@ -128,7 +128,7 @@ class DateTimeType extends SqlType<DateTime>
   }
 
   @override
-  mapToSqlVariable(DateTime content) {
+  dynamic mapToSqlVariable(DateTime content) {
     if (content == null) return null;
 
     return content.millisecondsSinceEpoch ~/ 1000;
@@ -141,7 +141,7 @@ class BlobType extends SqlType<Uint8List> {
   const BlobType();
 
   @override
-  mapFromDatabaseResponse(response) => response as Uint8List;
+  Uint8List mapFromDatabaseResponse(dynamic response) => response as Uint8List;
 
   @override
   String mapToSqlConstant(Uint8List content) {
@@ -151,7 +151,7 @@ class BlobType extends SqlType<Uint8List> {
   }
 
   @override
-  mapToSqlVariable(Uint8List content) => content;
+  dynamic mapToSqlVariable(Uint8List content) => content;
 }
 
 /// Maps [double] values from and to sql
@@ -160,7 +160,9 @@ class RealType extends SqlType<double> implements FullArithmetic<double> {
   const RealType();
 
   @override
-  double mapFromDatabaseResponse(response) => (response as num)?.toDouble();
+  double mapFromDatabaseResponse(dynamic response) {
+    return (response as num)?.toDouble();
+  }
 
   @override
   String mapToSqlConstant(num content) {
@@ -171,5 +173,5 @@ class RealType extends SqlType<double> implements FullArithmetic<double> {
   }
 
   @override
-  mapToSqlVariable(num content) => content;
+  dynamic mapToSqlVariable(num content) => content;
 }

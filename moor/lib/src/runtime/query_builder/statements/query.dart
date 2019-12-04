@@ -90,7 +90,8 @@ abstract class Selectable<T> {
   /// ```dart
   /// Future<TodoEntry> loadMostImportant() {
   ///   return (select(todos)
-  ///    ..orderBy([(t) => OrderingTerm(expression: t.priority, mode: OrderingMode.desc)])
+  ///    ..orderBy([(t) =>
+  ///       OrderingTerm(expression: t.priority, mode: OrderingMode.desc)])
   ///    ..limit(1)
   ///   ).getSingle();
   /// }
@@ -178,7 +179,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
   ///    which explains how to express most SQL expressions in Dart.
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [QueryEngine.select].
-  void where(Expression<bool, BoolType> filter(T tbl)) {
+  void where(Expression<bool, BoolType> Function(T tbl) filter) {
     final predicate = filter(table.asDslTable);
 
     if (whereExpr == null) {
@@ -218,7 +219,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
     });
 
     Expression<bool, BoolType> predicate;
-    for (var entry in primaryKeyValues.entries) {
+    for (final entry in primaryKeyValues.entries) {
       final comparison =
           _Comparison(entry.key, _ComparisonOperator.equal, entry.value);
 

@@ -2,7 +2,7 @@ part of '../../query_builder.dart';
 
 /// Signature of a function that generates an [OrderingTerm] when provided with
 /// a table.
-typedef OrderingTerm OrderClauseGenerator<T>(T tbl);
+typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 
 /// A select statement that doesn't use joins
 class SimpleSelectStatement<T extends Table, D extends DataClass>
@@ -91,7 +91,8 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// ```
   /// (db.select(db.users)
   ///    ..orderBy([
-  ///      (u) => OrderingTerm(expression: u.isAwesome, mode: OrderingMode.desc),
+  ///      (u) =>
+  ///        OrderingTerm(expression: u.isAwesome, mode: OrderingMode.desc),
   ///      (u) => OrderingTerm(expression: u.id)
   ///    ]))
   ///  .get()

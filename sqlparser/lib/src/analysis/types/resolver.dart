@@ -179,6 +179,7 @@ class TypeResolver {
     return _cache((Invocation call) {
       final parameters = _expandParameters(call);
       final firstNullable =
+          // ignore: avoid_bool_literals_in_conditional_expressions
           parameters.isEmpty ? false : justResolve(parameters.first).nullable;
       final anyNullable = parameters.map(justResolve).any((r) => r.nullable);
 
@@ -474,7 +475,7 @@ class ResolveResult {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         other is ResolveResult &&
             other.type == type &&

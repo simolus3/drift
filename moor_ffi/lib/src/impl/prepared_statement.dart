@@ -91,7 +91,7 @@ class PreparedStatement {
       bindings.sqlite3_reset(_stmt);
       _bound = false;
     }
-    for (var pointer in _allocatedWhileBinding) {
+    for (final pointer in _allocatedWhileBinding) {
       pointer.free();
     }
     _allocatedWhileBinding.clear();

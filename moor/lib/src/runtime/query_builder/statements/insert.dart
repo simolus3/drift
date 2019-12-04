@@ -71,7 +71,7 @@ class InsertStatement<D extends DataClass> {
     // Not every insert has the same sql, as fields which are set to null are
     // not included. So, we have a map for sql -> list of variables which we can
     // then turn into prepared statements
-    for (var row in rows) {
+    for (final row in rows) {
       final ctx = createContext(row, _resolveMode(mode, orReplace));
       statements.putIfAbsent(ctx.sql, () => []).add(ctx);
     }
@@ -115,7 +115,7 @@ class InsertStatement<D extends DataClass> {
         ..write('VALUES (');
 
       var first = true;
-      for (var variable in map.values) {
+      for (final variable in map.values) {
         if (!first) {
           ctx.buffer.write(', ');
         }

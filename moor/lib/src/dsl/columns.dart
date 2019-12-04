@@ -153,7 +153,7 @@ class IntColumnBuilder
     extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
-  IntColumnBuilder autoIncrement() => this;
+  IntColumnBuilder autoIncrement() => null;
 }
 
 /// Tells the generator to build an [BoolColumn]. See the docs at
@@ -181,7 +181,7 @@ class TextColumnBuilder
   /// string so that [String.length] is smaller than [min], the query will throw
   /// an exception when executed and no data will be written. The same applies
   /// for [max].
-  TextColumnBuilder withLength({int min, int max}) => this;
+  TextColumnBuilder withLength({int min, int max}) => null;
 }
 
 /// Tells the generator to build an [DateTimeColumn]. See the docs at

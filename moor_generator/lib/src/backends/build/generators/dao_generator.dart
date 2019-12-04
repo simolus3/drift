@@ -12,7 +12,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
     final parsed = await builder.analyzeDartFile(buildStep);
     final writer = builder.createWriter();
 
-    for (var dao in parsed.declaredDaos) {
+    for (final dao in parsed.declaredDaos) {
       final classScope = writer.child();
       final element = dao.fromClass;
 
@@ -21,7 +21,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<${dao.dbClass.displayName}> {\n');
 
-      for (var table in dao.allTables) {
+      for (final table in dao.allTables) {
         final infoType = table.tableInfoName;
         final getterName = table.tableFieldName;
         classScope
@@ -30,7 +30,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       }
 
       final writtenMappingMethods = <String>{};
-      for (var query in dao.resolvedQueries) {
+      for (final query in dao.resolvedQueries) {
         QueryWriter(query, classScope.child(), writtenMappingMethods).write();
       }
 

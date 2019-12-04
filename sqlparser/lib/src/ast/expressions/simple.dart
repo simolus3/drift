@@ -129,9 +129,8 @@ class InExpression extends Expression {
   /// tuple of variables at runtime.
   final Expression inside;
 
-  InExpression({this.not = false, @required this.left, @required this.inside}) {
-    assert(inside is Tuple || inside is Variable || inside is SubQuery);
-  }
+  InExpression({this.not = false, @required this.left, @required this.inside})
+      : assert(inside is Tuple || inside is Variable || inside is SubQuery);
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);

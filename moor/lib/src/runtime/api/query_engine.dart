@@ -245,7 +245,7 @@ mixin QueryEngine on DatabaseConnectionUser {
           rethrow;
         } finally {
           if (success) {
-            // calling complete will also take care of committing the transaction
+            // complete() will also take care of committing the transaction
             await transaction.complete();
           }
         }

@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'utils.dart';
 
-final testCases = {
+final Map<String, AstNode> testCases = {
   'UPDATE OR ROLLBACK tbl SET a = NULL, b = c WHERE d': UpdateStatement(
     or: FailureMode.rollback,
     table: TableReference('tbl', null),

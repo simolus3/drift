@@ -11,6 +11,7 @@ void main() {
     expectLater(stream, emitsInOrder([1, 2, 3, 4]));
 
     controller..add([1])..add([2])..add([3])..add([4]);
+    controller.close();
   });
 
   test('emits errors for invalid lists', () {
@@ -20,5 +21,6 @@ void main() {
     expectLater(stream, emitsInOrder([1, emitsError(anything), 2, null]));
 
     controller..add([1])..add([2, 3])..add([2])..add([]);
+    controller.close();
   });
 }

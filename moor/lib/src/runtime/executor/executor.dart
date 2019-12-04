@@ -25,7 +25,7 @@ abstract class QueryExecutor {
 
   /// Performs the async [fn] after this executor is ready, or directly if it's
   /// already ready.
-  Future<T> doWhenOpened<T>(FutureOr<T> fn(QueryExecutor e)) {
+  Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor e) fn) {
     return ensureOpen().then((_) => fn(this));
   }
 
@@ -87,7 +87,7 @@ class BatchedStatement {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other is BatchedStatement &&
             other.sql == sql &&

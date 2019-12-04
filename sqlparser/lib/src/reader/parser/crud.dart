@@ -92,7 +92,7 @@ mixin CrudParser on ParserBase {
 
       final parts = <CompoundSelectPart>[];
 
-      while (true) {
+      for (;;) {
         final part = _compoundSelectPart();
         if (part != null) {
           parts.add(part);
@@ -198,7 +198,8 @@ mixin CrudParser on ParserBase {
     if (_match(const [TokenType.identifier])) {
       // two options. the identifier could be followed by ".*", in which case
       // we have a star result column. If it's followed by anything else, it can
-      // still refer to a column in a table as part of a expression result column
+      // still refer to a column in a table as part of a expression
+      // result column
       final identifier = _previous;
 
       if (_match(const [TokenType.dot]) && _match(const [TokenType.star])) {
@@ -589,8 +590,8 @@ mixin CrudParser on ParserBase {
         if (_match(tokensToModes.keys)) {
           insertMode = tokensToModes[_previous.type];
         } else {
-          _error(
-              'After the INSERT OR, expected an insert mode (REPLACE, ROLLBACK, etc.)');
+          _error('After the INSERT OR, expected an insert mode '
+              '(REPLACE, ROLLBACK, etc.)');
         }
       } else {
         insertMode = InsertMode.insert;

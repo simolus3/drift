@@ -81,7 +81,7 @@ class MoorIsolate {
   /// [MoorIsolate] is an object than can be sent across isolates - any other
   /// isolate can then use [MoorIsolate.connect] to obtain a special database
   /// connection which operations are all executed on this isolate.
-  static MoorIsolate inCurrent(DatabaseOpener opener) {
+  factory MoorIsolate.inCurrent(DatabaseOpener opener) {
     final server = _MoorServer(opener);
     return MoorIsolate._(server.key);
   }

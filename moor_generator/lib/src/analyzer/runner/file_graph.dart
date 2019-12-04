@@ -43,7 +43,7 @@ class FileGraph {
       final neighbors = edges[file];
 
       if (neighbors != null) {
-        for (var neighbor in neighbors) {
+        for (final neighbor in neighbors) {
           // if the neighbor wasn't in the set, also add to unhandled nodes so
           // that we crawl its imports later.
           if (found.add(neighbor)) {
@@ -62,7 +62,7 @@ class FileGraph {
     // clear old imports, we also need to take the transposed imports into
     // account here
     if (_imports.containsKey(file)) {
-      for (var oldImport in _imports[file]) {
+      for (final oldImport in _imports[file]) {
         _transposedImports[oldImport]?.remove(file);
       }
       _imports.remove(file);
@@ -70,7 +70,7 @@ class FileGraph {
 
     _imports[file] = updatedImports;
 
-    for (var newImport in updatedImports) {
+    for (final newImport in updatedImports) {
       _transposedImports.putIfAbsent(newImport, () => []).add(file);
     }
   }
@@ -112,7 +112,7 @@ class FoundFile {
   int get hashCode => uri.hashCode;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) || other is FoundFile && other.uri == uri;
   }
 }

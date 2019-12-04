@@ -45,7 +45,7 @@ class Batch {
   void insertAll<D extends DataClass>(
       TableInfo<Table, D> table, List<Insertable<D>> rows,
       {InsertMode mode}) {
-    for (var row in rows) {
+    for (final row in rows) {
       insert<D>(table, row, mode: mode);
     }
   }
@@ -86,7 +86,7 @@ class Batch {
   /// Helper that calls [replace] for all [rows].
   void replaceAll<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, List<Insertable<D>> rows) {
-    for (var row in rows) {
+    for (final row in rows) {
       replace(table, row);
     }
   }

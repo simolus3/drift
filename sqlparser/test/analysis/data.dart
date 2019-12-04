@@ -1,6 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 
-final id = TableColumn(
+final TableColumn id = TableColumn(
   'id',
   const ResolvedType(type: BasicType.int),
   definition: ColumnDefinition(
@@ -9,19 +9,20 @@ final id = TableColumn(
     constraints: [PrimaryKeyColumn(null)],
   ),
 );
-final content =
+final TableColumn content =
     TableColumn('content', const ResolvedType(type: BasicType.text));
 
-final demoTable = Table(
+final Table demoTable = Table(
   name: 'demo',
   resolvedColumns: [id, content],
 );
 
-final anotherId = TableColumn('id', const ResolvedType(type: BasicType.int));
-final dateTime = TableColumn(
+final TableColumn anotherId =
+    TableColumn('id', const ResolvedType(type: BasicType.int));
+final TableColumn dateTime = TableColumn(
     'date', const ResolvedType(type: BasicType.int, hint: IsDateTime()));
 
-final anotherTable = Table(
+final Table anotherTable = Table(
   name: 'tbl',
   resolvedColumns: [anotherId, dateTime],
 );

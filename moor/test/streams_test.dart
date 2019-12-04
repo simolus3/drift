@@ -50,12 +50,12 @@ void main() {
   test('streams emit cached data when a new listener attaches', () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
-    final first = (db.select(db.users).watch());
+    final first = db.select(db.users).watch();
     expect(first, emits(isEmpty));
 
     clearInteractions(executor);
 
-    final second = (db.select(db.users).watch());
+    final second = db.select(db.users).watch();
     expect(second, emits(isEmpty));
 
     // calling executor.dialect is ok, it's needed to construct the statement

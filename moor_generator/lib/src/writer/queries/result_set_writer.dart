@@ -18,7 +18,7 @@ class ResultSetWriter {
 
     into.write('class $className {\n');
     // write fields
-    for (var column in query.resultSet.columns) {
+    for (final column in query.resultSet.columns) {
       final name = query.resultSet.dartNameFor(column);
       final runtimeType = column.dartType;
       into.write('final $runtimeType $name\n;');
@@ -26,7 +26,7 @@ class ResultSetWriter {
 
     // write the constructor
     into.write('$className({');
-    for (var column in columnNames) {
+    for (final column in columnNames) {
       into.write('this.$column,');
     }
     into.write('});\n');

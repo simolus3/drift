@@ -1,15 +1,15 @@
 part of 'query_builder.dart';
 
 /// Signature of a function that will be invoked when a database is created.
-typedef Future<void> OnCreate(Migrator m);
+typedef OnCreate = Future<void> Function(Migrator m);
 
 /// Signature of a function that will be invoked when a database is upgraded.
-typedef Future<void> OnUpgrade(Migrator m, int from, int to);
+typedef OnUpgrade = Future<void> Function(Migrator m, int from, int to);
 
 /// Signature of a function that's called after a migration has finished and the
 /// database is ready to be used. Useful to populate data.
-@deprecated
-typedef Future<void> OnMigrationFinished();
+@Deprecated('This is never used')
+typedef OnMigrationFinished = Future<void> Function();
 
 /// Signature of a function that's called before a database is marked opened by
 /// moor, but after migrations took place. This is a suitable callback to to
@@ -48,7 +48,7 @@ class MigrationStrategy {
 }
 
 /// A function that executes queries and ignores what they return.
-typedef Future<void> SqlExecutor(String sql, [List<dynamic> args]);
+typedef SqlExecutor = Future<void> Function(String sql, [List<dynamic> args]);
 
 /// Runs migrations declared by a [MigrationStrategy].
 class Migrator {
@@ -60,7 +60,7 @@ class Migrator {
 
   /// Creates all tables specified for the database, if they don't exist
   Future<void> createAllTables() async {
-    for (var table in _db.allTables) {
+    for (final table in _db.allTables) {
       await createTable(table);
     }
   }

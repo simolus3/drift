@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('utf8 store and load test', () {
-    final content = 'Hasta Mañana';
+    const content = 'Hasta Mañana';
     final blob = CBlob.allocateString(content);
 
     expect(blob.readString(), content);

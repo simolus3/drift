@@ -50,7 +50,8 @@ class TableColumn extends Column {
 
     // We need to check whether this column is a primary key, which could happen
     // because of a table or a column constraint
-    for (var tableConstraint in table.tableConstraints.whereType<KeyClause>()) {
+    final columnsWithKey = table.tableConstraints.whereType<KeyClause>();
+    for (final tableConstraint in columnsWithKey) {
       if (!tableConstraint.isPrimaryKey) continue;
 
       final columns = tableConstraint.indexedColumns;
@@ -60,7 +61,7 @@ class TableColumn extends Column {
     }
 
     // option 2: This column has a primary key constraint
-    for (var primaryConstraint in constraints.whereType<PrimaryKeyColumn>()) {
+    for (final primaryConstraint in constraints.whereType<PrimaryKeyColumn>()) {
       if (primaryConstraint.mode == OrderingMode.descending) return false;
 
       // additional restriction: Column type must be exactly "INTEGER"

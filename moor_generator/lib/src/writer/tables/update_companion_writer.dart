@@ -24,7 +24,7 @@ class UpdateCompanionWriter {
   }
 
   void _writeFields() {
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _buffer.write('final Value<${column.dartTypeName}>'
           ' ${column.dartGetterName};\n');
     }
@@ -33,7 +33,7 @@ class UpdateCompanionWriter {
   void _writeConstructor() {
     _buffer.write('const ${table.getNameForCompanionClass(scope.options)}({');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _buffer.write('this.${column.dartGetterName} = const Value.absent(),');
     }
 
@@ -57,7 +57,7 @@ class UpdateCompanionWriter {
     //    @required String b}): a = Value(a), b = Value(b);
     // We don't need to use this. for the initializers, Dart figures that out.
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final param = column.dartGetterName;
 
       if (column.requiredDuringInsert) {
@@ -71,7 +71,7 @@ class UpdateCompanionWriter {
     _buffer.write('})');
 
     var first = true;
-    for (var required in requiredColumns) {
+    for (final required in requiredColumns) {
       if (first) {
         _buffer.write(': ');
         first = false;
@@ -91,7 +91,7 @@ class UpdateCompanionWriter {
       ..write(table.getNameForCompanionClass(scope.options))
       ..write(' copyWith({');
     var first = true;
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       if (!first) {
         _buffer.write(', ');
       }
@@ -102,7 +102,7 @@ class UpdateCompanionWriter {
     _buffer
       ..write('}) {\n') //
       ..write('return ${table.getNameForCompanionClass(scope.options)}(');
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final name = column.dartGetterName;
       _buffer.write('$name: $name ?? this.$name,');
     }

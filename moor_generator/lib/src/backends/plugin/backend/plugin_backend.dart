@@ -27,7 +27,7 @@ class PluginTask extends BackendTask {
   final Logger log = Logger.root;
 
   @override
-  Future<CompilationUnit> parseSource(String dart) {
+  Future<CompilationUnit> parseSource(String dart) async {
     return null;
   }
 

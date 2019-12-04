@@ -15,7 +15,7 @@ class TypeMapper {
   /// by the sqlparser library.
   Table extractStructure(SpecifiedTable table) {
     final columns = <TableColumn>[];
-    for (var specified in table.columns) {
+    for (final specified in table.columns) {
       final hint = specified.typeConverter != null
           ? TypeConverterHint(specified.typeConverter)
           : null;
@@ -111,7 +111,7 @@ class TypeMapper {
     var maxIndex = 999;
     var currentIndex = 0;
 
-    for (var used in merged) {
+    for (final used in merged) {
       if (used is Variable) {
         if (used.resolvedIndex == currentIndex) {
           continue; // already handled, we only report a single variable / index
@@ -127,8 +127,8 @@ class TypeMapper {
 
         if (explicitIndex != null && currentIndex >= maxIndex) {
           throw ArgumentError(
-              'Cannot have a variable with an index lower than that of an array '
-              'appearing after an array!');
+              'Cannot have a variable with an index lower than that of an '
+              'array appearing after an array!');
         }
 
         foundElements
@@ -158,14 +158,14 @@ class TypeMapper {
   List<dynamic /* Variable|DartPlaceholder */ > _mergeVarsAndPlaceholders(
       List<Variable> vars, List<DartPlaceholder> placeholders) {
     final groupVarsByIndex = <int, List<Variable>>{};
-    for (var variable in vars) {
+    for (final variable in vars) {
       groupVarsByIndex
           .putIfAbsent(variable.resolvedIndex, () => [])
           .add(variable);
     }
     // sort each group by index
-    for (var group in groupVarsByIndex.values) {
-      group..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+    for (final group in groupVarsByIndex.values) {
+      group.sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
     }
 
     int Function(dynamic, dynamic) comparer;

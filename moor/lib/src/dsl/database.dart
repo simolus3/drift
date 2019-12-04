@@ -10,7 +10,8 @@ part of 'dsl.dart';
 /// a [QueryEngine] to use moor:
 /// ```dart
 /// class MyDatabase extends _$MyDatabase { // _$MyDatabase was generated
-///   MyDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'path.db'));
+///   MyDatabase():
+///     super(FlutterQueryExecutor.inDatabaseFolder(path: 'path.db'));
 /// }
 /// ```
 class UseMoor {

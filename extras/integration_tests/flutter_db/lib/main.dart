@@ -28,7 +28,7 @@ class SqfliteExecutor extends TestExecutor {
   }
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   runAllTests(SqfliteExecutor());

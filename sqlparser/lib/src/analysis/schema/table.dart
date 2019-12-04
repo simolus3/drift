@@ -52,7 +52,7 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
       this.withoutRowId = false,
       this.tableConstraints = const [],
       this.definition}) {
-    for (var column in resolvedColumns) {
+    for (final column in resolvedColumns) {
       column.table = this;
 
       if (_rowIdColumn == null && column.isAliasForRowId()) {

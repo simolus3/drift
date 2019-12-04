@@ -29,7 +29,7 @@ class MoorGenerator extends Generator implements BaseGenerator {
       writer.leaf().write(ignore);
     }
 
-    for (var db in parsed.declaredDatabases) {
+    for (final db in parsed.declaredDatabases) {
       DatabaseWriter(db, writer.child()).write();
     }
 

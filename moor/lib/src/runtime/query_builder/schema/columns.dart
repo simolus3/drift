@@ -106,7 +106,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   int get hashCode => $mrjf($mrjc(tableName.hashCode, $name.hashCode));
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     if (other.runtimeType != runtimeType) return false;
 
     // ignore: test_types_in_equals

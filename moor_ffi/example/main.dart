@@ -18,7 +18,7 @@ void main() {
 
   final selectStmt = db.prepare('SELECT * FROM frameworks ORDER BY name');
   final result = selectStmt.select();
-  for (var row in result) {
+  for (final row in result) {
     print('${row['id']}: ${row['name']}');
   }
 

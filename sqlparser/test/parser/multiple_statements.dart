@@ -8,7 +8,7 @@ import 'utils.dart';
 
 void main() {
   test('can parse multiple statements', () {
-    final sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
+    const sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
 
     testMoorFile(
       sql,
@@ -37,7 +37,7 @@ void main() {
   });
 
   test('recovers from invalid statements', () {
-    final sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
+    const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
     final tokens = Scanner(sql).scanTokens();
     final statements = Parser(tokens).moorFile().statements;
 
@@ -55,7 +55,7 @@ void main() {
   });
 
   test('parses imports and declared statements in moor mode', () {
-    final sql = r'''
+    const sql = r'''
     import 'test.dart';
     query: SELECT * FROM tbl;
      ''';

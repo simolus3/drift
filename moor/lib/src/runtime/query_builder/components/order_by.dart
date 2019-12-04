@@ -56,7 +56,7 @@ class OrderBy extends Component {
       context.buffer.write('ORDER BY ');
     }
 
-    for (var term in terms) {
+    for (final term in terms) {
       if (first) {
         first = false;
       } else {

@@ -27,7 +27,7 @@ class ParseDartStep extends Step {
     final databases = <SpecifiedDatabase>[];
     final daos = <SpecifiedDao>[];
 
-    for (var declaredClass in reader.classes) {
+    for (final declaredClass in reader.classes) {
       // check if the table inherits from the moor table class. The !isExactly
       // check is here because we run this generator on moor itself and we get
       // weird errors for the Table class itself.
@@ -35,12 +35,12 @@ class ParseDartStep extends Step {
           !_tableTypeChecker.isExactly(declaredClass)) {
         await _parseTable(declaredClass);
       } else {
-        for (var annotation in _useMoorChecker.annotationsOf(declaredClass)) {
+        for (final annotation in _useMoorChecker.annotationsOf(declaredClass)) {
           final reader = ConstantReader(annotation);
           databases.add(await parseDatabase(declaredClass, reader));
         }
 
-        for (var annotation in _useDaoChecker.annotationsOf(declaredClass)) {
+        for (final annotation in _useDaoChecker.annotationsOf(declaredClass)) {
           final reader = ConstantReader(annotation);
           daos.add(await parseDao(declaredClass, reader));
         }
@@ -90,7 +90,7 @@ class ParseDartStep extends Step {
           message: 'The type $type is not a moor table',
           affectedElement: initializedBy,
         ));
-        return null;
+        return Future.value(null);
       } else {
         return _parseTable(type.element as ClassElement);
       }

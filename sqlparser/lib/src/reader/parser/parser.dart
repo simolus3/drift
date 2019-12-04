@@ -81,7 +81,7 @@ abstract class ParserBase {
 
   bool _match(Iterable<TokenType> types) {
     if (_reportAutoComplete) _suggestHintForTokens(types);
-    for (var type in types) {
+    for (final type in types) {
       if (_check(type)) {
         _advance();
         return true;

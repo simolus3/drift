@@ -1,5 +1,8 @@
 part of '../query_builder.dart';
 
+// ignoring the lint because we can't have parameterized factories
+// ignore_for_file: prefer_constructors_over_static_methods
+
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.
 class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
@@ -10,7 +13,7 @@ class Variable<T, S extends SqlType<T>> extends Expression<T, S> {
   // get its own index in sqlite and is thus different.
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
   /// Constructs a new variable from the [value].
   const Variable(this.value);
@@ -72,13 +75,13 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
   const Constant(this.value);
 
   @override
-  final Precedence precedence = Precedence.primary;
+  Precedence get precedence => Precedence.primary;
 
   /// The value that will be converted to an sql literal.
   final T value;
 
   @override
-  final bool isLiteral = true;
+  bool get isLiteral => true;
 
   @override
   void writeInto(GenerationContext context) {
@@ -90,7 +93,7 @@ class Constant<T, S extends SqlType<T>> extends Expression<T, S> {
   int get hashCode => value.hashCode;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return other.runtimeType == runtimeType &&
         // ignore: test_types_in_equals
         (other as Constant<T, S>).value == value;

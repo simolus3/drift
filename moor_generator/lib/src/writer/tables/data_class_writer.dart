@@ -15,11 +15,11 @@ class DataClassWriter {
   }
 
   void write() {
-    _buffer.write(
-        'class ${table.dartTypeName} extends DataClass implements Insertable<${table.dartTypeName}> {\n');
+    _buffer.write('class ${table.dartTypeName} extends DataClass '
+        'implements Insertable<${table.dartTypeName}> {\n');
 
     // write individual fields
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _buffer
           .write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
     }
@@ -70,7 +70,7 @@ class DataClassWriter {
     final dartTypeToResolver = <String, String>{};
 
     final types = table.columns.map((c) => c.variableTypeName).toSet();
-    for (var usedType in types) {
+    for (final usedType in types) {
       // final intType = db.typeSystem.forDartType<int>();
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
@@ -82,7 +82,7 @@ class DataClassWriter {
     // finally, the mighty constructor invocation:
     _buffer.write('return $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       // id: intType.mapFromDatabaseResponse(data["id])
       final getter = column.dartGetterName;
       final resolver = dartTypeToResolver[column.variableTypeName];
@@ -115,7 +115,7 @@ class DataClassWriter {
           ') {\n')
       ..write('return $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
       final type = column.dartTypeName;
@@ -140,7 +140,7 @@ class DataClassWriter {
         '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
         '\n return {');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final name = column.getJsonKey(scope.options);
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
@@ -169,7 +169,7 @@ class DataClassWriter {
 
     _buffer.write('}) => $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       // we also have a method parameter called like the getter, so we can use
       // field: field ?? this.field
       final getter = column.dartGetterName;
@@ -224,7 +224,7 @@ class DataClassWriter {
         '$companionClass createCompanion(bool nullToAbsent) {\n'
         'return $companionClass(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final getter = column.dartGetterName;
       _buffer.write('$getter: $getter == null && nullToAbsent ? '
           'const Value.absent() : Value($getter),');

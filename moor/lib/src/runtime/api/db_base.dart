@@ -60,13 +60,15 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     }
     final count = ++_openedDbCount[runtimeType];
     if (count > 1) {
+      // ignore: avoid_print
       print(
         'WARNING (moor): It looks like you\'ve created the database class'
         '$runtimeType multiple times. When these two databases use the same '
         'QueryExecutor, race conditions will ocur and might corrupt the '
         'database. \n'
         'Try to follow the advice at https://moor.simonbinder.eu/faq/#using-the-database '
-        'or, if you know what you\'re doing, set moorRuntimeOptions.dontWarnAboutMultipleDatabases = true\n'
+        'or, if you know what you\'re doing, set '
+        'moorRuntimeOptions.dontWarnAboutMultipleDatabases = true\n'
         'Here is the stacktrace from when the database was opened a second '
         'time:\n${StackTrace.current}\n'
         'This warning will only appear on debug builds.',

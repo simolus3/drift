@@ -23,7 +23,7 @@ class ColumnName {
   int get hashCode => name.hashCode + implicit.hashCode * 31;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     if (other.runtimeType != runtimeType) return false;
     // ignore: test_types_in_equals
     final typedOther = other as ColumnName;
@@ -127,7 +127,8 @@ class SpecifiedColumn {
   final UsedTypeConverter typeConverter;
 
   /// The dart type that matches the values of this column. For instance, if a
-  /// table has declared an `IntColumn`, the matching dart type name would be [int].
+  /// table has declared an `IntColumn`, the matching dart type name would be
+  /// [int].
   String get dartTypeName {
     if (typeConverter != null) {
       return typeConverter.mappedType?.displayName;
@@ -205,7 +206,7 @@ class AutoIncrement extends ColumnFeature {
   factory AutoIncrement() => _instance;
 
   @override
-  bool operator ==(other) => other is AutoIncrement;
+  bool operator ==(dynamic other) => other is AutoIncrement;
 
   @override
   int get hashCode => 1337420;
@@ -222,7 +223,7 @@ class LimitingTextLength extends ColumnFeature {
   int get hashCode => minLength.hashCode ^ maxLength.hashCode;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     if (other.runtimeType != runtimeType) return false;
     // ignore: test_types_in_equals
     final typedOther = other as LimitingTextLength;

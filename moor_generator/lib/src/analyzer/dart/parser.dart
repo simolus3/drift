@@ -49,8 +49,8 @@ class MoorDartParser {
       step.reportError(ErrorInDartCode(
         affectedElement: method.declaredElement,
         severity: Severity.criticalError,
-        message:
-            'This method must have an expression body (user => instead of {return ...})',
+        message: 'This method must have an expression body '
+            '(use => instead of {return ...})',
       ));
       return null;
     }
@@ -66,7 +66,7 @@ class MoorDartParser {
     return resolvedLibrary.getElementDeclaration(element);
   }
 
-  String readStringLiteral(Expression expression, void onError()) {
+  String readStringLiteral(Expression expression, void Function() onError) {
     if (!(expression is StringLiteral)) {
       onError();
     } else {
@@ -81,7 +81,7 @@ class MoorDartParser {
     return null;
   }
 
-  int readIntLiteral(Expression expression, void onError()) {
+  int readIntLiteral(Expression expression, void Function() onError) {
     if (!(expression is IntegerLiteral)) {
       onError();
       // ignore: avoid_returning_null

@@ -23,7 +23,7 @@ void main() {
     // these shouldn't be identical, so no const constructor
     final first = Constant('hi'); // ignore: prefer_const_constructors
     final alsoFirst = Constant('hi'); // ignore: prefer_const_constructors
-    final second = const Constant(3);
+    const second = Constant(3);
 
     expectEquals(first, alsoFirst);
     expectNotEquals(first, second);

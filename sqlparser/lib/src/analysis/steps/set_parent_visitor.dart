@@ -11,7 +11,7 @@ class SetParentVisitor {
   void _applyFor(AstNode node, AstNode parent) {
     node.parent = parent;
 
-    for (var child in node.childNodes) {
+    for (final child in node.childNodes) {
       _applyFor(child, node);
     }
   }

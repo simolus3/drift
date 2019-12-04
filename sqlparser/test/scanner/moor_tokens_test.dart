@@ -4,7 +4,7 @@ import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 void main() {
   test('parses moor specific tokens', () {
-    final part = 'c INTEGER MAPPED BY `const Mapper()` NOT NULL';
+    const part = 'c INTEGER MAPPED BY `const Mapper()` NOT NULL';
     final scanner = Scanner(part, scanMoorTokens: true);
     final tokens = scanner.scanTokens();
 

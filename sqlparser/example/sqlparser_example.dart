@@ -17,16 +17,14 @@ ORDER BY f.name ASC, f.popularity DESC
 LIMIT 5 OFFSET 5 * 3
   ''');
 
-  for (var error in result.errors) {
-    print(error);
-  }
+  result.errors.forEach(print);
 
   final select = result.root as SelectStatement;
   final columns = select.resolvedColumns;
 
   print('the query returns ${columns.length} columns');
 
-  for (var column in columns) {
+  for (final column in columns) {
     final type = result.typeOf(column);
     print('${column.name}, which will be a $type');
   }

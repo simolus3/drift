@@ -24,8 +24,8 @@ DynamicLibrary _defaultOpen() {
     return DynamicLibrary.open('libsqlite3.so');
   }
   if (Platform.isMacOS || Platform.isIOS) {
-    // todo when we use a dev version of Dart 2.6, we can (and should!!) use DynamicLibrary.executable() here
-//     return DynamicLibrary.executable();
+    // todo: Consider including sqlite3 in the build and use DynamicLibrary.
+    // executable()
     return DynamicLibrary.open('/usr/lib/libsqlite3.dylib');
   }
   if (Platform.isWindows) {

@@ -100,7 +100,7 @@ class _DefaultValueSerializer extends ValueSerializer {
   const _DefaultValueSerializer();
 
   @override
-  T fromJson<T>(json) {
+  T fromJson<T>(dynamic json) {
     if (T == DateTime) {
       if (json == null) {
         return null;

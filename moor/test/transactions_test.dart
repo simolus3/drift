@@ -1,5 +1,7 @@
 @TestOn('!browser') // todo: Figure out why this doesn't run in js
 
+// ignore_for_file: lines_longer_than_80_chars
+
 /*
 These tests don't work when compiled to js:
 

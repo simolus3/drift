@@ -20,7 +20,7 @@ class MoorParser {
     final queryDeclarations = <DeclaredMoorQuery>[];
     final importStatements = <ImportStatement>[];
 
-    for (var parsedStmt in parsedFile.statements) {
+    for (final parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
         step.inlineDartResolver.importStatements.add(importStmt.importedFile);
@@ -32,7 +32,7 @@ class MoorParser {
       }
     }
 
-    for (var error in result.errors) {
+    for (final error in result.errors) {
       step.reportError(ErrorInMoorFile(
         severity: Severity.error,
         span: error.token.span,
@@ -42,7 +42,7 @@ class MoorParser {
 
     final createdTables = <SpecifiedTable>[];
     final tableDeclarations = <CreateTableStatement, SpecifiedTable>{};
-    for (var reader in createdReaders) {
+    for (final reader in createdReaders) {
       final table = reader.extractTable(step.mapper);
       createdTables.add(table);
       tableDeclarations[reader.stmt] = table;
@@ -55,7 +55,7 @@ class MoorParser {
       imports: importStatements,
       tableDeclarations: tableDeclarations,
     );
-    for (var decl in queryDeclarations) {
+    for (final decl in queryDeclarations) {
       decl.file = analyzedFile;
     }
 

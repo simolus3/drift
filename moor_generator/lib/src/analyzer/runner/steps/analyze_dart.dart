@@ -7,7 +7,7 @@ class AnalyzeDartStep extends AnalyzingStep {
   void analyze() {
     final parseResult = file.currentResult as ParsedDartFile;
 
-    for (var accessor in parseResult.dbAccessors) {
+    for (final accessor in parseResult.dbAccessors) {
       final transitiveImports = _transitiveImports(accessor.resolvedImports);
 
       var availableTables = _availableTables(transitiveImports)

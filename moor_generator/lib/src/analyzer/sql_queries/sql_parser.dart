@@ -29,7 +29,7 @@ class SqlParser {
   void parse() {
     _spawnEngine();
 
-    for (var query in definedQueries) {
+    for (final query in definedQueries) {
       final name = query.name;
       var declaredInMoor = false;
 
@@ -51,7 +51,7 @@ class SqlParser {
         continue;
       }
 
-      for (var error in context.errors) {
+      for (final error in context.errors) {
         _report(error,
             msg: () => 'The sql query $name is invalid: $error',
             severity: Severity.error);
@@ -67,8 +67,8 @@ class SqlParser {
     }
 
     // report lints
-    for (var query in foundQueries) {
-      for (var lint in query.lints) {
+    for (final query in foundQueries) {
+      for (final lint in query.lints) {
         _report(lint,
             msg: () => 'Lint for ${query.name}: $lint',
             severity: Severity.warning);

@@ -20,7 +20,7 @@ class MoorHighlightContributor implements HighlightsContributor {
       final visitor = _HighlightingVisitor(collector);
       result.parsedFile.accept(visitor);
 
-      for (var token in result.parseResult.tokens) {
+      for (final token in result.parseResult.tokens) {
         if (token is KeywordToken && !token.isIdentifier) {
           final start = token.span.start.offset;
           final length = token.span.length;

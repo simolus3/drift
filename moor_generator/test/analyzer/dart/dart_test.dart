@@ -34,15 +34,18 @@ void main() {
       return declaration.node as MethodDeclaration;
     }
 
-    void _verifyReturnExpressionMatches(Element element, String source) async {
+    Future<void> _verifyReturnExpressionMatches(
+        Element element, String source) async {
       final node = await _loadDeclaration(element);
       expect(parser.returnExpressionOfMethod(node).toSource(), source);
     }
 
     final testClass = library.getType('Test');
 
-    _verifyReturnExpressionMatches(testClass.getGetter('getter'), "'foo'");
-    _verifyReturnExpressionMatches(testClass.getMethod('function'), "'bar'");
+    await _verifyReturnExpressionMatches(
+        testClass.getGetter('getter'), "'foo'");
+    await _verifyReturnExpressionMatches(
+        testClass.getMethod('function'), "'bar'");
 
     final invalidDecl = await _loadDeclaration(testClass.getMethod('invalid'));
     expect(parser.returnExpressionOfMethod(invalidDecl), isNull);

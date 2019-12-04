@@ -88,7 +88,8 @@ void main() {
           .addColumn(db.users, db.users.isAwesome);
 
       verify(mockQueryExecutor.call('ALTER TABLE users ADD COLUMN '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1));'));
+          'is_awesome INTEGER NOT NULL DEFAULT 1 '
+          'CHECK (is_awesome in (0, 1));'));
     });
   });
 

@@ -37,10 +37,9 @@ class AggregateExpression extends Expression
       @required this.parameters,
       this.filter,
       this.windowDefinition,
-      this.windowName}) {
-    // either window definition or name must be null
-    assert((windowDefinition == null) != (windowName == null));
-  }
+      this.windowName})
+      // either window definition or name must be null
+      : assert((windowDefinition == null) != (windowName == null));
 
   @override
   T accept<T>(AstVisitor<T> visitor) => visitor.visitAggregateExpression(this);
@@ -196,7 +195,7 @@ class FrameBoundary {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     if (identical(this, other)) return true;
     if (other.runtimeType != runtimeType) return false;
 

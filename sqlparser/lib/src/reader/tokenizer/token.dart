@@ -254,7 +254,7 @@ const Map<String, TokenType> keywords = {
 };
 
 /// Maps [TokenType]s which are keywords to their lexeme.
-final reverseKeywords = {
+final Map<TokenType, String> reverseKeywords = {
   for (var entry in keywords.entries) entry.value: entry.key,
   for (var entry in moorKeywords.entries) entry.value: entry.key,
 };

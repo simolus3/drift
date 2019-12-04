@@ -46,12 +46,9 @@ class _VmDelegate extends DatabaseDelegate {
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) async {
-    for (var stmt in statements) {
+    for (final stmt in statements) {
       final prepared = _db.prepare(stmt.sql);
-
-      for (var boundVars in stmt.variables) {
-        prepared.execute(boundVars);
-      }
+      stmt.variables.forEach(prepared.execute);
 
       prepared.close();
     }

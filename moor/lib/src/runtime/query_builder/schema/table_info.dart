@@ -63,7 +63,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   TableInfo<TableDsl, D> createAlias(String alias);
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     // tables are singleton instances except for aliases
     if (other is TableInfo) {
       return other.runtimeType == runtimeType && other.$tableName == $tableName;

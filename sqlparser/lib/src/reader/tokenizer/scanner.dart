@@ -308,7 +308,8 @@ class Scanner {
 
       if (_isAtEnd) {
         errors.add(TokenizerError(
-            'Unexpected end of file. Expected digits for the scientific notation',
+            'Unexpected end of file. '
+            'Expected digits for the scientific notation',
             _currentLocation));
         return;
       }

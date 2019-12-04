@@ -34,6 +34,7 @@ class MoorWrappedException implements Exception {
 
   @override
   String toString() {
-    return '$cause at \n$trace\nMoor detected a possible cause for this: $message';
+    return '$cause at \n$trace\n'
+        'Moor detected a possible cause for this: $message';
   }
 }

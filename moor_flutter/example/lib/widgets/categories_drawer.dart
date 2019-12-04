@@ -81,7 +81,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Text('${entry.categoryWithCount?.count} entries'),
       ),
     ];
@@ -129,7 +129,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Material(
         color: isActive
             ? Colors.orangeAccent.withOpacity(0.3)
@@ -141,7 +141,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
             Navigator.pop(context); // close the navigation drawer
           },
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8),
             child: Row(
               children: rowContent,
             ),

@@ -89,21 +89,21 @@ mixin ExpressionParser on ParserBase {
     var expression = _comparison();
     final first = expression.first;
 
-    final ops = const [
+    const ops = [
       TokenType.equal,
       TokenType.doubleEqual,
       TokenType.exclamationEqual,
       TokenType.lessMore,
       TokenType.$is,
     ];
-    final stringOps = const [
+    const stringOps = [
       TokenType.like,
       TokenType.glob,
       TokenType.match,
       TokenType.regexp,
     ];
 
-    while (true) {
+    for (;;) {
       if (_checkWithNot(TokenType.between)) {
         final not = _matchOne(TokenType.not);
         _consume(TokenType.between, 'expected a BETWEEN');

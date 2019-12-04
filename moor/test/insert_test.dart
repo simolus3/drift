@@ -79,8 +79,8 @@ void main() {
       TodosTableCompanion(title: Value('title'), content: Value('c')),
     ]);
 
-    final insertSimple = 'INSERT INTO todos (content) VALUES (?)';
-    final insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
+    const insertSimple = 'INSERT INTO todos (content) VALUES (?)';
+    const insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
 
     verify(executor.runBatched([
       BatchedStatement(insertSimple, [
@@ -103,8 +103,8 @@ void main() {
       TodosTableCompanion(title: Value('title'), content: Value('c')),
     ], orReplace: true);
 
-    final insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
-    final insertTitle =
+    const insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
+    const insertTitle =
         'INSERT OR REPLACE INTO todos (title, content) VALUES (?, ?)';
 
     verify(executor.runBatched([

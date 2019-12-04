@@ -2,7 +2,7 @@ import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final content = '''
+  const content = '''
 import 'package:my_package/some_file.dart';
 import 'relative_file.moor';
   

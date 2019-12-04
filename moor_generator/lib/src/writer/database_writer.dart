@@ -25,7 +25,8 @@ class DatabaseWriter {
     final className = '_\$${db.fromClass.name}';
     final firstLeaf = dbScope.leaf();
     firstLeaf.write('abstract class $className extends GeneratedDatabase {\n'
-        '$className(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e); \n');
+        '$className(QueryExecutor e) : '
+        'super(SqlTypeSystem.defaultInstance, e); \n');
 
     if (dbScope.options.generateConnectConstructor) {
       firstLeaf.write(
@@ -34,7 +35,7 @@ class DatabaseWriter {
 
     final tableGetters = <String>[];
 
-    for (var table in db.allTables) {
+    for (final table in db.allTables) {
       tableGetters.add(table.tableFieldName);
       final tableClassName = table.tableInfoName;
 
@@ -47,7 +48,7 @@ class DatabaseWriter {
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
-    for (var dao in db.daos) {
+    for (final dao in db.daos) {
       final typeName = dao.displayName;
       final getterName = ReCase(typeName).camelCase;
       final databaseImplName = db.fromClass.name;
@@ -62,7 +63,7 @@ class DatabaseWriter {
 
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
-    for (var query in db.resolvedQueries) {
+    for (final query in db.resolvedQueries) {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
