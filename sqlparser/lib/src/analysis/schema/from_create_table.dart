@@ -10,7 +10,7 @@ class SchemaFromCreateTable {
 
   Table read(TableInducingStatement stmt) {
     if (stmt is CreateTableStatement) {
-      _readCreateTable(stmt);
+      return _readCreateTable(stmt);
     } else if (stmt is CreateVirtualTableStatement) {
       final module = stmt.scope.resolve<Module>(stmt.moduleName);
       return module.parseTable(stmt);

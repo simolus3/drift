@@ -46,7 +46,7 @@ class IsolateCommunication {
     key.openConnectionPort
         .send(_ClientConnectionRequest(clientReceive.sendPort));
 
-    final response = (await stream.first) as _ServerConnectionResponse;
+    final response = await stream.first as _ServerConnectionResponse;
 
     final communication =
         IsolateCommunication._(response.sendPort, stream, debugLog);

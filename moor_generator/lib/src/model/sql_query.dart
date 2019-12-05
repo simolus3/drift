@@ -2,6 +2,7 @@ import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
+import 'package:moor_generator/src/utils/hash.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -298,4 +299,16 @@ class FoundDartPlaceholder extends FoundElement {
 
   @override
   String get dartParameterName => name;
+
+  @override
+  int get hashCode => hashAll([type, columnType, name]);
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        other is FoundDartPlaceholder &&
+            other.type == type &&
+            other.columnType == columnType &&
+            other.name == name;
+  }
 }

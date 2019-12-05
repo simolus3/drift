@@ -34,7 +34,7 @@ class UsedLanguages extends Table {
   tables: [UsedLanguages],
   include: {'package:test_lib/tables.moor'},
   queries: {
-    'transitiveImportTest': 'SELECT * FROM programming_languages',
+    'transitiveImportTest': r'SELECT * FROM programming_languages ORDER BY $o',
   },
 )
 class Database {}
@@ -103,6 +103,10 @@ class ProgrammingLanguages extends Table {
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
     expect(importQuery.resultClassName, 'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
+    expect(
+        importQuery.placeholders,
+        contains(equals(
+            FoundDartPlaceholder(DartPlaceholderType.orderBy, null, 'o'))));
 
     final librariesQuery = database.resolvedQueries
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;
