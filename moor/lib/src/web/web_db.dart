@@ -68,6 +68,7 @@ class _WebDelegate extends DatabaseDelegate {
   @override
   Future<void> runCustom(String statement, List args) {
     _db.runWithArgs(statement, args);
+    _storeDb();
     return Future.value();
   }
 
