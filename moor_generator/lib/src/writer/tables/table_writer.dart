@@ -54,7 +54,7 @@ class TableWriter {
           '[$columnsWithGetters];\n')
       ..write('@override\n${table.tableInfoName} get asDslTable => this;\n')
       ..write('@override\nString get \$tableName => '
-          'alias ?? \'${table.sqlName}\';\n')
+          '_alias ?? \'${table.sqlName}\';\n')
       ..write(
           '@override\nfinal String actualTableName = \'${table.sqlName}\';\n');
 
