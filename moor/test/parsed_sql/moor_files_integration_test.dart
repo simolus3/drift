@@ -66,7 +66,7 @@ void main() {
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
-      'ORDER BY config_key ASC',
+      'ORDER BY config.config_key ASC',
       ['a', 'b'],
     ));
   });
