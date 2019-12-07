@@ -300,10 +300,12 @@ mixin QueryEngine on DatabaseConnectionUser {
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: engine});
   }
 
-  /// Will be used by generated code to resolve inline Dart expressions in sql.
+  /// Will be used by generated code to resolve inline Dart components in sql.
   @protected
   GenerationContext $write(Component component) {
-    final context = GenerationContext.fromDb(this);
+    // for good measure, act like there are multiple tables. This will make
+    // column references be explicit about their table name.
+    final context = GenerationContext.fromDb(this)..hasMultipleTables = true;
 
     // we don't want ORDER BY clauses to write the ORDER BY tokens because those
     // are already declared in sql
