@@ -33,7 +33,9 @@ abstract class Step {
 
   String get path => file.uri.path;
 
-  Step(this.task, this.file);
+  Step(this.task, this.file)
+      : assert(task != null),
+        assert(file != null);
 
   void reportError(MoorError error) =>
       errors.report(error..wasDuringParsing = isParsing);

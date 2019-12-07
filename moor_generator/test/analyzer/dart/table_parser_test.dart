@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:test/test.dart';
@@ -75,8 +76,12 @@ void main() {
   setUp(() async {
     final uri = Uri.parse('package:test_lib/main.dart');
     final task = backend.startTask(uri);
+    final session = MoorSession(backend);
 
-    dartStep = ParseDartStep(null, null, await task.resolveDart(uri));
+    final moorTask = session.startTask(task);
+    final file = session.registerFile(uri);
+
+    dartStep = ParseDartStep(moorTask, file, await task.resolveDart(uri));
     parser = MoorDartParser(dartStep);
   });
 
