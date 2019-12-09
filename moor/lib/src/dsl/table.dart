@@ -60,7 +60,7 @@ abstract class Table {
   /// IntColumn get id => integer().autoIncrement()();
   /// ```
   @protected
-  IntColumnBuilder integer() => null;
+  IntColumnBuilder integer() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds strings.
   /// Example (inside the body of a table class):
@@ -68,7 +68,7 @@ abstract class Table {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  TextColumnBuilder text() => null;
+  TextColumnBuilder text() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds bools.
   /// Example (inside the body of a table class):
@@ -76,7 +76,7 @@ abstract class Table {
   /// BoolColumn get isAwesome => boolean()();
   /// ```
   @protected
-  BoolColumnBuilder boolean() => null;
+  BoolColumnBuilder boolean() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds date and
   /// time. Note that [DateTime] values are stored on a second-accuracy.
@@ -85,7 +85,7 @@ abstract class Table {
   /// DateTimeColumn get accountCreatedAt => dateTime()();
   /// ```
   @protected
-  DateTimeColumnBuilder dateTime() => null;
+  DateTimeColumnBuilder dateTime() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds arbitrary
   /// data blobs, stored as an [Uint8List]. Example:
@@ -93,7 +93,7 @@ abstract class Table {
   /// BlobColumn get payload => blob()();
   /// ```
   @protected
-  BlobColumnBuilder blob() => null;
+  BlobColumnBuilder blob() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds floating
   /// point numbers. Example
@@ -101,7 +101,7 @@ abstract class Table {
   /// RealColumn get averageSpeed => real()();
   /// ```
   @protected
-  RealColumnBuilder real() => null;
+  RealColumnBuilder real() => _isGenerated();
 }
 
 /// A class to to be used as an annotation on [Table] classes to customize the
