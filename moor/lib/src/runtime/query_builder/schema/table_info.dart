@@ -74,3 +74,13 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   @override
   int get hashCode => $mrjf($mrjc(runtimeType.hashCode, $tableName.hashCode));
 }
+
+/// Additional interface for tables in a moor file that have been created with
+/// an `CREATE VIRTUAL TABLE STATEMENT`.
+mixin VirtualTableInfo<TableDsl extends Table, D extends DataClass>
+    on TableInfo<TableDsl, D> {
+  /// Returns the module name and the arguments that were used in the statement
+  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name>
+  /// USING <moduleAndArgs>;` can be used to create this table in sql.
+  String get moduleAndArgs;
+}

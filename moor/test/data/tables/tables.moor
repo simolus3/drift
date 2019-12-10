@@ -27,6 +27,8 @@ CREATE TABLE mytable (
     somedate DATETIME
 );
 
+CREATE VIRTUAL TABLE email USING fts5(sender, title, body) AS EMail;
+
 readConfig: SELECT * FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;

@@ -37,7 +37,7 @@ class ParsedMoorFile extends FileResult {
   final List<DeclaredQuery> queries;
 
   List<SqlQuery> resolvedQueries;
-  Map<CreateTableStatement, SpecifiedTable> tableDeclarations;
+  Map<TableInducingStatement, SpecifiedTable> tableDeclarations;
   Map<ImportStatement, FoundFile> resolvedImports;
 
   ParsedMoorFile(this.parseResult,

@@ -134,9 +134,9 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   }
 
   @override
-  final bool withoutRowId = true;
+  bool get withoutRowId => true;
   @override
-  final bool dontWriteConstraints = true;
+  bool get dontWriteConstraints => true;
 }
 
 class WithDefault extends DataClass implements Insertable<WithDefault> {
@@ -295,7 +295,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   }
 
   @override
-  final bool dontWriteConstraints = true;
+  bool get dontWriteConstraints => true;
 }
 
 class WithConstraint extends DataClass implements Insertable<WithConstraint> {
@@ -484,11 +484,10 @@ class WithConstraints extends Table
   }
 
   @override
-  final List<String> customConstraints = const [
-    'FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'
-  ];
+  List<String> get customConstraints =>
+      const ['FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'];
   @override
-  final bool dontWriteConstraints = true;
+  bool get dontWriteConstraints => true;
 }
 
 class Config extends DataClass implements Insertable<Config> {
@@ -656,7 +655,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   }
 
   @override
-  final bool dontWriteConstraints = true;
+  bool get dontWriteConstraints => true;
 }
 
 class MytableData extends DataClass implements Insertable<MytableData> {
@@ -895,7 +894,206 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   }
 
   @override
-  final bool dontWriteConstraints = true;
+  bool get dontWriteConstraints => true;
+}
+
+class EMail extends DataClass implements Insertable<EMail> {
+  final String sender;
+  final String title;
+  final String body;
+  EMail({@required this.sender, @required this.title, @required this.body});
+  factory EMail.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final stringType = db.typeSystem.forDartType<String>();
+    return EMail(
+      sender:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}sender']),
+      title:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
+      body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body']),
+    );
+  }
+  factory EMail.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return EMail(
+      sender: serializer.fromJson<String>(json['sender']),
+      title: serializer.fromJson<String>(json['title']),
+      body: serializer.fromJson<String>(json['body']),
+    );
+  }
+  factory EMail.fromJsonString(String encodedJson,
+          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+      EMail.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return {
+      'sender': serializer.toJson<String>(sender),
+      'title': serializer.toJson<String>(title),
+      'body': serializer.toJson<String>(body),
+    };
+  }
+
+  @override
+  EmailCompanion createCompanion(bool nullToAbsent) {
+    return EmailCompanion(
+      sender:
+          sender == null && nullToAbsent ? const Value.absent() : Value(sender),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+    );
+  }
+
+  EMail copyWith({String sender, String title, String body}) => EMail(
+        sender: sender ?? this.sender,
+        title: title ?? this.title,
+        body: body ?? this.body,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('EMail(')
+          ..write('sender: $sender, ')
+          ..write('title: $title, ')
+          ..write('body: $body')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is EMail &&
+          other.sender == this.sender &&
+          other.title == this.title &&
+          other.body == this.body);
+}
+
+class EmailCompanion extends UpdateCompanion<EMail> {
+  final Value<String> sender;
+  final Value<String> title;
+  final Value<String> body;
+  const EmailCompanion({
+    this.sender = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+  });
+  EmailCompanion.insert({
+    @required String sender,
+    @required String title,
+    @required String body,
+  })  : sender = Value(sender),
+        title = Value(title),
+        body = Value(body);
+  EmailCompanion copyWith(
+      {Value<String> sender, Value<String> title, Value<String> body}) {
+    return EmailCompanion(
+      sender: sender ?? this.sender,
+      title: title ?? this.title,
+      body: body ?? this.body,
+    );
+  }
+}
+
+class Email extends Table
+    with TableInfo<Email, EMail>, VirtualTableInfo<Email, EMail> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  Email(this._db, [this._alias]);
+  final VerificationMeta _senderMeta = const VerificationMeta('sender');
+  GeneratedTextColumn _sender;
+  GeneratedTextColumn get sender => _sender ??= _constructSender();
+  GeneratedTextColumn _constructSender() {
+    return GeneratedTextColumn('sender', $tableName, false,
+        $customConstraints: '');
+  }
+
+  final VerificationMeta _titleMeta = const VerificationMeta('title');
+  GeneratedTextColumn _title;
+  GeneratedTextColumn get title => _title ??= _constructTitle();
+  GeneratedTextColumn _constructTitle() {
+    return GeneratedTextColumn('title', $tableName, false,
+        $customConstraints: '');
+  }
+
+  final VerificationMeta _bodyMeta = const VerificationMeta('body');
+  GeneratedTextColumn _body;
+  GeneratedTextColumn get body => _body ??= _constructBody();
+  GeneratedTextColumn _constructBody() {
+    return GeneratedTextColumn('body', $tableName, false,
+        $customConstraints: '');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [sender, title, body];
+  @override
+  Email get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'email';
+  @override
+  final String actualTableName = 'email';
+  @override
+  VerificationContext validateIntegrity(EmailCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.sender.present) {
+      context.handle(
+          _senderMeta, sender.isAcceptableValue(d.sender.value, _senderMeta));
+    } else if (sender.isRequired && isInserting) {
+      context.missing(_senderMeta);
+    }
+    if (d.title.present) {
+      context.handle(
+          _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
+    } else if (title.isRequired && isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (d.body.present) {
+      context.handle(
+          _bodyMeta, body.isAcceptableValue(d.body.value, _bodyMeta));
+    } else if (body.isRequired && isInserting) {
+      context.missing(_bodyMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  EMail map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return EMail.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(EmailCompanion d) {
+    final map = <String, Variable>{};
+    if (d.sender.present) {
+      map['sender'] = Variable<String, StringType>(d.sender.value);
+    }
+    if (d.title.present) {
+      map['title'] = Variable<String, StringType>(d.title.value);
+    }
+    if (d.body.present) {
+      map['body'] = Variable<String, StringType>(d.body.value);
+    }
+    return map;
+  }
+
+  @override
+  Email createAlias(String alias) {
+    return Email(_db, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+  @override
+  String get moduleAndArgs => 'fts5(sender, title, body)';
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
@@ -912,6 +1110,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   ConfigTable get config => _config ??= ConfigTable(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
+  Email _email;
+  Email get email => _email ??= Email(this);
   Config _rowToConfig(QueryRow row) {
     return Config(
       configKey: row.readString('config_key'),
@@ -990,7 +1190,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   @override
   List<TableInfo> get allTables =>
-      [noIds, withDefaults, withConstraints, config, mytable];
+      [noIds, withDefaults, withConstraints, config, mytable, email];
 }
 
 class ReadRowIdResult {

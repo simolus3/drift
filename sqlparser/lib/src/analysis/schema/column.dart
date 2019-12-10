@@ -19,12 +19,19 @@ class TableColumn extends Column {
 
   /// The column constraints set on this column.
   ///
+  /// This only works columns where [hasDefinition] is true, otherwise this
+  /// getter will throw. The columns in a `CREATE TABLE` statement always have
+  /// a definition, but those from a `CREATE VIRTUAL TABLE` likely don't.
+  ///
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
   List<ColumnConstraint> get constraints => definition.constraints;
 
   /// The definition in the AST that was used to create this column model.
   final ColumnDefinition definition;
+
+  /// Whether this column has a definition from the ast.
+  bool get hasDefinition => definition != null;
 
   /// The table this column belongs to.
   Table table;

@@ -4,6 +4,7 @@ import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
@@ -75,6 +76,21 @@ class SpecifiedTable {
   /// The set of tables referenced somewhere in the declaration of this table,
   /// for instance by using a `REFERENCES` column constraint.
   final Set<SpecifiedTable> references = {};
+
+  /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
+  /// statement in a moor file
+  bool get isVirtualTable {
+    if (declaration == null) {
+      throw StateError("Couldn't determine whether $displayName is a virtual "
+          'table since its declaration is unknown.');
+    }
+    final node = declaration?.moorDeclaration;
+    // tables declared in Dart can't be virtual
+    if (node == null) return false;
+
+    assert(node is TableInducingStatement);
+    return node is CreateVirtualTableStatement;
+  }
 
   SpecifiedTable(
       {this.fromClass,

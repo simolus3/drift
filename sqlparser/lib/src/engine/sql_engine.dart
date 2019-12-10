@@ -41,8 +41,8 @@ class SqlEngine {
     _knownModules.add(module);
   }
 
-  ReferenceScope _constructRootScope() {
-    final scope = ReferenceScope(null);
+  ReferenceScope _constructRootScope({ReferenceScope parent}) {
+    final scope = parent == null ? ReferenceScope(null) : parent.createChild();
     for (final table in knownTables) {
       scope.register(table.name, table);
     }
@@ -72,7 +72,7 @@ class SqlEngine {
     return tokens;
   }
 
-  /// Parses the [sql] statement into an AST-representation.
+  /// Parses a single [sql] statement into an AST-representation.
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
@@ -95,6 +95,7 @@ class SqlEngine {
         Parser(tokensForParser, useMoor: true, autoComplete: autoComplete);
 
     final moorFile = parser.moorFile();
+    _attachRootScope(moorFile);
 
     return ParseResult._(
         moorFile, tokens, parser.errors, content, autoComplete);
@@ -142,10 +143,10 @@ class SqlEngine {
 
   void _analyzeContext(AnalysisContext context) {
     final node = context.root;
-    final scope = _constructRootScope();
+    _attachRootScope(node);
 
     try {
-      AstPreparingVisitor(globalScope: scope, context: context).start(node);
+      AstPreparingVisitor(context: context).start(node);
 
       if (node is CrudStatement) {
         node
@@ -156,6 +157,16 @@ class SqlEngine {
     } catch (_) {
       rethrow;
     }
+  }
+
+  void _attachRootScope(AstNode root) {
+    // calling node.referenceScope throws when no scope is set, we use the
+    // nullable variant here
+    final safeScope = root.selfAndParents
+        .map((node) => node.meta<ReferenceScope>())
+        .firstWhere((e) => e != null, orElse: () => null);
+
+    root.scope = _constructRootScope(parent: safeScope);
   }
 }
 

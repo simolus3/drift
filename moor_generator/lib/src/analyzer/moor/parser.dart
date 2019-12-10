@@ -25,7 +25,7 @@ class MoorParser {
         final importStmt = parsedStmt;
         step.inlineDartResolver.importStatements.add(importStmt.importedFile);
         importStatements.add(importStmt);
-      } else if (parsedStmt is CreateTableStatement) {
+      } else if (parsedStmt is TableInducingStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
       } else if (parsedStmt is DeclaredStatement) {
         queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
@@ -41,7 +41,7 @@ class MoorParser {
     }
 
     final createdTables = <SpecifiedTable>[];
-    final tableDeclarations = <CreateTableStatement, SpecifiedTable>{};
+    final tableDeclarations = <TableInducingStatement, SpecifiedTable>{};
     for (final reader in createdReaders) {
       final table = reader.extractTable(step.mapper);
       createdTables.add(table);

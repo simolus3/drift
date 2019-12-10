@@ -75,6 +75,17 @@ class Migrator {
   /// Creates the given table if it doesn't exist
   Future<void> createTable(TableInfo table) async {
     final context = _createContext();
+
+    if (table is VirtualTableInfo) {
+      _writeCreateVirtual(table, context);
+    } else {
+      _writeCreateTable(table, context);
+    }
+
+    return issueCustomQuery(context.sql, context.boundVariables);
+  }
+
+  void _writeCreateTable(TableInfo table, GenerationContext context) {
     context.buffer.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
 
     var hasAutoIncrement = false;
@@ -125,8 +136,15 @@ class Migrator {
     }
 
     context.buffer.write(';');
+  }
 
-    return issueCustomQuery(context.sql, context.boundVariables);
+  void _writeCreateVirtual(VirtualTableInfo table, GenerationContext context) {
+    context.buffer
+      ..write('CREATE VIRTUAL TABLE IF NOT EXISTS ')
+      ..write(table.$tableName)
+      ..write(' USING ')
+      ..write(table.moduleAndArgs)
+      ..write(';');
   }
 
   /// Deletes the table with the given name. Note that this function does not

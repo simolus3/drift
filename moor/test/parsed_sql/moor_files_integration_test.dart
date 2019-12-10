@@ -25,6 +25,9 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'somebool INTEGER, '
     'somedate INTEGER);';
 
+const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
+    'fts5(sender, title, body);';
+
 void main() {
   // see ../data/tables/tables.moor
   test('creates tables as specified in .moor files', () async {
@@ -38,6 +41,7 @@ void main() {
     verify(mockQueryExecutor.call(_createWithConstraints, []));
     verify(mockQueryExecutor.call(_createConfig, []));
     verify(mockQueryExecutor.call(_createMyTable, []));
+    verify(mockQueryExecutor.call(_createEmail, []));
   });
 
   test('infers primary keys correctly', () async {

@@ -18,6 +18,7 @@ abstract class Module implements Referencable, VisibleToChildren {
   Module(this.name);
 
   /// Extracts the table structure from a `CREATE VIRTUAL TABLE` statement that
-  /// refers to this module.
+  /// refers to this module. The module is responsible for setting
+  /// [Table.definition].
   Table parseTable(CreateVirtualTableStatement stmt);
 }

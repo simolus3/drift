@@ -9,3 +9,4 @@ targets:
           write_from_json_string_constructor: true
           sqlite_modules:
             - json1
+            - fts5

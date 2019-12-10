@@ -5,6 +5,7 @@ import 'package:moor_generator/src/writer/tables/data_class_writer.dart';
 import 'package:moor_generator/src/writer/tables/update_companion_writer.dart';
 import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
 import 'package:moor_generator/src/writer/writer.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 class TableWriter {
   final SpecifiedTable table;
@@ -31,9 +32,14 @@ class TableWriter {
     final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
+    final typeArgs = '<${table.tableInfoName}, $dataClass>';
+    _buffer.write('class ${table.tableInfoName} extends $tableDslName with '
+        'TableInfo$typeArgs ');
+    if (table.isVirtualTable) {
+      _buffer.write(', VirtualTableInfo$typeArgs ');
+    }
     _buffer
-      ..write('class ${table.tableInfoName} extends $tableDslName '
-          'with TableInfo<${table.tableInfoName}, $dataClass> {\n')
+      ..write('{\n')
       // write a GeneratedDatabase reference that is set in the constructor
       ..write('final GeneratedDatabase _db;\n')
       ..write('final String _alias;\n')
@@ -276,7 +282,7 @@ class TableWriter {
       final value = table.overrideWithoutRowId ? 'true' : 'false';
       _buffer
         ..write('@override\n')
-        ..write('final bool withoutRowId = $value;\n');
+        ..write('bool get withoutRowId => $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {
@@ -285,14 +291,24 @@ class TableWriter {
 
       _buffer
         ..write('@override\n')
-        ..write('final List<String> customConstraints = const [$value];\n');
+        ..write('List<String> get customConstraints => const [$value];\n');
     }
 
     if (table.overrideDontWriteConstraints != null) {
       final value = table.overrideDontWriteConstraints ? 'true' : 'false';
       _buffer
         ..write('@override\n')
-        ..write('final bool dontWriteConstraints = $value;\n');
+        ..write('bool get dontWriteConstraints => $value;\n');
+    }
+
+    if (table.isVirtualTable) {
+      final stmt =
+          table.declaration.moorDeclaration as CreateVirtualTableStatement;
+      final moduleAndArgs = asDartLiteral(
+          '${stmt.moduleName}(${stmt.argumentContent.join(', ')})');
+      _buffer
+        ..write('@override\n')
+        ..write('String get moduleAndArgs => $moduleAndArgs;\n');
     }
   }
 }

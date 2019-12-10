@@ -38,6 +38,7 @@ class MoorSession {
     return SqlEngine(
       useMoorExtensions: true,
       enableJson1Module: options.hasModule(SqlModule.json1),
+      enableFts5: options.hasModule(SqlModule.fts5),
     );
   }
 

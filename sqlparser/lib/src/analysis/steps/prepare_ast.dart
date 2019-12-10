@@ -1,7 +1,6 @@
 part of '../analysis.dart';
 
-/// Prepares the AST for further analysis. This visitor:
-/// - attaches the global scope containing table names and builtin functions
+/// Prepares the AST for further analysis. This visitor
 /// - creates [ReferenceScope]s for sub-queries
 /// - in each scope, registers every table or subquery that can be referenced to
 ///   the local [ReferenceScope].
@@ -10,17 +9,13 @@ part of '../analysis.dart';
 /// - reports syntactic errors that aren't handled in the parser to keep that
 ///   implementation simpler.
 class AstPreparingVisitor extends RecursiveVisitor<void> {
-  final ReferenceScope globalScope;
   final List<Variable> _foundVariables = [];
   final AnalysisContext context;
 
-  AstPreparingVisitor({@required this.globalScope, this.context});
+  AstPreparingVisitor({this.context});
 
   void start(AstNode root) {
-    root
-      ..scope = globalScope
-      ..accept(this);
-
+    root.accept(this);
     _resolveIndexOfVariables();
   }
 

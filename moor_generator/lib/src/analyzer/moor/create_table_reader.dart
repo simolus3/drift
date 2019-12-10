@@ -11,7 +11,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
-  final CreateTableStatement stmt;
+  final TableInducingStatement stmt;
   final Step step;
 
   CreateTableReader(this.stmt, this.step);
@@ -33,7 +33,12 @@ class CreateTableReader {
       String defaultValue;
       String overriddenJsonKey;
 
-      for (final constraint in column.constraints) {
+      // columns from virtual tables don't necessarily have a definition, so we
+      // can't read the constraints.
+      final constraints = column.hasDefinition
+          ? column.constraints
+          : const Iterable<ColumnConstraint>.empty();
+      for (final constraint in constraints) {
         if (constraint is PrimaryKeyColumn) {
           isPrimaryKey = true;
           features.add(const PrimaryKey());
