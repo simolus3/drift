@@ -37,7 +37,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
     };
@@ -69,7 +69,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -216,7 +216,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'instructions': serializer.toJson<String>(instructions),
@@ -261,7 +261,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Recipe &&
           other.id == this.id &&
@@ -455,7 +455,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'caloriesPer100g': serializer.toJson<int>(caloriesPer100g),
@@ -492,7 +492,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   int get hashCode =>
       $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Ingredient &&
           other.id == this.id &&
@@ -666,7 +666,7 @@ class IngredientInRecipe extends DataClass
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'recipe': serializer.toJson<int>(recipe),
       'ingredient': serializer.toJson<int>(ingredient),
       'amountInGrams': serializer.toJson<int>(amountInGrams),
@@ -708,7 +708,7 @@ class IngredientInRecipe extends DataClass
   int get hashCode => $mrjf($mrjc(
       recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is IngredientInRecipe &&
           other.recipe == this.recipe &&
@@ -898,7 +898,7 @@ class TotalWeightResult {
   @override
   int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is TotalWeightResult &&
           other.title == this.title &&

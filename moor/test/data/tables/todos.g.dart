@@ -55,7 +55,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
@@ -115,7 +115,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           $mrjc(content.hashCode,
               $mrjc(targetDate.hashCode, category.hashCode)))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == this.id &&
@@ -331,7 +331,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
     };
@@ -363,7 +363,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -514,7 +514,7 @@ class User extends DataClass implements Insertable<User> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'isAwesome': serializer.toJson<bool>(isAwesome),
@@ -573,7 +573,7 @@ class User extends DataClass implements Insertable<User> {
           $mrjc(isAwesome.hashCode,
               $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
@@ -790,7 +790,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'todo': serializer.toJson<int>(todo),
       'user': serializer.toJson<int>(user),
     };
@@ -820,7 +820,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is SharedTodo &&
           other.todo == this.todo &&
@@ -970,7 +970,7 @@ class TableWithoutPKData extends DataClass
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'notReallyAnId': serializer.toJson<int>(notReallyAnId),
       'someFloat': serializer.toJson<double>(someFloat),
       'custom': serializer.toJson<MyCustomObject>(custom),
@@ -1012,7 +1012,7 @@ class TableWithoutPKData extends DataClass
   int get hashCode => $mrjf($mrjc(
       notReallyAnId.hashCode, $mrjc(someFloat.hashCode, custom.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is TableWithoutPKData &&
           other.notReallyAnId == this.notReallyAnId &&
@@ -1183,7 +1183,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'txt': serializer.toJson<String>(txt),
     };
@@ -1213,7 +1213,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, txt.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is PureDefault && other.id == this.id && other.txt == this.txt);
 }
@@ -1478,7 +1478,7 @@ class AllTodosWithCategoryResult {
                   $mrjc(category.hashCode,
                       $mrjc(catId.hashCode, catDesc.hashCode)))))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is AllTodosWithCategoryResult &&
           other.id == this.id &&

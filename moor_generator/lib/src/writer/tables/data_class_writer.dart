@@ -138,7 +138,7 @@ class DataClassWriter {
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
         '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
-        '\n return {');
+        '\n return <String, dynamic>{');
 
     for (final column in table.columns) {
       final name = column.getJsonKey(scope.options);

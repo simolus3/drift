@@ -32,7 +32,7 @@ class NoId extends DataClass implements Insertable<NoId> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'payload': serializer.toJson<Uint8List>(payload),
     };
   }
@@ -58,7 +58,7 @@ class NoId extends DataClass implements Insertable<NoId> {
   @override
   int get hashCode => $mrjf(payload.hashCode);
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is NoId && other.payload == this.payload);
 }
@@ -168,7 +168,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
     };
@@ -198,7 +198,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, b.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is WithDefault && other.a == this.a && other.b == this.b);
 }
@@ -332,7 +332,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
       'c': serializer.toJson<double>(c),
@@ -366,7 +366,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is WithConstraint &&
           other.a == this.a &&
@@ -519,7 +519,7 @@ class Config extends DataClass implements Insertable<Config> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String>(configValue),
     };
@@ -553,7 +553,7 @@ class Config extends DataClass implements Insertable<Config> {
   @override
   int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Config &&
           other.configKey == this.configKey &&
@@ -699,7 +699,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String>(sometext),
       'somebool': serializer.toJson<bool>(somebool),
@@ -747,7 +747,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   int get hashCode => $mrjf($mrjc(someid.hashCode,
       $mrjc(sometext.hashCode, $mrjc(somebool.hashCode, somedate.hashCode))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is MytableData &&
           other.someid == this.someid &&
@@ -929,7 +929,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   @override
   Map<String, dynamic> toJson(
       {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+    return <String, dynamic>{
       'sender': serializer.toJson<String>(sender),
       'title': serializer.toJson<String>(title),
       'body': serializer.toJson<String>(body),
@@ -966,7 +966,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   int get hashCode =>
       $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is EMail &&
           other.sender == this.sender &&
@@ -1206,7 +1206,7 @@ class ReadRowIdResult {
   int get hashCode => $mrjf(
       $mrjc(rowid.hashCode, $mrjc(configKey.hashCode, configValue.hashCode)));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is ReadRowIdResult &&
           other.rowid == this.rowid &&
