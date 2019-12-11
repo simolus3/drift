@@ -39,6 +39,8 @@ class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet, VisibleToChildren {
   final String tableName;
+  Token tableNameToken;
+
   @override
   final String as;
 

@@ -20,7 +20,7 @@ mixin SchemaParser on ParserBase {
     final tableIdentifier = _consumeIdentifier('Expected a table name');
 
     if (virtual) {
-      return _virtualTable(first, ifNotExists, tableIdentifier.identifier);
+      return _virtualTable(first, ifNotExists, tableIdentifier);
     }
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
@@ -69,13 +69,14 @@ mixin SchemaParser on ParserBase {
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
-      ..closingBracket = rightParen;
+      ..closingBracket = rightParen
+      ..tableNameToken = tableIdentifier;
   }
 
   /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
   /// <name>` tokens have already been read.
   CreateVirtualTableStatement _virtualTable(
-      Token first, bool ifNotExists, String name) {
+      Token first, bool ifNotExists, IdentifierToken nameToken) {
     _consume(TokenType.using, 'Expected USING for virtual table declaration');
     final moduleName = _consumeIdentifier('Expected a module name');
     final args = <SourceSpanWithContext>[];
@@ -132,11 +133,13 @@ mixin SchemaParser on ParserBase {
     final moorDataClassName = _overriddenDataClassName();
     return CreateVirtualTableStatement(
       ifNotExists: ifNotExists,
-      tableName: name,
+      tableName: nameToken.identifier,
       moduleName: moduleName.identifier,
       arguments: args,
       overriddenDataClassName: moorDataClassName,
-    )..setSpan(first, _previous);
+    )
+      ..setSpan(first, _previous)
+      ..tableNameToken = nameToken;
   }
 
   String _overriddenDataClassName() {
@@ -171,7 +174,8 @@ mixin SchemaParser on ParserBase {
       constraints: constraints,
     )
       ..setSpan(name, _previous)
-      ..typeNames = typeTokens;
+      ..typeNames = typeTokens
+      ..nameToken = name;
   }
 
   List<Token> _typeName() {

@@ -1,4 +1,5 @@
 import 'package:source_span/source_span.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 enum TokenType {
   leftParen,
@@ -268,13 +269,14 @@ const Map<String, TokenType> moorKeywords = {
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 
-class Token {
+class Token implements SyntacticEntity {
   final TokenType type;
 
   /// Whether this token should be invisible to the parser. We use this for
   /// comment tokens.
   bool get invisibleToParser => false;
 
+  @override
   final FileSpan span;
   String get lexeme => span.text;
 
@@ -284,9 +286,21 @@ class Token {
   Token(this.type, this.span);
 
   @override
+  bool get hasSpan => true;
+
+  @override
   String toString() {
     return '$type: $lexeme';
   }
+
+  @override
+  int get firstPosition => span.start.offset;
+
+  @override
+  int get lastPosition => span.end.offset;
+
+  @override
+  bool get synthetic => false;
 }
 
 class StringLiteralToken extends Token {
@@ -306,6 +320,7 @@ class IdentifierToken extends Token {
   /// Whether this identifier token is synthetic. We sometimes convert
   /// [KeywordToken]s to identifiers if they're unambiguous, in which case
   /// [synthetic] will be true on this token because it was not scanned as such.
+  @override
   final bool synthetic;
 
   String get identifier {
@@ -363,7 +378,7 @@ class InlineDartToken extends Token {
 /// the keywords easily.
 class KeywordToken extends Token {
   /// Whether this token has been used as an identifier while parsing.
-  bool isIdentifier;
+  bool isIdentifier = false;
 
   KeywordToken(TokenType type, FileSpan span) : super(type, span);
 

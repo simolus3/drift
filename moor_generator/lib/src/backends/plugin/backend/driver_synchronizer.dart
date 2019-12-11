@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
 
-// ignore: implementation_imports
 import 'package:analyzer/src/dart/analysis/driver.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
+
 import 'driver.dart';
 
 const _lowestPriority = AnalysisDriverPriority.general;
@@ -43,7 +43,7 @@ class DriverSynchronizer {
     assert(_currentUnit != null && _waitForResume == null,
         'Dart driver can only be used as a part of a non-paused task');
     _waitForResume = Completer();
-    // make safeRunTask or resume complete, so tha work is delegated to the
+    // make safeRunTask or resume complete, so that work is delegated to the
     // dart driver
     _currentUnit._completeCurrentStep();
 
@@ -61,11 +61,12 @@ class DriverSynchronizer {
     return _currentUnit._currentCompleter.future;
   }
 
-  Future<void> safeRunTask(Task task) {
+  Future<void> safeRunTask(Task task) async {
     assert(!hasPausedWork, "Can't start a new task, another one was paused");
     _currentUnit = _WorkUnit()..task = task;
 
-    task.runTask().then((_) => _handleTaskCompleted(task));
+    await task.runTask();
+    _handleTaskCompleted(task);
 
     return _currentUnit._currentCompleter.future;
   }

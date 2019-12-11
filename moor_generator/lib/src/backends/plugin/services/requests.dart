@@ -68,6 +68,8 @@ class MoorRequestAtPosition
   @override
   final ResourceProvider resourceProvider;
 
+  bool get hasSpan => offset > 0;
+
   SourceSpan get span {
     return SourceSpan(
       SourceLocation(offset),

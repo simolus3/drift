@@ -32,9 +32,10 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
     final offset = span.start.offset;
     final length = span.end.offset - offset;
 
-    // The client only wants the navigation target for a single region, but
-    // we always scan the whole file. Only report if there is an intersection
-    if (intersect(span, request.span)) {
+    // Some clients only want the navigation target for a single region, others
+    // want the whole file. For the former, only report regions is there is an
+    // intersection
+    if (!request.hasSpan || intersect(span, request.span)) {
       collector.addRegion(offset, length, kind, target);
     }
   }
@@ -99,7 +100,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
     if (e is TableReference) {
       final resolved = e.resolved;
 
-      if (resolved is Table) {
+      if (resolved is Table && resolved != null) {
         final declaration = resolved.meta<TableDeclaration>();
         _reportForSpan(
             e.span, ElementKind.CLASS, locationOfDeclaration(declaration));

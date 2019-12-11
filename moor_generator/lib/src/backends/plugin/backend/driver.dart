@@ -3,8 +3,8 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
-import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
+import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -154,8 +154,13 @@ class MoorDriver implements AnalysisDriverGeneric {
     return session.completedTasks.expand((task) => task.analyzedFiles);
   }
 
-  /// Waits for the file at [path] to be parsed.
+  /// Waits for the file at [path] to be parsed. If the file is neither a Dart
+  /// or a moor file, returns `null`.
   Future<FoundFile> waitFileParsed(String path) {
+    if (!_ownsFile(path)) {
+      return Future.value(null);
+    }
+
     final found = pathToFoundFile(path);
 
     if (found.isParsed) {

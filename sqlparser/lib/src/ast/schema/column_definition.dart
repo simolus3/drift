@@ -8,6 +8,7 @@ class ColumnDefinition extends AstNode {
 
   /// The tokens there were involved in defining the type of this column.
   List<Token> typeNames;
+  Token nameToken;
 
   ColumnDefinition(
       {@required this.columnName,

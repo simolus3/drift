@@ -1,18 +1,17 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/analysis/analysis.dart';
+import 'package:sqlparser/src/reader/syntactic_entity.dart';
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
 part 'clauses/with.dart';
-
 part 'common/queryables.dart';
 part 'common/renamable.dart';
 part 'common/tuple.dart';
-
 part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
 part 'expressions/expressions.dart';
@@ -22,15 +21,12 @@ part 'expressions/reference.dart';
 part 'expressions/simple.dart';
 part 'expressions/subquery.dart';
 part 'expressions/variables.dart';
-
 part 'moor/declared_statement.dart';
 part 'moor/import_statement.dart';
 part 'moor/inline_dart.dart';
 part 'moor/moor_file.dart';
-
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
-
 part 'statements/create_table.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
@@ -39,7 +35,7 @@ part 'statements/statement.dart';
 part 'statements/update.dart';
 
 /// A node in the abstract syntax tree of an SQL statement.
-abstract class AstNode with HasMetaMixin {
+abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   /// The parent of this node, or null if this is the root node. Will be set
   /// by the analyzer after the tree has been parsed.
   AstNode parent;
@@ -52,25 +48,22 @@ abstract class AstNode with HasMetaMixin {
   /// all nodes.
   Token last;
 
-  /// Whether this ast node is synthetic, meaning that it doesn't appear in the
-  /// actual source.
+  @override
   bool synthetic;
 
-  /// The first index in the source that belongs to this node. Not set for all
-  /// nodes.
+  @override
   int get firstPosition => first.span.start.offset;
 
-  /// The (exclusive) last index of this node in the source. In other words, the
-  /// first index that is _not_ a part of this node. Not set for all nodes.
+  @override
   int get lastPosition => last.span.end.offset;
 
+  @override
   FileSpan get span {
     if (!hasSpan) return null;
     return first.span.expand(last.span);
   }
 
-  /// Whether a source span has been set on this node. The span describes what
-  /// range in the source code is covered by this node.
+  @override
   bool get hasSpan => first != null && last != null;
 
   /// Sets the [AstNode.first] and [AstNode.last] property in one go.

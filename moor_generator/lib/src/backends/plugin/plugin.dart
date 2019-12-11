@@ -1,6 +1,6 @@
-import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
-import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
+import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
 import 'package:analyzer_plugin/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
@@ -8,6 +8,7 @@ import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
 import 'package:analyzer_plugin/plugin/navigation_mixin.dart';
 import 'package:analyzer_plugin/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin/plugin/plugin.dart';
+import 'package:analyzer_plugin/protocol/protocol.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
 import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
@@ -15,6 +16,7 @@ import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
+import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
@@ -97,10 +99,26 @@ class MoorPlugin extends ServerPlugin
     return driver as MoorDriver;
   }
 
-  Future<MoorRequest> _createMoorRequest(String path) async {
+  Future<FoundFile> _waitParsed(String path) async {
     final driver = _moorDriverForPath(path);
-    final file = await driver.waitFileParsed(path);
+    if (driver == null) {
+      throw RequestFailure(plugin.RequestError(
+          plugin.RequestErrorCode.INVALID_PARAMETER,
+          "Path isn't covered by plugin: $path"));
+    }
 
+    final file = await driver.waitFileParsed(path);
+    if (file == null) {
+      throw RequestFailure(plugin.RequestError(
+          plugin.RequestErrorCode.PLUGIN_ERROR,
+          'Unknown file: Neither Dart or moor: $path'));
+    }
+
+    return file;
+  }
+
+  Future<MoorRequest> _createMoorRequest(String path) async {
+    final file = await _waitParsed(path);
     return MoorRequest(file, resourceProvider);
   }
 
@@ -110,8 +128,9 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  Future<OutlineRequest> getOutlineRequest(String path) =>
-      _createMoorRequest(path);
+  Future<OutlineRequest> getOutlineRequest(String path) {
+    return _createMoorRequest(path);
+  }
 
   @override
   List<HighlightsContributor> getHighlightsContributors(String path) {
@@ -119,8 +138,9 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  Future<HighlightsRequest> getHighlightsRequest(String path) =>
-      _createMoorRequest(path);
+  Future<HighlightsRequest> getHighlightsRequest(String path) {
+    return _createMoorRequest(path);
+  }
 
   @override
   List<FoldingContributor> getFoldingContributors(String path) {
@@ -128,8 +148,9 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  Future<FoldingRequest> getFoldingRequest(String path) =>
-      _createMoorRequest(path);
+  Future<FoldingRequest> getFoldingRequest(String path) {
+    return _createMoorRequest(path);
+  }
 
   @override
   List<CompletionContributor> getCompletionContributors(String path) {
@@ -140,8 +161,7 @@ class MoorPlugin extends ServerPlugin
   Future<CompletionRequest> getCompletionRequest(
       plugin.CompletionGetSuggestionsParams parameters) async {
     final path = parameters.file;
-    final driver = _moorDriverForPath(path);
-    final file = await driver.waitFileParsed(path);
+    final file = await _waitParsed(path);
 
     return MoorCompletionRequest(parameters.offset, resourceProvider, file);
   }
@@ -155,8 +175,7 @@ class MoorPlugin extends ServerPlugin
   Future<AssistRequest> getAssistRequest(
       plugin.EditGetAssistsParams parameters) async {
     final path = parameters.file;
-    final driver = _moorDriverForPath(path);
-    final file = await driver.waitFileParsed(path);
+    final file = await _waitParsed(path);
 
     return MoorRequestAtPosition(
         file, parameters.length, parameters.offset, resourceProvider);
@@ -171,8 +190,7 @@ class MoorPlugin extends ServerPlugin
   Future<NavigationRequest> getNavigationRequest(
       plugin.AnalysisGetNavigationParams parameters) async {
     final path = parameters.file;
-    final driver = _moorDriverForPath(path);
-    final file = await driver.waitFileParsed(path);
+    final file = await _waitParsed(path);
 
     return MoorRequestAtPosition(
         file, parameters.length, parameters.offset, resourceProvider);

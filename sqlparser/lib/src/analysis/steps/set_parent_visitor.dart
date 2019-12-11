@@ -12,6 +12,7 @@ class SetParentVisitor {
     node.parent = parent;
 
     for (final child in node.childNodes) {
+      assert(child != null, '$node had a null-child');
       _applyFor(child, node);
     }
   }

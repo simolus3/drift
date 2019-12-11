@@ -285,7 +285,8 @@ mixin CrudParser on ParserBase {
       final tableName = firstToken.identifier;
       final alias = _as();
       return TableReference(tableName, alias?.identifier)
-        ..setSpan(firstToken, _previous);
+        ..setSpan(firstToken, _previous)
+        ..tableNameToken = firstToken;
     }
     return null;
   }

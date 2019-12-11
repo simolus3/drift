@@ -11,6 +11,8 @@ abstract class TableInducingStatement extends Statement
   /// enabled or if no name has been set.
   final String overriddenDataClassName;
 
+  Token tableNameToken;
+
   TableInducingStatement._(this.ifNotExists, this.tableName,
       [this.overriddenDataClassName]);
 }
