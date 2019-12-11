@@ -1,8 +1,5 @@
 import 'package:moor_generator/src/model/specified_db_classes.dart';
-import 'package:moor_generator/src/writer/queries/query_writer.dart';
-import 'package:moor_generator/src/writer/tables/table_writer.dart';
-import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
 /// Generates the Dart code put into a `.g.dart` file when running the

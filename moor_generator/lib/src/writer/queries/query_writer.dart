@@ -4,8 +4,7 @@ import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/queries/result_set_writer.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 

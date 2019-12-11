@@ -1,6 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
-import 'package:moor_generator/src/writer/database_writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 const _ignoredLints = [

@@ -1,6 +1,6 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 
 class UpdateCompanionWriter {
   final SpecifiedTable table;

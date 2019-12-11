@@ -1,7 +1,5 @@
 import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/writer/utils/hash_code.dart';
-import 'package:moor_generator/src/writer/utils/override_equals.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
 class DataClassWriter {

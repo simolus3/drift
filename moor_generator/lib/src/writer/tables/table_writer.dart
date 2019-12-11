@@ -1,10 +1,7 @@
 import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/tables/data_class_writer.dart';
-import 'package:moor_generator/src/writer/tables/update_companion_writer.dart';
-import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class TableWriter {

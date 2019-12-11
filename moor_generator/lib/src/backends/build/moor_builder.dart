@@ -5,7 +5,7 @@ import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/build/build_backend.dart';
 import 'package:moor_generator/src/backends/build/generators/dao_generator.dart';
 import 'package:moor_generator/src/backends/build/generators/moor_generator.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 class MoorBuilder extends SharedPartBuilder {

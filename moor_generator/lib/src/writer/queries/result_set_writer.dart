@@ -1,7 +1,5 @@
 import 'package:moor_generator/src/model/sql_query.dart';
-import 'package:moor_generator/src/writer/utils/hash_code.dart';
-import 'package:moor_generator/src/writer/utils/override_equals.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {

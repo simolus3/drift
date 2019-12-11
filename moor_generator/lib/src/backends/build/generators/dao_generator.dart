@@ -1,6 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
-import 'package:moor_generator/src/writer/queries/query_writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
 class DaoGenerator extends Generator implements BaseGenerator {
