@@ -105,7 +105,12 @@ class TypeResolver {
         // todo we can probably resolve tuples by looking at their content
         return const ResolveResult.needsContext();
       } else if (expr is Reference) {
-        return resolveColumn(expr.resolved as Column);
+        final resolved = expr.resolved;
+        if (resolved != null) {
+          return resolveColumn(expr.resolved as Column);
+        } else {
+          return const ResolveResult.unknown();
+        }
       } else if (expr is Invocation) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
