@@ -1,3 +1,4 @@
+@TestOn('vm')
 import 'dart:async';
 
 import 'package:moor/isolate.dart';

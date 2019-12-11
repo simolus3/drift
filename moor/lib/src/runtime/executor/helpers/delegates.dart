@@ -1,5 +1,6 @@
 import 'dart:async' show FutureOr;
 import 'dart:typed_data' show Uint8List;
+
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/helpers/results.dart';
 
@@ -54,6 +55,12 @@ abstract class DatabaseDelegate implements QueryDelegate {
   /// by this database should have been disposed.
   Future<void> close() async {
     // default no-op implementation
+  }
+
+  /// Callback from moor after the database has been fully opened and all
+  /// migrations ran.
+  void notifyDatabaseOpened(OpeningDetails details) {
+    // default no-op
   }
 
   /// The [SqlDialect] understood by this database engine.

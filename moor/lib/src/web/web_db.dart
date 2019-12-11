@@ -111,6 +111,13 @@ class _WebDelegate extends DatabaseDelegate {
     return Future.value();
   }
 
+  @override
+  void notifyDatabaseOpened(OpeningDetails details) {
+    if (details.hadUpgrade | details.wasCreated) {
+      _storeDb();
+    }
+  }
+
   /// Saves the database if the last statement changed rows. As a side-effect,
   /// saving the database resets the `last_insert_id` counter in sqlite.
   Future<int> _handlePotentialUpdate() {
