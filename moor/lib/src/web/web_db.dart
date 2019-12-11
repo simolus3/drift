@@ -68,7 +68,6 @@ class _WebDelegate extends DatabaseDelegate {
   @override
   Future<void> runCustom(String statement, List args) {
     _db.runWithArgs(statement, args);
-    _storeDb();
     return Future.value();
   }
 
@@ -110,6 +109,13 @@ class _WebDelegate extends DatabaseDelegate {
     _storeDb();
     _db?.close();
     return Future.value();
+  }
+
+  @override
+  void notifyDatabaseOpened(OpeningDetails details) {
+    if (details.hadUpgrade | details.wasCreated) {
+      _storeDb();
+    }
   }
 
   /// Saves the database if the last statement changed rows. As a side-effect,

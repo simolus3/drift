@@ -279,7 +279,9 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
           executor: runCustom, from: oldVersion, to: currentVersion);
     }
 
-    await _runBeforeOpen(OpeningDetails(oldVersion, currentVersion));
+    final openingDetails = OpeningDetails(oldVersion, currentVersion);
+    await _runBeforeOpen(openingDetails);
+    delegate.notifyDatabaseOpened(openingDetails);
   }
 
   @override
