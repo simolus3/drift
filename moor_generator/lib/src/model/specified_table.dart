@@ -1,7 +1,7 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -34,6 +34,7 @@ class SpecifiedTable {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
+  /// The getter name used for this table in a generated database or dao class.
   String get tableFieldName => _dbFieldName(_baseName);
   String get tableInfoName {
     // if this table was parsed from sql, a user might want to refer to it

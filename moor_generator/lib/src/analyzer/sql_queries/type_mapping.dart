@@ -16,6 +16,7 @@ class TypeMapper {
   Table extractStructure(SpecifiedTable table) {
     final existingTable = table.declaration?.tableFromSqlParser;
     if (existingTable != null) {
+      _engineTablesToSpecified[existingTable] = table;
       return existingTable;
     }
 

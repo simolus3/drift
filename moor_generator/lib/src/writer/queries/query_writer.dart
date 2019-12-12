@@ -96,15 +96,25 @@ class QueryWriter {
     if (!_writtenMappingMethods.contains(_nameOfMappingMethod())) {
       _buffer
         ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
-        ..write('(QueryRow row) {\n')
-        ..write('return ${_select.resultClassName}(');
+        ..write('(QueryRow row) {\n');
 
-      for (final column in _select.resultSet.columns) {
-        final fieldName = _select.resultSet.dartNameFor(column);
-        _buffer.write('$fieldName: ${_readingCode(column)},');
+      // If we're matching an existing table from moor - let's just use the
+      // mapping method we're generating for each table!
+      if (_select.resultSet.matchingTable != null) {
+        final table = _select.resultSet.matchingTable;
+        _buffer.write('return ${table.tableFieldName}.mapFromRow(row);\n');
+      } else {
+        // For more complex results, generate a custom constructor call
+        _buffer.write('return ${_select.resultClassName}(');
+        for (final column in _select.resultSet.columns) {
+          final fieldName = _select.resultSet.dartNameFor(column);
+          _buffer.write('$fieldName: ${_readingCode(column)},');
+        }
+
+        _buffer.write(');\n');
       }
+      _buffer.write('}\n');
 
-      _buffer.write(');\n}\n');
       _writtenMappingMethods.add(_nameOfMappingMethod());
     }
   }

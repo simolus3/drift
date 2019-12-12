@@ -1113,10 +1113,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Email _email;
   Email get email => _email ??= Email(this);
   Config _rowToConfig(QueryRow row) {
-    return Config(
-      configKey: row.readString('config_key'),
-      configValue: row.readString('config_value'),
-    );
+    return config.mapFromRow(row);
   }
 
   Selectable<Config> readConfig(String var1) {
@@ -1155,6 +1152,17 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         'SELECT * FROM config WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {config}).map(_rowToConfig);
+  }
+
+  EMail _rowToEMail(QueryRow row) {
+    return email.mapFromRow(row);
+  }
+
+  Selectable<EMail> searchEmails(String term) {
+    return customSelectQuery(
+        'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
+        variables: [Variable.withString(term)],
+        readsFrom: {email}).map(_rowToEMail);
   }
 
   ReadRowIdResult _rowToReadRowIdResult(QueryRow row) {

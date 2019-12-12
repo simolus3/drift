@@ -1,8 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-final _rankColumn = _Fts5RankColumn();
-
 class Fts5Extension implements Extension {
   const Fts5Extension();
 
@@ -42,17 +40,40 @@ class _Fts5Table extends Table {
       {@required String name,
       List<TableColumn> columns,
       CreateVirtualTableStatement definition})
-      : super(name: name, resolvedColumns: columns, definition: definition);
-
-  @override
-  Column findColumn(String name) {
-    if (name == 'rank') {
-      return _rankColumn;
-    }
-    return super.findColumn(name);
-  }
+      : super(
+          name: name,
+          resolvedColumns: [
+            ...columns,
+            _Fts5RankColumn(),
+            _Fts5TableColumn(name),
+          ],
+          definition: definition,
+        );
 }
 
+/// The rank column, which we introduce to support queries like
+/// ```
+/// SELECT * FROM my_fts_table WHERE my_fts_table MATCH 'foo' ORDER BY rank;
+/// ```
 class _Fts5RankColumn extends TableColumn {
+  @override
+  bool get includedInResults => false;
+
   _Fts5RankColumn() : super('rank', const ResolvedType(type: BasicType.int));
+}
+
+/// A column that has the same name as the fts5 it's from. We introduce this
+/// column to support constructs like
+/// ```
+/// CREATE VIRTUAL TABLE foo USING fts5(bar, baz);
+/// query: SELECT * FROM foo WHERE foo MATCH 'something';
+/// ```
+/// The easiest way to support that is to just make "foo" a column on that
+/// table.
+class _Fts5TableColumn extends TableColumn {
+  @override
+  bool get includedInResults => false;
+
+  _Fts5TableColumn(String name)
+      : super(name, const ResolvedType(type: BasicType.text));
 }

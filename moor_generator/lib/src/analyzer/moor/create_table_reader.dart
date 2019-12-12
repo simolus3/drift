@@ -23,6 +23,8 @@ class CreateTableReader {
     final primaryKey = <SpecifiedColumn>{};
 
     for (final column in table.resolvedColumns) {
+      if (!column.includedInResults) continue;
+
       var isPrimaryKey = false;
       final features = <ColumnFeature>[];
       final sqlName = column.name;

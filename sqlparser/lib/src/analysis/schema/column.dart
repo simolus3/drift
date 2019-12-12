@@ -5,6 +5,12 @@ abstract class Column with Referencable, HasMetaMixin implements Typeable {
   /// The name of this column in the result set.
   String get name;
 
+  /// Whether this column is included in results when running a select query
+  /// like `SELECT * FROM table`.
+  ///
+  /// Some columns, notably the rowid aliases, are exempt from this.
+  bool get includedInResults => true;
+
   Column();
 }
 
@@ -85,6 +91,9 @@ class RowId extends TableColumn {
   // note that such alias is always called "rowid" in the result set -
   // "SELECT oid FROM table" yields a sinle column called "rowid"
   RowId() : super('rowid', const ResolvedType(type: BasicType.int));
+
+  @override
+  bool get includedInResults => false;
 }
 
 /// A column that is created by an expression. For instance, in the select

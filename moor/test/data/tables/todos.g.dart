@@ -1372,13 +1372,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   TodoEntry _rowToTodoEntry(QueryRow row) {
-    return TodoEntry(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-    );
+    return todosTable.mapFromRow(row);
   }
 
   Selectable<TodoEntry> withInQuery(String var1, String var2, List<int> var3) {
@@ -1499,13 +1493,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $SharedTodosTable get sharedTodos => db.sharedTodos;
   $TodosTableTable get todosTable => db.todosTable;
   TodoEntry _rowToTodoEntry(QueryRow row) {
-    return TodoEntry(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-    );
+    return todosTable.mapFromRow(row);
   }
 
   Selectable<TodoEntry> todosForUserQuery(int user) {

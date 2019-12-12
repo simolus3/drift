@@ -60,6 +60,11 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
   /// Maps the given row returned by the database into the fitting data class.
   D map(Map<String, dynamic> data, {String tablePrefix});
 
+  /// Like [map], but from a [row] instead of the low-level map.
+  D mapFromRow(QueryRow row, {String tablePrefix}) {
+    return map(row.data, tablePrefix: tablePrefix);
+  }
+
   TableInfo<TableDsl, D> createAlias(String alias);
 
   @override

@@ -131,6 +131,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
     // result, but also expressions that appear as result columns
     for (final resultColumn in s.columns) {
       if (resultColumn is StarResultColumn) {
+        Iterable<Column> visibleColumnsForStar;
+
         if (resultColumn.tableName != null) {
           final tableResolver = scope
               .resolve<ResolvesToResultSet>(resultColumn.tableName, orElse: () {
@@ -141,11 +143,15 @@ class ColumnResolver extends RecursiveVisitor<void> {
             ));
           });
 
-          usedColumns.addAll(tableResolver.resultSet.resolvedColumns);
+          visibleColumnsForStar = tableResolver.resultSet.resolvedColumns;
         } else {
-          // we have a * column, that would be all available columns
-          usedColumns.addAll(availableColumns);
+          // we have a * column without a table, that resolves to every columns
+          // available
+          visibleColumnsForStar = availableColumns;
         }
+
+        usedColumns
+            .addAll(visibleColumnsForStar.where((e) => e.includedInResults));
       } else if (resultColumn is ExpressionResultColumn) {
         final expression = resultColumn.expression;
         Column column;

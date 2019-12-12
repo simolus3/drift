@@ -34,6 +34,8 @@ readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 findValidJsons: SELECT * FROM config WHERE json_valid(config_value);
 
+searchEmails: SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
+
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 
 cfeTest: WITH RECURSIVE
