@@ -10,7 +10,7 @@ Currently, we support
 - navigation for references in sql queries
 
 ## Setup
-To debug this plugin, you'll need to perform these steps once. It is assumed that you
+To use this plugin, you'll need to perform these steps once. It is assumed that you
 have already cloned the `moor` repository.
 
 1. Make sure you run version `3.5.0` or later of the Dart extension in VS Code.
@@ -23,7 +23,10 @@ have already cloned the `moor` repository.
    ```
 3. Uncomment the plugin lines in `analysis_options.yaml`
   
-## Running
+## Debugging
+Note: If you only want to _use_ the plugin and don't care about debugging it, follow the step
+from the [user documentation](https://moor.simonbinder.eu/docs/using-sql/sql_ide/).
+
 After you completed the setup, these steps will open an editor instance that runs the plugin.
 1. chdir into `moor_generator` and run `lib/plugin.dart`. You can run that file from an IDE if
    you need debugging capabilities, but starting it from the command line is fine. Keep that

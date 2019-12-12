@@ -39,8 +39,10 @@ class ColumnDeclaration extends BaseDeclaration {
 /// a referenced table was declared and provide navigation hints.
 class TableDeclaration extends BaseDeclaration {
   final SpecifiedTable table;
+  final Table tableFromSqlParser;
 
   TableDeclaration(this.table, FoundFile declarationFile,
-      Element dartDeclaration, AstNode moorDeclaration)
+      Element dartDeclaration, AstNode moorDeclaration,
+      {this.tableFromSqlParser})
       : super(declarationFile, dartDeclaration, moorDeclaration);
 }

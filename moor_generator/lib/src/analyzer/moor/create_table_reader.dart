@@ -121,9 +121,11 @@ class CreateTableReader {
       overrideDontWriteConstraints: true,
     );
 
-    return specifiedTable
-      ..declaration =
-          TableDeclaration(specifiedTable, step.file, null, table.definition);
+    final declaration = TableDeclaration(
+        specifiedTable, step.file, null, table.definition,
+        tableFromSqlParser: table);
+
+    return specifiedTable..declaration = declaration;
   }
 
   UsedTypeConverter _readTypeConverter(MappedBy mapper) {

@@ -14,6 +14,11 @@ class TypeMapper {
   /// Convert a [SpecifiedTable] from moor into something that can be understood
   /// by the sqlparser library.
   Table extractStructure(SpecifiedTable table) {
+    final existingTable = table.declaration?.tableFromSqlParser;
+    if (existingTable != null) {
+      return existingTable;
+    }
+
     final columns = <TableColumn>[];
     for (final specified in table.columns) {
       final hint = specified.typeConverter != null
