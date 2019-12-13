@@ -16,6 +16,7 @@ dependencies:
 dev_dependencies:
   test: ^1.6.0
   path: ^1.6.0
+  benchmark_harness: ^1.0.0
 
 flutter:
   plugin:

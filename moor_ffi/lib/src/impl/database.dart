@@ -37,7 +37,7 @@ class Database {
     final pathC = CBlob.allocateString(fileName);
 
     final resultCode =
-        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullptr.cast());
+        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullPtr());
     final dbPointer = dbOut.value;
 
     dbOut.free();
@@ -96,7 +96,7 @@ class Database {
     final errorOut = allocate<Pointer<CBlob>>();
 
     final result =
-        bindings.sqlite3_exec(_db, sqlPtr, nullptr, nullptr, errorOut);
+        bindings.sqlite3_exec(_db, sqlPtr, nullPtr(), nullPtr(), errorOut);
 
     sqlPtr.free();
 
@@ -123,7 +123,7 @@ class Database {
     final sqlPtr = CBlob.allocateString(sql);
 
     final resultCode =
-        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, nullptr.cast());
+        bindings.sqlite3_prepare_v2(_db, sqlPtr, -1, stmtOut, nullPtr());
     sqlPtr.free();
 
     final stmt = stmtOut.value;

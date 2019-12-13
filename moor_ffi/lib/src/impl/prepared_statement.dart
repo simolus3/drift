@@ -113,7 +113,7 @@ class PreparedStatement {
           final ptr = CBlob.allocateString(param);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_text(_stmt, i, ptr, -1, nullptr);
+          bindings.sqlite3_bind_text(_stmt, i, ptr, -1, nullPtr());
         } else if (param is Uint8List) {
           // avoid binding a null-pointer, as sqlite would treat that as NULL
           // in sql which is different from x''
@@ -124,7 +124,7 @@ class PreparedStatement {
           assert(!ptr.isNullPointer);
           _allocatedWhileBinding.add(ptr);
 
-          bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length, nullptr);
+          bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length, nullPtr());
         }
       }
     }
