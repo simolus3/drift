@@ -15,9 +15,10 @@ const _comparisonOperators = [
 
 class TypeResolver {
   final Map<Typeable, ResolveResult> _results = {};
+  final AnalysisContext context;
   final EngineOptions options;
 
-  TypeResolver(this.options);
+  TypeResolver(this.context, this.options);
 
   ResolveResult _cache<T extends Typeable>(
       ResolveResult Function(T param) resolver, T typeable) {
@@ -188,7 +189,8 @@ class TypeResolver {
           parameters.isEmpty ? false : justResolve(parameters.first).nullable;
       final anyNullable = parameters.map(justResolve).any((r) => r.nullable);
 
-      switch (call.name.toLowerCase()) {
+      final lowercaseName = call.name.toLowerCase();
+      switch (lowercaseName) {
         case 'round':
           // if there is only one param, returns an int. otherwise real
           if (parameters.length == 1) {
@@ -317,13 +319,18 @@ class TypeResolver {
         }
       }
 
+      if (options.addedFunctions.containsKey(lowercaseName)) {
+        return options.addedFunctions[lowercaseName]
+            .inferReturnType(this, call, parameters);
+      }
+
       throw StateError('Unknown function: ${call.name}');
     }, call);
   }
 
   ResolveResult _resolveFunctionArgument(
       Invocation parent, Expression argument) {
-    return _cache((argument) {
+    return _cache<Expression>((argument) {
       final functionName = parent.name.toLowerCase();
       final args = _expandParameters(parent);
 
@@ -333,6 +340,12 @@ class TypeResolver {
           argument == args[1]) {
         return const ResolveResult(ResolvedType(type: BasicType.int));
       }
+
+      if (options.addedFunctions.containsKey(functionName)) {
+        return options.addedFunctions[functionName]
+            .inferArgumentType(this, parent, argument);
+      }
+
       return const ResolveResult.unknown();
     }, argument);
   }
@@ -442,7 +455,7 @@ class ResolveResult {
   final ResolvedType type;
 
   /// Whether more context is needed to resolve the type. Used internally by the
-  /// analyze.
+  /// analyzer.
   final bool needsContext;
 
   /// Whether type resolution failed.

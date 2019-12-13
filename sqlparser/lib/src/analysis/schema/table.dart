@@ -34,6 +34,11 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
   @override
   final List<TableColumn> resolvedColumns;
 
+  /// Filter the [resolvedColumns] for those that are
+  /// [Column.includedInResults].
+  List<TableColumn> get resultColumns =>
+      resolvedColumns.where((c) => c.includedInResults).toList();
+
   /// Whether this table was created with an "WITHOUT ROWID" modifier
   final bool withoutRowId;
 

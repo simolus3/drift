@@ -7,6 +7,7 @@ class Fts5Extension implements Extension {
   @override
   void register(SqlEngine engine) {
     engine.registerModule(_Fts5Module());
+    engine.registerFunctionHandler(const _Fts5Functions());
   }
 }
 
@@ -49,6 +50,111 @@ class _Fts5Table extends Table {
           ],
           definition: definition,
         );
+}
+
+/// Provides type inference and lints for
+class _Fts5Functions implements FunctionHandler {
+  const _Fts5Functions();
+
+  @override
+  Set<String> get functionNames => const {'bm25', 'highlight', 'snippet'};
+
+  @override
+  ResolveResult inferArgumentType(
+      TypeResolver resolver, Invocation call, Expression argument) {
+    int argumentIndex;
+    if (call.parameters is ExprFunctionParameters) {
+      argumentIndex = (call.parameters as ExprFunctionParameters)
+          .parameters
+          .indexOf(argument);
+    }
+    if (argumentIndex == null || argumentIndex < 0) {
+      // couldn't find expression in arguments, so we don't know the type
+      return const ResolveResult.unknown();
+    }
+
+    switch (call.name) {
+      case 'bm25':
+        // bm25(fts_table)
+        return const ResolveResult.unknown();
+      case 'highlight':
+        // highlight(fts_table, column_index, text_before, text_after)
+        if (argumentIndex == 1) {
+          return const ResolveResult(ResolvedType(type: BasicType.int));
+        } else if (argumentIndex == 2 || argumentIndex == 3) {
+          return const ResolveResult(ResolvedType(type: BasicType.text));
+        }
+        break;
+      case 'snippet':
+        // snippet(fts_table, column_index, phrase_before, phrase_after,
+        //         text_before, max_tokens)
+        if (argumentIndex == 1 || argumentIndex == 5) {
+          return const ResolveResult(ResolvedType(type: BasicType.int));
+        } else if (argumentIndex >= 2 || argumentIndex <= 4) {
+          return const ResolveResult(ResolvedType(type: BasicType.text));
+        }
+        break;
+    }
+    return const ResolveResult.unknown();
+  }
+
+  @override
+  ResolveResult inferReturnType(
+      TypeResolver resolver, Invocation call, List<Typeable> expandedArgs) {
+    switch (call.name) {
+      case 'bm25':
+        return const ResolveResult(ResolvedType(type: BasicType.real));
+      case 'highlight':
+        return const ResolveResult(ResolvedType(type: BasicType.text));
+      case 'snippet':
+        return const ResolveResult(ResolvedType(type: BasicType.text));
+    }
+    return const ResolveResult.unknown();
+  }
+
+  @override
+  void reportErrors(Invocation call, AnalysisContext context) {
+    // it doesn't make sense to call fts5 functions with a star parameter
+    if (call.parameters is StarFunctionParameter) {
+      context.reportError(AnalysisError(
+        relevantNode: call,
+        message: '${call.name} should not be called with a star parameter',
+        type: AnalysisErrorType.other,
+      ));
+      return;
+    }
+
+    final args = (call.parameters as ExprFunctionParameters).parameters;
+    final expectedArgCount = const {
+      'bm25': 1,
+      'highlight': 4,
+      'snippet': 6,
+    }[call.name.toLowerCase()];
+
+    if (expectedArgCount != args.length) {
+      context.reportError(AnalysisError(
+        relevantNode: call,
+        message: '${call.name} expects $expectedArgCount arguments, '
+            'got ${args.length}.',
+        type: AnalysisErrorType.other,
+      ));
+      return;
+    }
+
+    Column firstResolved;
+    if (args.first is Reference) {
+      firstResolved = (args.first as Reference).resolvedColumn;
+    }
+
+    // the first argument to all functions must be a fts5 table name
+    if (firstResolved == null || firstResolved is! _Fts5TableColumn) {
+      context.reportError(AnalysisError(
+        relevantNode: args.first,
+        message: 'Expected an fts5 table name here',
+        type: AnalysisErrorType.other,
+      ));
+    }
+  }
 }
 
 /// The rank column, which we introduce to support queries like

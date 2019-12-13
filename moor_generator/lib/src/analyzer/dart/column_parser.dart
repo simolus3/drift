@@ -49,7 +49,7 @@ class ColumnParser {
   SpecifiedColumn parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
-    if (!(expr is FunctionExpressionInvocation)) {
+    if (expr is! FunctionExpressionInvocation) {
       base.step.reportError(ErrorInDartCode(
         affectedElement: getter.declaredElement,
         message: _errorMessage,

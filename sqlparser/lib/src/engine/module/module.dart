@@ -8,6 +8,45 @@ abstract class Extension {
   void register(SqlEngine engine);
 }
 
+/// Function handlers can be implemented by an [Extension] to add type analysis
+/// for additional function.
+abstract class FunctionHandler {
+  /// The set of function names supported by this handler.
+  ///
+  /// The returned set shouldn't change over time.
+  Set<String> get functionNames;
+
+  /// Resolve the return type of a function invocation.
+  ///
+  /// The [call] refers to a function declared in [functionNames]. To provide
+  /// further analysis, the [resolver] may be used. To support function calls
+  /// with a [StarFunctionParameter], [expandedArgs] contains the expanded
+  /// arguments from a `function(*)` call.
+  ///
+  /// If resolving to a type isn't possible, implementations should return
+  /// [ResolveResult.unknown].
+  ResolveResult inferReturnType(
+      TypeResolver resolver, Invocation call, List<Typeable> expandedArgs);
+
+  /// Resolve the type of an argument used in a function invocation.
+  ///
+  /// The [call] refers to a function declared in [functionNames]. To provide
+  /// further analysis, the [resolver] may be used. This method should return
+  /// the inferred type of [argument], which is an argument passed to the
+  /// [call].
+  ///
+  /// If resolving to a type isn't possible, implementations should return
+  /// [ResolveResult.unknown].
+  ResolveResult inferArgumentType(
+      TypeResolver resolver, Invocation call, Expression argument);
+
+  /// Can optionally be used by implementations to provide [AnalysisError]s
+  /// from the [call].
+  ///
+  /// Errors should be reported via [AnalysisContext.reportError].
+  void reportErrors(Invocation call, AnalysisContext context) {}
+}
+
 /// An sqlite module, which can be used in a `CREATE VIRTUAL TABLE` statement
 /// to find providers.
 abstract class Module implements Referencable, VisibleToChildren {

@@ -2,6 +2,8 @@ part of '../ast.dart';
 
 /// Interface for function calls, either a [FunctionExpression] or a
 /// [AggregateExpression].
+// todo: How does this not clash with Invocation from dart:core :O Anyway, we
+// might want to consider renaming.
 abstract class Invocation extends Expression {
   /// The name of the function being called
   String get name;

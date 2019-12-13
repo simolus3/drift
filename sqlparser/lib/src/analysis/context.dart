@@ -16,11 +16,12 @@ class AnalysisContext {
   /// A resolver that can be used to obtain the type of a [Typeable]. This
   /// mostly applies to [Expression]s, [Reference]s, [Variable]s and
   /// [ResultSet.resolvedColumns] of a select statement.
-  final TypeResolver types;
+  /* late final */ TypeResolver types;
 
   /// Constructs a new analysis context from the AST and the source sql.
-  AnalysisContext(this.root, this.sql, EngineOptions options)
-      : types = TypeResolver(options);
+  AnalysisContext(this.root, this.sql, EngineOptions options) {
+    types = TypeResolver(this, options);
+  }
 
   /// Reports an analysis error.
   void reportError(AnalysisError error) {

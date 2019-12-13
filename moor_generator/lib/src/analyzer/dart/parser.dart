@@ -1,8 +1,8 @@
 import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/element/type.dart';
-import 'package:meta/meta.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:meta/meta.dart';
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
@@ -45,7 +45,7 @@ class MoorDartParser {
   Expression returnExpressionOfMethod(MethodDeclaration method) {
     final body = method.body;
 
-    if (!(body is ExpressionFunctionBody)) {
+    if (body is! ExpressionFunctionBody) {
       step.reportError(ErrorInDartCode(
         affectedElement: method.declaredElement,
         severity: Severity.criticalError,
@@ -67,7 +67,7 @@ class MoorDartParser {
   }
 
   String readStringLiteral(Expression expression, void Function() onError) {
-    if (!(expression is StringLiteral)) {
+    if (expression is! StringLiteral) {
       onError();
     } else {
       final value = (expression as StringLiteral).stringValue;
@@ -82,7 +82,7 @@ class MoorDartParser {
   }
 
   int readIntLiteral(Expression expression, void Function() onError) {
-    if (!(expression is IntegerLiteral)) {
+    if (expression is! IntegerLiteral) {
       onError();
       // ignore: avoid_returning_null
       return null;

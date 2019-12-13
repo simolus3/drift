@@ -22,9 +22,12 @@ class SqlEngine {
       {bool useMoorExtensions = false,
       bool enableJson1Module = false,
       bool enableFts5 = false})
-      : options = EngineOptions(useMoorExtensions, enableJson1Module) {
-    if (enableFts5) {
-      const Fts5Extension().register(this);
+      : options = _constructOptions(
+            moor: useMoorExtensions,
+            json1: enableJson1Module,
+            fts5: enableFts5) {
+    for (final extension in options.enabledExtensions) {
+      extension.register(this);
     }
 
     registerTable(sqliteMaster);
@@ -37,8 +40,17 @@ class SqlEngine {
     knownTables.add(table);
   }
 
+  /// Registers the [module], which means that it can be used as a function in
+  /// `CREATE VIRTUAL TABLE` statements.
   void registerModule(Module module) {
     _knownModules.add(module);
+  }
+
+  /// Registers the [handler], which can provide implementations for additional
+  /// sql functions that can then be used in statements analyzed through this
+  /// engine.
+  void registerFunctionHandler(FunctionHandler handler) {
+    options.addFunctionHandler(handler);
   }
 
   ReferenceScope _constructRootScope({ReferenceScope parent}) {
@@ -152,7 +164,8 @@ class SqlEngine {
         node
           ..accept(ColumnResolver(context))
           ..accept(ReferenceResolver(context))
-          ..accept(TypeResolvingVisitor(context));
+          ..accept(TypeResolvingVisitor(context))
+          ..accept(LintingVisitor(options, context));
       }
     } catch (_) {
       rethrow;
@@ -167,6 +180,13 @@ class SqlEngine {
         .firstWhere((e) => e != null, orElse: () => null);
 
     root.scope = _constructRootScope(parent: safeScope);
+  }
+
+  static EngineOptions _constructOptions({bool moor, bool fts5, bool json1}) {
+    final extensions = [
+      if (fts5) const Fts5Extension(),
+    ];
+    return EngineOptions(moor, json1, extensions);
   }
 }
 
