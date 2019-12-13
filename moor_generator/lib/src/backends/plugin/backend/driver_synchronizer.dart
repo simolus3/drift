@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+// ignore: implementation_imports
 import 'package:analyzer/src/dart/analysis/driver.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 
