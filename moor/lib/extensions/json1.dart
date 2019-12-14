@@ -44,14 +44,17 @@ extension JsonExtensions on Expression<String, StringType> {
   /// Evaluating this expression will cause an error if [path] has an invalid
   /// format or `this` isn't well-formatted json.
   ///
-  /// Note that, since the return type of this function is dynamic, it can't be
-  /// used in [JoinedSelectStatement.addColumns]. It's also recommended to use
-  /// [Expression.equalsExp] with an explicit [Variable] instead of
-  /// [Expression.equals].
-  Expression jsonExtract(String path) {
+  /// Note that the [T] and [S] type parameters have to be set if this function
+  /// is used in [JoinedSelectStatement.addColumns] or compared via
+  /// [Expression.equals]. The [T] parameter denotes the mapped Dart type for
+  /// this expression, such as [String]. THe [S] parameter denotes the mapper
+  /// from moor that's responsible for mapping Dart objects to sqlite and vice
+  /// versa. If [T] was set to [String], the matching value for [S] would be
+  /// [StringType].
+  Expression<T, S> jsonExtract<T, S extends SqlType<T>>(String path) {
     return FunctionCallExpression('json_extract', [
       this,
       Variable.withString(path),
-    ]);
+    ]).dartCast<T, S>();
   }
 }
