@@ -15,19 +15,18 @@ int _compareByPriority(TrackedFile a, TrackedFile b) {
 
 /// Keeps track of files that need to be analyzed by the moor plugin.
 class FileTracker {
-  PriorityQueue<TrackedFile> _pendingWork;
+  final PriorityQueue<TrackedFile> _pendingWork =
+      PriorityQueue(_compareByPriority);
   final Map<FoundFile, TrackedFile> _trackedFiles = {};
   final Set<TrackedFile> _currentPriority = {};
 
   final StreamController<TrackedFile> _computations =
       StreamController.broadcast();
 
-  FileTracker() {
-    _pendingWork = PriorityQueue(_compareByPriority);
-  }
-
-  void _notifyFilePriorityChanged(TrackedFile file) {
+  void _changeFilePriority(TrackedFile file, Function() action) {
     _pendingWork.remove(file);
+
+    action();
 
     // if a file is analyzed, we don't need to do anything with it. So don't add
     // it back into the queue
@@ -37,7 +36,8 @@ class FileTracker {
   }
 
   bool get hasWork => _pendingWork.isNotEmpty;
-  TrackedFile get fileWithHighestPriority => _pendingWork.first;
+  TrackedFile get fileWithHighestPriority =>
+      hasWork ? _pendingWork.first : null;
 
   TrackedFile _addFile(FoundFile file) {
     return _trackedFiles.putIfAbsent(file, () {
@@ -51,29 +51,31 @@ class FileTracker {
   /// if any of the files in the list has changed, the others are likely
   /// affected because they transitively import the changed file. This method
   /// assumes that the [FoundFile.state] in each file has already been adjusted.
-  void notifyFilesChanged(List<FoundFile> files) {
-    files.map(_addFile).forEach(_notifyFilePriorityChanged);
+  void notifyFilesChanged(Iterable<FoundFile> files) {
+    files.map(_addFile).forEach((file) {
+      _changeFilePriority(file, file._adjustPriorityOnCurrentState);
+    });
   }
 
   void setPriorityFiles(Iterable<FoundFile> priority) {
     // remove prioritized flag from existing files
     for (final file in _currentPriority) {
-      file._prioritized = false;
-      _notifyFilePriorityChanged(file);
+      _changeFilePriority(file, () {
+        file._prioritized = false;
+      });
     }
     _currentPriority
       ..clear()
       ..addAll(priority.map(_addFile))
       ..forEach((file) {
-        file._prioritized = true;
-        _notifyFilePriorityChanged(file);
+        _changeFilePriority(file, () {
+          file._prioritized = true;
+        });
       });
   }
 
   void handleTaskCompleted(Task task) {
-    for (final file in task.analyzedFiles) {
-      _notifyFilePriorityChanged(_addFile(file));
-    }
+    notifyFilesChanged(task.analyzedFiles);
   }
 
   /// Manually remove the [file] from the backlog. As the plugin is still very
@@ -95,19 +97,30 @@ class TrackedFile {
   /// because the user is currently typing in it.
   bool _prioritized = false;
 
+  // for the priority queue to work, we can only change the priority in
+  // _changeFilePriority.
+  AnalysisDriverPriority _cachedPriority;
+
   AnalysisDriverPriority get currentPriority {
+    return _cachedPriority;
+  }
+
+  void _adjustPriorityOnCurrentState() {
     if (_prioritized) {
-      return file.state == FileState.dirty
+      _cachedPriority = file.state == FileState.dirty
           ? AnalysisDriverPriority.interactive
           : AnalysisDriverPriority.priority;
     } else if (file.state == FileState.analyzed) {
-      return AnalysisDriverPriority.general;
+      _cachedPriority = AnalysisDriverPriority.general;
     } else if (file.state == FileState.parsed) {
-      return AnalysisDriverPriority.generalImportChanged;
+      _cachedPriority = AnalysisDriverPriority.generalImportChanged;
     } else {
-      return AnalysisDriverPriority.changedFiles;
+      _cachedPriority = AnalysisDriverPriority.changedFiles;
     }
   }
 
-  TrackedFile(this.file);
+  TrackedFile(this.file) {
+    // initialize _cachedPriority
+    _adjustPriorityOnCurrentState();
+  }
 }

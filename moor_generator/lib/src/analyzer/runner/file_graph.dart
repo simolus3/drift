@@ -115,4 +115,9 @@ class FoundFile {
   bool operator ==(dynamic other) {
     return identical(this, other) || other is FoundFile && other.uri == uri;
   }
+
+  @override
+  String toString() {
+    return 'FoundFile($uri, $type)';
+  }
 }
