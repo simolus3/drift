@@ -1,6 +1,7 @@
 import 'package:moor_generator/src/analyzer/options.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
-import 'package:moor_generator/src/model/used_type_converter.dart';
+
+import 'declarations/declaration.dart';
+import 'used_type_converter.dart';
 
 /// The column types in sql.
 enum ColumnType { integer, text, boolean, datetime, blob, real }
@@ -77,7 +78,7 @@ const Map<ColumnType, String> sqlTypes = {
 };
 
 /// A column, as specified by a getter in a table.
-class SpecifiedColumn {
+class MoorColumn implements HasDeclaration {
   /// The getter name of this column in the table class. It will also be used
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
@@ -85,7 +86,8 @@ class SpecifiedColumn {
 
   /// The declaration of this column, contains information about where this
   /// column was created in source code.
-  ColumnDeclaration declaration;
+  @override
+  final ColumnDeclaration declaration;
 
   /// Whether this column was declared inside a moor file.
   bool get declaredInMoorFile => declaration?.isDefinedInMoorFile ?? false;
@@ -176,7 +178,7 @@ class SpecifiedColumn {
   /// this column.
   String get sqlTypeName => sqlTypes[type];
 
-  SpecifiedColumn({
+  MoorColumn({
     this.type,
     this.dartGetterName,
     this.name,
@@ -186,6 +188,7 @@ class SpecifiedColumn {
     this.features = const [],
     this.defaultArgument,
     this.typeConverter,
+    this.declaration,
   });
 }
 
@@ -230,10 +233,4 @@ class LimitingTextLength extends ColumnFeature {
     return typedOther.minLength == minLength &&
         typedOther.maxLength == maxLength;
   }
-}
-
-class Reference extends ColumnFeature {
-  final SpecifiedColumn referencedColumn;
-
-  const Reference(this.referencedColumn);
 }

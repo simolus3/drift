@@ -1,9 +1,9 @@
 part of '../steps.dart';
 
 /// Extracts the following information from a Dart file:
-/// - [SpecifiedTable]s, which are read from Dart classes extending `Table`.
-/// - [SpecifiedDatabase]s, which are read from `@UseMoor`-annotated classes
-/// - [SpecifiedDao]s, which are read from `@UseDao`-annotated classes.
+/// - [MoorTable]s, which are read from Dart classes extending `Table`.
+/// - [Database]s, which are read from `@UseMoor`-annotated classes
+/// - [Dao]s, which are read from `@UseDao`-annotated classes.
 ///
 /// Notably, this step does not analyze defined queries.
 class ParseDartStep extends Step {
@@ -16,7 +16,7 @@ class ParseDartStep extends Step {
   MoorDartParser _parser;
   MoorDartParser get parser => _parser;
 
-  final Map<ClassElement, SpecifiedTable> _tables = {};
+  final Map<ClassElement, MoorTable> _tables = {};
 
   ParseDartStep(Task task, FoundFile file, this.library) : super(task, file) {
     _parser = MoorDartParser(this);
@@ -24,8 +24,8 @@ class ParseDartStep extends Step {
 
   Future<ParsedDartFile> parse() async {
     final reader = LibraryReader(library);
-    final databases = <SpecifiedDatabase>[];
-    final daos = <SpecifiedDao>[];
+    final databases = <Database>[];
+    final daos = <Dao>[];
 
     for (final declaredClass in reader.classes) {
       // check if the table inherits from the moor table class. The !isExactly
@@ -55,33 +55,32 @@ class ParseDartStep extends Step {
     );
   }
 
-  Future<SpecifiedTable> _parseTable(ClassElement element) async {
+  Future<MoorTable> _parseTable(ClassElement element) async {
     if (!_tables.containsKey(element)) {
       _tables[element] = await parser.parseTable(element);
     }
     return _tables[element];
   }
 
-  /// Parses a [SpecifiedDatabase] from the [ClassElement] which was annotated
+  /// Parses a [Database] from the [ClassElement] which was annotated
   /// with `@UseMoor` and the [annotation] reader that reads the `@UseMoor`
   /// annotation.
-  Future<SpecifiedDatabase> parseDatabase(
+  Future<Database> parseDatabase(
       ClassElement element, ConstantReader annotation) {
     return UseMoorParser(this).parseDatabase(element, annotation);
   }
 
-  /// Parses a [SpecifiedDao] from a class declaration that has a `UseDao`
+  /// Parses a [Dao] from a class declaration that has a `UseDao`
   /// [annotation].
-  Future<SpecifiedDao> parseDao(
-      ClassElement element, ConstantReader annotation) {
+  Future<Dao> parseDao(ClassElement element, ConstantReader annotation) {
     return UseDaoParser(this).parseDao(element, annotation);
   }
 
-  /// Resolves a [SpecifiedTable] for the class of each [DartType] in [types].
+  /// Resolves a [MoorTable] for the class of each [DartType] in [types].
   /// The [initializedBy] element should be the piece of code that caused the
   /// parsing (e.g. the database class that is annotated with `@UseMoor`). This
   /// will allow for more descriptive error messages.
-  Future<List<SpecifiedTable>> parseTables(
+  Future<List<MoorTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
       if (!_tableTypeChecker.isAssignableFrom(type.element)) {

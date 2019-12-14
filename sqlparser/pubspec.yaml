@@ -7,7 +7,7 @@ issue_tracker: https://github.com/simolus3/moor/issues
 author: Simon Binder <oss@simonbinder.eu>
 
 environment:
-  sdk: '>=2.2.2 <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
   meta: ^1.1.0

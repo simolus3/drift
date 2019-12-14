@@ -1,8 +1,7 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -16,11 +15,11 @@ class CreateTableReader {
 
   CreateTableReader(this.stmt, this.step);
 
-  SpecifiedTable extractTable(TypeMapper mapper) {
+  MoorTable extractTable(TypeMapper mapper) {
     final table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
 
-    final foundColumns = <String, SpecifiedColumn>{};
-    final primaryKey = <SpecifiedColumn>{};
+    final foundColumns = <String, MoorColumn>{};
+    final primaryKey = <MoorColumn>{};
 
     for (final column in table.resultColumns) {
       var isPrimaryKey = false;
@@ -71,7 +70,12 @@ class CreateTableReader {
         constraintWriter.write(constraint.span.text);
       }
 
-      final parsed = SpecifiedColumn(
+      // if the column definition isn't set - which can happen for CREATE
+      // VIRTUAL TABLE statements - use the entire statement as declaration.
+      final declaration =
+          MoorColumnDeclaration(column.definition ?? stmt, step.file);
+
+      final parsed = MoorColumn(
         type: moorType,
         nullable: column.type.nullable,
         dartGetterName: dartName,
@@ -81,11 +85,8 @@ class CreateTableReader {
         defaultArgument: defaultValue,
         typeConverter: converter,
         overriddenJsonName: overriddenJsonKey,
+        declaration: declaration,
       );
-
-      final declaration =
-          ColumnDeclaration(parsed, step.file, null, column.definition);
-      parsed.declaration = declaration;
 
       foundColumns[column.name] = parsed;
       if (isPrimaryKey) {
@@ -108,7 +109,7 @@ class CreateTableReader {
       }
     }
 
-    final specifiedTable = SpecifiedTable(
+    return MoorTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
@@ -119,13 +120,8 @@ class CreateTableReader {
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
-    );
-
-    final declaration = TableDeclaration(
-        specifiedTable, step.file, null, table.definition,
-        tableFromSqlParser: table);
-
-    return specifiedTable..declaration = declaration;
+      declaration: MoorTableDeclaration(stmt, step.file),
+    )..parserTable = table;
   }
 
   UsedTypeConverter _readTypeConverter(MappedBy mapper) {

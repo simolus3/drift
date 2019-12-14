@@ -1,23 +1,20 @@
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'meta/declarations.dart';
-
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
 class TypeMapper {
-  final Map<Table, SpecifiedTable> _engineTablesToSpecified = {};
+  final Map<Table, MoorTable> _engineTablesToSpecified = {};
 
-  /// Convert a [SpecifiedTable] from moor into something that can be understood
+  /// Convert a [MoorTable] from moor into something that can be understood
   /// by the sqlparser library.
-  Table extractStructure(SpecifiedTable table) {
-    final existingTable = table.declaration?.tableFromSqlParser;
-    if (existingTable != null) {
-      _engineTablesToSpecified[existingTable] = table;
-      return existingTable;
+  Table extractStructure(MoorTable table) {
+    if (table.parserTable != null) {
+      final parserTbl = table.parserTable;
+      _engineTablesToSpecified[parserTbl] = table;
+      return parserTbl;
     }
 
     final columns = <TableColumn>[];
@@ -29,13 +26,13 @@ class TypeMapper {
           .withNullable(specified.nullable);
 
       final column = TableColumn(specified.name.name, type);
-      column.setMeta<ColumnDeclaration>(specified.declaration);
+      column.setMeta<MoorColumn>(specified);
 
       columns.add(column);
     }
 
     final engineTable = Table(name: table.sqlName, resolvedColumns: columns);
-    engineTable.setMeta<TableDeclaration>(table.declaration);
+    engineTable.setMeta<MoorTable>(table);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
   }
@@ -222,7 +219,7 @@ class TypeMapper {
     return FoundDartPlaceholder(type, columnType, name)..astNode = placeholder;
   }
 
-  SpecifiedTable tableToMoor(Table table) {
+  MoorTable tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }
 }

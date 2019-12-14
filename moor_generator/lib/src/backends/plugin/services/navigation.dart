@@ -1,6 +1,6 @@
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:moor_generator/src/backends/plugin/utils/ast_to_location.dart';
 import 'package:moor_generator/src/backends/plugin/utils/span_utils.dart';
@@ -73,7 +73,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
   }
 
   Iterable<Location> _locationOfColumn(Column column) sync* {
-    final declaration = column.meta<ColumnDeclaration>();
+    final declaration = column.meta<MoorColumn>()?.declaration;
     if (declaration != null) {
       // the column was declared in a table and we happen to know where the
       // declaration is - point to that declaration.
@@ -101,7 +101,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       final resolved = e.resolved;
 
       if (resolved is Table && resolved != null) {
-        final declaration = resolved.meta<TableDeclaration>();
+        final declaration = resolved.meta<MoorTable>()?.declaration;
         _reportForSpan(
             e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
       }

@@ -1,11 +1,11 @@
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class TableWriter {
-  final SpecifiedTable table;
+  final MoorTable table;
   final Scope scope;
 
   StringBuffer _buffer;
@@ -132,7 +132,7 @@ class TableWriter {
     _buffer.write('return map; \n}\n');
   }
 
-  void _writeColumnGetter(SpecifiedColumn column) {
+  void _writeColumnGetter(MoorColumn column) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
@@ -192,7 +192,7 @@ class TableWriter {
     );
   }
 
-  void _writeColumnVerificationMeta(SpecifiedColumn column) {
+  void _writeColumnVerificationMeta(MoorColumn column) {
     if (!scope.writer.options.skipVerificationCode) {
       _buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
@@ -233,7 +233,7 @@ class TableWriter {
     _buffer.write('return context;\n}\n');
   }
 
-  String _fieldNameForColumnMeta(SpecifiedColumn column) {
+  String _fieldNameForColumnMeta(MoorColumn column) {
     return '_${column.dartGetterName}Meta';
   }
 
@@ -299,8 +299,8 @@ class TableWriter {
     }
 
     if (table.isVirtualTable) {
-      final stmt =
-          table.declaration.moorDeclaration as CreateVirtualTableStatement;
+      final declaration = table.declaration as MoorTableDeclaration;
+      final stmt = declaration.node as CreateVirtualTableStatement;
       final moduleAndArgs = asDartLiteral(
           '${stmt.moduleName}(${stmt.argumentContent.join(', ')})');
       _buffer

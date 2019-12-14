@@ -21,7 +21,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<${dao.dbClass.displayName}> {\n');
 
-      for (final table in dao.allTables) {
+      for (final table in dao.tables) {
         final infoType = table.tableInfoName;
         final getterName = table.tableFieldName;
         classScope
@@ -30,7 +30,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       }
 
       final writtenMappingMethods = <String>{};
-      for (final query in dao.resolvedQueries) {
+      for (final query in dao.queries) {
         QueryWriter(query, classScope.child(), writtenMappingMethods).write();
       }
 

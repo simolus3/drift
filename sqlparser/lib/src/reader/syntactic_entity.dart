@@ -26,3 +26,9 @@ abstract class SyntacticEntity {
   /// actual source.
   bool get synthetic;
 }
+
+/// Extension to report the length of a [SyntacticEntity].
+extension SyntacticLengthExtension on SyntacticEntity {
+  /// The length of this entity, in characters.
+  int get length => lastPosition - firstPosition;
+}

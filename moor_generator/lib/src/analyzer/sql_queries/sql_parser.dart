@@ -1,15 +1,15 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 class SqlParser {
-  final List<SpecifiedTable> tables;
+  final List<MoorTable> tables;
   final Step step;
   final List<DeclaredQuery> definedQueries;
 
@@ -62,6 +62,7 @@ class SqlParser {
           ..declaredInMoorFile = declaredInMoor;
         foundQueries.add(query);
       } catch (e, s) {
+        // todo remove dependency on build package here
         log.warning('Error while generating APIs for $name', e, s);
       }
     }

@@ -8,10 +8,10 @@ class AnalyzeDartStep extends AnalyzingStep {
     final parseResult = file.currentResult as ParsedDartFile;
 
     for (final accessor in parseResult.dbAccessors) {
-      final transitiveImports = _transitiveImports(accessor.resolvedImports);
+      final transitiveImports = _transitiveImports(accessor.imports);
 
       var availableTables = _availableTables(transitiveImports)
-          .followedBy(accessor.tables)
+          .followedBy(accessor.declaredTables)
           .toList();
 
       try {
@@ -39,13 +39,12 @@ class AnalyzeDartStep extends AnalyzingStep {
           .whereType<ParsedMoorFile>()
           .expand((f) => f.resolvedQueries);
 
-      final parser = SqlParser(this, availableTables, accessor.queries);
+      final parser = SqlParser(this, availableTables, accessor.declaredQueries);
       parser.parse();
 
-      accessor.allTables = availableTables;
-
-      accessor.resolvedQueries =
-          availableQueries.followedBy(parser.foundQueries).toList();
+      accessor
+        ..tables = availableTables
+        ..queries = availableQueries.followedBy(parser.foundQueries).toList();
     }
   }
 }

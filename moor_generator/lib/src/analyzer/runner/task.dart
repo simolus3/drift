@@ -1,10 +1,10 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// A task is used to fully parse and analyze files based on an input file. To
@@ -109,13 +109,13 @@ class Task {
         file.currentResult = parsed;
 
         final daosAndDatabases = parsed.declaredDaos
-            .cast<SpecifiedDbAccessor>()
+            .cast<BaseMoorAccessor>()
             .followedBy(parsed.declaredDatabases);
 
         for (final accessor in daosAndDatabases) {
           final resolvedForAccessor = <FoundFile>[];
 
-          for (final import in accessor.includes) {
+          for (final import in accessor.declaredIncludes) {
             final found = session.resolve(file, import);
             if (!await backend.exists(found.uri)) {
               step.reportError(ErrorInDartCode(
@@ -129,7 +129,7 @@ class Task {
             }
           }
 
-          accessor.resolvedImports = resolvedForAccessor;
+          accessor.imports = resolvedForAccessor;
         }
         break;
       default:

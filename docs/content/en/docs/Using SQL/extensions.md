@@ -48,7 +48,7 @@ You can learn more about the json1 extension on [sqlite.org](https://www.sqlite.
 
 ## fts5
 
-The fts5 extensions provides full-text search capabilities in sqlite tables.
+The fts5 extension provides full-text search capabilities in sqlite tables.
 To enable the fts5 extension in moor files and compiled queries, modify the 
 [build options]({{<relref "../Advanced Features/builder_options.md">}}) to include 
 `fts5` in the `sqlite_module` section.

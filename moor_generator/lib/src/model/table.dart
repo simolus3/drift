@@ -1,19 +1,25 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import 'column.dart';
+import 'declarations/declaration.dart';
+
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class SpecifiedTable {
+class MoorTable implements HasDeclaration {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
 
-  TableDeclaration declaration;
+  @override
+  final TableDeclaration declaration;
+
+  /// The associated table to use for the sqlparser package when analyzing
+  /// sql queries. Note that this field is set lazily.
+  Table parserTable;
 
   /// If [fromClass] is null, another source to use when determining the name
   /// of this table in generated Dart code.
@@ -26,7 +32,7 @@ class SpecifiedTable {
   String get _baseName => _overriddenName ?? fromClass.name;
 
   /// The columns declared in this table.
-  final List<SpecifiedColumn> columns;
+  final List<MoorColumn> columns;
 
   /// The name of this table when stored in the database
   final String sqlName;
@@ -60,7 +66,7 @@ class SpecifiedTable {
   /// The set of primary keys, if they have been explicitly defined by
   /// overriding `primaryKey` in the table class. `null` if the primary key has
   /// not been defined that way.
-  final Set<SpecifiedColumn> primaryKey;
+  final Set<MoorColumn> primaryKey;
 
   /// When non-null, the generated table class will override the `withoutRowId`
   /// getter on the table class with this value.
@@ -76,7 +82,7 @@ class SpecifiedTable {
 
   /// The set of tables referenced somewhere in the declaration of this table,
   /// for instance by using a `REFERENCES` column constraint.
-  final Set<SpecifiedTable> references = {};
+  final Set<MoorTable> references = {};
 
   /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
   /// statement in a moor file
@@ -84,26 +90,27 @@ class SpecifiedTable {
     if (declaration == null) {
       throw StateError("Couldn't determine whether $displayName is a virtual "
           'table since its declaration is unknown.');
+    } else if (declaration is! MoorTableDeclaration) {
+      // tables declared in Dart can't be virtual
+      return false;
     }
-    final node = declaration?.moorDeclaration;
-    // tables declared in Dart can't be virtual
-    if (node == null) return false;
 
-    assert(node is TableInducingStatement);
+    final node = (declaration as MoorTableDeclaration).node;
     return node is CreateVirtualTableStatement;
   }
 
-  SpecifiedTable(
-      {this.fromClass,
-      this.columns,
-      this.sqlName,
-      this.dartTypeName,
-      this.primaryKey,
-      String overriddenName,
-      this.overrideWithoutRowId,
-      this.overrideTableConstraints,
-      this.overrideDontWriteConstraints})
-      : _overriddenName = overriddenName;
+  MoorTable({
+    this.fromClass,
+    this.columns,
+    this.sqlName,
+    this.dartTypeName,
+    this.primaryKey,
+    String overriddenName,
+    this.overrideWithoutRowId,
+    this.overrideTableConstraints,
+    this.overrideDontWriteConstraints,
+    this.declaration,
+  }) : _overriddenName = overriddenName;
 
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>

@@ -1,10 +1,11 @@
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/hash.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
+
+import 'column.dart';
+import 'table.dart';
+import 'used_type_converter.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
@@ -95,7 +96,7 @@ abstract class SqlQuery {
 }
 
 class SqlSelectQuery extends SqlQuery {
-  final List<SpecifiedTable> readsFrom;
+  final List<MoorTable> readsFrom;
   final InferredResultSet resultSet;
 
   String get resultClassName {
@@ -116,7 +117,7 @@ class SqlSelectQuery extends SqlQuery {
 }
 
 class UpdatingQuery extends SqlQuery {
-  final List<SpecifiedTable> updates;
+  final List<MoorTable> updates;
   final bool isInsert;
 
   UpdatingQuery(String name, AnalysisContext fromContext,
@@ -129,7 +130,7 @@ class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  final SpecifiedTable matchingTable;
+  final MoorTable matchingTable;
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 

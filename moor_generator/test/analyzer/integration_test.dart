@@ -1,9 +1,9 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:test/test.dart';
 
@@ -92,14 +92,14 @@ class ProgrammingLanguages extends Table {
     final result = file.currentResult as ParsedDartFile;
     final database = result.declaredDatabases.single;
 
-    expect(database.allTables.map((t) => t.sqlName),
+    expect(database.tables.map((t) => t.sqlName),
         containsAll(['used_languages', 'libraries', 'programming_languages']));
 
     final tableWithReferences =
-        database.allTables.singleWhere((r) => r.sqlName == 'reference_test');
+        database.tables.singleWhere((r) => r.sqlName == 'reference_test');
     expect(tableWithReferences.references.single.sqlName, 'libraries');
 
-    final importQuery = database.resolvedQueries
+    final importQuery = database.queries
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
     expect(importQuery.resultClassName, 'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
@@ -108,7 +108,7 @@ class ProgrammingLanguages extends Table {
         contains(equals(
             FoundDartPlaceholder(DartPlaceholderType.orderBy, null, 'o'))));
 
-    final librariesQuery = database.resolvedQueries
+    final librariesQuery = database.queries
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;
     expect(librariesQuery.variables.single.type, ColumnType.text);
     expect(librariesQuery.declaredInMoorFile, isTrue);

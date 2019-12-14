@@ -7,8 +7,7 @@ class UseDaoParser {
 
   /// If [element] has a `@UseDao` annotation, parses the database model
   /// declared by that class and the referenced tables.
-  Future<SpecifiedDao> parseDao(
-      ClassElement element, ConstantReader annotation) async {
+  Future<Dao> parseDao(ClassElement element, ConstantReader annotation) async {
     final dbType = element.supertype;
     if (dbType.name != 'DatabaseAccessor') {
       step.reportError(ErrorInDartCode(
@@ -47,6 +46,12 @@ class UseDaoParser {
     final parsedTables = await step.parseTables(tableTypes, element);
     final parsedQueries = step.readDeclaredQueries(queryStrings);
 
-    return SpecifiedDao(element, dbImpl, parsedTables, includes, parsedQueries);
+    return Dao(
+      declaration: DatabaseOrDaoDeclaration(element, step.file),
+      dbClass: dbImpl,
+      declaredTables: parsedTables,
+      declaredIncludes: includes,
+      declaredQueries: parsedQueries,
+    );
   }
 }

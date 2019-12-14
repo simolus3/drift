@@ -1,9 +1,9 @@
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
 class DataClassWriter {
-  final SpecifiedTable table;
+  final MoorTable table;
   final Scope scope;
 
   StringBuffer _buffer;

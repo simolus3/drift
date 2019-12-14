@@ -1,18 +1,18 @@
-import 'package:moor_generator/src/model/specified_db_classes.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
-  final SpecifiedDatabase db;
+  final Database db;
   final Scope scope;
 
   DatabaseWriter(this.db, this.scope);
 
   void write() {
     // Write referenced tables
-    for (final table in db.allTables) {
+    for (final table in db.tables) {
       TableWriter(table, scope.child()).writeInto();
     }
 
@@ -32,7 +32,7 @@ class DatabaseWriter {
 
     final tableGetters = <String>[];
 
-    for (final table in db.allTables) {
+    for (final table in db.tables) {
       tableGetters.add(table.tableFieldName);
       final tableClassName = table.tableInfoName;
 
@@ -60,7 +60,7 @@ class DatabaseWriter {
 
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
-    for (final query in db.resolvedQueries) {
+    for (final query in db.queries) {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 

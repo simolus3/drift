@@ -1,8 +1,8 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -40,8 +40,8 @@ class MoorParser {
       ));
     }
 
-    final createdTables = <SpecifiedTable>[];
-    final tableDeclarations = <TableInducingStatement, SpecifiedTable>{};
+    final createdTables = <MoorTable>[];
+    final tableDeclarations = <TableInducingStatement, MoorTable>{};
     for (final reader in createdReaders) {
       final table = reader.extractTable(step.mapper);
       createdTables.add(table);

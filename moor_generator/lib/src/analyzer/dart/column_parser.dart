@@ -46,7 +46,7 @@ class ColumnParser {
 
   ColumnParser(this.base);
 
-  SpecifiedColumn parse(MethodDeclaration getter, Element element) {
+  MoorColumn parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (expr is! FunctionExpressionInvocation) {
@@ -180,20 +180,18 @@ class ColumnParser {
           sqlType: columnType);
     }
 
-    final column = SpecifiedColumn(
-        type: columnType,
-        dartGetterName: getter.name.name,
-        name: name,
-        overriddenJsonName: _readJsonKey(element),
-        customConstraints: foundCustomConstraint,
-        nullable: nullable,
-        features: foundFeatures,
-        defaultArgument: foundDefaultExpression?.toSource(),
-        typeConverter: converter);
-
-    final declaration =
-        ColumnDeclaration(column, base.step.file, element, null);
-    return column..declaration = declaration;
+    return MoorColumn(
+      type: columnType,
+      dartGetterName: getter.name.name,
+      name: name,
+      overriddenJsonName: _readJsonKey(element),
+      customConstraints: foundCustomConstraint,
+      nullable: nullable,
+      features: foundFeatures,
+      defaultArgument: foundDefaultExpression?.toSource(),
+      typeConverter: converter,
+      declaration: DartColumnDeclaration(element, base.step.file),
+    );
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

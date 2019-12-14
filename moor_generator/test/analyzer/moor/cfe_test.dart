@@ -1,9 +1,9 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:test/test.dart';
 

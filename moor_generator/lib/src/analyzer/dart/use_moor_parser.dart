@@ -7,7 +7,7 @@ class UseMoorParser {
 
   /// If [element] has a `@UseMoor` annotation, parses the database model
   /// declared by that class and the referenced tables.
-  Future<SpecifiedDatabase> parseDatabase(
+  Future<Database> parseDatabase(
       ClassElement element, ConstantReader annotation) async {
     // the types declared in UseMoor.tables
     final tableTypes =
@@ -27,8 +27,13 @@ class UseMoorParser {
     final parsedQueries = step.readDeclaredQueries(queryStrings);
     final daoTypes = _readDaoTypes(annotation);
 
-    return SpecifiedDatabase(
-        element, parsedTables, daoTypes, includes, parsedQueries);
+    return Database(
+      declaration: DatabaseOrDaoDeclaration(element, step.file),
+      declaredTables: parsedTables,
+      daos: daoTypes,
+      declaredIncludes: includes,
+      declaredQueries: parsedQueries,
+    );
   }
 
   List<DartType> _readDaoTypes(ConstantReader annotation) {

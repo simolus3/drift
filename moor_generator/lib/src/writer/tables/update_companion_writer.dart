@@ -1,9 +1,8 @@
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/writer.dart';
 
 class UpdateCompanionWriter {
-  final SpecifiedTable table;
+  final MoorTable table;
   final Scope scope;
 
   StringBuffer _buffer;
@@ -44,7 +43,7 @@ class UpdateCompanionWriter {
   /// absent during insert are marked `@required` here. Also, we don't need to
   /// use value wrappers here - `Value.absent` simply isn't an option.
   void _writeInsertConstructor() {
-    final requiredColumns = <SpecifiedColumn>{};
+    final requiredColumns = <MoorColumn>{};
 
     // can't be constant because we use initializers (this.a = Value(a)).
     // for a parameter a which is only potentially constant.

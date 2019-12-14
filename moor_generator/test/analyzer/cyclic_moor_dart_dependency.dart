@@ -51,7 +51,7 @@ CREATE TABLE bars (
     final result = file.currentResult as ParsedDartFile;
     final database = result.declaredDatabases.single;
 
-    expect(database.allTables.map((t) => t.sqlName),
-        containsAll(['foos', 'bars']));
+    expect(
+        database.tables.map((t) => t.sqlName), containsAll(['foos', 'bars']));
   });
 }

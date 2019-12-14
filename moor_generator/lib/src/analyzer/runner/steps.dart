@@ -2,6 +2,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor/moor.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/moor/table_handler.dart';
@@ -12,8 +13,6 @@ import 'package:moor_generator/src/analyzer/moor/parser.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/sql_parser.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
-import 'package:moor_generator/src/model/specified_db_classes.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/table_reference_sorter.dart';
 import 'package:source_gen/source_gen.dart';
@@ -54,8 +53,8 @@ abstract class AnalyzingStep extends Step {
         .toList();
   }
 
-  Iterable<SpecifiedTable> _availableTables(List<FoundFile> imports) {
-    return imports.expand<SpecifiedTable>(
+  Iterable<MoorTable> _availableTables(List<FoundFile> imports) {
+    return imports.expand<MoorTable>(
         (file) => file.currentResult?.declaredTables ?? const Iterable.empty());
   }
 }
