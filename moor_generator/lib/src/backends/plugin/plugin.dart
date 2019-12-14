@@ -17,7 +17,8 @@ import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
-import 'package:moor_generator/src/backends/plugin/backend/file_tracker.dart';
+import 'package:moor_generator/src/backends/common/driver.dart';
+import 'package:moor_generator/src/backends/common/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
@@ -27,7 +28,6 @@ import 'package:moor_generator/src/backends/plugin/services/navigation.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
-import 'backend/driver.dart';
 import 'backend/logger.dart';
 
 class MoorPlugin extends ServerPlugin

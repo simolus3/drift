@@ -2,8 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-
-import 'driver.dart';
+import 'package:moor_generator/src/backends/common/driver.dart';
 
 class PluginBackend extends Backend {
   final MoorDriver driver;
