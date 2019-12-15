@@ -8,6 +8,7 @@ part of '../steps.dart';
 /// Notably, this step does not analyze defined queries.
 class ParseDartStep extends Step {
   static const _tableTypeChecker = TypeChecker.fromRuntime(Table);
+  static const _generatedInfoChecker = TypeChecker.fromRuntime(TableInfo);
   static const _useMoorChecker = TypeChecker.fromRuntime(UseMoor);
   static const _useDaoChecker = TypeChecker.fromRuntime(UseDao);
 
@@ -28,11 +29,7 @@ class ParseDartStep extends Step {
     final daos = <Dao>[];
 
     for (final declaredClass in reader.classes) {
-      // check if the table inherits from the moor table class. The !isExactly
-      // check is here because we run this generator on moor itself and we get
-      // weird errors for the Table class itself.
-      if (_tableTypeChecker.isAssignableFrom(declaredClass) &&
-          !_tableTypeChecker.isExactly(declaredClass)) {
+      if (_isDslTable(declaredClass)) {
         await _parseTable(declaredClass);
       } else {
         for (final annotation in _useMoorChecker.annotationsOf(declaredClass)) {
@@ -106,5 +103,16 @@ class ParseDartStep extends Step {
 
       return DeclaredDartQuery(key, value);
     }).toList();
+  }
+
+  bool _isDslTable(ClassElement element) {
+    // check if the table inherits from the moor table class. The !isExactly
+    // check is here because we run this generator on moor itself and we get
+    // weird errors for the Table class itself. In weird cases where we iterate
+    // over generated code (standalone tool), don't report existing
+    // implementations as tables.
+    return _tableTypeChecker.isAssignableFrom(element) &&
+        !_tableTypeChecker.isExactly(element) &&
+        !_generatedInfoChecker.isAssignableFrom(element);
   }
 }

@@ -1,6 +1,9 @@
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
+// ignore: implementation_imports
+import 'package:analyzer/src/dart/analysis/driver.dart'
+    show AnalysisDriverScheduler;
 import 'package:analyzer_plugin/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
@@ -39,7 +42,9 @@ class MoorPlugin extends ServerPlugin
         AssistsMixin,
         NavigationMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
+    dartScheduler = AnalysisDriverScheduler(performanceLog);
     setupLogger(this);
+    dartScheduler.start();
   }
 
   @override
@@ -54,6 +59,8 @@ class MoorPlugin extends ServerPlugin
   final String contactInfo =
       'Create an issue at https://github.com/simolus3/moor/';
 
+  AnalysisDriverScheduler dartScheduler;
+
   @override
   MoorDriver createAnalysisDriver(plugin.ContextRoot contextRoot) {
     // create an analysis driver we can use to resolve Dart files
@@ -62,7 +69,7 @@ class MoorPlugin extends ServerPlugin
       ..optionsFilePath = contextRoot.optionsFile;
 
     final builder = ContextBuilder(resourceProvider, sdkManager, null)
-      ..analysisDriverScheduler = analysisDriverScheduler
+      ..analysisDriverScheduler = dartScheduler
       ..byteStore = byteStore
       ..performanceLog = performanceLog
       ..fileContentOverlay = fileContentOverlay;

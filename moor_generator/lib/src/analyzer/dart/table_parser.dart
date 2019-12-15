@@ -114,7 +114,10 @@ class TableParser {
         .map((t) => t.element)
         .followedBy([element])
         .expand((e) => e.fields)
-        .where((field) => isColumn(field.type) && field.getter != null)
+        .where((field) =>
+            isColumn(field.type) &&
+            field.getter != null &&
+            !field.getter.isSynthetic)
         .map((field) => field.name)
         .toSet();
 

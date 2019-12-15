@@ -23,7 +23,12 @@ void setupLogger(MoorPlugin plugin) {
       final error =
           PluginErrorParams(false, message, rec.stackTrace.toString());
 
-      plugin.channel.sendNotification(error.toNotification());
+      plugin.channel?.sendNotification(error.toNotification());
+    }
+
+    print('${rec.level.name}: ${rec.message}');
+    if (rec.error != null) {
+      print('${rec.error}: \n${rec.stackTrace}');
     }
   });
   _initialized = true;

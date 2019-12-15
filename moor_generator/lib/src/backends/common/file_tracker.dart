@@ -111,7 +111,7 @@ class TrackedFile {
           ? AnalysisDriverPriority.interactive
           : AnalysisDriverPriority.priority;
     } else if (file.state == FileState.analyzed) {
-      _cachedPriority = AnalysisDriverPriority.general;
+      _cachedPriority = AnalysisDriverPriority.nothing;
     } else if (file.state == FileState.parsed) {
       _cachedPriority = AnalysisDriverPriority.generalImportChanged;
     } else {

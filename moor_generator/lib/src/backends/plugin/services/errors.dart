@@ -36,7 +36,7 @@ class ErrorService {
     }
 
     final params = AnalysisErrorsParams(path, errors);
-    plugin.channel.sendNotification(params.toNotification());
+    plugin.channel?.sendNotification(params.toNotification());
   }
 
   Location _findLocationForError(MoorError error, String path) {

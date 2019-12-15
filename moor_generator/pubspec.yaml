@@ -19,6 +19,9 @@ dependencies:
   logging: '>=0.11.0 <1.0.0'
   json_annotation: ^3.0.0
 
+  # CLI
+  args: ^1.5.0
+
   # Moor-specific analysis
   moor: ^2.0.1
   sqlparser: ^0.4.0
@@ -27,9 +30,11 @@ dependencies:
   analyzer: '>=0.36.4 <0.40.0'
   analyzer_plugin: '>=0.1.0 <0.3.0'
   source_span: ^1.5.5
+  cli_util: ^0.1.0 # Used to locate the Dart SDK
 
   # Build system
   build: ^1.1.0
+  build_resolvers: ^1.2.0
   build_config: '>=0.3.1 <1.0.0'
   source_gen: ^0.9.4
 

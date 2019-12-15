@@ -10,7 +10,6 @@ import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 
 import 'backend.dart';
-import 'driver_synchronizer.dart';
 import 'file_tracker.dart';
 
 class MoorDriver implements AnalysisDriverGeneric {
@@ -23,10 +22,10 @@ class MoorDriver implements AnalysisDriverGeneric {
   /// unsaved files.
   final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
-  final DriverSynchronizer _synchronizer = DriverSynchronizer();
 
   /* late final */ MoorSession session;
   StreamSubscription _fileChangeSubscription;
+  StreamSubscription _taskCompleteSubscription;
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider) {
@@ -36,9 +35,12 @@ class MoorDriver implements AnalysisDriverGeneric {
 
     _fileChangeSubscription =
         session.changedFiles.listen(_tracker.notifyFilesChanged);
+    _taskCompleteSubscription =
+        session.completedTasks.listen(_tracker.handleTaskCompleted);
   }
 
-  bool _ownsFile(String path) => path.endsWith('.moor');
+  bool _ownsFile(String path) =>
+      path.endsWith('.moor') || path.endsWith('.dart');
 
   FoundFile pathToFoundFile(String path) {
     return session.registerFile(Uri.parse('file://$path'));
@@ -47,16 +49,25 @@ class MoorDriver implements AnalysisDriverGeneric {
   @override
   void addFile(String path) {
     if (_ownsFile(path)) {
-      pathToFoundFile(path); // will be registered if it doesn't exists
+      final file = pathToFoundFile(path);
+      _potentiallyNewFile(file);
     }
   }
 
   @override
   void dispose() {
     _fileChangeSubscription?.cancel();
+    _taskCompleteSubscription?.cancel();
+
     _scheduler.remove(this);
     dartDriver.dispose();
     _tracker.dispose();
+  }
+
+  void _potentiallyNewFile(FoundFile file) {
+    if (!file.isParsed) {
+      handleFileChanged(file.uri.path);
+    }
   }
 
   void handleFileChanged(String path) {
@@ -64,6 +75,8 @@ class MoorDriver implements AnalysisDriverGeneric {
       session.notifyFileChanged(pathToFoundFile(path));
       _scheduler.notify(this);
     }
+    // also notify the underlying Dart driver
+    dartDriver.changeFile(path);
   }
 
   @override
@@ -71,25 +84,21 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   Future<void> performWork() async {
-    if (_synchronizer.hasPausedWork) {
-      await _synchronizer.resumePaused();
-    } else {
-      final mostImportantFile = _tracker.fileWithHighestPriority;
-      if (mostImportantFile.file?.isAnalyzed ?? false) {
-        Logger.root.fine('Blocked attempt to work on fully analyzed file');
-        return;
-      }
-      final backendTask = _createTask(mostImportantFile.file.uri);
+    final mostImportantFile = _tracker.fileWithHighestPriority;
+    if (mostImportantFile.file?.isAnalyzed ?? false) {
+      Logger.root.fine('Blocked attempt to work on fully analyzed file');
+      return;
+    }
+    final backendTask = _createTask(mostImportantFile.file.uri);
 
-      try {
-        final task = session.startTask(backendTask);
-        await _synchronizer.safeRunTask(task);
-        _tracker.handleTaskCompleted(task);
-      } catch (e, s) {
-        Logger.root.warning(
-            'Error while working on ${mostImportantFile.file.uri}', e, s);
-        _tracker.removePending(mostImportantFile);
-      }
+    try {
+      final task = session.startTask(backendTask);
+      await task.runTask();
+      session.notifyTaskFinished(task);
+    } catch (e, s) {
+      Logger.root.warning(
+          'Error while working on ${mostImportantFile.file.uri}', e, s);
+      _tracker.removePending(mostImportantFile);
     }
   }
 
@@ -104,11 +113,8 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   Future<LibraryElement> resolveDart(String path) async {
-    final result = await _synchronizer.useDartDriver(() {
-      return dartDriver.currentSession.getUnitElement(path);
-    });
-
-    return result.element.enclosingElement;
+    final result = await dartDriver.currentSession.getResolvedLibrary(path);
+    return result.element;
   }
 
   bool doesFileExist(String path) {
@@ -140,9 +146,6 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   @override
   AnalysisDriverPriority get workPriority {
-    final overridden = _synchronizer.overriddenPriority;
-    if (overridden != null) return overridden;
-
     if (_tracker.hasWork) {
       final mostImportant = _tracker.fileWithHighestPriority;
       return mostImportant.currentPriority;
@@ -163,12 +166,15 @@ class MoorDriver implements AnalysisDriverGeneric {
     }
 
     final found = pathToFoundFile(path);
+    _potentiallyNewFile(found);
 
     if (found.isParsed) {
       return Future.value(found);
     } else {
-      _scheduler.notify(this);
-      final found = pathToFoundFile(path);
+      scheduleMicrotask(() {
+        // Changing files propagate async, so wait a bit before notifying.
+        _scheduler.notify(this);
+      });
 
       return completedFiles()
           .firstWhere((file) => file == found && file.isParsed);
