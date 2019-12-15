@@ -1,4 +1,5 @@
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
@@ -45,6 +46,10 @@ class MoorPlugin extends ServerPlugin
     dartScheduler = AnalysisDriverScheduler(performanceLog);
     setupLogger(this);
     dartScheduler.start();
+  }
+
+  factory MoorPlugin.forProduction() {
+    return MoorPlugin(PhysicalResourceProvider.INSTANCE);
   }
 
   @override
