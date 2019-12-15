@@ -8,8 +8,8 @@ import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
-import 'package:moor_generator/src/backends/plugin/backend/plugin_backend.dart';
 
+import 'backend.dart';
 import 'driver_synchronizer.dart';
 import 'file_tracker.dart';
 
@@ -31,7 +31,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider) {
     _scheduler.add(this);
-    final backend = PluginBackend(this);
+    final backend = CommonBackend(this);
     session = MoorSession(backend);
 
     _fileChangeSubscription =
@@ -127,8 +127,8 @@ class MoorDriver implements AnalysisDriverGeneric {
     return source.fullName;
   }
 
-  PluginTask _createTask(Uri uri) {
-    return PluginTask(uri, this);
+  CommonTask _createTask(Uri uri) {
+    return CommonTask(uri, this);
   }
 
   @override

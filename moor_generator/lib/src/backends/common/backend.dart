@@ -2,12 +2,13 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-import 'package:moor_generator/src/backends/common/driver.dart';
 
-class PluginBackend extends Backend {
+import 'driver.dart';
+
+class CommonBackend extends Backend {
   final MoorDriver driver;
 
-  PluginBackend(this.driver);
+  CommonBackend(this.driver);
 
   @override
   Uri resolve(Uri base, String import) {
@@ -15,12 +16,12 @@ class PluginBackend extends Backend {
   }
 }
 
-class PluginTask extends BackendTask {
+class CommonTask extends BackendTask {
   @override
   final Uri entrypoint;
   final MoorDriver driver;
 
-  PluginTask(this.entrypoint, this.driver);
+  CommonTask(this.entrypoint, this.driver);
 
   @override
   final Logger log = Logger.root;

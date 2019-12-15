@@ -28,7 +28,7 @@ import 'package:moor_generator/src/backends/plugin/services/navigation.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
-import 'backend/logger.dart';
+import 'logger.dart';
 
 class MoorPlugin extends ServerPlugin
     with
