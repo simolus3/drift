@@ -5,10 +5,10 @@ import 'package:test/test.dart';
 void main() {
   FileTracker tracker;
 
-  final fa = FoundFile(Uri.parse('a'), FileType.dart);
-  final fb = FoundFile(Uri.parse('b'), FileType.dart);
-  final fc = FoundFile(Uri.parse('c'), FileType.dart);
-  final fd = FoundFile(Uri.parse('d'), FileType.dart);
+  final fa = FoundFile(Uri.parse('a'), FileType.dartLibrary);
+  final fb = FoundFile(Uri.parse('b'), FileType.dartLibrary);
+  final fc = FoundFile(Uri.parse('c'), FileType.dartLibrary);
+  final fd = FoundFile(Uri.parse('d'), FileType.dartLibrary);
 
   setUp(() {
     tracker = FileTracker();

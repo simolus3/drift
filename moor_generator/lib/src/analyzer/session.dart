@@ -10,7 +10,7 @@ import 'options.dart';
 
 const _fileEndings = {
   '.moor': FileType.moor,
-  '.dart': FileType.dart,
+  '.dart': FileType.dartLibrary,
 };
 
 /// Will store cached data about files that have already been analyzed.

@@ -36,8 +36,15 @@ class BuildBackendTask extends BackendTask {
   }
 
   @override
-  Future<LibraryElement> resolveDart(Uri uri) {
-    return step.resolver.libraryFor(_resolve(uri));
+  Future<LibraryElement> resolveDart(Uri uri) async {
+    try {
+      final library = await step.resolver.libraryFor(_resolve(uri));
+      // older versions of the resolver used to return null instead of throwing
+      if (library == null) throw NotALibraryException(uri);
+      return library;
+    } on NonLibraryAssetException catch (_) {
+      throw NotALibraryException(uri);
+    }
   }
 
   @override

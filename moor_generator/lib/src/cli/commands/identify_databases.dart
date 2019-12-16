@@ -35,6 +35,9 @@ class IdentifyDatabases extends MoorCommand {
       final parsed = await driver.waitFileParsed(entity.path);
       final result = parsed.currentResult as ParsedDartFile;
 
+      // result can be null when we're running into a part of file
+      if (result == null) continue;
+
       if (result.dbAccessors.isNotEmpty) {
         final displayName = p.relative(file.path, from: directory.path);
 

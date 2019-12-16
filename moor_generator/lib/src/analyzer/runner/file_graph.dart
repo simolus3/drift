@@ -76,7 +76,17 @@ class FileGraph {
   }
 }
 
-enum FileType { moor, dart, other }
+enum FileType {
+  /// A `.moor` file, containing `CREATE TABLE` statements and queries.
+  moor,
+
+  /// A dart library. Note that, in particular, this doesn't include `part of`
+  /// files, as those aren't libraries.
+  dartLibrary,
+
+  /// Other files
+  other,
+}
 
 enum FileState {
   /// The file was discovered, but not handled yet
@@ -95,10 +105,10 @@ class FoundFile {
   /// The uri of this file, which can be an asset on the build backend or a
   /// `file://` uri on the analysis plugin backend.
   final Uri uri;
-  final FileType type;
+  FileType type;
 
   FileResult currentResult;
-  /* (not null) */ FileState state = FileState.dirty;
+  FileState state = FileState.dirty;
   final ErrorSink errors = ErrorSink();
 
   FoundFile(this.uri, this.type);

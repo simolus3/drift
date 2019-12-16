@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
 import 'package:analyzer/src/dart/analysis/file_state.dart';
+import 'package:analyzer/src/generated/source.dart' show SourceKind;
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -115,6 +116,10 @@ class MoorDriver implements AnalysisDriverGeneric {
   Future<LibraryElement> resolveDart(String path) async {
     final result = await dartDriver.currentSession.getResolvedLibrary(path);
     return result.element;
+  }
+
+  Future<bool> isDartLibrary(String path) async {
+    return await dartDriver.getSourceKind(path) == SourceKind.LIBRARY;
   }
 
   bool doesFileExist(String path) {

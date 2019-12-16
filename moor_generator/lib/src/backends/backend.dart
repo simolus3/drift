@@ -18,6 +18,10 @@ abstract class BackendTask {
   Uri get entrypoint;
   Logger get log;
 
+  /// Resolve the Dart library at [uri].
+  ///
+  /// If the file at [uri] isn't a library, for instance because it's a part
+  /// file, throws a [NotALibraryException].
   Future<LibraryElement> resolveDart(Uri uri);
   Future<CompilationUnit> parseSource(String dart);
   Future<String> readMoor(Uri uri);
@@ -31,4 +35,13 @@ abstract class BackendTask {
   /// We use this so that the build package can generate the dependency graph
   /// correctly.
   Future<void> fakeRead(Uri uri) async {}
+}
+
+/// Thrown when attempting to read a Dart library from a file that's not a
+/// library.
+class NotALibraryException implements Exception {
+  /// The uri of the file that was attempted to read.
+  final Uri uri;
+
+  NotALibraryException(this.uri);
 }

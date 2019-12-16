@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
@@ -101,8 +102,14 @@ class Task {
           }
         }
         break;
-      case FileType.dart:
-        final library = await backend.resolveDart(file.uri);
+      case FileType.dartLibrary:
+        LibraryElement library;
+        try {
+          library = await backend.resolveDart(file.uri);
+        } on NotALibraryException catch (_) {
+          file.type = FileType.other;
+          break;
+        }
         final step = createdStep = ParseDartStep(this, file, library);
 
         final parsed = await step.parse();
@@ -133,7 +140,7 @@ class Task {
         }
         break;
       default:
-        assert(false, 'Unknown file type ${file.type}');
+        // nothing to do here
         break;
     }
 
@@ -180,7 +187,7 @@ class Task {
     Step step;
 
     switch (file.type) {
-      case FileType.dart:
+      case FileType.dartLibrary:
         step = AnalyzeDartStep(this, file)..analyze();
         break;
       case FileType.moor:

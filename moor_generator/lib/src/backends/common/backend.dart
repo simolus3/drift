@@ -40,6 +40,9 @@ class CommonTask extends BackendTask {
   @override
   Future<LibraryElement> resolveDart(Uri uri) async {
     final path = driver.absolutePath(uri, base: entrypoint);
+    if (!await driver.isDartLibrary(path)) {
+      throw NotALibraryException(uri);
+    }
 
     return await driver.resolveDart(path);
   }
