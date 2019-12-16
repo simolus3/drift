@@ -7,9 +7,12 @@ class Batch {
   final Map<String, List<List<dynamic>>> _createdStatements = {};
   final QueryEngine _engine;
 
+  /// Whether we should start a transaction when completing.
+  final bool _startTransaction;
+
   final Set<TableInfo> _affectedTables = {};
 
-  Batch._(this._engine);
+  Batch._(this._engine, this._startTransaction);
 
   /// Inserts a row constructed from the fields in [row].
   ///
@@ -100,14 +103,29 @@ class Batch {
   Future<void> _commit() async {
     await _engine.executor.ensureOpen();
 
-    final transaction = _engine.executor.beginTransaction();
-    await transaction.doWhenOpened((executor) async {
-      final statements = _createdStatements.entries.map((entry) {
-        return BatchedStatement(entry.key, entry.value);
-      }).toList();
-      await executor.runBatched(statements);
-    });
-    await transaction.send();
+    if (_startTransaction) {
+      TransactionExecutor transaction;
+
+      try {
+        transaction = _engine.executor.beginTransaction();
+        await transaction.doWhenOpened(_runWith);
+        await transaction.send();
+      } catch (e) {
+        await transaction.rollback();
+        rethrow;
+      }
+    } else {
+      return _runWith(_engine.executor);
+    }
+
     _engine.markTablesUpdated(_affectedTables);
+  }
+
+  Future<void> _runWith(QueryExecutor executor) async {
+    final statements = _createdStatements.entries.map((entry) {
+      return BatchedStatement(entry.key, entry.value);
+    }).toList();
+
+    await executor.runBatched(statements);
   }
 }

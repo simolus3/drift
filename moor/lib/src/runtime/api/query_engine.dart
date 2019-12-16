@@ -259,6 +259,9 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// called on the [Batch] instance. The statements aren't executed with a call
   /// to [Batch]. Instead, all generated queries are queued up and are then run
   /// and executed atomically in a transaction.
+  /// If [batch] is called outside of a [transaction] call, it will implicitly
+  /// start a transaction. Otherwise, the batch will re-use the transaction,
+  /// and will have an effect when the transaction completes.
   /// Typically, running bulk updates (so a lot of similar statements) over a
   /// [Batch] is much faster than running them via the [GeneratedDatabase]
   /// directly.
@@ -278,14 +281,9 @@ mixin QueryEngine on DatabaseConnectionUser {
   @protected
   @visibleForTesting
   Future<void> batch(Function(Batch) runInBatch) {
-    final resolved = _resolvedEngine;
-    if (resolved is Transaction) {
-      // we use runBatched in the implementation, which is always run as top
-      // level with sqflite.
-      throw UnsupportedError('Batches cannot be used inside a transaction');
-    }
+    final engine = _resolvedEngine;
 
-    final batch = Batch._(resolved);
+    final batch = Batch._(engine, engine is! Transaction);
     runInBatch(batch);
     return batch._commit();
   }

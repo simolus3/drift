@@ -105,9 +105,9 @@ class Database extends _$Database {
         if (details.wasCreated) {
           // make sure that transactions can be used in the beforeOpen callback.
           await transaction(() async {
-            for (final user in [people.dash, people.duke, people.gopher]) {
-              await into(users).insert(user);
-            }
+            batch((batch) {
+              batch.insertAll(users, [people.dash, people.duke, people.gopher]);
+            });
           });
         }
       },

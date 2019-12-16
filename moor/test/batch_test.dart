@@ -70,15 +70,13 @@ void main() {
     ]));
   });
 
-  test("doesn't work inside a transaction", () {
-    expectLater(() {
-      return db.transaction(() async {
-        await db.batch((b) {});
-      });
-    }, throwsA(const TypeMatcher<UnsupportedError>()));
+  test('can re-use an outer transaction', () async {
+    await db.transaction(() async {
+      await db.batch((b) {});
+    });
 
     verifyNever(executor.runBatched(any));
-    verifyNever(executor.transactions.runBatched(any));
+    verify(executor.transactions.runBatched(any));
   });
 
   test('updates stream queries', () async {
