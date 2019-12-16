@@ -20,6 +20,7 @@ import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/common/driver.dart';
 import 'package:moor_generator/src/backends/common/file_tracker.dart';
@@ -67,7 +68,8 @@ class MoorPlugin extends ServerPlugin
   AnalysisDriverScheduler dartScheduler;
 
   @override
-  MoorDriver createAnalysisDriver(plugin.ContextRoot contextRoot) {
+  MoorDriver createAnalysisDriver(plugin.ContextRoot contextRoot,
+      {MoorOptions options}) {
     // create an analysis driver we can use to resolve Dart files
     final analyzerRoot = ContextRoot(contextRoot.root, contextRoot.exclude,
         pathContext: resourceProvider.pathContext)
@@ -89,7 +91,7 @@ class MoorPlugin extends ServerPlugin
     final errorService = ErrorService(this);
 
     final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
-        fileContentOverlay, resourceProvider);
+        fileContentOverlay, resourceProvider, options);
 
     driver.completedFiles().where((file) => file.isParsed).listen((file) {
       sendNotificationsForFile(file.uri.path);

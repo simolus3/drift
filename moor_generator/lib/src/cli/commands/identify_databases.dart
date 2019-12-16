@@ -18,21 +18,17 @@ class IdentifyDatabases extends MoorCommand {
 
   @override
   Future run() async {
-    final analyzer = await cli.analyzer;
     final directory = Directory.current;
     print('Starting to scan in ${directory.path}...');
 
-    final driver = analyzer.createAnalysisDriver(directory.path);
+    final driver = await cli.createMoorDriver();
 
-    await for (final entity in directory.list(recursive: true)) {
-      if (entity is! File) continue;
-
-      final file = entity as File;
+    await for (final file in cli.project.sourceFiles) {
       if (p.extension(file.path) != '.dart') continue;
 
-      print('scanning - $file');
+      cli.logger.fine('Scanning $file');
 
-      final parsed = await driver.waitFileParsed(entity.path);
+      final parsed = await driver.waitFileParsed(file.path);
       final result = parsed.currentResult as ParsedDartFile;
 
       // result can be null when we're running into a part of file
@@ -45,7 +41,7 @@ class IdentifyDatabases extends MoorCommand {
             .map((t) => t.declaration.fromClass.name)
             .join(', ');
 
-        print('$displayName has moor databases or daos: $names');
+        cli.logger.info('$displayName has moor databases or daos: $names');
       }
     }
   }

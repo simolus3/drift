@@ -4,6 +4,7 @@ import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:cli_util/cli_util.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/backends/common/driver.dart';
 import 'package:path/path.dart' as p;
 
@@ -41,7 +42,10 @@ class StandaloneMoorAnalyzer {
     }
   }
 
-  MoorDriver createAnalysisDriver(String path) {
-    return _fakePlugin.createAnalysisDriver(ContextRoot(path, []));
+  MoorDriver createAnalysisDriver(String path, {MoorOptions options}) {
+    return _fakePlugin.createAnalysisDriver(
+      ContextRoot(path, []),
+      options: options,
+    );
   }
 }

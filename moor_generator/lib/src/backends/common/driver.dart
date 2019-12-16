@@ -7,6 +7,7 @@ import 'package:analyzer/src/dart/analysis/driver.dart';
 import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/generated/source.dart' show SourceKind;
 import 'package:logging/logging.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 
@@ -29,10 +30,12 @@ class MoorDriver implements AnalysisDriverGeneric {
   StreamSubscription _taskCompleteSubscription;
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
-      this.contentOverlay, this._resourceProvider) {
+      this.contentOverlay, this._resourceProvider,
+      [MoorOptions options]) {
     _scheduler.add(this);
     final backend = CommonBackend(this);
-    session = MoorSession(backend);
+
+    session = MoorSession(backend, options: options ?? const MoorOptions());
 
     _fileChangeSubscription =
         session.changedFiles.listen(_tracker.notifyFilesChanged);
