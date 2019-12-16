@@ -29,6 +29,7 @@ Map<String, ResolveResult> _types = {
           ResolvedType(type: BasicType.int, hint: IsDateTime())),
   'SELECT row_number() OVER (RANGE ? PRECEDING)':
       const ResolveResult(ResolvedType(type: BasicType.int)),
+  'SELECT ?;': const ResolveResult.unknown(),
 };
 
 void main() {

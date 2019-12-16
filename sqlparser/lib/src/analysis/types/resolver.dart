@@ -125,9 +125,8 @@ class TypeResolver {
         if (_comparisonOperators.contains(operator)) {
           return const ResolveResult(ResolvedType.bool());
         } else {
-          final type = _encapsulate(expr.childNodes.cast(),
+          return _encapsulate(expr.childNodes.cast(),
               [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]);
-          return ResolveResult(type);
         }
       } else if (expr is CaseExpression) {
         return resolveExpression(expr.whens.first.then);
@@ -141,7 +140,7 @@ class TypeResolver {
         }
       }
 
-      throw StateError('Unknown expression $expr');
+      return const ResolveResult.unknown();
     }, expr);
   }
 
@@ -265,8 +264,8 @@ class TypeResolver {
           return justResolve(parameters.first);
         case 'coalesce':
         case 'ifnull':
-          return ResolveResult(_encapsulate(parameters,
-              [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]));
+          return _encapsulate(parameters,
+              [BasicType.int, BasicType.real, BasicType.text, BasicType.blob]);
         case 'nullif':
           return justResolve(parameters.first).withNullable(true);
         case 'first_value':
@@ -276,19 +275,19 @@ class TypeResolver {
         case 'nth_value':
           return justResolve(parameters.first);
         case 'max':
-          return ResolveResult(_encapsulate(parameters, [
+          return _encapsulate(parameters, [
             BasicType.int,
             BasicType.real,
             BasicType.text,
             BasicType.blob
-          ])).withNullable(true);
+          ]).withNullable(true);
         case 'min':
-          return ResolveResult(_encapsulate(parameters, [
+          return _encapsulate(parameters, [
             BasicType.blob,
             BasicType.text,
             BasicType.int,
             BasicType.real
-          ])).withNullable(true);
+          ]).withNullable(true);
       }
 
       if (options.enableJson1) {
@@ -431,15 +430,18 @@ class TypeResolver {
 
   /// Returns the type of an expression in [expressions] that has the highest
   /// order in [types].
-  ResolvedType _encapsulate(
+  ResolveResult _encapsulate(
       Iterable<Typeable> expressions, List<BasicType> types) {
     final argTypes = expressions
         .map((expr) => justResolve(expr).type)
         .where((t) => t != null);
-    final type = types.lastWhere((t) => argTypes.any((arg) => arg.type == t));
+    final type = types.lastWhere((t) => argTypes.any((arg) => arg.type == t),
+        orElse: () => null);
+    if (type == null) return const ResolveResult.unknown();
+
     final notNull = argTypes.any((t) => !t.nullable);
 
-    return ResolvedType(type: type, nullable: !notNull);
+    return ResolveResult(ResolvedType(type: type, nullable: !notNull));
   }
 }
 
