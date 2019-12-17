@@ -44,6 +44,8 @@ Map<String, TokenType> testCases = {
   '0Xf13A': TokenType.numberLiteral,
   'SELECT': TokenType.select,
   '"UPDATE"': TokenType.identifier,
+  '@foo': TokenType.atSignVariable,
+  ':named': TokenType.colonVariable,
 };
 
 void main() {

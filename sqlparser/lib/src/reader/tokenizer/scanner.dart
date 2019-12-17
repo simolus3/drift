@@ -152,6 +152,11 @@ class Scanner {
         final name = _matchColumnName();
         tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
+      case '@':
+        final name = _matchColumnName();
+        tokens.add(AtSignVariableToken(_currentSpan, name));
+        break;
+        break;
       case ';':
         _addToken(TokenType.semicolon);
         break;
@@ -167,7 +172,6 @@ class Scanner {
         _string();
         break;
       case '"':
-        // todo sqlite also allows string literals with double ticks, we don't
         _identifier(escapedInQuotes: true);
         break;
       case '`':

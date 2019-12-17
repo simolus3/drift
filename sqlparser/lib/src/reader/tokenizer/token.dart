@@ -42,8 +42,7 @@ enum TokenType {
   questionMarkVariable,
   colon,
   colonVariable,
-  // todo at is not used at the moment
-  at,
+  atSignVariable,
   dollarSignVariable,
 
   stringLiteral,
@@ -360,6 +359,13 @@ class DollarSignVariableToken extends Token {
 
   DollarSignVariableToken(FileSpan span, this.name)
       : super(TokenType.dollarSignVariable, span);
+}
+
+class AtSignVariableToken extends Token {
+  final String name;
+
+  AtSignVariableToken(FileSpan span, this.name)
+      : super(TokenType.atSignVariable, span);
 }
 
 /// Inline Dart appearing in a create table statement. Only parsed when the moor
