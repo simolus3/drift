@@ -54,7 +54,7 @@ return query.watch().map((rows) {
 _Note_: `readTable` returns `null` when an entity is not present in the row. For instance, todo entries
 might not be in any category.For a row without a category, `row.readTable(categories)` would return `null`.
 
-## Custom expressions
+## Custom columns
 
 Select statements aren't limited to columns from tables. You can also include more complex expressions in the
 query. For each row in the result, those expressions will be evaluated by the database engine.

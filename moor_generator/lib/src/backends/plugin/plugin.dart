@@ -1,17 +1,11 @@
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
-import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
-import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports
-// ignore: implementation_imports
-import 'package:analyzer/src/dart/analysis/driver.dart'
-    show AnalysisDriverScheduler;
 import 'package:analyzer_plugin/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin/plugin/highlights_mixin.dart';
 import 'package:analyzer_plugin/plugin/navigation_mixin.dart';
 import 'package:analyzer_plugin/plugin/outline_mixin.dart';
-import 'package:analyzer_plugin/plugin/plugin.dart';
 import 'package:analyzer_plugin/protocol/protocol.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart' as plugin;
 import 'package:analyzer_plugin/utilities/assist/assist.dart';
@@ -20,10 +14,9 @@ import 'package:analyzer_plugin/utilities/folding/folding.dart';
 import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin/utilities/outline/outline.dart';
-import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/backends/common/base_plugin.dart';
 import 'package:moor_generator/src/backends/common/driver.dart';
-import 'package:moor_generator/src/backends/common/file_tracker.dart';
 import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
@@ -35,7 +28,7 @@ import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
 import 'logger.dart';
 
-class MoorPlugin extends ServerPlugin
+class MoorPlugin extends BaseMoorPlugin
     with
         OutlineMixin,
         HighlightsMixin,
@@ -44,77 +37,31 @@ class MoorPlugin extends ServerPlugin
         AssistsMixin,
         NavigationMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
-    dartScheduler = AnalysisDriverScheduler(performanceLog);
     setupLogger(this);
-    dartScheduler.start();
+    errorService = ErrorService(this);
   }
 
   factory MoorPlugin.forProduction() {
     return MoorPlugin(PhysicalResourceProvider.INSTANCE);
   }
 
-  @override
-  final List<String> fileGlobsToAnalyze = const ['*.moor'];
-  @override
-  final String name = 'Moor plugin';
-  @override
-  // docs say that this should a version of _this_ plugin, but they lie. this
-  // version will be used to determine compatibility with the analyzer
-  final String version = '2.0.0-alpha.0';
-  @override
-  final String contactInfo =
-      'Create an issue at https://github.com/simolus3/moor/';
-
-  AnalysisDriverScheduler dartScheduler;
+  ErrorService errorService;
 
   @override
-  MoorDriver createAnalysisDriver(plugin.ContextRoot contextRoot,
-      {MoorOptions options}) {
-    // create an analysis driver we can use to resolve Dart files
-    final analyzerRoot = ContextRoot(contextRoot.root, contextRoot.exclude,
-        pathContext: resourceProvider.pathContext)
-      ..optionsFilePath = contextRoot.optionsFile;
-
-    final builder = ContextBuilder(resourceProvider, sdkManager, null)
-      ..analysisDriverScheduler = dartScheduler
-      ..byteStore = byteStore
-      ..performanceLog = performanceLog
-      ..fileContentOverlay = fileContentOverlay;
-
-    // todo we listen because we copied this from the angular plugin. figure out
-    // why exactly this is necessary
-    final dartDriver = builder.buildDriver(analyzerRoot)
-      ..results.listen((_) {}) // Consume the stream, otherwise we leak.
-      ..exceptions.listen((_) {}); // Consume the stream, otherwise we leak.
-
-    final tracker = FileTracker();
-    final errorService = ErrorService(this);
-
-    final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
-        fileContentOverlay, resourceProvider, options);
-
+  void didCreateDriver(MoorDriver driver) {
     driver.completedFiles().where((file) => file.isParsed).listen((file) {
       sendNotificationsForFile(file.uri.path);
       errorService.handleResult(file);
     });
-
-    return driver;
   }
 
   @override
   void contentChanged(String path) {
-    _moorDriverForPath(path)?.handleFileChanged(path);
-  }
-
-  MoorDriver _moorDriverForPath(String path) {
-    final driver = super.driverForPath(path);
-
-    if (driver is! MoorDriver) return null;
-    return driver as MoorDriver;
+    driverForPath(path)?.handleFileChanged(path);
   }
 
   Future<FoundFile> _waitParsed(String path) async {
-    final driver = _moorDriverForPath(path);
+    final driver = driverForPath(path);
     if (driver == null) {
       throw RequestFailure(plugin.RequestError(
           plugin.RequestErrorCode.INVALID_PARAMETER,

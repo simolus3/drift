@@ -4,13 +4,13 @@ weight: 10
 description: Information on json1 and fts5 support in the generator
 ---
 
-_Note_: Since `moor_flutter` uses the sqlite version shipped on the device, the extensions might not
+_Note_: Since `moor_flutter` uses the sqlite version shipped on the device, these extensions might not
 be available on all devices. When using these extensions, using `moor_ffi` is strongly recommended.
-This enables the extensions on all Android devices and on iOS 11 and later.
+This enables the extensions listed here on all Android devices and on iOS 11 and later.
 
 ## json1
 
-To enable the json1 extension in moor files and compiled queries, modify the 
+To enable the json1 extension in moor files and compiled queries, modify your
 [build options]({{<relref "../Advanced Features/builder_options.md">}}) to include 
 `json1` in the `sqlite_module` section.
 

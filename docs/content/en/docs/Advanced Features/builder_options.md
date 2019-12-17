@@ -61,7 +61,7 @@ At the moment, moor supports these options:
 __Note__: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is
 enabled, the [`json`](https://www.sqlite.org/json1.html) functions can be used in moor files. This doesn't necessarily
 mean that those functions are supported at runtime! Both extensions are available on iOS 11 or later. On Android, they're
-only available when using `moor_ffi`.
+only available when using `moor_ffi`. See [our docs]({{< relref "extensions.md" >}}) for more details on them.
 
 ```yaml
 targets:
