@@ -279,19 +279,27 @@ class Parser extends ParserBase
   }
 
   DeclaredStatement _declaredStatement() {
+    DeclaredStatementIdentifier identifier;
+
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
-      final name = _consumeIdentifier('Expected a name for a declared query');
-      final colon =
-          _consume(TokenType.colon, 'Expected colon (:) followed by a query');
+      final name = _consumeIdentifier('Expected a name for a declared query',
+          lenient: true);
 
-      final stmt = _crud();
+      identifier = SimpleName(name.identifier)..identifier = name;
+    } else if (_matchOne(TokenType.atSignVariable)) {
+      final previous = _previous as AtSignVariableToken;
 
-      return DeclaredStatement(name.identifier, stmt)
-        ..identifier = name
-        ..colon = colon;
+      identifier = SpecialStatementIdentifier(previous.name)
+        ..nameToken = previous;
+    } else {
+      return null;
     }
 
-    return null;
+    final colon =
+        _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
+    final stmt = _crud();
+
+    return DeclaredStatement(identifier, stmt)..colon = colon;
   }
 
   /// Invokes [parser], sets the appropriate source span and attaches a

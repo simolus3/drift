@@ -41,7 +41,8 @@ class DeclaredMoorQuery extends DeclaredQuery {
   DeclaredMoorQuery(String name, this.query) : super(name);
 
   factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
-    final name = stmt.name;
+    assert(stmt.identifier is SimpleName);
+    final name = (stmt.identifier as SimpleName).name;
     final query = stmt.statement;
     return DeclaredMoorQuery(name, query);
   }

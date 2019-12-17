@@ -65,11 +65,17 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitMoorDeclaredStatement(DeclaredStatement e) {
-    final element = _startElement(ElementKind.TOP_LEVEL_VARIABLE, e.name, e);
+    if (!e.isRegularQuery) {
+      super.visitChildren(e);
+      return;
+    }
+
+    final name = e.identifier.name;
+    final element = _startElement(ElementKind.TOP_LEVEL_VARIABLE, name, e);
 
     // enrich information with variable types if the query has been analyzed.
     final resolved = request.parsedMoor.resolvedQueries
-        .singleWhere((q) => q.name == e.name, orElse: () => null);
+        .firstWhere((q) => q.name == name, orElse: () => null);
 
     if (resolved != null) {
       final parameterBuilder = StringBuffer('(');

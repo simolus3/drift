@@ -114,9 +114,13 @@ class _HighlightingVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitMoorDeclaredStatement(DeclaredStatement e) {
-    if (e.identifier != null) {
-      _contribute(
-          e.identifier, HighlightRegionType.TOP_LEVEL_FUNCTION_DECLARATION);
+    final identifier = e.identifier;
+    if (identifier is SimpleName && identifier.identifier != null) {
+      _contribute(identifier.identifier,
+          HighlightRegionType.TOP_LEVEL_FUNCTION_DECLARATION);
+    } else if (identifier is SpecialStatementIdentifier &&
+        identifier.nameToken != null) {
+      _contribute(identifier.nameToken, HighlightRegionType.ANNOTATION);
     }
 
     visitChildren(e);

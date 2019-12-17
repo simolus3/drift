@@ -14,6 +14,7 @@ CREATE TABLE tbl (
 ) AS RowName
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
+@special: SELECT * FROM tbl;
 ''';
 
 void main() {
@@ -53,11 +54,18 @@ void main() {
           overriddenDataClassName: 'RowName',
         ),
         DeclaredStatement(
-          'all',
+          SimpleName('all'),
           SelectStatement(
             columns: [StarResultColumn(null)],
             from: [TableReference('tbl', null)],
             where: DartExpressionPlaceholder(name: 'predicate'),
+          ),
+        ),
+        DeclaredStatement(
+          SpecialStatementIdentifier('special'),
+          SelectStatement(
+            columns: [StarResultColumn(null)],
+            from: [TableReference('tbl', null)],
           ),
         ),
       ]),

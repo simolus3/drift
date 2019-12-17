@@ -14,7 +14,7 @@ void main() {
       sql,
       MoorFile([
         DeclaredStatement(
-          'a',
+          SimpleName('a'),
           UpdateStatement(
             table: TableReference('tbl', null),
             set: [
@@ -26,7 +26,7 @@ void main() {
           ),
         ),
         DeclaredStatement(
-          'b',
+          SimpleName('b'),
           SelectStatement(
             columns: [StarResultColumn(null)],
             from: [TableReference('tbl', null)],
@@ -45,7 +45,7 @@ void main() {
     enforceEqual(
       statements[0],
       DeclaredStatement(
-        'b',
+        SimpleName('b'),
         SelectStatement(
           columns: [StarResultColumn(null)],
           from: [TableReference('tbl', null)],
@@ -75,7 +75,7 @@ void main() {
     enforceEqual(
       declared,
       DeclaredStatement(
-        'query',
+        SimpleName('query'),
         SelectStatement(
           columns: [StarResultColumn(null)],
           from: [TableReference('tbl', null)],

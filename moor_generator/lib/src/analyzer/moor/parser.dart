@@ -28,7 +28,9 @@ class MoorParser {
       } else if (parsedStmt is TableInducingStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
       } else if (parsedStmt is DeclaredStatement) {
-        queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+        if (parsedStmt.isRegularQuery) {
+          queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+        }
       }
     }
 
