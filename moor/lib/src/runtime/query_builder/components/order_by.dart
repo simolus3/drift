@@ -27,6 +27,16 @@ class OrderingTerm extends Component {
   /// ascending).
   OrderingTerm({@required this.expression, this.mode = OrderingMode.asc});
 
+  /// Creates an ordering term that sorts for ascending values of [expression].
+  factory OrderingTerm.asc(Expression expression) {
+    return OrderingTerm(expression: expression, mode: OrderingMode.asc);
+  }
+
+  /// Creates an ordering term that sorts for descending values of [expression].
+  factory OrderingTerm.desc(Expression expression) {
+    return OrderingTerm(expression: expression, mode: OrderingMode.desc);
+  }
+
   @override
   void writeInto(GenerationContext context) {
     expression.writeInto(context);

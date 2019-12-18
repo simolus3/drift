@@ -51,9 +51,8 @@ void main() {
     test('with order-by clauses', () async {
       await (db.select(db.users)
             ..orderBy([
-              (u) => OrderingTerm(
-                  expression: u.isAwesome, mode: OrderingMode.desc),
-              (u) => OrderingTerm(expression: u.id)
+              (u) => OrderingTerm.desc(u.isAwesome),
+              (u) => OrderingTerm.asc(u.id)
             ]))
           .get();
 

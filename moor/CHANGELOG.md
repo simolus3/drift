@@ -12,6 +12,8 @@
 - Provide Dart apis for the json1 extension in the `package:moor/extensions/json1.dart` library. Note that
   json1 is not supported on most platforms.
 - Standardized behavior of batches in transactions across backends
+- Introduced `OrderingTerm.asc` and `OrderingTerm.desc` factories to construct ordering terms more
+  easily
 
 ## 2.1.0
 
