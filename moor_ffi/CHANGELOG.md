@@ -1,6 +1,8 @@
 ## unreleased
 
 - Better setup for compiling sqlite3 on Android
+  - Compilation options to increase runtime performance, enable `fts5` and `json1`
+  - We no longer download sqlite sources on the first run, they now ship with the plugin
 
 ## 0.2.0
 
