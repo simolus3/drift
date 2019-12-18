@@ -15,6 +15,12 @@
 - Introduced `OrderingTerm.asc` and `OrderingTerm.desc` factories to construct ordering terms more
   easily
 
+## 2.1.1
+
+- Fix crash when closing a database with asserts disabled
+- Web: Save the database after migrations ran
+- Escape column names in insert statements, if necessary
+
 ## 2.1.0
 
 - New extension methods to simplify the Dart api!

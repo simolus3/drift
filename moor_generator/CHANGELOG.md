@@ -1,3 +1,8 @@
+## 2.1.1
+
+- Fix a crash when using common table expressions in custom statements
+- Don't use a moor specific caching graph across build steps
+
 ## 2.1.0
 
 - Accept inheritance in table definitions (e.g. if an abstract class declared as `IntColumn get foo => integer()()`,
