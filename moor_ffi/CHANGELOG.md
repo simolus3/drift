@@ -1,4 +1,4 @@
-## unreleased
+## 0.3.0
 
 - Better setup for compiling sqlite3 on Android
   - Compilation options to increase runtime performance, enable `fts5` and `json1`
