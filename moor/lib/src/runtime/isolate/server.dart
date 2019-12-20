@@ -38,6 +38,7 @@ class _MoorServer {
         case _NoArgsRequest.startTransaction:
           return _spawnTransaction();
         case _NoArgsRequest.terminateAll:
+          connection.executor.close();
           server.close();
           Isolate.current.kill();
           break;

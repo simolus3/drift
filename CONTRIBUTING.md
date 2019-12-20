@@ -15,6 +15,10 @@ most certainly helps to resolve the issue quickly.
 All kinds of pull requests are absolutely appreciated! Before working on bigger changes, it
 can be helpful to create an issue describing your plans to help coordination.
 
+When working on moor, its recommended to fork the `develop` branch and also target that
+branch for PRs. When possible, we only use the `master` branch to reflect the state that's
+been released to pub.
+
 If you have any question about moor internals that you feel are not explained well enough,
 you're most welcome to create an issue or [chat via gitter](http://gitter.im/simolus3).
 
