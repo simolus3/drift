@@ -302,8 +302,11 @@ mixin QueryEngine on DatabaseConnectionUser {
 
   /// Will be used by generated code to resolve inline Dart expressions in sql.
   @protected
-  GenerationContext $write(Component component) {
+  GenerationContext $write(Component component, {bool hasMultipleTables: null}) {
     final context = GenerationContext.fromDb(this);
+    if (hasMultipleTables != null) {
+      context.hasMultipleTables = hasMultipleTables;
+    }
 
     // we don't want ORDER BY clauses to write the ORDER BY tokens because those
     // are already declared in sql
