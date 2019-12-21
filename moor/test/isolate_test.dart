@@ -57,6 +57,7 @@ void main() {
     await receiveDone.first;
     writer.kill();
     await expectation;
+    await moorIsolate.shutdownAll();
   });
 }
 
