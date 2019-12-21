@@ -90,4 +90,13 @@ void main() {
         'SELECT * FROM config WHERE config.config_key = ?', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
   });
+
+  test('columns use table names in queries with multiple tables', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    await db.multiple(db.withDefaults.a.equals('foo')).get();
+
+    verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
+  });
 }
