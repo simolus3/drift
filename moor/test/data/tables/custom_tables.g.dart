@@ -1157,6 +1157,24 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToConfig);
   }
 
+  MultipleResult _rowToMultipleResult(QueryRow row) {
+    return MultipleResult(
+      a: row.readString('a'),
+      b: row.readInt('b'),
+      c: row.readDouble('c'),
+      a1: row.readString('a'),
+      b1: row.readInt('b'),
+    );
+  }
+
+  Selectable<MultipleResult> multiple(Expression<bool, BoolType> predicate) {
+    final generatedpredicate = $write(predicate, hasMultipleTables: true);
+    return customSelectQuery(
+        'SELECT * FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
+        variables: [...generatedpredicate.introducedVariables],
+        readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
+  }
+
   EMail _rowToEMail(QueryRow row) {
     return EMail(
       sender: row.readString('sender'),
@@ -1206,6 +1224,33 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   @override
   List<TableInfo> get allTables =>
       [noIds, withDefaults, withConstraints, config, mytable, email];
+}
+
+class MultipleResult {
+  final String a;
+  final int b;
+  final double c;
+  final String a1;
+  final int b1;
+  MultipleResult({
+    this.a,
+    this.b,
+    this.c,
+    this.a1,
+    this.b1,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(a.hashCode,
+      $mrjc(b.hashCode, $mrjc(c.hashCode, $mrjc(a1.hashCode, b1.hashCode)))));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is MultipleResult &&
+          other.a == this.a &&
+          other.b == this.b &&
+          other.c == this.c &&
+          other.a1 == this.a1 &&
+          other.b1 == this.b1);
 }
 
 class ReadRowIdResult {

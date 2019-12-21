@@ -53,7 +53,9 @@ CREATE TABLE libraries (
    name TEXT NOT NULL
 );
 
-findLibraries: SELECT * FROM libraries WHERE name LIKE ?;      
+findLibraries: SELECT * FROM libraries WHERE name LIKE ?;
+joinTest: SELECT * FROM reference_test r
+  INNER JOIN libraries l ON l.id = r.library;
         ''',
         AssetId.parse('test_lib|lib/another.dart'): r'''
 import 'package:moor/moor.dart';
@@ -103,6 +105,7 @@ class ProgrammingLanguages extends Table {
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
     expect(importQuery.resultClassName, 'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
+    expect(importQuery.hasMultipleTables, isFalse);
     expect(
         importQuery.placeholders,
         contains(equals(
