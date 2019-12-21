@@ -1,3 +1,8 @@
+## unreleased
+
+- Experimental new CLI tool (`pub run moor_generator`). Not useful at the moment
+- Support inheritance when defining daos ([#285](https://github.com/simolus3/moor/issues/285))
+
 ## 2.1.1
 
 - Fix a crash when using common table expressions in custom statements

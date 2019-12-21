@@ -1,22 +1,17 @@
-import 'package:build/build.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/analyzer/runner/task.dart';
-import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:test/test.dart';
 
-import '../utils/test_backend.dart';
+import 'utils.dart';
 
 void main() {
-  TestBackend backend;
-  MoorSession session;
+  TestState state;
 
   setUpAll(() {
-    backend = TestBackend(
-      {
-        AssetId.parse('test_lib|lib/database.dart'): r'''
+    state = TestState.withContent({
+      'test_lib|lib/database.dart': r'''
 import 'package:moor/moor.dart';
 
 import 'another.dart'; // so that the resolver picks it up
@@ -38,9 +33,8 @@ class UsedLanguages extends Table {
   },
 )
 class Database {}
-
       ''',
-        AssetId.parse('test_lib|lib/tables.moor'): r'''
+      'test_lib|lib/tables.moor': r'''
 import 'another.dart';
 
 CREATE TABLE reference_test (
@@ -57,7 +51,7 @@ findLibraries: SELECT * FROM libraries WHERE name LIKE ?;
 joinTest: SELECT * FROM reference_test r
   INNER JOIN libraries l ON l.id = r.library;
         ''',
-        AssetId.parse('test_lib|lib/another.dart'): r'''
+      'test_lib|lib/another.dart': r'''
 import 'package:moor/moor.dart';
       
 class ProgrammingLanguages extends Table {
@@ -66,27 +60,19 @@ class ProgrammingLanguages extends Table {
   IntColumn get popularity => integer().named('ieee_index').nullable()();
 }
       ''',
-      },
-    );
-    session = MoorSession(backend);
+    });
   });
 
   tearDownAll(() {
-    backend.finish();
+    state.backend.finish();
   });
 
-  Task task;
-
   setUp(() async {
-    final backendTask =
-        backend.startTask(Uri.parse('package:test_lib/database.dart'));
-    task = session.startTask(backendTask);
-    await task.runTask();
+    await state.runTask('package:test_lib/database.dart');
   });
 
   test('resolves tables and queries', () {
-    final file =
-        session.registerFile(Uri.parse('package:test_lib/database.dart'));
+    final file = state.file('package:test_lib/database.dart');
 
     expect(file.state, FileState.analyzed);
     expect(file.errors.errors, isEmpty);

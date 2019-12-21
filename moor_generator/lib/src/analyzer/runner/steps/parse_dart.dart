@@ -34,12 +34,14 @@ class ParseDartStep extends Step {
       } else {
         for (final annotation in _useMoorChecker.annotationsOf(declaredClass)) {
           final reader = ConstantReader(annotation);
-          databases.add(await parseDatabase(declaredClass, reader));
+          final database = await parseDatabase(declaredClass, reader);
+          if (database != null) databases.add(database);
         }
 
         for (final annotation in _useDaoChecker.annotationsOf(declaredClass)) {
           final reader = ConstantReader(annotation);
-          daos.add(await parseDao(declaredClass, reader));
+          final dao = await parseDao(declaredClass, reader);
+          if (dao != null) daos.add(dao);
         }
       }
     }
