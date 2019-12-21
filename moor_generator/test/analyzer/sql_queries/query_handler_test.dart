@@ -61,4 +61,10 @@ void main() {
       expect((query as UpdatingQuery).updates, hasLength(1));
     });
   });
+
+  test('throws when variable indexes are skipped', () {
+    expect(() => parse('SELECT ?2'), throwsStateError);
+    expect(() => parse('SELECT ?1 = ?3'), throwsStateError);
+    expect(() => parse('SELECT ?1 = ?3 OR ?2'), returnsNormally);
+  });
 }
