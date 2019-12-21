@@ -296,8 +296,13 @@ class QueryWriter {
           ..write(_placeholderContextName(element))
           ..write(' = ')
           ..write(r'$write(')
-          ..write(element.dartParameterName)
-          ..write(');\n');
+          ..write(element.dartParameterName);
+
+        if (query.hasMultipleTables) {
+          _buffer.write(', hasMultipleTables: true');
+        }
+
+        _buffer.write(');\n');
 
         // similar to the case for expanded array variables, we need to
         // increase the index
