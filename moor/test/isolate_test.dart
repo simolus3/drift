@@ -1,5 +1,6 @@
 @TestOn('vm')
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:moor/isolate.dart';
 import 'package:moor/moor.dart';
@@ -26,6 +27,36 @@ void main() {
     }
 
     _runTests(spawnBackground, true);
+  });
+
+  test('stream queries across isolates', () async {
+    // three isolates:
+    // 1. this one, starting a query stream
+    // 2. another one running an insert
+    // 3. the MoorIsolate executor the other two are connecting to
+    final moorIsolate = await MoorIsolate.spawn(_backgroundConnection);
+
+    final receiveDone = ReceivePort();
+    final writer = await Isolate.spawn(_writeTodoEntryInBackground,
+        _BackgroundEntryMessage(moorIsolate, receiveDone.sendPort));
+
+    final db = TodoDb.connect(await moorIsolate.connect());
+    final expectedEntry = const TypeMatcher<TodoEntry>()
+        .having((e) => e.content, 'content', 'Hello from background');
+
+    final expectation = expectLater(
+      db.select(db.todosTable).watch(),
+      // can optionally emit an empty list if this isolate connected before the
+      // other one.
+      emitsInOrder([
+        mayEmit([]),
+        [expectedEntry]
+      ]),
+    );
+
+    await receiveDone.first;
+    writer.kill();
+    await expectation;
   });
 }
 
@@ -85,4 +116,21 @@ void _runTests(
 
 DatabaseConnection _backgroundConnection() {
   return DatabaseConnection.fromExecutor(VmDatabase.memory());
+}
+
+Future<void> _writeTodoEntryInBackground(_BackgroundEntryMessage msg) async {
+  final connection = await msg.isolate.connect();
+  final database = TodoDb.connect(connection);
+
+  await database
+      .into(database.todosTable)
+      .insert(TodosTableCompanion.insert(content: 'Hello from background'));
+  msg.sendDone.send(null);
+}
+
+class _BackgroundEntryMessage {
+  final MoorIsolate isolate;
+  final SendPort sendDone;
+
+  _BackgroundEntryMessage(this.isolate, this.sendDone);
 }
