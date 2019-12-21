@@ -54,13 +54,18 @@ class QueryHandler {
   UpdatingQuery _handleUpdate() {
     final updatedFinder = UpdatedTablesVisitor();
     context.root.accept(updatedFinder);
-    _foundTables = updatedFinder.foundTables;
+    _foundTables = updatedFinder.writtenTables;
 
     final isInsert = context.root is InsertStatement;
 
-    return UpdatingQuery(name, context, _foundElements,
-        _foundTables.map(mapper.tableToMoor).toList(),
-        isInsert: isInsert);
+    return UpdatingQuery(
+      name,
+      context,
+      _foundElements,
+      _foundTables.map(mapper.tableToMoor).toList(),
+      isInsert: isInsert,
+      hasMultipleTables: updatedFinder.foundTables.length > 1,
+    );
   }
 
   SqlSelectQuery _handleSelect() {

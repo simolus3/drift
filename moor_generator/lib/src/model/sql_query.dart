@@ -90,7 +90,13 @@ abstract class SqlQuery {
   /// appear inside the query.
   final List<FoundElement> elements;
 
-  SqlQuery(this.name, this.fromContext, this.elements) {
+  /// Whether the underlying sql statement of this query operates on more than
+  /// one table. In that case, column references in Dart placeholders have to
+  /// write their table name (e.g. `foo.bar` instead of just `bar`).
+  final bool hasMultipleTables;
+
+  SqlQuery(this.name, this.fromContext, this.elements, {bool hasMultipleTables})
+      : hasMultipleTables = hasMultipleTables ?? false {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
@@ -112,9 +118,14 @@ class SqlSelectQuery extends SqlQuery {
     return '${ReCase(name).pascalCase}Result';
   }
 
-  SqlSelectQuery(String name, AnalysisContext fromContext,
-      List<FoundElement> elements, this.readsFrom, this.resultSet)
-      : super(name, fromContext, elements);
+  SqlSelectQuery(
+    String name,
+    AnalysisContext fromContext,
+    List<FoundElement> elements,
+    this.readsFrom,
+    this.resultSet,
+  ) : super(name, fromContext, elements,
+            hasMultipleTables: readsFrom.length > 1);
 }
 
 class UpdatingQuery extends SqlQuery {
@@ -123,8 +134,9 @@ class UpdatingQuery extends SqlQuery {
 
   UpdatingQuery(String name, AnalysisContext fromContext,
       List<FoundElement> elements, this.updates,
-      {this.isInsert = false})
-      : super(name, fromContext, elements);
+      {this.isInsert = false, bool hasMultipleTables})
+      : super(name, fromContext, elements,
+            hasMultipleTables: hasMultipleTables);
 }
 
 class InferredResultSet {
