@@ -1,12 +1,9 @@
 name: moor_generator
 description: Dev-dependency to generate table and dataclasses together with the moor package.
-version: 2.1.1
+version: 2.2.0
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
-authors:
-  - Simon Binder <oss@simonbinder.eu>
-maintainer: Simon Binder (@simolus3)
 
 environment:
   sdk: '>=2.6.0 <3.0.0'

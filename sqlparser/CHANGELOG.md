@@ -1,4 +1,4 @@
-## unreleased
+## 0.5.0
 - Optionally support the `json1` module
 - Optionally support the `fts5` module
 

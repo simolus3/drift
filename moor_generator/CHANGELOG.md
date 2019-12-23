@@ -1,7 +1,8 @@
-## unreleased
+## 2.2.0
 
 - Experimental new CLI tool (`pub run moor_generator`). Not useful at the moment
 - Support inheritance when defining daos ([#285](https://github.com/simolus3/moor/issues/285))
+- Improve robustness and error messages, many bug fixes
 
 ## 2.1.1
 

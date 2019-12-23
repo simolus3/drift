@@ -1,4 +1,4 @@
-## unreleased
+## 2.2.0
 
 - Support custom expressions for selects in the Dart API:
   ```dart
@@ -11,7 +11,6 @@
   ```
 - Support the `json1` and `fts5` extensions! Using them also requires version 2.2 of `moor_generator`
   and they require `moor_ffi`. For details, see the [documentation](https://moor.simonbinder.eu/docs/using-sql/extensions/).
-- Provide Dart apis for the json1 extension in the `package:moor/extensions/json1.dart` library.
 - Standardized behavior of batches in transactions across backends
 - Introduced `OrderingTerm.asc` and `OrderingTerm.desc` factories to construct ordering terms more
   easily
