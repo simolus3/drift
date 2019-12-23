@@ -1,3 +1,4 @@
+@Tags(['analyzer'])
 import 'package:build_test/build_test.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:moor_generator/src/backends/build/build_backend.dart';

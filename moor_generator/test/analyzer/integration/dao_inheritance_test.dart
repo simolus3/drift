@@ -1,3 +1,4 @@
+@Tags(['analyzer'])
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
 
