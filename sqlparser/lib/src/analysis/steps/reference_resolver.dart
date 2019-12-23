@@ -16,19 +16,13 @@ class ReferenceResolver extends RecursiveVisitor<void> {
 
     if (e.tableName != null) {
       // first find the referenced table, then use the column on that table.
-      final tableResolver =
-          scope.resolve<ResolvesToResultSet>(e.tableName, orElse: () {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.referencedUnknownTable,
-          message: 'Unknown table: ${e.tableName}',
-          relevantNode: e,
-        ));
-      });
-      final resultSet = tableResolver.resultSet;
+      final tableResolver = scope.resolve<ResolvesToResultSet>(e.tableName);
+      final resultSet = tableResolver?.resultSet;
 
       if (resultSet == null) {
         context.reportError(AnalysisError(
           type: AnalysisErrorType.referencedUnknownTable,
+          message: 'Unknown table: ${e.tableName}',
           relevantNode: e,
         ));
       } else {
@@ -63,10 +57,13 @@ class ReferenceResolver extends RecursiveVisitor<void> {
             type: AnalysisErrorType.referencedUnknownColumn, relevantNode: e));
       } else {
         if (columns.length > 1) {
+          final description =
+              columns.map((c) => c.humanReadableDescription()).join(', ');
+
           context.reportError(AnalysisError(
             type: AnalysisErrorType.ambiguousReference,
             relevantNode: e,
-            message: 'Could refer to any in ${columns.join(', ')}',
+            message: 'Could refer to any of: $description',
           ));
         }
 

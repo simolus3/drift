@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
+import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -36,19 +37,20 @@ class MoorBuilder extends SharedPartBuilder {
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
     Task task;
+    FoundFile input;
     try {
       final backend = BuildBackend();
       final backendTask = backend.createTask(step);
       final session = MoorSession(backend, options: options);
 
-      final input = session.registerFile(step.inputId.uri);
+      input = session.registerFile(step.inputId.uri);
       task = session.startTask(backendTask);
       await task.runTask();
-
-      return input.currentResult as ParsedDartFile;
     } finally {
-      task.printErrors();
+      task?.printErrors();
     }
+
+    return input?.currentResult as ParsedDartFile;
   }
 }
 

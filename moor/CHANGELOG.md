@@ -1,6 +1,6 @@
 ## unreleased
 
-- Support custom expressions from selects in the Dart API:
+- Support custom expressions for selects in the Dart API:
   ```dart
   final currentBalance = accounts.income - accounts.expenses;
   select(accounts).addColumns([currentBalance]).map((row) {
@@ -9,8 +9,9 @@
     return ...
   }).get();
   ```
-- Provide Dart apis for the json1 extension in the `package:moor/extensions/json1.dart` library. Note that
-  json1 is not supported on most platforms.
+- Support the `json1` and `fts5` extensions! Using them also requires version 2.2 of `moor_generator`
+  and they require `moor_ffi`. For details, see the [documentation](https://moor.simonbinder.eu/docs/using-sql/extensions/).
+- Provide Dart apis for the json1 extension in the `package:moor/extensions/json1.dart` library.
 - Standardized behavior of batches in transactions across backends
 - Introduced `OrderingTerm.asc` and `OrderingTerm.desc` factories to construct ordering terms more
   easily

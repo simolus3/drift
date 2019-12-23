@@ -1,7 +1,9 @@
 part of '../analysis.dart';
 
 /// A column that appears in a [ResultSet]. Has a type and a name.
-abstract class Column with Referencable, HasMetaMixin implements Typeable {
+abstract class Column
+    with Referencable, HasMetaMixin
+    implements Typeable, HumanReadable {
   /// The name of this column in the result set.
   String get name;
 
@@ -12,6 +14,11 @@ abstract class Column with Referencable, HasMetaMixin implements Typeable {
   bool get includedInResults => true;
 
   Column();
+
+  @override
+  String humanReadableDescription() {
+    return name;
+  }
 }
 
 /// A column that is part of a table.
@@ -82,6 +89,11 @@ class TableColumn extends Column {
     }
 
     return false;
+  }
+
+  @override
+  String humanReadableDescription() {
+    return '$name in ${table.humanReadableDescription()}';
   }
 }
 

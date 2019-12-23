@@ -26,7 +26,9 @@ abstract class ResultSet implements ResolvesToResultSet {
 
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
-class Table with ResultSet, VisibleToChildren, HasMetaMixin {
+class Table
+    with ResultSet, VisibleToChildren, HasMetaMixin
+    implements HumanReadable {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
   final String name;
@@ -77,5 +79,10 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
         ..table = this;
     }
     return null;
+  }
+
+  @override
+  String humanReadableDescription() {
+    return name;
   }
 }
