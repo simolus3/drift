@@ -70,7 +70,7 @@ void main() {
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
-      'ORDER BY config.config_key ASC',
+      'ORDER BY config_key ASC',
       ['a', 'b'],
     ));
   });
@@ -86,8 +86,8 @@ void main() {
     final parsed =
         await db.readDynamic(db.config.configKey.equals('key')).getSingle();
 
-    verify(mock.runSelect(
-        'SELECT * FROM config WHERE config.config_key = ?', ['key']));
+    verify(
+        mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
   });
 
