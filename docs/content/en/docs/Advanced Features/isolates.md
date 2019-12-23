@@ -3,7 +3,7 @@ title: "Isolates"
 description: Seamlessly run moor on a background isolate and unblock the main thread
 ---
 
-{{% alert title="New feature" color="warning" %}}
+{{% alert title="New feature" color="primary" %}}
 The api for background isolates only works with moor version 2.1.0 or newer. Due to
 platform limitations, using [moor_ffi]({{< relref "../Other engines/vm.md" >}}) is required when
 using a background isolate. Using `moor_flutter` is not supported.
@@ -63,6 +63,64 @@ void main() async {
 }
 ```
 
+### Initialization on the main thread
+
+Platform channels are not available on background isolates, but sometimes you might want to use
+a function like `getApplicationDocumentsDirectory` from `path_provider` to construct the database
+path. As this function uses a method channel internally, we have to use a trick to initialize the
+database.
+We're going to start the isolate running the database manually. This allows us to pass additional
+data that we calculated on the main thread.
+
+```dart
+Future<MoorIsolate> _createMoorIsolate() async {
+  // this method is called from the main isolate. Since we can't use
+  // getApplicationDocumentsDirectory on a background isolate, we calculate
+  // the database path in the foreground isolate and then inform the
+  // background isolate about the path.
+  final dir = await getApplicationDocumentsDirectory();
+  final path = p.join(dir.path, 'db.sqlite');
+  final receivePort = ReceivePort();
+
+  await Isolate.spawn(
+    _startBackground,
+    _IsolateStartRequest(receivePort.sendPort, path),
+  );
+
+  // _startBackground will send the MoorIsolate to this ReceivePort
+  return (await receivePort.first as MoorIsolate);
+}
+
+void _startBackground(_IsolateStartRequest request) {
+  // this is the entrypoint from the background isolate! Let's create
+  // the database from the path we received
+  final executor = VmDatabase(File(request.targetPath));
+  // we're using MoorIsolate.inCurrent here as this method already runs on a
+  // background isolate. If we used MoorIsolate.spawn, a third isolate would be
+  // started which is not what we want!
+  final moorIsolate = MoorIsolate.inCurrent(
+    () => DatabaseConnection.fromExecutor(executor),
+  );
+  // inform the starting isolate about this, so that it can call .connect()
+  request.sendMoorIsolate.send(moorIsolate);
+}
+
+// used to bundle the SendPort and the target path, since isolate entrypoint
+// functions can only take one parameter.
+class _IsolateStartRequest {
+  final SendPort sendMoorIsolate;
+  final String targetPath;
+
+  _IsolateStartRequest(this.sendMoorIsolate, this.targetPath);
+}
+```
+
+### Shutting down the isolate
+
+Since multiple `DatabaseConnection`s can exist to a specific `MoorIsolate`, simply calling
+`Database.close` won't stop the isolate. You can use the `MoorIsolate.shutdownAll()` for that.
+It will disconnect all databases and then close the background isolate, releasing all resources.
+
 ## Common operation modes
 
 The `MoorIsolate` object itself can be sent across isolates, so if you have more than one isolate
@@ -96,9 +154,9 @@ All moor features are supported on background isolates and work out of the box. 
 - Custom statements or those generated from an sql api
 
 Please note that, will using a background isolate can reduce lag on the UI thread, the overall
-database is going to be much slower! There's a large overhead involved in sending data between
-isolates, and that's exactly what moor is doing internally. If you're not running into dropped
-frames because of moor, using a background isolate is a overkill.
+database is going to be slower! There's a overhead involved in sending data between
+isolates, and that's exactly what moor has to do internally. If you're not running into dropped
+frames because of moor, using a background isolate is probably not necessary for your app.
 
 Internally, moor uses the following model to implement this api:
 
