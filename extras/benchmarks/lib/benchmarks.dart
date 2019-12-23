@@ -18,6 +18,7 @@ List<Reportable> allBenchmarks(ScoreEmitter emitter) {
     SelectStringBenchmark(emitter),
     // high-level moor apis
     KeyValueInsertBatch(emitter),
+    KeyValueInsertSerial(emitter),
     // sql parser
     ParseMoorFile(emitter),
     TokenizerBenchmark(emitter),

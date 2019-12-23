@@ -13,7 +13,7 @@ class KeyValueInsertBatch extends AsyncBenchmarkBase {
   final Uuid uuid = Uuid();
 
   KeyValueInsertBatch(ScoreEmitter emitter)
-      : super('Inserting $_size entries', emitter);
+      : super('Inserting $_size entries (batch)', emitter);
 
   @override
   Future<void> run() async {
@@ -28,5 +28,27 @@ class KeyValueInsertBatch extends AsyncBenchmarkBase {
             _db.keyValues, KeyValuesCompanion.insert(key: key, value: value));
       }
     });
+  }
+}
+
+class KeyValueInsertSerial extends AsyncBenchmarkBase {
+  final _db = Database();
+  final Uuid uuid = Uuid();
+
+  KeyValueInsertSerial(ScoreEmitter emitter)
+      : super('Inserting $_size entries (serial)', emitter);
+
+  @override
+  Future<void> run() async {
+    await _db.delete(_db.keyValues).go();
+
+    for (var i = 0; i < _size; i++) {
+      final key = uuid.v4();
+      final value = uuid.v4();
+
+      await _db
+          .into(_db.keyValues)
+          .insert(KeyValuesCompanion.insert(key: key, value: value));
+    }
   }
 }
