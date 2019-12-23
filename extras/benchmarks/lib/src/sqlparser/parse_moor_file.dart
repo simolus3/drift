@@ -1,5 +1,4 @@
-import 'package:benchmark_harness/benchmark_harness.dart';
-
+import 'package:benchmarks/benchmarks.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 const file = '''
@@ -32,8 +31,7 @@ manyColumns:
 ''';
 
 class ParseMoorFile extends BenchmarkBase {
-  ParseMoorFile(ScoreEmitter emitter)
-      : super('Moor file: Parse only', emitter: emitter);
+  ParseMoorFile(ScoreEmitter emitter) : super('Moor file: Parse only', emitter);
 
   final _engine = SqlEngine(useMoorExtensions: true);
 

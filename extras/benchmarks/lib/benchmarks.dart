@@ -1,16 +1,23 @@
-import 'package:benchmark_harness/benchmark_harness.dart';
+import 'dart:async';
+
+import 'package:benchmark_harness/benchmark_harness.dart' show ScoreEmitter;
 import 'package:intl/intl.dart';
 
+import 'src/moor/key_value_insert.dart';
 import 'src/sqlite/bind_string.dart';
 import 'src/sqlparser/parse_moor_file.dart';
 import 'src/sqlparser/tokenizer.dart';
 
-part 'async_benchmark_base.dart';
+export 'package:benchmark_harness/benchmark_harness.dart' show ScoreEmitter;
 
-List<BenchmarkBase> allBenchmarks(ScoreEmitter emitter) {
+part 'benchmark_base.dart';
+
+List<Reportable> allBenchmarks(ScoreEmitter emitter) {
   return [
     // low-level sqlite native interop
     SelectStringBenchmark(emitter),
+    // high-level moor apis
+    KeyValueInsertBatch(emitter),
     // sql parser
     ParseMoorFile(emitter),
     TokenizerBenchmark(emitter),

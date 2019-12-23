@@ -6,6 +6,7 @@ dependencies:
   moor_ffi:
   benchmark_harness: ^1.0.5
   intl: ^0.16.0
+  uuid: ^2.0.0
 dev_dependencies:
   moor_generator:
   build_runner:

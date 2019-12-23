@@ -1,7 +1,6 @@
 import 'dart:math';
 
-import 'package:benchmark_harness/benchmark_harness.dart';
-
+import 'package:benchmarks/benchmarks.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 // ignore: implementation_imports
@@ -13,7 +12,7 @@ class TokenizerBenchmark extends BenchmarkBase {
   static const int size = 10000;
 
   TokenizerBenchmark(ScoreEmitter emitter)
-      : super('Tokenizing $size keywords', emitter: emitter);
+      : super('Tokenizing $size keywords', emitter);
 
   @override
   void setup() {

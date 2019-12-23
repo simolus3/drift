@@ -5,11 +5,11 @@ import 'package:benchmarks/benchmarks.dart';
 
 final File output = File('benchmark_results.json');
 
-void main() {
+Future<void> main() async {
   final tracker = TrackingEmitter();
   ComparingEmitter comparer;
-  if (output.existsSync()) {
-    final content = json.decode(output.readAsStringSync());
+  if (await output.exists()) {
+    final content = json.decode(await output.readAsString());
     final oldData = (content as Map).cast<String, double>();
     comparer = ComparingEmitter(oldData);
   } else {
@@ -20,7 +20,7 @@ void main() {
   final benchmarks = allBenchmarks(emitter);
 
   for (final benchmark in benchmarks) {
-    benchmark.report();
+    await benchmark.report();
   }
 
   output.writeAsStringSync(json.encode(tracker.timings));

@@ -1,9 +1,9 @@
-import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:benchmarks/benchmarks.dart';
 import 'package:moor_ffi/database.dart';
 
 class SelectStringBenchmark extends BenchmarkBase {
   SelectStringBenchmark(ScoreEmitter emitter)
-      : super('SELECTing a single string variable', emitter: emitter);
+      : super('SELECTing a single string variable', emitter);
 
   PreparedStatement statement;
   Database database;
