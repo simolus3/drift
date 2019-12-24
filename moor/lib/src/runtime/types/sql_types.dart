@@ -5,7 +5,7 @@ import 'package:convert/convert.dart';
 part 'custom_type.dart';
 part 'type_system.dart';
 
-/// A type that can be mapped from Dart to sql. The generic type parameter here
+/// A type that can be mapped from Dart to sql. The generic type parameter [T]
 /// denotes the resolved dart type.
 abstract class SqlType<T> {
   /// Constant constructor so that subclasses can be constant
@@ -57,8 +57,9 @@ class BoolType extends SqlType<bool> {
   }
 
   @override
-  dynamic mapToSqlVariable(bool content) {
+  int mapToSqlVariable(bool content) {
     if (content == null) {
+      // ignore: avoid_returning_null
       return null;
     }
     return content ? 1 : 0;
@@ -85,7 +86,7 @@ class StringType extends SqlType<String> implements Monoid<String> {
   }
 
   @override
-  dynamic mapToSqlVariable(String content) => content;
+  String mapToSqlVariable(String content) => content;
 }
 
 /// Maps [int] values from and to sql
@@ -100,7 +101,7 @@ class IntType extends SqlType<int> implements FullArithmetic<int> {
   String mapToSqlConstant(int content) => content?.toString() ?? 'NULL';
 
   @override
-  dynamic mapToSqlVariable(int content) {
+  int mapToSqlVariable(int content) {
     return content;
   }
 }
@@ -128,7 +129,8 @@ class DateTimeType extends SqlType<DateTime>
   }
 
   @override
-  dynamic mapToSqlVariable(DateTime content) {
+  int mapToSqlVariable(DateTime content) {
+    // ignore: avoid_returning_null
     if (content == null) return null;
 
     return content.millisecondsSinceEpoch ~/ 1000;
@@ -151,7 +153,7 @@ class BlobType extends SqlType<Uint8List> {
   }
 
   @override
-  dynamic mapToSqlVariable(Uint8List content) => content;
+  Uint8List mapToSqlVariable(Uint8List content) => content;
 }
 
 /// Maps [double] values from and to sql
@@ -173,5 +175,5 @@ class RealType extends SqlType<double> implements FullArithmetic<double> {
   }
 
   @override
-  dynamic mapToSqlVariable(num content) => content;
+  num mapToSqlVariable(num content) => content;
 }

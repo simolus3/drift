@@ -5,6 +5,7 @@ import 'package:moor/moor.dart';
 
 /// Common interface for objects which can be inserted or updated into a
 /// database.
+/// [D] is the associated data class.
 @optionalTypeArgs
 abstract class Insertable<D extends DataClass> {
   /// Converts this object into a companion that can be used for inserts. On
@@ -43,6 +44,8 @@ abstract class DataClass {
 
 /// An update companion for a [DataClass] which is used to write data into a
 /// database using [InsertStatement.insert] or [UpdateStatement.write].
+///
+/// [D] is the associated data class for this companion.
 ///
 /// See also:
 /// - the explanation in the changelog for 1.5

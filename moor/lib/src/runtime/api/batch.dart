@@ -115,7 +115,7 @@ class Batch {
         rethrow;
       }
     } else {
-      return _runWith(_engine.executor);
+      await _runWith(_engine.executor);
     }
 
     _engine.markTablesUpdated(_affectedTables);

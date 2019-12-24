@@ -6,6 +6,7 @@ part of 'runtime_api.dart';
 /// migration logic can live in the main [GeneratedDatabase] class, but code
 /// can be extracted into [DatabaseAccessor]s outside of that database.
 /// For details on how to write a dao, see [UseDao].
+/// [T] should be the associated database class you wrote.
 abstract class DatabaseAccessor<T extends GeneratedDatabase>
     extends DatabaseConnectionUser with QueryEngine {
   @override
