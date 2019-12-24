@@ -28,10 +28,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
       } else {
         final column = resultSet.findColumn(e.columnName);
         if (column == null) {
-          context.reportError(AnalysisError(
-            type: AnalysisErrorType.referencedUnknownColumn,
-            relevantNode: e,
-          ));
+          _reportUnknownColumnError(e, columns: resultSet.resolvedColumns);
         } else {
           e.resolved = column;
         }
@@ -41,8 +38,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
       final column = _resolveRowIdAlias(e);
 
       if (column == null) {
-        context.reportError(AnalysisError(
-            type: AnalysisErrorType.referencedUnknownColumn, relevantNode: e));
+        _reportUnknownColumnError(e);
       } else {
         e.resolved = column;
       }
@@ -53,8 +49,7 @@ class ReferenceResolver extends RecursiveVisitor<void> {
           scope.availableColumns.where((c) => c?.name == e.columnName).toSet();
 
       if (columns.isEmpty) {
-        context.reportError(AnalysisError(
-            type: AnalysisErrorType.referencedUnknownColumn, relevantNode: e));
+        _reportUnknownColumnError(e);
       } else {
         if (columns.length > 1) {
           final description =
@@ -72,6 +67,19 @@ class ReferenceResolver extends RecursiveVisitor<void> {
     }
 
     visitChildren(e);
+  }
+
+  void _reportUnknownColumnError(Reference e, {Iterable<Column> columns}) {
+    columns ??= e.scope.availableColumns;
+    final columnNames = e.scope.availableColumns
+        .map((c) => c.humanReadableDescription())
+        .join(', ');
+
+    context.reportError(AnalysisError(
+      type: AnalysisErrorType.referencedUnknownColumn,
+      relevantNode: e,
+      message: 'Unknown column. These columns are available: $columnNames',
+    ));
   }
 
   Column _resolveRowIdAlias(Reference e) {
