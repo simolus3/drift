@@ -197,6 +197,7 @@ abstract class AstVisitor<T> {
   T visitMoorFile(MoorFile e);
   T visitMoorImportStatement(ImportStatement e);
   T visitMoorDeclaredStatement(DeclaredStatement e);
+  T visitMoorStatementParameter(StatementParameter e);
   T visitDartPlaceholder(DartPlaceholder e);
 }
 
@@ -334,6 +335,9 @@ class RecursiveVisitor<T> extends AstVisitor<T> {
 
   @override
   T visitMoorDeclaredStatement(DeclaredStatement e) => visitChildren(e);
+
+  @override
+  T visitMoorStatementParameter(StatementParameter e) => visitChildren(e);
 
   @override
   T visitDartPlaceholder(DartPlaceholder e) => visitChildren(e);

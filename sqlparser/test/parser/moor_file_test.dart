@@ -15,6 +15,7 @@ CREATE TABLE tbl (
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
+typeHints(:foo AS TEXT): SELECT :foo;
 ''';
 
 void main() {
@@ -67,6 +68,24 @@ void main() {
             columns: [StarResultColumn(null)],
             from: [TableReference('tbl', null)],
           ),
+        ),
+        DeclaredStatement(
+          SimpleName('typeHints'),
+          SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+            ),
+          ]),
+          parameters: [
+            VariableTypeHint(
+              ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+              'TEXT',
+            )
+          ],
         ),
       ]),
     );

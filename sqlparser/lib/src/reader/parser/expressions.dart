@@ -311,6 +311,7 @@ mixin ExpressionParser on ParserBase {
     _error('Could not parse this expression');
   }
 
+  @override
   Variable _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
       return NumberedVariable(_previous as QuestionMarkVariableToken)

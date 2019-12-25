@@ -162,6 +162,8 @@ abstract class ParserBase {
   // Common operations that we are referenced very often
   Expression expression();
 
+  List<Token> _typeName();
+
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well.
   Expression _consumeTuple({bool orSubQuery = false});
@@ -183,6 +185,7 @@ abstract class ParserBase {
   /// [s-d]: https://sqlite.org/syntax/select-stmt.html
   BaseSelectStatement _fullSelect();
 
+  Variable _variableOrNull();
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
 
@@ -295,11 +298,40 @@ class Parser extends ParserBase
       return null;
     }
 
+    final parameters = <StatementParameter>[];
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final first = _peek;
+        final variable = _variableOrNull();
+        if (variable == null) {
+          _error('Expected a variable here');
+        }
+        final as = _consume(TokenType.as, 'Expected AS followed by a type');
+
+        final typeNameTokens = _typeName();
+        if (typeNameTokens == null) {
+          _error('Expected a type name here');
+        }
+
+        final typeName =
+            typeNameTokens.first.span.expand(typeNameTokens.last.span).text;
+        parameters.add(VariableTypeHint(variable, typeName)
+          ..as = as
+          ..setSpan(first, _previous));
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    }
+
     final colon =
         _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
     final stmt = _crud();
 
-    return DeclaredStatement(identifier, stmt)..colon = colon;
+    return DeclaredStatement(
+      identifier,
+      stmt,
+      parameters: parameters,
+    )..colon = colon;
   }
 
   /// Invokes [parser], sets the appropriate source span and attaches a

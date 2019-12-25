@@ -178,6 +178,7 @@ mixin SchemaParser on ParserBase {
       ..nameToken = name;
   }
 
+  @override
   List<Token> _typeName() {
     // sqlite doesn't really define what a type name is and has very loose rules
     // at turning them into a type affinity. We support this pattern:
@@ -199,7 +200,7 @@ mixin SchemaParser on ParserBase {
       }
 
       _consume(TokenType.rightParen,
-          'Expected closing paranthesis to finish type name');
+          'Expected closing parenthesis to finish type name');
       typeNames.add(_previous);
     }
 
