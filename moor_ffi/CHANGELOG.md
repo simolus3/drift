@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Implement `overrideForAll` and `overrideFor` - thanks, [@negator](https://github.com/negator)
+
 ## 0.3.0
 
 - Better setup for compiling sqlite3 on Android

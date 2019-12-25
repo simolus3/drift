@@ -1,6 +1,6 @@
 name: moor_ffi
 description: "Provides sqlite bindings using dart:ffi, including a moor executor"
-version: 0.3.0
+version: 0.3.1
 homepage: https://github.com/simolus3/moor/tree/develop/moor_ffi
 issue_tracker: https://github.com/simolus3/moor/issues
 
