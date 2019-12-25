@@ -5,7 +5,8 @@ import '../data/tables/custom_tables.dart';
 import '../data/utils/mocks.dart';
 
 const _createNoIds =
-    'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL) WITHOUT ROWID;';
+    'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL PRIMARY KEY) '
+    'WITHOUT ROWID;';
 
 const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS with_defaults ('
     "a VARCHAR DEFAULT 'something', b INTEGER UNIQUE);";
@@ -47,7 +48,7 @@ void main() {
   test('infers primary keys correctly', () async {
     final db = CustomTablesDb(null);
 
-    expect(db.noIds.primaryKey, isEmpty);
+    expect(db.noIds.primaryKey, [db.noIds.payload]);
     expect(db.withDefaults.primaryKey, isEmpty);
     expect(db.config.primaryKey, [db.config.configKey]);
   });

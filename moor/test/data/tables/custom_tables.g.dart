@@ -87,7 +87,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   GeneratedBlobColumn get payload => _payload ??= _constructPayload();
   GeneratedBlobColumn _constructPayload() {
     return GeneratedBlobColumn('payload', $tableName, false,
-        $customConstraints: 'NOT NULL');
+        $customConstraints: 'NOT NULL PRIMARY KEY');
   }
 
   @override
@@ -112,7 +112,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {payload};
   @override
   NoId map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;

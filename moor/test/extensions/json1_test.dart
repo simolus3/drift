@@ -44,5 +44,5 @@ void main() {
 
     final resultRow = await query.getSingle();
     expect(resultRow.read(arrayLengthExpr), 3);
-  });
+  }, tags: const ['integration']);
 }

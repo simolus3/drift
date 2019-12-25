@@ -1,5 +1,5 @@
 CREATE TABLE no_ids (
-    payload BLOB NOT NULL
+    payload BLOB NOT NULL PRIMARY KEY
 ) WITHOUT ROWID;
 
 CREATE TABLE with_defaults (
