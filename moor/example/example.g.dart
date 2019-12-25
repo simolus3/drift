@@ -137,14 +137,10 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
-    } else if (description.isRequired && isInserting) {
-      context.missing(_descriptionMeta);
     }
     return context;
   }
@@ -363,13 +359,11 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
-    } else if (title.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (d.instructions.present) {
@@ -377,14 +371,12 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
           _instructionsMeta,
           instructions.isAcceptableValue(
               d.instructions.value, _instructionsMeta));
-    } else if (instructions.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_instructionsMeta);
     }
     if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
-    } else if (category.isRequired && isInserting) {
-      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -579,13 +571,11 @@ class $IngredientsTable extends Ingredients
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
-    } else if (name.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (d.caloriesPer100g.present) {
@@ -593,7 +583,7 @@ class $IngredientsTable extends Ingredients
           _caloriesPer100gMeta,
           caloriesPer100g.isAcceptableValue(
               d.caloriesPer100g.value, _caloriesPer100gMeta));
-    } else if (caloriesPer100g.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_caloriesPer100gMeta);
     }
     return context;
@@ -800,13 +790,13 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     if (d.recipe.present) {
       context.handle(
           _recipeMeta, recipe.isAcceptableValue(d.recipe.value, _recipeMeta));
-    } else if (recipe.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_recipeMeta);
     }
     if (d.ingredient.present) {
       context.handle(_ingredientMeta,
           ingredient.isAcceptableValue(d.ingredient.value, _ingredientMeta));
-    } else if (ingredient.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_ingredientMeta);
     }
     if (d.amountInGrams.present) {
@@ -814,7 +804,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
           _amountInGramsMeta,
           amountInGrams.isAcceptableValue(
               d.amountInGrams.value, _amountInGramsMeta));
-    } else if (amountInGrams.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_amountInGramsMeta);
     }
     return context;

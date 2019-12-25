@@ -232,9 +232,14 @@ class TableWriter {
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
-        ..write('} else if ($getterName.isRequired && isInserting) {\n')
-        ..write('context.missing($metaName);\n')
-        ..write('}\n');
+        ..write('}');
+
+      if (column.requiredDuringInsert) {
+        _buffer
+          ..write(' else if (isInserting) {\n')
+          ..write('context.missing($metaName);\n')
+          ..write('}\n');
+      }
     }
     _buffer.write('return context;\n}\n');
   }

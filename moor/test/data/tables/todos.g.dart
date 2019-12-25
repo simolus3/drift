@@ -236,32 +236,24 @@ class $TodosTableTable extends TodosTable
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
-    } else if (title.isRequired && isInserting) {
-      context.missing(_titleMeta);
     }
     if (d.content.present) {
       context.handle(_contentMeta,
           content.isAcceptableValue(d.content.value, _contentMeta));
-    } else if (content.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_contentMeta);
     }
     if (d.targetDate.present) {
       context.handle(_targetDateMeta,
           targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
-    } else if (targetDate.isRequired && isInserting) {
-      context.missing(_targetDateMeta);
     }
     if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
-    } else if (category.isRequired && isInserting) {
-      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -428,13 +420,11 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
-    } else if (description.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
     return context;
@@ -691,27 +681,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
-    } else if (name.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (d.isAwesome.present) {
       context.handle(_isAwesomeMeta,
           isAwesome.isAcceptableValue(d.isAwesome.value, _isAwesomeMeta));
-    } else if (isAwesome.isRequired && isInserting) {
-      context.missing(_isAwesomeMeta);
     }
     if (d.profilePicture.present) {
       context.handle(
           _profilePictureMeta,
           profilePicture.isAcceptableValue(
               d.profilePicture.value, _profilePictureMeta));
-    } else if (profilePicture.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_profilePictureMeta);
     }
     if (d.creationTime.present) {
@@ -719,8 +705,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           _creationTimeMeta,
           creationTime.isAcceptableValue(
               d.creationTime.value, _creationTimeMeta));
-    } else if (creationTime.isRequired && isInserting) {
-      context.missing(_creationTimeMeta);
     }
     return context;
   }
@@ -891,13 +875,13 @@ class $SharedTodosTable extends SharedTodos
     if (d.todo.present) {
       context.handle(
           _todoMeta, todo.isAcceptableValue(d.todo.value, _todoMeta));
-    } else if (todo.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_todoMeta);
     }
     if (d.user.present) {
       context.handle(
           _userMeta, user.isAcceptableValue(d.user.value, _userMeta));
-    } else if (user.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_userMeta);
     }
     return context;
@@ -1107,13 +1091,13 @@ class $TableWithoutPKTable extends TableWithoutPK
           _notReallyAnIdMeta,
           notReallyAnId.isAcceptableValue(
               d.notReallyAnId.value, _notReallyAnIdMeta));
-    } else if (notReallyAnId.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_notReallyAnIdMeta);
     }
     if (d.someFloat.present) {
       context.handle(_someFloatMeta,
           someFloat.isAcceptableValue(d.someFloat.value, _someFloatMeta));
-    } else if (someFloat.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_someFloatMeta);
     }
     context.handle(_customMeta, const VerificationResult.success());
@@ -1276,13 +1260,9 @@ class $PureDefaultsTable extends PureDefaults
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.txt.present) {
       context.handle(_txtMeta, txt.isAcceptableValue(d.txt.value, _txtMeta));
-    } else if (txt.isRequired && isInserting) {
-      context.missing(_txtMeta);
     }
     return context;
   }
