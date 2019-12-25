@@ -3,7 +3,7 @@ import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 
-import '../../utils/test_backend.dart';
+import '../utils/test_backend.dart';
 
 class TestState {
   TestBackend backend;

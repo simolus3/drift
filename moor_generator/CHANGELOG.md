@@ -1,3 +1,9 @@
+## unreleased
+
+- Support explicit type arguments for queries in moor files. In 
+  `foo(:bar AS TEXT, :baz AS INT): SELECT :bar, :baz;`, the column type can now be inferred.
+  Previously, the query would fail because of an unknown type.
+
 ## 2.2.0
 
 - Experimental new CLI tool (`pub run moor_generator`). Not useful at the moment

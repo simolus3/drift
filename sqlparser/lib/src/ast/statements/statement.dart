@@ -18,5 +18,5 @@ abstract class HasWhereClause extends Statement {
   Expression get where;
 }
 
-/// Marker mixin for statements that change the table structure.
-mixin SchemaStatement on Statement {}
+/// Marker interface for statements that change the table structure.
+abstract class SchemaStatement extends Statement {}

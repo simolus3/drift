@@ -40,8 +40,11 @@ class SqlParser {
           final sql = query.sql;
           context = _engine.analyze(sql);
         } else if (query is DeclaredMoorQuery) {
-          context =
-              _engine.analyzeNode(query.query, query.file.parseResult.sql);
+          context = _engine.analyzeNode(
+            query.query,
+            query.file.parseResult.sql,
+            stmtOptions: _createOptions(query.astNode),
+          );
           declaredInMoor = true;
         }
       } catch (e, s) {
@@ -88,5 +91,27 @@ class SqlParser {
         message: msg(),
       ));
     }
+  }
+
+  AnalyzeStatementOptions _createOptions(DeclaredStatement stmt) {
+    final reader = _engine.schemaReader;
+    final indexedHints = <int, ResolvedType>{};
+    final namedHints = <String, ResolvedType>{};
+
+    for (final hint in stmt.parameters.whereType<VariableTypeHint>()) {
+      final variable = hint.variable;
+      final type = reader.resolveColumnType(hint.typeName);
+
+      if (variable is ColonNamedVariable) {
+        namedHints[variable.name] = type;
+      } else if (variable is NumberedVariable) {
+        indexedHints[variable.resolvedIndex] = type;
+      }
+    }
+
+    return AnalyzeStatementOptions(
+      indexedVariableTypes: indexedHints,
+      namedVariableTypes: namedHints,
+    );
   }
 }

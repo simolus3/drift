@@ -18,6 +18,8 @@ class SqlEngine {
   /// Internal options for this sql engine.
   final EngineOptions options;
 
+  SchemaFromCreateTable _schemaReader;
+
   SqlEngine(
       {bool useMoorExtensions = false,
       bool enableJson1Module = false,
@@ -32,6 +34,16 @@ class SqlEngine {
 
     registerTable(sqliteMaster);
     registerTable(sqliteSequence);
+  }
+
+  /// Obtain a [SchemaFromCreateTable] instance compatible with the
+  /// configuration of this engine.
+  ///
+  /// The returned reader can be used to read the table structure from a
+  /// [TableInducingStatement] by using [SchemaFromCreateTable.read].
+  SchemaFromCreateTable get schemaReader {
+    return _schemaReader ??=
+        SchemaFromCreateTable(moorExtensions: options.useMoorExtensions);
   }
 
   /// Registers the [table], which means that it can later be used in sql

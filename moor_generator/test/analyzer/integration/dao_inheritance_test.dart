@@ -2,7 +2,7 @@
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   test('supports inheritance for daos', () async {
