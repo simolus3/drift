@@ -9,7 +9,9 @@ class NumberedVariable extends Expression with Variable {
   final QuestionMarkVariableToken token;
   int get explicitIndex => token.explicitIndex;
 
-  NumberedVariable(this.token);
+  NumberedVariable(this.token) {
+    resolvedIndex = explicitIndex;
+  }
 
   @override
   T accept<T>(AstVisitor<T> visitor) {

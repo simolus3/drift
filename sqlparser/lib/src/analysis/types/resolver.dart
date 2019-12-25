@@ -352,6 +352,12 @@ class TypeResolver {
   ResolveResult inferType(Expression e) {
     return _cache<Expression>((e) {
       final parent = e.parent;
+      if (e is Variable) {
+        final specifiedType = context.stmtOptions.specifiedTypeOf(e);
+        if (specifiedType != null) {
+          return ResolveResult(specifiedType);
+        }
+      }
       if (parent is Expression) {
         final result = _argumentType(parent, e);
         // while more context is needed, look at the parent

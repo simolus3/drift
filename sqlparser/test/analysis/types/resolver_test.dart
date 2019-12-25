@@ -1,7 +1,7 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
-import 'data.dart';
+import '../data.dart';
 
 Map<String, ResolveResult> _types = {
   'SELECT * FROM demo WHERE id = ?':
@@ -84,5 +84,17 @@ void main() {
 
     expect(ctx.typeOf(dartExpr as Expression),
         const ResolveResult(ResolvedType.bool()));
+  });
+
+  test('respects explicit types for variables', () {
+    final ctx = SqlEngine(useMoorExtensions: true).analyze(
+      'SELECT ?',
+      stmtOptions: const AnalyzeStatementOptions(indexedVariableTypes: {
+        1: ResolvedType.bool(),
+      }),
+    );
+
+    final variable = ctx.root.allDescendants.whereType<Variable>().single;
+    expect(ctx.typeOf(variable), const ResolveResult(ResolvedType.bool()));
   });
 }

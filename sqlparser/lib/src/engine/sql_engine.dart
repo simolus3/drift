@@ -119,9 +119,11 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyze(String sql) {
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyze(String sql, {AnalyzeStatementOptions stmtOptions}) {
     final result = parse(sql);
-    return analyzeParsed(result);
+    return analyzeParsed(result, stmtOptions: stmtOptions);
   }
 
   /// Analyzes a parsed [result] statement. The [AnalysisContext] returned
@@ -130,10 +132,14 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyzeParsed(ParseResult result) {
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyzeParsed(ParseResult result,
+      {AnalyzeStatementOptions stmtOptions}) {
     final node = result.rootNode;
 
-    final context = AnalysisContext(node, result.sql, options);
+    final context =
+        AnalysisContext(node, result.sql, options, stmtOptions: stmtOptions);
     _analyzeContext(context);
 
     return context;
@@ -147,8 +153,12 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyzeNode(AstNode node, String file) {
-    final context = AnalysisContext(node, file, options);
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyzeNode(AstNode node, String file,
+      {AnalyzeStatementOptions stmtOptions}) {
+    final context =
+        AnalysisContext(node, file, options, stmtOptions: stmtOptions);
     _analyzeContext(context);
     return context;
   }

@@ -22,6 +22,7 @@ part 'steps/type_resolver.dart';
 part 'types/data.dart';
 part 'types/resolver.dart';
 part 'types/typeable.dart';
+part 'options.dart';
 
 /// Something that can be represented in a human-readable description.
 abstract class HumanReadable {
