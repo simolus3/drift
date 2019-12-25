@@ -86,7 +86,9 @@ class OpenDynamicLibrary {
   ///
   /// When using the asynchronous API over isolates, [open] __must be__ a top-
   /// level function or a static method.
-  void overrideFor(OperatingSystem os, OpenLibrary open) {}
+  void overrideFor(OperatingSystem os, OpenLibrary open) {
+    _overriddenPlatforms[os] = open;
+  }
 
   /// Makes `moor_ffi` use the [OpenLibrary] function for all Dart platforms.
   /// If this method has been called, it takes precedence over [overrideFor].
@@ -94,5 +96,7 @@ class OpenDynamicLibrary {
   ///
   /// When using the asynchronous API over isolates, [open] __must be__ a top-
   /// level function or a static method.
-  void overrideForAll(OpenLibrary open) {}
+  void overrideForAll(OpenLibrary open) {
+    _overriddenForAll = open;
+  }
 }
