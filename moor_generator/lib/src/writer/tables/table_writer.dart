@@ -179,7 +179,13 @@ class TableWriter {
       expressionBuffer..write(name)..write(': ')..write(value);
     });
 
-    expressionBuffer.write(');');
+    expressionBuffer.write(')');
+
+    if (column.clientDefaultCode != null) {
+      expressionBuffer.write('..clientDefault = ${column.clientDefaultCode}');
+    }
+
+    expressionBuffer.write(';');
 
     writeMemoizedGetterWithBody(
       buffer: _buffer,

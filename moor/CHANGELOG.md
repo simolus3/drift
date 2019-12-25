@@ -1,3 +1,8 @@
+## unreleased
+
+- New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for
+  each row. For instance, you can generate a uuid for each row with `text().clientDefault(() => Uuid().v4()();`
+  
 ## 2.2.0
 
 - Support custom expressions for selects in the Dart API:

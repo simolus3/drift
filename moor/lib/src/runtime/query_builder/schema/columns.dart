@@ -27,6 +27,14 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// specified. Can be null if no default value is set.
   final Expression<T, S> defaultValue;
 
+  /// A function that yields a default column for inserts if no value has been
+  /// set. This is different to [defaultValue] since the function is written in
+  /// Dart, not SQL. It's a compile-time error to declare columns where both
+  /// [defaultValue] and [clientDefault] are non-null.
+  ///
+  /// See also: [ColumnBuilder.clientDefault].
+  T Function() clientDefault;
+
   /// Used by generated code.
   GeneratedColumn(this.$name, this.tableName, this.$nullable,
       {this.$customConstraints, this.defaultValue});
@@ -99,7 +107,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   /// Returns true if this column needs to be set when writing a new row into
   /// a table.
   bool get isRequired {
-    return !$nullable && defaultValue == null;
+    return !$nullable && defaultValue == null && clientDefault == null;
   }
 
   @override
@@ -112,6 +120,10 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
     // ignore: test_types_in_equals
     final typedOther = other as GeneratedColumn;
     return typedOther.tableName == tableName && typedOther.$name == $name;
+  }
+
+  Variable _evaluateClientDefault() {
+    return Variable<T, S>(clientDefault());
   }
 }
 

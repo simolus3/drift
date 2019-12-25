@@ -1032,10 +1032,9 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   TableWithoutPKCompanion.insert({
     @required int notReallyAnId,
     @required double someFloat,
-    @required MyCustomObject custom,
+    this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
-        someFloat = Value(someFloat),
-        custom = Value(custom);
+        someFloat = Value(someFloat);
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
@@ -1088,7 +1087,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       'custom',
       $tableName,
       false,
-    );
+    )..clientDefault = _uuid.v4;
   }
 
   @override

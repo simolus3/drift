@@ -17,7 +17,8 @@ dependencies:
 
 dev_dependencies:
   moor_generator: ^2.1.0
-  moor_ffi: # Used to run some tests
+  uuid: ^2.0.0
+  moor_ffi: # Used to run integration tests
     path: ../moor_ffi
   build_runner: '>=1.3.0 <2.0.0'
   build_test: ^0.10.8

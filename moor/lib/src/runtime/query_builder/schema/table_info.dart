@@ -41,6 +41,15 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table {
 
   List<GeneratedColumn> get $columns;
 
+  Map<String, GeneratedColumn> _columnsByName;
+
+  /// Gets all [$columns] in this table, indexed by their (non-escaped) name.
+  Map<String, GeneratedColumn> get columnsByName {
+    return _columnsByName ??= {
+      for (final column in $columns) column.$name: column
+    };
+  }
+
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
   VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance,
