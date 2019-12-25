@@ -1,6 +1,8 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
+
 /// Signature responsible for loading the dynamic sqlite3 library that moor will
 /// use.
 typedef OpenLibrary = DynamicLibrary Function();
@@ -90,6 +92,7 @@ class OpenDynamicLibrary {
     _overriddenPlatforms[os] = open;
   }
 
+  // ignore: use_setters_to_change_properties
   /// Makes `moor_ffi` use the [OpenLibrary] function for all Dart platforms.
   /// If this method has been called, it takes precedence over [overrideFor].
   /// This method must be called before opening any database.
@@ -98,5 +101,12 @@ class OpenDynamicLibrary {
   /// level function or a static method.
   void overrideForAll(OpenLibrary open) {
     _overriddenForAll = open;
+  }
+
+  /// Clears all associated open helpers for all platforms.
+  @visibleForTesting
+  void reset() {
+    _overriddenForAll = null;
+    _overriddenPlatforms.clear();
   }
 }
