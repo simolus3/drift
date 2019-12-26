@@ -61,7 +61,7 @@ class _Fts5Functions implements FunctionHandler {
 
   @override
   ResolveResult inferArgumentType(
-      TypeResolver resolver, Invocation call, Expression argument) {
+      TypeResolver resolver, SqlInvocation call, Expression argument) {
     int argumentIndex;
     if (call.parameters is ExprFunctionParameters) {
       argumentIndex = (call.parameters as ExprFunctionParameters)
@@ -100,7 +100,7 @@ class _Fts5Functions implements FunctionHandler {
 
   @override
   ResolveResult inferReturnType(
-      TypeResolver resolver, Invocation call, List<Typeable> expandedArgs) {
+      TypeResolver resolver, SqlInvocation call, List<Typeable> expandedArgs) {
     switch (call.name) {
       case 'bm25':
         return const ResolveResult(ResolvedType(type: BasicType.real));
@@ -113,7 +113,7 @@ class _Fts5Functions implements FunctionHandler {
   }
 
   @override
-  void reportErrors(Invocation call, AnalysisContext context) {
+  void reportErrors(SqlInvocation call, AnalysisContext context) {
     // it doesn't make sense to call fts5 functions with a star parameter
     if (call.parameters is StarFunctionParameter) {
       context.reportError(AnalysisError(

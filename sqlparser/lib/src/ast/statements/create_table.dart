@@ -36,7 +36,9 @@ class CreateTableStatement extends TableInducingStatement {
       : super._(ifNotExists, tableName, overriddenDataClassName);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitCreateTableStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCreateTableStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [...columns, ...tableConstraints];
@@ -73,8 +75,9 @@ class CreateVirtualTableStatement extends TableInducingStatement {
   }) : super._(ifNotExists, tableName, overriddenDataClassName);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) =>
-      visitor.visitCreateVirtualTableStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCreateVirtualTableStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => const [];

@@ -19,17 +19,18 @@ class TableHandler {
       table.references.clear();
     }
 
-    file.parseResult.rootNode?.accept(_ReferenceResolvingVisitor(this));
+    file.parseResult.rootNode
+        ?.acceptWithoutArg(_ReferenceResolvingVisitor(this));
   }
 }
 
-class _ReferenceResolvingVisitor extends RecursiveVisitor<void> {
+class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   final TableHandler handler;
 
   _ReferenceResolvingVisitor(this.handler);
 
   @override
-  void visitForeignKeyClause(ForeignKeyClause clause) {
+  void visitForeignKeyClause(ForeignKeyClause clause, void arg) {
     final stmt = clause.parents.whereType<CreateTableStatement>().first;
     final referencedTable = handler.availableTables.singleWhere(
         (t) => t.sqlName == clause.foreignTable.tableName,
@@ -47,6 +48,6 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void> {
       createdTable?.references?.add(referencedTable);
     }
 
-    super.visitForeignKeyClause(clause);
+    super.visitForeignKeyClause(clause, arg);
   }
 }

@@ -14,8 +14,8 @@ class NumberedVariable extends Expression with Variable {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitNumberedVariable(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitNumberedVariable(this, arg);
   }
 
   @override
@@ -34,8 +34,8 @@ class ColonNamedVariable extends Expression with Variable {
   ColonNamedVariable(this.token);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitNamedVariable(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitNamedVariable(this, arg);
   }
 
   @override

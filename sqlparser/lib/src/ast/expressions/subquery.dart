@@ -8,7 +8,9 @@ class SubQuery extends Expression {
   SubQuery({this.select});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitSubQuery(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSubQuery(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [select];
@@ -23,7 +25,9 @@ class ExistsExpression extends Expression {
   ExistsExpression({@required this.select});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitExists(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitExists(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [select];

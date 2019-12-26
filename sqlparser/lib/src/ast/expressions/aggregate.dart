@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 class AggregateExpression extends Expression
-    implements Invocation, ReferenceOwner {
+    implements SqlInvocation, ReferenceOwner {
   final IdentifierToken function;
 
   @override
@@ -42,7 +42,9 @@ class AggregateExpression extends Expression
       : assert((windowDefinition == null) != (windowName == null));
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitAggregateExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAggregateExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes {
@@ -83,7 +85,9 @@ class WindowDefinition extends AstNode {
       @required this.frameSpec});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitWindowDefinition(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitWindowDefinition(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes =>
@@ -109,7 +113,9 @@ class FrameSpec extends AstNode {
   });
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitFrameSpec(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitFrameSpec(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [

@@ -112,7 +112,7 @@ class TypeResolver {
         } else {
           return const ResolveResult.unknown();
         }
-      } else if (expr is Invocation) {
+      } else if (expr is SqlInvocation) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
           expr is InExpression ||
@@ -168,7 +168,7 @@ class TypeResolver {
   /// Returns the expanded parameters of a function [call]. When a
   /// [StarFunctionParameter] is used, it's expanded to the
   /// [ReferenceScope.availableColumns].
-  List<Typeable> _expandParameters(Invocation call) {
+  List<Typeable> _expandParameters(SqlInvocation call) {
     final sqlParameters = call.parameters;
     if (sqlParameters is ExprFunctionParameters) {
       return sqlParameters.parameters;
@@ -180,8 +180,8 @@ class TypeResolver {
     throw ArgumentError('Unknown parameters: $sqlParameters');
   }
 
-  ResolveResult resolveFunctionCall(Invocation call) {
-    return _cache((Invocation call) {
+  ResolveResult resolveFunctionCall(SqlInvocation call) {
+    return _cache((SqlInvocation call) {
       final parameters = _expandParameters(call);
       final firstNullable =
           // ignore: avoid_bool_literals_in_conditional_expressions
@@ -328,7 +328,7 @@ class TypeResolver {
   }
 
   ResolveResult _resolveFunctionArgument(
-      Invocation parent, Expression argument) {
+      SqlInvocation parent, Expression argument) {
     return _cache<Expression>((argument) {
       final functionName = parent.name.toLowerCase();
       final args = _expandParameters(parent);
@@ -420,7 +420,7 @@ class TypeResolver {
         parent is Tuple ||
         parent is UnaryExpression) {
       return const ResolveResult.needsContext();
-    } else if (parent is Invocation) {
+    } else if (parent is SqlInvocation) {
       // if we have a special case for the mix of function and argument, use
       // that. Otherwise, just assume that the argument has the same type as the
       // return type of the function

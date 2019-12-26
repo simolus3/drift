@@ -17,8 +17,9 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   DeclaredStatement(this.identifier, this.statement, {this.parameters});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) =>
-      visitor.visitMoorDeclaredStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorDeclaredStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes =>
@@ -85,8 +86,8 @@ class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
 /// In `selectString(:name AS TEXT): SELECT :name`, `:name AS TEXT` is a
 abstract class StatementParameter extends AstNode {
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitMoorStatementParameter(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorStatementParameter(this, arg);
   }
 }
 

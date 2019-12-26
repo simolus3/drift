@@ -35,8 +35,8 @@ class SelectStatement extends BaseSelectStatement implements HasWhereClause {
       : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitSelectStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSelectStatement(this, arg);
   }
 
   @override
@@ -79,8 +79,8 @@ class CompoundSelectStatement extends BaseSelectStatement {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitCompoundSelectStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCompoundSelectStatement(this, arg);
   }
 
   @override
@@ -92,7 +92,9 @@ class CompoundSelectStatement extends BaseSelectStatement {
 
 abstract class ResultColumn extends AstNode {
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitResultColumn(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitResultColumn(this, arg);
+  }
 }
 
 /// A result column that either yields all columns or all columns from a table
@@ -136,7 +138,9 @@ class GroupBy extends AstNode {
   GroupBy({@required this.by, this.having});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitGroupBy(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitGroupBy(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [...by, if (having != null) having];
@@ -170,7 +174,9 @@ class CompoundSelectPart extends AstNode {
   Iterable<AstNode> get childNodes => [select];
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitCompoundSelectPart(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCompoundSelectPart(this, arg);
+  }
 
   @override
   bool contentEquals(CompoundSelectPart other) => mode == other.mode;

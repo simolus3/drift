@@ -17,12 +17,12 @@ class MoorNavigationContributor implements NavigationContributor {
 
     final visitor = _NavigationVisitor(moorRequest, collector);
     if (moorRequest.file.isParsed) {
-      moorRequest.parsedMoor.parsedFile.accept(visitor);
+      moorRequest.parsedMoor.parsedFile.acceptWithoutArg(visitor);
     }
   }
 }
 
-class _NavigationVisitor extends RecursiveVisitor<void> {
+class _NavigationVisitor extends RecursiveVisitor<void, void> {
   final MoorRequestAtPosition request;
   final NavigationCollector collector;
 
@@ -41,7 +41,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitMoorImportStatement(ImportStatement e) {
+  void visitMoorImportStatement(ImportStatement e, void arg) {
     if (request.isMoorAndParsed) {
       final moor = request.parsedMoor;
       final resolved = moor.resolvedImports[e];
@@ -53,11 +53,11 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitReference(Reference e) {
+  void visitReference(Reference e, void arg) {
     if (request.isMoorAndAnalyzed) {
       final resolved = e.resolved;
 
@@ -69,7 +69,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   Iterable<Location> _locationOfColumn(Column column) sync* {
@@ -96,7 +96,7 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitQueryable(Queryable e) {
+  void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
       final resolved = e.resolved;
 
@@ -107,6 +107,6 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 }

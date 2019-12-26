@@ -4,7 +4,9 @@ part of '../ast.dart';
 /// statement.
 abstract class Queryable extends AstNode {
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitQueryable(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitQueryable(this, arg);
+  }
 
   T when<T>({
     @required T Function(TableReference) isTable,
@@ -145,7 +147,9 @@ class Join extends AstNode {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitJoin(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitJoin(this, arg);
+  }
 }
 
 /// https://www.sqlite.org/syntax/join-constraint.html

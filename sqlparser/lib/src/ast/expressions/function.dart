@@ -2,9 +2,7 @@ part of '../ast.dart';
 
 /// Interface for function calls, either a [FunctionExpression] or a
 /// [AggregateExpression].
-// todo: How does this not clash with Invocation from dart:core :O Anyway, we
-// might want to consider renaming.
-abstract class Invocation extends Expression {
+abstract class SqlInvocation extends Expression {
   /// The name of the function being called
   String get name;
 
@@ -13,7 +11,7 @@ abstract class Invocation extends Expression {
 
 class FunctionExpression extends Expression
     with ReferenceOwner
-    implements Invocation {
+    implements SqlInvocation {
   @override
   final String name;
   @override
@@ -22,7 +20,9 @@ class FunctionExpression extends Expression
   FunctionExpression({@required this.name, @required this.parameters});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitFunction(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitFunction(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes {

@@ -18,7 +18,7 @@ class MoorHighlightContributor implements HighlightsContributor {
       final result = typedRequest.parsedMoor;
 
       final visitor = _HighlightingVisitor(collector);
-      result.parsedFile.accept(visitor);
+      result.parsedFile.acceptWithoutArg(visitor);
 
       for (final token in result.parseResult.tokens) {
         final start = token.span.start.offset;
@@ -43,7 +43,7 @@ class MoorHighlightContributor implements HighlightsContributor {
   }
 }
 
-class _HighlightingVisitor extends RecursiveVisitor<void> {
+class _HighlightingVisitor extends RecursiveVisitor<void, void> {
   final HighlightsCollector collector;
 
   _HighlightingVisitor(this.collector);
@@ -55,41 +55,32 @@ class _HighlightingVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitReference(Reference e) {
+  void visitReference(Reference e, void arg) {
     _contribute(e, HighlightRegionType.INSTANCE_GETTER_REFERENCE);
   }
 
   @override
-  void visitQueryable(Queryable e) {
+  void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
       final tableToken = e.tableNameToken;
       if (tableToken != null) {
         _contribute(e, HighlightRegionType.TYPE_PARAMETER);
       }
     }
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitCreateTableStatement(CreateTableStatement e) {
-    _visitTableInducingStatement(e);
-  }
-
-  @override
-  void visitCreateVirtualTableStatement(CreateVirtualTableStatement e) {
-    _visitTableInducingStatement(e);
-  }
-
-  void _visitTableInducingStatement(TableInducingStatement e) {
+  void visitTableInducingStatement(TableInducingStatement e, void arg) {
     if (e.tableNameToken != null) {
       _contribute(e.tableNameToken, HighlightRegionType.CLASS);
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitColumnDefinition(ColumnDefinition e) {
+  void visitColumnDefinition(ColumnDefinition e, void arg) {
     final nameToken = e.nameToken;
     if (nameToken != null) {
       _contribute(nameToken, HighlightRegionType.INSTANCE_FIELD_DECLARATION);
@@ -103,17 +94,17 @@ class _HighlightingVisitor extends RecursiveVisitor<void> {
       collector.addRegion(first, length, HighlightRegionType.TYPE_PARAMETER);
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitSetComponent(SetComponent e) {
+  void visitSetComponent(SetComponent e, void arg) {
     _contribute(e.column, HighlightRegionType.INSTANCE_SETTER_REFERENCE);
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitMoorDeclaredStatement(DeclaredStatement e) {
+  void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     final identifier = e.identifier;
     if (identifier is SimpleName && identifier.identifier != null) {
       _contribute(identifier.identifier,
@@ -123,11 +114,11 @@ class _HighlightingVisitor extends RecursiveVisitor<void> {
       _contribute(identifier.nameToken, HighlightRegionType.ANNOTATION);
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitLiteral(Literal e) {
+  void visitLiteral(Literal e, void arg) {
     if (e is NullLiteral) {
       _contribute(e, HighlightRegionType.BUILT_IN);
     } else if (e is NumericLiteral) {

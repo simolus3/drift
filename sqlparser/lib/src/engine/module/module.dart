@@ -26,7 +26,7 @@ abstract class FunctionHandler {
   /// If resolving to a type isn't possible, implementations should return
   /// [ResolveResult.unknown].
   ResolveResult inferReturnType(
-      TypeResolver resolver, Invocation call, List<Typeable> expandedArgs);
+      TypeResolver resolver, SqlInvocation call, List<Typeable> expandedArgs);
 
   /// Resolve the type of an argument used in a function invocation.
   ///
@@ -38,13 +38,13 @@ abstract class FunctionHandler {
   /// If resolving to a type isn't possible, implementations should return
   /// [ResolveResult.unknown].
   ResolveResult inferArgumentType(
-      TypeResolver resolver, Invocation call, Expression argument);
+      TypeResolver resolver, SqlInvocation call, Expression argument);
 
   /// Can optionally be used by implementations to provide [AnalysisError]s
   /// from the [call].
   ///
   /// Errors should be reported via [AnalysisContext.reportError].
-  void reportErrors(Invocation call, AnalysisContext context) {}
+  void reportErrors(SqlInvocation call, AnalysisContext context) {}
 }
 
 /// An sqlite module, which can be used in a `CREATE VIRTUAL TABLE` statement

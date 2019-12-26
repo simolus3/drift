@@ -11,18 +11,18 @@ class Linter {
   Linter(this.handler);
 
   void reportLints() {
-    handler.context.root.accept(_LintingVisitor(this));
+    handler.context.root.acceptWithoutArg(_LintingVisitor(this));
   }
 }
 
-class _LintingVisitor extends RecursiveVisitor<void> {
+class _LintingVisitor extends RecursiveVisitor<void, void> {
   final Linter linter;
 
   _LintingVisitor(this.linter);
 
   @override
-  void visitResultColumn(ResultColumn e) {
-    super.visitResultColumn(e);
+  void visitResultColumn(ResultColumn e, void arg) {
+    super.visitResultColumn(e, arg);
 
     if (e is ExpressionResultColumn) {
       // The generated code will be invalid if knowing the expression is needed
@@ -54,7 +54,7 @@ class _LintingVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
     final targeted = e.resolvedTargetColumns;
     if (targeted == null) return;
 

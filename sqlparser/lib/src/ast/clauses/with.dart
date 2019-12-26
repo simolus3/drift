@@ -11,7 +11,9 @@ class WithClause extends AstNode {
   WithClause({@required this.recursive, @required this.ctes});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitWithClause(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitWithClause(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => ctes;
@@ -38,8 +40,8 @@ class CommonTableExpression extends AstNode with ResultSet, VisibleToChildren {
       {@required this.cteTableName, this.columnNames, @required this.as});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitCommonTableExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCommonTableExpression(this, arg);
   }
 
   @override

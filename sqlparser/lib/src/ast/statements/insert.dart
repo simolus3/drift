@@ -36,7 +36,9 @@ class InsertStatement extends CrudStatement {
       : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitInsertStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitInsertStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes sync* {

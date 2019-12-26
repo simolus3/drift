@@ -184,10 +184,10 @@ class SqlEngine {
 
       if (node is CrudStatement) {
         node
-          ..accept(ColumnResolver(context))
-          ..accept(ReferenceResolver(context))
-          ..accept(TypeResolvingVisitor(context))
-          ..accept(LintingVisitor(options, context));
+          ..acceptWithoutArg(ColumnResolver(context))
+          ..acceptWithoutArg(ReferenceResolver(context))
+          ..acceptWithoutArg(TypeResolvingVisitor(context))
+          ..acceptWithoutArg(LintingVisitor(options, context));
       }
     } catch (_) {
       rethrow;
