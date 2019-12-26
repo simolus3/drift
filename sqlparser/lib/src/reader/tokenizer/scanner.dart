@@ -163,7 +163,7 @@ class Scanner {
 
       case 'x':
         if (_match("'")) {
-          _string(binary: false);
+          _string(binary: true);
         } else {
           _identifier();
         }

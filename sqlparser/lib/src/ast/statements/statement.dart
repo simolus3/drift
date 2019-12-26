@@ -14,7 +14,7 @@ abstract class CrudStatement extends Statement {
 
 /// Interface for statements that have a primary where clause (select, update,
 /// delete).
-abstract class HasWhereClause extends Statement {
+abstract class HasWhereClause implements CrudStatement {
   Expression get where;
 }
 

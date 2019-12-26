@@ -50,7 +50,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   Token last;
 
   @override
-  bool synthetic;
+  bool synthetic = false;
 
   @override
   int get firstPosition => first.span.start.offset;
