@@ -2,6 +2,12 @@
 
 - New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for
   each row. For instance, you can generate a uuid for each row with `text().clientDefault(() => Uuid().v4()();`
+- Ability to override the default `ValueSerializer` globally by using `moorRuntimeOptions.valueSerializer`.
+- Moor files: You can now explicitly declare column types in those cases that the analyzer can't
+  infer it:
+  ```
+  selectVariable(:variable AS TEXT): SELECT :variable;
+  ```
   
 ## 2.2.0
 

@@ -20,18 +20,19 @@ class NoId extends DataClass implements Insertable<NoId> {
     );
   }
   factory NoId.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return NoId(
       payload: serializer.fromJson<Uint8List>(json['payload']),
     );
   }
   factory NoId.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'payload': serializer.toJson<Uint8List>(payload),
     };
@@ -154,20 +155,21 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     );
   }
   factory WithDefault.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return WithDefault(
       a: serializer.fromJson<String>(json['a']),
       b: serializer.fromJson<int>(json['b']),
     );
   }
   factory WithDefault.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       WithDefault.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
@@ -313,7 +315,8 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     );
   }
   factory WithConstraint.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return WithConstraint(
       a: serializer.fromJson<String>(json['a']),
       b: serializer.fromJson<int>(json['b']),
@@ -321,13 +324,13 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     );
   }
   factory WithConstraint.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       WithConstraint.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
@@ -498,19 +501,20 @@ class Config extends DataClass implements Insertable<Config> {
     );
   }
   factory Config.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Config(
       configKey: serializer.fromJson<String>(json['config_key']),
       configValue: serializer.fromJson<String>(json['config_value']),
     );
   }
   factory Config.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String>(configValue),
@@ -673,7 +677,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
   factory MytableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return MytableData(
       someid: serializer.fromJson<int>(json['someid']),
       sometext: serializer.fromJson<String>(json['sometext']),
@@ -682,13 +687,13 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
   factory MytableData.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       MytableData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String>(sometext),
@@ -897,7 +902,8 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
   factory EMail.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return EMail(
       sender: serializer.fromJson<String>(json['sender']),
       title: serializer.fromJson<String>(json['title']),
@@ -905,12 +911,12 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
   factory EMail.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       EMail.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'sender': serializer.toJson<String>(sender),
       'title': serializer.toJson<String>(title),
