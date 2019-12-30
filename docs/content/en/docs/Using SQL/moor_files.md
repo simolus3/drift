@@ -78,6 +78,13 @@ with @ or $. The compiler will attempt to infer the variable's type by
 looking at its context. This lets moor generate typesafe apis for your
 queries, the variables will be written as parameters to your method.
 
+When it's ambigous, the analyzer might be unable to resolve the type of
+a variable. For those scenarios, you can also denote the explicit type
+of a variable:
+```sql
+myQuery(:variable AS TEXT): SELECT :variable;
+```
+
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:
