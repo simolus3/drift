@@ -284,7 +284,7 @@ mixin ExpressionParser on ParserBase {
       final first = _consumeIdentifier(
           'This error message should never be displayed. Please report.');
 
-      // could be table.column, function(...) or just column
+      // could be table.column, function(...), cast(...) or just column
       if (_matchOne(TokenType.dot)) {
         final second =
             _consumeIdentifier('Expected a column name here', lenient: true);
@@ -292,17 +292,28 @@ mixin ExpressionParser on ParserBase {
             tableName: first.identifier, columnName: second.identifier)
           ..setSpan(first, second);
       } else if (_matchOne(TokenType.leftParen)) {
-        final parameters = _functionParameters();
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
+        if (first.identifier.toLowerCase() == 'cast') {
+          final operand = expression();
+          _consume(TokenType.as, 'Expected AS operator here');
+          final type = _typeName();
+          final typeName = type.lexeme;
+          _consume(TokenType.rightParen, 'Expected closing bracket here');
 
-        if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-          return _aggregate(first, parameters);
+          return CastExpression(operand, typeName)..setSpan(first, _previous);
+        } else {
+          // regular function invocation
+          final parameters = _functionParameters();
+          final rightParen = _consume(TokenType.rightParen,
+              'Expected closing bracket after argument list');
+
+          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+            return _aggregate(first, parameters);
+          }
+
+          return FunctionExpression(
+              name: first.identifier, parameters: parameters)
+            ..setSpan(first, rightParen);
         }
-
-        return FunctionExpression(
-            name: first.identifier, parameters: parameters)
-          ..setSpan(first, rightParen);
       } else {
         return Reference(columnName: first.identifier)..setSpan(first, first);
       }

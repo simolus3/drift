@@ -30,6 +30,8 @@ Map<String, ResolveResult> _types = {
   'SELECT row_number() OVER (RANGE ? PRECEDING)':
       const ResolveResult(ResolvedType(type: BasicType.int)),
   'SELECT ?;': const ResolveResult.unknown(),
+  'SELECT CAST(3 AS TEXT) = ?':
+      const ResolveResult(ResolvedType(type: BasicType.text)),
 };
 
 void main() {

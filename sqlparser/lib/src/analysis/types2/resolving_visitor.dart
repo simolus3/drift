@@ -156,6 +156,14 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitChildren(e, const NoTypeExpectation());
   }
 
+  @override
+  void visitCastExpression(CastExpression e, TypeExpectation arg) {
+    final type = session.context.schemaSupport.resolveColumnType(e.typeName);
+    session.checkAndResolve(e, type, arg);
+    session.addRelationship(NullableIfSomeOtherIs(e, [e.operand]));
+    visit(e.operand, const NoTypeExpectation());
+  }
+
   void _handleWhereClause(HasWhereClause stmt) {
     // assume that a where statement is a boolean expression. Sqlite internally
     // casts (https://www.sqlite.org/lang_expr.html#booleanexpr), so be lax

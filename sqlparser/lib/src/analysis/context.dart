@@ -17,6 +17,9 @@ class AnalysisContext {
   /// outside.
   final AnalyzeStatementOptions stmtOptions;
 
+  /// Utilities to read types.
+  final SchemaFromCreateTable schemaSupport;
+
   /// A resolver that can be used to obtain the type of a [Typeable]. This
   /// mostly applies to [Expression]s, [Reference]s, [Variable]s and
   /// [ResultSet.resolvedColumns] of a select statement.
@@ -24,7 +27,7 @@ class AnalysisContext {
 
   /// Constructs a new analysis context from the AST and the source sql.
   AnalysisContext(this.root, this.sql, EngineOptions options,
-      {AnalyzeStatementOptions stmtOptions})
+      {AnalyzeStatementOptions stmtOptions, this.schemaSupport})
       : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions() {
     types = TypeResolver(this, options);
   }

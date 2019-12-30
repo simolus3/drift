@@ -158,8 +158,7 @@ mixin SchemaParser on ParserBase {
     String typeName;
 
     if (typeTokens != null) {
-      final typeSpan = typeTokens.first.span.expand(typeTokens.last.span);
-      typeName = typeSpan.text;
+      typeName = typeTokens.lexeme;
     }
 
     final constraints = <ColumnConstraint>[];

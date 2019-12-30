@@ -14,6 +14,7 @@ part 'common/renamable.dart';
 part 'common/tuple.dart';
 part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
+part 'expressions/cast.dart';
 part 'expressions/expressions.dart';
 part 'expressions/function.dart';
 part 'expressions/literals.dart';

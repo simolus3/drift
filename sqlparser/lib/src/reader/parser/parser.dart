@@ -313,8 +313,7 @@ class Parser extends ParserBase
           _error('Expected a type name here');
         }
 
-        final typeName =
-            typeNameTokens.first.span.expand(typeNameTokens.last.span).text;
+        final typeName = typeNameTokens.lexeme;
         parameters.add(VariableTypeHint(variable, typeName)
           ..as = as
           ..setSpan(first, _previous));
@@ -363,4 +362,8 @@ class Parser extends ParserBase
     // fast-forward to the token after th next semicolon
     while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
+}
+
+extension on List<Token> {
+  String get lexeme => first.span.expand(last.span).text;
 }

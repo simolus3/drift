@@ -136,6 +136,14 @@ final Map<String, Expression> _testCases = {
       ],
     ),
   ),
+  'CAST(3 + 4 AS TEXT)': CastExpression(
+    BinaryExpression(
+      NumericLiteral(3.0, token(TokenType.numberLiteral)),
+      token(TokenType.plus),
+      NumericLiteral(4.0, token(TokenType.numberLiteral)),
+    ),
+    'TEXT',
+  ),
 };
 
 void main() {

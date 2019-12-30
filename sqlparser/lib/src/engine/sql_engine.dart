@@ -150,8 +150,7 @@ class SqlEngine {
       {AnalyzeStatementOptions stmtOptions}) {
     final node = result.rootNode;
 
-    final context =
-        AnalysisContext(node, result.sql, options, stmtOptions: stmtOptions);
+    final context = _createContext(node, result.sql, stmtOptions);
     _analyzeContext(context);
 
     return context;
@@ -169,10 +168,15 @@ class SqlEngine {
   /// this statement only.
   AnalysisContext analyzeNode(AstNode node, String file,
       {AnalyzeStatementOptions stmtOptions}) {
-    final context =
-        AnalysisContext(node, file, options, stmtOptions: stmtOptions);
+    final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
     return context;
+  }
+
+  AnalysisContext _createContext(
+      AstNode node, String sql, AnalyzeStatementOptions stmtOptions) {
+    return AnalysisContext(node, sql, options,
+        stmtOptions: stmtOptions, schemaSupport: schemaReader);
   }
 
   void _analyzeContext(AnalysisContext context) {

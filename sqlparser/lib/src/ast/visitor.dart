@@ -27,6 +27,7 @@ abstract class AstVisitor<A, R> {
   R visitTableConstraint(TableConstraint e, A arg);
   R visitForeignKeyClause(ForeignKeyClause e, A arg);
 
+  R visitCastExpression(CastExpression e, A arg);
   R visitBinaryExpression(BinaryExpression e, A arg);
   R visitStringComparison(StringComparisonExpression e, A arg);
   R visitUnaryExpression(UnaryExpression e, A arg);
@@ -230,6 +231,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   // Expressions
+
+  @override
+  R visitCastExpression(CastExpression e, A arg) {
+    return visitExpression(e, arg);
+  }
 
   @override
   R visitBinaryExpression(BinaryExpression e, A arg) {

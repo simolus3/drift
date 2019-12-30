@@ -130,6 +130,9 @@ class TypeResolver {
         }
       } else if (expr is CaseExpression) {
         return resolveExpression(expr.whens.first.then);
+      } else if (expr is CastExpression) {
+        final type = context.schemaSupport.resolveColumnType(expr.typeName);
+        return ResolveResult(type);
       } else if (expr is SubQuery) {
         final columns = expr.select.resultSet.resolvedColumns;
         if (columns.length != 1) {

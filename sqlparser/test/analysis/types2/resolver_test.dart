@@ -61,4 +61,15 @@ void main() {
     expect(_resolveFirstVariable("SELECT '' || :foo"),
         const ResolvedType(type: BasicType.text));
   });
+
+  group('case expressions', () {
+    test('resolve to type argument', () {
+      expect(_resolveResultColumn('SELECT CAST(3+4 AS TEXT)'),
+          const ResolvedType(type: BasicType.text));
+    });
+
+    test('allow anything as their operand', () {
+      expect(_resolveFirstVariable('SELECT CAST(? AS TEXT)'), null);
+    });
+  });
 }
