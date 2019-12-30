@@ -1,5 +1,22 @@
 ## unreleased
 
+- Support explicit type arguments for queries in moor files. In 
+  `foo(:bar AS TEXT, :baz AS INT): SELECT :bar, :baz;`, the column type can now be inferred.
+  Previously, the query would fail because of an unknown type.
+
+## 2.2.0
+
+- Experimental new CLI tool (`pub run moor_generator`). Not useful at the moment
+- Support inheritance when defining daos ([#285](https://github.com/simolus3/moor/issues/285))
+- Improve robustness and error messages, many bug fixes
+
+## 2.1.1
+
+- Fix a crash when using common table expressions in custom statements
+- Don't use a moor specific caching graph across build steps
+
+## 2.1.0
+
 - Accept inheritance in table definitions (e.g. if an abstract class declared as `IntColumn get foo => integer()()`,
   tables inheriting from that class will also have a `foo` column)
 - New `use_data_class_name_for_companions` option that will make the name of the companion

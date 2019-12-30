@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:test/test.dart';
 
 void main() {

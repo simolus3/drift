@@ -46,26 +46,31 @@ class QueryHandler {
         root is InsertStatement) {
       return _handleUpdate();
     } else {
-      throw StateError(
-          'Unexpected sql: Got $root, expected insert, select, update or delete');
+      throw StateError('Unexpected sql: Got $root, expected insert, select, '
+          'update or delete');
     }
   }
 
   UpdatingQuery _handleUpdate() {
     final updatedFinder = UpdatedTablesVisitor();
-    context.root.accept(updatedFinder);
-    _foundTables = updatedFinder.foundTables;
+    context.root.acceptWithoutArg(updatedFinder);
+    _foundTables = updatedFinder.writtenTables;
 
     final isInsert = context.root is InsertStatement;
 
-    return UpdatingQuery(name, context, _foundElements,
-        _foundTables.map(mapper.tableToMoor).toList(),
-        isInsert: isInsert);
+    return UpdatingQuery(
+      name,
+      context,
+      _foundElements,
+      _foundTables.map(mapper.tableToMoor).toList(),
+      isInsert: isInsert,
+      hasMultipleTables: updatedFinder.foundTables.length > 1,
+    );
   }
 
   SqlSelectQuery _handleSelect() {
     final tableFinder = ReferencedTablesVisitor();
-    _select.accept(tableFinder);
+    _select.acceptWithoutArg(tableFinder);
     _foundTables = tableFinder.foundTables;
     final moorTables =
         _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
@@ -79,7 +84,7 @@ class QueryHandler {
     final columns = <ResultColumn>[];
     final rawColumns = _select.resolvedColumns;
 
-    for (var column in rawColumns) {
+    for (final column in rawColumns) {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
       UsedTypeConverter converter;
@@ -111,7 +116,7 @@ class QueryHandler {
       var matches = true;
 
       // go trough all columns of the table in question
-      for (var column in moorTable.columns) {
+      for (final column in moorTable.columns) {
         // check if this column from the table is present in the result set
         final tableColumn = table.findColumn(column.name.name);
         final inResultSet =
@@ -156,8 +161,13 @@ class QueryHandler {
     } else if (c is ExpressionColumn) {
       final expression = c.expression;
       if (expression is Reference) {
-        return expression.resolved as TableColumn;
+        final resolved = expression.resolved;
+        if (resolved is Column) {
+          return _toTableColumn(resolved);
+        }
       }
+    } else if (c is DelegatedColumn) {
+      return _toTableColumn(c.innerColumn);
     }
     return null;
   }

@@ -1,11 +1,12 @@
 part of '../ast.dart';
 
-abstract class BaseSelectStatement extends Statement
-    with CrudStatement, ResultSet {
+abstract class BaseSelectStatement extends CrudStatement with ResultSet {
   /// The resolved list of columns returned by this select statements. Not
   /// available from the parse tree, will be set later by the analyzer.
   @override
   List<Column> resolvedColumns;
+
+  BaseSelectStatement._(WithClause withClause) : super._(withClause);
 }
 
 class SelectStatement extends BaseSelectStatement implements HasWhereClause {
@@ -22,23 +23,26 @@ class SelectStatement extends BaseSelectStatement implements HasWhereClause {
   final LimitBase limit;
 
   SelectStatement(
-      {this.distinct = false,
+      {WithClause withClause,
+      this.distinct = false,
       this.columns,
       this.from,
       this.where,
       this.groupBy,
       this.windowDeclarations = const [],
       this.orderBy,
-      this.limit});
+      this.limit})
+      : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitSelectStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSelectStatement(this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes {
     return [
+      if (withClause != null) withClause,
       ...columns,
       if (from != null) ...from,
       if (where != null) where,
@@ -64,18 +68,19 @@ class CompoundSelectStatement extends BaseSelectStatement {
   // part of the last compound select statement in [additional]
 
   CompoundSelectStatement({
+    WithClause withClause,
     @required this.base,
     this.additional = const [],
-  });
+  }) : super._(withClause);
 
   @override
   Iterable<AstNode> get childNodes {
-    return [base, ...additional];
+    return [if (withClause != null) withClause, base, ...additional];
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitCompoundSelectStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCompoundSelectStatement(this, arg);
   }
 
   @override
@@ -87,7 +92,9 @@ class CompoundSelectStatement extends BaseSelectStatement {
 
 abstract class ResultColumn extends AstNode {
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitResultColumn(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitResultColumn(this, arg);
+  }
 }
 
 /// A result column that either yields all columns or all columns from a table
@@ -131,7 +138,9 @@ class GroupBy extends AstNode {
   GroupBy({@required this.by, this.having});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitGroupBy(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitGroupBy(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [...by, if (having != null) having];
@@ -165,7 +174,9 @@ class CompoundSelectPart extends AstNode {
   Iterable<AstNode> get childNodes => [select];
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitCompoundSelectPart(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCompoundSelectPart(this, arg);
+  }
 
   @override
   bool contentEquals(CompoundSelectPart other) => mode == other.mode;

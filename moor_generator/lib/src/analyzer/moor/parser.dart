@@ -1,8 +1,8 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -12,30 +12,29 @@ class MoorParser {
   MoorParser(this.step);
 
   Future<ParsedMoorFile> parseAndAnalyze() {
-    final result =
-        SqlEngine(useMoorExtensions: true).parseMoorFile(step.content);
+    final engine = step.task.session.spawnEngine();
+    final result = engine.parseMoorFile(step.content);
     final parsedFile = result.rootNode as MoorFile;
 
     final createdReaders = <CreateTableReader>[];
     final queryDeclarations = <DeclaredMoorQuery>[];
     final importStatements = <ImportStatement>[];
-    final otherComponents = <PartOfMoorFile>[];
 
-    for (var parsedStmt in parsedFile.statements) {
+    for (final parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
         step.inlineDartResolver.importStatements.add(importStmt.importedFile);
         importStatements.add(importStmt);
-      } else if (parsedStmt is CreateTableStatement) {
+      } else if (parsedStmt is TableInducingStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
       } else if (parsedStmt is DeclaredStatement) {
-        queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
-      } else if (parsedStmt is CreateTriggerStatement) {
-        otherComponents.add(parsedStmt);
+        if (parsedStmt.isRegularQuery) {
+          queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+        }
       }
     }
 
-    for (var error in result.errors) {
+    for (final error in result.errors) {
       step.reportError(ErrorInMoorFile(
         severity: Severity.error,
         span: error.token.span,
@@ -43,9 +42,9 @@ class MoorParser {
       ));
     }
 
-    final createdTables = <SpecifiedTable>[];
-    final tableDeclarations = <CreateTableStatement, SpecifiedTable>{};
-    for (var reader in createdReaders) {
+    final createdTables = <MoorTable>[];
+    final tableDeclarations = <TableInducingStatement, MoorTable>{};
+    for (final reader in createdReaders) {
       final table = reader.extractTable(step.mapper);
       createdTables.add(table);
       tableDeclarations[reader.stmt] = table;
@@ -57,9 +56,8 @@ class MoorParser {
       queries: queryDeclarations,
       imports: importStatements,
       tableDeclarations: tableDeclarations,
-      otherComponents: otherComponents,
     );
-    for (var decl in queryDeclarations) {
+    for (final decl in queryDeclarations) {
       decl.file = analyzedFile;
     }
 

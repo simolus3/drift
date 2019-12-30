@@ -12,7 +12,7 @@ class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
       // there is no not-null constraint on this column, suggest to add one
       // after the type name
       final end = node.typeNames.last.span.end.offset;
-      final id = AssistId.makeNotNull;
+      const id = AssistId.makeNotNull;
 
       collector.addAssist(PrioritizedSourceChange(
         id.priority,
@@ -29,7 +29,7 @@ class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {
     } else {
       // suggest to remove the NOT NULL constraint, e.g. to make this column
       // nullable
-      final id = AssistId.makeNullable;
+      const id = AssistId.makeNullable;
 
       collector.addAssist(PrioritizedSourceChange(
         id.priority,

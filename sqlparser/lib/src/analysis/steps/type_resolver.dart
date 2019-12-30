@@ -3,14 +3,14 @@ part of '../analysis.dart';
 /// Resolves types for all nodes in the AST which can have a type. This includes
 /// expressions, variables and so on. For select statements, we also try to
 /// figure out what types they return.
-class TypeResolvingVisitor extends RecursiveVisitor<void> {
+class TypeResolvingVisitor extends RecursiveVisitor<void, void> {
   final AnalysisContext context;
   TypeResolver get types => context.types;
 
   TypeResolvingVisitor(this.context);
 
   @override
-  void visitChildren(AstNode e) {
+  void visitChildren(AstNode e, void arg) {
     // called for every ast node, so we implement this here
     if (e is Expression && !types.needsToBeInferred(e)) {
       types.resolveExpression(e);
@@ -18,11 +18,11 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
       e.resolvedColumns.forEach(types.resolveColumn);
     }
 
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
     // resolve target columns - this is easy, as we should have the table
     // structure available.
     e.targetColumns.forEach(types.resolveExpression);
@@ -33,7 +33,7 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
       final targetTypes = e.resolvedTargetColumns.map(context.typeOf).toList();
       final source = e.source as ValuesSource;
 
-      for (var tuple in source.values) {
+      for (final tuple in source.values) {
         final expressions = tuple.expressions;
         for (var i = 0; i < min(expressions.length, targetTypes.length); i++) {
           if (i < targetTypes.length) {
@@ -43,10 +43,12 @@ class TypeResolvingVisitor extends RecursiveVisitor<void> {
       }
 
       // we already handled the source tuples, don't visit them
-      visitChildren(e.table);
-      e.targetColumns.forEach(visitChildren);
+      visit(e.table, arg);
+      for (final column in e.targetColumns) {
+        visit(column, arg);
+      }
     } else {
-      visitChildren(e);
+      visitChildren(e, arg);
     }
   }
 }

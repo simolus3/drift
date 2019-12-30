@@ -1,35 +1,36 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// Handles `REFERENCES` clauses in tables by resolving their columns and
 /// reporting errors if they don't exist. Further, sets the
-/// [SpecifiedTable.references] field for tables declared in moor.
+/// [MoorTable.references] field for tables declared in moor.
 class TableHandler {
   final AnalyzeMoorStep step;
   final ParsedMoorFile file;
-  final List<SpecifiedTable> availableTables;
+  final List<MoorTable> availableTables;
 
   TableHandler(this.step, this.file, this.availableTables);
 
   void handle() {
-    for (var table in file.declaredTables) {
+    for (final table in file.declaredTables) {
       table.references.clear();
     }
 
-    file.parseResult.rootNode?.accept(_ReferenceResolvingVisitor(this));
+    file.parseResult.rootNode
+        ?.acceptWithoutArg(_ReferenceResolvingVisitor(this));
   }
 }
 
-class _ReferenceResolvingVisitor extends RecursiveVisitor<void> {
+class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   final TableHandler handler;
 
   _ReferenceResolvingVisitor(this.handler);
 
   @override
-  void visitForeignKeyClause(ForeignKeyClause clause) {
+  void visitForeignKeyClause(ForeignKeyClause clause, void arg) {
     final stmt = clause.parents.whereType<CreateTableStatement>().first;
     final referencedTable = handler.availableTables.singleWhere(
         (t) => t.sqlName == clause.foreignTable.tableName,
@@ -47,6 +48,6 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void> {
       createdTable?.references?.add(referencedTable);
     }
 
-    super.visitForeignKeyClause(clause);
+    super.visitForeignKeyClause(clause, arg);
   }
 }

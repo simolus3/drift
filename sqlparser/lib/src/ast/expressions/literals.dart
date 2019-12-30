@@ -7,7 +7,9 @@ abstract class Literal extends Expression {
   Literal(this.token);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitLiteral(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitLiteral(this, arg);
+  }
 
   @override
   final Iterable<AstNode> childNodes = const <AstNode>[];

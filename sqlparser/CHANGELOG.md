@@ -1,4 +1,15 @@
 ## unreleased
+
+- Added a argument type and argument to the visitor classes
+- Experimental new type inference algorithm
+- Support `CAST` expressions.
+
+## 0.5.0
+- Optionally support the `json1` module
+- Optionally support the `fts5` module
+
+## 0.4.0
+- Support common table expressions
 - Handle special `rowid`, `oid`, `__rowid__` references
 - Support references to `sqlite_master` and `sqlite_sequence` tables
 
@@ -9,7 +20,6 @@
 - some features that are specific to moor
 
 __0.3.0+1__: Accept `\r` characters as whitespace
-
 
 ## 0.2.0
 - Parse `CREATE TABLE` statements

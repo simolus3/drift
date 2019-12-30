@@ -52,7 +52,7 @@ class StreamKey {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other is StreamKey &&
             other.sql == sql &&
@@ -61,8 +61,8 @@ class StreamKey {
   }
 }
 
-/// Keeps track of active streams created from [SimpleSelectStatement]s and updates
-/// them when needed.
+/// Keeps track of active streams created from [SimpleSelectStatement]s and
+/// updates them when needed.
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey> _keysPendingRemoval = HashSet<StreamKey>();
@@ -103,7 +103,13 @@ class StreamQueryStore {
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
   Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    _updatedTableNames.add(tables.map((t) => t.actualTableName).toSet());
+    handleTableUpdatesByName(tables.map((t) => t.actualTableName).toSet());
+  }
+
+  /// Handles updates on tables by their name. All queries reading from any of
+  /// the tables in [updatedTableNames] will fetch their data again.
+  void handleTableUpdatesByName(Set<String> updatedTableNames) {
+    _updatedTableNames.add(updatedTableNames);
   }
 
   void markAsClosed(QueryStream stream) {
@@ -194,11 +200,18 @@ class QueryStream<T> {
     // Fetch data if it's needed, publish that data if it's possible.
     if (!_controller.hasListener) return;
 
-    final data = await _fetcher.fetchData();
-    _lastData = data;
+    T data;
 
-    if (!_controller.isClosed) {
-      _controller.add(data);
+    try {
+      data = await _fetcher.fetchData();
+      _lastData = data;
+      if (!_controller.isClosed) {
+        _controller.add(data);
+      }
+    } catch (e, s) {
+      if (!_controller.isClosed) {
+        _controller.addError(e, s);
+      }
     }
   }
 }

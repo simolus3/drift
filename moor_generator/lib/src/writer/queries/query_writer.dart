@@ -1,11 +1,10 @@
 import 'dart:math' show max;
 
-import 'package:moor_generator/src/backends/build/moor_builder.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/queries/result_set_writer.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
@@ -97,15 +96,18 @@ class QueryWriter {
     if (!_writtenMappingMethods.contains(_nameOfMappingMethod())) {
       _buffer
         ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
-        ..write('(QueryRow row) {\n')
-        ..write('return ${_select.resultClassName}(');
+        ..write('(QueryRow row) {\n');
 
-      for (var column in _select.resultSet.columns) {
+      // note that, even if the result set has a matching table, we can't just
+      // use the mapFromRow() function of that table - the column names might
+      // be different!
+      _buffer.write('return ${_select.resultClassName}(');
+      for (final column in _select.resultSet.columns) {
         final fieldName = _select.resultSet.dartNameFor(column);
         _buffer.write('$fieldName: ${_readingCode(column)},');
       }
-
       _buffer.write(');\n}\n');
+
       _writtenMappingMethods.add(_nameOfMappingMethod());
     }
   }
@@ -203,7 +205,7 @@ class QueryWriter {
     _buffer.write(',');
     _writeUpdates();
 
-    _buffer..write(',);\n}\n');
+    _buffer.write(',);\n}\n');
   }
 
   void _writeParameters() {
@@ -263,7 +265,7 @@ class QueryWriter {
     // query.elements are guaranteed to be sorted in the order in which they're
     // going to have an effect when expanded. See TypeMapper.extractElements for
     // the gory details.
-    for (var element in query.elements) {
+    for (final element in query.elements) {
       if (element is FoundVariable) {
         if (element.isArray) {
           _writeIndexCounterIfNeeded();
@@ -294,8 +296,13 @@ class QueryWriter {
           ..write(_placeholderContextName(element))
           ..write(' = ')
           ..write(r'$write(')
-          ..write(element.dartParameterName)
-          ..write(');\n');
+          ..write(element.dartParameterName);
+
+        if (query.hasMultipleTables) {
+          _buffer.write(', hasMultipleTables: true');
+        }
+
+        _buffer.write(');\n');
 
         // similar to the case for expanded array variables, we need to
         // increase the index
@@ -306,10 +313,10 @@ class QueryWriter {
   }
 
   void _writeVariables() {
-    _buffer..write('variables: [');
+    _buffer.write('variables: [');
 
     var first = true;
-    for (var element in query.elements) {
+    for (final element in query.elements) {
       if (!first) {
         _buffer.write(', ');
       }
@@ -332,7 +339,7 @@ class QueryWriter {
       }
     }
 
-    _buffer..write(']');
+    _buffer.write(']');
   }
 
   /// Returns a Dart string literal representing the query after variables have
@@ -360,7 +367,7 @@ class QueryWriter {
       buffer.write(content);
     }
 
-    for (var rewriteTarget in toReplace) {
+    for (final rewriteTarget in toReplace) {
       if (rewriteTarget is Variable) {
         final moorVar = query.variables.singleWhere(
             (f) => f.variable.resolvedIndex == rewriteTarget.resolvedIndex);

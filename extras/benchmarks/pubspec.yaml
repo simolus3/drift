@@ -1,0 +1,24 @@
+name: benchmarks
+description: Runs simple and complex benchmarks to measure performance of moor and moor_ffi
+
+dependencies:
+  moor:
+  moor_ffi:
+  benchmark_harness: ^1.0.5
+  intl: ^0.16.0
+  uuid: ^2.0.0
+  path: ^1.6.0
+dev_dependencies:
+  moor_generator:
+  build_runner:
+  test:
+
+dependency_overrides:
+  moor:
+    path: ../../moor
+  moor_ffi:
+    path: ../../moor_ffi
+  moor_generator:
+    path: ../../moor_generator
+  sqlparser:
+    path: ../../sqlparser

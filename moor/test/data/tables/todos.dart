@@ -1,4 +1,5 @@
 import 'package:moor/moor.dart';
+import 'package:uuid/uuid.dart';
 
 part 'todos.g.dart';
 
@@ -48,15 +49,19 @@ class SharedTodos extends Table {
       ];
 }
 
+final _uuid = Uuid();
+
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
 
-  TextColumn get custom => text().map(const CustomConverter())();
+  TextColumn get custom =>
+      text().map(const CustomConverter()).clientDefault(_uuid.v4)();
 }
 
 class PureDefaults extends Table with AutoIncrement {
-  TextColumn get txt => text().nullable()();
+  // name after keyword to ensure it's escaped properly
+  TextColumn get txt => text().named('insert').nullable()();
 }
 
 // example object used for custom mapping
@@ -99,7 +104,12 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   },
 )
 class TodoDb extends _$TodoDb {
-  TodoDb(QueryExecutor e) : super(e);
+  TodoDb(QueryExecutor e) : super(e) {
+    moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  }
+  TodoDb.connect(DatabaseConnection connection) : super.connect(connection) {
+    moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy();

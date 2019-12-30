@@ -34,7 +34,7 @@ class Row extends MapMixin<String, dynamic>
   }
 
   @override
-  operator [](Object key) {
+  dynamic operator [](Object key) {
     if (key is! String) return null;
 
     final index = _result._calculatedIndexes[key];

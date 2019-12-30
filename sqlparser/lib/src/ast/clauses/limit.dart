@@ -13,8 +13,8 @@ class Limit extends AstNode implements LimitBase {
   Limit({this.count, this.offsetSeparator, this.offset});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitLimit(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitLimit(this, arg);
   }
 
   @override

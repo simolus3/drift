@@ -88,7 +88,8 @@ void main() {
           .addColumn(db.users, db.users.isAwesome);
 
       verify(mockQueryExecutor.call('ALTER TABLE users ADD COLUMN '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1));'));
+          'is_awesome INTEGER NOT NULL DEFAULT 1 '
+          'CHECK (is_awesome in (0, 1));'));
     });
   });
 
@@ -96,4 +97,24 @@ void main() {
     await db.customStatement('some custom statement');
     verify(mockExecutor.runCustom('some custom statement'));
   });
+
+  test('upgrading a database without schema migration throws', () async {
+    final db = _DefaultDb(MockExecutor());
+    expect(
+        () => db.handleDatabaseVersionChange(
+            executor: MockQueryExecutor(), from: 1, to: 2),
+        throwsA(const TypeMatcher<Exception>()));
+  });
+}
+
+class _DefaultDb extends GeneratedDatabase {
+  _DefaultDb(QueryExecutor executor)
+      // ignore: prefer_const_constructors
+      : super(SqlTypeSystem.withDefaults(), executor);
+
+  @override
+  List<TableInfo<Table, DataClass>> get allTables => [];
+
+  @override
+  int get schemaVersion => 2;
 }

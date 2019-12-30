@@ -15,16 +15,21 @@ mixin SchemaParser on ParserBase {
 
   /// Parses a `CREATE TABLE` statement, assuming that the `CREATE` token has
   /// already been matched.
-  CreateTableStatement _createTable() {
+  TableInducingStatement _createTable() {
     final first = _previous;
     assert(first.type == TokenType.create);
 
-    _suggestHint(HintDescription.token(TokenType.table));
+    final virtual = _matchOne(TokenType.virtual);
+
     _consume(TokenType.table, 'Expected TABLE keyword here');
 
     final ifNotExists = _ifNotExists();
 
     final tableIdentifier = _consumeIdentifier('Expected a table name');
+
+    if (virtual) {
+      return _virtualTable(first, ifNotExists, tableIdentifier);
+    }
 
     // we don't currently support CREATE TABLE x AS SELECT ... statements
     final leftParen = _consume(
@@ -60,11 +65,7 @@ mixin SchemaParser on ParserBase {
       withoutRowId = true;
     }
 
-    String overriddenName;
-    if (enableMoorExtensions && _matchOne(TokenType.as)) {
-      overriddenName =
-          _consumeIdentifier('Expected the name for the data class').identifier;
-    }
+    final overriddenName = _overriddenDataClassName();
 
     return CreateTableStatement(
       ifNotExists: ifNotExists,
@@ -76,7 +77,85 @@ mixin SchemaParser on ParserBase {
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
-      ..closingBracket = rightParen;
+      ..closingBracket = rightParen
+      ..tableNameToken = tableIdentifier;
+  }
+
+  /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
+  /// <name>` tokens have already been read.
+  CreateVirtualTableStatement _virtualTable(
+      Token first, bool ifNotExists, IdentifierToken nameToken) {
+    _consume(TokenType.using, 'Expected USING for virtual table declaration');
+    final moduleName = _consumeIdentifier('Expected a module name');
+    final args = <SourceSpanWithContext>[];
+
+    if (_matchOne(TokenType.leftParen)) {
+      // args can be just about anything, so we accept any token until the right
+      // parenthesis closing it of.
+      Token currentStart;
+      var levelOfParens = 0;
+
+      void addCurrent() {
+        if (currentStart == null) {
+          _error('Expected at least one token for the previous argument');
+        } else {
+          args.add(currentStart.span.expand(_previous.span));
+          currentStart = null;
+        }
+      }
+
+      for (;;) {
+        // begin reading a single argument, which is stopped by a comma or
+        // maybe with a ), if the current depth is one
+        while (_peek.type != TokenType.rightParen &&
+            _peek.type != TokenType.comma) {
+          _advance();
+          if (_previous.type == TokenType.leftParen) {
+            levelOfParens++;
+          }
+          currentStart ??= _previous;
+        }
+
+        // if we just read the last ) of the argument list, finish. Otherwise
+        // just handle the ) and continue reading the same argument
+        if (_peek.type == TokenType.rightParen) {
+          levelOfParens--;
+          if (levelOfParens < 0) {
+            addCurrent();
+            _advance(); // consume the rightParen
+            break;
+          } else {
+            _advance(); // add the rightParen to the current argument
+            continue;
+          }
+        }
+
+        // finished while loop above, but not with a ), so it must be a comma
+        // that finishes the current argument
+        assert(_peek.type == TokenType.comma);
+        addCurrent();
+        _advance(); // consume the comma
+      }
+    }
+
+    final moorDataClassName = _overriddenDataClassName();
+    return CreateVirtualTableStatement(
+      ifNotExists: ifNotExists,
+      tableName: nameToken.identifier,
+      moduleName: moduleName.identifier,
+      arguments: args,
+      overriddenDataClassName: moorDataClassName,
+    )
+      ..setSpan(first, _previous)
+      ..tableNameToken = nameToken;
+  }
+
+  String _overriddenDataClassName() {
+    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+      return _consumeIdentifier('Expected the name for the data class')
+          .identifier;
+    }
+    return null;
   }
 
   /// Parses a "CREATE TRIGGER" statement, assuming that the create token has
@@ -173,8 +252,7 @@ mixin SchemaParser on ParserBase {
     String typeName;
 
     if (typeTokens != null) {
-      final typeSpan = typeTokens.first.span.expand(typeTokens.last.span);
-      typeName = typeSpan.text;
+      typeName = typeTokens.lexeme;
     }
 
     final constraints = <ColumnConstraint>[];
@@ -189,9 +267,11 @@ mixin SchemaParser on ParserBase {
       constraints: constraints,
     )
       ..setSpan(name, _previous)
-      ..typeNames = typeTokens;
+      ..typeNames = typeTokens
+      ..nameToken = name;
   }
 
+  @override
   List<Token> _typeName() {
     // sqlite doesn't really define what a type name is and has very loose rules
     // at turning them into a type affinity. We support this pattern:
@@ -213,7 +293,7 @@ mixin SchemaParser on ParserBase {
       }
 
       _consume(TokenType.rightParen,
-          'Expected closing paranthesis to finish type name');
+          'Expected closing parenthesis to finish type name');
       typeNames.add(_previous);
     }
 

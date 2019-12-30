@@ -8,8 +8,13 @@ This library can parse most sql statements and perform static analysis. We can r
 what type a column in a `SELECT` statement has, infer types for variables, find
 semantic errors and more.
 
-This library supports most features, including joins, `group by`, nested and compound sql
-statements, window functions and foreign keys.
+This library supports most sqlite features:
+- CRUD: Full support, including joins, `group by`, nested and compound selects, `WITH` clauses
+  and window functions
+- DDL: Supports `CREATE TABLE` statements, including advanced features like foreign keys.
+  We also support `fts5` and `CREATE VIRTUAL TABLE` statements. Triggers, views and indices
+  are not yet supported.
+
 ### Using the parser
 You can parse the abstract syntax tree of sqlite statements with `SqlEngine.parse`.
 ```dart
@@ -69,7 +74,6 @@ package to generate type-safe methods from sql.
 Most on this list is just not supported yet because I didn't found a use case for 
 them yet. If you need them, just leave an issue and I'll try to implement them soon.
 
-- Common table expressions are not supported
 - Some advanced expressions, like `CAST`s aren't supported yet.
 - An `UPSERT` clause is not yet supported on insert statements
 

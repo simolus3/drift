@@ -60,5 +60,6 @@ enum AnalysisErrorType {
 
   unknownFunction,
   compoundColumnCountMismatch,
+  cteColumnCountMismatch,
   other,
 }

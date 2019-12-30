@@ -5,6 +5,7 @@ import 'package:moor/moor.dart';
 
 /// Common interface for objects which can be inserted or updated into a
 /// database.
+/// [D] is the associated data class.
 @optionalTypeArgs
 abstract class Insertable<D extends DataClass> {
   /// Converts this object into a companion that can be used for inserts. On
@@ -23,14 +24,15 @@ abstract class DataClass {
 
   /// Converts this object into a representation that can be encoded with
   /// [json]. The [serializer] can be used to configure how individual values
-  /// will be encoded.
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()});
+  /// will be encoded. By default, [MoorRuntimeOptions.defaultSerializer] will
+  /// be used. See [ValueSerializer.defaults] for details.
+  Map<String, dynamic> toJson({ValueSerializer serializer});
 
   /// Converts this object into a json representation. The [serializer] can be
-  /// used to configure how individual values will be encoded.
-  String toJsonString(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  /// used to configure how individual values will be encoded. By default,
+  /// [MoorRuntimeOptions.defaultSerializer] will be used. See
+  /// [ValueSerializer.defaults] for details.
+  String toJsonString({ValueSerializer serializer}) {
     return json.encode(toJson(serializer: serializer));
   }
 
@@ -43,6 +45,8 @@ abstract class DataClass {
 
 /// An update companion for a [DataClass] which is used to write data into a
 /// database using [InsertStatement.insert] or [UpdateStatement.write].
+///
+/// [D] is the associated data class for this companion.
 ///
 /// See also:
 /// - the explanation in the changelog for 1.5
@@ -83,8 +87,13 @@ abstract class ValueSerializer {
   /// Constant super-constructor to allow constant child classes.
   const ValueSerializer();
 
-  /// The default serializer encodes date times as a unix-timestamp in
-  /// milliseconds.
+  /// The builtin default serializer.
+  ///
+  /// This serializer won't transform numbers or strings. Date times will be
+  /// encoded as a unix-timestamp.
+  ///
+  /// To override the default serializer moor uses, you can change the
+  /// [MoorRuntimeOptions.defaultSerializer] field.
   const factory ValueSerializer.defaults() = _DefaultValueSerializer;
 
   /// Converts the [value] to something that can be passed to
@@ -100,7 +109,7 @@ class _DefaultValueSerializer extends ValueSerializer {
   const _DefaultValueSerializer();
 
   @override
-  T fromJson<T>(json) {
+  T fromJson<T>(dynamic json) {
     if (T == DateTime) {
       if (json == null) {
         return null;

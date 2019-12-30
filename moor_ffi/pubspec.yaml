@@ -1,16 +1,17 @@
 name: moor_ffi
-description: "Provides experimental sqlite bindings using dart:ffi, including a moor executor"
-version: 0.0.1
-author: Simon Binder <oss@simonbinder.eu>
+description: "Provides sqlite bindings using dart:ffi, including a moor executor"
+version: 0.3.1
 homepage: https://github.com/simolus3/moor/tree/develop/moor_ffi
 issue_tracker: https://github.com/simolus3/moor/issues
 
 environment:
-  sdk: ">=2.5.0-dev <2.6.0"
+  sdk: ">=2.6.0 <3.0.0"
 
 dependencies:
-  moor: ">=1.7.0 <2.1.0"
+  moor: ">=1.7.0 <3.0.0"
+  ffi: ^0.1.3
   collection: ^1.0.0
+  meta: ^1.0.2
 
 dev_dependencies:
   test: ^1.6.0

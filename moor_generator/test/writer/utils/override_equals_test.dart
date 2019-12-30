@@ -8,7 +8,7 @@ void main() {
 
     expect(
         buffer.toString(),
-        '@override\nbool operator ==(other) => '
+        '@override\nbool operator ==(dynamic other) => '
         'identical(this, other) || (other is Foo);\n');
   });
 
@@ -18,7 +18,7 @@ void main() {
 
     expect(
         buffer.toString(),
-        '@override\nbool operator ==(other) => '
+        '@override\nbool operator ==(dynamic other) => '
         'identical(this, other) || (other is Foo && '
         'other.a == this.a && other.b == this.b && other.c == this.c);\n');
   });

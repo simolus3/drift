@@ -10,7 +10,7 @@ enum InsertMode {
   insertOrIgnore
 }
 
-class InsertStatement extends Statement with CrudStatement {
+class InsertStatement extends CrudStatement {
   final InsertMode mode;
   final TableReference table;
   final List<Reference> targetColumns;
@@ -28,16 +28,21 @@ class InsertStatement extends Statement with CrudStatement {
   // todo parse upsert clauses
 
   InsertStatement(
-      {this.mode = InsertMode.insert,
+      {WithClause withClause,
+      this.mode = InsertMode.insert,
       @required this.table,
       @required this.targetColumns,
-      @required this.source});
+      @required this.source})
+      : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitInsertStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitInsertStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes sync* {
+    if (withClause != null) yield withClause;
     yield table;
     yield* targetColumns;
     yield* source.childNodes;
@@ -82,7 +87,7 @@ class ValuesSource extends InsertSource {
 
 /// Inserts the rows returned by [stmt].
 class SelectInsertSource extends InsertSource {
-  final SelectStatement stmt;
+  final BaseSelectStatement stmt;
 
   SelectInsertSource(this.stmt);
 
@@ -95,5 +100,5 @@ class DefaultValues extends InsertSource {
   const DefaultValues();
 
   @override
-  final Iterable<AstNode> childNodes = const [];
+  Iterable<AstNode> get childNodes => const [];
 }

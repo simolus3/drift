@@ -18,8 +18,10 @@ targets:
     builders:
       moor_generator:
         options:
-          write_from_json_string_constructor: true
+          compact_query_methods: true
 ```
+
+## Available options
 
 At the moment, moor supports these options:
 
@@ -48,6 +50,32 @@ At the moment, moor supports these options:
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
   This will be the only option in moor 3.0. You can always override the json key by using a `JSON KEY`
   column constraint (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`)
+* `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{< relref "isolates.md" >}}).
+  This is a build option because isolates are still experimental. This will be the default option eventually.
+* `sqlite_modules`: This list can be used to enable sqlite extensions, like those for json or full-text search.
+  Modules have to be enabled explicitly because they're not supported on all platforms. See the following section for
+  details.
+
+## Available extensions
+
+__Note__: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is
+enabled, the [`json`](https://www.sqlite.org/json1.html) functions can be used in moor files. This doesn't necessarily
+mean that those functions are supported at runtime! Both extensions are available on iOS 11 or later. On Android, they're
+only available when using `moor_ffi`. See [our docs]({{< relref "extensions.md" >}}) for more details on them.
+
+```yaml
+targets:
+  $default:
+    builders:
+      moor_generator:
+        options:
+          sqlite_module:
+            - json1
+            - fts5
+```
+
+We currently support the [json1](https://www.sqlite.org/json1.html) and [fts5](https://www.sqlite.org/fts5.html) extensions
+for static analysis. Feel free to create an issue if you need support for different extensions.
 
 ## Recommended options
 

@@ -31,8 +31,9 @@ void main() {
 
   group('SELECT statements are generated', () {
     test('for simple statements', () {
-      db.select(db.users).get();
-      verify(executor.runSelect('SELECT * FROM users;', argThat(isEmpty)));
+      db.select(db.users, distinct: true).get();
+      verify(executor.runSelect(
+          'SELECT DISTINCT * FROM users;', argThat(isEmpty)));
     });
 
     test('with limit statements', () {
@@ -50,9 +51,8 @@ void main() {
     test('with order-by clauses', () async {
       await (db.select(db.users)
             ..orderBy([
-              (u) => OrderingTerm(
-                  expression: u.isAwesome, mode: OrderingMode.desc),
-              (u) => OrderingTerm(expression: u.id)
+              (u) => OrderingTerm.desc(u.isAwesome),
+              (u) => OrderingTerm.asc(u.id)
             ]))
           .get();
 
@@ -65,11 +65,11 @@ void main() {
     test('with complex predicates', () {
       (db.select(db.users)
             ..where((u) =>
-                and(not(u.name.equals('Dash')), (u.id.isBiggerThanValue(12)))))
+                u.name.equals('Dash').not() & u.id.isBiggerThanValue(12)))
           .get();
 
       verify(executor.runSelect(
-          'SELECT * FROM users WHERE (NOT name = ?) AND (id > ?);',
+          'SELECT * FROM users WHERE NOT (name = ?) AND id > ?;',
           ['Dash', 12]));
     });
 

@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
@@ -24,25 +25,31 @@ void main() {
     });
 
     final input = Uri.parse('package:test_lib/main.dart');
+    final session = MoorSession(backend);
     final backendTask = backend.startTask(input);
+    final task = session.startTask(backendTask);
 
     final library = await backendTask.resolveDart(input);
-    final parser = MoorDartParser(ParseDartStep(null, null, library));
+    final parser = MoorDartParser(
+        ParseDartStep(task, session.registerFile(input), library));
 
     Future<MethodDeclaration> _loadDeclaration(Element element) async {
       final declaration = await parser.loadElementDeclaration(element);
       return declaration.node as MethodDeclaration;
     }
 
-    void _verifyReturnExpressionMatches(Element element, String source) async {
+    Future<void> _verifyReturnExpressionMatches(
+        Element element, String source) async {
       final node = await _loadDeclaration(element);
       expect(parser.returnExpressionOfMethod(node).toSource(), source);
     }
 
     final testClass = library.getType('Test');
 
-    _verifyReturnExpressionMatches(testClass.getGetter('getter'), "'foo'");
-    _verifyReturnExpressionMatches(testClass.getMethod('function'), "'bar'");
+    await _verifyReturnExpressionMatches(
+        testClass.getGetter('getter'), "'foo'");
+    await _verifyReturnExpressionMatches(
+        testClass.getMethod('function'), "'bar'");
 
     final invalidDecl = await _loadDeclaration(testClass.getMethod('invalid'));
     expect(parser.returnExpressionOfMethod(invalidDecl), isNull);

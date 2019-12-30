@@ -9,7 +9,7 @@ part 'column_nullability.dart';
 class AssistService implements AssistContributor {
   const AssistService();
 
-  final _nullability = const ColumnNullability();
+  ColumnNullability get _nullability => const ColumnNullability();
 
   @override
   void computeAssists(AssistRequest request, AssistCollector collector) {
@@ -20,7 +20,7 @@ class AssistService implements AssistContributor {
       final relevantNodes = parseResult.findNodesAtPosition(request.offset,
           length: request.length);
 
-      for (var node in relevantNodes.expand((node) => node.selfAndParents)) {
+      for (final node in relevantNodes.expand((node) => node.selfAndParents)) {
         _handleNode(collector, node, moorRequest.path);
       }
     }

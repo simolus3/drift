@@ -6,6 +6,7 @@ import 'package:sqlparser/src/utils/ast_equality.dart';
 import '../utils.dart';
 
 void _enforceFrom(SelectStatement stmt, List<Queryable> expected) {
+  enforceHasSpan(stmt);
   expect(stmt.from.length, expected.length);
 
   for (var i = 0; i < stmt.from.length; i++) {

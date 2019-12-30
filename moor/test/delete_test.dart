@@ -14,7 +14,9 @@ void main() {
   setUp(() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
-    db = TodoDb(executor)..streamQueries = streamQueries;
+
+    final connection = createConnection(executor, streamQueries);
+    db = TodoDb.connect(connection);
   });
 
   group('Generates DELETE statements', () {
@@ -26,18 +28,18 @@ void main() {
 
     test('for complex components', () async {
       await (db.delete(db.users)
-            ..where((u) => or(not(u.isAwesome), u.id.isSmallerThanValue(100))))
+            ..where((u) => u.isAwesome.not() | u.id.isSmallerThanValue(100)))
           .go();
 
       verify(executor.runDelete(
-          'DELETE FROM users WHERE (NOT is_awesome) OR (id < ?);', [100]));
+          'DELETE FROM users WHERE NOT is_awesome OR id < ?;', [100]));
     });
 
     test('to delete an entity via a dataclasss', () async {
       await db.delete(db.sharedTodos).delete(SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
-          'DELETE FROM shared_todos WHERE (todo = ?) AND (user = ?);', [3, 2]));
+          'DELETE FROM shared_todos WHERE todo = ? AND user = ?;', [3, 2]));
     });
   });
 

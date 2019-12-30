@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/join.dart';
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
@@ -22,8 +21,8 @@ void main() {
     ]).get();
 
     verify(executor.runSelect(
-        'SELECT t.id AS "t.id", t.title AS "t.title", t.content AS "t.content", '
-        't.target_date AS "t.target_date", '
+        'SELECT t.id AS "t.id", t.title AS "t.title", '
+        't.content AS "t.content", t.target_date AS "t.target_date", '
         't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc" '
         'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
         argThat(isEmpty)));
@@ -48,7 +47,7 @@ void main() {
       ]);
     });
 
-    final result = await db.select(todos).join([
+    final result = await db.select(todos, distinct: true).join([
       leftOuterJoin(categories, categories.id.equalsExp(todos.category))
     ]).get();
 
@@ -67,6 +66,8 @@ void main() {
 
     expect(
         row.readTable(categories), Category(id: 3, description: 'description'));
+
+    verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
 
   test('reports null when no data is available', () async {
@@ -113,6 +114,31 @@ void main() {
 
     verify(executor.runSelect(
         argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
+  });
+
+  test('supports custom columns and results', () async {
+    final categories = db.alias(db.categories, 'c');
+    final descriptionLength = categories.description.length;
+
+    final query = db.select(categories).addColumns([descriptionLength]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'c.id': 3, 'c.desc': 'Description', 'c2': 11}
+      ];
+    });
+
+    final result = await query.getSingle();
+
+    verify(executor.runSelect(
+      'SELECT c.id AS "c.id", c.`desc` AS "c.desc", LENGTH(c.`desc`) AS "c2" '
+      'FROM categories c;',
+      [],
+    ));
+
+    expect(result.readTable(categories),
+        equals(Category(id: 3, description: 'Description')));
+    expect(result.read(descriptionLength), 11);
   });
 
   test('injects custom error message when a table is used multiple times',

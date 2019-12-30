@@ -1,0 +1,210 @@
+part of '../../query_builder.dart';
+
+/// A `SELECT` statement that operates on more than one table.
+// this is called JoinedSelectStatement for legacy reasons - we also use it
+// when custom expressions are used as result columns. Basically, it stores
+// queries that are more complex than SimpleSelectStatement
+class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
+    extends Query<FirstT, FirstD>
+    with LimitContainerMixin, Selectable<TypedResult> {
+  /// Used internally by moor, users should use [SimpleSelectStatement.join]
+  /// instead.
+  JoinedSelectStatement(
+      QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
+      [this.distinct = false])
+      : super(database, table) {
+    // use all columns across all tables as result column for this query
+    _selectedColumns ??=
+        _tables.expand((t) => t.$columns).cast<Expression>().toList();
+  }
+
+  /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
+  /// rows from the result set.
+  final bool distinct;
+  final List<Join> _joins;
+
+  /// All columns that we're selecting from.
+  List<Expression> _selectedColumns;
+
+  /// The `AS` aliases generated for each column that isn't from a table.
+  ///
+  /// Each table column can be uniquely identified by its (potentially aliased)
+  /// table and its name. So a column named `id` in a table called `users` would
+  /// be written as `users.id AS "users.id"`. These columns will NOT be written
+  /// into this map.
+  ///
+  /// Other expressions used as columns will be included here. There just named
+  /// in increasing order, so something like `AS c3`.
+  final Map<Expression, String> _columnAliases = {};
+
+  /// The tables this select statement reads from
+  @visibleForOverriding
+  Set<TableInfo> get watchedTables => _tables.toSet();
+
+  // fixed order to make testing easier
+  Iterable<TableInfo> get _tables =>
+      <TableInfo>[table].followedBy(_joins.map((j) => j.table));
+
+  @override
+  void writeStartPart(GenerationContext ctx) {
+    ctx.hasMultipleTables = true;
+    ctx.buffer..write(_beginOfSelect(distinct))..write(' ');
+
+    for (var i = 0; i < _selectedColumns.length; i++) {
+      if (i != 0) {
+        ctx.buffer.write(', ');
+      }
+
+      final column = _selectedColumns[i];
+      String chosenAlias;
+      if (column is GeneratedColumn) {
+        chosenAlias = '${column.tableName}.${column.$name}';
+      } else {
+        chosenAlias = 'c$i';
+        _columnAliases[column] = chosenAlias;
+      }
+
+      column.writeInto(ctx);
+      ctx.buffer..write(' AS "')..write(chosenAlias)..write('"');
+    }
+
+    ctx.buffer.write(' FROM ${table.tableWithAlias}');
+
+    if (_joins.isNotEmpty) {
+      ctx.writeWhitespace();
+
+      for (var i = 0; i < _joins.length; i++) {
+        if (i != 0) ctx.writeWhitespace();
+
+        _joins[i].writeInto(ctx);
+      }
+    }
+  }
+
+  /// Applies the [predicate] as the where clause, which will be used to filter
+  /// results.
+  ///
+  /// The clause should only refer to columns defined in one of the tables
+  /// specified during [SimpleSelectStatement.join].
+  ///
+  /// With the example of a todos table which refers to categories, we can write
+  /// something like
+  /// ```dart
+  /// final query = select(todos)
+  /// .join([
+  ///   leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
+  /// ])
+  /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
+  /// ```
+  void where(Expression<bool, BoolType> predicate) {
+    if (whereExpr == null) {
+      whereExpr = Where(predicate);
+    } else {
+      whereExpr = Where(whereExpr.predicate & predicate);
+    }
+  }
+
+  /// Orders the results of this statement by the ordering [terms].
+  void orderBy(List<OrderingTerm> terms) {
+    orderByExpr = OrderBy(terms);
+  }
+
+  /// {@template moor_select_addColumns}
+  /// Adds a custom expression to the query.
+  ///
+  /// The database will evaluate the [Expression] for each row found for this
+  /// query. The value of the expression can be extracted from the [TypedResult]
+  /// by passing it to [TypedResult.read].
+  ///
+  /// As an example, we could calculate the length of a column on the database:
+  /// ```dart
+  /// final contentLength = todos.content.length;
+  /// final results = await select(todos).addColumns([contentLength]).get();
+  ///
+  /// // we can now read the result of a column added to addColumns
+  /// final lengthOfFirst = results.first.read(contentLength);
+  /// ```
+  ///
+  /// See also:
+  ///  - The docs on expressions: https://moor.simonbinder.eu/docs/getting-started/expressions/
+  /// {@endtemplate}
+  void addColumns(Iterable<Expression> expressions) {
+    _selectedColumns.addAll(expressions);
+  }
+
+  @override
+  Stream<List<TypedResult>> watch() {
+    final ctx = constructQuery();
+    final fetcher = QueryStreamFetcher<List<TypedResult>>(
+      readsFrom: watchedTables,
+      fetchData: () => _getWithQuery(ctx),
+      key: StreamKey(ctx.sql, ctx.boundVariables, TypedResult),
+    );
+
+    return database.createStream(fetcher);
+  }
+
+  @override
+  Future<List<TypedResult>> get() async {
+    final ctx = constructQuery();
+    return _getWithQuery(ctx);
+  }
+
+  Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
+    final results = await ctx.executor.doWhenOpened((e) async {
+      try {
+        return await e.runSelect(ctx.sql, ctx.boundVariables);
+      } catch (e, s) {
+        final foundTables = <String>{};
+        for (final table in _tables) {
+          if (!foundTables.add(table.$tableName)) {
+            _warnAboutDuplicate(e, s, table);
+          }
+        }
+
+        rethrow;
+      }
+    });
+
+    final tables = _tables;
+
+    return results.map((row) {
+      final readTables = <TableInfo, dynamic>{};
+      final readColumns = <Expression, dynamic>{};
+
+      for (final table in tables) {
+        final prefix = '${table.$tableName}.';
+        // if all columns of this table are null, skip the table
+        if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
+          readTables[table] = table.map(row, tablePrefix: table.$tableName);
+        } else {
+          readTables[table] = null;
+        }
+      }
+
+      for (final aliasedColumn in _columnAliases.entries) {
+        final expr = aliasedColumn.key;
+        final value = row[aliasedColumn.value];
+
+        final type = expr.findType(ctx.typeSystem);
+        readColumns[expr] = type.mapFromDatabaseResponse(value);
+      }
+
+      return TypedResult(readTables, QueryRow(row, database), readColumns);
+    }).toList();
+  }
+
+  @alwaysThrows
+  void _warnAboutDuplicate(dynamic cause, StackTrace trace, TableInfo table) {
+    throw MoorWrappedException(
+      message:
+          'This query contained the table ${table.actualTableName} more than '
+          'once. Is this a typo? \n'
+          'If you need a join that includes the same table more than once, you '
+          'need to alias() at least one table. See https://moor.simonbinder.eu/queries/joins#aliases '
+          'for an example.',
+      cause: cause,
+      trace: trace,
+    );
+  }
+}

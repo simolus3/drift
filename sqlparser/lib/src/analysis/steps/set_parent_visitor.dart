@@ -11,7 +11,8 @@ class SetParentVisitor {
   void _applyFor(AstNode node, AstNode parent) {
     node.parent = parent;
 
-    for (var child in node.childNodes) {
+    for (final child in node.childNodes) {
+      assert(child != null, '$node had a null-child');
       _applyFor(child, node);
     }
   }

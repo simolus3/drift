@@ -50,12 +50,12 @@ void main() {
   test('streams emit cached data when a new listener attaches', () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
 
-    final first = (db.select(db.users).watch());
+    final first = db.select(db.users).watch();
     expect(first, emits(isEmpty));
 
     clearInteractions(executor);
 
-    final second = (db.select(db.users).watch());
+    final second = db.select(db.users).watch();
     expect(second, emits(isEmpty));
 
     // calling executor.dialect is ok, it's needed to construct the statement
@@ -139,6 +139,15 @@ void main() {
     await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(2);
+  });
+
+  test('stream emits error when loading the query throws', () {
+    final exception = Exception('stub');
+    when(executor.runSelect(any, any))
+        .thenAnswer((_) => Future.error(exception));
+
+    final result = db.customSelectQuery('select 1').watch().first;
+    expectLater(result, throwsA(exception));
   });
 
   group('stream keys', () {

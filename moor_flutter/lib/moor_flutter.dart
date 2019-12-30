@@ -115,8 +115,8 @@ mixin _SqfliteExecutor on QueryDelegate {
   Future<void> runBatched(List<BatchedStatement> statements) async {
     final batch = db.batch();
 
-    for (var statement in statements) {
-      for (var boundVariables in statement.variables) {
+    for (final statement in statements) {
+      for (final boundVariables in statement.variables) {
         batch.execute(statement.sql, boundVariables);
       }
     }

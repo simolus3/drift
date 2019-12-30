@@ -26,13 +26,20 @@ abstract class ResultSet implements ResolvesToResultSet {
 
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
-class Table with ResultSet, VisibleToChildren, HasMetaMixin {
+class Table
+    with ResultSet, VisibleToChildren, HasMetaMixin
+    implements HumanReadable {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
   final String name;
 
   @override
   final List<TableColumn> resolvedColumns;
+
+  /// Filter the [resolvedColumns] for those that are
+  /// [Column.includedInResults].
+  List<TableColumn> get resultColumns =>
+      resolvedColumns.where((c) => c.includedInResults).toList();
 
   /// Whether this table was created with an "WITHOUT ROWID" modifier
   final bool withoutRowId;
@@ -41,7 +48,7 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
   final List<TableConstraint> tableConstraints;
 
   /// The ast node that created this table
-  final CreateTableStatement definition;
+  final TableInducingStatement definition;
 
   TableColumn _rowIdColumn;
 
@@ -52,7 +59,7 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
       this.withoutRowId = false,
       this.tableConstraints = const [],
       this.definition}) {
-    for (var column in resolvedColumns) {
+    for (final column in resolvedColumns) {
       column.table = this;
 
       if (_rowIdColumn == null && column.isAliasForRowId()) {
@@ -72,5 +79,10 @@ class Table with ResultSet, VisibleToChildren, HasMetaMixin {
         ..table = this;
     }
     return null;
+  }
+
+  @override
+  String humanReadableDescription() {
+    return name;
   }
 }

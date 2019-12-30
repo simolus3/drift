@@ -15,7 +15,9 @@ class OrderBy extends AstNode implements OrderByBase {
   OrderBy({this.terms});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitOrderBy(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitOrderBy(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => terms;
@@ -38,7 +40,9 @@ class OrderingTerm extends AstNode implements OrderingTermBase {
   OrderingTerm({this.expression, this.orderingMode});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitOrderingTerm(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitOrderingTerm(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [expression];

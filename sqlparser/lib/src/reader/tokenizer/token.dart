@@ -1,4 +1,5 @@
 import 'package:source_span/source_span.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 enum TokenType {
   leftParen,
@@ -41,8 +42,7 @@ enum TokenType {
   questionMarkVariable,
   colon,
   colonVariable,
-  // todo at is not used at the moment
-  at,
+  atSignVariable,
   dollarSignVariable,
 
   stringLiteral,
@@ -119,9 +119,11 @@ enum TokenType {
   except,
 
   create,
+  virtual,
   table,
   trigger,
   $if,
+  $with,
   without,
   rowid,
   constraint,
@@ -139,6 +141,7 @@ enum TokenType {
   restrict,
   no,
   action,
+  recursive,
 
   before,
   after,
@@ -220,6 +223,7 @@ const Map<String, TokenType> keywords = {
   'TABLE': TokenType.table,
   'TRIGGER': TokenType.trigger,
   'IF': TokenType.$if,
+  'WITH': TokenType.$with,
   'WITHOUT': TokenType.without,
   'ROWID': TokenType.rowid,
   'CONSTRAINT': TokenType.constraint,
@@ -240,6 +244,7 @@ const Map<String, TokenType> keywords = {
   'OVER': TokenType.over,
   'PARTITION': TokenType.partition,
   'RANGE': TokenType.range,
+  'RECURSIVE': TokenType.recursive,
   'ROWS': TokenType.rows,
   'GROUPS': TokenType.groups,
   'UNBOUNDED': TokenType.unbounded,
@@ -262,10 +267,11 @@ const Map<String, TokenType> keywords = {
   'FOR': TokenType.$for,
   'EACH': TokenType.each,
   'BEGIN': TokenType.begin,
+  'VIRTUAL': TokenType.virtual,
 };
 
 /// Maps [TokenType]s which are keywords to their lexeme.
-final reverseKeywords = {
+final Map<TokenType, String> reverseKeywords = {
   for (var entry in keywords.entries) entry.value: entry.key,
   for (var entry in moorKeywords.entries) entry.value: entry.key,
 };
@@ -279,13 +285,14 @@ const Map<String, TokenType> moorKeywords = {
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 
-class Token {
+class Token implements SyntacticEntity {
   final TokenType type;
 
   /// Whether this token should be invisible to the parser. We use this for
   /// comment tokens.
   bool get invisibleToParser => false;
 
+  @override
   final FileSpan span;
   String get lexeme => span.text;
 
@@ -295,9 +302,21 @@ class Token {
   Token(this.type, this.span);
 
   @override
+  bool get hasSpan => true;
+
+  @override
   String toString() {
     return '$type: $lexeme';
   }
+
+  @override
+  int get firstPosition => span.start.offset;
+
+  @override
+  int get lastPosition => span.end.offset;
+
+  @override
+  bool get synthetic => false;
 }
 
 class StringLiteralToken extends Token {
@@ -317,6 +336,7 @@ class IdentifierToken extends Token {
   /// Whether this identifier token is synthetic. We sometimes convert
   /// [KeywordToken]s to identifiers if they're unambiguous, in which case
   /// [synthetic] will be true on this token because it was not scanned as such.
+  @override
   final bool synthetic;
 
   String get identifier {
@@ -358,6 +378,13 @@ class DollarSignVariableToken extends Token {
       : super(TokenType.dollarSignVariable, span);
 }
 
+class AtSignVariableToken extends Token {
+  final String name;
+
+  AtSignVariableToken(FileSpan span, this.name)
+      : super(TokenType.atSignVariable, span);
+}
+
 /// Inline Dart appearing in a create table statement. Only parsed when the moor
 /// extensions are enabled. Dart code is wrapped in backticks.
 class InlineDartToken extends Token {
@@ -374,7 +401,7 @@ class InlineDartToken extends Token {
 /// the keywords easily.
 class KeywordToken extends Token {
   /// Whether this token has been used as an identifier while parsing.
-  bool isIdentifier;
+  bool isIdentifier = false;
 
   KeywordToken(TokenType type, FileSpan span) : super(type, span);
 

@@ -3,7 +3,7 @@
 void overrideEquals(
     Iterable<String> fields, String className, StringBuffer into) {
   into
-    ..write('@override\nbool operator ==(other) => ')
+    ..write('@override\nbool operator ==(dynamic other) => ')
     ..write('identical(this, other) || (other is $className');
 
   if (fields.isNotEmpty) {

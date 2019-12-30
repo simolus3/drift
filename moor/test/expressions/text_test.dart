@@ -1,8 +1,8 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../data/utils/expect_generated.dart';
 
 void main() {
   final expression = GeneratedTextColumn('col', null, false);
@@ -22,5 +22,11 @@ void main() {
 
     expect(ctx.sql, 'col COLLATE NOCASE');
     expect(ctx.boundVariables, isEmpty);
+  });
+
+  test('can use string functions', () {
+    expression.upper().expectGenerates('UPPER(col)');
+    expression.lower().expectGenerates('LOWER(col)');
+    expression.length.expectGenerates('LENGTH(col)');
   });
 }

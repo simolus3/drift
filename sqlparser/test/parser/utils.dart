@@ -18,6 +18,14 @@ IdentifierToken identifier(String content) {
   return IdentifierToken(false, fakeSpan(content));
 }
 
+void testMoorFile(String moorFile, MoorFile expected) {
+  final parsed =
+      SqlEngine(useMoorExtensions: true).parseMoorFile(moorFile).rootNode;
+
+  enforceHasSpan(parsed);
+  enforceEqual(parsed, expected);
+}
+
 void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
   final parsed = SqlEngine(useMoorExtensions: moorMode).parse(sql).rootNode;
   enforceHasSpan(parsed);
@@ -38,9 +46,9 @@ void testAll(Map<String, AstNode> testCases) {
 
 /// The parser should make sure [AstNode.hasSpan] is true on relevant nodes.
 void enforceHasSpan(AstNode node) {
-  final problematic = [node]
-      .followedBy(node.allDescendants)
-      .firstWhere((node) => !node.hasSpan, orElse: () => null);
+  final problematic = [node].followedBy(node.allDescendants).firstWhere(
+      (node) => !node.hasSpan && !node.synthetic,
+      orElse: () => null);
 
   if (problematic != null) {
     throw ArgumentError('Node $problematic did not have a span');

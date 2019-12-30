@@ -1,6 +1,6 @@
 builders:
   moor_generator:
-    import: "package:moor_generator/moor_generator.dart"
+    import: "package:moor_generator/integrations/build.dart"
     builder_factories: ["moorBuilder"]
     build_extensions: {".dart": [".moor.g.part"]}
     auto_apply: dependents

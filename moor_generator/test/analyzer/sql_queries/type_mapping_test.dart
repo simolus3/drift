@@ -6,7 +6,8 @@ import 'package:test/test.dart';
 final _idColumn = TableColumn('id', const ResolvedType(type: BasicType.int));
 final _titleColumn =
     TableColumn('title', const ResolvedType(type: BasicType.text));
-final table = Table(name: 'todos', resolvedColumns: [_idColumn, _titleColumn]);
+final Table table =
+    Table(name: 'todos', resolvedColumns: [_idColumn, _titleColumn]);
 
 void main() {
   final engine = SqlEngine()..registerTable(table);

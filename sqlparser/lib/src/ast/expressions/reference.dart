@@ -16,7 +16,9 @@ class Reference extends Expression with ReferenceOwner {
   Reference({this.tableName, this.columnName});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitReference(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitReference(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => const [];

@@ -7,11 +7,11 @@ class AnalyzeDartStep extends AnalyzingStep {
   void analyze() {
     final parseResult = file.currentResult as ParsedDartFile;
 
-    for (var accessor in parseResult.dbAccessors) {
-      final transitiveImports = _transitiveImports(accessor.resolvedImports);
+    for (final accessor in parseResult.dbAccessors) {
+      final transitiveImports = _transitiveImports(accessor.imports);
 
       var availableTables = _availableTables(transitiveImports)
-          .followedBy(accessor.tables)
+          .followedBy(accessor.declaredTables)
           .toList();
 
       try {
@@ -34,35 +34,17 @@ class AnalyzeDartStep extends AnalyzingStep {
         ));
       }
 
-      final transitiveMoorFiles = transitiveImports
+      final availableQueries = transitiveImports
           .map((f) => f.currentResult)
-          .whereType<ParsedMoorFile>();
+          .whereType<ParsedMoorFile>()
+          .expand((f) => f.resolvedQueries);
 
-      final availableQueries =
-          transitiveMoorFiles.expand((f) => f.resolvedQueries);
-
-      final parser = SqlParser(this, availableTables, accessor.queries);
+      final parser = SqlParser(this, availableTables, accessor.declaredQueries);
       parser.parse();
 
-      accessor.allTables = availableTables;
-
-      accessor.resolvedQueries =
-          availableQueries.followedBy(parser.foundQueries).toList();
-
-      if (accessor is SpecifiedDatabase) {
-        accessor.otherEntities = transitiveMoorFiles.expand((file) {
-          return file.otherComponents.map((component) {
-            final declaration = BaseDeclaration(null, null, component);
-
-            if (component is CreateTriggerStatement) {
-              return SpecifiedTrigger(
-                  component.triggerName, component.span.text, declaration);
-            }
-
-            throw AssertionError('Unexpected component: $component');
-          });
-        }).toList();
-      }
+      accessor
+        ..tables = availableTables
+        ..queries = availableQueries.followedBy(parser.foundQueries).toList();
     }
   }
 }

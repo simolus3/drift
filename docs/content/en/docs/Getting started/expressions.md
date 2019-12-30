@@ -32,12 +32,27 @@ Future<List<Animal>> findAnimalsByLegs(int legCount) {
 ```
 
 ## Boolean algebra
-You can nest boolean expressions by using the top-level `and`, `or` and `not` functions
+You can nest boolean expressions by using the `&`, `!` operators and the `not` method
 exposed by moor:
 ```dart
 // find all animals that aren't mammals and have 4 legs
-select(animals)..where((a) => and(not(a.isMammal), a.amountOfLegs.equals(4)))
+select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4))
 ```
+
+## Arithmetic
+For `int` and `double` expressions, you can use the `+`, `-`, `*` and `/` operators. To
+run calculations between a sql expression and a Dart value, wrap it in a `Variable`:
+```dart
+Future<List<Product>> canBeBought(int amount, int price) {
+  return (select(products)..where((p) {
+    final totalPrice = p.price * Variable(amount);
+    return totalPrice.isSmallerOrEqualValue(price);
+  })).get();
+}
+```
+
+String expressions define a `+` operator as well. Just like you would expect, it performs
+concatenation in sql.
 
 ## Nullability
 To check whether an expression returns null, you can use the top-level `isNull` function,
@@ -46,20 +61,21 @@ resolve to `true` if the inner expression resolves to null and `false` otherwise
 As you would expect, `isNotNull` works the other way around.
 
 ## Date and Time
-For columns and expressions that return a `DateTime`, you can use the top-level
-`year`, `month`, `day`, `hour`, `minute` and `second` functions to extract individual
+For columns and expressions that return a `DateTime`, you can use the
+`year`, `month`, `day`, `hour`, `minute` and `second` getters to extract individual
 fields from that date:
 ```dart
-select(users)..where((u) => year(u.birthDate).isLessThan(1950))
+select(users)..where((u) => u.birthDate.year.isLessThan(1950))
 ```
 
 To obtain the current date or the current time as an expression, use the `currentDate` 
 and `currentDateAndTime` constants provided by moor.
 
 ## `IN` and `NOT IN`
-You can check whether an expression is in a list of values by using the `isIn` function:
+You can check whether an expression is in a list of values by using the `isIn` and `isNotIn`
+methods:
 ```dart
-select(animals)..where((a) => isIn(a.amountOfLegs, [3, 7, 4, 2]))
+select(animals)..where((a) => a.amountOfLegs.isIn([3, 7, 4, 2]);
 ```
 
 Again, the `isNotIn` function works the other way around.

@@ -1,8 +1,7 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -11,18 +10,18 @@ import 'package:sqlparser/sqlparser.dart';
 
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
-  final CreateTableStatement stmt;
+  final TableInducingStatement stmt;
   final Step step;
 
   CreateTableReader(this.stmt, this.step);
 
-  SpecifiedTable extractTable(TypeMapper mapper) {
+  MoorTable extractTable(TypeMapper mapper) {
     final table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
 
-    final foundColumns = <String, SpecifiedColumn>{};
-    final primaryKey = <SpecifiedColumn>{};
+    final foundColumns = <String, MoorColumn>{};
+    final primaryKey = <MoorColumn>{};
 
-    for (var column in table.resolvedColumns) {
+    for (final column in table.resultColumns) {
       var isPrimaryKey = false;
       final features = <ColumnFeature>[];
       final sqlName = column.name;
@@ -33,7 +32,12 @@ class CreateTableReader {
       String defaultValue;
       String overriddenJsonKey;
 
-      for (var constraint in column.constraints) {
+      // columns from virtual tables don't necessarily have a definition, so we
+      // can't read the constraints.
+      final constraints = column.hasDefinition
+          ? column.constraints
+          : const Iterable<ColumnConstraint>.empty();
+      for (final constraint in constraints) {
         if (constraint is PrimaryKeyColumn) {
           isPrimaryKey = true;
           features.add(const PrimaryKey());
@@ -66,7 +70,12 @@ class CreateTableReader {
         constraintWriter.write(constraint.span.text);
       }
 
-      final parsed = SpecifiedColumn(
+      // if the column definition isn't set - which can happen for CREATE
+      // VIRTUAL TABLE statements - use the entire statement as declaration.
+      final declaration =
+          MoorColumnDeclaration(column.definition ?? stmt, step.file);
+
+      final parsed = MoorColumn(
         type: moorType,
         nullable: column.type.nullable,
         dartGetterName: dartName,
@@ -76,11 +85,8 @@ class CreateTableReader {
         defaultArgument: defaultValue,
         typeConverter: converter,
         overriddenJsonName: overriddenJsonKey,
+        declaration: declaration,
       );
-
-      final declaration =
-          ColumnDeclaration(parsed, step.file, null, column.definition);
-      parsed.declaration = declaration;
 
       foundColumns[column.name] = parsed;
       if (isPrimaryKey) {
@@ -95,7 +101,7 @@ class CreateTableReader {
 
     final constraints = table.tableConstraints.map((c) => c.span.text).toList();
 
-    for (var keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
+    for (final keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
       if (keyConstraint.isPrimaryKey) {
         primaryKey.addAll(keyConstraint.indexedColumns
             .map((r) => foundColumns[r.columnName])
@@ -103,7 +109,7 @@ class CreateTableReader {
       }
     }
 
-    final specifiedTable = SpecifiedTable(
+    return MoorTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
@@ -114,11 +120,8 @@ class CreateTableReader {
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
-    );
-
-    return specifiedTable
-      ..declaration =
-          TableDeclaration(specifiedTable, step.file, null, table.definition);
+      declaration: MoorTableDeclaration(stmt, step.file),
+    )..parserTable = table;
   }
 
   UsedTypeConverter _readTypeConverter(MappedBy mapper) {

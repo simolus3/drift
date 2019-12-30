@@ -1,11 +1,11 @@
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/table_reference_sorter.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('throws cyclic exception when two tables reference each other', () {
-    final first = SpecifiedTable(sqlName: 'a');
-    final second = SpecifiedTable(sqlName: 'b');
+    final first = MoorTable(sqlName: 'a');
+    final second = MoorTable(sqlName: 'b');
     first.references.add(second);
     second.references.add(first);
 
@@ -15,10 +15,10 @@ void main() {
   });
 
   test('throws cyclic exception on a circular reference with three tables', () {
-    final a = SpecifiedTable(sqlName: 'a');
-    final b = SpecifiedTable(sqlName: 'b');
-    final c = SpecifiedTable(sqlName: 'c');
-    final d = SpecifiedTable(sqlName: 'd');
+    final a = MoorTable(sqlName: 'a');
+    final b = MoorTable(sqlName: 'b');
+    final c = MoorTable(sqlName: 'c');
+    final d = MoorTable(sqlName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -31,10 +31,10 @@ void main() {
   });
 
   test('sorts tables topologically when no cycles exist', () {
-    final a = SpecifiedTable(sqlName: 'a');
-    final b = SpecifiedTable(sqlName: 'b');
-    final c = SpecifiedTable(sqlName: 'c');
-    final d = SpecifiedTable(sqlName: 'd');
+    final a = MoorTable(sqlName: 'a');
+    final b = MoorTable(sqlName: 'b');
+    final c = MoorTable(sqlName: 'c');
+    final d = MoorTable(sqlName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -44,7 +44,7 @@ void main() {
   });
 }
 
-CircularReferenceException _expectFails(Iterable<SpecifiedTable> table) {
+CircularReferenceException _expectFails(Iterable<MoorTable> table) {
   try {
     sortTablesTopologically(table);
     fail('Expected sortTablesTopologically to throw here');

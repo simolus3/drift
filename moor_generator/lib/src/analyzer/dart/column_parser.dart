@@ -23,11 +23,13 @@ const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
+const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
-    'columns are formed. If you have any questions, feel free to raise an issue.';
+    'columns are formed. If you have any questions, feel free to raise an '
+    'issue.';
 
 /// Parses a single column defined in a Dart table. These columns are a chain
 /// or [MethodInvocation]s. An example getter might look like this:
@@ -45,10 +47,10 @@ class ColumnParser {
 
   ColumnParser(this.base);
 
-  SpecifiedColumn parse(MethodDeclaration getter, Element element) {
+  MoorColumn parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
-    if (!(expr is FunctionExpressionInvocation)) {
+    if (expr is! FunctionExpressionInvocation) {
       base.step.reportError(ErrorInDartCode(
         affectedElement: getter.declaredElement,
         message: _errorMessage,
@@ -64,13 +66,14 @@ class ColumnParser {
     String foundExplicitName;
     String foundCustomConstraint;
     Expression foundDefaultExpression;
+    Expression clientDefaultExpression;
     Expression createdTypeConverter;
     DartType typeConverterRuntime;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
 
-    while (true) {
+    for (;;) {
       final methodName = remainingExpr.methodName.name;
 
       if (starters.contains(methodName)) {
@@ -112,9 +115,9 @@ class ColumnParser {
           final minArg = base.findNamedArgument(args, 'min');
           final maxArg = base.findNamedArgument(args, 'max');
 
-          foundFeatures.add(LimitingTextLength.withLength(
-            min: base.readIntLiteral(minArg, () {}),
-            max: base.readIntLiteral(maxArg, () {}),
+          foundFeatures.add(LimitingTextLength(
+            minLength: base.readIntLiteral(minArg, () {}),
+            maxLength: base.readIntLiteral(maxArg, () {}),
           ));
           break;
         case _methodAutoIncrement:
@@ -144,6 +147,9 @@ class ColumnParser {
           final expression = args.arguments.single;
           foundDefaultExpression = expression;
           break;
+        case _methodClientDefault:
+          clientDefaultExpression = remainingExpr.argumentList.arguments.single;
+          break;
         case _methodMap:
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
@@ -158,7 +164,7 @@ class ColumnParser {
       }
 
       // We're not at a starting method yet, so we need to go deeper!
-      final inner = (remainingExpr.target) as MethodInvocation;
+      final inner = remainingExpr.target as MethodInvocation;
       remainingExpr = inner;
     }
 
@@ -179,20 +185,31 @@ class ColumnParser {
           sqlType: columnType);
     }
 
-    final column = SpecifiedColumn(
-        type: columnType,
-        dartGetterName: getter.name.name,
-        name: name,
-        overriddenJsonName: _readJsonKey(element),
-        customConstraints: foundCustomConstraint,
-        nullable: nullable,
-        features: foundFeatures,
-        defaultArgument: foundDefaultExpression?.toSource(),
-        typeConverter: converter);
+    if (foundDefaultExpression != null && clientDefaultExpression != null) {
+      base.step.reportError(
+        ErrorInDartCode(
+          severity: Severity.warning,
+          affectedElement: getter.declaredElement,
+          message: 'clientDefault() and withDefault() are mutually exclusive, '
+              "they can't both be used. Use clientDefault() for values that "
+              'are different for each row and withDefault() otherwise.',
+        ),
+      );
+    }
 
-    final declaration =
-        ColumnDeclaration(column, base.step.file, element, null);
-    return column..declaration = declaration;
+    return MoorColumn(
+      type: columnType,
+      dartGetterName: getter.name.name,
+      name: name,
+      overriddenJsonName: _readJsonKey(element),
+      customConstraints: foundCustomConstraint,
+      nullable: nullable,
+      features: foundFeatures,
+      defaultArgument: foundDefaultExpression?.toSource(),
+      clientDefaultCode: clientDefaultExpression?.toSource(),
+      typeConverter: converter,
+      declaration: DartColumnDeclaration(element, base.step.file),
+    );
   }
 
   ColumnType _startMethodToColumnType(String startMethod) {

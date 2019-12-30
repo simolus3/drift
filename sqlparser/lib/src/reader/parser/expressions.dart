@@ -89,21 +89,21 @@ mixin ExpressionParser on ParserBase {
     var expression = _comparison();
     final first = expression.first;
 
-    final ops = const [
+    const ops = [
       TokenType.equal,
       TokenType.doubleEqual,
       TokenType.exclamationEqual,
       TokenType.lessMore,
       TokenType.$is,
     ];
-    final stringOps = const [
+    const stringOps = [
       TokenType.like,
       TokenType.glob,
       TokenType.match,
       TokenType.regexp,
     ];
 
-    while (true) {
+    for (;;) {
       if (_checkWithNot(TokenType.between)) {
         final not = _matchOne(TokenType.not);
         _consume(TokenType.between, 'expected a BETWEEN');
@@ -194,7 +194,7 @@ mixin ExpressionParser on ParserBase {
       final existsToken = _previous;
       _consume(
           TokenType.leftParen, 'Expected opening parenthesis after EXISTS');
-      final selectStmt = select(noCompound: true) as SelectStatement;
+      final selectStmt = _fullSelect() ?? _error('Expected a select statement');
       _consume(TokenType.rightParen,
           'Expected closing paranthesis to finish EXISTS expression');
       return ExistsExpression(select: selectStmt)
@@ -263,10 +263,11 @@ mixin ExpressionParser on ParserBase {
 
     if (_matchOne(TokenType.leftParen)) {
       final left = _previous;
-      if (_peek.type == TokenType.select) {
-        final stmt = select(noCompound: true) as SelectStatement;
+
+      final selectStmt = _fullSelect(); // returns null if there's no select
+      if (selectStmt != null) {
         _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return SubQuery(select: stmt)..setSpan(left, _previous);
+        return SubQuery(select: selectStmt)..setSpan(left, _previous);
       } else {
         final expr = expression();
         _consume(TokenType.rightParen, 'Expected a closing bracket');
@@ -283,7 +284,7 @@ mixin ExpressionParser on ParserBase {
       final first = _consumeIdentifier(
           'This error message should never be displayed. Please report.');
 
-      // could be table.column, function(...) or just column
+      // could be table.column, function(...), cast(...) or just column
       if (_matchOne(TokenType.dot)) {
         final second =
             _consumeIdentifier('Expected a column name here', lenient: true);
@@ -291,17 +292,28 @@ mixin ExpressionParser on ParserBase {
             tableName: first.identifier, columnName: second.identifier)
           ..setSpan(first, second);
       } else if (_matchOne(TokenType.leftParen)) {
-        final parameters = _functionParameters();
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
+        if (first.identifier.toLowerCase() == 'cast') {
+          final operand = expression();
+          _consume(TokenType.as, 'Expected AS operator here');
+          final type = _typeName();
+          final typeName = type.lexeme;
+          _consume(TokenType.rightParen, 'Expected closing bracket here');
 
-        if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-          return _aggregate(first, parameters);
+          return CastExpression(operand, typeName)..setSpan(first, _previous);
+        } else {
+          // regular function invocation
+          final parameters = _functionParameters();
+          final rightParen = _consume(TokenType.rightParen,
+              'Expected closing bracket after argument list');
+
+          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+            return _aggregate(first, parameters);
+          }
+
+          return FunctionExpression(
+              name: first.identifier, parameters: parameters)
+            ..setSpan(first, rightParen);
         }
-
-        return FunctionExpression(
-            name: first.identifier, parameters: parameters)
-          ..setSpan(first, rightParen);
       } else {
         return Reference(columnName: first.identifier)..setSpan(first, first);
       }
@@ -310,6 +322,7 @@ mixin ExpressionParser on ParserBase {
     _error('Could not parse this expression');
   }
 
+  @override
   Variable _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
       return NumberedVariable(_previous as QuestionMarkVariableToken)
@@ -380,7 +393,8 @@ mixin ExpressionParser on ParserBase {
         _consume(TokenType.leftParen, 'Expected opening parenthesis for tuple');
     final expressions = <Expression>[];
 
-    final subQuery = select(noCompound: true) as SelectStatement;
+    // if desired, attempt to parse select statement
+    final subQuery = orSubQuery ? _fullSelect() : null;
     if (subQuery == null) {
       // no sub query found. read expressions that form the tuple.
       // tuples can be empty `()`, so only start parsing values when it's not

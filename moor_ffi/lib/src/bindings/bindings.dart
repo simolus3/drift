@@ -48,9 +48,6 @@ class _SQLiteBindings {
   Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_name;
 
-  Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
-      sqlite3_column_decltype;
-
   int Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_type;
 
@@ -157,10 +154,6 @@ class _SQLiteBindings {
     sqlite3_column_name = sqlite
         .lookup<NativeFunction<sqlite3_column_name_native_t>>(
             'sqlite3_column_name')
-        .asFunction();
-    sqlite3_column_decltype = sqlite
-        .lookup<NativeFunction<sqlite3_column_decltype_native_t>>(
-            'sqlite3_column_decltype')
         .asFunction();
     sqlite3_column_type = sqlite
         .lookup<NativeFunction<sqlite3_column_type_native_t>>(

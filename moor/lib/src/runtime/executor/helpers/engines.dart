@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -13,6 +12,10 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   bool get isSequential => false;
   bool get logStatements => false;
   final Lock _lock = Lock();
+
+  /// Used to provide better error messages when calling operations without
+  /// calling [ensureOpen] before.
+  bool _ensureOpenCalled = false;
 
   Future<T> _synchronized<T>(FutureOr<T> Function() action) async {
     if (isSequential) {
@@ -32,6 +35,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   @override
   Future<List<Map<String, dynamic>>> runSelect(
       String statement, List args) async {
+    assert(_ensureOpenCalled);
     final result = await _synchronized(() {
       _log(statement, args);
       return impl.runSelect(statement, args);
@@ -41,6 +45,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runUpdate(String statement, List args) {
+    assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
       return impl.runUpdate(statement, args);
@@ -49,6 +54,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runDelete(String statement, List args) {
+    assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
       return impl.runUpdate(statement, args);
@@ -57,6 +63,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runInsert(String statement, List args) {
+    assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
       return impl.runInsert(statement, args);
@@ -65,6 +72,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<void> runCustom(String statement, [List<dynamic> args]) {
+    assert(_ensureOpenCalled);
     return _synchronized(() {
       final resolvedArgs = args ?? const [];
       _log(statement, resolvedArgs);
@@ -74,6 +82,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) {
+    assert(_ensureOpenCalled);
     return _synchronized(() {
       if (logStatements) {
         print('Moor: Executing $statements in a batch');
@@ -114,6 +123,7 @@ class _TransactionExecutor extends TransactionExecutor
 
   @override
   Future<bool> ensureOpen() async {
+    _ensureOpenCalled = true;
     if (_openingCompleter != null) {
       return await _openingCompleter.future;
     }
@@ -190,34 +200,7 @@ class _TransactionExecutor extends TransactionExecutor
   }
 }
 
-class _BeforeOpeningExecutor extends QueryExecutor
-    with _ExecutorWithQueryDelegate {
-  final DelegatedDatabase db;
-
-  @override
-  QueryDelegate get impl => db.delegate;
-
-  @override
-  bool get isSequential => db.isSequential;
-
-  @override
-  bool get logStatements => db.logStatements;
-
-  _BeforeOpeningExecutor(this.db);
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw Exception(
-        "Transactions can't be started in the before open callback");
-  }
-
-  @override
-  Future<bool> ensureOpen() {
-    return Future.value(true);
-  }
-}
-
-/// A database engine (implements [QueryExecutor]) that delegated the relevant
+/// A database engine (implements [QueryExecutor]) that delegates the relevant
 /// work to a [DatabaseDelegate].
 class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   /// The [DatabaseDelegate] to send queries to.
@@ -245,12 +228,15 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   Future<bool> ensureOpen() {
+    _ensureOpenCalled = true;
     return _openingLock.synchronized(() async {
       final alreadyOpen = await delegate.isOpen;
       if (alreadyOpen) {
         return true;
       }
 
+      assert(databaseInfo != null,
+          'A databaseInfo needs to be set to use a QueryExeuctor');
       await delegate.open(databaseInfo);
       await _runMigrations();
       return true;
@@ -293,7 +279,9 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
           executor: runCustom, from: oldVersion, to: currentVersion);
     }
 
-    await _runBeforeOpen(OpeningDetails(oldVersion, currentVersion));
+    final openingDetails = OpeningDetails(oldVersion, currentVersion);
+    await _runBeforeOpen(openingDetails);
+    delegate.notifyDatabaseOpened(openingDetails);
   }
 
   @override
@@ -304,4 +292,28 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   Future<void> _runBeforeOpen(OpeningDetails d) {
     return databaseInfo.beforeOpenCallback(_BeforeOpeningExecutor(this), d);
   }
+}
+
+/// Inside a `beforeOpen` callback, all moor apis must be available. At the same
+/// time, the `beforeOpen` callback must complete before any query sent outside
+/// of a `beforeOpen` callback can run. We do this by introducing a special
+/// executor that delegates all work to the original executor, but without
+/// blocking on `ensureOpen`
+class _BeforeOpeningExecutor extends QueryExecutor
+    with _ExecutorWithQueryDelegate {
+  final DelegatedDatabase _base;
+
+  _BeforeOpeningExecutor(this._base);
+
+  @override
+  TransactionExecutor beginTransaction() => _base.beginTransaction();
+
+  @override
+  Future<bool> ensureOpen() {
+    _ensureOpenCalled = true;
+    return Future.value(true);
+  }
+
+  @override
+  QueryDelegate get impl => _base.impl;
 }

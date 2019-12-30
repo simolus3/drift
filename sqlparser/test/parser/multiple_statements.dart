@@ -4,43 +4,40 @@ import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   test('can parse multiple statements', () {
-    final sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
-    final tokens = Scanner(sql).scanTokens();
-    final moorFile = Parser(tokens).moorFile();
+    const sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
 
-    final statements = moorFile.statements;
-
-    enforceEqual(
-      statements[0],
-      DeclaredStatement(
-        'a',
-        UpdateStatement(
-          table: TableReference('tbl', null),
-          set: [
-            SetComponent(
-              column: Reference(columnName: 'a'),
-              expression: Reference(columnName: 'b'),
-            ),
-          ],
+    testMoorFile(
+      sql,
+      MoorFile([
+        DeclaredStatement(
+          SimpleName('a'),
+          UpdateStatement(
+            table: TableReference('tbl', null),
+            set: [
+              SetComponent(
+                column: Reference(columnName: 'a'),
+                expression: Reference(columnName: 'b'),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    enforceEqual(
-      statements[1],
-      DeclaredStatement(
-        'b',
-        SelectStatement(
-          columns: [StarResultColumn(null)],
-          from: [TableReference('tbl', null)],
+        DeclaredStatement(
+          SimpleName('b'),
+          SelectStatement(
+            columns: [StarResultColumn(null)],
+            from: [TableReference('tbl', null)],
+          ),
         ),
-      ),
+      ]),
     );
   });
 
   test('recovers from invalid statements', () {
-    final sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
+    const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
     final tokens = Scanner(sql).scanTokens();
     final statements = Parser(tokens).moorFile().statements;
 
@@ -48,7 +45,7 @@ void main() {
     enforceEqual(
       statements[0],
       DeclaredStatement(
-        'b',
+        SimpleName('b'),
         SelectStatement(
           columns: [StarResultColumn(null)],
           from: [TableReference('tbl', null)],
@@ -58,7 +55,7 @@ void main() {
   });
 
   test('parses imports and declared statements in moor mode', () {
-    final sql = r'''
+    const sql = r'''
     import 'test.dart';
     query: SELECT * FROM tbl;
      ''';
@@ -78,7 +75,7 @@ void main() {
     enforceEqual(
       declared,
       DeclaredStatement(
-        'query',
+        SimpleName('query'),
         SelectStatement(
           columns: [StarResultColumn(null)],
           from: [TableReference('tbl', null)],

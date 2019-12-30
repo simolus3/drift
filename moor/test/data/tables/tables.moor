@@ -1,5 +1,5 @@
 CREATE TABLE no_ids (
-    payload BLOB NOT NULL
+    payload BLOB NOT NULL PRIMARY KEY
 ) WITHOUT ROWID;
 
 CREATE TABLE with_defaults (
@@ -27,6 +27,8 @@ CREATE TABLE mytable (
     somedate DATETIME
 );
 
+CREATE VIRTUAL TABLE email USING fts5(sender, title, body) AS EMail;
+
 CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
     INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
 END;
@@ -34,5 +36,22 @@ END;
 readConfig: SELECT * FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
+findValidJsons: SELECT * FROM config WHERE json_valid(config_value);
+
+multiple: SELECT * FROM with_constraints c
+ INNER JOIN with_defaults d
+   ON d.a = c.a AND d.b = c.b
+ WHERE $predicate;
+
+searchEmails: SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
+
+cfeTest: WITH RECURSIVE
+  cnt(x) AS (
+    SELECT 1
+      UNION ALL
+      SELECT x+1 FROM cnt
+      LIMIT 1000000
+    )
+  SELECT x FROM cnt;

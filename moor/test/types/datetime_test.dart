@@ -7,7 +7,7 @@ final _exampleDateTime =
     DateTime.fromMillisecondsSinceEpoch(_exampleUnixMillis);
 
 void main() {
-  final type = const moor.DateTimeType();
+  const type = moor.DateTimeType();
 
   group('DateTimes', () {
     test('can be read from unix stamps returned by sql', () {

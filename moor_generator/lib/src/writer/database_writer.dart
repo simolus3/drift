@@ -1,21 +1,18 @@
-import 'package:moor_generator/src/model/specified_db_classes.dart';
-import 'package:moor_generator/src/model/specified_entities.dart';
-import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/queries/query_writer.dart';
-import 'package:moor_generator/src/writer/tables/table_writer.dart';
-import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
+/// Generates the Dart code put into a `.g.dart` file when running the
+/// generator.
 class DatabaseWriter {
-  final SpecifiedDatabase db;
+  final Database db;
   final Scope scope;
 
   DatabaseWriter(this.db, this.scope);
 
   void write() {
     // Write referenced tables
-    for (final table in db.allTables) {
+    for (final table in db.tables) {
       TableWriter(table, scope.child()).writeInto();
     }
 
@@ -23,14 +20,19 @@ class DatabaseWriter {
     final dbScope = scope.child();
 
     final className = '_\$${db.fromClass.name}';
-    dbScope.leaf().write(
-        'abstract class $className extends GeneratedDatabase {\n'
-        '$className(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e); \n');
+    final firstLeaf = dbScope.leaf();
+    firstLeaf.write('abstract class $className extends GeneratedDatabase {\n'
+        '$className(QueryExecutor e) : '
+        'super(SqlTypeSystem.defaultInstance, e); \n');
+
+    if (dbScope.options.generateConnectConstructor) {
+      firstLeaf.write(
+          '$className.connect(DatabaseConnection c): super.connect(c); \n');
+    }
 
     final tableGetters = <String>[];
-    final entityGetters = <String>[];
 
-    for (var table in db.allTables) {
+    for (final table in db.tables) {
       tableGetters.add(table.tableFieldName);
       final tableClassName = table.tableInfoName;
 
@@ -41,24 +43,9 @@ class DatabaseWriter {
         code: '$tableClassName(this)',
       );
     }
-    entityGetters.addAll(tableGetters);
-
-    for (var otherEntity in db.otherEntities) {
-      entityGetters.add(otherEntity.dartFieldName);
-
-      if (otherEntity is SpecifiedTrigger) {
-        writeMemoizedGetter(
-          buffer: dbScope.leaf(),
-          getterName: otherEntity.dartFieldName,
-          returnType: 'Trigger',
-          code: 'Trigger(${asDartLiteral(otherEntity.sql)}, '
-              '${asDartLiteral(otherEntity.name)})',
-        );
-      }
-    }
 
     // Write fields to access an dao. We use a lazy getter for that.
-    for (var dao in db.daos) {
+    for (final dao in db.daos) {
       final typeName = dao.displayName;
       final getterName = ReCase(typeName).camelCase;
       final databaseImplName = db.fromClass.name;
@@ -73,7 +60,7 @@ class DatabaseWriter {
 
     // Write implementation for query methods
     final writtenMappingMethods = <String>{};
-    for (var query in db.resolvedQueries) {
+    for (final query in db.queries) {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
@@ -81,9 +68,6 @@ class DatabaseWriter {
     dbScope.leaf()
       ..write('@override\nList<TableInfo> get allTables => [')
       ..write(tableGetters.join(','))
-      ..write('];\n')
-      ..write('@override\nList<DatabaseSchemaEntity> get allEntities => [')
-      ..write(entityGetters.join(','))
       ..write('];\n}');
   }
 }

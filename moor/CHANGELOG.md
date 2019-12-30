@@ -1,6 +1,57 @@
 ## unreleased
 
+- New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for
+  each row. For instance, you can generate a uuid for each row with `text().clientDefault(() => Uuid().v4()();`
+- Ability to override the default `ValueSerializer` globally by using `moorRuntimeOptions.valueSerializer`.
+- Moor files: You can now explicitly declare column types in those cases that the analyzer can't
+  infer it:
+  ```
+  selectVariable(:variable AS TEXT): SELECT :variable;
+  ```
+  
+## 2.2.0
+
+- Support custom expressions for selects in the Dart API:
+  ```dart
+  final currentBalance = accounts.income - accounts.expenses;
+  select(accounts).addColumns([currentBalance]).map((row) {
+    Account account = row.readTable(accounts);
+    int balanceOfAccount = row.read(currentBalance);
+    return ...
+  }).get();
+  ```
+- Support the `json1` and `fts5` extensions! Using them also requires version 2.2 of `moor_generator`
+  and they require `moor_ffi`. For details, see the [documentation](https://moor.simonbinder.eu/docs/using-sql/extensions/).
+- Standardized behavior of batches in transactions across backends
+- Introduced `OrderingTerm.asc` and `OrderingTerm.desc` factories to construct ordering terms more
+  easily
+
+## 2.1.1
+
+- Fix crash when closing a database with asserts disabled
+- Web: Save the database after migrations ran
+- Escape column names in insert statements, if necessary
+
+## 2.1.0
+
+- New extension methods to simplify the Dart api!
+  - Use `&`, `or` and `.not()` to combine boolean expressions.
+    ```dart
+    // OLD
+    select(animals)..where((a) => and(not(a.isMammal), a.amountOfLegs.equals(4)))
+    // NEW:
+    select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4))
+    ```
+  - Arithmetic: New `+`, `-`, `*` and `/` operators for int and double sql expressions
+  - New `+` operator for string concatenation
 - Fix crash when `customStatement` is the first operation used on a database ([#199](https://github.com/simolus3/moor/issues/199))
+- Allow transactions inside a `beforeOpen` callback
+- New `batch` method on generated databases to execute multiple queries in a single batch
+- Experimental support to run moor on a background isolate
+- Reduce use of parentheses in SQL code generated at runtime
+- Query streams now emit errors that happened while running the query
+- Upgraded the sql parser which now supports `WITH` clauses in moor files
+- Internal refactorings on the runtime query builder
 
 ## 2.0.1
 
@@ -11,6 +62,9 @@
 - Fix streams not emitting cached data when listening multiple times
 - __Breaking__: Remove the type parameter from `Insertable.createCompanion` (it was declared as an
   internal method)
+  
+__2.0.1+1__: Fix crash when `customStatement` is the first operation used on a database 
+([#199](https://github.com/simolus3/moor/issues/199))
 
 ## 2.0.0
 This is the first major update after the initial release and moor and we have a lot to cover:

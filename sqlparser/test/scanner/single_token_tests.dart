@@ -14,8 +14,8 @@ void expectFullToken(String token, TokenType type) {
   }
 
   if (tokens.length != 2 || tokens.last.type != TokenType.eof) {
-    fail(
-        'Expected exactly one token when parsing $token, got ${tokens.length - 1}');
+    fail('Expected exactly one token when parsing $token, '
+        'got ${tokens.length - 1}');
   }
 
   expect(tokens.first.type, type, reason: '$token is a $type');
@@ -44,6 +44,8 @@ Map<String, TokenType> testCases = {
   '0Xf13A': TokenType.numberLiteral,
   'SELECT': TokenType.select,
   '"UPDATE"': TokenType.identifier,
+  '@foo': TokenType.atSignVariable,
+  ':named': TokenType.colonVariable,
 };
 
 void main() {

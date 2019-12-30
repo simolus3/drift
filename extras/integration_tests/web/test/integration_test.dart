@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import 'package:moor/moor_web.dart';
 
 class WebExecutor extends TestExecutor {
-  final name = 'db';
+  final String name = 'db';
 
   @override
   QueryExecutor createExecutor() {

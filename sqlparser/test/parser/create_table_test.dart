@@ -1,6 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
 import '../common_data.dart';
@@ -118,11 +117,8 @@ void main() {
   });
 
   test('parses MAPPED BY constraints when in moor mode', () {
-    const stmt = 'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)';
-    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
-
-    enforceEqual(
-      parsed,
+    testStatement(
+      'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)',
       CreateTableStatement(tableName: 'a', columns: [
         ColumnDefinition(
           columnName: 'b',
@@ -134,15 +130,13 @@ void main() {
           ],
         ),
       ]),
+      moorMode: true,
     );
   });
 
   test('parses JSON KEY constraints in moor mode', () {
-    const stmt = 'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")';
-    final parsed = SqlEngine(useMoorExtensions: true).parse(stmt).rootNode;
-
-    enforceEqual(
-      parsed,
+    testStatement(
+      'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")',
       CreateTableStatement(
         tableName: 'a',
         columns: [
@@ -157,6 +151,55 @@ void main() {
             ],
           ),
         ],
+      ),
+      moorMode: true,
+    );
+  });
+
+  test('parses CREATE VIRTUAL TABLE statement', () {
+    testStatement(
+      'CREATE VIRTUAL TABLE IF NOT EXISTS foo USING bar(a, b(), c) AS moor',
+      CreateVirtualTableStatement(
+        ifNotExists: true,
+        tableName: 'foo',
+        moduleName: 'bar',
+        arguments: [
+          fakeSpan('a'),
+          fakeSpan('b()'),
+          fakeSpan('c'),
+        ],
+        overriddenDataClassName: 'moor',
+      ),
+      moorMode: true,
+    );
+  });
+
+  test('parses CREATE VIRTUAL TABLE statement without args', () {
+    testStatement(
+      'CREATE VIRTUAL TABLE foo USING bar;',
+      CreateVirtualTableStatement(
+        tableName: 'foo',
+        moduleName: 'bar',
+        arguments: [],
+      ),
+    );
+  });
+
+  test("can't have empty arguments in CREATE VIRTUAL TABLE", () {
+    final engine = SqlEngine();
+    expect(
+      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,)'),
+      throwsA(
+        const TypeMatcher<ParsingError>()
+            .having((e) => e.token.lexeme, 'fails at closing bracket', ')'),
+      ),
+    );
+
+    expect(
+      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,,b)'),
+      throwsA(
+        const TypeMatcher<ParsingError>()
+            .having((e) => e.token.lexeme, 'fails at next comma', ','),
       ),
     );
   });

@@ -13,14 +13,19 @@ linkTitle: "Moor"
 	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://pub.dev/packages/moor_flutter">
 		Get fom pub <i class="fas fa-code ml-2 "></i>
 	</a>
+
+	<p class="lead mt-5">
+		With a fluent query api, a powerful sql analyzer, auto-updating streams and much moor,
+		moor makes persistence fun. Scroll down to learn about moor's key features, or visit the 
+		<a href="{{< relref "/docs/Getting started" >}}">getting started guide</a> for a step-by-step guide on using moor.
+	</p>
 </div>
 {{< /blocks/cover >}}
 
 
 {{% blocks/lead color="dark" %}}
-Moor is an easy to use, reactive persistence library for Flutter apps. Define your
-database tables in pure Dart and enjoy a fluent query API, auto-updating streams
-and more!
+Moor is an easy to use, reactive persistence library for Flutter apps. Define tables in Dart or
+SQL and enjoy a fluent query API, auto-updating streams and more!
 {{% /blocks/lead %}}
 
 {{< blocks/section color="primary" >}}
@@ -42,9 +47,32 @@ code.
 
 
 {{% blocks/feature icon="fas fa-star" title="And much more!" %}}
-Moor provides auto-updating `Streams` for all your queries, makes dealing with transactions and migrations easy
+Moor provides auto-updating streams for all your queries, makes dealing with transactions and migrations easy
 and lets your write modular database code with DAOs. We even have a [sql IDE](too) builtin to the project
 When using moor, working with databases in Dart is fun!
 
 {{% /blocks/feature %}}
+{{< /blocks/section >}}
+
+{{< blocks/section color="light" type="section" >}}
+
+<h2>Key moor features</h2>
+Here are some of the many ways moor helps you write awesome database code:
+<ul>
+	<li><b>Auto-updating streams</b>: With moor, any query - no matter how complex - can be turned into a stream that emits new data as the underlying data changes.</li>
+	<li><b>Polyglot</b>: Moor lets you write queries in a fluent Dart api or directly in SQL - you can even embed Dart expressions in SQL.</li>
+	<li><b>Safety</b>: Moor can verify your table declarations and queries at compile time, providing helpful and descriptive hints when it finds problems.</li>
+	<li><b>Boilerplate-free</b>: Stop writing mapping code yourself - moor can take of that. Moor generates Dart code around your data so you can focus
+	on building great apps.</li>
+	<li><b>Flexible</b>: Want to write queries in SQL? Moor verifies them at compile time and generates Dart apis for them. Prefer to write them in Dart?
+	Moor will generate efficient SQL for Dart queries.</li>
+	<li><b>Easy to learn</b>: Instead of having to learn yet another ORM, moor lets you write queries in SQL and generates typesafe wrappers. Queries and tables
+	can also be written in Dart that looks similar to SQL without loosing type-safety.</li>
+	<li><b>Fast _and_ powerful</b>: With the new `moor_ffi` backend, moor can outperform key-value stores without putting any compromises on the integrity
+	and flexibility that relational databases provide. Moor is the only major persistence library with builtin support for multiple isolates.</li>
+	<li><b>Well tested and production ready</b>: Each component of moor is verified by a wide range of unit and integration tests. Moor powers many Flutter apps
+	in production.</li>
+	<li><b>Cross-Platform</b>: Moor works on iOS, Android, Linux, macOS, Windows and on the web. It doesn't even require Flutter.</li>
+</ul>
+
 {{< /blocks/section >}}

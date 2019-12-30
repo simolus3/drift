@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:moor/moor.dart';
 
+import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 class _FakeDb extends GeneratedDatabase {
@@ -31,6 +32,8 @@ class _FakeDb extends GeneratedDatabase {
 }
 
 void main() {
+  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
   test('status of OpeningDetails', () {
     expect(const OpeningDetails(null, 1).wasCreated, true);
     expect(const OpeningDetails(2, 4).wasCreated, false);
@@ -65,5 +68,23 @@ void main() {
       await db.beforeOpenCallback(executor, const OpeningDetails(3, 4));
       verify(executor.runSelect('opened: 3 to 4', []));
     });
+  });
+
+  test('creates and attaches daos', () async {
+    final executor = MockExecutor();
+    final db = TodoDb(executor);
+
+    await db.someDao.todosForUser(1);
+
+    verify(executor.runSelect(argThat(contains('SELECT t.* FROM todos')), [1]));
+  });
+
+  test('closing the database closes the executor', () async {
+    final executor = MockExecutor();
+    final db = TodoDb(executor);
+
+    await db.close();
+
+    verify(executor.close());
   });
 }

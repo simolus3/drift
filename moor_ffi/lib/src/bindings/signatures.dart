@@ -47,9 +47,6 @@ typedef sqlite3_column_count_native_t = Int32 Function(
 typedef sqlite3_column_name_native_t = Pointer<CBlob> Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
-typedef sqlite3_column_decltype_native_t = Pointer<CBlob> Function(
-    Pointer<Statement> statement, Int32 columnIndex);
-
 typedef sqlite3_column_type_native_t = Int32 Function(
     Pointer<Statement> statement, Int32 columnIndex);
 

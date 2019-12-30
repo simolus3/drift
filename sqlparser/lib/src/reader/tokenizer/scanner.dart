@@ -152,13 +152,18 @@ class Scanner {
         final name = _matchColumnName();
         tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
+      case '@':
+        final name = _matchColumnName();
+        tokens.add(AtSignVariableToken(_currentSpan, name));
+        break;
+        break;
       case ';':
         _addToken(TokenType.semicolon);
         break;
 
       case 'x':
         if (_match("'")) {
-          _string(binary: false);
+          _string(binary: true);
         } else {
           _identifier();
         }
@@ -167,7 +172,6 @@ class Scanner {
         _string();
         break;
       case '"':
-        // todo sqlite also allows string literals with double ticks, we don't
         _identifier(escapedInQuotes: true);
         break;
       case '`':
@@ -308,7 +312,8 @@ class Scanner {
 
       if (_isAtEnd) {
         errors.add(TokenizerError(
-            'Unexpected end of file. Expected digits for the scientific notation',
+            'Unexpected end of file. '
+            'Expected digits for the scientific notation',
             _currentLocation));
         return;
       }

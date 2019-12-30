@@ -1,43 +1,31 @@
-import 'dart:typed_data';
-
-import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/expressions/expression.dart';
+part of 'dsl.dart';
 
 /// Base class for columns in sql. The [T] type refers to the type a value of
 /// this column will have in Dart, [S] is the mapping class from moor.
-abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {}
+abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {
+  @override
+  final Precedence precedence = Precedence.primary;
+}
 
 /// A column that stores int values.
-abstract class IntColumn extends Column<int, IntType> implements IntExpression {
-}
+abstract class IntColumn extends Column<int, IntType> {}
 
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
 abstract class BoolColumn extends Column<bool, BoolType> {}
 
 /// A column that stores text.
-abstract class TextColumn extends Column<String, StringType> {
-  /// Whether this column matches the given pattern. For details on what patters
-  /// are valid and how they are interpreted, check out
-  /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool, BoolType> like(String regex);
-
-  /// Uses the given [collate] sequence when comparing this column to other
-  /// values.
-  Expression<String, StringType> collate(Collate collate);
-}
+abstract class TextColumn extends Column<String, StringType> {}
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime, DateTimeType>
-    implements DateTimeExpression {}
+abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
 abstract class BlobColumn extends Column<Uint8List, BlobType> {}
 
 /// A column that stores floating point numeric values.
-abstract class RealColumn extends Column<double, RealType>
-    implements DoubleExpression {}
+abstract class RealColumn extends Column<double, RealType> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
@@ -60,11 +48,11 @@ class ColumnBuilder<
   /// Note that using [named] __does not__ have an effect on the json key of an
   /// object. To change the json key, annotate this column getter with
   /// [JsonKey].
-  Builder named(String name) => null;
+  Builder named(String name) => _isGenerated();
 
   /// Marks this column as nullable. Nullable columns should not appear in a
   /// primary key. Columns are non-null by default.
-  Builder nullable() => null;
+  Builder nullable() => _isGenerated();
 
   /// Tells moor to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
@@ -91,15 +79,16 @@ class ColumnBuilder<
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
   /// - [GeneratedColumn.writeCustomConstraints]
-  Builder customConstraint(String constraint) => null;
+  Builder customConstraint(String constraint) => _isGenerated();
 
   /// The column will use this expression when a row is inserted and no value
   /// has been specified.
   ///
   /// Note: Unless most other methods used to declare tables, the parameter
-  /// [e] which denotes the default expression, doesn't have to be constant.
-  /// Particularly, you can use methods like [and], [or] and [not] to form
-  /// expressions here.
+  /// [e] which denotes the default expression, doesn't have to be a Dart
+  /// constant.
+  /// Particularly, you can use operators like those defined in
+  /// [BooleanExpressionOperators] to form expressions here.
   ///
   /// If you need a column that just stores a static default value, you could
   /// use this method with a [Constant]:
@@ -112,7 +101,35 @@ class ColumnBuilder<
   /// TABLE statements.
   /// - [currentDate] and [currentDateAndTime], which are useful expressions to
   /// store the current date/time as a default value.
-  Builder withDefault(Expression<ResultDartType, ResultSqlType> e) => null;
+  Builder withDefault(Expression<ResultDartType, ResultSqlType> e) =>
+      _isGenerated();
+
+  /// Sets a dynamic default value for this column.
+  ///
+  /// When a row is inserted into the table and no value has been specified for
+  /// this column, [onInsert] will be evaluated. Its return value will be used
+  /// for the missing column. [onInsert] may return different values when called
+  /// multiple times.
+  ///
+  /// Here's an example using the [uuid](https://pub.dev/packages/uuid) package:
+  ///
+  /// ```dart
+  /// final uuid = Uuid();
+  ///
+  /// class Pictures extends Table {
+  ///   TextColumn get id => text().clientDefault(() => uuid.v4())();
+  ///   BlobColumn get rawData => blob();
+  ///
+  ///   @override
+  ///   Set<Column> get primaryKey = {id};
+  /// }
+  /// ```
+  ///
+  /// For a default value that's constant, it is more efficient to use
+  /// [withDefault] instead. [withDefault] will write the default value into the
+  /// generated `CREATE TABLE` statement. The underlying sql engine will then
+  /// apply the default value.
+  Builder clientDefault(ResultDartType Function() onInsert) => _isGenerated();
 
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.
@@ -150,12 +167,12 @@ class ColumnBuilder<
   /// ```
   /// The generated row class will then use a `MyFancyClass` instead of a
   /// `String`, which would usually be used for [Table.text] columns.
-  Builder map<T>(TypeConverter<T, ResultDartType> converter) => null;
+  Builder map<T>(TypeConverter<T, ResultDartType> converter) => _isGenerated();
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your
   /// source code to figure out your table structure.
-  ResultColumn call() => null;
+  ResultColumn call() => _isGenerated();
 }
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
@@ -164,7 +181,7 @@ class IntColumnBuilder
     extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
-  IntColumnBuilder autoIncrement() => this;
+  IntColumnBuilder autoIncrement() => _isGenerated();
 }
 
 /// Tells the generator to build an [BoolColumn]. See the docs at
@@ -192,7 +209,7 @@ class TextColumnBuilder
   /// string so that [String.length] is smaller than [min], the query will throw
   /// an exception when executed and no data will be written. The same applies
   /// for [max].
-  TextColumnBuilder withLength({int min, int max}) => this;
+  TextColumnBuilder withLength({int min, int max}) => _isGenerated();
 }
 
 /// Tells the generator to build an [DateTimeColumn]. See the docs at

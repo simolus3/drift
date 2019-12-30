@@ -1,7 +1,7 @@
 import 'dart:async' show FutureOr;
 import 'dart:typed_data' show Uint8List;
+
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:moor/src/runtime/executor/helpers/results.dart';
 
 /// An interface that supports sending database queries. Used as a backend for
@@ -47,14 +47,21 @@ abstract class DatabaseDelegate implements QueryDelegate {
   /// multiple times.
   ///
   /// The [GeneratedDatabase] is the user-defined database annotated with
-  /// [UseMoor]. It might be useful to read the [GeneratedDatabase.schemaVersion]
-  /// if that information is required while opening the database.
+  /// [UseMoor]. It might be useful to read the
+  /// [GeneratedDatabase.schemaVersion] if that information is required while
+  /// opening the database.
   Future<void> open([GeneratedDatabase db]);
 
   /// Closes this database. When the future completes, all resources used
   /// by this database should have been disposed.
   Future<void> close() async {
     // default no-op implementation
+  }
+
+  /// Callback from moor after the database has been fully opened and all
+  /// migrations ran.
+  void notifyDatabaseOpened(OpeningDetails details) {
+    // default no-op
   }
 
   /// The [SqlDialect] understood by this database engine.
@@ -97,8 +104,8 @@ abstract class QueryDelegate {
   /// [BatchedStatement], which can be executed multiple times.
   Future<void> runBatched(List<BatchedStatement> statements) async {
     // default, inefficient implementation
-    for (var stmt in statements) {
-      for (var boundVars in stmt.variables) {
+    for (final stmt in statements) {
+      for (final boundVars in stmt.variables) {
         await runCustom(stmt.sql, boundVars);
       }
     }

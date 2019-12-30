@@ -13,7 +13,9 @@ class MoorFile extends AstNode {
   MoorFile(this.statements);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitMoorFile(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorFile(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => statements;

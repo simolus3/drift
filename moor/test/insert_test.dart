@@ -12,7 +12,9 @@ void main() {
   setUp(() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
-    db = TodoDb(executor)..streamQueries = streamQueries;
+
+    final connection = createConnection(executor, streamQueries);
+    db = TodoDb.connect(connection);
   });
 
   test('generates insert statements', () async {
@@ -42,6 +44,20 @@ void main() {
           id: 113,
           content: 'Done',
         ),
+        mode: InsertMode.insertOrReplace);
+
+    verify(executor.runInsert(
+        'INSERT OR REPLACE INTO todos (id, content) VALUES (?, ?)',
+        [113, 'Done']));
+  });
+
+  test('generates insert or replace statements with legacy parameter',
+      () async {
+    await db.into(db.todosTable).insert(
+        TodoEntry(
+          id: 113,
+          content: 'Done',
+        ),
         orReplace: true);
 
     verify(executor.runInsert(
@@ -56,14 +72,15 @@ void main() {
   });
 
   test('runs bulk inserts', () async {
+    // ignore: deprecated_member_use_from_same_package
     await db.into(db.todosTable).insertAll(const [
       TodosTableCompanion(content: Value('a')),
       TodosTableCompanion(title: Value('title'), content: Value('b')),
       TodosTableCompanion(title: Value('title'), content: Value('c')),
     ]);
 
-    final insertSimple = 'INSERT INTO todos (content) VALUES (?)';
-    final insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
+    const insertSimple = 'INSERT INTO todos (content) VALUES (?)';
+    const insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
 
     verify(executor.runBatched([
       BatchedStatement(insertSimple, [
@@ -79,14 +96,15 @@ void main() {
   });
 
   test('runs bulk inserts with OR REPLACE', () async {
+    // ignore: deprecated_member_use_from_same_package
     await db.into(db.todosTable).insertAll(const [
       TodosTableCompanion(content: Value('a')),
       TodosTableCompanion(title: Value('title'), content: Value('b')),
       TodosTableCompanion(title: Value('title'), content: Value('c')),
     ], orReplace: true);
 
-    final insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
-    final insertTitle =
+    const insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
+    const insertTitle =
         'INSERT OR REPLACE INTO todos (title, content) VALUES (?, ?)';
 
     verify(executor.runBatched([
@@ -138,5 +156,14 @@ void main() {
           .insert(const TodosTableCompanion(content: Value('Bottom text'))),
       completion(42),
     );
+  });
+
+  test('escaped when column name is keyword', () async {
+    await db
+        .into(db.pureDefaults)
+        .insert(PureDefaultsCompanion.insert(txt: const Value('foo')));
+
+    verify(executor
+        .runInsert('INSERT INTO pure_defaults (`insert`) VALUES (?)', ['foo']));
   });
 }

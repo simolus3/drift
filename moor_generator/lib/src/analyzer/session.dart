@@ -4,21 +4,25 @@ import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqlparser/sqlparser.dart';
+
+import 'options.dart';
 
 const _fileEndings = {
   '.moor': FileType.moor,
-  '.dart': FileType.dart,
+  '.dart': FileType.dartLibrary,
 };
 
 /// Will store cached data about files that have already been analyzed.
 class MoorSession {
   final FileGraph fileGraph = FileGraph();
   final Backend backend;
+  final MoorOptions options;
 
   final _completedTasks = StreamController<Task>.broadcast();
   final _changedFiles = StreamController<List<FoundFile>>.broadcast();
 
-  MoorSession(this.backend);
+  MoorSession(this.backend, {this.options = const MoorOptions()});
 
   /// Stream that emits a [Task] that has been completed.
   Stream<Task> get completedTasks => _completedTasks.stream;
@@ -28,6 +32,15 @@ class MoorSession {
   /// This is not supported on all backends (notably, not with `package:build`,
   /// which assumes immutable files during a build run).
   Stream<List<FoundFile>> get changedFiles => _changedFiles.stream;
+
+  /// Creates a properly configured [SqlEngine].
+  SqlEngine spawnEngine() {
+    return SqlEngine(
+      useMoorExtensions: true,
+      enableJson1Module: options.hasModule(SqlModule.json1),
+      enableFts5: options.hasModule(SqlModule.fts5),
+    );
+  }
 
   FileType _findFileType(String path) {
     final extension = p.extension(path);
@@ -63,7 +76,7 @@ class MoorSession {
 
     // all files that transitively imported this files are no longer analyzed
     // because they depend on this file. They're still parsed though
-    for (var affected in fileGraph.crawl(file, transposed: true)) {
+    for (final affected in fileGraph.crawl(file, transposed: true)) {
       if (affected.state == FileState.analyzed) {
         affected.state = FileState.parsed;
       }

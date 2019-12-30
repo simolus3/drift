@@ -1,5 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
 
 import 'utils.dart';
@@ -15,16 +14,14 @@ CREATE TABLE tbl (
 ) AS RowName
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
+@special: SELECT * FROM tbl;
+typeHints(:foo AS TEXT): SELECT :foo;
 ''';
 
 void main() {
   test('parses moor files', () {
-    final parsed = SqlEngine(useMoorExtensions: true).parseMoorFile(content);
-    final file = parsed.rootNode;
-    enforceHasSpan(file);
-
-    enforceEqual(
-      file,
+    testMoorFile(
+      content,
       MoorFile([
         ImportStatement('other.dart'),
         ImportStatement('another.moor'),
@@ -58,12 +55,37 @@ void main() {
           overriddenDataClassName: 'RowName',
         ),
         DeclaredStatement(
-          'all',
+          SimpleName('all'),
           SelectStatement(
             columns: [StarResultColumn(null)],
             from: [TableReference('tbl', null)],
             where: DartExpressionPlaceholder(name: 'predicate'),
           ),
+        ),
+        DeclaredStatement(
+          SpecialStatementIdentifier('special'),
+          SelectStatement(
+            columns: [StarResultColumn(null)],
+            from: [TableReference('tbl', null)],
+          ),
+        ),
+        DeclaredStatement(
+          SimpleName('typeHints'),
+          SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+            ),
+          ]),
+          parameters: [
+            VariableTypeHint(
+              ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+              'TEXT',
+            )
+          ],
         ),
       ]),
     );

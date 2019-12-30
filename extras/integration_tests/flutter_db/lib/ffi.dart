@@ -26,7 +26,7 @@ class FfiExecutor extends TestExecutor {
   }
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dbPath = await getDatabasesPath();

@@ -4,22 +4,23 @@ part of '../analysis.dart';
 /// columns are returned and which columns are available. For instance, when
 /// we have a table "t" with two columns "a" and "b", the select statement
 /// "SELECT a FROM t" has one result column but two columns available.
-class ColumnResolver extends RecursiveVisitor<void> {
+class ColumnResolver extends RecursiveVisitor<void, void> {
   final AnalysisContext context;
 
   ColumnResolver(this.context);
 
   @override
-  void visitSelectStatement(SelectStatement e) {
+  void visitSelectStatement(SelectStatement e, void arg) {
+    // visit children first so that common table expressions are resolved
+    visitChildren(e, arg);
     _resolveSelect(e);
-    visitChildren(e);
   }
 
   @override
-  void visitCompoundSelectStatement(CompoundSelectStatement e) {
+  void visitCompoundSelectStatement(CompoundSelectStatement e, void arg) {
     // first, visit all children so that the compound parts have their columns
     // resolved
-    visitChildren(e);
+    visitChildren(e, arg);
 
     final columnSets = [
       e.base.resolvedColumns,
@@ -54,32 +55,52 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitUpdateStatement(UpdateStatement e) {
-    final table = _resolveTableReference(e.table);
-    e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+  void visitCommonTableExpression(CommonTableExpression e, void arg) {
+    visitChildren(e, arg);
+
+    final resolved = e.as.resolvedColumns;
+    final names = e.columnNames;
+    if (names != null && resolved != null && names.length != resolved.length) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.cteColumnCountMismatch,
+        message: 'This CTE declares ${names.length} columns, but its select '
+            'statement actually returns ${resolved.length}.',
+        relevantNode: e,
+      ));
+    }
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitUpdateStatement(UpdateStatement e, void arg) {
     final table = _resolveTableReference(e.table);
-    visitChildren(e);
     e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitDeleteStatement(DeleteStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
+    final table = _resolveTableReference(e.table);
+    visitChildren(e, arg);
+    e.scope.availableColumns = table.resolvedColumns;
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitDeleteStatement(DeleteStatement e, void arg) {
     final table = _resolveTableReference(e.from);
     e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   void _handle(Queryable queryable, List<Column> availableColumns) {
     queryable.when(
       isTable: (table) {
-        _resolveTableReference(table);
-        availableColumns.addAll(table.resultSet.resolvedColumns);
+        final resolved = _resolveTableReference(table);
+        if (resolved != null) {
+          // an error will be logged when resolved is null, so the != null check
+          // is fine and avoids crashes
+          availableColumns.addAll(table.resultSet.resolvedColumns);
+        }
       },
       isSelect: (select) {
         // the inner select statement doesn't have access to columns defined in
@@ -90,7 +111,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
       },
       isJoin: (join) {
         _handle(join.primary, availableColumns);
-        for (var query in join.joins.map((j) => j.query)) {
+        for (final query in join.joins.map((j) => j.query)) {
           _handle(query, availableColumns);
         }
       },
@@ -99,7 +120,7 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
   void _resolveSelect(SelectStatement s) {
     final availableColumns = <Column>[];
-    for (var queryable in s.from) {
+    for (final queryable in s.from) {
       _handle(queryable, availableColumns);
     }
 
@@ -108,8 +129,10 @@ class ColumnResolver extends RecursiveVisitor<void> {
 
     // a select statement can include everything from its sub queries as a
     // result, but also expressions that appear as result columns
-    for (var resultColumn in s.columns) {
+    for (final resultColumn in s.columns) {
       if (resultColumn is StarResultColumn) {
+        Iterable<Column> visibleColumnsForStar;
+
         if (resultColumn.tableName != null) {
           final tableResolver = scope
               .resolve<ResolvesToResultSet>(resultColumn.tableName, orElse: () {
@@ -120,31 +143,37 @@ class ColumnResolver extends RecursiveVisitor<void> {
             ));
           });
 
-          usedColumns.addAll(tableResolver.resultSet.resolvedColumns);
+          visibleColumnsForStar = tableResolver.resultSet.resolvedColumns;
         } else {
-          // we have a * column, that would be all available columns
-          usedColumns.addAll(availableColumns);
+          // we have a * column without a table, that resolves to every columns
+          // available
+          visibleColumnsForStar = availableColumns;
         }
+
+        usedColumns
+            .addAll(visibleColumnsForStar.where((e) => e.includedInResults));
       } else if (resultColumn is ExpressionResultColumn) {
         final expression = resultColumn.expression;
         Column column;
-        String name;
 
         if (expression is Reference) {
           column = ReferenceExpressionColumn(expression,
               overriddenName: resultColumn.as);
-          if (resultColumn.as != null) name = resultColumn.as;
         } else {
-          name = _nameOfResultColumn(resultColumn);
+          final name = _nameOfResultColumn(resultColumn);
           column =
               ExpressionColumn(name: name, expression: resultColumn.expression);
         }
 
         usedColumns.add(column);
 
-        // make this column available if there is no other with the same name
-        if (name != null && !availableColumns.any((c) => c.name == name)) {
-          availableColumns.add(column);
+        if (resultColumn.as != null) {
+          // make this column available for references if there is no other
+          // column with the same name
+          final name = resultColumn.as;
+          if (!availableColumns.any((c) => c.name == name)) {
+            availableColumns.add(column);
+          }
         }
       }
     }
@@ -168,9 +197,9 @@ class ColumnResolver extends RecursiveVisitor<void> {
     return span;
   }
 
-  Table _resolveTableReference(TableReference r) {
+  ResultSet _resolveTableReference(TableReference r) {
     final scope = r.scope;
-    final resolvedTable = scope.resolve<Table>(r.tableName, orElse: () {
+    final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
       final available = scope.allOf<Table>().map((t) => t.name);
 
       context.reportError(UnresolvedReferenceError(

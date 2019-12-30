@@ -1,7 +1,5 @@
 import 'package:moor_generator/src/model/sql_query.dart';
-import 'package:moor_generator/src/writer/utils/hash_code.dart';
-import 'package:moor_generator/src/writer/utils/override_equals.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {
@@ -18,7 +16,7 @@ class ResultSetWriter {
 
     into.write('class $className {\n');
     // write fields
-    for (var column in query.resultSet.columns) {
+    for (final column in query.resultSet.columns) {
       final name = query.resultSet.dartNameFor(column);
       final runtimeType = column.dartType;
       into.write('final $runtimeType $name\n;');
@@ -26,7 +24,7 @@ class ResultSetWriter {
 
     // write the constructor
     into.write('$className({');
-    for (var column in columnNames) {
+    for (final column in columnNames) {
       into.write('this.$column,');
     }
     into.write('});\n');

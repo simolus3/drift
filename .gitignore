@@ -2,3 +2,9 @@
 **/*.iml
 
 lcov.info
+
+.packages
+pubspec.lock
+.dart_tool/
+
+benchmark_results.json

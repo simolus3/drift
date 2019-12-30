@@ -1,7 +1,8 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:moor/moor.dart' show Table, UseMoor, UseDao;
+import 'package:moor/moor.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/moor/table_handler.dart';
@@ -9,17 +10,12 @@ import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/moor/inline_dart_resolver.dart';
 import 'package:moor_generator/src/analyzer/moor/parser.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/sql_parser.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
-import 'package:moor_generator/src/model/specified_db_classes.dart';
-import 'package:moor_generator/src/model/specified_entities.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/table_reference_sorter.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:sqlparser/sqlparser.dart' hide Table;
 
 part 'steps/analyze_dart.dart';
 part 'steps/analyze_moor.dart';
@@ -36,7 +32,9 @@ abstract class Step {
 
   String get path => file.uri.path;
 
-  Step(this.task, this.file);
+  Step(this.task, this.file)
+      : assert(task != null),
+        assert(file != null);
 
   void reportError(MoorError error) =>
       errors.report(error..wasDuringParsing = isParsing);
@@ -55,8 +53,8 @@ abstract class AnalyzingStep extends Step {
         .toList();
   }
 
-  Iterable<SpecifiedTable> _availableTables(List<FoundFile> imports) {
-    return imports.expand<SpecifiedTable>(
+  Iterable<MoorTable> _availableTables(List<FoundFile> imports) {
+    return imports.expand<MoorTable>(
         (file) => file.currentResult?.declaredTables ?? const Iterable.empty());
   }
 }

@@ -1,37 +1,47 @@
 name: moor_generator
 description: Dev-dependency to generate table and dataclasses together with the moor package.
-version: 2.0.1
+version: 2.2.0
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
-authors:
-  - Simon Binder <oss@simonbinder.eu>
-maintainer: Simon Binder (@simolus3)
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=0.36.4 <0.39.0'
-  analyzer_plugin: '>=0.1.0 <0.3.0'
   collection: ^1.14.0
   recase: ^2.0.1
-  built_value: ^6.3.0
-  source_gen: ^0.9.4
-  source_span: ^1.5.5
-  build: ^1.1.0
-  logging: '>=0.11.0 <1.0.0'
-  build_config: '>=0.3.1 <1.0.0'
-  moor: ^2.0.1
   meta: ^1.1.0
   path: ^1.6.0
-  sqlparser: ^0.3.0
+  json_annotation: ^3.0.0
+  stream_transform: '>=0.0.20 <2.0.0'
+
+  # CLI
+  args: ^1.5.0
+  logging: '>=0.11.0 <1.0.0'
+  cli_util: ^0.1.0
+
+  # Moor-specific analysis
+  moor: ^2.0.1
+  sqlparser: ^0.4.0
+
+  # Dart analysis
+  analyzer: '>=0.36.4 <0.40.0'
+  analyzer_plugin: '>=0.1.0 <0.3.0'
+  source_span: ^1.5.5
+
+  # Build system
+  build: ^1.1.0
+  build_resolvers: ^1.2.0
+  build_config: '>=0.3.1 <1.0.0'
+  source_gen: ^0.9.4
+
 dev_dependencies:
   test: ^1.6.0
   test_core: ^0.2.0
   build_runner: ^1.6.7
-  built_value_generator: ^6.3.0
   build_test: ^0.10.0
+  json_serializable: ^3.0.0
 
 dependency_overrides:
   sqlparser:

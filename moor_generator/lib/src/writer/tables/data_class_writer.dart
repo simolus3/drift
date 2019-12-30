@@ -1,11 +1,9 @@
-import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/writer/utils/hash_code.dart';
-import 'package:moor_generator/src/writer/utils/override_equals.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
 class DataClassWriter {
-  final SpecifiedTable table;
+  final MoorTable table;
   final Scope scope;
 
   StringBuffer _buffer;
@@ -15,11 +13,11 @@ class DataClassWriter {
   }
 
   void write() {
-    _buffer.write(
-        'class ${table.dartTypeName} extends DataClass implements Insertable<${table.dartTypeName}> {\n');
+    _buffer.write('class ${table.dartTypeName} extends DataClass '
+        'implements Insertable<${table.dartTypeName}> {\n');
 
     // write individual fields
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _buffer
           .write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
     }
@@ -70,7 +68,7 @@ class DataClassWriter {
     final dartTypeToResolver = <String, String>{};
 
     final types = table.columns.map((c) => c.variableTypeName).toSet();
-    for (var usedType in types) {
+    for (final usedType in types) {
       // final intType = db.typeSystem.forDartType<int>();
       final resolver = '${ReCase(usedType).camelCase}Type';
       dartTypeToResolver[usedType] = resolver;
@@ -82,7 +80,7 @@ class DataClassWriter {
     // finally, the mighty constructor invocation:
     _buffer.write('return $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       // id: intType.mapFromDatabaseResponse(data["id])
       final getter = column.dartGetterName;
       final resolver = dartTypeToResolver[column.variableTypeName];
@@ -110,12 +108,12 @@ class DataClassWriter {
 
     _buffer
       ..write('factory $dataClassName.fromJson('
-          'Map<String, dynamic> json,'
-          '{ValueSerializer serializer = const ValueSerializer.defaults()}'
+          'Map<String, dynamic> json, {ValueSerializer serializer}'
           ') {\n')
+      ..write('serializer ??= moorRuntimeOptions.defaultSerializer;\n')
       ..write('return $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
       final type = column.dartTypeName;
@@ -128,7 +126,7 @@ class DataClassWriter {
     if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
       _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
-          '{ValueSerializer serializer = const ValueSerializer.defaults()}) => '
+          '{ValueSerializer serializer}) => '
           '$dataClassName.fromJson('
           'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
           'serializer: serializer);');
@@ -137,10 +135,11 @@ class DataClassWriter {
 
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
-        '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
-        '\n return {');
+        '{ValueSerializer serializer}) {\n'
+        'serializer ??= moorRuntimeOptions.defaultSerializer;\n'
+        'return <String, dynamic>{\n');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final name = column.getJsonKey(scope.options);
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
@@ -169,7 +168,7 @@ class DataClassWriter {
 
     _buffer.write('}) => $dataClassName(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       // we also have a method parameter called like the getter, so we can use
       // field: field ?? this.field
       final getter = column.dartGetterName;
@@ -224,7 +223,7 @@ class DataClassWriter {
         '$companionClass createCompanion(bool nullToAbsent) {\n'
         'return $companionClass(');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final getter = column.dartGetterName;
       _buffer.write('$getter: $getter == null && nullToAbsent ? '
           'const Value.absent() : Value($getter),');

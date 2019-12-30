@@ -13,9 +13,9 @@ void crudTests(TestExecutor executor) {
     final expectation = expectLater(
       friends,
       emitsInOrder(
-        [
+        <Matcher>[
           isEmpty, // initial state without friendships
-          [b] // after we called makeFriends(a,b)
+          equals(<User>[b]), // after we called makeFriends(a,b)
         ],
       ),
     );

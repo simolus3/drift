@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:moor_example/main.dart';
+import 'package:moor_example/bloc.dart';
+import 'package:provider/provider.dart';
 
 class AddCategoryDialog extends StatefulWidget {
   @override
@@ -13,12 +14,12 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               child: Text(
                 'Add a category',
                 style: Theme.of(context).textTheme.title,
@@ -49,7 +50,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
 
   void _addEntry() {
     if (_controller.text.isNotEmpty) {
-      BlocProvider.provideBloc(context).addCategory(_controller.text);
+      Provider.of<TodoAppBloc>(context).addCategory(_controller.text);
       Navigator.of(context).pop();
     }
   }

@@ -9,29 +9,41 @@ declaring both tables and queries in Dart. This version will focus on how to use
 
 ## Adding the dependency
 First, lets add moor to your project's `pubspec.yaml`.
-At the moment, the current version of `moor_flutter` is [![Flutter version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dartlang.org/packages/moor_flutter) and the current version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
+At the moment, the current version of `moor` is [![Moor version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor),
+`moor_ffi` is at [![Moor version](https://img.shields.io/pub/v/moor_ffi.svg)](https://pub.dartlang.org/packages/moor_ffi)
+and the latest version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
 
 ```yaml
 dependencies:
-  moor_flutter: # use the latest version
+  moor: # use the latest version
+  moor_ffi: # use the latest version
+  path_provider:
+  path:
 
 dev_dependencies:
   moor_generator: # use the latest version
   build_runner: 
 ```
 
-The `moor_flutter` package will execute sql at runtime, while the
-`moor_generator` will generate typesafe Dart based on your SQL queries.
+If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
+
+- `moor`: This is the core package defining most apis
+- `moor_ffi`: Contains code that will run the actual queries
+- `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team
+- `moor_generator`: Generates Dart apis for the sql queries and tables you wrote
+- `build_runner`: Common tool for code-generation, maintained by the Dart team
+
+{{% changed_to_ffi %}}
 
 ## Declaring tables and queries
 
 To declare tables and queries in sql, create a file called `tables.moor`
 next to your Dart files (for instance in `lib/database/tables.moor`).
 
-You can put the `CREATE TABLE` statements for your queries in there.
+You can put `CREATE TABLE` statements for your queries in there.
 The following example creates two tables to model a todo-app. If you're
-migrating an existing project to moor, you would put the `CREATE TABLE`
-for your tables in there.
+migrating an existing project to moor, you can just copy the `CREATE TABLE`
+statements you've already written into this file.
 ```sql
 -- this is the tables.moor file
 CREATE TABLE todos (
@@ -79,18 +91,35 @@ a file called `database.dart` next to the `tables.moor` file you wrote
 in the previous step.
 
 ```dart
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:moor/moor.dart';
+// These imports are only needed to open the database
+import 'package:moor_ffi/moor_ffi.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 part 'database.g.dart';
 
 @UseMoor(
+  // relative import for the moor file. Moor also supports `package:`
+  // imports
   include: {'tables.moor'},
 )
 class AppDb extends _$AppDb {
-  AppDb() : super(FlutterQueryExecutor.inDatabaseFolder('app.db'));
+  AppDb() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
+}
+
+LazyDatabase _openConnection() {
+  // the LazyDatabase util lets us find the right location for the file async.
+  return LazyDatabase(() async {
+    // put the database file, called db.sqlite here, into the documents folder
+    // for your app.
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder, 'db.sqlite'));
+    return VmDatabase(file);
+  });
 }
 ```
 
@@ -126,7 +155,7 @@ a `.moor` file - moor will generate matching code for them as well.
 
 ## Learning more
 
-Know that you know how to use moor together with sql, here are some
+Now that you know how to use moor together with sql, here are some
 further guides to help you learn more:
 
 - The [SQL IDE]({{< relref "../Using SQL/sql_ide.md" >}}) that provides feedback on sql queries right in your editor.

@@ -1,13 +1,11 @@
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
-import 'package:moor_generator/src/writer/tables/data_class_writer.dart';
-import 'package:moor_generator/src/writer/tables/update_companion_writer.dart';
-import 'package:moor_generator/src/writer/utils/memoized_getter.dart';
-import 'package:moor_generator/src/writer/writer.dart';
+import 'package:moor_generator/writer.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 class TableWriter {
-  final SpecifiedTable table;
+  final MoorTable table;
   final Scope scope;
 
   StringBuffer _buffer;
@@ -31,16 +29,21 @@ class TableWriter {
     final tableDslName = table.fromClass?.name ?? 'Table';
 
     // class UsersTable extends Users implements TableInfo<Users, User> {
+    final typeArgs = '<${table.tableInfoName}, $dataClass>';
+    _buffer.write('class ${table.tableInfoName} extends $tableDslName with '
+        'TableInfo$typeArgs ');
+    if (table.isVirtualTable) {
+      _buffer.write(', VirtualTableInfo$typeArgs ');
+    }
     _buffer
-      ..write('class ${table.tableInfoName} extends $tableDslName '
-          'with TableInfo<${table.tableInfoName}, $dataClass> {\n')
-      // should have a GeneratedDatabase reference that is set in the constructor
+      ..write('{\n')
+      // write a GeneratedDatabase reference that is set in the constructor
       ..write('final GeneratedDatabase _db;\n')
       ..write('final String _alias;\n')
       ..write('${table.tableInfoName}(this._db, [this._alias]);\n');
 
     // Generate the columns
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _writeColumnVerificationMeta(column);
       _writeColumnGetter(column);
     }
@@ -50,11 +53,11 @@ class TableWriter {
         table.columns.map((c) => c.dartGetterName).join(', ');
 
     _buffer
-      ..write(
-          '@override\nList<GeneratedColumn> get \$columns => [$columnsWithGetters];\n')
+      ..write('@override\nList<GeneratedColumn> get \$columns => '
+          '[$columnsWithGetters];\n')
       ..write('@override\n${table.tableInfoName} get asDslTable => this;\n')
-      ..write(
-          '@override\nString get \$tableName => _alias ?? \'${table.sqlName}\';\n')
+      ..write('@override\nString get \$tableName => '
+          '_alias ?? \'${table.sqlName}\';\n')
       ..write(
           '@override\nfinal String actualTableName = \'${table.sqlName}\';\n');
 
@@ -74,10 +77,10 @@ class TableWriter {
   }
 
   void _writeConvertersAsStaticFields() {
-    for (var converter in table.converters) {
+    for (final converter in table.converters) {
       final typeName = converter.typeOfConverter.displayName;
       final code = converter.expression.toSource();
-      _buffer..write('static $typeName ${converter.fieldName} = $code;');
+      _buffer.write('static $typeName ${converter.fieldName} = $code;');
     }
   }
 
@@ -85,12 +88,12 @@ class TableWriter {
     final dataClassName = table.dartTypeName;
 
     _buffer
-      ..write(
-          '@override\n$dataClassName map(Map<String, dynamic> data, {String tablePrefix}) {\n')
-      ..write(
-          "final effectivePrefix = tablePrefix != null ? '\$tablePrefix.' : null;")
-      ..write(
-          'return $dataClassName.fromData(data, _db, prefix: effectivePrefix);\n')
+      ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
+          '{String tablePrefix}) {\n')
+      ..write('final effectivePrefix = '
+          "tablePrefix != null ? '\$tablePrefix.' : null;")
+      ..write('return $dataClassName.fromData'
+          '(data, _db, prefix: effectivePrefix);\n')
       ..write('}\n');
   }
 
@@ -101,7 +104,7 @@ class TableWriter {
           '${table.getNameForCompanionClass(scope.options)} d) {\n')
       ..write('final map = <String, Variable> {};');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       _buffer.write('if (d.${column.dartGetterName}.present) {');
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<${column.variableTypeName}, ${column.sqlTypeName}>';
@@ -129,12 +132,12 @@ class TableWriter {
     _buffer.write('return map; \n}\n');
   }
 
-  void _writeColumnGetter(SpecifiedColumn column) {
+  void _writeColumnGetter(MoorColumn column) {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
 
-    for (var feature in column.features) {
+    for (final feature in column.features) {
       if (feature is AutoIncrement) {
         additionalParams['hasAutoIncrement'] = 'true';
       } else if (feature is LimitingTextLength) {
@@ -162,7 +165,6 @@ class TableWriter {
     }
 
     expressionBuffer
-      // GeneratedIntColumn('sql_name', tableName, isNullable, additionalField: true)
       ..write('return ${column.implColumnTypeName}')
       ..write("('${column.name.name}', \$tableName, $isNullable, ");
 
@@ -177,7 +179,13 @@ class TableWriter {
       expressionBuffer..write(name)..write(': ')..write(value);
     });
 
-    expressionBuffer.write(');');
+    expressionBuffer.write(')');
+
+    if (column.clientDefaultCode != null) {
+      expressionBuffer.write('..clientDefault = ${column.clientDefaultCode}');
+    }
+
+    expressionBuffer.write(';');
 
     writeMemoizedGetterWithBody(
       buffer: _buffer,
@@ -190,8 +198,7 @@ class TableWriter {
     );
   }
 
-  void _writeColumnVerificationMeta(SpecifiedColumn column) {
-    // final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
+  void _writeColumnVerificationMeta(MoorColumn column) {
     if (!scope.writer.options.skipVerificationCode) {
       _buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
@@ -208,16 +215,15 @@ class TableWriter {
           '{bool isInserting = false}) {\n')
       ..write('final context = VerificationContext();\n');
 
-    for (var column in table.columns) {
+    for (final column in table.columns) {
       final getterName = column.dartGetterName;
       final metaName = _fieldNameForColumnMeta(column);
 
       if (column.typeConverter != null) {
         // dont't verify custom columns, we assume that the user knows what
         // they're doing
-        _buffer
-          ..write(
-              'context.handle($metaName, const VerificationResult.success());');
+        _buffer.write(
+            'context.handle($metaName, const VerificationResult.success());');
         continue;
       }
 
@@ -226,14 +232,19 @@ class TableWriter {
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
-        ..write('} else if ($getterName.isRequired && isInserting) {\n')
-        ..write('context.missing($metaName);\n')
-        ..write('}\n');
+        ..write('}');
+
+      if (column.requiredDuringInsert) {
+        _buffer
+          ..write(' else if (isInserting) {\n')
+          ..write('context.missing($metaName);\n')
+          ..write('}\n');
+      }
     }
     _buffer.write('return context;\n}\n');
   }
 
-  String _fieldNameForColumnMeta(SpecifiedColumn column) {
+  String _fieldNameForColumnMeta(MoorColumn column) {
     return '_${column.dartGetterName}Meta';
   }
 
@@ -279,7 +290,7 @@ class TableWriter {
       final value = table.overrideWithoutRowId ? 'true' : 'false';
       _buffer
         ..write('@override\n')
-        ..write('final bool withoutRowId = $value;\n');
+        ..write('bool get withoutRowId => $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {
@@ -288,14 +299,24 @@ class TableWriter {
 
       _buffer
         ..write('@override\n')
-        ..write('final List<String> customConstraints = const [$value];\n');
+        ..write('List<String> get customConstraints => const [$value];\n');
     }
 
     if (table.overrideDontWriteConstraints != null) {
       final value = table.overrideDontWriteConstraints ? 'true' : 'false';
       _buffer
         ..write('@override\n')
-        ..write('final bool dontWriteConstraints = $value;\n');
+        ..write('bool get dontWriteConstraints => $value;\n');
+    }
+
+    if (table.isVirtualTable) {
+      final declaration = table.declaration as MoorTableDeclaration;
+      final stmt = declaration.node as CreateVirtualTableStatement;
+      final moduleAndArgs = asDartLiteral(
+          '${stmt.moduleName}(${stmt.argumentContent.join(', ')})');
+      _buffer
+        ..write('@override\n')
+        ..write('String get moduleAndArgs => $moduleAndArgs;\n');
     }
   }
 }

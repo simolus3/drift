@@ -4,7 +4,9 @@ part of '../ast.dart';
 /// statement.
 abstract class Queryable extends AstNode {
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitQueryable(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitQueryable(this, arg);
+  }
 
   T when<T>({
     @required T Function(TableReference) isTable,
@@ -31,10 +33,16 @@ abstract class TableOrSubquery extends Queryable {}
 ///
 /// This is both referencable (if we have SELECT * FROM table t), other parts
 /// of the select statement can access "t") and a reference owner (the table).
+///
+/// Note that this doesn't necessarily resolve to a result set. It could also
+/// resolve to a common table expression or anything else defining a result
+/// set.
 class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet, VisibleToChildren {
   final String tableName;
+  Token tableNameToken;
+
   @override
   final String as;
 
@@ -139,7 +147,9 @@ class Join extends AstNode {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitJoin(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitJoin(this, arg);
+  }
 }
 
 /// https://www.sqlite.org/syntax/join-constraint.html

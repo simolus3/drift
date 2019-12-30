@@ -3,9 +3,9 @@ import 'package:moor/src/runtime/data_class.dart';
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 
-final someDate = DateTime(2019, 06, 08);
+final DateTime someDate = DateTime(2019, 06, 08);
 
-final someTodoEntry = TodoEntry(
+final TodoEntry someTodoEntry = TodoEntry(
   id: 3,
   title: 'a title',
   content: null,
@@ -13,7 +13,7 @@ final someTodoEntry = TodoEntry(
   category: 3,
 );
 
-final regularSerialized = {
+final Map<String, dynamic> regularSerialized = {
   'id': 3,
   'title': 'a title',
   'content': null,
@@ -21,7 +21,7 @@ final regularSerialized = {
   'category': 3,
 };
 
-final customSerialized = {
+final Map<String, dynamic> customSerialized = {
   'id': 3,
   'title': 'a title',
   'content': 'set to null',
@@ -31,7 +31,7 @@ final customSerialized = {
 
 class CustomSerializer extends ValueSerializer {
   @override
-  T fromJson<T>(json) {
+  T fromJson<T>(dynamic json) {
     if (T == DateTime) {
       return DateTime.parse(json.toString()) as T;
     } else if (json == 'set to null') {
@@ -42,7 +42,7 @@ class CustomSerializer extends ValueSerializer {
   }
 
   @override
-  toJson<T>(T value) {
+  dynamic toJson<T>(T value) {
     if (T == DateTime) {
       return (value as DateTime).toIso8601String();
     } else if (value == null) {
@@ -55,7 +55,7 @@ class CustomSerializer extends ValueSerializer {
 
 void main() {
   test('default serializer', () {
-    final serializer = const ValueSerializer.defaults();
+    const serializer = ValueSerializer.defaults();
     expect(serializer.toJson<DateTime>(null), null);
     expect(serializer.fromJson<DateTime>(null), null);
   });

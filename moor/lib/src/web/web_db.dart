@@ -53,10 +53,10 @@ class _WebDelegate extends DatabaseDelegate {
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) {
-    for (var stmt in statements) {
+    for (final stmt in statements) {
       final prepared = _db.prepare(stmt.sql);
 
-      for (var args in stmt.variables) {
+      for (final args in stmt.variables) {
         prepared
           ..executeWith(args)
           ..step();
@@ -109,6 +109,13 @@ class _WebDelegate extends DatabaseDelegate {
     _storeDb();
     _db?.close();
     return Future.value();
+  }
+
+  @override
+  void notifyDatabaseOpened(OpeningDetails details) {
+    if (details.hadUpgrade | details.wasCreated) {
+      _storeDb();
+    }
   }
 
   /// Saves the database if the last statement changed rows. As a side-effect,

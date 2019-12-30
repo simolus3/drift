@@ -1,21 +1,24 @@
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-import 'meta/declarations.dart';
-
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
 class TypeMapper {
-  final Map<Table, SpecifiedTable> _engineTablesToSpecified = {};
+  final Map<Table, MoorTable> _engineTablesToSpecified = {};
 
-  /// Convert a [SpecifiedTable] from moor into something that can be understood
+  /// Convert a [MoorTable] from moor into something that can be understood
   /// by the sqlparser library.
-  Table extractStructure(SpecifiedTable table) {
+  Table extractStructure(MoorTable table) {
+    if (table.parserTable != null) {
+      final parserTbl = table.parserTable;
+      _engineTablesToSpecified[parserTbl] = table;
+      return parserTbl;
+    }
+
     final columns = <TableColumn>[];
-    for (var specified in table.columns) {
+    for (final specified in table.columns) {
       final hint = specified.typeConverter != null
           ? TypeConverterHint(specified.typeConverter)
           : null;
@@ -23,13 +26,13 @@ class TypeMapper {
           .withNullable(specified.nullable);
 
       final column = TableColumn(specified.name.name, type);
-      column.setMeta<ColumnDeclaration>(specified.declaration);
+      column.setMeta<MoorColumn>(specified);
 
       columns.add(column);
     }
 
     final engineTable = Table(name: table.sqlName, resolvedColumns: columns);
-    engineTable.setMeta<TableDeclaration>(table.declaration);
+    engineTable.setMeta<MoorTable>(table);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
   }
@@ -111,7 +114,7 @@ class TypeMapper {
     var maxIndex = 999;
     var currentIndex = 0;
 
-    for (var used in merged) {
+    for (final used in merged) {
       if (used is Variable) {
         if (used.resolvedIndex == currentIndex) {
           continue; // already handled, we only report a single variable / index
@@ -127,8 +130,8 @@ class TypeMapper {
 
         if (explicitIndex != null && currentIndex >= maxIndex) {
           throw ArgumentError(
-              'Cannot have a variable with an index lower than that of an array '
-              'appearing after an array!');
+              'Cannot have a variable with an index lower than that of an '
+              'array appearing after an array!');
         }
 
         foundElements
@@ -158,14 +161,14 @@ class TypeMapper {
   List<dynamic /* Variable|DartPlaceholder */ > _mergeVarsAndPlaceholders(
       List<Variable> vars, List<DartPlaceholder> placeholders) {
     final groupVarsByIndex = <int, List<Variable>>{};
-    for (var variable in vars) {
+    for (final variable in vars) {
       groupVarsByIndex
           .putIfAbsent(variable.resolvedIndex, () => [])
           .add(variable);
     }
     // sort each group by index
-    for (var group in groupVarsByIndex.values) {
-      group..sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+    for (final group in groupVarsByIndex.values) {
+      group.sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
     }
 
     int Function(dynamic, dynamic) comparer;
@@ -216,7 +219,7 @@ class TypeMapper {
     return FoundDartPlaceholder(type, columnType, name)..astNode = placeholder;
   }
 
-  SpecifiedTable tableToMoor(Table table) {
+  MoorTable tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }
 }

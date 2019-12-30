@@ -1,10 +1,11 @@
+import 'package:analyzer/dart/element/element.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-import 'package:moor_generator/src/model/specified_db_classes.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// A task is used to fully parse and analyze files based on an input file. To
@@ -55,7 +56,7 @@ class Task {
     final moorFiles = _analyzedFiles.where((f) => f.type == FileType.moor);
     final otherFiles = _analyzedFiles.where((f) => f.type != FileType.moor);
 
-    for (var file in moorFiles.followedBy(otherFiles)) {
+    for (final file in moorFiles.followedBy(otherFiles)) {
       file.errors.clearNonParsingErrors();
       await _analyze(file);
     }
@@ -82,7 +83,7 @@ class Task {
         file.currentResult = parsed;
 
         parsed.resolvedImports = <ImportStatement, FoundFile>{};
-        for (var import in parsed.imports) {
+        for (final import in parsed.imports) {
           if (import.importedFile == null) {
             // invalid import statement, this can happen as the user is typing
             continue;
@@ -101,21 +102,27 @@ class Task {
           }
         }
         break;
-      case FileType.dart:
-        final library = await backend.resolveDart(file.uri);
+      case FileType.dartLibrary:
+        LibraryElement library;
+        try {
+          library = await backend.resolveDart(file.uri);
+        } on NotALibraryException catch (_) {
+          file.type = FileType.other;
+          break;
+        }
         final step = createdStep = ParseDartStep(this, file, library);
 
         final parsed = await step.parse();
         file.currentResult = parsed;
 
         final daosAndDatabases = parsed.declaredDaos
-            .cast<SpecifiedDbAccessor>()
+            .cast<BaseMoorAccessor>()
             .followedBy(parsed.declaredDatabases);
 
-        for (var accessor in daosAndDatabases) {
+        for (final accessor in daosAndDatabases) {
           final resolvedForAccessor = <FoundFile>[];
 
-          for (var import in accessor.includes) {
+          for (final import in accessor.declaredIncludes) {
             final found = session.resolve(file, import);
             if (!await backend.exists(found.uri)) {
               step.reportError(ErrorInDartCode(
@@ -129,10 +136,11 @@ class Task {
             }
           }
 
-          accessor.resolvedImports = resolvedForAccessor;
+          accessor.imports = resolvedForAccessor;
         }
         break;
       default:
+        // nothing to do here
         break;
     }
 
@@ -164,7 +172,7 @@ class Task {
             (available.currentResult as ParsedMoorFile).resolvedImports.values;
       }
 
-      for (var next in importsFromHere) {
+      for (final next in importsFromHere) {
         if (!found.contains(next) && !unhandled.contains(next)) {
           unhandled.add(next);
         }
@@ -179,7 +187,7 @@ class Task {
     Step step;
 
     switch (file.type) {
-      case FileType.dart:
+      case FileType.dartLibrary:
         step = AnalyzeDartStep(this, file)..analyze();
         break;
       case FileType.moor:
@@ -196,7 +204,7 @@ class Task {
   }
 
   void _notifyFilesNeedWork(Iterable<FoundFile> files) {
-    for (var file in files) {
+    for (final file in files) {
       if (!_analyzedFiles.contains(file) && !_unhandled.contains(file)) {
         _unhandled.add(file);
       }
@@ -211,7 +219,7 @@ class Task {
       log.warning('There were some errors while running moor_generator on '
           '${backend.entrypoint}:');
 
-      for (var error in foundErrors) {
+      for (final error in foundErrors) {
         final printer = error.isError ? log.warning : log.info;
         error.writeDescription(printer);
       }

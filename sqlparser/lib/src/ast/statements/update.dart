@@ -16,9 +16,7 @@ const Map<TokenType, FailureMode> _tokensToMode = {
   TokenType.ignore: FailureMode.ignore,
 };
 
-class UpdateStatement extends Statement
-    with CrudStatement
-    implements HasWhereClause {
+class UpdateStatement extends CrudStatement implements HasWhereClause {
   final FailureMode or;
   final TableReference table;
   final List<SetComponent> set;
@@ -26,13 +24,25 @@ class UpdateStatement extends Statement
   final Expression where;
 
   UpdateStatement(
-      {this.or, @required this.table, @required this.set, this.where});
+      {WithClause withClause,
+      this.or,
+      @required this.table,
+      @required this.set,
+      this.where})
+      : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitUpdateStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitUpdateStatement(this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => [table, ...set, if (where != null) where];
+  Iterable<AstNode> get childNodes => [
+        if (withClause != null) withClause,
+        table,
+        ...set,
+        if (where != null) where,
+      ];
 
   @override
   bool contentEquals(UpdateStatement other) {
@@ -51,7 +61,9 @@ class SetComponent extends AstNode {
   SetComponent({@required this.column, @required this.expression});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitSetComponent(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSetComponent(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [column, expression];

@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 class AggregateExpression extends Expression
-    implements Invocation, ReferenceOwner {
+    implements SqlInvocation, ReferenceOwner {
   final IdentifierToken function;
 
   @override
@@ -37,13 +37,14 @@ class AggregateExpression extends Expression
       @required this.parameters,
       this.filter,
       this.windowDefinition,
-      this.windowName}) {
-    // either window definition or name must be null
-    assert((windowDefinition == null) != (windowName == null));
-  }
+      this.windowName})
+      // either window definition or name must be null
+      : assert((windowDefinition == null) != (windowName == null));
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitAggregateExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAggregateExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes {
@@ -84,7 +85,9 @@ class WindowDefinition extends AstNode {
       @required this.frameSpec});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitWindowDefinition(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitWindowDefinition(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes =>
@@ -110,7 +113,9 @@ class FrameSpec extends AstNode {
   });
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitFrameSpec(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitFrameSpec(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [
@@ -196,7 +201,7 @@ class FrameBoundary {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     if (identical(this, other)) return true;
     if (other.runtimeType != runtimeType) return false;
 

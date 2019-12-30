@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -14,14 +15,14 @@ const _comparisonOperators = [
   TokenType.more,
   TokenType.moreEqual,
 ];
-const _binaryOperators = const [
+const _binaryOperators = [
   TokenType.shiftLeft,
   TokenType.shiftRight,
   TokenType.ampersand,
   TokenType.pipe,
 ];
 
-final _startOperators = const [
+const _startOperators = [
   TokenType.natural,
   TokenType.left,
   TokenType.inner,
@@ -80,7 +81,7 @@ abstract class ParserBase {
 
   bool _match(Iterable<TokenType> types) {
     if (_reportAutoComplete) _suggestHintForTokens(types);
-    for (var type in types) {
+    for (final type in types) {
       if (_check(type)) {
         _advance();
         return true;
@@ -137,7 +138,7 @@ abstract class ParserBase {
   }
 
   @alwaysThrows
-  void _error(String message) {
+  Null _error(String message) {
     final error = ParsingError(_peek, message);
     errors.add(error);
     throw error;
@@ -162,6 +163,8 @@ abstract class ParserBase {
   // Common operations that we are referenced very often
   Expression expression();
 
+  List<Token> _typeName();
+
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well.
   Expression _consumeTuple({bool orSubQuery = false});
@@ -170,10 +173,20 @@ abstract class ParserBase {
   /// [CompoundSelectStatement]. If [noCompound] is set to true, the parser will
   /// only attempt to parse a [SelectStatement].
   ///
+  /// This method doesn't parse WITH clauses, most users would probably want to
+  /// use [_fullSelect] instead.
+  ///
   /// See also:
   /// https://www.sqlite.org/lang_select.html
   BaseSelectStatement select({bool noCompound});
 
+  /// Parses a select statement as defined in [the sqlite documentation][s-d],
+  /// which means that compound selects and a with clause is supported.
+  ///
+  /// [s-d]: https://sqlite.org/syntax/select-stmt.html
+  BaseSelectStatement _fullSelect();
+
+  Variable _variableOrNull();
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
 
@@ -214,17 +227,6 @@ class Parser extends ParserBase
       _error('Expected the statement to finish here');
     }
     return stmt..setSpan(first, _previous);
-  }
-
-  CrudStatement _crud() {
-    // writing select() ?? _deleteStmt() and so on doesn't cast to CrudStatement
-    // for some reason.
-    CrudStatement stmt = select();
-    stmt ??= _deleteStmt();
-    stmt ??= _update();
-    stmt ??= _insertStmt();
-
-    return stmt;
   }
 
   MoorFile moorFile() {
@@ -284,19 +286,55 @@ class Parser extends ParserBase
   }
 
   DeclaredStatement _declaredStatement() {
+    DeclaredStatementIdentifier identifier;
+
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
-      final name = _consumeIdentifier('Expected a name for a declared query');
-      final colon =
-          _consume(TokenType.colon, 'Expected colon (:) followed by a query');
+      final name = _consumeIdentifier('Expected a name for a declared query',
+          lenient: true);
 
-      final stmt = _crud();
+      identifier = SimpleName(name.identifier)..identifier = name;
+    } else if (_matchOne(TokenType.atSignVariable)) {
+      final previous = _previous as AtSignVariableToken;
 
-      return DeclaredStatement(name.identifier, stmt)
-        ..identifier = name
-        ..colon = colon;
+      identifier = SpecialStatementIdentifier(previous.name)
+        ..nameToken = previous;
+    } else {
+      return null;
     }
 
-    return null;
+    final parameters = <StatementParameter>[];
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final first = _peek;
+        final variable = _variableOrNull();
+        if (variable == null) {
+          _error('Expected a variable here');
+        }
+        final as = _consume(TokenType.as, 'Expected AS followed by a type');
+
+        final typeNameTokens = _typeName();
+        if (typeNameTokens == null) {
+          _error('Expected a type name here');
+        }
+
+        final typeName = typeNameTokens.lexeme;
+        parameters.add(VariableTypeHint(variable, typeName)
+          ..as = as
+          ..setSpan(first, _previous));
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    }
+
+    final colon =
+        _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
+    final stmt = _crud();
+
+    return DeclaredStatement(
+      identifier,
+      stmt,
+      parameters: parameters,
+    )..colon = colon;
   }
 
   /// Invokes [parser], sets the appropriate source span and attaches a
@@ -347,4 +385,8 @@ class Parser extends ParserBase
     // fast-forward to the token after the next semicolon
     while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
+}
+
+extension on List<Token> {
+  String get lexeme => first.span.expand(last.span).text;
 }

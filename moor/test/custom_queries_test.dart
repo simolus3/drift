@@ -4,6 +4,8 @@ import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
+// ignore_for_file: lines_longer_than_80_chars
+
 void main() {
   TodoDb db;
   MockExecutor executor;
@@ -12,7 +14,9 @@ void main() {
   setUp(() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
-    db = TodoDb(executor)..streamQueries = streamQueries;
+
+    final connection = createConnection(executor, streamQueries);
+    db = TodoDb.connect(connection);
   });
 
   group('compiled custom queries', () {

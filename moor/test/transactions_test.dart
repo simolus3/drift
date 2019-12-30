@@ -1,5 +1,7 @@
 @TestOn('!browser') // todo: Figure out why this doesn't run in js
 
+// ignore_for_file: lines_longer_than_80_chars
+
 /*
 These tests don't work when compiled to js:
 
@@ -28,7 +30,9 @@ void main() {
   setUp(() {
     executor = MockExecutor();
     streamQueries = MockStreamQueries();
-    db = TodoDb(executor)..streamQueries = streamQueries;
+
+    final connection = createConnection(executor, streamQueries);
+    db = TodoDb.connect(connection);
   });
 
   test("transactions don't allow creating streams", () {

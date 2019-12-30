@@ -10,9 +10,9 @@ const nullContent =
     TodosTableCompanion(title: Value('Test'), content: Value(null));
 const absentContent =
     TodosTableCompanion(title: Value('Test'), content: Value.absent());
-final shortTitle =
-    const TodosTableCompanion(title: Value('A'), content: Value('content'));
-final longTitle = TodosTableCompanion(
+const shortTitle =
+    TodosTableCompanion(title: Value('A'), content: Value('content'));
+final TodosTableCompanion longTitle = TodosTableCompanion(
     title: Value('A ${'very' * 5} long title'), content: const Value('hi'));
 const valid =
     TodosTableCompanion(title: Value('Test'), content: Value('Some content'));

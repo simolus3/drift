@@ -1,15 +1,98 @@
 part of 'parser.dart';
 
 mixin CrudParser on ParserBase {
+  CrudStatement _crud() {
+    final withClause = _withClause();
+
+    if (_check(TokenType.select)) {
+      return select(withClause: withClause);
+    } else if (_check(TokenType.delete)) {
+      return _deleteStmt(withClause);
+    } else if (_check(TokenType.update)) {
+      return _update(withClause);
+    } else if (_check(TokenType.insert) || _check(TokenType.replace)) {
+      return _insertStmt(withClause);
+    }
+    return null;
+  }
+
+  WithClause _withClause() {
+    if (!_matchOne(TokenType.$with)) return null;
+    final withToken = _previous;
+
+    final recursive = _matchOne(TokenType.recursive);
+    final recursiveToken = recursive ? _previous : null;
+
+    final ctes = <CommonTableExpression>[];
+    do {
+      final name = _consumeIdentifier('Expected name for common table');
+      List<String> columnNames;
+
+      // can optionally declare the column names in (foo, bar, baz) syntax
+      if (_matchOne(TokenType.leftParen)) {
+        columnNames = [];
+        do {
+          final identifier = _consumeIdentifier('Expected column name');
+          columnNames.add(identifier.identifier);
+        } while (_matchOne(TokenType.comma));
+
+        _consume(TokenType.rightParen,
+            'Expected closing bracket after column names');
+      }
+
+      final asToken = _consume(TokenType.as, 'Expected AS');
+
+      const msg = 'Expected select statement in brackets';
+      _consume(TokenType.leftParen, msg);
+      final selectStmt = select() ?? _error(msg);
+      _consume(TokenType.rightParen, msg);
+
+      ctes.add(CommonTableExpression(
+        cteTableName: name.identifier,
+        columnNames: columnNames,
+        as: selectStmt,
+      )
+        ..setSpan(name, _previous)
+        ..asToken = asToken
+        ..tableNameToken = name);
+    } while (_matchOne(TokenType.comma));
+
+    return WithClause(
+      recursive: recursive,
+      ctes: ctes,
+    )
+      ..setSpan(withToken, _previous)
+      ..recursiveToken = recursiveToken
+      ..withToken = withToken;
+  }
+
   @override
-  BaseSelectStatement select({bool noCompound}) {
+  BaseSelectStatement _fullSelect() {
+    final clause = _withClause();
+    return select(withClause: clause);
+  }
+
+  @override
+  BaseSelectStatement select({bool noCompound, WithClause withClause}) {
     if (noCompound == true) {
-      return _selectNoCompound();
+      return _selectNoCompound(withClause);
     } else {
-      final first = _selectNoCompound();
+      final firstTokenOfBase = _peek;
+      final first = _selectNoCompound(withClause);
+
+      if (first == null) {
+        // _selectNoCompound returns null if there's no select statement at the
+        // current position. That's fine if we didn't encounter an with clause
+        // already
+        if (withClause != null) {
+          _error('Expected a SELECT statement to follow the WITH clause here');
+        }
+        return null;
+      }
+
       final parts = <CompoundSelectPart>[];
 
-      while (true) {
+      for (;;) {
         final part = _compoundSelectPart();
         if (part != null) {
           parts.add(part);
@@ -19,18 +102,24 @@ mixin CrudParser on ParserBase {
       }
 
       if (parts.isEmpty) {
-        // no compound parts, just return the simple select statement
+        // no compound parts, just return the simple select statement.
         return first;
       } else {
+        // remove with clause from base select, it belongs to the compound
+        // select.
+        first.withClause = null;
+        first.first = firstTokenOfBase;
+
         return CompoundSelectStatement(
+          withClause: withClause,
           base: first,
           additional: parts,
-        )..setSpan(first.first, _previous);
+        )..setSpan(withClause?.first ?? first.first, _previous);
       }
     }
   }
 
-  SelectStatement _selectNoCompound() {
+  SelectStatement _selectNoCompound([WithClause withClause]) {
     if (!_match(const [TokenType.select])) return null;
     final selectToken = _previous;
 
@@ -54,7 +143,9 @@ mixin CrudParser on ParserBase {
     final orderBy = _orderBy();
     final limit = _limit();
 
+    final first = withClause?.first ?? selectToken;
     return SelectStatement(
+      withClause: withClause,
       distinct: distinct,
       columns: resultColumns,
       from: from,
@@ -63,7 +154,7 @@ mixin CrudParser on ParserBase {
       windowDeclarations: windowDecls,
       orderBy: orderBy,
       limit: limit,
-    )..setSpan(selectToken, _previous);
+    )..setSpan(first, _previous);
   }
 
   CompoundSelectPart _compoundSelectPart() {
@@ -107,7 +198,8 @@ mixin CrudParser on ParserBase {
     if (_match(const [TokenType.identifier])) {
       // two options. the identifier could be followed by ".*", in which case
       // we have a star result column. If it's followed by anything else, it can
-      // still refer to a column in a table as part of a expression result column
+      // still refer to a column in a table as part of a expression
+      // result column
       final identifier = _previous;
 
       if (_match(const [TokenType.dot]) && _match(const [TokenType.star])) {
@@ -171,13 +263,15 @@ mixin CrudParser on ParserBase {
     if (tableRef != null) {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
+      final first = _previous;
       final innerStmt = _selectNoCompound();
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
       final alias = _as();
       return SelectStatementAsSource(
-          statement: innerStmt, as: alias?.identifier);
+          statement: innerStmt, as: alias?.identifier)
+        ..setSpan(first, _previous);
     }
 
     _error('Expected a table name or a nested select statement');
@@ -191,7 +285,8 @@ mixin CrudParser on ParserBase {
       final tableName = firstToken.identifier;
       final alias = _as();
       return TableReference(tableName, alias?.identifier)
-        ..setSpan(firstToken, _previous);
+        ..setSpan(firstToken, _previous)
+        ..tableNameToken = firstToken;
     }
     return null;
   }
@@ -205,6 +300,8 @@ mixin CrudParser on ParserBase {
     final joins = <Join>[];
 
     while (operator != null) {
+      final first = _peekNext;
+
       final subquery = _tableOrSubquery();
       final constraint = _joinConstraint();
       JoinOperator resolvedOperator;
@@ -227,7 +324,7 @@ mixin CrudParser on ParserBase {
         operator: resolvedOperator,
         query: subquery,
         constraint: constraint,
-      ));
+      )..setSpan(first, _previous));
 
       // parse the next operator, if there is more than one join
       if (_matchOne(TokenType.comma)) {
@@ -237,7 +334,8 @@ mixin CrudParser on ParserBase {
       }
     }
 
-    return JoinClause(primary: start, joins: joins);
+    return JoinClause(primary: start, joins: joins)
+      ..setSpan(start.first, _previous);
   }
 
   /// Parses https://www.sqlite.org/syntax/join-operator.html, minus the comma.
@@ -297,6 +395,8 @@ mixin CrudParser on ParserBase {
 
   GroupBy _groupBy() {
     if (_matchOne(TokenType.group)) {
+      final groupToken = _previous;
+
       _consume(TokenType.by, 'Expected a "BY"');
       final by = <Expression>[];
       Expression having;
@@ -309,7 +409,7 @@ mixin CrudParser on ParserBase {
         having = expression();
       }
 
-      return GroupBy(by: by, having: having);
+      return GroupBy(by: by, having: having)..setSpan(groupToken, _previous);
     }
     return null;
   }
@@ -413,7 +513,7 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  DeleteStatement _deleteStmt() {
+  DeleteStatement _deleteStmt([WithClause withClause]) {
     if (!_matchOne(TokenType.delete)) return null;
     final deleteToken = _previous;
 
@@ -429,11 +529,14 @@ mixin CrudParser on ParserBase {
       where = expression();
     }
 
-    return DeleteStatement(from: table, where: where)
-      ..setSpan(deleteToken, _previous);
+    return DeleteStatement(
+      withClause: withClause,
+      from: table,
+      where: where,
+    )..setSpan(withClause?.first ?? deleteToken, _previous);
   }
 
-  UpdateStatement _update() {
+  UpdateStatement _update([WithClause withClause]) {
     if (!_matchOne(TokenType.update)) return null;
     final updateToken = _previous;
 
@@ -461,11 +564,15 @@ mixin CrudParser on ParserBase {
 
     final where = _where();
     return UpdateStatement(
-        or: failureMode, table: table, set: set, where: where)
-      ..setSpan(updateToken, _previous);
+      withClause: withClause,
+      or: failureMode,
+      table: table,
+      set: set,
+      where: where,
+    )..setSpan(withClause?.first ?? updateToken, _previous);
   }
 
-  InsertStatement _insertStmt() {
+  InsertStatement _insertStmt([WithClause withClause]) {
     if (!_match(const [TokenType.insert, TokenType.replace])) return null;
 
     final firstToken = _previous;
@@ -484,8 +591,8 @@ mixin CrudParser on ParserBase {
         if (_match(tokensToModes.keys)) {
           insertMode = tokensToModes[_previous.type];
         } else {
-          _error(
-              'After the INSERT OR, expected an insert mode (REPLACE, ROLLBACK, etc.)');
+          _error('After the INSERT OR, expected an insert mode '
+              '(REPLACE, ROLLBACK, etc.)');
         }
       } else {
         insertMode = InsertMode.insert;
@@ -513,11 +620,12 @@ mixin CrudParser on ParserBase {
     final source = _insertSource();
 
     return InsertStatement(
+      withClause: withClause,
       mode: insertMode,
       table: table,
       targetColumns: targetColumns,
       source: source,
-    )..setSpan(firstToken, _previous);
+    )..setSpan(withClause?.first ?? firstToken, _previous);
   }
 
   InsertSource _insertSource() {
@@ -532,7 +640,8 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return const DefaultValues();
     } else {
-      return SelectInsertSource(_selectNoCompound());
+      return SelectInsertSource(
+          _fullSelect() ?? _error('Expeced a select statement'));
     }
   }
 
@@ -567,7 +676,7 @@ mixin CrudParser on ParserBase {
       baseWindowName: baseWindowName,
       partitionBy: partitionBy,
       orderBy: orderBy,
-      frameSpec: spec ?? FrameSpec(),
+      frameSpec: spec ?? (FrameSpec()..synthetic = true),
     )..setSpan(leftParen, _previous);
   }
 

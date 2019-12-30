@@ -1,11 +1,24 @@
 part of '../analysis.dart';
 
 /// A column that appears in a [ResultSet]. Has a type and a name.
-abstract class Column with Referencable, HasMetaMixin implements Typeable {
+abstract class Column
+    with Referencable, HasMetaMixin
+    implements Typeable, HumanReadable {
   /// The name of this column in the result set.
   String get name;
 
+  /// Whether this column is included in results when running a select query
+  /// like `SELECT * FROM table`.
+  ///
+  /// Some columns, notably the rowid aliases, are exempt from this.
+  bool get includedInResults => true;
+
   Column();
+
+  @override
+  String humanReadableDescription() {
+    return name;
+  }
 }
 
 /// A column that is part of a table.
@@ -19,12 +32,19 @@ class TableColumn extends Column {
 
   /// The column constraints set on this column.
   ///
+  /// This only works columns where [hasDefinition] is true, otherwise this
+  /// getter will throw. The columns in a `CREATE TABLE` statement always have
+  /// a definition, but those from a `CREATE VIRTUAL TABLE` likely don't.
+  ///
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
   List<ColumnConstraint> get constraints => definition.constraints;
 
   /// The definition in the AST that was used to create this column model.
   final ColumnDefinition definition;
+
+  /// Whether this column has a definition from the ast.
+  bool get hasDefinition => definition != null;
 
   /// The table this column belongs to.
   Table table;
@@ -50,7 +70,8 @@ class TableColumn extends Column {
 
     // We need to check whether this column is a primary key, which could happen
     // because of a table or a column constraint
-    for (var tableConstraint in table.tableConstraints.whereType<KeyClause>()) {
+    final columnsWithKey = table.tableConstraints.whereType<KeyClause>();
+    for (final tableConstraint in columnsWithKey) {
       if (!tableConstraint.isPrimaryKey) continue;
 
       final columns = tableConstraint.indexedColumns;
@@ -60,7 +81,7 @@ class TableColumn extends Column {
     }
 
     // option 2: This column has a primary key constraint
-    for (var primaryConstraint in constraints.whereType<PrimaryKeyColumn>()) {
+    for (final primaryConstraint in constraints.whereType<PrimaryKeyColumn>()) {
       if (primaryConstraint.mode == OrderingMode.descending) return false;
 
       // additional restriction: Column type must be exactly "INTEGER"
@@ -68,6 +89,11 @@ class TableColumn extends Column {
     }
 
     return false;
+  }
+
+  @override
+  String humanReadableDescription() {
+    return '$name in ${table.humanReadableDescription()}';
   }
 }
 
@@ -77,6 +103,9 @@ class RowId extends TableColumn {
   // note that such alias is always called "rowid" in the result set -
   // "SELECT oid FROM table" yields a sinle column called "rowid"
   RowId() : super('rowid', const ResolvedType(type: BasicType.int));
+
+  @override
+  bool get includedInResults => false;
 }
 
 /// A column that is created by an expression. For instance, in the select
@@ -106,8 +135,16 @@ class ReferenceExpressionColumn extends ExpressionColumn {
       : super(name: null, expression: ref);
 }
 
+/// A column that wraps another column.
+mixin DelegatedColumn on Column {
+  Column get innerColumn;
+
+  @override
+  String get name => innerColumn.name;
+}
+
 /// The result column of a [CompoundSelectStatement].
-class CompoundSelectColumn extends Column {
+class CompoundSelectColumn extends Column with DelegatedColumn {
   /// The column in [CompoundSelectStatement.base] each of the
   /// [CompoundSelectStatement.additional] that contributed to this column.
   final List<Column> columns;
@@ -115,5 +152,18 @@ class CompoundSelectColumn extends Column {
   CompoundSelectColumn(this.columns);
 
   @override
-  String get name => columns.first.name;
+  Column get innerColumn => columns.first;
+}
+
+class CommonTableExpressionColumn extends Column with DelegatedColumn {
+  @override
+  final String name;
+
+  @override
+  Column innerColumn;
+
+  // note that innerColumn is mutable because the column might not be known
+  // during all analysis phases.
+
+  CommonTableExpressionColumn(this.name, this.innerColumn);
 }

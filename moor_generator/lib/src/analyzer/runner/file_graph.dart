@@ -43,7 +43,7 @@ class FileGraph {
       final neighbors = edges[file];
 
       if (neighbors != null) {
-        for (var neighbor in neighbors) {
+        for (final neighbor in neighbors) {
           // if the neighbor wasn't in the set, also add to unhandled nodes so
           // that we crawl its imports later.
           if (found.add(neighbor)) {
@@ -62,7 +62,7 @@ class FileGraph {
     // clear old imports, we also need to take the transposed imports into
     // account here
     if (_imports.containsKey(file)) {
-      for (var oldImport in _imports[file]) {
+      for (final oldImport in _imports[file]) {
         _transposedImports[oldImport]?.remove(file);
       }
       _imports.remove(file);
@@ -70,13 +70,23 @@ class FileGraph {
 
     _imports[file] = updatedImports;
 
-    for (var newImport in updatedImports) {
+    for (final newImport in updatedImports) {
       _transposedImports.putIfAbsent(newImport, () => []).add(file);
     }
   }
 }
 
-enum FileType { moor, dart, other }
+enum FileType {
+  /// A `.moor` file, containing `CREATE TABLE` statements and queries.
+  moor,
+
+  /// A dart library. Note that, in particular, this doesn't include `part of`
+  /// files, as those aren't libraries.
+  dartLibrary,
+
+  /// Other files
+  other,
+}
 
 enum FileState {
   /// The file was discovered, but not handled yet
@@ -95,10 +105,10 @@ class FoundFile {
   /// The uri of this file, which can be an asset on the build backend or a
   /// `file://` uri on the analysis plugin backend.
   final Uri uri;
-  final FileType type;
+  FileType type;
 
   FileResult currentResult;
-  /* (not null) */ FileState state = FileState.dirty;
+  FileState state = FileState.dirty;
   final ErrorSink errors = ErrorSink();
 
   FoundFile(this.uri, this.type);
@@ -112,7 +122,12 @@ class FoundFile {
   int get hashCode => uri.hashCode;
 
   @override
-  bool operator ==(other) {
+  bool operator ==(dynamic other) {
     return identical(this, other) || other is FoundFile && other.uri == uri;
+  }
+
+  @override
+  String toString() {
+    return 'FoundFile($uri, $type)';
   }
 }

@@ -1,10 +1,13 @@
 ---
-title: "Joins"
+title: "Advanced queries in Dart"
 weight: 1
-description: Use joins to write queries that read from more than one table
+description: Use sql joins or custom expressions from the Dart api
+url: /docs/advanced-features/joins
 aliases:
  - /queries/joins
 ---
+
+## Joins
 
 Moor supports sql joins to write queries that operate on more than one table. To use that feature, start
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
@@ -49,7 +52,37 @@ return query.watch().map((rows) {
 ```
 
 _Note_: `readTable` returns `null` when an entity is not present in the row. For instance, todo entries
-might not be in any category. If we a row without a category, `row.readTable(categories)` would return `null`.
+might not be in any category.For a row without a category, `row.readTable(categories)` would return `null`.
+
+## Custom columns
+
+Select statements aren't limited to columns from tables. You can also include more complex expressions in the
+query. For each row in the result, those expressions will be evaluated by the database engine.
+
+```dart
+class EntryWithImportance {
+  final TodoEntry entry;
+  final bool important;
+
+  EntryWithImportance(this.entry, this.important);
+}
+
+Future<List<EntryWithImportance>> loadEntries() {
+  // assume that an entry is important if it has the string "important" somewhere in its content
+  final isImportant = todos.content.like('%important%');
+
+  return select(todos).addColumns([isImportant]).map((row) {
+    final entry = row.readTable(todos);
+    final entryIsImportant = row.read(isImportant);
+    
+    return EntryWithImportance(entry, entryIsImportant);
+  }).get();
+}
+```
+
+Note that the `like` check is _not_ performed in Dart - it's sent to the underlying database engine which
+can efficiently compute it for all rows.
+
 ## Aliases
 Sometimes, a query references a table more than once. Consider the following example to store saved routes for a
 navigation system:

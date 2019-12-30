@@ -2,10 +2,10 @@
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
+import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
@@ -75,12 +75,16 @@ void main() {
   setUp(() async {
     final uri = Uri.parse('package:test_lib/main.dart');
     final task = backend.startTask(uri);
+    final session = MoorSession(backend);
 
-    dartStep = ParseDartStep(null, null, await task.resolveDart(uri));
+    final moorTask = session.startTask(task);
+    final file = session.registerFile(uri);
+
+    dartStep = ParseDartStep(moorTask, file, await task.resolveDart(uri));
     parser = MoorDartParser(dartStep);
   });
 
-  Future<SpecifiedTable> parse(String name) async {
+  Future<MoorTable> parse(String name) async {
     return parser.parseTable(dartStep.library.getType(name));
   }
 
@@ -108,8 +112,14 @@ void main() {
           table.columns.singleWhere((col) => col.name.name == 'id');
 
       expect(idColumn.name, equals(ColumnName.implicitly('id')));
-      expect(idColumn.declaration.dartDeclaration,
-          const TypeMatcher<PropertyAccessorElement>());
+      expect(
+        idColumn.declaration,
+        const TypeMatcher<DartColumnDeclaration>().having(
+          (c) => c.element,
+          'element',
+          const TypeMatcher<PropertyAccessorElement>(),
+        ),
+      );
     });
 
     test('should use explicit name, if it exists', () async {
@@ -126,7 +136,7 @@ void main() {
           table.columns.singleWhere((col) => col.name.name == 'user_name');
 
       expect(idColumn.features,
-          contains(LimitingTextLength.withLength(min: 6, max: 32)));
+          contains(LimitingTextLength(minLength: 6, maxLength: 32)));
     });
 
     test('should only parse max length when relevant', () async {
@@ -134,8 +144,7 @@ void main() {
       final idColumn =
           table.columns.singleWhere((col) => col.dartGetterName == 'onlyMax');
 
-      expect(
-          idColumn.features, contains(LimitingTextLength.withLength(max: 100)));
+      expect(idColumn.features, contains(LimitingTextLength(maxLength: 100)));
     });
 
     test('parses custom constraints', () async {

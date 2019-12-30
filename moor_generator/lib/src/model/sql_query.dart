@@ -1,9 +1,11 @@
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/model/specified_column.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
-import 'package:moor_generator/src/model/used_type_converter.dart';
+import 'package:moor_generator/src/utils/hash.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
+
+import 'column.dart';
+import 'table.dart';
+import 'used_type_converter.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
@@ -33,15 +35,16 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// A [DeclaredQuery] read from a `.moor` file, where the AST is already
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
-  final AstNode query;
+  final DeclaredStatement astNode;
+  CrudStatement get query => astNode.statement;
   ParsedMoorFile file;
 
-  DeclaredMoorQuery(String name, this.query) : super(name);
+  DeclaredMoorQuery(String name, this.astNode) : super(name);
 
   factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
-    final name = stmt.name;
-    final query = stmt.statement;
-    return DeclaredMoorQuery(name, query);
+    assert(stmt.identifier is SimpleName);
+    final name = (stmt.identifier as SimpleName).name;
+    return DeclaredMoorQuery(name, stmt);
   }
 }
 
@@ -87,14 +90,20 @@ abstract class SqlQuery {
   /// appear inside the query.
   final List<FoundElement> elements;
 
-  SqlQuery(this.name, this.fromContext, this.elements) {
+  /// Whether the underlying sql statement of this query operates on more than
+  /// one table. In that case, column references in Dart placeholders have to
+  /// write their table name (e.g. `foo.bar` instead of just `bar`).
+  final bool hasMultipleTables;
+
+  SqlQuery(this.name, this.fromContext, this.elements, {bool hasMultipleTables})
+      : hasMultipleTables = hasMultipleTables ?? false {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
 }
 
 class SqlSelectQuery extends SqlQuery {
-  final List<SpecifiedTable> readsFrom;
+  final List<MoorTable> readsFrom;
   final InferredResultSet resultSet;
 
   String get resultClassName {
@@ -109,26 +118,32 @@ class SqlSelectQuery extends SqlQuery {
     return '${ReCase(name).pascalCase}Result';
   }
 
-  SqlSelectQuery(String name, AnalysisContext fromContext,
-      List<FoundElement> elements, this.readsFrom, this.resultSet)
-      : super(name, fromContext, elements);
+  SqlSelectQuery(
+    String name,
+    AnalysisContext fromContext,
+    List<FoundElement> elements,
+    this.readsFrom,
+    this.resultSet,
+  ) : super(name, fromContext, elements,
+            hasMultipleTables: readsFrom.length > 1);
 }
 
 class UpdatingQuery extends SqlQuery {
-  final List<SpecifiedTable> updates;
+  final List<MoorTable> updates;
   final bool isInsert;
 
   UpdatingQuery(String name, AnalysisContext fromContext,
       List<FoundElement> elements, this.updates,
-      {this.isInsert = false})
-      : super(name, fromContext, elements);
+      {this.isInsert = false, bool hasMultipleTables})
+      : super(name, fromContext, elements,
+            hasMultipleTables: hasMultipleTables);
 }
 
 class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  final SpecifiedTable matchingTable;
+  final MoorTable matchingTable;
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 
@@ -233,9 +248,8 @@ class FoundVariable extends FoundElement {
   /// without having to look at other variables.
   final bool isArray;
 
-  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray) {
-    assert(variable.resolvedIndex == index);
-  }
+  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray)
+      : assert(variable.resolvedIndex == index);
 
   @override
   String get dartParameterName {
@@ -299,4 +313,16 @@ class FoundDartPlaceholder extends FoundElement {
 
   @override
   String get dartParameterName => name;
+
+  @override
+  int get hashCode => hashAll([type, columnType, name]);
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        other is FoundDartPlaceholder &&
+            other.type == type &&
+            other.columnType == columnType &&
+            other.name == name;
+  }
 }

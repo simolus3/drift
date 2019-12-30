@@ -18,7 +18,7 @@ mixin _MySqlExecutor on QueryDelegate {
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) async {
-    for (var stmt in statements) {
+    for (final stmt in statements) {
       await _querier.preparedMulti(stmt.sql, stmt.variables);
     }
   }

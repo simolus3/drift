@@ -11,6 +11,7 @@ void main() {
 
     expect(suggestions.anchor, 0);
     expect(suggestions.suggestions, contains(hasCode('CREATE')));
+    expect(suggestions.suggestions, contains(hasCode('CREATE')));
   });
 
   test('suggests CREATE TABLE completion after CREATE', () async {
@@ -23,7 +24,7 @@ void main() {
     expect(suggestions.suggestions, contains(hasCode('TABLE')));
   });
 
-  test('suggests completions for started expressions', () {
+  test('suggests completions for started keywords', () {
     final engine = SqlEngine(useMoorExtensions: true);
     final parseResult = engine.parseMoorFile('creat');
 
@@ -34,7 +35,7 @@ void main() {
   });
 }
 
-dynamic hasCode(code) => SuggestionWithCode(code);
+dynamic hasCode(dynamic code) => SuggestionWithCode(code);
 
 class SuggestionWithCode extends Matcher {
   final Matcher codeMatcher;
@@ -47,7 +48,7 @@ class SuggestionWithCode extends Matcher {
   }
 
   @override
-  bool matches(item, Map matchState) {
+  bool matches(dynamic item, Map matchState) {
     return item is Suggestion && codeMatcher.matches(item.code, matchState);
   }
 }

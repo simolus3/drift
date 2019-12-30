@@ -1,4 +1,3 @@
-import 'package:moor/src/runtime/components/component.dart';
 import 'package:test/test.dart';
 import 'package:moor/moor.dart';
 

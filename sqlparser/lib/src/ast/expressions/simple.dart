@@ -7,7 +7,9 @@ class UnaryExpression extends Expression {
   UnaryExpression(this.operator, this.inner);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitUnaryExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitUnaryExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [inner];
@@ -42,7 +44,9 @@ class BinaryExpression extends Expression {
   BinaryExpression(this.left, this.operator, this.right);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitBinaryExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBinaryExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
@@ -68,7 +72,9 @@ class StringComparisonExpression extends Expression {
       this.escape});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitStringComparison(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitStringComparison(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [left, right, if (escape != null) escape];
@@ -86,8 +92,8 @@ class IsExpression extends Expression {
   IsExpression(this.negated, this.left, this.right);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitIsExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitIsExpression(this, arg);
   }
 
   @override
@@ -109,7 +115,9 @@ class BetweenExpression extends Expression {
   BetweenExpression({this.not = false, this.check, this.lower, this.upper});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitBetweenExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBetweenExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [check, lower, upper];
@@ -129,12 +137,13 @@ class InExpression extends Expression {
   /// tuple of variables at runtime.
   final Expression inside;
 
-  InExpression({this.not = false, @required this.left, @required this.inside}) {
-    assert(inside is Tuple || inside is Variable || inside is SubQuery);
-  }
+  InExpression({this.not = false, @required this.left, @required this.inside})
+      : assert(inside is Tuple || inside is Variable || inside is SubQuery);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitInExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [left, inside];
@@ -156,8 +165,8 @@ class Parentheses extends Expression {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return expression.accept(visitor);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return expression.accept(visitor, arg);
   }
 
   @override

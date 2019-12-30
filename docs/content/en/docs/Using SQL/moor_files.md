@@ -78,6 +78,13 @@ with @ or $. The compiler will attempt to infer the variable's type by
 looking at its context. This lets moor generate typesafe apis for your
 queries, the variables will be written as parameters to your method.
 
+When it's ambigous, the analyzer might be unable to resolve the type of
+a variable. For those scenarios, you can also denote the explicit type
+of a variable:
+```sql
+myQuery(:variable AS TEXT): SELECT :variable;
+```
+
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:
@@ -119,9 +126,13 @@ You can put import statements at the top of a `moor` file:
 import 'other.moor'; -- single quotes are required for imports
 ```
 All tables reachable from the other file will then also be visible in
-the current file and to the database that `includes` it. Importing
-Dart files into a moor file will also work - then, all the tables
-declared via Dart tables can be used inside queries.
+the current file and to the database that `includes` it. If you want
+to declare queries on tables that were defined in another moor
+file, you also need to import that file for the tables to be
+visible.
+
+Importing Dart files into a moor file will also work - then, 
+all the tables declared via Dart tables can be used inside queries.
 We support both relative imports and the `package:` imports you
 know from Dart.
 

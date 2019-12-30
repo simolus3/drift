@@ -1,28 +1,28 @@
 part of 'parser.dart';
 
-/// Parses a [SpecifiedTable] from a Dart class.
+/// Parses a [MoorTable] from a Dart class.
 class TableParser {
   final MoorDartParser base;
 
   TableParser(this.base);
 
-  Future<SpecifiedTable> parseTable(ClassElement element) async {
+  Future<MoorTable> parseTable(ClassElement element) async {
     final sqlName = await _parseTableName(element);
     if (sqlName == null) return null;
 
     final columns = await _parseColumns(element);
 
-    final table = SpecifiedTable(
+    final table = MoorTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
       primaryKey: await _readPrimaryKey(element, columns),
+      declaration: DartTableDeclaration(element, base.step.file),
     );
-    table.declaration = TableDeclaration(table, base.step.file, element, null);
 
     var index = 0;
-    for (var converter in table.converters) {
+    for (final converter in table.converters) {
       converter
         ..index = index++
         ..table = table;
@@ -71,8 +71,8 @@ class TableParser {
     return tableName;
   }
 
-  Future<Set<SpecifiedColumn>> _readPrimaryKey(
-      ClassElement element, List<SpecifiedColumn> columns) async {
+  Future<Set<MoorColumn>> _readPrimaryKey(
+      ClassElement element, List<MoorColumn> columns) async {
     final primaryKeyGetter = element.getGetter('primaryKey');
     if (primaryKeyGetter == null) {
       return null;
@@ -88,10 +88,10 @@ class TableParser {
       return null;
     }
     final expression = (body as ExpressionFunctionBody).expression;
-    final parsedPrimaryKey = <SpecifiedColumn>{};
+    final parsedPrimaryKey = <MoorColumn>{};
 
     if (expression is SetOrMapLiteral) {
-      for (var entry in expression.elements) {
+      for (final entry in expression.elements) {
         if (entry is Identifier) {
           final column = columns
               .singleWhere((column) => column.dartGetterName == entry.name);
@@ -109,12 +109,15 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
-  Future<List<SpecifiedColumn>> _parseColumns(ClassElement element) {
+  Future<List<MoorColumn>> _parseColumns(ClassElement element) {
     final columnNames = element.allSupertypes
         .map((t) => t.element)
         .followedBy([element])
         .expand((e) => e.fields)
-        .where((field) => isColumn(field.type) && field.getter != null)
+        .where((field) =>
+            isColumn(field.type) &&
+            field.getter != null &&
+            !field.getter.isSynthetic)
         .map((field) => field.name)
         .toSet();
 

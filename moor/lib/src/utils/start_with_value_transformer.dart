@@ -29,10 +29,10 @@ class _StartWithValueStream<T> extends Stream<T> {
   StreamSubscription<T> listen(void Function(T event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
     var didReceiveData = false;
-    final wrappedCallback = (T event) {
+    void wrappedCallback(T event) {
       didReceiveData = true;
       onData?.call(event);
-    };
+    }
 
     final subscription = _inner.listen(wrappedCallback,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);

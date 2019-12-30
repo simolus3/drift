@@ -4,14 +4,19 @@ abstract class Statement extends AstNode {
   Token semicolon;
 }
 
-/// Marker mixin for statements that read from an existing table structure.
-mixin CrudStatement on Statement {}
+/// A statement that reads from an existing table structure and has an optional
+/// `WITH` clause.
+abstract class CrudStatement extends Statement {
+  WithClause withClause;
+
+  CrudStatement._(this.withClause);
+}
 
 /// Interface for statements that have a primary where clause (select, update,
 /// delete).
-abstract class HasWhereClause extends Statement {
+abstract class HasWhereClause implements CrudStatement {
   Expression get where;
 }
 
-/// Marker mixin for statements that change the table structure.
-mixin SchemaStatement on Statement implements PartOfMoorFile {}
+/// Marker interface for statements that change the table structure.
+abstract class SchemaStatement extends Statement implements PartOfMoorFile {}

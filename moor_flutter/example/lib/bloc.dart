@@ -53,7 +53,7 @@ class TodoAppBloc {
     _activeCategory.add(category);
   }
 
-  void addCategory(String description) async {
+  Future<void> addCategory(String description) async {
     final id = await db.createCategory(description);
 
     showCategory(Category(id: id, description: description));
@@ -82,5 +82,10 @@ class TodoAppBloc {
     }
 
     db.deleteCategory(category);
+  }
+
+  void close() {
+    db.close();
+    _allCategories.close();
   }
 }

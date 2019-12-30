@@ -1,15 +1,15 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/model/specified_table.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 class SqlParser {
-  final List<SpecifiedTable> tables;
+  final List<MoorTable> tables;
   final Step step;
   final List<DeclaredQuery> definedQueries;
 
@@ -18,39 +18,43 @@ class SqlParser {
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlParser(this.step, this.tables, this.definedQueries);
+  SqlParser(this.step, this.tables, this.definedQueries) {
+    _engine = step.task.session.spawnEngine();
+  }
 
   void _spawnEngine() {
-    _engine = SqlEngine();
     tables.map(_mapper.extractStructure).forEach(_engine.registerTable);
   }
 
   void parse() {
     _spawnEngine();
 
-    for (var query in definedQueries) {
+    for (final query in definedQueries) {
       final name = query.name;
       var declaredInMoor = false;
 
       AnalysisContext context;
 
-      if (query is DeclaredDartQuery) {
-        final sql = query.sql;
-
-        try {
+      try {
+        if (query is DeclaredDartQuery) {
+          final sql = query.sql;
           context = _engine.analyze(sql);
-        } catch (e, s) {
-          step.reportError(MoorError(
-              severity: Severity.criticalError,
-              message: 'Error while trying to parse $name: $e, $s'));
-          return;
+        } else if (query is DeclaredMoorQuery) {
+          context = _engine.analyzeNode(
+            query.query,
+            query.file.parseResult.sql,
+            stmtOptions: _createOptions(query.astNode),
+          );
+          declaredInMoor = true;
         }
-      } else if (query is DeclaredMoorQuery) {
-        context = _engine.analyzeNode(query.query, query.file.parseResult.sql);
-        declaredInMoor = true;
+      } catch (e, s) {
+        step.reportError(MoorError(
+            severity: Severity.criticalError,
+            message: 'Error while trying to parse $name: $e, $s'));
+        continue;
       }
 
-      for (var error in context.errors) {
+      for (final error in context.errors) {
         _report(error,
             msg: () => 'The sql query $name is invalid: $error',
             severity: Severity.error);
@@ -61,13 +65,14 @@ class SqlParser {
           ..declaredInMoorFile = declaredInMoor;
         foundQueries.add(query);
       } catch (e, s) {
+        // todo remove dependency on build package here
         log.warning('Error while generating APIs for $name', e, s);
       }
     }
 
     // report lints
-    for (var query in foundQueries) {
-      for (var lint in query.lints) {
+    for (final query in foundQueries) {
+      for (final lint in query.lints) {
         _report(lint,
             msg: () => 'Lint for ${query.name}: $lint',
             severity: Severity.warning);
@@ -86,5 +91,27 @@ class SqlParser {
         message: msg(),
       ));
     }
+  }
+
+  AnalyzeStatementOptions _createOptions(DeclaredStatement stmt) {
+    final reader = _engine.schemaReader;
+    final indexedHints = <int, ResolvedType>{};
+    final namedHints = <String, ResolvedType>{};
+
+    for (final hint in stmt.parameters.whereType<VariableTypeHint>()) {
+      final variable = hint.variable;
+      final type = reader.resolveColumnType(hint.typeName);
+
+      if (variable is ColonNamedVariable) {
+        namedHints[variable.name] = type;
+      } else if (variable is NumberedVariable) {
+        indexedHints[variable.resolvedIndex] = type;
+      }
+    }
+
+    return AnalyzeStatementOptions(
+      indexedVariableTypes: indexedHints,
+      namedVariableTypes: namedHints,
+    );
   }
 }

@@ -11,6 +11,7 @@ void main() {
         .parse('SELECT * FROM tbl ORDER BY -a, b DESC')
         .rootNode as SelectStatement;
 
+    enforceHasSpan(parsed);
     enforceEqual(
       parsed.orderBy,
       OrderBy(

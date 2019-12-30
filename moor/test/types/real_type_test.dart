@@ -2,7 +2,7 @@ import 'package:moor/moor.dart' as moor;
 import 'package:test/test.dart';
 
 void main() {
-  final type = const moor.RealType();
+  const type = moor.RealType();
 
   group('RealType', () {
     test('can be read from floating point values returned by sql', () {

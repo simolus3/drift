@@ -1,6 +1,6 @@
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/meta/declarations.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:moor_generator/src/backends/plugin/utils/ast_to_location.dart';
 import 'package:moor_generator/src/backends/plugin/utils/span_utils.dart';
@@ -17,12 +17,12 @@ class MoorNavigationContributor implements NavigationContributor {
 
     final visitor = _NavigationVisitor(moorRequest, collector);
     if (moorRequest.file.isParsed) {
-      moorRequest.parsedMoor.parsedFile.accept(visitor);
+      moorRequest.parsedMoor.parsedFile.acceptWithoutArg(visitor);
     }
   }
 }
 
-class _NavigationVisitor extends RecursiveVisitor<void> {
+class _NavigationVisitor extends RecursiveVisitor<void, void> {
   final MoorRequestAtPosition request;
   final NavigationCollector collector;
 
@@ -32,15 +32,16 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
     final offset = span.start.offset;
     final length = span.end.offset - offset;
 
-    // The client only wants the navigation target for a single region, but
-    // we always scan the whole file. Only report if there is an intersection
-    if (intersect(span, request.span)) {
+    // Some clients only want the navigation target for a single region, others
+    // want the whole file. For the former, only report regions is there is an
+    // intersection
+    if (!request.hasSpan || intersect(span, request.span)) {
       collector.addRegion(offset, length, kind, target);
     }
   }
 
   @override
-  void visitMoorImportStatement(ImportStatement e) {
+  void visitMoorImportStatement(ImportStatement e, void arg) {
     if (request.isMoorAndParsed) {
       final moor = request.parsedMoor;
       final resolved = moor.resolvedImports[e];
@@ -52,45 +53,60 @@ class _NavigationVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitReference(Reference e) {
+  void visitReference(Reference e, void arg) {
     if (request.isMoorAndAnalyzed) {
       final resolved = e.resolved;
 
       if (resolved is Column) {
-        // if we know the declaration because the file was analyzed - use that
-        final declaration = resolved.meta<ColumnDeclaration>();
-        if (declaration != null) {
-          final location = locationOfDeclaration(declaration);
-          _reportForSpan(e.span, ElementKind.FIELD, location);
-        } else if (declaration is ExpressionColumn) {
-          // expression references don't have an explicit declaration, but they
-          // reference an expression that we can target
-          final expr = (declaration as ExpressionColumn).expression;
-          final target = locationOfNode(request.file, expr);
-          _reportForSpan(e.span, ElementKind.LOCAL_VARIABLE, target);
+        final locations = _locationOfColumn(resolved);
+        for (final declaration in locations) {
+          _reportForSpan(e.span, ElementKind.FIELD, declaration);
         }
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
+  }
+
+  Iterable<Location> _locationOfColumn(Column column) sync* {
+    final declaration = column.meta<MoorColumn>()?.declaration;
+    if (declaration != null) {
+      // the column was declared in a table and we happen to know where the
+      // declaration is - point to that declaration.
+      final location = locationOfDeclaration(declaration);
+      yield location;
+    } else if (column is ExpressionColumn) {
+      // expression references don't have an explicit declaration, but they
+      // reference an expression that we can target
+      final expr = (declaration as ExpressionColumn).expression;
+      yield locationOfNode(request.file, expr);
+    } else if (column is CompoundSelectColumn) {
+      // a compound select column consists of multiple column declarations -
+      // let's use all of them
+      yield* column.columns.where((c) => c != null).expand(_locationOfColumn);
+    } else if (column is DelegatedColumn) {
+      if (column.innerColumn != null) {
+        yield* _locationOfColumn(column.innerColumn);
+      }
+    }
   }
 
   @override
-  void visitQueryable(Queryable e) {
+  void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
       final resolved = e.resolved;
 
-      if (resolved is Table) {
-        final declaration = resolved.meta<TableDeclaration>();
+      if (resolved is Table && resolved != null) {
+        final declaration = resolved.meta<MoorTable>()?.declaration;
         _reportForSpan(
             e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 }

@@ -5,7 +5,8 @@ import '../data/tables/custom_tables.dart';
 import '../data/utils/mocks.dart';
 
 const _createNoIds =
-    'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL) WITHOUT ROWID;';
+    'CREATE TABLE IF NOT EXISTS no_ids (payload BLOB NOT NULL PRIMARY KEY) '
+    'WITHOUT ROWID;';
 
 const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS with_defaults ('
     "a VARCHAR DEFAULT 'something', b INTEGER UNIQUE);";
@@ -25,32 +26,29 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'somebool INTEGER, '
     'somedate INTEGER);';
 
-const _createMyTrigger = '''
-CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
-    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
-END;''';
+const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
+    'fts5(sender, title, body);';
 
 void main() {
   // see ../data/tables/tables.moor
-  test('creates entities as specified in .moor files', () async {
+  test('creates tables as specified in .moor files', () async {
     final mockExecutor = MockExecutor();
-
     final mockQueryExecutor = MockQueryExecutor();
     final db = CustomTablesDb(mockExecutor);
-    await Migrator(db, mockQueryExecutor).createAll();
+    await Migrator(db, mockQueryExecutor).createAllTables();
 
     verify(mockQueryExecutor.call(_createNoIds, []));
     verify(mockQueryExecutor.call(_createWithDefaults, []));
     verify(mockQueryExecutor.call(_createWithConstraints, []));
     verify(mockQueryExecutor.call(_createConfig, []));
     verify(mockQueryExecutor.call(_createMyTable, []));
-    verify(mockQueryExecutor.call(_createMyTrigger));
+    verify(mockQueryExecutor.call(_createEmail, []));
   });
 
   test('infers primary keys correctly', () async {
     final db = CustomTablesDb(null);
 
-    expect(db.noIds.primaryKey, isEmpty);
+    expect(db.noIds.primaryKey, [db.noIds.payload]);
     expect(db.withDefaults.primaryKey, isEmpty);
     expect(db.config.primaryKey, [db.config.configKey]);
   });
@@ -72,7 +70,8 @@ void main() {
         OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
 
     verify(mock.runSelect(
-      'SELECT * FROM config WHERE config_key IN (?1, ?2) ORDER BY config_key ASC',
+      'SELECT * FROM config WHERE config_key IN (?1, ?2) '
+      'ORDER BY config_key ASC',
       ['a', 'b'],
     ));
   });
@@ -91,5 +90,14 @@ void main() {
     verify(
         mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
+  });
+
+  test('columns use table names in queries with multiple tables', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    await db.multiple(db.withDefaults.a.equals('foo')).get();
+
+    verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
   });
 }

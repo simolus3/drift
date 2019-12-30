@@ -1,7 +1,6 @@
 part of '../analysis.dart';
 
-/// Prepares the AST for further analysis. This visitor:
-/// - attaches the global scope containing table names and builtin functions
+/// Prepares the AST for further analysis. This visitor
 /// - creates [ReferenceScope]s for sub-queries
 /// - in each scope, registers every table or subquery that can be referenced to
 ///   the local [ReferenceScope].
@@ -9,43 +8,42 @@ part of '../analysis.dart';
 ///   statement.
 /// - reports syntactic errors that aren't handled in the parser to keep that
 ///   implementation simpler.
-class AstPreparingVisitor extends RecursiveVisitor<void> {
-  final ReferenceScope globalScope;
+class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   final List<Variable> _foundVariables = [];
   final AnalysisContext context;
 
-  AstPreparingVisitor({@required this.globalScope, this.context});
+  AstPreparingVisitor({this.context});
 
   void start(AstNode root) {
-    root
-      ..scope = globalScope
-      ..accept(this);
-
+    root.accept(this, null);
     _resolveIndexOfVariables();
   }
 
   @override
-  void visitSelectStatement(SelectStatement e) {
+  void visitSelectStatement(SelectStatement e, void arg) {
     // a select statement can appear as a sub query which has its own scope, so
     // we need to fork the scope here. There is one special case though:
     // Select statements that appear as a query source can't depend on data
     // defined in the outer scope. This is different from select statements
     // that work as expressions.
     // For instance, if you go to sqliteonline.com and issue the following
-    // query: "SELECT * FROM demo d1, (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
+    // query: "SELECT * FROM demo d1,
+    //   (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
     // it won't work.
     final isInFROM = e.parent is Queryable;
     final scope = e.scope;
 
     if (isInFROM) {
-      final forked = scope.effectiveRoot.createChild();
+      final surroundingSelect =
+          e.parents.firstWhere((node) => node is BaseSelectStatement).scope;
+      final forked = surroundingSelect.createSibling();
       e.scope = forked;
     } else {
       final forked = scope.createChild();
       e.scope = forked;
     }
 
-    for (var windowDecl in e.windowDeclarations) {
+    for (final windowDecl in e.windowDeclarations) {
       e.scope.register(windowDecl.name, windowDecl);
     }
 
@@ -83,11 +81,11 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitResultColumn(ResultColumn e) {
+  void visitResultColumn(ResultColumn e, void arg) {
     if (e is StarResultColumn) {
       // doesn't need special treatment, star expressions can't be referenced
     } else if (e is ExpressionResultColumn) {
@@ -95,11 +93,11 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
         e.scope.register(e.as, e);
       }
     }
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitQueryable(Queryable e) {
+  void visitQueryable(Queryable e, void arg) {
     final scope = e.scope;
     e.when(
       isTable: (table) {
@@ -122,19 +120,25 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
       },
     );
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitNumberedVariable(NumberedVariable e) {
-    _foundVariables.add(e);
-    visitChildren(e);
+  void visitCommonTableExpression(CommonTableExpression e, void arg) {
+    e.scope.register(e.cteTableName, e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitNamedVariable(ColonNamedVariable e) {
+  void visitNumberedVariable(NumberedVariable e, void arg) {
     _foundVariables.add(e);
-    visitChildren(e);
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitNamedVariable(ColonNamedVariable e, void arg) {
+    _foundVariables.add(e);
+    visitChildren(e, arg);
   }
 
   void _resolveIndexOfVariables() {
@@ -146,7 +150,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
     var largestAssigned = 0;
     final resolvedNames = <String, int>{};
 
-    for (var variable in _foundVariables) {
+    for (final variable in _foundVariables) {
       if (variable is NumberedVariable) {
         // if the variable has an explicit index (e.g ?123), then 123 is the
         // resolved index and the next variable will have index 124. Otherwise,
@@ -163,11 +167,24 @@ class AstPreparingVisitor extends RecursiveVisitor<void> {
         // index, but of course two variables with the same name must have the
         // same index.
         final index = resolvedNames.putIfAbsent(variable.name, () {
-          largestAssigned++;
-          return largestAssigned;
+          return ++largestAssigned;
         });
         variable.resolvedIndex = index;
       }
     }
+  }
+
+  void _forkScope(AstNode node) {
+    node.scope = node.scope.createChild();
+  }
+
+  @override
+  void visitChildren(AstNode e, void arg) {
+    // hack to fork scopes on statements (selects are handled above)
+    if (e is Statement && e is! SelectStatement) {
+      _forkScope(e);
+    }
+
+    super.visitChildren(e, arg);
   }
 }
