@@ -62,7 +62,7 @@ void main() {
         const ResolvedType(type: BasicType.text));
   });
 
-  group('case expressions', () {
+  group('cast expressions', () {
     test('resolve to type argument', () {
       expect(_resolveResultColumn('SELECT CAST(3+4 AS TEXT)'),
           const ResolvedType(type: BasicType.text));
