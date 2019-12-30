@@ -93,6 +93,69 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
+  @override
+  void visitBinaryExpression(BinaryExpression e, TypeExpectation arg) {
+    switch (e.operator.type) {
+      case TokenType.and:
+      case TokenType.or:
+        session.checkAndResolve(e, const ResolvedType.bool(), arg);
+        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+
+        // logic expressions, so children must be boolean
+        visitChildren(e, const ExactTypeExpectation.laxly(ResolvedType.bool()));
+        break;
+      case TokenType.equal:
+      case TokenType.exclamationEqual:
+      case TokenType.lessMore:
+      case TokenType.less:
+      case TokenType.lessEqual:
+      case TokenType.more:
+      case TokenType.moreEqual:
+        // comparison. Returns bool, copying nullability from children.
+        session.checkAndResolve(e, const ResolvedType.bool(), arg);
+        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        // Not technically a requirement, but assume lhs and rhs have the same
+        // type.
+        session.addRelationship(HaveSameType(e.left, e.right));
+        visitChildren(e, arg);
+        break;
+      case TokenType.plus:
+      case TokenType.minus:
+        session.addRelationship(CopyEncapsulating(e, [e.left, e.right]));
+        break;
+      // all of those only really make sense for integers
+      case TokenType.shiftLeft:
+      case TokenType.shiftRight:
+      case TokenType.pipe:
+      case TokenType.ampersand:
+      case TokenType.percent:
+        const type = ResolvedType(type: BasicType.int);
+        session.checkAndResolve(e, type, arg);
+        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        visitChildren(e, const ExactTypeExpectation.laxly(type));
+        break;
+      case TokenType.doublePipe:
+        // string concatenation.
+        const stringType = ResolvedType(type: BasicType.text);
+        session.checkAndResolve(e, stringType, arg);
+        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        const childExpectation = ExactTypeExpectation.laxly(stringType);
+        visit(e.left, childExpectation);
+        visit(e.right, childExpectation);
+        break;
+      default:
+        throw StateError('Binary operator ${e.operator.type} not recognized '
+            'by types2. At $e');
+    }
+  }
+
+  @override
+  void visitIsExpression(IsExpression e, TypeExpectation arg) {
+    session.checkAndResolve(e, const ResolvedType.bool(), arg);
+    session.hintNullability(e, false);
+    visitChildren(e, const NoTypeExpectation());
+  }
+
   void _handleWhereClause(HasWhereClause stmt) {
     // assume that a where statement is a boolean expression. Sqlite internally
     // casts (https://www.sqlite.org/lang_expr.html#booleanexpr), so be lax

@@ -56,4 +56,9 @@ void main() {
       const ResolvedType.bool(),
     );
   });
+
+  test('infers type in a string concatenation', () {
+    expect(_resolveFirstVariable("SELECT '' || :foo"),
+        const ResolvedType(type: BasicType.text));
+  });
 }
