@@ -9,7 +9,9 @@ class Block extends AstNode {
   Block(this.statements);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitBlock(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBlock(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => statements;

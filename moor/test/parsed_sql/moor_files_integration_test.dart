@@ -35,7 +35,7 @@ void main() {
     final mockExecutor = MockExecutor();
     final mockQueryExecutor = MockQueryExecutor();
     final db = CustomTablesDb(mockExecutor);
-    await Migrator(db, mockQueryExecutor).createAllTables();
+    await Migrator(db, mockQueryExecutor).createAll();
 
     verify(mockQueryExecutor.call(_createNoIds, []));
     verify(mockQueryExecutor.call(_createWithDefaults, []));

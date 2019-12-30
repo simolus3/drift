@@ -1,3 +1,4 @@
+export 'base_entity.dart';
 export 'column.dart';
 export 'database.dart';
 export 'declarations/declaration.dart';

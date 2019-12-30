@@ -7,12 +7,12 @@ import 'package:sqlparser/sqlparser.dart';
 /// Handles `REFERENCES` clauses in tables by resolving their columns and
 /// reporting errors if they don't exist. Further, sets the
 /// [MoorTable.references] field for tables declared in moor.
-class TableHandler {
+class EntityHandler {
   final AnalyzeMoorStep step;
   final ParsedMoorFile file;
   final List<MoorTable> availableTables;
 
-  TableHandler(this.step, this.file, this.availableTables);
+  EntityHandler(this.step, this.file, this.availableTables);
 
   void handle() {
     for (final table in file.declaredTables) {
@@ -25,7 +25,7 @@ class TableHandler {
 }
 
 class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
-  final TableHandler handler;
+  final EntityHandler handler;
 
   _ReferenceResolvingVisitor(this.handler);
 

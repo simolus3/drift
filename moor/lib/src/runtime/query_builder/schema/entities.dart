@@ -1,3 +1,5 @@
+part of '../query_builder.dart';
+
 /// Some abstract schema entity that can be stored in a database. This includes
 /// tables, triggers, views, indexes, etc.
 abstract class DatabaseSchemaEntity {
@@ -10,10 +12,11 @@ abstract class DatabaseSchemaEntity {
 /// In moor, triggers can only be declared in `.moor` files.
 ///
 /// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
-/// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tutorial].
+/// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
 ///
-/// [sqlite-docs]: (https://sqlite.org/lang_createtrigger.html)
-/// [sql-tutorial]: (https://www.sqlitetutorial.net/sqlite-trigger/)
+///
+/// [sqlite-docs]: https://sqlite.org/lang_createtrigger.html
+/// [sql-tut]: https://www.sqlitetutorial.net/sqlite-trigger/
 class Trigger extends DatabaseSchemaEntity {
   /// The `CREATE TRIGGER` sql statement that can be used to create this
   /// trigger.

@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 abstract class TableInducingStatement extends Statement
-    implements PartOfMoorFile, SchemaStatement {
+    implements SchemaStatement {
   final bool ifNotExists;
   final String tableName;
 

@@ -4,12 +4,13 @@ import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import 'base_entity.dart';
 import 'column.dart';
 import 'declarations/declaration.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class MoorTable implements HasDeclaration {
+class MoorTable implements HasDeclaration, MoorSchemaEntity {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
@@ -80,8 +81,7 @@ class MoorTable implements HasDeclaration {
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
-  /// The set of tables referenced somewhere in the declaration of this table,
-  /// for instance by using a `REFERENCES` column constraint.
+  @override
   final Set<MoorTable> references = {};
 
   /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
@@ -116,6 +116,7 @@ class MoorTable implements HasDeclaration {
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
 
+  @override
   String get displayName {
     if (isFromSql) {
       return sqlName;

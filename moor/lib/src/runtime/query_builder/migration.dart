@@ -69,7 +69,7 @@ class Migrator {
   /// Creates all tables, triggers, views, indexes and everything else defined
   /// in the database, if they don't exist.
   Future<void> createAll() async {
-    for (var entity in _db.allEntities) {
+    for (final entity in _db.allSchemaEntities) {
       if (entity is TableInfo) {
         await createTable(entity);
       } else if (entity is Trigger) {

@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-final block = Block([
+final _block = Block([
   UpdateStatement(table: TableReference('tbl'), set: [
     SetComponent(
       column: Reference(columnName: 'foo'),
@@ -36,7 +36,7 @@ void main() {
         mode: TriggerMode.after,
         target: const DeleteTarget(),
         onTable: TableReference('tbl'),
-        action: block,
+        action: _block,
       ),
     );
   });
@@ -61,7 +61,7 @@ void main() {
           Reference(columnName: 'bar'),
         ]),
         onTable: TableReference('tbl'),
-        action: block,
+        action: _block,
       ),
     );
   });
@@ -89,7 +89,7 @@ void main() {
           Reference(tableName: 'new', columnName: 'foo'),
           NullLiteral(token(TokenType.$null)),
         ),
-        action: block,
+        action: _block,
       ),
     );
   });

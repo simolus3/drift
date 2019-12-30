@@ -1,5 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
-import 'package:moor_generator/src/utils/table_reference_sorter.dart';
+import 'package:moor_generator/src/utils/entity_reference_sorter.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -39,14 +39,14 @@ void main() {
     a.references.add(b);
     b.references.add(c);
 
-    final sorted = sortTablesTopologically([a, b, c, d]);
+    final sorted = sortEntitiesTopologically([a, b, c, d]);
     expect(sorted, [c, b, a, d]);
   });
 }
 
 CircularReferenceException _expectFails(Iterable<MoorTable> table) {
   try {
-    sortTablesTopologically(table);
+    sortEntitiesTopologically(table);
     fail('Expected sortTablesTopologically to throw here');
   } on CircularReferenceException catch (e) {
     return e;

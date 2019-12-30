@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 /// A "CREATE TRIGGER" statement, see https://sqlite.org/lang_createtrigger.html
-class CreateTriggerStatement extends Statement with SchemaStatement {
+class CreateTriggerStatement extends Statement implements SchemaStatement {
   final bool ifNotExists;
   final String triggerName;
   IdentifierToken triggerNameToken;
@@ -24,8 +24,8 @@ class CreateTriggerStatement extends Statement with SchemaStatement {
       @required this.action});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitCreateTriggerStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCreateTriggerStatement(this, arg);
   }
 
   @override
@@ -53,7 +53,7 @@ abstract class TriggerTarget {
   int get hashCode => runtimeType.hashCode;
 
   @override
-  bool operator ==(other) => other.runtimeType == runtimeType;
+  bool operator ==(dynamic other) => other.runtimeType == runtimeType;
 }
 
 class DeleteTarget extends TriggerTarget {

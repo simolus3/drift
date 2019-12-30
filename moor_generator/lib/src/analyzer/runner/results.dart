@@ -6,9 +6,11 @@ import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 abstract class FileResult {
-  final List<MoorTable> declaredTables;
+  final List<MoorSchemaEntity> declaredEntities;
 
-  FileResult(this.declaredTables);
+  Iterable<MoorTable> get declaredTables => declaredEntities.whereType();
+
+  FileResult(this.declaredEntities);
 }
 
 class ParsedDartFile extends FileResult {

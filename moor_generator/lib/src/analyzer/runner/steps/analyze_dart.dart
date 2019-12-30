@@ -10,12 +10,12 @@ class AnalyzeDartStep extends AnalyzingStep {
     for (final accessor in parseResult.dbAccessors) {
       final transitiveImports = _transitiveImports(accessor.imports);
 
-      var availableTables = _availableTables(transitiveImports)
+      var availableEntities = _availableEntities(transitiveImports)
           .followedBy(accessor.declaredTables)
           .toList();
 
       try {
-        availableTables = sortTablesTopologically(availableTables);
+        availableEntities = sortEntitiesTopologically(availableEntities);
       } on CircularReferenceException catch (e) {
         final msg = StringBuffer(
             'Found a circular reference in your database. This can cause '
@@ -39,6 +39,7 @@ class AnalyzeDartStep extends AnalyzingStep {
           .whereType<ParsedMoorFile>()
           .expand((f) => f.resolvedQueries);
 
+      final availableTables = availableEntities.whereType<MoorTable>().toList();
       final parser = SqlParser(this, availableTables, accessor.declaredQueries);
       parser.parse();
 
