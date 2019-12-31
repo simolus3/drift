@@ -48,7 +48,7 @@ class CreateTriggerStatement extends Statement implements SchemaStatement {
 enum TriggerMode { before, after, insteadOf }
 
 abstract class TriggerTarget {
-  const TriggerTarget();
+  const TriggerTarget._();
   @override
   int get hashCode => runtimeType.hashCode;
 
@@ -57,15 +57,15 @@ abstract class TriggerTarget {
 }
 
 class DeleteTarget extends TriggerTarget {
-  const DeleteTarget();
+  const DeleteTarget() : super._();
 }
 
 class InsertTarget extends TriggerTarget {
-  const InsertTarget();
+  const InsertTarget() : super._();
 }
 
 class UpdateTarget extends TriggerTarget {
   final List<Reference> columnNames;
 
-  UpdateTarget(this.columnNames);
+  UpdateTarget(this.columnNames) : super._();
 }

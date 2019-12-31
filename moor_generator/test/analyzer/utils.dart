@@ -30,4 +30,9 @@ class TestState {
   FoundFile file(String uri) {
     return session.registerFile(Uri.parse(uri));
   }
+
+  Future<FoundFile> analyze(String uri) async {
+    await runTask(uri);
+    return file(uri);
+  }
 }

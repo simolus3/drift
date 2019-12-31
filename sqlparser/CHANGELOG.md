@@ -3,6 +3,7 @@
 - Added a argument type and argument to the visitor classes
 - Experimental new type inference algorithm
 - Support `CAST` expressions.
+- Support parsing `CREATE TRIGGER` statements
 
 ## 0.5.0
 - Optionally support the `json1` module

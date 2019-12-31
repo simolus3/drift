@@ -42,14 +42,13 @@ class ParsedMoorFile extends FileResult {
   final List<PartOfMoorFile> otherComponents;
 
   List<SqlQuery> resolvedQueries;
-  Map<TableInducingStatement, MoorTable> tableDeclarations;
   Map<ImportStatement, FoundFile> resolvedImports;
 
-  ParsedMoorFile(this.parseResult,
-      {List<MoorTable> declaredTables = const [],
-      this.queries = const [],
-      this.imports = const [],
-      this.otherComponents = const [],
-      this.tableDeclarations = const {}})
-      : super(declaredTables);
+  ParsedMoorFile(
+    this.parseResult, {
+    List<MoorSchemaEntity> declaredEntities = const [],
+    this.queries = const [],
+    this.imports = const [],
+    this.otherComponents = const [],
+  }) : super(declaredEntities);
 }

@@ -1,7 +1,9 @@
+import 'package:moor_generator/moor_generator.dart';
+
 /// Some schema entity found.
 ///
 /// Most commonly a table, but it can also be a trigger.
-abstract class MoorSchemaEntity {
+abstract class MoorSchemaEntity implements HasDeclaration {
   /// All entities that have to be created before this entity can be created.
   ///
   /// For tables, this can be contents of a `REFERENCES` clause. For triggers,

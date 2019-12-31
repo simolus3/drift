@@ -74,7 +74,6 @@ package to generate type-safe methods from sql.
 Most on this list is just not supported yet because I didn't found a use case for 
 them yet. If you need them, just leave an issue and I'll try to implement them soon.
 
-- Some advanced expressions, like `CAST`s aren't supported yet.
 - An `UPSERT` clause is not yet supported on insert statements
 
 If you run into parsing errors with what you think is valid sql, please create an issue.

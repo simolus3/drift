@@ -5,4 +5,5 @@ export 'declarations/declaration.dart';
 export 'sources.dart';
 export 'sql_query.dart';
 export 'table.dart';
+export 'trigger.dart';
 export 'used_type_converter.dart';
