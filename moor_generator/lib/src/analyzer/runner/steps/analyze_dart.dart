@@ -44,7 +44,7 @@ class AnalyzeDartStep extends AnalyzingStep {
       parser.parse();
 
       accessor
-        ..tables = availableTables
+        ..entities = availableEntities
         ..queries = availableQueries.followedBy(parser.foundQueries).toList();
     }
   }

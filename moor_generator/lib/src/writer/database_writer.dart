@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -30,10 +31,10 @@ class DatabaseWriter {
           '$className.connect(DatabaseConnection c): super.connect(c); \n');
     }
 
-    final tableGetters = <String>[];
+    final tableGetters = <MoorTable, String>{};
 
     for (final table in db.tables) {
-      tableGetters.add(table.tableFieldName);
+      tableGetters[table] = table.tableFieldName;
       final tableClassName = table.tableInfoName;
 
       writeMemoizedGetter(
@@ -64,10 +65,30 @@ class DatabaseWriter {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
-    // Write List of tables, close bracket for class
-    dbScope.leaf()
-      ..write('@override\nList<TableInfo> get allTables => [')
-      ..write(tableGetters.join(','))
-      ..write('];\n}');
+    // Write List of tables
+    final schemaScope = dbScope.leaf();
+    schemaScope
+      ..write('@override\nIterable<TableInfo> get allTables => ')
+      ..write('allSchemaEntities.whereType<TableInfo>();\n')
+      ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
+      ..write('=> [');
+
+    var first = true;
+    for (final entity in db.entities) {
+      if (!first) {
+        schemaScope.write(', ');
+      }
+
+      if (entity is MoorTable) {
+        schemaScope.write(tableGetters[entity]);
+      } else if (entity is MoorTrigger) {
+        schemaScope.write('Trigger(${asDartLiteral(entity.create)}, '
+            '${asDartLiteral(entity.displayName)})');
+      }
+      first = false;
+    }
+
+    // finally, close bracket for the allSchemaEntities override and class.
+    schemaScope.write('];\n}');
   }
 }

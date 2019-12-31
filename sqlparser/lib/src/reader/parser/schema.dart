@@ -4,7 +4,7 @@ mixin SchemaParser on ParserBase {
   SchemaStatement _create() {
     if (!_matchOne(TokenType.create)) return null;
 
-    if (_check(TokenType.table)) {
+    if (_check(TokenType.table) || _check(TokenType.virtual)) {
       return _createTable();
     } else if (_check(TokenType.trigger)) {
       return _createTrigger();

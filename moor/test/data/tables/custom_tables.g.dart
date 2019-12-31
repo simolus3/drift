@@ -7,6 +7,173 @@ part of 'custom_tables.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+class Config extends DataClass implements Insertable<Config> {
+  final String configKey;
+  final String configValue;
+  Config({@required this.configKey, this.configValue});
+  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final stringType = db.typeSystem.forDartType<String>();
+    return Config(
+      configKey: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
+      configValue: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
+    );
+  }
+  factory Config.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Config(
+      configKey: serializer.fromJson<String>(json['config_key']),
+      configValue: serializer.fromJson<String>(json['config_value']),
+    );
+  }
+  factory Config.fromJsonString(String encodedJson,
+          {ValueSerializer serializer}) =>
+      Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'config_key': serializer.toJson<String>(configKey),
+      'config_value': serializer.toJson<String>(configValue),
+    };
+  }
+
+  @override
+  ConfigCompanion createCompanion(bool nullToAbsent) {
+    return ConfigCompanion(
+      configKey: configKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configKey),
+      configValue: configValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configValue),
+    );
+  }
+
+  Config copyWith({String configKey, String configValue}) => Config(
+        configKey: configKey ?? this.configKey,
+        configValue: configValue ?? this.configValue,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Config(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is Config &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue);
+}
+
+class ConfigCompanion extends UpdateCompanion<Config> {
+  final Value<String> configKey;
+  final Value<String> configValue;
+  const ConfigCompanion({
+    this.configKey = const Value.absent(),
+    this.configValue = const Value.absent(),
+  });
+  ConfigCompanion.insert({
+    @required String configKey,
+    this.configValue = const Value.absent(),
+  }) : configKey = Value(configKey);
+  ConfigCompanion copyWith(
+      {Value<String> configKey, Value<String> configValue}) {
+    return ConfigCompanion(
+      configKey: configKey ?? this.configKey,
+      configValue: configValue ?? this.configValue,
+    );
+  }
+}
+
+class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  ConfigTable(this._db, [this._alias]);
+  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
+  GeneratedTextColumn _configKey;
+  GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
+  GeneratedTextColumn _constructConfigKey() {
+    return GeneratedTextColumn('config_key', $tableName, false,
+        $customConstraints: 'not null primary key');
+  }
+
+  final VerificationMeta _configValueMeta =
+      const VerificationMeta('configValue');
+  GeneratedTextColumn _configValue;
+  GeneratedTextColumn get configValue =>
+      _configValue ??= _constructConfigValue();
+  GeneratedTextColumn _constructConfigValue() {
+    return GeneratedTextColumn('config_value', $tableName, true,
+        $customConstraints: '');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [configKey, configValue];
+  @override
+  ConfigTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'config';
+  @override
+  final String actualTableName = 'config';
+  @override
+  VerificationContext validateIntegrity(ConfigCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.configKey.present) {
+      context.handle(_configKeyMeta,
+          configKey.isAcceptableValue(d.configKey.value, _configKeyMeta));
+    } else if (isInserting) {
+      context.missing(_configKeyMeta);
+    }
+    if (d.configValue.present) {
+      context.handle(_configValueMeta,
+          configValue.isAcceptableValue(d.configValue.value, _configValueMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {configKey};
+  @override
+  Config map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Config.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(ConfigCompanion d) {
+    final map = <String, Variable>{};
+    if (d.configKey.present) {
+      map['config_key'] = Variable<String, StringType>(d.configKey.value);
+    }
+    if (d.configValue.present) {
+      map['config_value'] = Variable<String, StringType>(d.configValue.value);
+    }
+    return map;
+  }
+
+  @override
+  ConfigTable createAlias(String alias) {
+    return ConfigTable(_db, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class NoId extends DataClass implements Insertable<NoId> {
   final Uint8List payload;
   NoId({@required this.payload});
@@ -485,173 +652,6 @@ class WithConstraints extends Table
   bool get dontWriteConstraints => true;
 }
 
-class Config extends DataClass implements Insertable<Config> {
-  final String configKey;
-  final String configValue;
-  Config({@required this.configKey, this.configValue});
-  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    return Config(
-      configKey: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
-      configValue: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-    );
-  }
-  factory Config.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return Config(
-      configKey: serializer.fromJson<String>(json['config_key']),
-      configValue: serializer.fromJson<String>(json['config_value']),
-    );
-  }
-  factory Config.fromJsonString(String encodedJson,
-          {ValueSerializer serializer}) =>
-      Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'config_key': serializer.toJson<String>(configKey),
-      'config_value': serializer.toJson<String>(configValue),
-    };
-  }
-
-  @override
-  ConfigCompanion createCompanion(bool nullToAbsent) {
-    return ConfigCompanion(
-      configKey: configKey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(configKey),
-      configValue: configValue == null && nullToAbsent
-          ? const Value.absent()
-          : Value(configValue),
-    );
-  }
-
-  Config copyWith({String configKey, String configValue}) => Config(
-        configKey: configKey ?? this.configKey,
-        configValue: configValue ?? this.configValue,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Config(')
-          ..write('configKey: $configKey, ')
-          ..write('configValue: $configValue')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is Config &&
-          other.configKey == this.configKey &&
-          other.configValue == this.configValue);
-}
-
-class ConfigCompanion extends UpdateCompanion<Config> {
-  final Value<String> configKey;
-  final Value<String> configValue;
-  const ConfigCompanion({
-    this.configKey = const Value.absent(),
-    this.configValue = const Value.absent(),
-  });
-  ConfigCompanion.insert({
-    @required String configKey,
-    this.configValue = const Value.absent(),
-  }) : configKey = Value(configKey);
-  ConfigCompanion copyWith(
-      {Value<String> configKey, Value<String> configValue}) {
-    return ConfigCompanion(
-      configKey: configKey ?? this.configKey,
-      configValue: configValue ?? this.configValue,
-    );
-  }
-}
-
-class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
-  final GeneratedDatabase _db;
-  final String _alias;
-  ConfigTable(this._db, [this._alias]);
-  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
-  GeneratedTextColumn _configKey;
-  GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
-  GeneratedTextColumn _constructConfigKey() {
-    return GeneratedTextColumn('config_key', $tableName, false,
-        $customConstraints: 'not null primary key');
-  }
-
-  final VerificationMeta _configValueMeta =
-      const VerificationMeta('configValue');
-  GeneratedTextColumn _configValue;
-  GeneratedTextColumn get configValue =>
-      _configValue ??= _constructConfigValue();
-  GeneratedTextColumn _constructConfigValue() {
-    return GeneratedTextColumn('config_value', $tableName, true,
-        $customConstraints: '');
-  }
-
-  @override
-  List<GeneratedColumn> get $columns => [configKey, configValue];
-  @override
-  ConfigTable get asDslTable => this;
-  @override
-  String get $tableName => _alias ?? 'config';
-  @override
-  final String actualTableName = 'config';
-  @override
-  VerificationContext validateIntegrity(ConfigCompanion d,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    if (d.configKey.present) {
-      context.handle(_configKeyMeta,
-          configKey.isAcceptableValue(d.configKey.value, _configKeyMeta));
-    } else if (isInserting) {
-      context.missing(_configKeyMeta);
-    }
-    if (d.configValue.present) {
-      context.handle(_configValueMeta,
-          configValue.isAcceptableValue(d.configValue.value, _configValueMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {configKey};
-  @override
-  Config map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Config.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  Map<String, Variable> entityToSql(ConfigCompanion d) {
-    final map = <String, Variable>{};
-    if (d.configKey.present) {
-      map['config_key'] = Variable<String, StringType>(d.configKey.value);
-    }
-    if (d.configValue.present) {
-      map['config_value'] = Variable<String, StringType>(d.configValue.value);
-    }
-    return map;
-  }
-
-  @override
-  ConfigTable createAlias(String alias) {
-    return ConfigTable(_db, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
 class MytableData extends DataClass implements Insertable<MytableData> {
   final int someid;
   final String sometext;
@@ -1087,6 +1087,8 @@ class Email extends Table
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
+  ConfigTable _config;
+  ConfigTable get config => _config ??= ConfigTable(this);
   NoIds _noIds;
   NoIds get noIds => _noIds ??= NoIds(this);
   WithDefaults _withDefaults;
@@ -1094,8 +1096,6 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   WithConstraints _withConstraints;
   WithConstraints get withConstraints =>
       _withConstraints ??= WithConstraints(this);
-  ConfigTable _config;
-  ConfigTable get config => _config ??= ConfigTable(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
   Email _email;
@@ -1210,8 +1210,19 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables =>
-      [noIds, withDefaults, withConstraints, config, mytable, email];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        config,
+        Trigger(
+            'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
+            'my_trigger'),
+        noIds,
+        withDefaults,
+        withConstraints,
+        mytable,
+        email
+      ];
 }
 
 class MultipleResult {

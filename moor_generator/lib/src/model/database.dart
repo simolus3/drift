@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 
@@ -18,7 +19,8 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// All tables that have been declared on this accessor directly.
   ///
   /// This contains the `tables` field from a `UseMoor` or `UseDao` annotation,
-  /// but not tables that are declared in imported moor files. Use
+  /// but not tables that are declared in imported moor files. Use [tables] for
+  /// that.
   final List<MoorTable> declaredTables;
 
   /// The `includes` field from the `UseMoor` or `UseDao` annotation.
@@ -27,9 +29,13 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// All queries declared directly in the `UseMoor` or `UseDao` annotation.
   final List<DeclaredQuery> declaredQueries;
 
+  /// All entities for this database accessor. This contains [declaredTables]
+  /// and all tables, triggers and other entities available through includes.
+  List<MoorSchemaEntity> entities = [];
+
   /// All tables for this database accessor. This contains the [declaredTables]
-  /// and all tables that are reachable through
-  List<MoorTable> tables = [];
+  /// and all tables that are reachable through includes.
+  Iterable<MoorTable> get tables => entities.whereType();
 
   /// All resolved queries.
   ///

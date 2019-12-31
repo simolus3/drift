@@ -878,10 +878,9 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables =>
-      [categories, recipes, ingredients, ingredientInRecipes];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allEntities =>
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
       [categories, recipes, ingredients, ingredientInRecipes];
 }
 

@@ -1424,16 +1424,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables => [
-        todosTable,
-        categories,
-        users,
-        sharedTodos,
-        tableWithoutPK,
-        pureDefaults
-      ];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allEntities => [
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
         todosTable,
         categories,
         users,

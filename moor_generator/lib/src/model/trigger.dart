@@ -8,12 +8,14 @@ class MoorTrigger implements MoorSchemaEntity {
   final String displayName;
 
   @override
-  final Declaration declaration;
+  final TriggerDeclaration declaration;
 
   /// The table on which this trigger operates.
   ///
   /// This field can be null in case the table wasn't resolved.
   MoorTable on;
+
+  String _create;
 
   MoorTrigger(this.displayName, this.declaration, this.on);
 
@@ -27,4 +29,12 @@ class MoorTrigger implements MoorSchemaEntity {
 
   @override
   Iterable<MoorSchemaEntity> get references => [on];
+
+  /// The `CREATE TRIGGER` statement that can be used to create this trigger.
+  String get create {
+    if (_create != null) return _create;
+
+    final node = (declaration as MoorTriggerDeclaration).node;
+    return node.span.text;
+  }
 }
