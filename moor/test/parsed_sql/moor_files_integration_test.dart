@@ -26,6 +26,9 @@ const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'somebool INTEGER, '
     'somedate INTEGER);';
 
+const _createMyTrigger =
+    'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;';
+
 const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
     'fts5(sender, title, body);';
 
@@ -43,6 +46,14 @@ void main() {
     verify(mockQueryExecutor.call(_createConfig, []));
     verify(mockQueryExecutor.call(_createMyTable, []));
     verify(mockQueryExecutor.call(_createEmail, []));
+  });
+
+  test('creates triggers specified in .moor files', () async {
+    final mockQueryExecutor = MockQueryExecutor();
+    final db = CustomTablesDb(MockExecutor());
+    await Migrator(db, mockQueryExecutor).createAll();
+
+    verify(mockQueryExecutor.call(_createMyTrigger, []));
   });
 
   test('infers primary keys correctly', () async {

@@ -30,7 +30,7 @@ CREATE TABLE mytable (
 CREATE VIRTUAL TABLE email USING fts5(sender, title, body) AS EMail;
 
 CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
-    INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
+  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
 END;
 
 readConfig: SELECT * FROM config WHERE config_key = ?;

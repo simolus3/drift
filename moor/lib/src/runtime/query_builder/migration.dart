@@ -164,7 +164,7 @@ class Migrator {
 
   /// Executes the `CREATE TRIGGER` statement that created the [trigger].
   Future<void> createTrigger(Trigger trigger) {
-    return issueCustomQuery(trigger.createTriggerStmt);
+    return issueCustomQuery(trigger.createTriggerStmt, const []);
   }
 
   /// Deletes the table with the given name. Note that this function does not
