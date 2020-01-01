@@ -186,13 +186,11 @@ class SqlEngine {
     try {
       AstPreparingVisitor(context: context).start(node);
 
-      if (node is CrudStatement) {
-        node
-          ..acceptWithoutArg(ColumnResolver(context))
-          ..acceptWithoutArg(ReferenceResolver(context))
-          ..acceptWithoutArg(TypeResolvingVisitor(context))
-          ..acceptWithoutArg(LintingVisitor(options, context));
-      }
+      node
+        ..acceptWithoutArg(ColumnResolver(context))
+        ..acceptWithoutArg(ReferenceResolver(context))
+        ..acceptWithoutArg(TypeResolvingVisitor(context))
+        ..acceptWithoutArg(LintingVisitor(options, context));
     } catch (_) {
       rethrow;
     }

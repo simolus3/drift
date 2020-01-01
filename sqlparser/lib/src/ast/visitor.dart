@@ -101,7 +101,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg) {
-    return visitCreateTriggerStatement(e, arg);
+    return visitSchemaStatement(e, arg);
   }
 
   R visitBaseSelectStatement(BaseSelectStatement stmt, A arg) {

@@ -92,6 +92,26 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
+  @override
+  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
+    final table = _resolveTableReference(e.onTable);
+    if (table == null) {
+      // further analysis is not really possible without knowing the table
+      super.visitCreateTriggerStatement(e, arg);
+      return;
+    }
+
+    final scope = e.scope;
+    if (e.target.introducesNew) {
+      scope.register('new', table);
+    }
+    if (e.target.introducesOld) {
+      scope.register('old', table);
+    }
+
+    visitChildren(e, arg);
+  }
+
   void _handle(Queryable queryable, List<Column> availableColumns) {
     queryable.when(
       isTable: (table) {

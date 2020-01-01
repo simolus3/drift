@@ -54,18 +54,41 @@ abstract class TriggerTarget {
 
   @override
   bool operator ==(dynamic other) => other.runtimeType == runtimeType;
+
+  /// Whether this target introduces the "new" table reference in the sub-scope
+  /// of the create trigger statement.
+  bool get introducesNew;
+
+  /// Whether this target introduces the "old" table reference in the sub-scope
+  /// of the create trigger statement.
+  bool get introducesOld;
 }
 
 class DeleteTarget extends TriggerTarget {
   const DeleteTarget() : super._();
+
+  @override
+  bool get introducesNew => false;
+  @override
+  bool get introducesOld => true;
 }
 
 class InsertTarget extends TriggerTarget {
   const InsertTarget() : super._();
+
+  @override
+  bool get introducesNew => true;
+  @override
+  bool get introducesOld => false;
 }
 
 class UpdateTarget extends TriggerTarget {
   final List<Reference> columnNames;
 
   UpdateTarget(this.columnNames) : super._();
+
+  @override
+  bool get introducesNew => true;
+  @override
+  bool get introducesOld => true;
 }
