@@ -2,17 +2,21 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// Handles `REFERENCES` clauses in tables by resolving their columns and
 /// reporting errors if they don't exist. Further, sets the
 /// [MoorTable.references] field for tables declared in moor.
-class EntityHandler {
-  final AnalyzeMoorStep step;
+class EntityHandler extends BaseAnalyzer {
   final ParsedMoorFile file;
-  final List<MoorTable> availableTables;
 
-  EntityHandler(this.step, this.file, this.availableTables);
+  AnalyzeMoorStep get moorStep => step as AnalyzeMoorStep;
+
+  EntityHandler(
+      AnalyzeMoorStep step, this.file, List<MoorTable> availableTables)
+      : super(availableTables, step);
 
   final Map<CreateTriggerStatement, MoorTrigger> _triggers = {};
   final Map<TableInducingStatement, MoorTable> _tables = {};
@@ -31,8 +35,17 @@ class EntityHandler {
       trigger.on = null;
 
       final declaration = trigger.declaration as MoorTriggerDeclaration;
-      _triggers[declaration.node] = trigger;
-      declaration.node.acceptWithoutArg(referenceResolver);
+      final node = declaration.node;
+      _triggers[node] = trigger;
+      node.acceptWithoutArg(referenceResolver);
+
+      // triggers can have complex statements, so run the linter on them
+      final context = engine.analyzeNode(node, file.parseResult.sql);
+      context.errors.forEach(report);
+
+      final linter = Linter(context, mapper);
+      linter.reportLints();
+      reportLints(linter.lints, name: trigger.displayName);
     }
   }
 
@@ -51,8 +64,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
   _ReferenceResolvingVisitor(this.handler);
 
   MoorTable _resolveTable(TableReference reference) {
-    return handler.availableTables.singleWhere(
-        (t) => t.sqlName == reference.tableName,
+    return handler.tables.singleWhere((t) => t.sqlName == reference.tableName,
         orElse: () => null);
   }
 

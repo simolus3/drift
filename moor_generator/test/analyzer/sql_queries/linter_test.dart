@@ -1,7 +1,10 @@
+import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
+
+import '../utils.dart';
 
 void main() {
   final engine = SqlEngine(useMoorExtensions: true);
@@ -21,5 +24,49 @@ void main() {
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('Dart template')));
+  });
+
+  group('warns about insert column count mismatch', () {
+    test('in top-level queries', () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  context VARCHAR
+);
+
+test: INSERT INTO foo VALUES (?)
+        ''',
+      });
+
+      final file = await state.analyze('package:foo/a.moor');
+      expect(
+        file.errors.errors,
+        contains(const TypeMatcher<MoorError>().having(
+            (e) => e.message, 'message', 'Expected tuple to have 2 values')),
+      );
+    });
+
+    test('in CREATE TRIGGER statements', () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  context VARCHAR
+);
+
+CREATE TRIGGER my_trigger AFTER DELETE ON foo BEGIN
+  INSERT INTO foo VALUES (old.context);
+END;
+        ''',
+      });
+
+      final file = await state.analyze('package:foo/a.moor');
+      expect(
+        file.errors.errors,
+        contains(const TypeMatcher<MoorError>().having(
+            (e) => e.message, 'message', 'Expected tuple to have 2 values')),
+      );
+    });
   });
 }

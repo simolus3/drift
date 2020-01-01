@@ -13,7 +13,7 @@ class AnalyzeMoorStep extends AnalyzingStep {
         .followedBy(parseResult.declaredTables)
         .toList();
 
-    final parser = SqlParser(this, availableTables, parseResult.queries)
+    final parser = SqlAnalyzer(this, availableTables, parseResult.queries)
       ..parse();
 
     EntityHandler(this, parseResult, availableTables).handle();

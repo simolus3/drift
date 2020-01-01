@@ -30,7 +30,7 @@ class QueryHandler {
     _verifyNoSkippedIndexes();
     final query = _mapToMoor();
 
-    final linter = Linter(this);
+    final linter = Linter.forHandler(this);
     linter.reportLints();
     query.lints = linter.lints;
 
