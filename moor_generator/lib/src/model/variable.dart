@@ -14,7 +14,4 @@ class MoorVariable implements HasDeclaration
 		this.value,
 		this.declaration
 	});
-
-	@override
-	String toString() => '$type $name${value == null ? "" : "= $value"}';
 }
