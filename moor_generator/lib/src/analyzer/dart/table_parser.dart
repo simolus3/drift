@@ -12,9 +12,12 @@ class TableParser {
 
     final columns = await _parseColumns(element);
 
+	final variables = await _parseVariables(element);
+
     final table = MoorTable(
       fromClass: element,
       columns: columns,
+	  variables: variables,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
       primaryKey: await _readPrimaryKey(element, columns),
@@ -132,6 +135,30 @@ class TableParser {
       final node = resolved.node as MethodDeclaration;
 
       return await base.parseColumn(node, field.getter);
+    }));
+  }
+
+  Future<List<MoorVariable>> _parseVariables(ClassElement element) {
+    final variableNames = element.allSupertypes
+      .map((t) => t.element)
+      .followedBy([element])
+      .expand((e) => e.fields)
+      .where((field) {
+	  	return field.metadata.singleWhere((annotation) => 
+		  annotation.element != null && annotation.element.name.contains("classVariable"), 
+		  orElse: () => null) != null;
+	  })
+      .map((field) => field.name)
+      .toSet();
+
+    final fields = variableNames.map((name) {
+      final getter = element.getGetter(name) ??
+          element.lookUpInheritedConcreteGetter(name, element.library);
+      return getter.variable;
+    });
+
+    return Future.wait(fields.map((field) async {
+      return await base.parseVariable(field);
     }));
   }
 }
