@@ -14,6 +14,7 @@ import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 
+part 'variable_parser.dart';
 part 'column_parser.dart';
 part 'table_parser.dart';
 part 'use_dao_parser.dart';
@@ -21,12 +22,14 @@ part 'use_moor_parser.dart';
 
 class MoorDartParser {
   final ParseDartStep step;
-
+  
   ColumnParser _columnParser;
+  VariableParser _variableParser;
   TableParser _tableParser;
 
   MoorDartParser(this.step) {
     _columnParser = ColumnParser(this);
+	_variableParser = VariableParser(this);
     _tableParser = TableParser(this);
   }
 
@@ -37,6 +40,10 @@ class MoorDartParser {
   Future<MoorColumn> parseColumn(
       MethodDeclaration declaration, Element element) {
     return Future.value(_columnParser.parse(declaration, element));
+  }
+
+  Future<MoorVariable> parseVariable(PropertyInducingElement element) {
+    return Future.value(_variableParser.parse(element));
   }
 
   @visibleForTesting
