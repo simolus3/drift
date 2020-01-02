@@ -106,7 +106,7 @@ class MoorTable implements MoorSchemaEntity {
   MoorTable({
     this.fromClass,
     this.columns,
-	this.variables,
+	this.variables = const [],
     this.sqlName,
     this.dartTypeName,
     this.primaryKey,
