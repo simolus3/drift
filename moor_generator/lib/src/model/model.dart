@@ -1,5 +1,6 @@
 export 'base_entity.dart';
 export 'column.dart';
+export 'variable.dart';
 export 'database.dart';
 export 'declarations/declaration.dart';
 export 'sources.dart';
