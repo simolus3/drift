@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 import 'base_entity.dart';
 import 'column.dart';
+import 'variable.dart';
 import 'declarations/declaration.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
@@ -34,6 +35,9 @@ class MoorTable implements MoorSchemaEntity {
 
   /// The columns declared in this table.
   final List<MoorColumn> columns;
+
+  /// The variables declared in this table.
+  final List<MoorVariable> variables;
 
   /// The name of this table when stored in the database
   final String sqlName;
@@ -102,6 +106,7 @@ class MoorTable implements MoorSchemaEntity {
   MoorTable({
     this.fromClass,
     this.columns,
+	this.variables,
     this.sqlName,
     this.dartTypeName,
     this.primaryKey,
