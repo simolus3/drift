@@ -23,7 +23,8 @@ class DataClassWriter {
     }
 
 	for (final variable in table.variables) {
-      _buffer.write('$variable; \n');
+	  String value = variable.value == null ? "" : "= ${variable.value}";
+      _buffer.write('${variable.type} ${variable.name} $value; \n');
     }
 
     // write constructor with named optional fields
