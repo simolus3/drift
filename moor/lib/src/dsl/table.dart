@@ -123,3 +123,13 @@ class DataClassName {
   /// {@macro moor:custom_data_class}
   const DataClassName(this.name);
 }
+
+/// A class to to be used as an annotation on members of the [Table] class
+class ClassVariable
+{
+	/// Constructor
+	const ClassVariable();
+}
+
+/// define the annotation
+const classVariable = ClassVariable();
