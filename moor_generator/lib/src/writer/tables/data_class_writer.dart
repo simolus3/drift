@@ -22,6 +22,10 @@ class DataClassWriter {
           .write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
     }
 
+	for (final variable in table.variables) {
+      _buffer.write('$variable; \n');
+    }
+
     // write constructor with named optional fields
     _buffer
       ..write(table.dartTypeName)
