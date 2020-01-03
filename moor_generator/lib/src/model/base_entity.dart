@@ -17,5 +17,7 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   String get displayName;
 
   /// The getter in a generated database accessor referring to this model.
+  ///
+  /// Returns null for entities that shouldn't have a getter.
   String get dbGetterName;
 }

@@ -37,6 +37,19 @@ class MoorParser {
       } else if (parsedStmt is DeclaredStatement) {
         if (parsedStmt.isRegularQuery) {
           queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+        } else {
+          final identifier =
+              parsedStmt.identifier as SpecialStatementIdentifier;
+          if (identifier.specialName != 'create') {
+            step.reportError(
+              ErrorInMoorFile(
+                span: identifier.nameToken.span,
+                message: 'Only @create is supported at the moment.',
+              ),
+            );
+          } else {
+            createdEntities.add(SpecialQuery.fromMoor(parsedStmt, step.file));
+          }
         }
       }
     }

@@ -46,3 +46,26 @@ class Index extends DatabaseSchemaEntity {
   /// Mainly used by generated code.
   Index(this.entityName, this.createIndexStmt);
 }
+
+/// An internal schema entity to run an sql statement when the database is
+/// created.
+///
+/// The generator uses this entity to implement `@create` statements in moor
+/// files:
+/// ```sql
+/// CREATE TABLE users (name TEXT);
+///
+/// @create: INSERT INTO users VALUES ('Bob');
+/// ```
+/// A [OnCreateQuery] is emitted for each `@create` statement in an included
+/// moor file.
+class OnCreateQuery extends DatabaseSchemaEntity {
+  /// The sql statement that should be run in the default `onCreate` clause.
+  final String sql;
+
+  /// Create a query that will be run in the default `onCreate` migration.
+  OnCreateQuery(this.sql);
+
+  @override
+  String get entityName => r'$internal$';
+}

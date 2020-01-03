@@ -37,6 +37,8 @@ END;''';
 const _createValueIndex =
     'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);';
 
+const _defaultInsert = "INSERT INTO config VALUES ('key', 'values')";
+
 void main() {
   // see ../data/tables/tables.moor
   test('creates everything as specified in .moor files', () async {
@@ -53,6 +55,7 @@ void main() {
     verify(mockQueryExecutor.call(_createEmail, []));
     verify(mockQueryExecutor.call(_createMyTrigger, []));
     verify(mockQueryExecutor.call(_createValueIndex, []));
+    verify(mockQueryExecutor.call(_defaultInsert, []));
   });
 
   test('can create trigger manually', () async {

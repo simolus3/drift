@@ -40,6 +40,8 @@ readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 findValidJsons: SELECT * FROM config WHERE json_valid(config_value);
 
+@create: INSERT INTO config VALUES ('key', 'values');
+
 multiple: SELECT * FROM with_constraints c
  INNER JOIN with_defaults d
    ON d.a = c.a AND d.b = c.b

@@ -34,7 +34,11 @@ class DatabaseWriter {
     final entityGetters = <MoorSchemaEntity, String>{};
 
     for (final entity in db.entities) {
-      entityGetters[entity] = entity.dbGetterName;
+      final getterName = entity.dbGetterName;
+      if (getterName != null) {
+        entityGetters[entity] = entity.dbGetterName;
+      }
+
       if (entity is MoorTable) {
         final tableClassName = entity.tableInfoName;
 
@@ -92,7 +96,13 @@ class DatabaseWriter {
       ..write('=> [');
 
     schemaScope
-      ..write(db.entities.map((e) => entityGetters[e]).join(', '))
+      ..write(db.entities.map((e) {
+        if (e is SpecialQuery) {
+          return 'OnCreateQuery(${asDartLiteral(e.sql)})';
+        }
+
+        return entityGetters[e];
+      }).join(', '))
       // close list literal, getter and finally the class
       ..write('];\n}');
   }

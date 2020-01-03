@@ -1224,6 +1224,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         valueIdx,
         withDefaults,
         myTrigger,
+        OnCreateQuery('INSERT INTO config VALUES (\'key\', \'values\')'),
         noIds,
         withConstraints,
         mytable,

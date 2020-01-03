@@ -4,6 +4,7 @@ export 'database.dart';
 export 'declarations/declaration.dart';
 export 'index.dart';
 export 'sources.dart';
+export 'special_queries.dart';
 export 'sql_query.dart';
 export 'table.dart';
 export 'trigger.dart';

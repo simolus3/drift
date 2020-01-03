@@ -40,24 +40,36 @@ class EntityHandler extends BaseAnalyzer {
             _handleMoorDeclaration(entity, _triggers) as CreateTriggerStatement;
 
         // triggers can have complex statements, so run the linter on them
-        final context = engine.analyzeNode(node, file.parseResult.sql);
-        context.errors.forEach(report);
-
-        final linter = Linter(context, mapper);
-        linter.reportLints();
-        reportLints(linter.lints, name: entity.displayName);
+        _lint(node, entity.displayName);
 
         // find additional tables that might be referenced in the body
-        final tablesFinder = ReferencedTablesVisitor();
-        node.action.acceptWithoutArg(tablesFinder);
-        final tablesFromBody = tablesFinder.foundTables.map(mapper.tableToMoor);
-        entity.bodyReferences.addAll(tablesFromBody);
+        entity.bodyReferences.addAll(_findTables(node.action));
       } else if (entity is MoorIndex) {
         entity.table = null;
 
         _handleMoorDeclaration<MoorIndexDeclaration>(entity, _indexes);
+      } else if (entity is SpecialQuery) {
+        final node = (entity.declaration as MoorSpecialQueryDeclaration).node;
+
+        _lint(node, 'special @create table');
+        entity.references.addAll(_findTables(node.statement));
       }
     }
+  }
+
+  void _lint(AstNode node, String displayName) {
+    final context = engine.analyzeNode(node, file.parseResult.sql);
+    context.errors.forEach(report);
+
+    final linter = Linter(context, mapper);
+    linter.reportLints();
+    reportLints(linter.lints, name: displayName);
+  }
+
+  Iterable<MoorTable> _findTables(AstNode node) {
+    final tablesFinder = ReferencedTablesVisitor();
+    node.acceptWithoutArg(tablesFinder);
+    return tablesFinder.foundTables.map(mapper.tableToMoor);
   }
 
   AstNode _handleMoorDeclaration<T extends MoorDeclaration>(

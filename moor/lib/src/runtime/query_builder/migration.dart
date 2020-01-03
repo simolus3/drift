@@ -76,6 +76,8 @@ class Migrator {
         await createTrigger(entity);
       } else if (entity is Index) {
         await createIndex(entity);
+      } else if (entity is OnCreateQuery) {
+        await issueCustomQuery(entity.sql, const []);
       } else {
         throw AssertionError('Unknown entity: $entity');
       }

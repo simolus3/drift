@@ -27,8 +27,19 @@ void main() {
   });
 
   group('warns about insert column count mismatch', () {
+    TestState state;
+
+    Future<void> expectError() async {
+      final file = await state.analyze('package:foo/a.moor');
+      expect(
+        file.errors.errors,
+        contains(const TypeMatcher<MoorError>().having(
+            (e) => e.message, 'message', 'Expected tuple to have 2 values')),
+      );
+    }
+
     test('in top-level queries', () async {
-      final state = TestState.withContent({
+      state = TestState.withContent({
         'foo|lib/a.moor': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -38,17 +49,11 @@ CREATE TABLE foo (
 test: INSERT INTO foo VALUES (?)
         ''',
       });
-
-      final file = await state.analyze('package:foo/a.moor');
-      expect(
-        file.errors.errors,
-        contains(const TypeMatcher<MoorError>().having(
-            (e) => e.message, 'message', 'Expected tuple to have 2 values')),
-      );
+      await expectError();
     });
 
     test('in CREATE TRIGGER statements', () async {
-      final state = TestState.withContent({
+      state = TestState.withContent({
         'foo|lib/a.moor': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -60,13 +65,21 @@ CREATE TRIGGER my_trigger AFTER DELETE ON foo BEGIN
 END;
         ''',
       });
+      await expectError();
+    });
 
-      final file = await state.analyze('package:foo/a.moor');
-      expect(
-        file.errors.errors,
-        contains(const TypeMatcher<MoorError>().having(
-            (e) => e.message, 'message', 'Expected tuple to have 2 values')),
-      );
+    test('in @create statements', () async {
+      state = TestState.withContent({
+        'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+  context VARCHAR
+);
+
+@create: INSERT INTO foo VALUES (old.context);
+        ''',
+      });
+      await expectError();
     });
   });
 }
