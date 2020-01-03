@@ -105,6 +105,28 @@ class IsExpression extends Expression {
   }
 }
 
+class IsNullExpression extends Expression {
+  final Expression operand;
+
+  /// When true, this is a `NOT NULL` expression.
+  final bool negated;
+
+  IsNullExpression(this.operand, [this.negated = false]);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitIsNullExpression(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [operand];
+
+  @override
+  bool contentEquals(IsNullExpression other) {
+    return other.negated == negated;
+  }
+}
+
 /// `$check BETWEEN $lower AND $upper`
 class BetweenExpression extends Expression {
   final bool not;

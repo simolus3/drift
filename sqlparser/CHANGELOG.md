@@ -2,7 +2,7 @@
 
 - Added a argument type and argument to the visitor classes
 - Experimental new type inference algorithm
-- Support `CAST` expressions.
+- Support `CAST` expressions and the `ISNULL` / `NOTNULL` postfixes
 - Support parsing `CREATE TRIGGER` statements
 - Support parsing `CREATE INDEX` statement
 

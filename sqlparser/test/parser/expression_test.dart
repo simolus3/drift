@@ -144,6 +144,8 @@ final Map<String, Expression> _testCases = {
     ),
     'TEXT',
   ),
+  'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
+  'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
 };
 
 void main() {

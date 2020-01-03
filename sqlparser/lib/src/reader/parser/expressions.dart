@@ -205,21 +205,41 @@ mixin ExpressionParser on ParserBase {
   }
 
   Expression _postfix() {
-    // todo parse ISNULL, NOTNULL, NOT NULL, etc.
-    // I don't even know the precedence ¯\_(ツ)_/¯ (probably not higher than
-    // unary)
     var expression = _primary();
 
-    while (_matchOne(TokenType.collate)) {
-      final collateOp = _previous;
-      final collateFun =
-          _consume(TokenType.identifier, 'Expected a collating sequence')
-              as IdentifierToken;
-      expression = CollateExpression(
-        inner: expression,
-        operator: collateOp,
-        collateFunction: collateFun,
-      )..setSpan(expression.first, collateFun);
+    // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
+    // with NOT BETWEEN / NOT IN / ... expressions
+    const matchedTokens = [
+      TokenType.collate,
+      TokenType.notNull,
+      TokenType.isNull
+    ];
+
+    while (_match(matchedTokens)) {
+      final operator = _previous;
+      switch (operator.type) {
+        case TokenType.collate:
+          final collateOp = _previous;
+          final collateFun =
+              _consume(TokenType.identifier, 'Expected a collating sequence')
+                  as IdentifierToken;
+          expression = CollateExpression(
+            inner: expression,
+            operator: collateOp,
+            collateFunction: collateFun,
+          );
+          break;
+        case TokenType.isNull:
+          expression = IsNullExpression(expression);
+          break;
+        case TokenType.notNull:
+          expression = IsNullExpression(expression, true);
+          break;
+        default:
+          // we checked with _match, this may never happen
+          throw AssertionError();
+      }
+      expression.setSpan(operator, _previous);
     }
 
     return expression;

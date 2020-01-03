@@ -115,6 +115,7 @@ class TypeResolver {
       } else if (expr is SqlInvocation) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
+          expr is IsNullExpression ||
           expr is InExpression ||
           expr is StringComparisonExpression ||
           expr is BetweenExpression ||
