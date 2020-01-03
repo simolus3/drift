@@ -8,6 +8,7 @@
   ```
   selectVariable(:variable AS TEXT): SELECT :variable;
   ```
+- Support for triggers! You can declare them in a `.moor` file and
   
 ## 2.2.0
 
