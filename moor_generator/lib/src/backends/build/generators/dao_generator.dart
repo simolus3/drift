@@ -23,7 +23,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
 
       for (final table in dao.tables) {
         final infoType = table.tableInfoName;
-        final getterName = table.tableFieldName;
+        final getterName = table.dbGetterName;
         classScope
             .leaf()
             .write('$infoType get $getterName => db.$getterName;\n');

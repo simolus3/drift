@@ -38,4 +38,7 @@ class MoorTrigger implements MoorSchemaEntity {
     final node = (declaration as MoorTriggerDeclaration).node;
     return node.span.text;
   }
+
+  @override
+  String get dbGetterName => dbFieldName(displayName);
 }

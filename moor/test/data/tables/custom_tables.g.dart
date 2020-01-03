@@ -1091,6 +1091,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   ConfigTable get config => _config ??= ConfigTable(this);
   WithDefaults _withDefaults;
   WithDefaults get withDefaults => _withDefaults ??= WithDefaults(this);
+  Trigger _myTrigger;
+  Trigger get myTrigger => _myTrigger ??= Trigger(
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
+      'my_trigger');
   NoIds _noIds;
   NoIds get noIds => _noIds ??= NoIds(this);
   WithConstraints _withConstraints;
@@ -1212,17 +1216,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-        config,
-        withDefaults,
-        Trigger(
-            'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
-            'my_trigger'),
-        noIds,
-        withConstraints,
-        mytable,
-        email
-      ];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [config, withDefaults, myTrigger, noIds, withConstraints, mytable, email];
 }
 
 class MultipleResult {

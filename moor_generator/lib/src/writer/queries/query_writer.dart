@@ -394,12 +394,12 @@ class QueryWriter {
   }
 
   void _writeReadsFrom() {
-    final from = _select.readsFrom.map((t) => t.tableFieldName).join(', ');
+    final from = _select.readsFrom.map((t) => t.dbGetterName).join(', ');
     _buffer..write('readsFrom: {')..write(from)..write('}');
   }
 
   void _writeUpdates() {
-    final from = _update.updates.map((t) => t.tableFieldName).join(', ');
+    final from = _update.updates.map((t) => t.dbGetterName).join(', ');
     _buffer..write('updates: {')..write(from)..write('}');
   }
 }

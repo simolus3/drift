@@ -42,7 +42,8 @@ class MoorTable implements MoorSchemaEntity {
   final String dartTypeName;
 
   /// The getter name used for this table in a generated database or dao class.
-  String get tableFieldName => _dbFieldName(_baseName);
+  @override
+  String get dbGetterName => dbFieldName(_baseName);
   String get tableInfoName {
     // if this table was parsed from sql, a user might want to refer to it
     // directly because there is no user defined parent class.
@@ -131,6 +132,6 @@ class MoorTable implements MoorSchemaEntity {
   }
 }
 
-String _dbFieldName(String className) => ReCase(className).camelCase;
+String dbFieldName(String className) => ReCase(className).camelCase;
 
 String tableInfoNameForTableClass(String className) => '\$${className}Table';

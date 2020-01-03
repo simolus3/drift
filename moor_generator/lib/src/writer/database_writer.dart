@@ -31,18 +31,28 @@ class DatabaseWriter {
           '$className.connect(DatabaseConnection c): super.connect(c); \n');
     }
 
-    final tableGetters = <MoorTable, String>{};
+    final entityGetters = <MoorSchemaEntity, String>{};
 
-    for (final table in db.tables) {
-      tableGetters[table] = table.tableFieldName;
-      final tableClassName = table.tableInfoName;
+    for (final entity in db.entities) {
+      entityGetters[entity] = entity.dbGetterName;
+      if (entity is MoorTable) {
+        final tableClassName = entity.tableInfoName;
 
-      writeMemoizedGetter(
-        buffer: dbScope.leaf(),
-        getterName: table.tableFieldName,
-        returnType: tableClassName,
-        code: '$tableClassName(this)',
-      );
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: tableClassName,
+          code: '$tableClassName(this)',
+        );
+      } else if (entity is MoorTrigger) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: 'Trigger',
+          code: 'Trigger(${asDartLiteral(entity.create)}, '
+              '${asDartLiteral(entity.displayName)})',
+        );
+      }
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
@@ -73,22 +83,9 @@ class DatabaseWriter {
       ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
       ..write('=> [');
 
-    var first = true;
-    for (final entity in db.entities) {
-      if (!first) {
-        schemaScope.write(', ');
-      }
-
-      if (entity is MoorTable) {
-        schemaScope.write(tableGetters[entity]);
-      } else if (entity is MoorTrigger) {
-        schemaScope.write('Trigger(${asDartLiteral(entity.create)}, '
-            '${asDartLiteral(entity.displayName)})');
-      }
-      first = false;
-    }
-
-    // finally, close bracket for the allSchemaEntities override and class.
-    schemaScope.write('];\n}');
+    schemaScope
+      ..write(db.entities.map((e) => entityGetters[e]).join(', '))
+      // close list literal, getter and finally the class
+      ..write('];\n}');
   }
 }
