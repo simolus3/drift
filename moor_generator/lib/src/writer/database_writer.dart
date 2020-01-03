@@ -52,6 +52,14 @@ class DatabaseWriter {
           code: 'Trigger(${asDartLiteral(entity.create)}, '
               '${asDartLiteral(entity.displayName)})',
         );
+      } else if (entity is MoorIndex) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: 'Index',
+          code: 'Index(${asDartLiteral(entity.displayName)}, '
+              '${asDartLiteral(entity.createStmt)})',
+        );
       }
     }
 

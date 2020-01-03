@@ -5,6 +5,7 @@ import 'package:sqlparser/sqlparser.dart';
 
 part 'columns.dart';
 part 'database.dart';
+part 'index.dart';
 part 'tables.dart';
 part 'trigger.dart';
 

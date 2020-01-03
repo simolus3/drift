@@ -14,7 +14,6 @@ abstract class DatabaseSchemaEntity {
 /// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
 /// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
 ///
-///
 /// [sqlite-docs]: https://sqlite.org/lang_createtrigger.html
 /// [sql-tut]: https://www.sqlitetutorial.net/sqlite-trigger/
 class Trigger extends DatabaseSchemaEntity {
@@ -27,4 +26,23 @@ class Trigger extends DatabaseSchemaEntity {
   /// Creates a trigger representation by the [createTriggerStmt] and its
   /// [entityName]. Mainly used by generated code.
   Trigger(this.createTriggerStmt, this.entityName);
+}
+
+/// A sqlite index on columns or expressions.
+///
+/// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
+/// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
+///
+/// [sqlite-docs]: https://www.sqlite.org/lang_createindex.html
+/// [sql-tut]: https://www.sqlitetutorial.net/sqlite-index/
+class Index extends DatabaseSchemaEntity {
+  @override
+  final String entityName;
+
+  /// The `CREATE INDEX` sql statement that can be used to create this index.
+  final String createIndexStmt;
+
+  /// Creates an index model by the [createIndexStmt] and its [entityName].
+  /// Mainly used by generated code.
+  Index(this.entityName, this.createIndexStmt);
 }

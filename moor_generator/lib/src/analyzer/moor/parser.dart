@@ -32,6 +32,8 @@ class MoorParser {
       } else if (parsedStmt is CreateTriggerStatement) {
         // the table will be resolved in the analysis step
         createdEntities.add(MoorTrigger.fromMoor(parsedStmt, step.file));
+      } else if (parsedStmt is CreateIndexStatement) {
+        createdEntities.add(MoorIndex.fromMoor(parsedStmt, step.file));
       } else if (parsedStmt is DeclaredStatement) {
         if (parsedStmt.isRegularQuery) {
           queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));

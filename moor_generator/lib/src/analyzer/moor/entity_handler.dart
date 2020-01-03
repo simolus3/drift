@@ -17,44 +17,58 @@ class EntityHandler extends BaseAnalyzer {
 
   EntityHandler(
       AnalyzeMoorStep step, this.file, List<MoorTable> availableTables)
-      : super(availableTables, step);
+      : super(availableTables, step) {
+    _referenceResolver = _ReferenceResolvingVisitor(this);
+  }
 
   final Map<CreateTriggerStatement, MoorTrigger> _triggers = {};
   final Map<TableInducingStatement, MoorTable> _tables = {};
+  final Map<CreateIndexStatement, MoorIndex> _indexes = {};
+
+  _ReferenceResolvingVisitor _referenceResolver;
 
   void handle() {
-    final referenceResolver = _ReferenceResolvingVisitor(this);
-    for (final table in file.declaredTables) {
-      table.references.clear();
+    for (final entity in file.declaredEntities) {
+      if (entity is MoorTable) {
+        entity.references.clear();
+        _handleMoorDeclaration<MoorTableDeclaration>(entity, _tables);
+      } else if (entity is MoorTrigger) {
+        entity.on = null;
+        entity.bodyReferences.clear();
 
-      final declaration = table.declaration as MoorTableDeclaration;
-      _tables[declaration.node] = table;
-      declaration.node.acceptWithoutArg(referenceResolver);
+        final node =
+            _handleMoorDeclaration(entity, _tables) as CreateTriggerStatement;
+
+        // triggers can have complex statements, so run the linter on them
+        final context = engine.analyzeNode(node, file.parseResult.sql);
+        context.errors.forEach(report);
+
+        final linter = Linter(context, mapper);
+        linter.reportLints();
+        reportLints(linter.lints, name: entity.displayName);
+
+        // find additional tables that might be referenced in the body
+        final tablesFinder = ReferencedTablesVisitor();
+        node.action.acceptWithoutArg(tablesFinder);
+        final tablesFromBody = tablesFinder.foundTables.map(mapper.tableToMoor);
+        entity.bodyReferences.addAll(tablesFromBody);
+      } else if (entity is MoorIndex) {
+        entity.table = null;
+
+        _handleMoorDeclaration<MoorTableDeclaration>(entity, _indexes);
+      }
     }
+  }
 
-    for (final trigger in file.declaredEntities.whereType<MoorTrigger>()) {
-      trigger.on = null;
-      trigger.bodyReferences.clear();
+  AstNode _handleMoorDeclaration<T extends MoorDeclaration>(
+    HasDeclaration e,
+    Map<AstNode, HasDeclaration> map,
+  ) {
+    final declaration = e.declaration as T;
+    map[declaration.node] = e;
 
-      final declaration = trigger.declaration as MoorTriggerDeclaration;
-      final node = declaration.node;
-      _triggers[node] = trigger;
-      node.acceptWithoutArg(referenceResolver);
-
-      // triggers can have complex statements, so run the linter on them
-      final context = engine.analyzeNode(node, file.parseResult.sql);
-      context.errors.forEach(report);
-
-      final linter = Linter(context, mapper);
-      linter.reportLints();
-      reportLints(linter.lints, name: trigger.displayName);
-
-      // find additional tables that might be referenced in the body
-      final tablesFinder = ReferencedTablesVisitor();
-      node.action.acceptWithoutArg(tablesFinder);
-      final tablesFromBody = tablesFinder.foundTables.map(mapper.tableToMoor);
-      trigger.bodyReferences.addAll(tablesFromBody);
-    }
+    declaration.node.acceptWithoutArg(_referenceResolver);
+    return declaration.node;
   }
 
   MoorTable _inducedTable(TableInducingStatement stmt) {
@@ -63,6 +77,10 @@ class EntityHandler extends BaseAnalyzer {
 
   MoorTrigger _inducedTrigger(CreateTriggerStatement stmt) {
     return _triggers[stmt];
+  }
+
+  MoorIndex _inducedIndex(CreateIndexStatement stmt) {
+    return _indexes[stmt];
   }
 }
 
@@ -88,6 +106,21 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
     } else {
       final moorTrigger = handler._inducedTrigger(e);
       moorTrigger?.on = table;
+    }
+  }
+
+  @override
+  void visitCreateIndexStatement(CreateIndexStatement e, void arg) {
+    final table = _resolveTable(e.on);
+    if (table == null) {
+      handler.step.reportError(ErrorInMoorFile(
+        severity: Severity.error,
+        span: e.on.span,
+        message: 'Target table ${e.on.tableName} could not be found.',
+      ));
+    } else {
+      final moorIndex = handler._inducedIndex(e);
+      moorIndex?.table = table;
     }
   }
 
