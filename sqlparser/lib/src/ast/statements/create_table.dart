@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 abstract class TableInducingStatement extends Statement
-    implements SchemaStatement {
+    implements CreatingStatement {
   final bool ifNotExists;
   final String tableName;
 
@@ -14,6 +14,9 @@ abstract class TableInducingStatement extends Statement
 
   TableInducingStatement._(this.ifNotExists, this.tableName,
       [this.overriddenDataClassName]);
+
+  @override
+  String get createdName => tableName;
 }
 
 /// A "CREATE TABLE" statement, see https://www.sqlite.org/lang_createtable.html

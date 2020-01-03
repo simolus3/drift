@@ -4,6 +4,7 @@
 - Experimental new type inference algorithm
 - Support `CAST` expressions.
 - Support parsing `CREATE TRIGGER` statements
+- Support parsing `CREATE INDEX` statement
 
 ## 0.5.0
 - Optionally support the `json1` module

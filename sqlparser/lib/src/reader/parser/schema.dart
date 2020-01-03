@@ -8,6 +8,8 @@ mixin SchemaParser on ParserBase {
       return _createTable();
     } else if (_check(TokenType.trigger)) {
       return _createTrigger();
+    } else if (_check(TokenType.unique) || _check(TokenType.$index)) {
+      return _createIndex();
     }
 
     return null;
@@ -232,6 +234,52 @@ mixin SchemaParser on ParserBase {
     )
       ..setSpan(create, _previous)
       ..triggerNameToken = trigger;
+  }
+
+  /// Parses a [CreateIndexStatement]. The `CREATE` token must have already been
+  /// accepted.
+  CreateIndexStatement _createIndex() {
+    final create = _previous;
+    assert(create.type == TokenType.create);
+
+    final unique = _matchOne(TokenType.unique);
+    if (!_matchOne(TokenType.$index)) return null;
+
+    final ifNotExists = _ifNotExists();
+    final name = _consumeIdentifier('Expected a name for this index');
+
+    _consume(TokenType.on, 'Expected ON table');
+    final nameToken = _consumeIdentifier('Expected a table name');
+    final tableRef = TableReference(nameToken.identifier)
+      ..setSpan(nameToken, nameToken);
+
+    _consume(TokenType.leftParen, 'Expected indexed columns in parentheses');
+
+    final indexes = <IndexedColumn>[];
+    do {
+      final expr = expression();
+      final mode = _orderingModeOrNull();
+
+      indexes.add(IndexedColumn(expr, mode)..setSpan(expr.first, _previous));
+    } while (_matchOne(TokenType.comma));
+
+    _consume(TokenType.rightParen, 'Expected closing bracket');
+
+    Expression where;
+    if (_matchOne(TokenType.where)) {
+      where = expression();
+    }
+
+    return CreateIndexStatement(
+      indexName: name.identifier,
+      unique: unique,
+      ifNotExists: ifNotExists,
+      on: tableRef,
+      columns: indexes,
+      where: where,
+    )
+      ..nameToken = name
+      ..setSpan(create, _previous);
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

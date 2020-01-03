@@ -11,6 +11,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateTableStatement(CreateTableStatement e, A arg);
   R visitCreateVirtualTableStatement(CreateVirtualTableStatement e, A arg);
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg);
+  R visitCreateIndexStatement(CreateIndexStatement e, A arg);
 
   R visitWithClause(WithClause e, A arg);
   R visitCommonTableExpression(CommonTableExpression e, A arg);
@@ -47,6 +48,7 @@ abstract class AstVisitor<A, R> {
   R visitAggregateExpression(AggregateExpression e, A arg);
   R visitWindowDefinition(WindowDefinition e, A arg);
   R visitFrameSpec(FrameSpec e, A arg);
+  R visitIndexedColumn(IndexedColumn e, A arg);
 
   R visitNumberedVariable(NumberedVariable e, A arg);
   R visitNamedVariable(ColonNamedVariable e, A arg);
@@ -101,6 +103,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg) {
+    return visitSchemaStatement(e, arg);
+  }
+
+  @override
+  R visitCreateIndexStatement(CreateIndexStatement e, A arg) {
     return visitSchemaStatement(e, arg);
   }
 
@@ -208,6 +215,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitFrameSpec(FrameSpec e, A arg) {
+    return visitChildren(e, arg);
+  }
+
+  @override
+  R visitIndexedColumn(IndexedColumn e, A arg) {
     return visitChildren(e, arg);
   }
 
