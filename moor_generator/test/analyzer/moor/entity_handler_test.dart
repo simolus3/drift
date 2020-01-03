@@ -38,7 +38,7 @@ CREATE TABLE friendships (
         table.references,
         [
           const TypeMatcher<MoorTable>()
-              .having((table) => table.displayName, 'displayName', 'users')
+              .having((table) => table.displayName, 'displayName', 'users'),
         ],
       );
     });
@@ -48,8 +48,16 @@ CREATE TABLE friendships (
         'foo|lib/a.moor': '''
 import 'b.moor';
 
+CREATE TABLE friendships (
+  user_a INTEGER REFERENCES users (id),
+  user_b INTEGER REFERENCES users (id),
+  
+  PRIMARY KEY(user_a, user_b),
+  CHECK (user_a != user_b)
+);
+
 CREATE TRIGGER my_trigger AFTER DELETE ON users BEGIN
-  SELECT * FROM users;
+  DELETE FROM friendships WHERE user_a = old.id OR user_b = old.id;
 END;
         ''',
         ...definitions,
@@ -58,13 +66,16 @@ END;
       final file = await state.analyze('package:foo/a.moor');
       expect(file.errors.errors, isEmpty);
 
-      final trigger = file.currentResult.declaredEntities.single;
+      final trigger =
+          file.currentResult.declaredEntities.whereType<MoorTrigger>().single;
       expect(
         trigger.references,
-        [
+        {
+          const TypeMatcher<MoorTable>().having(
+              (table) => table.displayName, 'displayName', 'friendships'),
           const TypeMatcher<MoorTable>()
-              .having((table) => table.displayName, 'displayName', 'users')
-        ],
+              .having((table) => table.displayName, 'displayName', 'users'),
+        },
       );
     });
   });

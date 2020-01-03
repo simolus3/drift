@@ -14,6 +14,7 @@ class MoorTrigger implements MoorSchemaEntity {
   ///
   /// This field can be null in case the table wasn't resolved.
   MoorTable on;
+  List<MoorTable> bodyReferences = [];
 
   String _create;
 
@@ -28,7 +29,7 @@ class MoorTrigger implements MoorSchemaEntity {
   }
 
   @override
-  Iterable<MoorSchemaEntity> get references => [on];
+  Iterable<MoorSchemaEntity> get references => {on, ...bodyReferences};
 
   /// The `CREATE TRIGGER` statement that can be used to create this trigger.
   String get create {

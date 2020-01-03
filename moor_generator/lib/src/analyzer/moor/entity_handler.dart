@@ -2,6 +2,7 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/affected_tables_visitor.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -33,6 +34,7 @@ class EntityHandler extends BaseAnalyzer {
 
     for (final trigger in file.declaredEntities.whereType<MoorTrigger>()) {
       trigger.on = null;
+      trigger.bodyReferences.clear();
 
       final declaration = trigger.declaration as MoorTriggerDeclaration;
       final node = declaration.node;
@@ -46,6 +48,12 @@ class EntityHandler extends BaseAnalyzer {
       final linter = Linter(context, mapper);
       linter.reportLints();
       reportLints(linter.lints, name: trigger.displayName);
+
+      // find additional tables that might be referenced in the body
+      final tablesFinder = ReferencedTablesVisitor();
+      node.action.acceptWithoutArg(tablesFinder);
+      final tablesFromBody = tablesFinder.foundTables.map(mapper.tableToMoor);
+      trigger.bodyReferences.addAll(tablesFromBody);
     }
   }
 
