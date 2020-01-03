@@ -58,6 +58,14 @@ void main() {
     verify(mockQueryExecutor.call(_createMyTrigger, []));
   });
 
+  test('can create trigger manually', () async {
+    final mockQueryExecutor = MockQueryExecutor();
+    final db = CustomTablesDb(MockExecutor());
+
+    await Migrator(db, mockQueryExecutor).createTrigger(db.myTrigger);
+    verify(mockQueryExecutor.call(_createMyTrigger, []));
+  });
+
   test('infers primary keys correctly', () async {
     final db = CustomTablesDb(null);
 
