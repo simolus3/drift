@@ -74,6 +74,8 @@ class Migrator {
         await createTable(entity);
       } else if (entity is Trigger) {
         await createTrigger(entity);
+      } else if (entity is Index) {
+        await createIndex(entity);
       } else {
         throw AssertionError('Unknown entity: $entity');
       }
@@ -165,6 +167,11 @@ class Migrator {
   /// Executes the `CREATE TRIGGER` statement that created the [trigger].
   Future<void> createTrigger(Trigger trigger) {
     return issueCustomQuery(trigger.createTriggerStmt, const []);
+  }
+
+  /// Executes a `CREATE INDEX` statement to create the [index].
+  Future<void> createIndex(Index index) {
+    return issueCustomQuery(index.createIndexStmt, const []);
   }
 
   /// Deletes the table with the given name. Note that this function does not

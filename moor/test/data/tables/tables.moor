@@ -20,6 +20,8 @@ create table config (
     config_value TEXT
 ) AS "Config";
 
+CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);
+
 CREATE TABLE mytable (
     someid INTEGER NOT NULL PRIMARY KEY,
     sometext TEXT,

@@ -78,6 +78,26 @@ END;
         },
       );
     });
+
+    test('in an index', () async {
+      final state = TestState.withContent(const {
+        'foo|lib/a.moor': '''
+import 'b.moor';
+
+CREATE INDEX idx ON users (name);
+        ''',
+        ...definitions,
+      });
+
+      final file = await state.analyze('package:foo/a.moor');
+      expect(file.errors.errors, isEmpty);
+
+      final trigger = file.currentResult.declaredEntities.single as MoorIndex;
+      expect(trigger.references, {
+        const TypeMatcher<MoorTable>()
+            .having((table) => table.displayName, 'displayName', 'users'),
+      });
+    });
   });
 
   group('issues error when referencing an unknown table', () {

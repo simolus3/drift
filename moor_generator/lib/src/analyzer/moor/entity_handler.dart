@@ -37,7 +37,7 @@ class EntityHandler extends BaseAnalyzer {
         entity.bodyReferences.clear();
 
         final node =
-            _handleMoorDeclaration(entity, _tables) as CreateTriggerStatement;
+            _handleMoorDeclaration(entity, _triggers) as CreateTriggerStatement;
 
         // triggers can have complex statements, so run the linter on them
         final context = engine.analyzeNode(node, file.parseResult.sql);
@@ -55,7 +55,7 @@ class EntityHandler extends BaseAnalyzer {
       } else if (entity is MoorIndex) {
         entity.table = null;
 
-        _handleMoorDeclaration<MoorTableDeclaration>(entity, _indexes);
+        _handleMoorDeclaration<MoorIndexDeclaration>(entity, _indexes);
       }
     }
   }

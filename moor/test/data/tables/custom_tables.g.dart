@@ -1089,6 +1089,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
   ConfigTable _config;
   ConfigTable get config => _config ??= ConfigTable(this);
+  Index _valueIdx;
+  Index get valueIdx => _valueIdx ??= Index('value_idx',
+      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);');
   WithDefaults _withDefaults;
   WithDefaults get withDefaults => _withDefaults ??= WithDefaults(this);
   Trigger _myTrigger;
@@ -1216,8 +1219,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [config, withDefaults, myTrigger, noIds, withConstraints, mytable, email];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        config,
+        valueIdx,
+        withDefaults,
+        myTrigger,
+        noIds,
+        withConstraints,
+        mytable,
+        email
+      ];
 }
 
 class MultipleResult {
