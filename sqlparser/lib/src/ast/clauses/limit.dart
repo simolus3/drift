@@ -8,7 +8,7 @@ abstract class LimitBase implements AstNode {}
 class Limit extends AstNode implements LimitBase {
   Expression count;
   Token offsetSeparator; // can either be OFFSET or just a comma
-  Expression offset;
+  Expression offset; // nullable
 
   Limit({this.count, this.offsetSeparator, this.offset});
 

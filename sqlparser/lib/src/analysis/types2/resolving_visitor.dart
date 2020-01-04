@@ -1,5 +1,8 @@
 part of 'types.dart';
 
+const _expectInt =
+    ExactTypeExpectation.laxly(ResolvedType(type: BasicType.int));
+
 class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   final TypeInferenceSession session;
 
@@ -99,6 +102,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     } else {
       visitChildren(e, arg);
     }
+  }
+
+  @override
+  void visitLimit(Limit e, TypeExpectation arg) {
+    visit(e.count, _expectInt);
+    visitNullable(e.offset, _expectInt);
   }
 
   @override

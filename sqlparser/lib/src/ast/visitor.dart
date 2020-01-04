@@ -366,6 +366,8 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   R visit(AstNode e, A arg) => e.accept(this, arg);
 
+  R visitNullable(AstNode e, A arg) => e?.accept(this, arg);
+
   @protected
   R visitChildren(AstNode e, A arg) => visitList(e.childNodes, arg);
 

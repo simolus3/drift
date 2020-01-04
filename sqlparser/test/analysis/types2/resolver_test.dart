@@ -117,4 +117,14 @@ void main() {
 
     expect(found, type);
   });
+
+  test('handles LIMIT clauses', () {
+    const int = ResolvedType(type: BasicType.int);
+
+    final type = _resolveFirstVariable('SELECT 0 LIMIT ?');
+    expect(type, int);
+
+    final offsetType = _resolveFirstVariable('SELECT 0 LIMIT 1, ?');
+    expect(offsetType, int);
+  });
 }
