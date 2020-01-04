@@ -11,7 +11,7 @@ void main() {
 
   TypeResolver _obtainResolver(String sql) {
     final context = engine.analyze(sql);
-    return TypeResolver(TypeInferenceSession(context))..start(context.root);
+    return TypeResolver(TypeInferenceSession(context))..run(context.root);
   }
 
   ResolvedType _resolveFirstVariable(String sql) {

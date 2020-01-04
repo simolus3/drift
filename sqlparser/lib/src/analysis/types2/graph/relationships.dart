@@ -33,6 +33,11 @@ class HaveSameType extends TypeRelationship {
   final Typeable second;
 
   HaveSameType(this.first, this.second);
+
+  Typeable getOther(Typeable t) {
+    assert(t == first || t == second);
+    return t == first ? second : first;
+  }
 }
 
 /// Dependency declaring that, if no better option is found, [target] should

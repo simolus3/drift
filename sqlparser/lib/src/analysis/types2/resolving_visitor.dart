@@ -5,8 +5,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   TypeResolver(this.session);
 
-  void start(AstNode root) {
+  void run(AstNode root) {
     visit(root, const NoTypeExpectation());
+    session.finish();
   }
 
   @override

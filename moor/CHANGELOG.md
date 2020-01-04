@@ -8,7 +8,11 @@
   ```
   selectVariable(:variable AS TEXT): SELECT :variable;
   ```
-- Support for triggers! You can declare them in a `.moor` file and
+- Support for triggers and indices! You can declare them in a `.moor` file with a regular `CREATE TRIGGER`
+  or `CREATE INDEX` statement. Both triggers and indices will be created in the default `onCreate` function.
+  To create them in `onUpgrade`, use the new `createIndex` and `createTrigger` functions on a `Migrator`.
+- Support for moor-file queries that run on initialization ([#280](https://github.com/simolus3/moor/issues/280))
+  Declare them like this `@create: INSERT INTO users VALUES ('default', 'user')`
   
 ## 2.2.0
 

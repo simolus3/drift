@@ -33,13 +33,17 @@ class TypeInferenceSession {
     return graph[t];
   }
 
-  void addRelationship(TypeRelationship relationship) {}
+  void addRelationship(TypeRelationship relationship) {
+    graph.addRelation(relationship);
+  }
 
   void expectIsPossible(ResolvedType r, TypeExpectation expectation) {}
 
   void hintNullability(Typeable t, bool nullable) {
     assert(nullable != null);
   }
+
+  void finish() {}
 }
 
 /// Keeps track of resolved variable types so that they can be re-used.
