@@ -124,7 +124,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitVariable(Variable e, TypeExpectation arg) {
-    final resolved = _inferFromContext(arg);
+    final resolved = session.context.stmtOptions.specifiedTypeOf(e) ??
+        _inferFromContext(arg);
     if (resolved != null) {
       session.markTypeResolved(e, resolved);
     }

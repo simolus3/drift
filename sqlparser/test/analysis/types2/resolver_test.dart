@@ -9,13 +9,14 @@ void main() {
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 
-  TypeResolver _obtainResolver(String sql) {
-    final context = engine.analyze(sql);
+  TypeResolver _obtainResolver(String sql, {AnalyzeStatementOptions options}) {
+    final context = engine.analyze(sql, stmtOptions: options);
     return TypeResolver(TypeInferenceSession(context))..run(context.root);
   }
 
-  ResolvedType _resolveFirstVariable(String sql) {
-    final resolver = _obtainResolver(sql);
+  ResolvedType _resolveFirstVariable(String sql,
+      {AnalyzeStatementOptions options}) {
+    final resolver = _obtainResolver(sql, options: options);
     final session = resolver.session;
     final variable =
         session.context.root.allDescendants.whereType<Variable>().first;
@@ -98,5 +99,22 @@ void main() {
       expect(resolver.session.typeOf(idVar), id.type);
       expect(resolver.session.typeOf(contentVar), content.type);
     });
+  });
+
+  test('recognizes that variables are the same', () {
+    // semantically, :var and ?1 are the same variable
+    final type = _resolveFirstVariable('SELECT :var WHERE ?1');
+    expect(type, const ResolvedType.bool());
+  });
+
+  test('respects variable types set from options', () {
+    const type = ResolvedType(type: BasicType.text);
+    // should resolve to string, even though it would be a boolean normally
+    final found = _resolveFirstVariable(
+      'SELECT * FROM demo WHERE ?',
+      options: const AnalyzeStatementOptions(indexedVariableTypes: {1: type}),
+    );
+
+    expect(found, type);
   });
 }

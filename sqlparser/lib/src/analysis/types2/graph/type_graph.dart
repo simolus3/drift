@@ -1,6 +1,8 @@
 part of '../types.dart';
 
 class TypeGraph {
+  final _ResolvedVariables variables = _ResolvedVariables();
+
   final Map<Typeable, ResolvedType> _knownTypes = {};
   final Map<Typeable, bool> _knownNullability = {};
 
@@ -11,19 +13,26 @@ class TypeGraph {
   TypeGraph();
 
   ResolvedType operator [](Typeable t) {
-    return _knownTypes[t];
+    final normalized = variables.normalize(t);
+
+    if (_knownTypes.containsKey(normalized)) {
+      return _knownTypes[normalized];
+    }
+
+    return null;
   }
 
   void operator []=(Typeable t, ResolvedType type) {
-    _knownTypes[t] = type;
+    final normalized = variables.normalize(t);
+    _knownTypes[normalized] = type;
 
     if (type.nullable != null) {
       // nullability is known
-      _knownNullability[t] = type.nullable;
+      _knownNullability[normalized] = type.nullable;
     }
   }
 
-  bool knowsType(Typeable t) => _knownTypes.containsKey(t);
+  bool knowsType(Typeable t) => _knownTypes.containsKey(variables.normalize(t));
 
   void addRelation(TypeRelationship relation) {
     _relationships.add(relation);
@@ -94,3 +103,17 @@ class TypeGraph {
 }
 
 abstract class TypeRelationship {}
+
+/// Keeps track of resolved variable types so that they can be re-used.
+/// Different [Variable] instances can refer to the same logical sql variable,
+/// so we keep track of them.
+class _ResolvedVariables {
+  final Map<int, Variable> _referenceForIndex = {};
+
+  Typeable normalize(Typeable t) {
+    if (t is! Variable) return t;
+
+    final normalized = t as Variable;
+    return _referenceForIndex[normalized.resolvedIndex] ??= normalized;
+  }
+}
