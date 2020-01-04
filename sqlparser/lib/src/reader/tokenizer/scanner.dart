@@ -205,9 +205,11 @@ class Scanner {
   }
 
   String _nextChar() {
-    _currentOffset++;
+    _advance();
     return source.substring(_currentOffset - 1, _currentOffset);
   }
+
+  void _advance() => _currentOffset++;
 
   String _peek() {
     if (_isAtEnd) throw StateError('Reached end of source');
@@ -228,19 +230,31 @@ class Scanner {
   }
 
   void _string({bool binary = false}) {
-    while (_peek() != "'" && !_isAtEnd) {
-      _nextChar();
+    var properlyClosed = false;
+
+    while (!_isAtEnd) {
+      final char = _nextChar();
+
+      // single quote could be an escape (when there are two of them) or the
+      // end of this string literal
+      if (char == "'") {
+        if (!_isAtEnd && _peek() == "'") {
+          _advance();
+          continue;
+        }
+        properlyClosed = true;
+        break;
+      }
     }
 
     // Issue an error if the string is unterminated
-    if (_isAtEnd) {
+    if (!properlyClosed) {
       errors.add(TokenizerError('Unterminated string', _currentLocation));
     }
 
-    // consume the closing "'"
-    _nextChar();
-
-    final value = source.substring(_startOffset + 1, _currentOffset - 1);
+    final value = source
+        .substring(_startOffset + 1, _currentOffset - 1)
+        .replaceAll("''", "'");
     tokens.add(StringLiteralToken(value, _currentSpan, binary: binary));
   }
 
