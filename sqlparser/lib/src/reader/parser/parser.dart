@@ -330,6 +330,11 @@ class Parser extends ParserBase
         _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
     final stmt = _crud();
 
+    if (stmt == null) {
+      _error(
+          'Expected a sql statement here (SELECT, UPDATE, INSERT or DELETE)');
+    }
+
     return DeclaredStatement(
       identifier,
       stmt,

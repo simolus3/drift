@@ -90,4 +90,25 @@ void main() {
       ]),
     );
   });
+
+  test("reports error when the statement can't be parsed", () {
+    // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
+    final parsed = SqlEngine(useMoorExtensions: true)
+        .parseMoorFile('name: NSERT INTO foo DEFAULT VALUES;');
+
+    expect(
+      parsed.errors,
+      contains(const TypeMatcher<ParsingError>().having(
+        (e) => e.message,
+        'message',
+        contains('Expected a sql statement here'),
+      )),
+    );
+
+    final root = parsed.rootNode as MoorFile;
+    expect(
+      root.allDescendants,
+      isNot(contains(const TypeMatcher<DeclaredStatement>())),
+    );
+  });
 }
