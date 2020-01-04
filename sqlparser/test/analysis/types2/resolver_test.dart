@@ -127,4 +127,14 @@ void main() {
     final offsetType = _resolveFirstVariable('SELECT 0 LIMIT 1, ?');
     expect(offsetType, int);
   });
+
+  test('handles string matching expressions', () {
+    final type =
+        _resolveFirstVariable('SELECT * FROM demo WHERE content LIKE ?');
+    expect(type, const ResolvedType(type: BasicType.text));
+
+    final escapedType = _resolveFirstVariable(
+        "SELECT * FROM demo WHERE content LIKE 'foo' ESCAPE ?");
+    expect(escapedType, const ResolvedType(type: BasicType.text));
+  });
 }

@@ -2,6 +2,8 @@ part of 'types.dart';
 
 const _expectInt =
     ExactTypeExpectation.laxly(ResolvedType(type: BasicType.int));
+const _expectString =
+    ExactTypeExpectation.laxly(ResolvedType(type: BasicType.text));
 
 class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   final TypeInferenceSession session;
@@ -116,16 +118,20 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     if (e is NullLiteral) {
       type = const ResolvedType(type: BasicType.nullType, nullable: true);
+      session.hintNullability(e, true);
     } else if (e is StringLiteral) {
       type = e.isBinary
           ? const ResolvedType(type: BasicType.blob)
           : const ResolvedType(type: BasicType.text);
+      session.hintNullability(e, false);
     } else if (e is BooleanLiteral) {
       type = const ResolvedType.bool();
+      session.hintNullability(e, false);
     } else if (e is NumericLiteral) {
       type = e.isInt
           ? const ResolvedType(type: BasicType.int)
           : const ResolvedType(type: BasicType.real);
+      session.hintNullability(e, false);
     }
 
     session.checkAndResolve(e, type, arg);
@@ -241,6 +247,24 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session.checkAndResolve(e, type, arg);
     session.addRelationship(NullableIfSomeOtherIs(e, [e.operand]));
     visit(e.operand, const NoTypeExpectation());
+  }
+
+  @override
+  void visitStringComparison(
+      StringComparisonExpression e, TypeExpectation arg) {
+    session.checkAndResolve(e, const ResolvedType(type: BasicType.text), arg);
+    session.addRelationship(NullableIfSomeOtherIs(
+      e,
+      [
+        e.left,
+        e.right,
+        if (e.escape != null) e.escape,
+      ],
+    ));
+
+    visit(e.left, _expectString);
+    visit(e.right, _expectString);
+    visitNullable(e.escape, _expectString);
   }
 
   @override

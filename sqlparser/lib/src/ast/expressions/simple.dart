@@ -57,6 +57,7 @@ class BinaryExpression extends Expression {
   }
 }
 
+/// A like, glob, match or regexp expression.
 class StringComparisonExpression extends Expression {
   final bool not;
   final Token operator;
