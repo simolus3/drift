@@ -11,6 +11,67 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitSelectStatement(SelectStatement e, TypeExpectation arg) {
+    _handleWhereClause(e);
+
+    var currentColumnIndex = 0;
+    final columnExpectations = arg is SelectTypeExpectation
+        ? arg.columnExpectations
+        : const <TypeExpectation>[];
+
+    for (final child in e.childNodes) {
+      if (child == e.where) continue; // handled above
+
+      if (child is ResultColumn) {
+        if (child is ExpressionResultColumn) {
+          final expectation = currentColumnIndex < columnExpectations.length
+              ? columnExpectations[currentColumnIndex]
+              : const NoTypeExpectation();
+          visit(child, expectation);
+
+          currentColumnIndex++;
+        } else if (child is StarResultColumn) {
+          currentColumnIndex += child.scope.availableColumns.length;
+        }
+      } else {
+        visit(child, arg);
+      }
+    }
+  }
+
+  @override
+  void visitInsertStatement(InsertStatement e, TypeExpectation arg) {
+    if (e.withClause != null) visit(e.withClause, arg);
+    visitList(e.targetColumns, const NoTypeExpectation());
+
+    final targets = e.resolvedTargetColumns ?? const [];
+    targets.forEach(_handleColumn);
+
+    final expectations = targets.map((r) {
+      if (session.graph.knowsType(r)) {
+        return ExactTypeExpectation(session.typeOf(r));
+      }
+      return const NoTypeExpectation();
+    }).toList();
+
+    e.source.when(
+      isSelect: (select) {
+        visit(select.stmt, SelectTypeExpectation(expectations));
+      },
+      isValues: (values) {
+        for (final tuple in values.values) {
+          for (var i = 0; i < tuple.expressions.length; i++) {
+            final expectation = i < expectations.length
+                ? expectations[i]
+                : const NoTypeExpectation();
+            visit(tuple.expressions[i], expectation);
+          }
+        }
+      },
+    );
+  }
+
+  @override
   void visitCrudStatement(CrudStatement stmt, TypeExpectation arg) {
     if (stmt is HasWhereClause) {
       final typedStmt = stmt as HasWhereClause;
@@ -170,6 +231,36 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session.checkAndResolve(e, type, arg);
     session.addRelationship(NullableIfSomeOtherIs(e, [e.operand]));
     visit(e.operand, const NoTypeExpectation());
+  }
+
+  @override
+  void visitReference(Reference e, TypeExpectation arg) {
+    final resolved = e.resolvedColumn;
+    if (resolved == null) return;
+
+    _handleColumn(resolved);
+    _lazyCopy(e, resolved);
+  }
+
+  void _handleColumn(Column column) {
+    if (session.graph.knowsType(column)) return;
+
+    if (column is TableColumn) {
+      session.markTypeResolved(column, column.type);
+    } else if (column is ExpressionColumn) {
+      _lazyCopy(column, column.expression);
+    } else if (column is DelegatedColumn && column.innerColumn != null) {
+      _handleColumn(column.innerColumn);
+      _lazyCopy(column, column.innerColumn);
+    }
+  }
+
+  void _lazyCopy(Typeable to, Typeable from) {
+    if (session.graph.knowsType(from)) {
+      session.markTypeResolved(to, session.typeOf(from));
+    } else {
+      session.addRelationship(CopyTypeFrom(to, from));
+    }
   }
 
   void _handleWhereClause(HasWhereClause stmt) {

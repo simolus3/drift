@@ -72,4 +72,31 @@ void main() {
       expect(_resolveFirstVariable('SELECT CAST(? AS TEXT)'), null);
     });
   });
+
+  group('types in insert statements', () {
+    test('for VALUES', () {
+      final resolver =
+          _obtainResolver('INSERT INTO demo VALUES (:id, :content);');
+      final root = resolver.session.context.root;
+      final variables = root.allDescendants.whereType<Variable>();
+
+      final idVar = variables.singleWhere((v) => v.resolvedIndex == 1);
+      final contentVar = variables.singleWhere((v) => v.resolvedIndex == 2);
+
+      expect(resolver.session.typeOf(idVar), id.type);
+      expect(resolver.session.typeOf(contentVar), content.type);
+    });
+
+    test('for SELECT', () {
+      final resolver = _obtainResolver('INSERT INTO demo SELECT :id, :content');
+      final root = resolver.session.context.root;
+      final variables = root.allDescendants.whereType<Variable>();
+
+      final idVar = variables.singleWhere((v) => v.resolvedIndex == 1);
+      final contentVar = variables.singleWhere((v) => v.resolvedIndex == 2);
+
+      expect(resolver.session.typeOf(idVar), id.type);
+      expect(resolver.session.typeOf(contentVar), content.type);
+    });
+  });
 }

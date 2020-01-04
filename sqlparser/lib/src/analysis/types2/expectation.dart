@@ -57,3 +57,14 @@ class RoughTypeExpectation extends TypeExpectation {
 enum _RoughType {
   numeric,
 }
+
+/// Type expectation for result columns in a select statement.
+///
+/// This can be used to set expectations in an `INSERT INTO SELECT` statement,
+/// where the column types are constrained by what's expected in the insert
+/// statement.
+class SelectTypeExpectation extends TypeExpectation {
+  final List<TypeExpectation> columnExpectations;
+
+  SelectTypeExpectation(this.columnExpectations);
+}
