@@ -144,5 +144,24 @@ If a column is nullable or has a default value (this includes auto-increments), 
 can be omitted. All other fields must be set and non-null. The `insert` method will throw
 otherwise.
 
-Multiple inserts can be batched by using `insertAll` - it takes a list of companions instead
-of a single companion.
+Multiple insert statements can be run efficiently by using a batch. To do that, you can
+use the `insertAll` method inside a `batch`:
+```dart
+Future<void> insertMultipleEntries() async{
+  await batch((batch) {
+    // functions in a batch don't have to be awaited - just
+    // await the whole batch afterwards.
+    batch.insertAll([
+      TodosCompanion.insert(
+        title: 'First entry',
+        content: 'My content',
+      ),
+      TodosCompanion.insert(
+        title: 'Another entry',
+        content: 'More content',
+      ),
+      // ...
+    ]);
+  });
+}
+```
