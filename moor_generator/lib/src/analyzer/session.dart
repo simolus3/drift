@@ -35,11 +35,16 @@ class MoorSession {
 
   /// Creates a properly configured [SqlEngine].
   SqlEngine spawnEngine() {
-    return SqlEngine(
+    final sqlOptions = EngineOptions(
       useMoorExtensions: true,
-      enableJson1Module: options.hasModule(SqlModule.json1),
-      enableFts5: options.hasModule(SqlModule.fts5),
+      enableJson1: options.hasModule(SqlModule.json1),
+      enabledExtensions: [
+        if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
+      ],
+      enableExperimentalTypeInference: options.useExperimentalInference,
     );
+
+    return SqlEngine.withOptions(sqlOptions);
   }
 
   FileType _findFileType(String path) {

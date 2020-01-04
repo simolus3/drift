@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/analysis/types2/types.dart' as t2;
 import 'package:sqlparser/src/engine/module/fts5.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
@@ -20,14 +21,18 @@ class SqlEngine {
 
   SchemaFromCreateTable _schemaReader;
 
+  @Deprecated('Use SqlEngine.withOptions instead')
   SqlEngine(
       {bool useMoorExtensions = false,
       bool enableJson1Module = false,
       bool enableFts5 = false})
-      : options = _constructOptions(
-            moor: useMoorExtensions,
-            json1: enableJson1Module,
-            fts5: enableFts5) {
+      : this.withOptions(_constructOptions(
+          moor: useMoorExtensions,
+          json1: enableJson1Module,
+          fts5: enableFts5,
+        ));
+
+  SqlEngine.withOptions(this.options) {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
     }
@@ -188,9 +193,19 @@ class SqlEngine {
 
       node
         ..acceptWithoutArg(ColumnResolver(context))
-        ..acceptWithoutArg(ReferenceResolver(context))
-        ..acceptWithoutArg(TypeResolvingVisitor(context))
-        ..acceptWithoutArg(LintingVisitor(options, context));
+        ..acceptWithoutArg(ReferenceResolver(context));
+
+      if (options.enableExperimentalTypeInference) {
+        final session = t2.TypeInferenceSession(context);
+        final resolver = t2.TypeResolver(session);
+        node.acceptWithoutArg(resolver);
+        session.finish();
+        context.types2 = session.results;
+      } else {
+        node.acceptWithoutArg(TypeResolvingVisitor(context));
+      }
+
+      node.acceptWithoutArg(LintingVisitor(options, context));
     } catch (_) {
       rethrow;
     }
@@ -210,7 +225,11 @@ class SqlEngine {
     final extensions = [
       if (fts5) const Fts5Extension(),
     ];
-    return EngineOptions(moor, json1, extensions);
+    return EngineOptions(
+      useMoorExtensions: moor,
+      enableJson1: json1,
+      enabledExtensions: extensions,
+    );
   }
 }
 

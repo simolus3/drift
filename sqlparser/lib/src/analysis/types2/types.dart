@@ -11,8 +11,11 @@ part 'resolving_visitor.dart';
 class TypeInferenceSession {
   final TypeGraph graph = TypeGraph();
   final AnalysisContext context;
+  TypeInferenceResults results;
 
-  TypeInferenceSession(this.context);
+  TypeInferenceSession(this.context) {
+    results = TypeInferenceResults._(this);
+  }
 
   void markTypeResolved(Typeable t, ResolvedType r) {
     graph[t] = r;
@@ -40,5 +43,18 @@ class TypeInferenceSession {
 
   void finish() {
     graph.performResolve();
+  }
+}
+
+/// Apis to view results of a type inference session.
+class TypeInferenceResults {
+  final TypeInferenceSession session;
+
+  TypeInferenceResults._(this.session);
+
+  /// Finds the resolved type of [t], or `null` if the type of [t] could not
+  /// be inferred.
+  ResolvedType typeOf(Typeable t) {
+    return session.typeOf(t);
   }
 }

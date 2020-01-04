@@ -7,6 +7,9 @@ import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/utils/meta.dart';
 
+import 'types2/types.dart';
+export 'types2/types.dart' show TypeInferenceResults;
+
 part 'context.dart';
 part 'error.dart';
 part 'schema/column.dart';

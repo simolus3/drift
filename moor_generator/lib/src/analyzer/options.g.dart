@@ -16,6 +16,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'use_data_class_name_for_companions',
       'use_column_name_as_json_key_when_defined_in_moor_file',
       'generate_connect_constructor',
+      'use_experimental_inference',
       'sqlite_modules'
     ]);
     final val = MoorOptions(
@@ -42,6 +43,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       generateConnectConstructor: $checkedConvert(
               json, 'generate_connect_constructor', (v) => v as bool) ??
           false,
+      useExperimentalInference: $checkedConvert(
+              json, 'use_experimental_inference', (v) => v as bool) ??
+          false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',
@@ -61,6 +65,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'useColumnNameAsJsonKeyWhenDefinedInMoorFile':
         'use_column_name_as_json_key_when_defined_in_moor_file',
     'generateConnectConstructor': 'generate_connect_constructor',
+    'useExperimentalInference': 'use_experimental_inference',
     'modules': 'sqlite_modules'
   });
 }

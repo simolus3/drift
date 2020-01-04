@@ -25,11 +25,27 @@ class AnalysisContext {
   /// [ResultSet.resolvedColumns] of a select statement.
   /* late final */ TypeResolver types;
 
+  /// Experimental new type resolver with better support for nullability and
+  /// complex structures.
+  ///
+  /// By using [TypeInferenceResults.typeOf], the type of an [Expression],
+  /// a [Variable] and [ResultSet.resolvedColumns] may be resolved or inferred.
+  ///
+  /// This field is null when experimental type inference is disabled.
+  ///
+  /// Please note that types2 is experimental at the moment. Changes to how
+  /// [types] resolves types are considered breaking and are handled
+  /// accordingly. [types2] may change results in any update.
+  @experimental
+  TypeInferenceResults types2;
+
   /// Constructs a new analysis context from the AST and the source sql.
   AnalysisContext(this.root, this.sql, EngineOptions options,
       {AnalyzeStatementOptions stmtOptions, this.schemaSupport})
       : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions() {
-    types = TypeResolver(this, options);
+    if (!options.enableExperimentalTypeInference) {
+      types = TypeResolver(this, options);
+    }
   }
 
   /// Reports an analysis error.
