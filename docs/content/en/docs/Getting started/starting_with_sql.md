@@ -55,7 +55,7 @@ CREATE TABLE todos (
 
 CREATE TABLE categories (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-    description TEXT,
+    description TEXT
 ) AS Category; -- see the explanation on "AS Category" below
 
 /* after declaring your tables, you can put queries in here. Just
@@ -66,7 +66,7 @@ todosInCategory: SELECT * FROM todos WHERE category = ?;
 category, including those entries which aren't in any category at all. */
 countEntries:     
   SELECT
-    c.desc,
+    c.description,
     (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount
   FROM categories c
   UNION ALL
@@ -91,6 +91,8 @@ a file called `database.dart` next to the `tables.moor` file you wrote
 in the previous step.
 
 ```dart
+import 'dart:io';
+
 import 'package:moor/moor.dart';
 // These imports are only needed to open the database
 import 'package:moor_ffi/moor_ffi.dart';
@@ -117,7 +119,7 @@ LazyDatabase _openConnection() {
     // put the database file, called db.sqlite here, into the documents folder
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder, 'db.sqlite'));
+    final file = File(p.join(dbFolder.path, 'db.sqlite'));
     return VmDatabase(file);
   });
 }
