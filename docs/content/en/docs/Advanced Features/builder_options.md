@@ -72,7 +72,7 @@ targets:
     builders:
       moor_generator:
         options:
-          sqlite_module:
+          sqlite_modules:
             - json1
             - fts5
 ```
