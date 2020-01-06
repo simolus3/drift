@@ -74,8 +74,9 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
     final element = _startElement(ElementKind.TOP_LEVEL_VARIABLE, name, e);
 
     // enrich information with variable types if the query has been analyzed.
+    // (resolvedQueries is null when the file isn't fully analyzed)
     final resolved = request.parsedMoor.resolvedQueries
-        .firstWhere((q) => q.name == name, orElse: () => null);
+        ?.firstWhere((q) => q.name == name, orElse: () => null);
 
     if (resolved != null) {
       final parameterBuilder = StringBuffer('(');
