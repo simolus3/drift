@@ -89,14 +89,16 @@ class Task {
             continue;
           }
 
-          final found = session.resolve(file, import.importedFile);
-          if (!await backend.exists(found.uri)) {
+          final found = await _resolveOrReportError(file, import.importedFile,
+              (errorMsg) {
             step.reportError(ErrorInMoorFile(
               span: import.importString.span,
               severity: Severity.error,
-              message: 'File does not exist: ${import.importedFile}',
+              message: errorMsg,
             ));
-          } else {
+          });
+
+          if (found != null) {
             resolvedImports.add(found);
             parsed.resolvedImports[import] = found;
           }
@@ -123,14 +125,14 @@ class Task {
           final resolvedForAccessor = <FoundFile>[];
 
           for (final import in accessor.declaredIncludes) {
-            final found = session.resolve(file, import);
-            if (!await backend.exists(found.uri)) {
+            final found = await _resolveOrReportError(file, import, (errorMsg) {
               step.reportError(ErrorInDartCode(
                 affectedElement: accessor.fromClass,
                 severity: Severity.error,
-                message: 'Include could not be resolved: $import',
+                message: errorMsg,
               ));
-            } else {
+            });
+            if (found != null) {
               resolvedImports.add(found);
               resolvedForAccessor.add(found);
             }
@@ -148,6 +150,24 @@ class Task {
     session.fileGraph.setImports(file, resolvedImports.toList());
     _notifyFilesNeedWork(resolvedImports);
     return createdStep;
+  }
+
+  Future<FoundFile> _resolveOrReportError(
+    FoundFile file,
+    String import,
+    void Function(String) reporter,
+  ) async {
+    final found = session.resolve(file, import);
+
+    if (found == null) {
+      reporter('Invalid import: $import');
+    } else if (!await backend.exists(found.uri)) {
+      reporter('Imported file does not exist: $import');
+    } else {
+      return found;
+    }
+
+    return null;
   }
 
   /// Crawls through all (transitive) imports of the provided [roots]. Each

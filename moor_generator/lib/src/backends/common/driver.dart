@@ -133,12 +133,13 @@ class MoorDriver implements AnalysisDriverGeneric {
   /// Finds the absolute path of a [reference] url, optionally assuming that the
   /// [reference] appears in [base]. This supports both "package:"-based uris
   /// and relative imports.
+  /// Returns null if the uri can't be parsed.
   String absolutePath(Uri reference, {Uri base}) {
     final factory = dartDriver.sourceFactory;
     final baseSource = base == null ? null : factory.forUri2(base);
 
     final source = factory.resolveUri(baseSource, reference.toString());
-    return source.fullName;
+    return source?.fullName;
   }
 
   CommonTask _createTask(Uri uri) {

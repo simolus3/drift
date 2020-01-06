@@ -55,9 +55,13 @@ class MoorSession {
 
   /// Resolves an import directive in the context of the [source] file. This
   /// can handle both relative imports and `package:` imports.
+  ///
+  /// Returns null if the import could not be resolved. Note that it does not
+  /// return null if the file doesn't exists - that needs to be checked
+  /// separately.
   FoundFile resolve(FoundFile source, String import) {
     final resolvedUri = backend.resolve(source.uri, import);
-    return _uriToFile(resolvedUri);
+    return resolvedUri == null ? null : _uriToFile(resolvedUri);
   }
 
   /// Registers a file by its absolute uri.
