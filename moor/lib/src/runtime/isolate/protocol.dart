@@ -48,6 +48,9 @@ class _ExecuteQuery {
 
   @override
   String toString() {
+    if (transactionId != null) {
+      return '$method: $sql with $args (@$transactionId)';
+    }
     return '$method: $sql with $args';
   }
 }
@@ -55,8 +58,9 @@ class _ExecuteQuery {
 /// Sent from the client to run a list of [BatchedStatement]s.
 class _ExecuteBatchedStatement {
   final List<BatchedStatement> stmts;
+  final int transactionId;
 
-  _ExecuteBatchedStatement(this.stmts);
+  _ExecuteBatchedStatement(this.stmts, [this.transactionId]);
 }
 
 /// Sent from the client to commit or rollback a transaction
