@@ -33,7 +33,7 @@ manyColumns:
 class ParseMoorFile extends BenchmarkBase {
   ParseMoorFile(ScoreEmitter emitter) : super('Moor file: Parse only', emitter);
 
-  final _engine = SqlEngine(useMoorExtensions: true);
+  final _engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
 
   @override
   void exercise() {

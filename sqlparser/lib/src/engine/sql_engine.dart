@@ -21,14 +21,19 @@ class SqlEngine {
 
   SchemaFromCreateTable _schemaReader;
 
-  @Deprecated('Use SqlEngine.withOptions instead')
   SqlEngine(
-      {bool useMoorExtensions = false,
-      bool enableJson1Module = false,
-      bool enableFts5 = false})
+      {@Deprecated('Use SqlEngine.withOptions instead')
+          bool useMoorExtensions = false,
+      @Deprecated('Use SqlEngine.withOptions instead')
+          bool enableJson1Module = false,
+      @Deprecated('Use SqlEngine.withOptions instead')
+          bool enableFts5 = false})
       : this.withOptions(_constructOptions(
+          // ignore: deprecated_member_use_from_same_package
           moor: useMoorExtensions,
+          // ignore: deprecated_member_use_from_same_package
           json1: enableJson1Module,
+          // ignore: deprecated_member_use_from_same_package
           fts5: enableFts5,
         ));
 

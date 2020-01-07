@@ -2,9 +2,11 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:test/test.dart';
 
+final _moorOptions = EngineOptions(useMoorExtensions: true);
+
 void main() {
   test('suggests a CREATE an empty file', () {
-    final engine = SqlEngine(useMoorExtensions: true);
+    final engine = SqlEngine.withOptions(_moorOptions);
     final parseResult = engine.parseMoorFile('');
 
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
@@ -15,7 +17,7 @@ void main() {
   });
 
   test('suggests CREATE TABLE completion after CREATE', () async {
-    final engine = SqlEngine(useMoorExtensions: true);
+    final engine = SqlEngine.withOptions(_moorOptions);
     final parseResult = engine.parseMoorFile('CREATE ');
 
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(7);
@@ -25,7 +27,7 @@ void main() {
   });
 
   test('suggests completions for started keywords', () {
-    final engine = SqlEngine(useMoorExtensions: true);
+    final engine = SqlEngine.withOptions(_moorOptions);
     final parseResult = engine.parseMoorFile('creat');
 
     final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);

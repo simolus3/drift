@@ -93,7 +93,7 @@ void main() {
 
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
-    final parsed = SqlEngine(useMoorExtensions: true)
+    final parsed = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
         .parseMoorFile('name: NSERT INTO foo DEFAULT VALUES;');
 
     expect(

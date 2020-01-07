@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('resolves return types of json functions', () {
     ResolveResult findResult(String expression) {
-      final engine = SqlEngine(enableJson1Module: true);
+      final engine = SqlEngine.withOptions(EngineOptions(enableJson1: true));
       final result = engine.analyze('SELECT $expression;');
 
       final select = result.root as SelectStatement;
