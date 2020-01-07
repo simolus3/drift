@@ -63,7 +63,7 @@ On the web, you can use
 ```dart
 import 'package:moor/moor_web.dart';
 SharedDatabase constructDb() {
-    return SharedDatabase(WebDatabse('db'));
+    return SharedDatabase(WebDatabase('db'));
 }
 ```
 
