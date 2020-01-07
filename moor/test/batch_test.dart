@@ -37,6 +37,8 @@ void main() {
         CategoriesCompanion(id: Value(1), description: Value('new1')),
         CategoriesCompanion(id: Value(2), description: Value('new2')),
       ]);
+
+      b.delete(db.categories, (_) => const Constant(true));
     });
 
     final transaction = executor.transactions;
@@ -66,6 +68,10 @@ void main() {
           ['new1', 1],
           ['new2', 2],
         ],
+      ),
+      BatchedStatement(
+        'DELETE FROM categories WHERE 1;',
+        [[]],
       ),
     ]));
   });

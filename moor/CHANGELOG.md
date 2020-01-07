@@ -13,6 +13,7 @@
   To create them in `onUpgrade`, use the new `createIndex` and `createTrigger` functions on a `Migrator`.
 - Support for moor-file queries that run on initialization ([#280](https://github.com/simolus3/moor/issues/280))
   Declare them like this `@create: INSERT INTO users VALUES ('default', 'user')`
+- Support deletes in batches ([#325](https://github.com/simolus3/moor/issues/325))
   
 ## 2.2.0
 

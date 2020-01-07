@@ -94,6 +94,16 @@ class Batch {
     }
   }
 
+  /// Deletes all rows from [table] matching the provided [filter].
+  ///
+  /// See also:
+  ///  - [QueryEngine.delete]
+  void delete<T extends Table, D extends DataClass>(TableInfo<T, D> table,
+      Expression<bool, BoolType> Function(T tbl) filter) {
+    final stmt = DeleteStatement(_engine, table)..where(filter);
+    _addContext(stmt.constructQuery());
+  }
+
   void _addContext(GenerationContext ctx) {
     final sql = ctx.sql;
     final variableSet = _createdStatements.putIfAbsent(sql, () => []);
