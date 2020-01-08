@@ -74,7 +74,7 @@ class MoorOptions {
       this.useDataClassNameForCompanions = false,
       this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
       this.generateConnectConstructor = false,
-      this.useExperimentalInference,
+      this.useExperimentalInference = false,
       this.modules = const []});
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>

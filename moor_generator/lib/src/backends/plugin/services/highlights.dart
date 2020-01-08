@@ -37,6 +37,9 @@ class MoorHighlightContributor implements HighlightsContributor {
         } else if (token is VariableToken) {
           collector.addRegion(
               start, length, HighlightRegionType.PARAMETER_REFERENCE);
+        } else if (token is StringLiteralToken) {
+          collector.addRegion(
+              start, length, HighlightRegionType.LITERAL_STRING);
         }
       }
     }
@@ -123,10 +126,9 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
       _contribute(e, HighlightRegionType.BUILT_IN);
     } else if (e is NumericLiteral) {
       _contribute(e, HighlightRegionType.LITERAL_INTEGER);
-    } else if (e is StringLiteral) {
-      _contribute(e, HighlightRegionType.LITERAL_STRING);
     } else if (e is BooleanLiteral) {
       _contribute(e, HighlightRegionType.LITERAL_BOOLEAN);
     }
+    // string literals are reported for each string token
   }
 }
