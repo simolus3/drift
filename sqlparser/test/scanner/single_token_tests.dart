@@ -47,6 +47,7 @@ Map<String, TokenType> testCases = {
   '"UPDATE"': TokenType.identifier,
   '@foo': TokenType.atSignVariable,
   ':named': TokenType.colonVariable,
+  '"spo\uD83C\uDF83ky"': TokenType.identifier,
 };
 
 void main() {

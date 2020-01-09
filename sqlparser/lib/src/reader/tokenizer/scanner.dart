@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:source_span/source_span.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
-import 'package:sqlparser/src/reader/tokenizer/utils.dart';
+
+import 'token.dart';
+import 'utils.dart';
 
 class Scanner {
   final String source;
+  final Uint16List _charCodes;
 
   /// Whether to scan tokens that are only relevant for moor.
   final bool scanMoorTokens;
@@ -25,7 +29,8 @@ class Scanner {
   }
 
   Scanner(this.source, {this.scanMoorTokens = false})
-      : _file = SourceFile.fromString(source);
+      : _file = SourceFile.fromString(source),
+        _charCodes = Uint16List.fromList(source.codeUnits);
 
   List<Token> scanTokens() {
     while (!_isAtEnd) {
@@ -46,90 +51,88 @@ class Scanner {
   void _scanToken() {
     final char = _nextChar();
     switch (char) {
-      case '(':
+      case charParenLeft:
         _addToken(TokenType.leftParen);
         break;
-      case ')':
+      case charParenRight:
         _addToken(TokenType.rightParen);
         break;
-      case ',':
+      case charComma:
         _addToken(TokenType.comma);
         break;
-      case '.':
+      case charPeriod:
         if (!_isAtEnd && isDigit(_peek())) {
           _numeric(char);
         } else {
           _addToken(TokenType.dot);
         }
         break;
-      case '+':
+      case charPlus:
         _addToken(TokenType.plus);
         break;
-      case '-':
-        if (_match('-')) {
+      case charMinus:
+        if (_match(charMinus)) {
           _lineComment();
         } else {
           _addToken(TokenType.minus);
         }
         break;
-      case '*':
+      case charStar:
         _addToken(TokenType.star);
         break;
-      case '/':
-        if (_match('*')) {
+      case charSlash:
+        if (_match(charStar)) {
           _cStyleComment();
         } else {
           _addToken(TokenType.slash);
         }
 
         break;
-      case '%':
+      case charPercent:
         _addToken(TokenType.percent);
         break;
-      case '&':
+      case charAmpersand:
         _addToken(TokenType.ampersand);
         break;
-      case '|':
-        _addToken(_match('|') ? TokenType.doublePipe : TokenType.pipe);
+      case charPipe:
+        _addToken(_match(charPipe) ? TokenType.doublePipe : TokenType.pipe);
         break;
-
-      case '<':
-        if (_match('=')) {
+      case charLess:
+        if (_match(charEquals)) {
           _addToken(TokenType.lessEqual);
-        } else if (_match('<')) {
+        } else if (_match(charLess)) {
           _addToken(TokenType.shiftLeft);
-        } else if (_match('>')) {
+        } else if (_match(charGreater)) {
           _addToken(TokenType.lessMore);
         } else {
           _addToken(TokenType.less);
         }
         break;
-      case '>':
-        if (_match('=')) {
+      case charGreater:
+        if (_match(charEquals)) {
           _addToken(TokenType.moreEqual);
-        } else if (_match('>')) {
+        } else if (_match(charGreater)) {
           _addToken(TokenType.shiftRight);
         } else {
           _addToken(TokenType.more);
         }
         break;
-      case '!':
-        if (_match('=')) {
+      case charExclMark: // !
+        if (_match(charEquals)) {
           _addToken(TokenType.exclamationEqual);
         }
         break;
-      case '=':
-        _addToken(_match('=') ? TokenType.doubleEqual : TokenType.equal);
+      case charEquals:
+        _addToken(_match(charEquals) ? TokenType.doubleEqual : TokenType.equal);
         break;
-      case '~':
+      case charTilde:
         _addToken(TokenType.tilde);
         break;
-
-      case '?':
-        // if the next chars are numbers, this is an explicitly index variable
+      case charQuestionMark:
+        // if the next chars are numbers, this is an explicitly indexed variable
         final buffer = StringBuffer();
         while (!_isAtEnd && isDigit(_peek())) {
-          buffer.write(_nextChar());
+          buffer.writeCharCode(_nextChar());
         }
 
         int explicitIndex;
@@ -139,52 +142,50 @@ class Scanner {
 
         tokens.add(QuestionMarkVariableToken(_currentSpan, explicitIndex));
         break;
-      case ':':
+      case charColon:
         final name = _matchColumnName();
         if (name == null) {
           _addToken(TokenType.colon);
         } else {
           tokens.add(ColonVariableToken(_currentSpan, ':$name'));
         }
-
         break;
-      case r'$':
+      case charDollarSign:
         final name = _matchColumnName();
         tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
-      case '@':
+      case charAt:
         final name = _matchColumnName();
         tokens.add(AtSignVariableToken(_currentSpan, name));
         break;
-        break;
-      case ';':
+      case charSemicolon:
         _addToken(TokenType.semicolon);
         break;
-
-      case 'x':
-        if (_match("'")) {
+      case charCodeX:
+      case charCodeLowerX:
+        if (_match(charSingleTick)) {
           _string(binary: true);
         } else {
           _identifier();
         }
         break;
-      case "'":
+      case charSingleTick:
         _string();
         break;
-      case '"':
+      case charDoubleTick:
         _identifier(escapedInQuotes: true);
         break;
-      case '`':
+      case charBacktick:
         if (scanMoorTokens) {
           _inlineDart();
         } else {
           _unexpectedToken();
         }
         break;
-      case ' ':
-      case '\r':
-      case '\t':
-      case '\n':
+      case charSpace:
+      case charCarriageReturn:
+      case charTab:
+      case charLineFeed:
         // ignore whitespace
         break;
 
@@ -204,21 +205,23 @@ class Scanner {
     errors.add(TokenizerError('Unexpected character.', _currentLocation));
   }
 
-  String _nextChar() {
+  @pragma('vm:prefer-inline')
+  int _nextChar() {
     _advance();
-    return source.substring(_currentOffset - 1, _currentOffset);
+    return _charCodes[_currentOffset - 1];
   }
 
+  @pragma('vm:prefer-inline')
   void _advance() => _currentOffset++;
 
-  String _peek() {
+  int _peek() {
     if (_isAtEnd) throw StateError('Reached end of source');
-    return source.substring(_currentOffset, _currentOffset + 1);
+    return _charCodes[_currentOffset];
   }
 
-  bool _match(String expected) {
+  bool _match(int expected) {
     if (_isAtEnd) return false;
-    if (source.substring(_currentOffset, _currentOffset + 1) != expected) {
+    if (_peek() != expected) {
       return false;
     }
     _currentOffset++;
@@ -237,8 +240,8 @@ class Scanner {
 
       // single quote could be an escape (when there are two of them) or the
       // end of this string literal
-      if (char == "'") {
-        if (!_isAtEnd && _peek() == "'") {
+      if (char == charSingleTick) {
+        if (!_isAtEnd && _peek() == charSingleTick) {
           _advance();
           continue;
         }
@@ -258,13 +261,13 @@ class Scanner {
     tokens.add(StringLiteralToken(value, _currentSpan, binary: binary));
   }
 
-  void _numeric(String firstChar) {
+  void _numeric(int firstChar) {
     // https://www.sqlite.org/syntax/numeric-literal.html
 
     // We basically have three cases: hexadecimal numbers (starting with 0x),
     // numbers starting with a decimal dot and numbers starting with a digit.
-    if (firstChar == '0') {
-      if (!_isAtEnd && (_peek() == 'x' || _peek() == 'X')) {
+    if (firstChar == charCodeZero) {
+      if (!_isAtEnd && (_peek() == charCodeLowerX || _peek() == charCodeX)) {
         _nextChar(); // consume the x
         // advance hexadecimal digits
         while (!_isAtEnd && isHexDigit(_peek())) {
@@ -292,7 +295,7 @@ class Scanner {
     }
 
     // ok, we're not dealing with a hexadecimal number.
-    if (firstChar == '.') {
+    if (firstChar == charPeriod) {
       // started with a decimal point. the next char has to be numeric
       if (_requireDigit('Expected a digit after the decimal dot')) {
         consumeDigits();
@@ -307,7 +310,7 @@ class Scanner {
       consumeDigits();
 
       // optional decimal part
-      if (!_isAtEnd && _peek() == '.') {
+      if (!_isAtEnd && _peek() == charPeriod) {
         _nextChar();
         // if there is a decimal separator, there must be at least one digit
         // after it
@@ -321,7 +324,7 @@ class Scanner {
 
     // ok, we've read the first part of the number. But there's more! If it's
     // not a hexadecimal number, it could be in scientific notation.
-    if (!_isAtEnd && (_peek() == 'e' || _peek() == 'E')) {
+    if (!_isAtEnd && (_peek() == charLowerE || _peek() == charCodeE)) {
       _nextChar(); // consume e or E
 
       if (_isAtEnd) {
@@ -338,7 +341,7 @@ class Scanner {
         _addToken(TokenType.numberLiteral);
         return;
       } else {
-        if (char == '+' || char == '-') {
+        if (char == charPlus || char == charMinus) {
           _requireDigit('Expected digits for the exponent');
           consumeDigits();
           _addToken(TokenType.numberLiteral);
@@ -356,7 +359,7 @@ class Scanner {
   void _identifier({bool escapedInQuotes = false}) {
     if (escapedInQuotes) {
       // find the closing quote
-      while (_peek() != '"' && !_isAtEnd) {
+      while (!_isAtEnd && _peek() != charDoubleTick) {
         _nextChar();
       }
       // Issue an error if the column name is unterminated
@@ -388,9 +391,9 @@ class Scanner {
   String _matchColumnName() {
     if (_isAtEnd || !canStartColumnName(_peek())) return null;
 
-    final buffer = StringBuffer()..write(_nextChar());
+    final buffer = StringBuffer()..writeCharCode(_nextChar());
     while (!_isAtEnd && continuesColumnName(_peek())) {
-      buffer.write(_nextChar());
+      buffer.writeCharCode(_nextChar());
     }
 
     return buffer.toString();
@@ -399,7 +402,7 @@ class Scanner {
   void _inlineDart() {
     // inline starts with a `, we just need to find the matching ` that
     // terminates this token.
-    while (_peek() != '`' && !_isAtEnd) {
+    while (_peek() != charBacktick && !_isAtEnd) {
       _nextChar();
     }
 
@@ -416,8 +419,8 @@ class Scanner {
   /// Scans a line comment after the -- has already been read.
   void _lineComment() {
     final contentBuilder = StringBuffer();
-    while (!_isAtEnd && _peek() != '\n') {
-      contentBuilder.write(_nextChar());
+    while (!_isAtEnd && _peek() != charLineFeed) {
+      contentBuilder.writeCharCode(_nextChar());
     }
 
     tokens.add(CommentToken(
@@ -430,15 +433,15 @@ class Scanner {
   void _cStyleComment() {
     final contentBuilder = StringBuffer();
     while (!_isAtEnd) {
-      if (_match('*')) {
-        if (!_isAtEnd && _match('/')) {
+      if (_match(charStar)) {
+        if (!_isAtEnd && _match(charSlash)) {
           break;
         } else {
           // write the * we otherwise forgot to write
-          contentBuilder.write('*');
+          contentBuilder.writeCharCode(charStar);
         }
       } else {
-        contentBuilder.write(_nextChar());
+        contentBuilder.writeCharCode(_nextChar());
       }
     }
 
