@@ -428,19 +428,11 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<CategoriesWithCountResult> _categoriesWithCountQuery() {
+  Selectable<CategoriesWithCountResult> _categoriesWithCount() {
     return customSelectQuery(
         'SELECT\n       c.id,\n       c.desc,\n       (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount\n     FROM categories c\n     UNION ALL\n     SELECT null, null, (SELECT COUNT(*) FROM todos WHERE category IS NULL)',
         variables: [],
         readsFrom: {categories, todos}).map(_rowToCategoriesWithCountResult);
-  }
-
-  Future<List<CategoriesWithCountResult>> _categoriesWithCount() {
-    return _categoriesWithCountQuery().get();
-  }
-
-  Stream<List<CategoriesWithCountResult>> _watchCategoriesWithCount() {
-    return _categoriesWithCountQuery().watch();
   }
 
   @override
