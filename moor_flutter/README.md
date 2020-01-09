@@ -14,7 +14,7 @@ even have a builtin IDE for SQL!
 - __🛡️ Safe__: Moor generates typesafe code based on your tables and queries. If you make a mistake in your queries, moor will find it at compile time and
 provide helpful and descriptive lints.
 - __Reactive__: Turn any sql query into an auto-updating stream! This includes complex queries across many tables
-- __⚙️ Cross-Platform support__: Moor works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/appleeducate/moor_shared) is a Flutter todo app that works on all platforms
+- __⚙️ Cross-Platform support__: Moor works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/rodydavis/moor_shared) is a Flutter todo app that works on all platforms
 - __🗡️ Battle tested and production ready__: Moor is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.
 
 With moor, persistence on Flutter is fun!
