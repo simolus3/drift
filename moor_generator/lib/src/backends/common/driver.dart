@@ -11,6 +11,7 @@ import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/services/ide/moor_ide.dart';
+import 'package:moor_generator/src/utils/options_reader.dart' as options;
 
 import 'backend.dart';
 import 'file_tracker.dart';
@@ -26,6 +27,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   /// unsaved files.
   final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
+  final String contextRoot;
 
   /* late final */ MoorSession session;
   StreamSubscription _fileChangeSubscription;
@@ -33,7 +35,7 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider,
-      [MoorOptions options]) {
+      [MoorOptions options, this.contextRoot]) {
     _scheduler.add(this);
     final backend = CommonBackend(this);
 
@@ -107,6 +109,20 @@ class MoorDriver implements AnalysisDriverGeneric {
       Logger.root.warning(
           'Error while working on ${mostImportantFile.file.uri}', e, s);
       _tracker.removePending(mostImportantFile);
+    }
+  }
+
+  /// Attempt to load the appropriate [MoorOptions] by reading the `build.yaml`
+  /// located in the context root.
+  ///
+  /// When something fails, the default options will be used an an error message
+  /// will be logged.
+  Future<void> tryToLoadOptions() async {
+    try {
+      final result = await options.fromRootDir(contextRoot);
+      session.options = result;
+    } catch (e, s) {
+      Logger.root.info('Could not load options, using defaults', e, s);
     }
   }
 

@@ -89,6 +89,11 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
       _contribute(e.tableNameToken, HighlightRegionType.CLASS);
     }
 
+    if (e is CreateVirtualTableStatement && e.moduleNameToken != null) {
+      _contribute(
+          e.moduleNameToken, HighlightRegionType.TOP_LEVEL_FUNCTION_REFERENCE);
+    }
+
     visitChildren(e, arg);
   }
 

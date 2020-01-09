@@ -7,6 +7,8 @@ CREATE TABLE playground (
   name VARCHAR NOT NULL
 );
 
+CREATE VIRTUAL TABLE email USING fts5(name);
+
 unknownColumn: SELECT * FROM playground WHERE bar = 'foo';
 syntaxError: SELECT 3 + FROM playground;
 lints: INSERT INTO playground DEFAULT VALUES;

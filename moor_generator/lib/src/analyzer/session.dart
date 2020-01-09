@@ -17,7 +17,7 @@ const _fileEndings = {
 class MoorSession {
   final FileGraph fileGraph = FileGraph();
   final Backend backend;
-  final MoorOptions options;
+  MoorOptions options;
 
   final _completedTasks = StreamController<Task>.broadcast();
   final _changedFiles = StreamController<List<FoundFile>>.broadcast();

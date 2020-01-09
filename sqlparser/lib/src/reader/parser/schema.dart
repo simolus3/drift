@@ -149,7 +149,8 @@ mixin SchemaParser on ParserBase {
       overriddenDataClassName: moorDataClassName,
     )
       ..setSpan(first, _previous)
-      ..tableNameToken = nameToken;
+      ..tableNameToken = nameToken
+      ..moduleNameToken = moduleName;
   }
 
   String _overriddenDataClassName() {

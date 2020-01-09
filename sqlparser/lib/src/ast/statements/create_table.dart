@@ -58,6 +58,7 @@ class CreateTableStatement extends TableInducingStatement {
 class CreateVirtualTableStatement extends TableInducingStatement {
   /// The module that will be invoked when creating the virtual table.
   final String moduleName;
+  Token moduleNameToken;
 
   /// Arguments passed to the module. Since the specific module is responsible
   /// for parsing them, the general parser only exposes them as strings with a

@@ -66,7 +66,7 @@ abstract class BaseMoorPlugin extends ServerPlugin {
 
     final tracker = FileTracker();
     final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
-        fileContentOverlay, resourceProvider, options);
+        fileContentOverlay, resourceProvider, options, contextRoot.root);
     didCreateDriver(driver);
 
     return driver;

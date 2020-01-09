@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/model/declarations/declaration.dart';
@@ -16,7 +17,15 @@ class CreateTableReader {
   CreateTableReader(this.stmt, this.step);
 
   MoorTable extractTable(TypeMapper mapper) {
-    final table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
+    Table table;
+    try {
+      table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
+    } catch (e) {
+      step.reportError(ErrorInMoorFile(
+        span: stmt.tableNameToken.span,
+        message: 'Could not extract schema information for this table: $e',
+      ));
+    }
 
     final foundColumns = <String, MoorColumn>{};
     final primaryKey = <MoorColumn>{};

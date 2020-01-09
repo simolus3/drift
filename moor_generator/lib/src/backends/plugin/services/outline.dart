@@ -47,6 +47,25 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitCreateVirtualTableStatement(
+      CreateVirtualTableStatement e, void arg) {
+    _startElement(ElementKind.CLASS, e.tableName, e);
+
+    // if the file is analyzed, we can report analyzed columns
+    final resolved = request.parsedMoor.declaredTables
+        ?.singleWhere((t) => t.sqlName == e.tableName, orElse: () => null);
+
+    if (resolved != null) {
+      for (final column in resolved.columns) {
+        _startElement(ElementKind.FIELD, column.name.name, e);
+        collector.endElement();
+      }
+    }
+
+    collector.endElement();
+  }
+
+  @override
   void visitColumnDefinition(ColumnDefinition e, void arg) {
     // we use parameters instead of returnType because VS Code doesn't show
     // the return type but we'd really like it to be shown

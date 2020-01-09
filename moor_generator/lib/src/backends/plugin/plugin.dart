@@ -45,6 +45,7 @@ class MoorPlugin extends BaseMoorPlugin
 
   @override
   void didCreateDriver(MoorDriver driver) {
+    driver.tryToLoadOptions();
     driver.session
         .completedFiles()
         .where((file) => file.isParsed)
