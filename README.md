@@ -24,7 +24,7 @@ provide helpful and descriptive lints.
 - __⚡ Fast__: Even though moor lets you write powerful queries, it can keep
 up with the performance of key-value stores like shared preferences and Hive. Moor is the only major persistence library with builtin threading support, allowing you to run database code across isolates with zero additional effort.
 - __Reactive__: Turn any sql query into an auto-updating stream! This includes complex queries across many tables
-- __⚙️ Cross-Platform support__: Moor works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/appleeducate/moor_shared) is a Flutter todo app that works on all platforms
+- __⚙️ Cross-Platform support__: Moor works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/rodydavis/moor_shared) is a Flutter todo app that works on all platforms
 - __🗡️ Battle tested and production ready__: Moor is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.
 
 With moor, persistence on Flutter is fun!
