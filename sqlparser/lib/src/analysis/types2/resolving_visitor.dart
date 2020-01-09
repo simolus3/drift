@@ -81,7 +81,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     if (stmt is HasWhereClause) {
       final typedStmt = stmt as HasWhereClause;
       _handleWhereClause(typedStmt);
-      _visitExcept(stmt, typedStmt.where, arg);
+      visitExcept(stmt, typedStmt.where, arg);
     } else {
       visitChildren(stmt, arg);
     }
@@ -90,7 +90,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   @override
   void visitCreateIndexStatement(CreateIndexStatement e, TypeExpectation arg) {
     _handleWhereClause(e);
-    _visitExcept(e, e.where, arg);
+    visitExcept(e, e.where, arg);
   }
 
   @override
@@ -100,7 +100,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       // ON <expr>, <expr> should be boolean
       visit(constraint.expression,
           const ExactTypeExpectation.laxly(ResolvedType.bool()));
-      _visitExcept(e, constraint.expression, arg);
+      visitExcept(e, constraint.expression, arg);
     } else {
       visitChildren(e, arg);
     }
@@ -303,14 +303,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       // internally casts (https://www.sqlite.org/lang_expr.html#booleanexpr),
       // so be lax
       visit(stmt.where, const ExactTypeExpectation.laxly(ResolvedType.bool()));
-    }
-  }
-
-  void _visitExcept(AstNode node, AstNode skip, TypeExpectation arg) {
-    for (final child in node.childNodes) {
-      if (child != skip) {
-        visit(child, arg);
-      }
     }
   }
 

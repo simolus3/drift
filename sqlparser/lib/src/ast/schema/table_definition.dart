@@ -30,6 +30,7 @@ class ForeignKeyClause extends AstNode {
 
 abstract class TableConstraint extends AstNode {
   final String name;
+  Token nameToken;
 
   TableConstraint(this.name);
 

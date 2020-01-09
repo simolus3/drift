@@ -351,7 +351,7 @@ mixin SchemaParser on ParserBase {
   ColumnConstraint _columnConstraint({bool orNull = false}) {
     final first = _peek;
 
-    final resolvedName = _constraintNameOrNull();
+    final resolvedName = _constraintNameOrNull()?.identifier;
 
     if (_matchOne(TokenType.primary)) {
       _suggestHint(HintDescription.token(TokenType.key));
@@ -438,8 +438,10 @@ mixin SchemaParser on ParserBase {
 
   TableConstraint _tableConstraintOrNull() {
     final first = _peek;
-    final name = _constraintNameOrNull();
+    final nameToken = _constraintNameOrNull();
+    final name = nameToken?.identifier;
 
+    TableConstraint result;
     if (_match([TokenType.unique, TokenType.primary])) {
       final isPrimaryKey = _previous.type == TokenType.primary;
 
@@ -450,21 +452,27 @@ mixin SchemaParser on ParserBase {
       final columns = _listColumnsInParentheses(allowEmpty: false);
       final conflictClause = _conflictClauseOrNull();
 
-      return KeyClause(name,
+      result = KeyClause(name,
           isPrimaryKey: isPrimaryKey,
           indexedColumns: columns,
-          onConflict: conflictClause)
-        ..setSpan(first, _previous);
+          onConflict: conflictClause);
     } else if (_matchOne(TokenType.check)) {
       final expr = _expressionInParentheses();
-      return CheckTable(name, expr)..setSpan(first, _previous);
+      result = CheckTable(name, expr);
     } else if (_matchOne(TokenType.foreign)) {
       _consume(TokenType.key, 'Expected KEY to start FOREIGN KEY clause');
       final columns = _listColumnsInParentheses(allowEmpty: false);
       final clause = _foreignKeyClause();
 
-      return ForeignKeyTableConstraint(name, columns: columns, clause: clause)
-        ..setSpan(first, _previous);
+      result =
+          ForeignKeyTableConstraint(name, columns: columns, clause: clause);
+    }
+
+    if (result != null) {
+      result
+        ..setSpan(first, _previous)
+        ..nameToken = nameToken;
+      return result;
     }
 
     if (name != null) {
@@ -475,10 +483,10 @@ mixin SchemaParser on ParserBase {
     return null;
   }
 
-  String _constraintNameOrNull() {
+  IdentifierToken _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
       final name = _consumeIdentifier('Expect a name for the constraint here');
-      return name.identifier;
+      return name;
     }
     return null;
   }

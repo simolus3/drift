@@ -378,4 +378,12 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
     }
     return null;
   }
+
+  void visitExcept(AstNode node, AstNode skip, A arg) {
+    for (final child in node.childNodes) {
+      if (child != skip) {
+        visit(child, arg);
+      }
+    }
+  }
 }

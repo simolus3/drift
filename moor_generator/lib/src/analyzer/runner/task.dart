@@ -79,7 +79,16 @@ class Task {
         final content = await backend.readMoor(file.uri);
         final step = createdStep = ParseMoorStep(this, file, content);
 
-        final parsed = await step.parseFile();
+        ParsedMoorFile parsed;
+        try {
+          parsed = await step.parseFile();
+        } on Exception catch (e) {
+          file.errors.report(MoorError(
+            severity: Severity.error,
+            message: 'Could not parse file: $e',
+          )..wasDuringParsing = true);
+          break;
+        }
         file.currentResult = parsed;
 
         parsed.resolvedImports = <ImportStatement, FoundFile>{};

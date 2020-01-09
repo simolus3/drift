@@ -77,6 +77,11 @@ class MoorSession {
     return Task(this, _uriToFile(backend.entrypoint), backend);
   }
 
+  /// A stream emitting files whenever they were included in a completed task.
+  Stream<FoundFile> completedFiles() {
+    return completedTasks.expand((task) => task.analyzedFiles);
+  }
+
   /// Notifies this backend that the content of the given [file] has been
   /// changed.
   void notifyFileChanged(FoundFile file) {
