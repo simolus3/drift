@@ -67,6 +67,11 @@ class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey> _keysPendingRemoval = HashSet<StreamKey>();
 
+  bool _isShuttingDown = false;
+  // we track pending timers since Flutter throws an exception when timers
+  // remain after a test run.
+  final Set<Completer> _pendingTimers = {};
+
   // Why is this stream synchronous? We want to dispatch table updates before
   // the future from the query completes. This allows streams to invalidate
   // their cached data before the user can send another query.
@@ -112,16 +117,31 @@ class StreamQueryStore {
     _updatedTableNames.add(updatedTableNames);
   }
 
-  void markAsClosed(QueryStream stream) {
+  void markAsClosed(QueryStream stream, Function() whenRemoved) {
+    if (_isShuttingDown) return;
+
     final key = stream._fetcher.key;
     _keysPendingRemoval.add(key);
 
-    scheduleMicrotask(() {
+    final completer = Completer<void>();
+    _pendingTimers.add(completer);
+
+    // Hey there! If you're sent here because your Flutter tests fail, please
+    // call and await Database.close() in your Flutter widget tests!
+    // Moor uses timers internally so that after you stopped listening to a
+    // stream, it can keep its cache just a bit longer. When you listen to
+    // streams a lot, this helps reduce duplicate statements, especially with
+    // Flutter's StreamBuilder.
+    Timer.run(() {
+      completer.complete();
+      _pendingTimers.remove(completer);
+
       // if no other subscriber was found during this event iteration, remove
       // the stream from the cache.
       if (_keysPendingRemoval.contains(key)) {
         _keysPendingRemoval.remove(key);
         _activeKeyStreams.remove(key);
+        whenRemoved();
       }
     });
   }
@@ -134,16 +154,27 @@ class StreamQueryStore {
       _activeKeyStreams[key] = stream;
     }
   }
+
+  Future<void> close() async {
+    _isShuttingDown = true;
+
+    for (final stream in _activeKeyStreams.values) {
+      await stream._controller.close();
+    }
+    await _updatedTableNames.close();
+
+    while (_pendingTimers.isNotEmpty) {
+      await _pendingTimers.first.future;
+    }
+
+    _activeKeyStreams.clear();
+  }
 }
 
 class QueryStream<T> {
   final QueryStreamFetcher<T> _fetcher;
   final StreamQueryStore _store;
 
-  // todo this controller is not disposed because it can be listened to at any
-  // time, so we have to rely on GC to clean this up.
-  // In a future release, we should implement a dispose method and encourage
-  // users to call it. See the comment at registerStream and https://github.com/simolus3/moor/issues/75
   StreamController<T> _controller;
   StreamSubscription _tablesChangedSubscription;
 
@@ -165,41 +196,42 @@ class QueryStream<T> {
   T _cachedData() => _lastData;
 
   void _onListen() {
-    // first listener added, fetch query
-    fetchAndEmitData();
     _store.markAsOpened(this);
 
-    // fetch new data whenever any table referenced in this stream changes its
-    // name
-    assert(_tablesChangedSubscription == null);
-    final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
-    _tablesChangedSubscription = _store._updatedTableNames.stream
-        .where((changed) => changed.any(names.contains))
-        .listen((_) {
-      // table has changed, invalidate cache
-      _lastData = null;
+    // fetch new data whenever any table referenced in this stream updates.
+    // It could be that we have an outstanding subscription when the
+    // stream was closed but another listener attached quickly enough. In that
+    // case we don't have to re-send the query
+    if (_tablesChangedSubscription == null) {
+      // first listener added, fetch query
       fetchAndEmitData();
-    });
+
+      final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
+      _tablesChangedSubscription = _store._updatedTableNames.stream
+          .where((changed) => changed.any(names.contains))
+          .listen((_) {
+        // table has changed, invalidate cache
+        _lastData = null;
+        fetchAndEmitData();
+      });
+    }
   }
 
   void _onCancel() {
-    // last listener gone, dispose
-    _tablesChangedSubscription?.cancel();
-    _tablesChangedSubscription = null;
+    _store.markAsClosed(this, () {
+      // last listener gone, dispose
+      _tablesChangedSubscription?.cancel();
 
-    // we don't listen for table updates anymore, and we're guaranteed to
-    // re-fetch data after a new listener comes in. We can't know if the table
-    // was updated in the meantime, but let's delete the cached data just in
-    // case
-    _lastData = null;
-
-    _store.markAsClosed(this);
+      // we don't listen for table updates anymore, and we're guaranteed to
+      // re-fetch data after a new listener comes in. We can't know if the table
+      // was updated in the meantime, but let's delete the cached data just in
+      // case
+      _lastData = null;
+      _tablesChangedSubscription = null;
+    });
   }
 
   Future<void> fetchAndEmitData() async {
-    // Fetch data if it's needed, publish that data if it's possible.
-    if (!_controller.hasListener) return;
-
     T data;
 
     try {
