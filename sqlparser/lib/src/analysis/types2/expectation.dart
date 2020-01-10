@@ -52,6 +52,15 @@ class RoughTypeExpectation extends TypeExpectation {
     }
     return false;
   }
+
+  ResolvedType defaultType() {
+    switch (_type) {
+      case _RoughType.numeric:
+        return const ResolvedType(type: BasicType.real);
+    }
+
+    throw AssertionError();
+  }
 }
 
 enum _RoughType {

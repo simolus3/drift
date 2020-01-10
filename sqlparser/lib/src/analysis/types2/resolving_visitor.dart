@@ -2,6 +2,7 @@ part of 'types.dart';
 
 const _expectInt =
     ExactTypeExpectation.laxly(ResolvedType(type: BasicType.int));
+const _expectNum = RoughTypeExpectation.numeric();
 const _expectString =
     ExactTypeExpectation.laxly(ResolvedType(type: BasicType.text));
 
@@ -141,10 +142,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitVariable(Variable e, TypeExpectation arg) {
     final resolved = session.context.stmtOptions.specifiedTypeOf(e) ??
         _inferFromContext(arg);
+
     if (resolved != null) {
-      session.markTypeResolved(e, resolved);
+      session.checkAndResolve(e, resolved, arg);
+    } else if (arg is RoughTypeExpectation) {
+      session.addRelationship(DefaultType(e, arg.defaultType()));
     }
-    // todo support when arg is RoughTypeExpectation
+
     visitChildren(e, arg);
   }
 
@@ -176,6 +180,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       throw StateError(
           'Unary operator $operatorType not recognized by types2. At $e');
     }
+  }
+
+  @override
+  void visitBetweenExpression(BetweenExpression e, TypeExpectation arg) {
+    visitChildren(e, _expectNum);
+
+    session
+      ..addRelationship(NullableIfSomeOtherIs(e, e.childNodes))
+      ..addRelationship(HaveSameType(e.lower, e.upper))
+      ..addRelationship(HaveSameType(e.check, e.lower));
   }
 
   @override
@@ -239,6 +253,45 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session.checkAndResolve(e, const ResolvedType.bool(), arg);
     session.hintNullability(e, false);
     visitChildren(e, const NoTypeExpectation());
+  }
+
+  @override
+  void visitIsNullExpression(IsNullExpression e, TypeExpectation arg) {
+    session.checkAndResolve(e, const ResolvedType.bool(), arg);
+    session.hintNullability(e, false);
+    visitChildren(e, const NoTypeExpectation());
+  }
+
+  @override
+  void visitCaseExpression(CaseExpression e, TypeExpectation arg) {
+    session.addRelationship(CopyEncapsulating(e, [
+      for (final when in e.whens) when.then,
+      if (e.elseExpr != null) e.elseExpr,
+    ]));
+
+    if (e.base != null) {
+      session.addRelationship(
+        CopyEncapsulating(e.base, [for (final when in e.whens) when.when]),
+      );
+    }
+
+    visitNullable(e.base, const NoTypeExpectation());
+    visitExcept(e, e.base, arg);
+  }
+
+  @override
+  void visitWhen(WhenComponent e, TypeExpectation arg) {
+    final parent = e.parent;
+    if (parent is CaseExpression && parent.base != null) {
+      // case expressions with base -> condition is compared to base
+      session.addRelationship(CopyTypeFrom(e.when, parent.base));
+      visit(e.when, const NoTypeExpectation());
+    } else {
+      // case expression without base -> the conditions are booleans
+      visit(e.when, const ExactTypeExpectation(ResolvedType.bool()));
+    }
+
+    visit(e.then, arg);
   }
 
   @override

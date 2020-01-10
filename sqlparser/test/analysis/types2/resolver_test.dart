@@ -137,4 +137,27 @@ void main() {
         "SELECT * FROM demo WHERE content LIKE 'foo' ESCAPE ?");
     expect(escapedType, const ResolvedType(type: BasicType.text));
   });
+
+  group('case expressions', () {
+    test('infers base clause from when', () {
+      final type = _resolveFirstVariable("SELECT CASE ? WHEN 1 THEN 'two' END");
+      expect(type, const ResolvedType(type: BasicType.int));
+    });
+
+    test('infers when condition from base', () {
+      final type = _resolveFirstVariable("SELECT CASE 1 WHEN ? THEN 'two' END");
+      expect(type, const ResolvedType(type: BasicType.int));
+    });
+
+    test('infers when conditions as boolean when no base is set', () {
+      final type = _resolveFirstVariable("SELECT CASE WHEN ? THEN 'two' END;");
+      expect(type, const ResolvedType.bool());
+    });
+
+    test('infers type of whole when expression', () {
+      final type = _resolveResultColumn("SELECT CASE WHEN false THEN 'one' "
+          "WHEN true THEN 'two' ELSE 'three' END;");
+      expect(type, const ResolvedType(type: BasicType.text));
+    });
+  });
 }

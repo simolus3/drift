@@ -143,7 +143,7 @@ class BetweenExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [check, lower, upper];
+  List<Expression> get childNodes => [check, lower, upper];
 
   @override
   bool contentEquals(BetweenExpression other) => other.not == not;
