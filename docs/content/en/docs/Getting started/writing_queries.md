@@ -151,7 +151,7 @@ Future<void> insertMultipleEntries() async{
   await batch((batch) {
     // functions in a batch don't have to be awaited - just
     // await the whole batch afterwards.
-    batch.insertAll([
+    batch.insertAll(todos, [
       TodosCompanion.insert(
         title: 'First entry',
         content: 'My content',
