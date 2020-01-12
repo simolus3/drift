@@ -50,13 +50,10 @@ typedef sqlite3_column_name_native_t = Pointer<CBlob> Function(
 typedef sqlite3_column_type_native_t = Int32 Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
-typedef sqlite3_column_value_native_t = Pointer<Value> Function(
-    Pointer<Statement> statement, Int32 columnIndex);
-
 typedef sqlite3_column_double_native_t = Double Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
-typedef sqlite3_column_int_native_t = Int32 Function(
+typedef sqlite3_column_int64_native_t = Int64 Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
 typedef sqlite3_column_text_native_t = Pointer<CBlob> Function(
@@ -74,8 +71,8 @@ typedef sqlite3_last_insert_rowid_native = Int64 Function(
 
 typedef sqlite3_bind_double_native = Int32 Function(
     Pointer<Statement> statement, Int32 columnIndex, Double value);
-typedef sqlite3_bind_int_native = Int32 Function(
-    Pointer<Statement> statement, Int32 columnIndex, Int32 value);
+typedef sqlite3_bind_int64_native = Int32 Function(
+    Pointer<Statement> statement, Int32 columnIndex, Int64 value);
 typedef sqlite3_bind_text_native = Int32 Function(
     Pointer<Statement> statement,
     Int32 columnIndex,

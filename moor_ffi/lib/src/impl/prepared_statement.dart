@@ -56,7 +56,7 @@ class PreparedStatement {
     final type = bindings.sqlite3_column_type(_stmt, index);
     switch (type) {
       case Types.SQLITE_INTEGER:
-        return bindings.sqlite3_column_int(_stmt, index);
+        return bindings.sqlite3_column_int64(_stmt, index);
       case Types.SQLITE_FLOAT:
         return bindings.sqlite3_column_double(_stmt, index);
       case Types.SQLITE_TEXT:
@@ -106,7 +106,7 @@ class PreparedStatement {
         if (param == null) {
           bindings.sqlite3_bind_null(_stmt, i);
         } else if (param is int) {
-          bindings.sqlite3_bind_int(_stmt, i, param);
+          bindings.sqlite3_bind_int64(_stmt, i, param);
         } else if (param is num) {
           bindings.sqlite3_bind_double(_stmt, i, param.toDouble());
         } else if (param is String) {

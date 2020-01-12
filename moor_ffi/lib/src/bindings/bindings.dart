@@ -51,12 +51,10 @@ class _SQLiteBindings {
   int Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_type;
 
-  Pointer<Value> Function(Pointer<Statement> statement, int columnIndex)
-      sqlite3_column_value;
   double Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_double;
   int Function(Pointer<Statement> statement, int columnIndex)
-      sqlite3_column_int;
+      sqlite3_column_int64;
   Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_text;
   Pointer<CBlob> Function(Pointer<Statement> statement, int columnIndex)
@@ -75,7 +73,7 @@ class _SQLiteBindings {
   int Function(Pointer<Statement> statement, int columnIndex, double value)
       sqlite3_bind_double;
   int Function(Pointer<Statement> statement, int columnIndex, int value)
-      sqlite3_bind_int;
+      sqlite3_bind_int64;
   int Function(
       Pointer<Statement> statement,
       int columnIndex,
@@ -97,8 +95,8 @@ class _SQLiteBindings {
         .lookup<NativeFunction<sqlite3_bind_double_native>>(
             'sqlite3_bind_double')
         .asFunction();
-    sqlite3_bind_int = sqlite
-        .lookup<NativeFunction<sqlite3_bind_int_native>>('sqlite3_bind_int')
+    sqlite3_bind_int64 = sqlite
+        .lookup<NativeFunction<sqlite3_bind_int64_native>>('sqlite3_bind_int64')
         .asFunction();
     sqlite3_bind_text = sqlite
         .lookup<NativeFunction<sqlite3_bind_text_native>>('sqlite3_bind_text')
@@ -159,17 +157,13 @@ class _SQLiteBindings {
         .lookup<NativeFunction<sqlite3_column_type_native_t>>(
             'sqlite3_column_type')
         .asFunction();
-    sqlite3_column_value = sqlite
-        .lookup<NativeFunction<sqlite3_column_value_native_t>>(
-            'sqlite3_column_value')
-        .asFunction();
     sqlite3_column_double = sqlite
         .lookup<NativeFunction<sqlite3_column_double_native_t>>(
             'sqlite3_column_double')
         .asFunction();
-    sqlite3_column_int = sqlite
-        .lookup<NativeFunction<sqlite3_column_int_native_t>>(
-            'sqlite3_column_int')
+    sqlite3_column_int64 = sqlite
+        .lookup<NativeFunction<sqlite3_column_int64_native_t>>(
+            'sqlite3_column_int64')
         .asFunction();
     sqlite3_column_text = sqlite
         .lookup<NativeFunction<sqlite3_column_text_native_t>>(
