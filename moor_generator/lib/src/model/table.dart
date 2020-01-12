@@ -100,6 +100,15 @@ class MoorTable implements MoorSchemaEntity {
     return node is CreateVirtualTableStatement;
   }
 
+  /// If this table [isVirtualTable], returns the `CREATE VIRTUAL TABLE`
+  /// statement to create this table. Otherwise returns null.
+  String get createVirtual {
+    if (!isVirtualTable) return null;
+
+    final node = (declaration as MoorTableDeclaration).node;
+    return (node as CreateVirtualTableStatement).span.text;
+  }
+
   MoorTable({
     this.fromClass,
     this.columns,

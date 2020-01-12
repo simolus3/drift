@@ -157,6 +157,11 @@ abstract class ParserBase {
     if (next is KeywordToken && (next.canConvertToIdentifier() || lenient)) {
       return (_advance() as KeywordToken).convertToIdentifier();
     }
+
+    if (next is KeywordToken) {
+      message = '$message (got keyword ${reverseKeywords[next.type]})';
+    }
+
     return _consume(TokenType.identifier, message) as IdentifierToken;
   }
 

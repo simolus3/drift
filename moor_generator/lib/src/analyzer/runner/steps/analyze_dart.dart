@@ -32,6 +32,13 @@ class AnalyzeDartStep extends AnalyzingStep {
           affectedElement: accessor.fromClass,
           message: msg.toString(),
         ));
+      } catch (e) {
+        // unknown error while sorting
+        reportError(ErrorInDartCode(
+          severity: Severity.warning,
+          affectedElement: accessor.fromClass,
+          message: 'Unknown error while sorting database entities: $e',
+        ));
       }
 
       final availableQueries = transitiveImports

@@ -5,6 +5,8 @@ part of 'sql_types.dart';
 ///
 /// Moor currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
+///
+/// Also see [ColumnBuilder.map] for details.
 abstract class TypeConverter<D, S> {
   /// Empty constant constructor so that subclasses can have a constant
   /// constructor.

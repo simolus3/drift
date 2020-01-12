@@ -21,21 +21,23 @@ List<MoorSchemaEntity> sortEntitiesTopologically(
   return run.result;
 }
 
-void _visit(MoorSchemaEntity table, _SortRun run) {
-  for (final reference in table.references) {
+void _visit(MoorSchemaEntity entity, _SortRun run) {
+  for (final reference in entity.references) {
+    assert(reference != null, '$entity had a null reference');
+
     if (run.result.contains(reference)) {
       // already handled, nothing to do
     } else if (run.previous.containsKey(reference)) {
       // that's a circular reference, report
-      run.throwCircularException(table, reference);
+      run.throwCircularException(entity, reference);
     } else {
-      run.previous[reference] = table;
+      run.previous[reference] = entity;
       _visit(reference, run);
     }
   }
 
   // now that everything this table references is written, add the table itself
-  run.result.add(table);
+  run.result.add(entity);
 }
 
 class _SortRun {

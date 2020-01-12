@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:moor/moor.dart';
 
 part 'custom_type.dart';
 part 'type_system.dart';
