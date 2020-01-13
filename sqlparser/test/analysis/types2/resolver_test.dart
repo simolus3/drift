@@ -51,6 +51,11 @@ void main() {
         const ResolvedType.bool());
   });
 
+  test('does not infer boolean for grandchildren of where clause', () {
+    expect(_resolveFirstVariable("SELECT * FROM demo WHERE 'foo' = :foo"),
+        const ResolvedType(type: BasicType.text));
+  });
+
   test('infers boolean type in a join ON clause', () {
     expect(
       _resolveFirstVariable('SELECT * FROM demo JOIN tbl ON :foo'),
@@ -158,6 +163,21 @@ void main() {
       final type = _resolveResultColumn("SELECT CASE WHEN false THEN 'one' "
           "WHEN true THEN 'two' ELSE 'three' END;");
       expect(type, const ResolvedType(type: BasicType.text));
+    });
+
+    test('handles recursive CTEs', () {
+      final type = _resolveResultColumn('''
+WITH RECURSIVE
+  cnt(x) AS (
+    SELECT 1
+      UNION ALL
+      SELECT x+1 FROM cnt
+      LIMIT 1000000
+    )
+  SELECT x FROM cnt
+      ''');
+
+      expect(type, const ResolvedType(type: BasicType.int));
     });
   });
 }

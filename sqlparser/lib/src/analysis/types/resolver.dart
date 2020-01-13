@@ -153,13 +153,11 @@ class TypeResolver {
       if (l is StringLiteral) {
         return ResolveResult(
             ResolvedType(type: l.isBinary ? BasicType.blob : BasicType.text));
+      } else if (l is BooleanLiteral) {
+        return const ResolveResult(ResolvedType.bool());
       } else if (l is NumericLiteral) {
-        if (l is BooleanLiteral) {
-          return const ResolveResult(ResolvedType.bool());
-        } else {
-          return ResolveResult(
-              ResolvedType(type: l.isInt ? BasicType.int : BasicType.real));
-        }
+        return ResolveResult(
+            ResolvedType(type: l.isInt ? BasicType.int : BasicType.real));
       } else if (l is NullLiteral) {
         return const ResolveResult(
             ResolvedType(type: BasicType.nullType, nullable: true));
@@ -169,24 +167,9 @@ class TypeResolver {
     }, l);
   }
 
-  /// Returns the expanded parameters of a function [call]. When a
-  /// [StarFunctionParameter] is used, it's expanded to the
-  /// [ReferenceScope.availableColumns].
-  List<Typeable> _expandParameters(SqlInvocation call) {
-    final sqlParameters = call.parameters;
-    if (sqlParameters is ExprFunctionParameters) {
-      return sqlParameters.parameters;
-    } else if (sqlParameters is StarFunctionParameter) {
-      // if * is used as a parameter, it refers to all columns in all tables
-      // that are available in the current scope.
-      return call.scope.availableColumns.whereType<TableColumn>().toList();
-    }
-    throw ArgumentError('Unknown parameters: $sqlParameters');
-  }
-
   ResolveResult resolveFunctionCall(SqlInvocation call) {
     return _cache((SqlInvocation call) {
-      final parameters = _expandParameters(call);
+      final parameters = call.expandParameters();
       final firstNullable =
           // ignore: avoid_bool_literals_in_conditional_expressions
           parameters.isEmpty ? false : justResolve(parameters.first).nullable;
@@ -324,7 +307,7 @@ class TypeResolver {
 
       if (options.addedFunctions.containsKey(lowercaseName)) {
         return options.addedFunctions[lowercaseName]
-            .inferReturnType(this, call, parameters);
+            .inferReturnType(context, call, parameters);
       }
 
       throw StateError('Unknown function: ${call.name}');
@@ -335,7 +318,7 @@ class TypeResolver {
       SqlInvocation parent, Expression argument) {
     return _cache<Expression>((argument) {
       final functionName = parent.name.toLowerCase();
-      final args = _expandParameters(parent);
+      final args = parent.expandParameters();
 
       // the second argument of nth_value is always an integer
       if (functionName == 'nth_value' &&
@@ -346,7 +329,7 @@ class TypeResolver {
 
       if (options.addedFunctions.containsKey(functionName)) {
         return options.addedFunctions[functionName]
-            .inferArgumentType(this, parent, argument);
+            .inferArgumentType(context, parent, argument);
       }
 
       return const ResolveResult.unknown();
@@ -355,13 +338,19 @@ class TypeResolver {
 
   ResolveResult inferType(Expression e) {
     return _cache<Expression>((e) {
-      final parent = e.parent;
+      var parent = e.parent;
       if (e is Variable) {
         final specifiedType = context.stmtOptions.specifiedTypeOf(e);
         if (specifiedType != null) {
           return ResolveResult(specifiedType);
         }
       }
+
+      if (parent is FunctionParameters) {
+        // analyze the function, the parameters are meaningless
+        parent = parent.parent;
+      }
+
       if (parent is Expression) {
         final result = _argumentType(parent, e);
         // while more context is needed, look at the parent

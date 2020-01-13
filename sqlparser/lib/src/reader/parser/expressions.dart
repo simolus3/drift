@@ -356,22 +356,27 @@ mixin ExpressionParser on ParserBase {
 
   FunctionParameters _functionParameters() {
     if (_matchOne(TokenType.star)) {
-      return const StarFunctionParameter();
+      return StarFunctionParameter()
+        ..starToken = _previous
+        ..setSpan(_previous, _previous);
     }
 
     if (_check(TokenType.rightParen)) {
-      // nothing between the brackets -> empty parameter list
-      return ExprFunctionParameters(parameters: const []);
+      // nothing between the brackets -> empty parameter list. We mark it as
+      // synthetic because it has an empty span in the file
+      return ExprFunctionParameters(parameters: const [])..synthetic = true;
     }
 
     final distinct = _matchOne(TokenType.distinct);
     final parameters = <Expression>[];
+    final first = _peek;
 
     do {
       parameters.add(expression());
     } while (_matchOne(TokenType.comma));
 
-    return ExprFunctionParameters(distinct: distinct, parameters: parameters);
+    return ExprFunctionParameters(distinct: distinct, parameters: parameters)
+      ..setSpan(first, _previous);
   }
 
   AggregateExpression _aggregate(

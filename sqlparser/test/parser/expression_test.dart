@@ -35,7 +35,7 @@ final Map<String, Expression> _testCases = {
     token(TokenType.doubleEqual),
     FunctionExpression(
       name: 'COUNT',
-      parameters: const StarFunctionParameter(),
+      parameters: StarFunctionParameter(),
     ),
   ),
   '? * ?3 + ?2 == :test': BinaryExpression(

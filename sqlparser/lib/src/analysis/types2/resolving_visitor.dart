@@ -1,10 +1,12 @@
 part of 'types.dart';
 
-const _expectInt =
-    ExactTypeExpectation.laxly(ResolvedType(type: BasicType.int));
+const _intType = ResolvedType(type: BasicType.int);
+const _realType = ResolvedType(type: BasicType.real);
+const _textType = ResolvedType(type: BasicType.text);
+
+const _expectInt = ExactTypeExpectation.laxly(_intType);
 const _expectNum = RoughTypeExpectation.numeric();
-const _expectString =
-    ExactTypeExpectation.laxly(ResolvedType(type: BasicType.text));
+const _expectString = ExactTypeExpectation.laxly(_textType);
 
 class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   final TypeInferenceSession session;
@@ -121,17 +123,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       type = const ResolvedType(type: BasicType.nullType, nullable: true);
       session.hintNullability(e, true);
     } else if (e is StringLiteral) {
-      type = e.isBinary
-          ? const ResolvedType(type: BasicType.blob)
-          : const ResolvedType(type: BasicType.text);
+      type = e.isBinary ? const ResolvedType(type: BasicType.blob) : _textType;
       session.hintNullability(e, false);
     } else if (e is BooleanLiteral) {
       type = const ResolvedType.bool();
       session.hintNullability(e, false);
     } else if (e is NumericLiteral) {
-      type = e.isInt
-          ? const ResolvedType(type: BasicType.int)
-          : const ResolvedType(type: BasicType.real);
+      type = e.isInt ? _intType : _realType;
       session.hintNullability(e, false);
     }
 
@@ -216,7 +214,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         // Not technically a requirement, but assume lhs and rhs have the same
         // type.
         session.addRelationship(HaveSameType(e.left, e.right));
-        visitChildren(e, arg);
+        visitChildren(e, const NoTypeExpectation());
         break;
       case TokenType.plus:
       case TokenType.minus:
@@ -327,6 +325,153 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     _handleColumn(resolved);
     _lazyCopy(e, resolved);
+  }
+
+  @override
+  void visitInvocation(SqlInvocation e, TypeExpectation arg) {
+    final type = _resolveInvocation(e);
+    if (type != null) {
+      session.checkAndResolve(e, type, arg);
+    }
+    visitChildren(e, const NoTypeExpectation());
+  }
+
+  ResolvedType _resolveInvocation(SqlInvocation e) {
+    final params = e.expandParameters();
+    void nullableIfChildIs() {
+      session.addRelationship(NullableIfSomeOtherIs(e, params));
+    }
+
+    final lowercaseName = e.name.toLowerCase();
+    switch (lowercaseName) {
+      case 'round':
+        nullableIfChildIs();
+        //if there is only one params, it rounds to int. Otherwise real
+        if (params.length == 1) {
+          return _intType;
+        } else {
+          return _realType;
+        }
+        // ignore: dead_code
+        throw AssertionError(); // required so that this switch compiles
+      case 'sum':
+        session.addRelationship(CopyAndCast(e, params.first, CastMode.numeric));
+        session.addRelationship(DefaultType(e, _realType));
+        nullableIfChildIs();
+        return null;
+      case 'lower':
+      case 'ltrim':
+      case 'printf':
+      case 'replace':
+      case 'rtrim':
+      case 'substr':
+      case 'trim':
+      case 'upper':
+      case 'group_concat':
+        nullableIfChildIs();
+        return _textType;
+      case 'date':
+      case 'time':
+      case 'datetime':
+      case 'julianday':
+      case 'strftime':
+      case 'char':
+      case 'hex':
+      case 'quote':
+      case 'soundex':
+      case 'sqlite_compileoption_set':
+      case 'sqlite_version':
+      case 'typeof':
+        return _textType;
+      case 'changes':
+      case 'last_insert_rowid':
+      case 'random':
+      case 'sqlite_compileoption_used':
+      case 'total_changes':
+      case 'count':
+      case 'row_number':
+      case 'rank':
+      case 'dense_rank':
+      case 'ntile':
+        return _intType;
+      case 'instr':
+      case 'length':
+      case 'unicode':
+        nullableIfChildIs();
+        return _intType;
+      case 'randomblob':
+      case 'zeroblob':
+        return const ResolvedType(type: BasicType.blob);
+      case 'total':
+      case 'avg':
+      case 'percent_rank':
+      case 'cume_dist':
+        return _realType;
+      case 'abs':
+      case 'likelihood':
+      case 'likely':
+      case 'unlikely':
+        session.addRelationship(CopyTypeFrom(e, params.first));
+        return null;
+      case 'coalesce':
+      case 'ifnull':
+        session.addRelationship(CopyEncapsulating(e, params));
+        return null;
+      case 'nullif':
+        session.hintNullability(e, true);
+        session.addRelationship(CopyTypeFrom(e, params.first));
+        return null;
+      case 'first_value':
+      case 'last_value':
+      case 'lag':
+      case 'lead':
+      case 'nth_value':
+        session.addRelationship(CopyTypeFrom(e, params.first));
+        return null;
+      case 'max':
+      case 'min':
+        session.hintNullability(e, true);
+        session.addRelationship(CopyEncapsulating(e, params));
+        return null;
+    }
+
+    final options = session.options;
+    if (options.enableJson1) {
+      switch (lowercaseName) {
+        case 'json':
+        case 'json_array':
+        case 'json_insert':
+        case 'json_replace':
+        case 'json_set':
+        case 'json_object':
+        case 'json_patch':
+        case 'json_remove':
+        case 'json_quote':
+        case 'json_group_array':
+        case 'json_group_object':
+          return _textType;
+        case 'json_type':
+          return _textType;
+        case 'json_valid':
+          return const ResolvedType.bool();
+        case 'json_extract':
+          return null;
+        case 'json_array_length':
+          return _intType;
+      }
+    }
+
+    if (options.addedFunctions.containsKey(lowercaseName)) {
+      return options.addedFunctions[lowercaseName]
+          .inferReturnType(session.context, e, params)
+          ?.type;
+    }
+
+    session.context.reportError(AnalysisError(
+      type: AnalysisErrorType.unknownFunction,
+      message: 'Function ${e.name} could not be found',
+    ));
+    return null;
   }
 
   void _handleColumn(Column column) {

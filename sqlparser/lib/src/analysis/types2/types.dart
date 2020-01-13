@@ -10,10 +10,12 @@ part 'resolving_visitor.dart';
 /// Contains all information associated to a single type inference pass.
 class TypeInferenceSession {
   final TypeGraph graph = TypeGraph();
+  final EngineOptions options;
   final AnalysisContext context;
   TypeInferenceResults results;
 
-  TypeInferenceSession(this.context) {
+  TypeInferenceSession(this.context, [EngineOptions options])
+      : options = options ?? EngineOptions() {
     results = TypeInferenceResults._(this);
   }
 

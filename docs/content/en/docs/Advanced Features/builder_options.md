@@ -58,6 +58,11 @@ At the moment, moor supports these options:
 * `sqlite_modules`: This list can be used to enable sqlite extensions, like those for json or full-text search.
   Modules have to be enabled explicitly because they're not supported on all platforms. See the following section for
   details.
+* `use_experimental_inference`: Enables a new type inference algorithm for sql statements.
+  The new algorithm is much better at handling complex statements and nullability. 
+  However, it's still in development and may not work in all cases yet. Please report any issues you can find.
+  __Warning:__ The new type inference algorithm is in development and does not obey to semantic versioning.
+  Results and generated code might change in moor versions not declared as breaking.
 
 ## Available extensions
 

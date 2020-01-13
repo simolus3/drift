@@ -61,7 +61,7 @@ class _Fts5Functions implements FunctionHandler {
 
   @override
   ResolveResult inferArgumentType(
-      TypeResolver resolver, SqlInvocation call, Expression argument) {
+      AnalysisContext context, SqlInvocation call, Expression argument) {
     int argumentIndex;
     if (call.parameters is ExprFunctionParameters) {
       argumentIndex = (call.parameters as ExprFunctionParameters)
@@ -99,8 +99,8 @@ class _Fts5Functions implements FunctionHandler {
   }
 
   @override
-  ResolveResult inferReturnType(
-      TypeResolver resolver, SqlInvocation call, List<Typeable> expandedArgs) {
+  ResolveResult inferReturnType(AnalysisContext context, SqlInvocation call,
+      List<Typeable> expandedArgs) {
     switch (call.name) {
       case 'bm25':
         return const ResolveResult(ResolvedType(type: BasicType.real));

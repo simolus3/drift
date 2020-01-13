@@ -55,7 +55,14 @@ class AnalysisContext {
 
   /// Obtains the result of any typeable component. See the information at
   /// [types] on important [Typeable]s.
-  ResolveResult typeOf(Typeable t) => types.resolveOrInfer(t);
+  ResolveResult typeOf(Typeable t) {
+    if (types2 != null) {
+      final type = types2.typeOf(t);
+      return type != null ? ResolveResult(type) : const ResolveResult.unknown();
+    }
+
+    return types.resolveOrInfer(t);
+  }
 
   /// Compares two [AstNode]s by their first position in the query.
   static int compareNodesByOrder(AstNode first, AstNode second) {

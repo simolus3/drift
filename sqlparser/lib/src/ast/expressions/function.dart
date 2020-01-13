@@ -26,46 +26,55 @@ class FunctionExpression extends Expression
 
   @override
   Iterable<AstNode> get childNodes {
-    return [
-      if (parameters is ExprFunctionParameters)
-        ...(parameters as ExprFunctionParameters).parameters
-    ];
+    return [parameters];
   }
 
   @override
   bool contentEquals(FunctionExpression other) {
-    if (other.name != name) {
-      return false;
-    }
-
-    if (parameters is StarFunctionParameter) {
-      return other.parameters is StarFunctionParameter;
-    } else if (parameters is ExprFunctionParameters) {
-      final typedParams = parameters as ExprFunctionParameters;
-      final typedOther = other.parameters as ExprFunctionParameters;
-      return typedParams.equals(typedOther);
-    }
-
-    return true;
+    return other.name == name;
   }
 }
 
 /// Marker interface for anything that can be inside the parentheses after a
 /// function name.
-abstract class FunctionParameters {}
+abstract class FunctionParameters extends AstNode {}
 
 /// Using a star as a function parameter. For instance: "COUNT(*)".
-class StarFunctionParameter implements FunctionParameters {
-  const StarFunctionParameter();
+class StarFunctionParameter extends FunctionParameters {
+  StarFunctionParameter();
+
+  Token starToken;
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitStarFunctionParameter(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  bool contentEquals(StarFunctionParameter other) {
+    return true;
+  }
 }
 
-class ExprFunctionParameters implements FunctionParameters {
+class ExprFunctionParameters extends FunctionParameters {
   final bool distinct;
   final List<Expression> parameters;
 
   ExprFunctionParameters({this.parameters = const [], this.distinct = false});
 
-  bool equals(ExprFunctionParameters other) {
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitExpressionFunctionParameters(this, arg);
+  }
+
+  @override
+  List<AstNode> get childNodes => parameters;
+
+  @override
+  bool contentEquals(ExprFunctionParameters other) {
     return other.distinct == distinct && other.parameters == parameters;
   }
 }

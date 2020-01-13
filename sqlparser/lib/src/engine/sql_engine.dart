@@ -201,7 +201,7 @@ class SqlEngine {
         ..acceptWithoutArg(ReferenceResolver(context));
 
       if (options.enableExperimentalTypeInference) {
-        final session = t2.TypeInferenceSession(context);
+        final session = t2.TypeInferenceSession(context, options);
         final resolver = t2.TypeResolver(session);
         node.acceptWithoutArg(resolver);
         session.finish();

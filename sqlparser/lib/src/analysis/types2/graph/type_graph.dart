@@ -150,7 +150,9 @@ extension on ResolvedType {
     if (other == this) return this;
 
     if (other.type == type) {
-      return withNullable(nullable || other.nullable);
+      final thisNullable = nullable ?? true;
+      final otherNullable = other.nullable ?? true;
+      return withNullable(thisNullable || otherNullable);
     }
 
     // fallback. todo: Support more cases

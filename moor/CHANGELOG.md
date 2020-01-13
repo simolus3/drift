@@ -15,6 +15,8 @@
   Declare them like this `@create: INSERT INTO users VALUES ('default', 'user')`
 - Support deletes in batches ([#325](https://github.com/simolus3/moor/issues/325))
 - Reduce unnecessary queries when a stream is unsubscribed and then re-subscribed ([#329](https://github.com/simolus3/moor/issues/329))
+- Experimental new type inference for the sql analyzer. For details, check the
+  `use_experimental_inference` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/)
   
 ## 2.2.0
 

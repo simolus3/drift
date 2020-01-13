@@ -49,8 +49,7 @@ class AggregateExpression extends Expression
   @override
   Iterable<AstNode> get childNodes {
     return [
-      if (parameters is ExprFunctionParameters)
-        ...(parameters as ExprFunctionParameters).parameters,
+      parameters,
       if (filter != null) filter,
       if (windowDefinition != null) windowDefinition,
     ];

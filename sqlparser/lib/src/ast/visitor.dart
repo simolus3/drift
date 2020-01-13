@@ -29,6 +29,12 @@ abstract class AstVisitor<A, R> {
   R visitTableConstraint(TableConstraint e, A arg);
   R visitForeignKeyClause(ForeignKeyClause e, A arg);
 
+  R visitLiteral(Literal e, A arg);
+  R visitNumericLiteral(Literal e, A arg);
+  R visitNullLiteral(NullLiteral e, A arg);
+  R visitBooleanLiteral(BooleanLiteral e, A arg);
+  R visitStringLiteral(StringLiteral e, A arg);
+
   R visitCastExpression(CastExpression e, A arg);
   R visitBinaryExpression(BinaryExpression e, A arg);
   R visitStringComparison(StringComparisonExpression e, A arg);
@@ -36,9 +42,10 @@ abstract class AstVisitor<A, R> {
   R visitIsExpression(IsExpression e, A arg);
   R visitIsNullExpression(IsNullExpression e, A arg);
   R visitBetweenExpression(BetweenExpression e, A arg);
-  R visitLiteral(Literal e, A arg);
   R visitReference(Reference e, A arg);
   R visitFunction(FunctionExpression e, A arg);
+  R visitStarFunctionParameter(StarFunctionParameter e, A arg);
+  R visitExpressionFunctionParameters(ExprFunctionParameters e, A arg);
   R visitSubQuery(SubQuery e, A arg);
   R visitExists(ExistsExpression e, A arg);
   R visitCaseExpression(CaseExpression e, A arg);
@@ -298,6 +305,26 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   @override
+  R visitNullLiteral(NullLiteral e, A arg) {
+    return visitLiteral(e, arg);
+  }
+
+  @override
+  R visitNumericLiteral(Literal e, A arg) {
+    return visitLiteral(e, arg);
+  }
+
+  @override
+  R visitBooleanLiteral(BooleanLiteral e, A arg) {
+    return visitLiteral(e, arg);
+  }
+
+  @override
+  R visitStringLiteral(StringLiteral e, A arg) {
+    return visitLiteral(e, arg);
+  }
+
+  @override
   R visitReference(Reference e, A arg) {
     return visitExpression(e, arg);
   }
@@ -305,6 +332,20 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   @override
   R visitFunction(FunctionExpression e, A arg) {
     return visitInvocation(e, arg);
+  }
+
+  R visitFunctionParameters(FunctionParameters e, A arg) {
+    return visitChildren(e, arg);
+  }
+
+  @override
+  R visitStarFunctionParameter(StarFunctionParameter e, A arg) {
+    return visitFunctionParameters(e, arg);
+  }
+
+  @override
+  R visitExpressionFunctionParameters(ExprFunctionParameters e, A arg) {
+    return visitFunctionParameters(e, arg);
   }
 
   @override
