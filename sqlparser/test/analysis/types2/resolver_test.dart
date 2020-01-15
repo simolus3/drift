@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../data.dart';
 
 void main() {
-  final engine = SqlEngine()
+  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 
@@ -27,8 +27,7 @@ void main() {
     final resolver = _obtainResolver(sql);
     final session = resolver.session;
     final stmt = session.context.root as SelectStatement;
-    return session
-        .typeOf((stmt.columns.single as ExpressionResultColumn).expression);
+    return session.typeOf(stmt.resolvedColumns.single);
   }
 
   test('resolves literals', () {
@@ -163,6 +162,21 @@ void main() {
       final type = _resolveResultColumn("SELECT CASE WHEN false THEN 'one' "
           "WHEN true THEN 'two' ELSE 'three' END;");
       expect(type, const ResolvedType(type: BasicType.text));
+    });
+
+    test('can select columns', () {
+      final type = _resolveResultColumn('SELECT id FROM demo;');
+      expect(type, const ResolvedType(type: BasicType.int));
+    });
+
+    test('infers types for dart placeholders', () {
+      final resolver = _obtainResolver(r'SELECT * FROM demo WHERE $pred');
+      final type = resolver.session.typeOf(resolver
+              .session.context.root.allDescendants
+              .firstWhere((e) => e is DartExpressionPlaceholder)
+          as DartExpressionPlaceholder);
+
+      expect(type, const ResolvedType.bool());
     });
 
     test('handles recursive CTEs', () {

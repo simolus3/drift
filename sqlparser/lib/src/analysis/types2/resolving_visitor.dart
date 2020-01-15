@@ -15,6 +15,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   void run(AstNode root) {
     visit(root, const NoTypeExpectation());
+
+    // annotate Columns as well. They implement Typeable, but aren't an ast
+    // node, which means this visitor doesn't find them
+    root.acceptWithoutArg(_ResultColumnVisitor(this));
+
     session.finish();
   }
 
@@ -138,8 +143,24 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitVariable(Variable e, TypeExpectation arg) {
-    final resolved = session.context.stmtOptions.specifiedTypeOf(e) ??
-        _inferFromContext(arg);
+    _inferAsVariable(e, arg);
+  }
+
+  @override
+  void visitDartPlaceholder(DartPlaceholder e, TypeExpectation arg) {
+    if (e is DartExpressionPlaceholder) {
+      _inferAsVariable(e, arg);
+    } else {
+      super.visitDartPlaceholder(e, arg);
+    }
+  }
+
+  void _inferAsVariable(Expression e, TypeExpectation arg) {
+    ResolvedType resolved;
+    if (e is Variable) {
+      resolved = session.context.stmtOptions.specifiedTypeOf(e);
+    }
+    resolved ??= _inferFromContext(arg);
 
     if (resolved != null) {
       session.checkAndResolve(e, resolved, arg);
@@ -509,5 +530,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       return expectation.type;
     }
     return null;
+  }
+}
+
+class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
+  final TypeResolver resolver;
+
+  _ResultColumnVisitor(this.resolver);
+
+  @override
+  void visitBaseSelectStatement(BaseSelectStatement stmt, void arg) {
+    if (stmt.resolvedColumns != null) {
+      stmt.resolvedColumns.forEach(resolver._handleColumn);
+    }
   }
 }
