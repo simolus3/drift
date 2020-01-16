@@ -8,6 +8,7 @@ import 'package:moor_generator/src/backends/common/driver.dart';
 import 'package:moor_generator/src/backends/standalone.dart';
 import 'package:moor_generator/src/cli/project.dart';
 
+import 'commands/analyze.dart';
 import 'commands/debug_plugin.dart';
 import 'commands/identify_databases.dart';
 import 'commands/schema.dart';
@@ -40,6 +41,7 @@ class MoorCli {
       'CLI utilities for the moor package, currently in an experimental state.',
       usageLineLength: 80,
     )
+      ..addCommand(AnalyzeCommand(this))
       ..addCommand(IdentifyDatabases(this))
       ..addCommand(DebugPluginCommand(this))
       ..addCommand(SchemaCommand(this));

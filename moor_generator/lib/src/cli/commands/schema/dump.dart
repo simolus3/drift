@@ -16,7 +16,7 @@ class DumpSchemaCommand extends Command {
 
   @override
   String get invocation {
-    return '${runner.executableName} schema dump [arguments] <input <output>';
+    return '${runner.executableName} schema dump [arguments] <input> <output>';
   }
 
   final MoorCli cli;
