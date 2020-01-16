@@ -142,6 +142,23 @@ void main() {
     expect(escapedType, const ResolvedType(type: BasicType.text));
   });
 
+  test('handles nth_value', () {
+    final resolver = _obtainResolver("SELECT nth_value('string', ?1) = ?2");
+    final variables = resolver.session.context.root.allDescendants
+        .whereType<Variable>()
+        .iterator;
+    variables.moveNext();
+    final firstVar = variables.current;
+    variables.moveNext();
+    final secondVar = variables.current;
+
+    expect(resolver.session.typeOf(firstVar),
+        equals(const ResolvedType(type: BasicType.int)));
+
+    expect(resolver.session.typeOf(secondVar),
+        equals(const ResolvedType(type: BasicType.text)));
+  });
+
   group('case expressions', () {
     test('infers base clause from when', () {
       final type = _resolveFirstVariable("SELECT CASE ? WHEN 1 THEN 'two' END");
@@ -163,24 +180,25 @@ void main() {
           "WHEN true THEN 'two' ELSE 'three' END;");
       expect(type, const ResolvedType(type: BasicType.text));
     });
+  });
 
-    test('can select columns', () {
-      final type = _resolveResultColumn('SELECT id FROM demo;');
-      expect(type, const ResolvedType(type: BasicType.int));
-    });
+  test('can select columns', () {
+    final type = _resolveResultColumn('SELECT id FROM demo;');
+    expect(type, const ResolvedType(type: BasicType.int));
+  });
 
-    test('infers types for dart placeholders', () {
-      final resolver = _obtainResolver(r'SELECT * FROM demo WHERE $pred');
-      final type = resolver.session.typeOf(resolver
-              .session.context.root.allDescendants
-              .firstWhere((e) => e is DartExpressionPlaceholder)
-          as DartExpressionPlaceholder);
+  test('infers types for dart placeholders', () {
+    final resolver = _obtainResolver(r'SELECT * FROM demo WHERE $pred');
+    final type = resolver.session.typeOf(resolver
+            .session.context.root.allDescendants
+            .firstWhere((e) => e is DartExpressionPlaceholder)
+        as DartExpressionPlaceholder);
 
-      expect(type, const ResolvedType.bool());
-    });
+    expect(type, const ResolvedType.bool());
+  });
 
-    test('handles recursive CTEs', () {
-      final type = _resolveResultColumn('''
+  test('handles recursive CTEs', () {
+    final type = _resolveResultColumn('''
 WITH RECURSIVE
   cnt(x) AS (
     SELECT 1
@@ -191,7 +209,29 @@ WITH RECURSIVE
   SELECT x FROM cnt
       ''');
 
-      expect(type, const ResolvedType(type: BasicType.int));
+    expect(type, const ResolvedType(type: BasicType.int));
+  });
+
+  test('handles set components in updates', () {
+    final type = _resolveFirstVariable('UPDATE demo SET id = ?');
+    expect(type, const ResolvedType(type: BasicType.int));
+  });
+
+  test('infers offsets in frame specs', () {
+    final type =
+        _resolveFirstVariable('SELECT SUM(id) OVER (ROWS ? PRECEDING)');
+    expect(type, const ResolvedType(type: BasicType.int));
+  });
+
+  group('IS IN expressions', () {
+    test('infer the variable as an array type', () {
+      final type = _resolveFirstVariable('SELECT 3 IN ?');
+      expect(type, const ResolvedType(type: BasicType.int, isArray: true));
+    });
+
+    test('does not infer the variable as an array when in a tuple', () {
+      final type = _resolveFirstVariable('SELECT 3 IN (?)');
+      expect(type, const ResolvedType(type: BasicType.int, isArray: false));
     });
   });
 }

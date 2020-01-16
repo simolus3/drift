@@ -17,7 +17,7 @@ class Tuple extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes => expressions;
+  List<Expression> get childNodes => expressions;
 
   @override
   bool contentEquals(Tuple other) => true;

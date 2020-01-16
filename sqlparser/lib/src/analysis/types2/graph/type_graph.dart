@@ -6,9 +6,9 @@ class TypeGraph {
   final Map<Typeable, ResolvedType> _knownTypes = {};
   final Map<Typeable, bool> _knownNullability = {};
 
-  final List<TypeRelationship> _relationships = [];
+  final List<TypeRelation> _relations = [];
 
-  final Map<Typeable, List<TypeRelationship>> _edges = {};
+  final Map<Typeable, List<TypeRelation>> _edges = {};
   final List<DefaultType> _defaultTypes = [];
 
   TypeGraph();
@@ -35,8 +35,8 @@ class TypeGraph {
 
   bool knowsType(Typeable t) => _knownTypes.containsKey(variables.normalize(t));
 
-  void addRelation(TypeRelationship relation) {
-    _relationships.add(relation);
+  void addRelation(TypeRelation relation) {
+    _relations.add(relation);
   }
 
   void performResolve() {
@@ -61,17 +61,19 @@ class TypeGraph {
     // propagate changes
     for (final edge in _edges[t]) {
       if (edge is CopyTypeFrom) {
-        _copyType(resolved, edge.other, edge.target);
+        var type = this[edge.other];
+        if (edge.array != null) {
+          type = type.toArray(edge.array);
+        }
+        _copyType(resolved, edge.other, edge.target, type);
       } else if (edge is HaveSameType) {
         _copyType(resolved, t, edge.getOther(t));
       } else if (edge is CopyAndCast) {
         _copyType(resolved, t, edge.target, this[t].cast(edge.cast));
       } else if (edge is MultiSourceRelation) {
         // handle many-to-one changes, if all targets have been resolved
-        final typedEdge = edge as MultiSourceRelation;
-
-        if (typedEdge.from.every(knowsType)) {
-          _propagateManyToOne(typedEdge, resolved, t);
+        if (edge.from.every(knowsType)) {
+          _propagateManyToOne(edge, resolved, t);
         }
       }
     }
@@ -108,17 +110,17 @@ class TypeGraph {
   void _indexRelationships() {
     _edges.clear();
 
-    void put(Typeable t, TypeRelationship r) {
+    void put(Typeable t, TypeRelation r) {
       _edges.putIfAbsent(t, () => []).add(r);
     }
 
-    void putAll(Iterable<Typeable> t, TypeRelationship r) {
+    void putAll(Iterable<Typeable> t, TypeRelation r) {
       for (final element in t) {
         put(element, r);
       }
     }
 
-    for (final relation in _relationships) {
+    for (final relation in _relations) {
       if (relation is NullableIfSomeOtherIs) {
         putAll(relation.from, relation);
       } else if (relation is CopyTypeFrom) {
@@ -139,12 +141,20 @@ class TypeGraph {
   }
 }
 
-abstract class TypeRelationship {}
+/// Describes how the type of different [Typeable] instances has an effect on
+/// others.
+///
+/// Note that all logic is handled in the type graph, these are logic-less model
+/// classes only.
+abstract class TypeRelation {}
 
-abstract class DirectedRelation {
+/// Relation that only has an effect on one [Typeable] -- namely, [target].
+abstract class DirectedRelation implements TypeRelation {
+  /// The only [Typeable] effected by this relation.
   Typeable get target;
 }
 
+/// Relation where the type of multiple [Typeable] instances must be known.
 abstract class MultiSourceRelation implements DirectedRelation {
   List<Typeable> get from;
 }

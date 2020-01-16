@@ -20,7 +20,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     // node, which means this visitor doesn't find them
     root.acceptWithoutArg(_ResultColumnVisitor(this));
 
-    session.finish();
+    session._finish();
   }
 
   @override
@@ -72,6 +72,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         visit(select.stmt, SelectTypeExpectation(expectations));
       },
       isValues: (values) {
+        // todo: It would be nice to remove this special case. Can we generalize
+        // the SelectTypeExpectation so that it works for tuples and just visit
+        // e.source?
         for (final tuple in values.values) {
           for (var i = 0; i < tuple.expressions.length; i++) {
             final expectation = i < expectations.length
@@ -115,9 +118,27 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitSetComponent(SetComponent e, TypeExpectation arg) {
+    visit(e.column, const NoTypeExpectation());
+    _lazyCopy(e.expression, e.column);
+    visit(e.expression, const NoTypeExpectation());
+  }
+
+  @override
   void visitLimit(Limit e, TypeExpectation arg) {
     visit(e.count, _expectInt);
     visitNullable(e.offset, _expectInt);
+  }
+
+  @override
+  void visitFrameSpec(FrameSpec e, TypeExpectation arg) {
+    // handle something like "RANGE BETWEEN ? PRECEDING AND ? FOLLOWING
+    if (e.start.isExpressionOffset) {
+      visit(e.start.offset, _expectInt);
+    }
+    if (e.end.isExpressionOffset) {
+      visit(e.end.offset, _expectInt);
+    }
   }
 
   @override
@@ -126,19 +147,19 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     if (e is NullLiteral) {
       type = const ResolvedType(type: BasicType.nullType, nullable: true);
-      session.hintNullability(e, true);
+      session._hintNullability(e, true);
     } else if (e is StringLiteral) {
       type = e.isBinary ? const ResolvedType(type: BasicType.blob) : _textType;
-      session.hintNullability(e, false);
+      session._hintNullability(e, false);
     } else if (e is BooleanLiteral) {
       type = const ResolvedType.bool();
-      session.hintNullability(e, false);
+      session._hintNullability(e, false);
     } else if (e is NumericLiteral) {
       type = e.isInt ? _intType : _realType;
-      session.hintNullability(e, false);
+      session._hintNullability(e, false);
     }
 
-    session.checkAndResolve(e, type, arg);
+    session._checkAndResolve(e, type, arg);
   }
 
   @override
@@ -163,9 +184,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     resolved ??= _inferFromContext(arg);
 
     if (resolved != null) {
-      session.checkAndResolve(e, resolved, arg);
+      session._checkAndResolve(e, resolved, arg);
     } else if (arg is RoughTypeExpectation) {
-      session.addRelationship(DefaultType(e, arg.defaultType()));
+      session._addRelation(DefaultType(e, arg.defaultType()));
     }
 
     visitChildren(e, arg);
@@ -177,22 +198,22 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     if (operatorType == TokenType.plus) {
       // plus is a no-op, so copy type from child
-      session.addRelationship(CopyTypeFrom(e, e.inner));
+      session._addRelation(CopyTypeFrom(e, e.inner));
       visit(e.inner, arg);
     } else if (operatorType == TokenType.not) {
       // unary not expression - boolean, but nullability depends on child node.
-      session.checkAndResolve(e, const ResolvedType.bool(nullable: null), arg);
-      session.addRelationship(NullableIfSomeOtherIs(e, [e.inner]));
+      session._checkAndResolve(e, const ResolvedType.bool(nullable: null), arg);
+      session._addRelation(NullableIfSomeOtherIs(e, [e.inner]));
       visit(e.inner, const ExactTypeExpectation.laxly(ResolvedType.bool()));
     } else if (operatorType == TokenType.minus) {
       // unary minus - can be int or real depending on child node
-      session.addRelationship(CopyAndCast(e, e.inner, CastMode.numeric));
+      session._addRelation(CopyAndCast(e, e.inner, CastMode.numeric));
       visit(e.inner, const RoughTypeExpectation.numeric());
     } else if (operatorType == TokenType.tilde) {
       // bitwise negation - definitely int, but nullability depends on child
-      session.checkAndResolve(
+      session._checkAndResolve(
           e, const ResolvedType(type: BasicType.int, nullable: null), arg);
-      session.addRelationship(NullableIfSomeOtherIs(e, [e.inner]));
+      session._addRelation(NullableIfSomeOtherIs(e, [e.inner]));
 
       visit(e.inner, const NoTypeExpectation());
     } else {
@@ -202,13 +223,21 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitTuple(Tuple e, TypeExpectation arg) {
+    // make children non-arrays
+    for (final child in e.childNodes) {
+      session._addRelation(CopyTypeFrom(child, e, array: false));
+    }
+  }
+
+  @override
   void visitBetweenExpression(BetweenExpression e, TypeExpectation arg) {
     visitChildren(e, _expectNum);
 
     session
-      ..addRelationship(NullableIfSomeOtherIs(e, e.childNodes))
-      ..addRelationship(HaveSameType(e.lower, e.upper))
-      ..addRelationship(HaveSameType(e.check, e.lower));
+      .._addRelation(NullableIfSomeOtherIs(e, e.childNodes))
+      .._addRelation(HaveSameType(e.lower, e.upper))
+      .._addRelation(HaveSameType(e.check, e.lower));
   }
 
   @override
@@ -216,8 +245,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     switch (e.operator.type) {
       case TokenType.and:
       case TokenType.or:
-        session.checkAndResolve(e, const ResolvedType.bool(), arg);
-        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        session._checkAndResolve(e, const ResolvedType.bool(), arg);
+        session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
 
         // logic expressions, so children must be boolean
         visitChildren(e, const ExactTypeExpectation.laxly(ResolvedType.bool()));
@@ -230,16 +259,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case TokenType.more:
       case TokenType.moreEqual:
         // comparison. Returns bool, copying nullability from children.
-        session.checkAndResolve(e, const ResolvedType.bool(), arg);
-        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        session._checkAndResolve(e, const ResolvedType.bool(), arg);
+        session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
         // Not technically a requirement, but assume lhs and rhs have the same
         // type.
-        session.addRelationship(HaveSameType(e.left, e.right));
+        session._addRelation(HaveSameType(e.left, e.right));
         visitChildren(e, const NoTypeExpectation());
         break;
       case TokenType.plus:
       case TokenType.minus:
-        session.addRelationship(CopyEncapsulating(e, [e.left, e.right]));
+        session._addRelation(CopyEncapsulating(e, [e.left, e.right]));
         break;
       // all of those only really make sense for integers
       case TokenType.shiftLeft:
@@ -248,15 +277,15 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case TokenType.ampersand:
       case TokenType.percent:
         const type = ResolvedType(type: BasicType.int);
-        session.checkAndResolve(e, type, arg);
-        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        session._checkAndResolve(e, type, arg);
+        session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
         visitChildren(e, const ExactTypeExpectation.laxly(type));
         break;
       case TokenType.doublePipe:
         // string concatenation.
         const stringType = ResolvedType(type: BasicType.text);
-        session.checkAndResolve(e, stringType, arg);
-        session.addRelationship(NullableIfSomeOtherIs(e, [e.left, e.right]));
+        session._checkAndResolve(e, stringType, arg);
+        session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
         const childExpectation = ExactTypeExpectation.laxly(stringType);
         visit(e.left, childExpectation);
         visit(e.right, childExpectation);
@@ -269,27 +298,37 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitIsExpression(IsExpression e, TypeExpectation arg) {
-    session.checkAndResolve(e, const ResolvedType.bool(), arg);
-    session.hintNullability(e, false);
+    session._checkAndResolve(e, const ResolvedType.bool(), arg);
+    session._hintNullability(e, false);
     visitChildren(e, const NoTypeExpectation());
   }
 
   @override
   void visitIsNullExpression(IsNullExpression e, TypeExpectation arg) {
-    session.checkAndResolve(e, const ResolvedType.bool(), arg);
-    session.hintNullability(e, false);
+    session._checkAndResolve(e, const ResolvedType.bool(), arg);
+    session._hintNullability(e, false);
+    visitChildren(e, const NoTypeExpectation());
+  }
+
+  @override
+  void visitInExpression(InExpression e, TypeExpectation arg) {
+    session._checkAndResolve(e, const ResolvedType.bool(), arg);
+    session._addRelation(NullableIfSomeOtherIs(e, e.childNodes));
+
+    session._addRelation(CopyTypeFrom(e.inside, e.left, array: true));
+
     visitChildren(e, const NoTypeExpectation());
   }
 
   @override
   void visitCaseExpression(CaseExpression e, TypeExpectation arg) {
-    session.addRelationship(CopyEncapsulating(e, [
+    session._addRelation(CopyEncapsulating(e, [
       for (final when in e.whens) when.then,
       if (e.elseExpr != null) e.elseExpr,
     ]));
 
     if (e.base != null) {
-      session.addRelationship(
+      session._addRelation(
         CopyEncapsulating(e.base, [for (final when in e.whens) when.when]),
       );
     }
@@ -303,7 +342,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final parent = e.parent;
     if (parent is CaseExpression && parent.base != null) {
       // case expressions with base -> condition is compared to base
-      session.addRelationship(CopyTypeFrom(e.when, parent.base));
+      session._addRelation(CopyTypeFrom(e.when, parent.base));
       visit(e.when, const NoTypeExpectation());
     } else {
       // case expression without base -> the conditions are booleans
@@ -316,16 +355,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   @override
   void visitCastExpression(CastExpression e, TypeExpectation arg) {
     final type = session.context.schemaSupport.resolveColumnType(e.typeName);
-    session.checkAndResolve(e, type, arg);
-    session.addRelationship(NullableIfSomeOtherIs(e, [e.operand]));
+    session._checkAndResolve(e, type, arg);
+    session._addRelation(NullableIfSomeOtherIs(e, [e.operand]));
     visit(e.operand, const NoTypeExpectation());
   }
 
   @override
   void visitStringComparison(
       StringComparisonExpression e, TypeExpectation arg) {
-    session.checkAndResolve(e, const ResolvedType(type: BasicType.text), arg);
-    session.addRelationship(NullableIfSomeOtherIs(
+    session._checkAndResolve(e, const ResolvedType(type: BasicType.text), arg);
+    session._addRelation(NullableIfSomeOtherIs(
       e,
       [
         e.left,
@@ -352,15 +391,21 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitInvocation(SqlInvocation e, TypeExpectation arg) {
     final type = _resolveInvocation(e);
     if (type != null) {
-      session.checkAndResolve(e, type, arg);
+      session._checkAndResolve(e, type, arg);
     }
-    visitChildren(e, const NoTypeExpectation());
+
+    final visited = _resolveFunctionArguments(e);
+    for (final child in e.childNodes) {
+      if (!visited.contains(child)) {
+        visit(child, const NoTypeExpectation());
+      }
+    }
   }
 
   ResolvedType _resolveInvocation(SqlInvocation e) {
     final params = e.expandParameters();
     void nullableIfChildIs() {
-      session.addRelationship(NullableIfSomeOtherIs(e, params));
+      session._addRelation(NullableIfSomeOtherIs(e, params));
     }
 
     final lowercaseName = e.name.toLowerCase();
@@ -376,8 +421,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         // ignore: dead_code
         throw AssertionError(); // required so that this switch compiles
       case 'sum':
-        session.addRelationship(CopyAndCast(e, params.first, CastMode.numeric));
-        session.addRelationship(DefaultType(e, _realType));
+        session._addRelation(CopyAndCast(e, params.first, CastMode.numeric));
+        session._addRelation(DefaultType(e, _realType));
         nullableIfChildIs();
         return null;
       case 'lower':
@@ -432,27 +477,27 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'likelihood':
       case 'likely':
       case 'unlikely':
-        session.addRelationship(CopyTypeFrom(e, params.first));
+        session._addRelation(CopyTypeFrom(e, params.first));
         return null;
       case 'coalesce':
       case 'ifnull':
-        session.addRelationship(CopyEncapsulating(e, params));
+        session._addRelation(CopyEncapsulating(e, params));
         return null;
       case 'nullif':
-        session.hintNullability(e, true);
-        session.addRelationship(CopyTypeFrom(e, params.first));
+        session._hintNullability(e, true);
+        session._addRelation(CopyTypeFrom(e, params.first));
         return null;
       case 'first_value':
       case 'last_value':
       case 'lag':
       case 'lead':
       case 'nth_value':
-        session.addRelationship(CopyTypeFrom(e, params.first));
+        session._addRelation(CopyTypeFrom(e, params.first));
         return null;
       case 'max':
       case 'min':
-        session.hintNullability(e, true);
-        session.addRelationship(CopyEncapsulating(e, params));
+        session._hintNullability(e, true);
+        session._addRelation(CopyEncapsulating(e, params));
         return null;
     }
 
@@ -495,11 +540,26 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     return null;
   }
 
+  Set<AstNode> _resolveFunctionArguments(SqlInvocation e) {
+    final params = e.expandParameters();
+    final visited = <AstNode>{};
+    final name = e.name.toLowerCase();
+
+    if (name == 'nth_value' && params.length >= 2 && params[1] is Expression) {
+      // the second argument of nth_value is always an integer
+      final secondParam = params[1] as Expression;
+      visit(secondParam, _expectInt);
+      visited.add(secondParam);
+    }
+
+    return visited;
+  }
+
   void _handleColumn(Column column) {
     if (session.graph.knowsType(column)) return;
 
     if (column is TableColumn) {
-      session.markTypeResolved(column, column.type);
+      session._markTypeResolved(column, column.type);
     } else if (column is ExpressionColumn) {
       _lazyCopy(column, column.expression);
     } else if (column is DelegatedColumn && column.innerColumn != null) {
@@ -510,9 +570,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   void _lazyCopy(Typeable to, Typeable from) {
     if (session.graph.knowsType(from)) {
-      session.markTypeResolved(to, session.typeOf(from));
+      session._markTypeResolved(to, session.typeOf(from));
     } else {
-      session.addRelationship(CopyTypeFrom(to, from));
+      session._addRelation(CopyTypeFrom(to, from));
     }
   }
 

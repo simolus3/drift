@@ -169,7 +169,7 @@ class InExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [left, inside];
+  List<Expression> get childNodes => [left, inside];
 
   @override
   bool contentEquals(InExpression other) => other.not == not;

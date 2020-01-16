@@ -19,31 +19,41 @@ class TypeInferenceSession {
     results = TypeInferenceResults._(this);
   }
 
-  void markTypeResolved(Typeable t, ResolvedType r) {
+  void _markTypeResolved(Typeable t, ResolvedType r) {
     graph[t] = r;
   }
 
-  void checkAndResolve(
+  void _checkAndResolve(
       Typeable t, ResolvedType r, TypeExpectation expectation) {
-    expectIsPossible(r, expectation);
-    markTypeResolved(t, r);
+    _expectIsPossible(r, expectation);
+    _markTypeResolved(t, r);
   }
 
+  /// Returns the inferred type of [t], or `null` if it couldn't be inferred.
   ResolvedType typeOf(Typeable t) {
     return graph[t];
   }
 
-  void addRelationship(TypeRelationship relationship) {
+  void _addRelation(TypeRelation relationship) {
     graph.addRelation(relationship);
   }
 
-  void expectIsPossible(ResolvedType r, TypeExpectation expectation) {}
+  /// Check that [r] is compatible with [expectation].
+  ///
+  /// This is not currently implemented.
+  void _expectIsPossible(ResolvedType r, TypeExpectation expectation) {}
 
-  void hintNullability(Typeable t, bool nullable) {
+  /// This is not currently implemented.
+  void _hintNullability(Typeable t, bool nullable) {
     assert(nullable != null);
   }
 
-  void finish() {
+  /// Asks the underlying [TypeGraph] to propagate known types via known
+  /// [TypeRelation]s.
+  ///
+  /// The [SqlEngine] will call this method when analyzing a statement. There's
+  /// no need to call it from user code.
+  void _finish() {
     graph.performResolve();
   }
 }
