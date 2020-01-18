@@ -70,6 +70,16 @@ class SqlJsDatabase {
   final JsObject _obj;
   SqlJsDatabase._(this._obj);
 
+  /// Returns the `user_version` pragma from sqlite.
+  int get userVersion {
+    return _selectSingleRowAndColumn('PRAGMA user_version;') as int;
+  }
+
+  /// Sets sqlite's `user_version` pragma to the specified [version].
+  set userVersion(int version) {
+    run('PRAGMA user_version = $version');
+  }
+
   /// Calls `prepare` on the underlying js api
   PreparedStatement prepare(String sql) {
     final obj = _obj.callMethod('prepare', [sql]) as JsObject;
@@ -97,12 +107,14 @@ class SqlJsDatabase {
   /// [export].
   int lastInsertId() {
     // load insert id. Will return [{columns: [...], values: [[id]]}]
-    final results = _obj
-        .callMethod('exec', const ['SELECT last_insert_rowid();']) as JsArray;
+    return _selectSingleRowAndColumn('SELECT last_insert_rowid();') as int;
+  }
+
+  dynamic _selectSingleRowAndColumn(String sql) {
+    final results = _obj.callMethod('exec', [sql]) as JsArray;
     final row = results.first as JsObject;
     final data = (row['values'] as JsArray).first as JsArray;
-
-    return data.first as int;
+    return data.first;
   }
 
   /// Runs `export` on the underlying js api
