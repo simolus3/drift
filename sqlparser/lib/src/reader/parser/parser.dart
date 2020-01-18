@@ -200,6 +200,22 @@ abstract class ParserBase {
 
   /// Parses a block, which consists of statements between `BEGIN` and `END`.
   Block _consumeBlock();
+
+  /// Skips all tokens until it finds one with [type]. If [skipTarget] is true,
+  /// that token will be skipped as well.
+  ///
+  /// When using `_synchronize(TokenType.semicolon, skipTarget: true)`,
+  /// this will move the parser to the next statement, which can be useful for
+  /// error recovery.
+  void _synchronize(TokenType type, {bool skipTarget = false}) {
+    if (skipTarget) {
+      while (!_isAtEnd && _advance().type != type) {}
+    } else {
+      while (!_isAtEnd && !_check(type)) {
+        _advance();
+      }
+    }
+  }
 }
 
 class Parser extends ParserBase
@@ -355,11 +371,11 @@ class Parser extends ParserBase
     T result;
     try {
       result = parser();
-    } on ParsingError catch (_) {
+    } on ParsingError {
       _lastStmtHadParsingError = true;
-      // the error is added to the list errors, so ignore. We skip to the next
-      // semicolon to parse the next statement.
-      _synchronize();
+      // the error is added to the list errors, so ignore. We skip after the
+      // next semicolon to parse the next statement.
+      _synchronize(TokenType.semicolon, skipTarget: true);
     }
 
     if (result == null) return null;
@@ -389,11 +405,6 @@ class Parser extends ParserBase
       ..setSpan(begin, end)
       ..begin = begin
       ..end = end;
-  }
-
-  void _synchronize() {
-    // fast-forward to the token after the next semicolon
-    while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
   }
 }
 

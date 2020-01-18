@@ -43,17 +43,26 @@ mixin SchemaParser on ParserBase {
     var encounteredTableConstraint = false;
 
     do {
-      final tableConstraint = _tableConstraintOrNull();
+      try {
+        final tableConstraint = _tableConstraintOrNull();
 
-      if (tableConstraint != null) {
-        encounteredTableConstraint = true;
-        tableConstraints.add(tableConstraint);
-      } else {
-        if (encounteredTableConstraint) {
-          _error('Expected another table constraint');
+        if (tableConstraint != null) {
+          encounteredTableConstraint = true;
+          tableConstraints.add(tableConstraint);
         } else {
-          columns.add(_columnDefinition());
+          if (encounteredTableConstraint) {
+            _error('Expected another table constraint');
+          } else {
+            columns.add(_columnDefinition());
+          }
         }
+      } on ParsingError {
+        // if we're at the closing bracket, don't try to parse another column
+        if (_check(TokenType.rightParen)) break;
+        // error while parsing a column definition or table constraint. We try
+        // to recover to the next comma.
+        _synchronize(TokenType.comma);
+        if (_check(TokenType.rightParen)) break;
       }
     } while (_matchOne(TokenType.comma));
 

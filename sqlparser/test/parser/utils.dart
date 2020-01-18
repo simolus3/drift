@@ -18,11 +18,14 @@ IdentifierToken identifier(String content) {
   return IdentifierToken(false, fakeSpan(content));
 }
 
-void testMoorFile(String moorFile, MoorFile expected) {
-  final parsed = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
-      .parseMoorFile(moorFile)
-      .rootNode;
+MoorFile parseMoor(String content) {
+  return SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+      .parseMoorFile(content)
+      .rootNode as MoorFile;
+}
 
+void testMoorFile(String moorFile, MoorFile expected) {
+  final parsed = parseMoor(moorFile);
   enforceHasSpan(parsed);
   enforceEqual(parsed, expected);
 }
