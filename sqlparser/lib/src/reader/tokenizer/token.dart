@@ -291,6 +291,9 @@ const Map<String, TokenType> moorKeywords = {
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 
+/// Returns true if [name] is a reserved keyword in sqlite.
+bool isKeywordLexeme(String name) => keywords.containsKey(name.toUpperCase());
+
 class Token implements SyntacticEntity {
   final TokenType type;
 

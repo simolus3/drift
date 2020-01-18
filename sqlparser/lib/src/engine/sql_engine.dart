@@ -122,7 +122,7 @@ class SqlEngine {
     assert(options.useMoorExtensions);
 
     final tokens = tokenize(content);
-    final autoComplete = AutoCompleteEngine(tokens);
+    final autoComplete = AutoCompleteEngine(tokens, this);
 
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
     final parser =

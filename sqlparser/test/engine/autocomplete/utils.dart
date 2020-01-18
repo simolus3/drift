@@ -2,11 +2,13 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:test/test.dart';
 
-/// Parses the [moorFile] and computes available autocomplete suggestions at the
-/// position of a `^` character in the source.
-ComputedSuggestions completionsFor(String moorFile) {
+/// Parses the [moorFile] and computes available autocomplete suggestions at
+/// the position of a `^` character in the source.
+ComputedSuggestions completionsFor(String moorFile,
+    {void Function(SqlEngine) setup}) {
   final position = moorFile.indexOf('^');
   final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+  setup?.call(engine);
 
   final result = engine.parseMoorFile(moorFile.replaceFirst('^', ''));
   return result.autoCompleteEngine.suggestCompletions(position - 1);

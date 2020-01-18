@@ -216,6 +216,7 @@ mixin SchemaParser on ParserBase {
     }
 
     _consume(TokenType.on, 'Expected ON');
+    _suggestHint(const TableNameDescription());
     final nameToken = _consumeIdentifier('Expected a table name');
     final tableRef = TableReference(nameToken.identifier)
       ..setSpan(nameToken, nameToken);
@@ -259,6 +260,7 @@ mixin SchemaParser on ParserBase {
     final name = _consumeIdentifier('Expected a name for this index');
 
     _consume(TokenType.on, 'Expected ON table');
+    _suggestHint(const TableNameDescription());
     final nameToken = _consumeIdentifier('Expected a table name');
     final tableRef = TableReference(nameToken.identifier)
       ..setSpan(nameToken, nameToken);
