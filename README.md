@@ -38,7 +38,7 @@ project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/moor/)
 -----
 
 Packages in this repo:
-- `moor`: The main rutime for moor, which provides most apis
+- `moor`: The main runtime for moor, which provides most apis
 - `moor_ffi`: New and faster executor for moor, built with `dart:ffi`.
 - `moor_flutter`: The standard executor wrapping the `sqflite` package
 - `moor_generator`: The compiler for moor tables, databases and daos. It 
