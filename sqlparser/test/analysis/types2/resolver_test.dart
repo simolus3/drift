@@ -67,6 +67,11 @@ void main() {
         const ResolvedType(type: BasicType.text));
   });
 
+  test('resolves arithmetic expressions', () {
+    expect(_resolveFirstVariable('SELECT ((3 + 4) * 5) = ?'),
+        const ResolvedType(type: BasicType.int));
+  });
+
   group('cast expressions', () {
     test('resolve to type argument', () {
       expect(_resolveResultColumn('SELECT CAST(3+4 AS TEXT)'),

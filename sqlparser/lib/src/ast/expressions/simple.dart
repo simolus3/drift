@@ -189,7 +189,7 @@ class Parentheses extends Expression {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return expression.accept(visitor, arg);
+    return visitor.visitParentheses(this, arg);
   }
 
   @override

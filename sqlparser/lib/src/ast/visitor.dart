@@ -51,6 +51,7 @@ abstract class AstVisitor<A, R> {
   R visitCaseExpression(CaseExpression e, A arg);
   R visitWhen(WhenComponent e, A arg);
   R visitTuple(Tuple e, A arg);
+  R visitParentheses(Parentheses e, A arg);
   R visitInExpression(InExpression e, A arg);
 
   R visitAggregateExpression(AggregateExpression e, A arg);
@@ -376,6 +377,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   @override
   R visitTuple(Tuple e, A arg) {
     return visitExpression(e, arg);
+  }
+
+  @override
+  R visitParentheses(Parentheses e, A arg) {
+    return e.expression.accept(this, arg);
   }
 
   @override

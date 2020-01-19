@@ -1,3 +1,4 @@
+@Tags(['analyzer'])
 import 'dart:convert';
 
 import 'package:moor_generator/src/analyzer/runner/results.dart';

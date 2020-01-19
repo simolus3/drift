@@ -27,6 +27,8 @@ const Map<String, ResolvedType> _types = {
       ResolvedType(type: BasicType.int),
   'SELECT ?;': null,
   'SELECT CAST(3 AS TEXT) = ?': ResolvedType(type: BasicType.text),
+  'SELECT (3 * 4) = ?': ResolvedType(type: BasicType.int),
+  'SELECT (3 / 4) = ?': ResolvedType(type: BasicType.int),
 };
 
 SqlEngine _spawnEngine() {
@@ -49,5 +51,25 @@ void main() {
         expect(content.typeOf(variable).type, equals(expected));
       });
     });
+  });
+
+  test('resolves all expressions in CTE', () {
+    final engine = _spawnEngine();
+    final content = engine.analyze('''
+WITH RECURSIVE
+  cnt(x) AS (
+    SELECT 1
+      UNION ALL
+      SELECT x+1 FROM cnt
+      LIMIT 1000000
+  )
+  SELECT x FROM cnt;    
+    ''');
+
+    final expressions = content.root.allDescendants.whereType<Expression>();
+    expect(
+      expressions.map((e) => content.typeOf(e).type),
+      everyElement(isNotNull),
+    );
   });
 }

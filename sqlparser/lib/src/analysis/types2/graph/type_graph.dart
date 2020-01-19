@@ -9,6 +9,7 @@ class TypeGraph {
   final List<TypeRelation> _relations = [];
 
   final Map<Typeable, List<TypeRelation>> _edges = {};
+  final Set<MultiSourceRelation> _multiSources = {};
   final List<DefaultType> _defaultTypes = [];
 
   TypeGraph();
@@ -40,11 +41,16 @@ class TypeGraph {
   }
 
   void performResolve() {
-    _indexRelationships();
+    _indexRelations();
 
     final queue = List.of(_knownTypes.keys);
     while (queue.isNotEmpty) {
       _propagateTypeInfo(queue, queue.removeLast());
+    }
+
+    // propagate many-to-one sources where we don't know each source type
+    for (final remaining in _multiSources) {
+      _propagateManyToOne(remaining, queue);
     }
 
     // apply default types
@@ -73,14 +79,14 @@ class TypeGraph {
       } else if (edge is MultiSourceRelation) {
         // handle many-to-one changes, if all targets have been resolved
         if (edge.from.every(knowsType)) {
-          _propagateManyToOne(edge, resolved, t);
+          _multiSources.remove(edge);
+          _propagateManyToOne(edge, resolved);
         }
       }
     }
   }
 
-  void _propagateManyToOne(
-      MultiSourceRelation edge, List<Typeable> resolved, Typeable t) {
+  void _propagateManyToOne(MultiSourceRelation edge, List<Typeable> resolved) {
     if (!knowsType(edge.target)) {
       final fromTypes = edge.from.map((t) => this[t]).where((e) => e != null);
       final encapsulated = _encapsulate(fromTypes);
@@ -107,26 +113,27 @@ class TypeGraph {
     });
   }
 
-  void _indexRelationships() {
+  void _indexRelations() {
     _edges.clear();
 
     void put(Typeable t, TypeRelation r) {
       _edges.putIfAbsent(t, () => []).add(r);
     }
 
-    void putAll(Iterable<Typeable> t, TypeRelation r) {
-      for (final element in t) {
+    void putAll(MultiSourceRelation r) {
+      _multiSources.add(r);
+      for (final element in r.from) {
         put(element, r);
       }
     }
 
     for (final relation in _relations) {
       if (relation is NullableIfSomeOtherIs) {
-        putAll(relation.from, relation);
+        putAll(relation);
       } else if (relation is CopyTypeFrom) {
         put(relation.other, relation);
       } else if (relation is CopyEncapsulating) {
-        putAll(relation.from, relation);
+        putAll(relation);
       } else if (relation is HaveSameType) {
         put(relation.first, relation);
         put(relation.second, relation);

@@ -32,6 +32,8 @@ Map<String, ResolveResult> _types = {
   'SELECT ?;': const ResolveResult.unknown(),
   'SELECT CAST(3 AS TEXT) = ?':
       const ResolveResult(ResolvedType(type: BasicType.text)),
+  'SELECT (3 * 4) = ?': const ResolveResult(ResolvedType(type: BasicType.int)),
+  'SELECT (3 / 4) = ?': const ResolveResult(ResolvedType(type: BasicType.int)),
 };
 
 void main() {
