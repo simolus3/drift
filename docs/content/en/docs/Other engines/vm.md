@@ -1,5 +1,5 @@
 ---
-title: Dart VM (Desktop support)
+title: moor_ffi (Desktop support)
 description: Run moor on both mobile and desktop
 ---
 
@@ -66,9 +66,9 @@ import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:path/path.dart' as p;
 
 LazyDatabase(() async {
-   final dbFolder = await getDatabasesPath();
-   final file = File(j.join(dbFolder, 'db.sqlite'));
-   return VmDatabase(file);
+  final dbFolder = await getDatabasesPath();
+  final file = File(j.join(dbFolder, 'db.sqlite'));
+  return VmDatabase(file);
 })
 ```
 
@@ -77,6 +77,28 @@ on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](http
 Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
 `path_provider` on Android. This can cause data loss if you've already shipped a version using
 `moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
+
+## Using moor_ffi with an existing database
+
+If your existing sqlite database is stored as a file, you can just use `VmDatabase(thatFile)` - no further
+changes are required.
+
+If you want to load databases from assets or any other source, you can use a `LazyDatabase`.
+It allows you to perform some async work before opening the database:
+
+```dart
+// before
+VmDatabase(File('...'));
+
+// after
+LazyDatabase(() async {
+  final file = File('...');
+  if (!await file.exists()) {
+    // copy the file from an asset, or network, or any other source
+  }
+  return VmDatabase(file);
+});
+```
 
 ## Used compile options on Android
 
