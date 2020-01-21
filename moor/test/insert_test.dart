@@ -34,8 +34,8 @@ void main() {
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
-        '(not_really_an_id, some_float) VALUES (?, ?)',
-        [42, 3.1415]));
+        '(not_really_an_id, some_float, custom) VALUES (?, ?, ?)',
+        [42, 3.1415, anything]));
   });
 
   test('generates insert or replace statements', () async {
@@ -147,7 +147,17 @@ void main() {
     expect(exception.toString(), startsWith('InvalidDataException'));
   });
 
-  test('reports auto-increment id', () async {
+  test("doesn't allow writing null rows", () {
+    expect(
+      () {
+        return db.into(db.todosTable).insert(null);
+      },
+      throwsA(const TypeMatcher<InvalidDataException>().having(
+          (e) => e.message, 'message', contains('Cannot write null row'))),
+    );
+  });
+
+  test('reports auto-increment id', () {
     when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(42));
 
     expect(
@@ -156,6 +166,21 @@ void main() {
           .insert(const TodosTableCompanion(content: Value('Bottom text'))),
       completion(42),
     );
+  });
+
+  test('evaluates client-default functions', () async {
+    await db.into(db.tableWithoutPK).insert(
+        TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 3.14));
+
+    // the client default generates a uuid
+    final uuidRegex = RegExp(
+        r'[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}');
+
+    verify(executor.runInsert(
+      'INSERT INTO table_without_p_k (not_really_an_id, some_float, custom) '
+      'VALUES (?, ?, ?)',
+      [3, 3.14, matches(uuidRegex)],
+    ));
   });
 
   test('escaped when column name is keyword', () async {

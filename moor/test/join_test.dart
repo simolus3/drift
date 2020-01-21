@@ -116,6 +116,37 @@ void main() {
         argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
   });
 
+  test('can be watched', () {
+    final todos = db.alias(db.todosTable, 't');
+    final categories = db.alias(db.categories, 'c');
+
+    final query = db
+        .select(todos)
+        .join([innerJoin(categories, todos.category.equalsExp(categories.id))]);
+
+    final stream = query.watch();
+    expectLater(stream, emitsInOrder([[], []]));
+
+    db.markTablesUpdated({todos});
+    db.markTablesUpdated({categories});
+  });
+
+  test('setting where multiple times forms conjunction', () async {
+    final todos = db.alias(db.todosTable, 't');
+    final categories = db.alias(db.categories, 'c');
+
+    final query = db
+        .select(todos)
+        .join([innerJoin(categories, todos.category.equalsExp(categories.id))])
+          ..where(todos.id.isSmallerThanValue(5))
+          ..where(categories.id.isBiggerOrEqualValue(10));
+
+    await query.get();
+
+    verify(executor
+        .runSelect(argThat(contains('WHERE t.id < ? AND c.id >= ?')), [5, 10]));
+  });
+
   test('supports custom columns and results', () async {
     final categories = db.alias(db.categories, 'c');
     final descriptionLength = categories.description.length;

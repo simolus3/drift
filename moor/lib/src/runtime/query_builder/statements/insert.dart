@@ -96,19 +96,19 @@ class InsertStatement<D extends DataClass> {
 
     final rawValues = table.entityToSql(entry.createCompanion(true));
 
-    // strip out null values, apply client defaults where applicable
+    // apply default values for columns that have one
     final map = <String, Variable>{};
-    for (final columnName in rawValues.keys) {
-      final value = rawValues[columnName];
+    for (final column in table.$columns) {
+      final columnName = column.$name;
 
-      if (value != null) {
-        map[columnName] = value;
+      if (rawValues.containsKey(columnName)) {
+        map[columnName] = rawValues[columnName];
       } else {
-        final column = table.columnsByName[columnName];
-        if (column.defaultValue != null) {
+        if (column.clientDefault != null) {
           map[columnName] = column._evaluateClientDefault();
         }
       }
+
       // column not set, and doesn't have a client default. So just don't
       // include this column
     }
