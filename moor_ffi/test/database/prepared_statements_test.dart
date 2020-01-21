@@ -1,4 +1,5 @@
-import 'package:moor/moor.dart';
+import 'dart:typed_data';
+
 import 'package:moor_ffi/database.dart';
 import 'package:test/test.dart';
 
@@ -56,5 +57,21 @@ void main() {
     expect(result['x'], <int>[]);
 
     opened.close();
-  }, skip: 'todo figure out why this still fails');
+  });
+
+  test('can bind null blob in prepared statements', () {
+    final opened = Database.memory();
+    opened.execute('CREATE TABLE tbl (x BLOB);');
+
+    final insert = opened.prepare('INSERT INTO tbl VALUES (?)');
+    insert.execute([null]);
+    insert.close();
+
+    final select = opened.prepare('SELECT * FROM tbl');
+    final result = select.select().single;
+
+    expect(result['x'], isNull);
+
+    opened.close();
+  });
 }

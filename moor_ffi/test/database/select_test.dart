@@ -15,6 +15,10 @@ void main() {
     expect(result2.columnNames, ['?']);
     expect(result2.single.columnAt(0), 2);
 
+    final result3 = prepared.select(['']);
+    expect(result3.columnNames, ['?']);
+    expect(result3.single.columnAt(0), '');
+
     opened.close();
   });
 }
