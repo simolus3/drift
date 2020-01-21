@@ -1,10 +1,11 @@
-## unreleased
+## 0.6.0
 
-- Added a argument type and argument to the visitor classes
-- Experimental new type inference algorithm
+- __Breaking:__ Added an argument type and argument to the visitor classes
+- Experimental new type inference algorithm 
+(`SqlEngine.withOptions(EngineOptions(enableExperimentalTypeInference: true))`)
 - Support `CAST` expressions and the `ISNULL` / `NOTNULL` postfixes
 - Support parsing `CREATE TRIGGER` statements
-- Support parsing `CREATE INDEX` statement
+- Support parsing `CREATE INDEX` statements
 
 ## 0.5.0
 - Optionally support the `json1` module

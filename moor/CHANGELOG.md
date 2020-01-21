@@ -1,4 +1,4 @@
-## unreleased
+## 2.3.0
 
 - New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for
   each row. For instance, you can generate a uuid for each row with `text().clientDefault(() => Uuid().v4()();`
@@ -18,7 +18,7 @@
 - Reduce unnecessary queries when a stream is unsubscribed and then re-subscribed ([#329](https://github.com/simolus3/moor/issues/329))
 - Experimental new type inference for the sql analyzer. For details, check the
   `use_experimental_inference` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/)
-- Web: New `initializer` parameter to provide the database when it doesn't exist
+- Web: New `initializer` parameter to create the database when it doesn't exist
   
 ## 2.2.0
 

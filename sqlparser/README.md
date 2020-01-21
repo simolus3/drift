@@ -4,19 +4,21 @@ Sql parser and static analyzer written in Dart. At the moment, this library targ
 sqlite dialect only.
 
 ## Features
-This library can parse most sql statements and perform static analysis. We can resolve
-what type a column in a `SELECT` statement has, infer types for variables, find
-semantic errors and more.
+
+This library aims to support every sqlite feature, which includes parsing and detailed
+static analysis.
+We can resolve what type a column in a `SELECT` statement has, infer types for variables,
+find semantic errors and more.
 
 This library supports most sqlite features:
 - CRUD: Full support, including joins, `group by`, nested and compound selects, `WITH` clauses
   and window functions
-- DDL: Supports `CREATE TABLE` statements, including advanced features like foreign keys.
-  We also support `fts5` and `CREATE VIRTUAL TABLE` statements. Triggers, views and indices
-  are not yet supported.
+- DDL: Supports `CREATE TABLE` statements, including advanced features like foreign keys or
+  virtual tables (when a matching module like `fts5` is enabled). This library also supports
+  `CREATE TRIGGER` and `CREATE INDEX` statements.
 
 ### Using the parser
-You can parse the abstract syntax tree of sqlite statements with `SqlEngine.parse`.
+To obtain an abstract syntax tree from an sql statement, use `SqlEngine.parse`.
 ```dart
 import 'package:sqlparser/sqlparser.dart';
 
@@ -47,7 +49,7 @@ To use the analyzer, first register all known tables via `SqlEngine.registerTabl
 about errors. The type of result columns and expressions can be inferred by using 
 `AnalysisContext.typeOf()`. Here's an example:
 
-```dart 
+```dart
 final id = TableColumn('id', const ResolvedType(type: BasicType.int));
 final content = TableColumn('content', const ResolvedType(type: BasicType.text));
 final demoTable = Table(
