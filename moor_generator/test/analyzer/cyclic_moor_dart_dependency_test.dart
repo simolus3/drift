@@ -1,3 +1,4 @@
+@Tags(['analyzer'])
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
