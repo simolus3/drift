@@ -22,15 +22,16 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
     );
   }
   factory KeyValue.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return KeyValue(
       key: serializer.fromJson<String>(json['key']),
       value: serializer.fromJson<String>(json['value']),
     );
   }
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'key': serializer.toJson<String>(key),
       'value': serializer.toJson<String>(value),
@@ -130,13 +131,13 @@ class $KeyValuesTable extends KeyValues
     final context = VerificationContext();
     if (d.key.present) {
       context.handle(_keyMeta, key.isAcceptableValue(d.key.value, _keyMeta));
-    } else if (key.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (d.value.present) {
       context.handle(
           _valueMeta, value.isAcceptableValue(d.value.value, _valueMeta));
-    } else if (value.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_valueMeta);
     }
     return context;
@@ -173,5 +174,7 @@ abstract class _$Database extends GeneratedDatabase {
   $KeyValuesTable _keyValues;
   $KeyValuesTable get keyValues => _keyValues ??= $KeyValuesTable(this);
   @override
-  List<TableInfo> get allTables => [keyValues];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [keyValues];
 }

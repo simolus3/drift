@@ -1,35 +1,41 @@
 import 'package:sqlparser/sqlparser.dart';
 
 import '../query_handler.dart';
+import '../type_mapping.dart';
 
 /// Provides additional hints that aren't implemented in the sqlparser because
 /// they're specific to moor.
 class Linter {
-  final QueryHandler handler;
+  final AnalysisContext context;
+  final TypeMapper mapper;
   final List<AnalysisError> lints = [];
 
-  Linter(this.handler);
+  Linter(this.context, this.mapper);
+
+  Linter.forHandler(QueryHandler handler)
+      : context = handler.context,
+        mapper = handler.mapper;
 
   void reportLints() {
-    handler.context.root.accept(_LintingVisitor(this));
+    context.root.acceptWithoutArg(_LintingVisitor(this));
   }
 }
 
-class _LintingVisitor extends RecursiveVisitor<void> {
+class _LintingVisitor extends RecursiveVisitor<void, void> {
   final Linter linter;
 
   _LintingVisitor(this.linter);
 
   @override
-  void visitResultColumn(ResultColumn e) {
-    super.visitResultColumn(e);
+  void visitResultColumn(ResultColumn e, void arg) {
+    super.visitResultColumn(e, arg);
 
     if (e is ExpressionResultColumn) {
       // The generated code will be invalid if knowing the expression is needed
       // to know the column name (e.g. it's a Dart template without an AS), or
       // if the type is unknown.
       final expression = e.expression;
-      final resolveResult = linter.handler.context.typeOf(expression);
+      final resolveResult = linter.context.typeOf(expression);
 
       if (resolveResult.type == null) {
         linter.lints.add(AnalysisError(
@@ -54,7 +60,7 @@ class _LintingVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
     final targeted = e.resolvedTargetColumns;
     if (targeted == null) return;
 
@@ -86,8 +92,7 @@ class _LintingVisitor extends RecursiveVisitor<void> {
     );
 
     // second, check that no required columns are left out
-    final specifiedTable =
-        linter.handler.mapper.tableToMoor(e.table.resolved as Table);
+    final specifiedTable = linter.mapper.tableToMoor(e.table.resolved as Table);
     final required =
         specifiedTable.columns.where((c) => c.requiredDuringInsert).toList();
 

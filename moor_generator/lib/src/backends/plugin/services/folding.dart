@@ -13,18 +13,18 @@ class MoorFoldingContributor implements FoldingContributor {
     if (moorRequest.isMoorAndParsed) {
       final result = moorRequest.parsedMoor;
       final visitor = _FoldingVisitor(collector);
-      result.parsedFile.accept(visitor);
+      result.parsedFile.acceptWithoutArg(visitor);
     }
   }
 }
 
-class _FoldingVisitor extends RecursiveVisitor<void> {
+class _FoldingVisitor extends RecursiveVisitor<void, void> {
   final FoldingCollector collector;
 
   _FoldingVisitor(this.collector);
 
   @override
-  void visitMoorFile(MoorFile e) {
+  void visitMoorFile(MoorFile e, void arg) {
     // construct a folding region for import statements
     final imports = e.imports.toList();
     if (imports.length > 1) {
@@ -34,11 +34,11 @@ class _FoldingVisitor extends RecursiveVisitor<void> {
       collector.addRegion(first, last - first, FoldingKind.DIRECTIVES);
     }
 
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
   }
 
   @override
-  void visitCreateTableStatement(CreateTableStatement e) {
+  void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final startBody = e.openingBracket;
     final endBody = e.closingBracket;
 

@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/src/analysis/types2/types.dart' as t2;
 import 'package:sqlparser/src/engine/module/fts5.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
@@ -18,20 +19,41 @@ class SqlEngine {
   /// Internal options for this sql engine.
   final EngineOptions options;
 
+  SchemaFromCreateTable _schemaReader;
+
   SqlEngine(
-      {bool useMoorExtensions = false,
-      bool enableJson1Module = false,
-      bool enableFts5 = false})
-      : options = _constructOptions(
-            moor: useMoorExtensions,
-            json1: enableJson1Module,
-            fts5: enableFts5) {
+      {@Deprecated('Use SqlEngine.withOptions instead')
+          bool useMoorExtensions = false,
+      @Deprecated('Use SqlEngine.withOptions instead')
+          bool enableJson1Module = false,
+      @Deprecated('Use SqlEngine.withOptions instead')
+          bool enableFts5 = false})
+      : this.withOptions(_constructOptions(
+          // ignore: deprecated_member_use_from_same_package
+          moor: useMoorExtensions,
+          // ignore: deprecated_member_use_from_same_package
+          json1: enableJson1Module,
+          // ignore: deprecated_member_use_from_same_package
+          fts5: enableFts5,
+        ));
+
+  SqlEngine.withOptions(this.options) {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
     }
 
     registerTable(sqliteMaster);
     registerTable(sqliteSequence);
+  }
+
+  /// Obtain a [SchemaFromCreateTable] instance compatible with the
+  /// configuration of this engine.
+  ///
+  /// The returned reader can be used to read the table structure from a
+  /// [TableInducingStatement] by using [SchemaFromCreateTable.read].
+  SchemaFromCreateTable get schemaReader {
+    return _schemaReader ??=
+        SchemaFromCreateTable(moorExtensions: options.useMoorExtensions);
   }
 
   /// Registers the [table], which means that it can later be used in sql
@@ -100,7 +122,7 @@ class SqlEngine {
     assert(options.useMoorExtensions);
 
     final tokens = tokenize(content);
-    final autoComplete = AutoCompleteEngine(tokens);
+    final autoComplete = AutoCompleteEngine(tokens, this);
 
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
     final parser =
@@ -119,9 +141,11 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyze(String sql) {
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyze(String sql, {AnalyzeStatementOptions stmtOptions}) {
     final result = parse(sql);
-    return analyzeParsed(result);
+    return analyzeParsed(result, stmtOptions: stmtOptions);
   }
 
   /// Analyzes a parsed [result] statement. The [AnalysisContext] returned
@@ -130,10 +154,13 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyzeParsed(ParseResult result) {
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyzeParsed(ParseResult result,
+      {AnalyzeStatementOptions stmtOptions}) {
     final node = result.rootNode;
 
-    final context = AnalysisContext(node, result.sql, options);
+    final context = _createContext(node, result.sql, stmtOptions);
     _analyzeContext(context);
 
     return context;
@@ -147,10 +174,19 @@ class SqlEngine {
   /// The analyzer needs to know all the available tables to resolve references
   /// and result columns, so all known tables should be registered using
   /// [registerTable] before calling this method.
-  AnalysisContext analyzeNode(AstNode node, String file) {
-    final context = AnalysisContext(node, file, options);
+  /// The [stmtOptions] can be used to pass additional options used to analyze
+  /// this statement only.
+  AnalysisContext analyzeNode(AstNode node, String file,
+      {AnalyzeStatementOptions stmtOptions}) {
+    final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
     return context;
+  }
+
+  AnalysisContext _createContext(
+      AstNode node, String sql, AnalyzeStatementOptions stmtOptions) {
+    return AnalysisContext(node, sql, options,
+        stmtOptions: stmtOptions, schemaSupport: schemaReader);
   }
 
   void _analyzeContext(AnalysisContext context) {
@@ -160,13 +196,20 @@ class SqlEngine {
     try {
       AstPreparingVisitor(context: context).start(node);
 
-      if (node is CrudStatement) {
-        node
-          ..accept(ColumnResolver(context))
-          ..accept(ReferenceResolver(context))
-          ..accept(TypeResolvingVisitor(context))
-          ..accept(LintingVisitor(options, context));
+      node
+        ..acceptWithoutArg(ColumnResolver(context))
+        ..acceptWithoutArg(ReferenceResolver(context));
+
+      if (options.enableExperimentalTypeInference) {
+        final session = t2.TypeInferenceSession(context, options);
+        final resolver = t2.TypeResolver(session);
+        resolver.run(node);
+        context.types2 = session.results;
+      } else {
+        node.acceptWithoutArg(TypeResolvingVisitor(context));
       }
+
+      node.acceptWithoutArg(LintingVisitor(options, context));
     } catch (_) {
       rethrow;
     }
@@ -186,7 +229,11 @@ class SqlEngine {
     final extensions = [
       if (fts5) const Fts5Extension(),
     ];
-    return EngineOptions(moor, json1, extensions);
+    return EngineOptions(
+      useMoorExtensions: moor,
+      enableJson1: json1,
+      enabledExtensions: extensions,
+    );
   }
 }
 

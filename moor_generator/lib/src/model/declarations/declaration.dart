@@ -5,7 +5,10 @@ import 'package:sqlparser/sqlparser.dart';
 
 part 'columns.dart';
 part 'database.dart';
+part 'index.dart';
+part 'special_queries.dart';
 part 'tables.dart';
+part 'trigger.dart';
 
 /// Interface for model elements that are declared somewhere.
 abstract class HasDeclaration {

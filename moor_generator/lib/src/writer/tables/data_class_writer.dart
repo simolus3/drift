@@ -108,9 +108,9 @@ class DataClassWriter {
 
     _buffer
       ..write('factory $dataClassName.fromJson('
-          'Map<String, dynamic> json,'
-          '{ValueSerializer serializer = const ValueSerializer.defaults()}'
+          'Map<String, dynamic> json, {ValueSerializer serializer}'
           ') {\n')
+      ..write('serializer ??= moorRuntimeOptions.defaultSerializer;\n')
       ..write('return $dataClassName(');
 
     for (final column in table.columns) {
@@ -126,7 +126,7 @@ class DataClassWriter {
     if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
       _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
-          '{ValueSerializer serializer = const ValueSerializer.defaults()}) => '
+          '{ValueSerializer serializer}) => '
           '$dataClassName.fromJson('
           'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
           'serializer: serializer);');
@@ -135,8 +135,9 @@ class DataClassWriter {
 
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
-        '{ValueSerializer serializer = const ValueSerializer.defaults()}) {'
-        '\n return <String, dynamic>{');
+        '{ValueSerializer serializer}) {\n'
+        'serializer ??= moorRuntimeOptions.defaultSerializer;\n'
+        'return <String, dynamic>{\n');
 
     for (final column in table.columns) {
       final name = column.getJsonKey(scope.options);

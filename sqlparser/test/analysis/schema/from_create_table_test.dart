@@ -63,7 +63,8 @@ void main() {
   });
 
   test('supports booleans when moor extensions are enabled', () {
-    final engine = SqlEngine(useMoorExtensions: true);
+    final engine =
+        SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
     final stmt = engine.parse('''
     CREATE TABLE foo (
       a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL

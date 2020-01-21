@@ -16,6 +16,9 @@ class ResolvedType {
   /// applications but aren't covered by just exposing a [BasicType]. See the
   /// comment on [TypeHint] for examples.
   final TypeHint hint;
+
+  /// Whether this type is nullable. A `null` value for [nullable] indicates
+  /// that nullability is unknown.
   final bool nullable;
 
   /// Whether this type is an array.
@@ -23,8 +26,8 @@ class ResolvedType {
 
   const ResolvedType(
       {this.type, this.hint, this.nullable = false, this.isArray = false});
-  const ResolvedType.bool()
-      : this(type: BasicType.int, hint: const IsBoolean());
+  const ResolvedType.bool({bool nullable})
+      : this(type: BasicType.int, hint: const IsBoolean(), nullable: nullable);
 
   ResolvedType withNullable(bool nullable) {
     return ResolvedType(

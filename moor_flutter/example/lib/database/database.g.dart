@@ -34,7 +34,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     );
   }
   factory TodoEntry.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return TodoEntry(
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
@@ -43,9 +44,9 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     );
   }
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
       'targetDate': serializer.toJson<DateTime>(targetDate),
@@ -92,7 +93,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(content.hashCode, $mrjc(targetDate.hashCode, category.hashCode))));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == this.id &&
@@ -193,26 +194,20 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.content.present) {
       context.handle(_contentMeta,
           content.isAcceptableValue(d.content.value, _contentMeta));
-    } else if (content.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_contentMeta);
     }
     if (d.targetDate.present) {
       context.handle(_targetDateMeta,
           targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
-    } else if (targetDate.isRequired && isInserting) {
-      context.missing(_targetDateMeta);
     }
     if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
-    } else if (category.isRequired && isInserting) {
-      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -265,16 +260,17 @@ class Category extends DataClass implements Insertable<Category> {
     );
   }
   factory Category.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
     );
   }
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
     };
@@ -306,7 +302,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(other) =>
+  bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -374,13 +370,11 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
-    } else if (description.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
     return context;
@@ -442,7 +436,9 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables => [todos, categories];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [todos, categories];
 }
 
 class CategoriesWithCountResult {

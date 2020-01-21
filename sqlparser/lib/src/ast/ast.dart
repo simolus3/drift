@@ -14,6 +14,7 @@ part 'common/renamable.dart';
 part 'common/tuple.dart';
 part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
+part 'expressions/cast.dart';
 part 'expressions/expressions.dart';
 part 'expressions/function.dart';
 part 'expressions/literals.dart';
@@ -27,12 +28,16 @@ part 'moor/inline_dart.dart';
 part 'moor/moor_file.dart';
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
+part 'statements/block.dart';
 part 'statements/create_table.dart';
+part 'statements/create_index.dart';
+part 'statements/create_trigger.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 part 'statements/update.dart';
+part 'visitor.dart';
 
 /// A node in the abstract syntax tree of an SQL statement.
 abstract class AstNode with HasMetaMixin implements SyntacticEntity {
@@ -49,7 +54,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   Token last;
 
   @override
-  bool synthetic;
+  bool synthetic = false;
 
   @override
   int get firstPosition => first.span.start.offset;
@@ -129,7 +134,14 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
 
   /// Calls the appropriate method on the [visitor] to make it recognize this
   /// node.
-  T accept<T>(AstVisitor<T> visitor);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg);
+
+  /// Like [accept], but without an argument.
+  ///
+  /// Null will be used for the argument instead.
+  R acceptWithoutArg<R>(AstVisitor<void, R> visitor) {
+    return accept(visitor, null);
+  }
 
   /// Whether the content of this node is equal to the [other] node of the same
   /// type. The "content" refers to anything stored only in this node, children
@@ -142,207 +154,5 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
       return '$runtimeType: ${span.text}';
     }
     return super.toString();
-  }
-}
-
-abstract class AstVisitor<T> {
-  T visitSelectStatement(SelectStatement e);
-  T visitCompoundSelectStatement(CompoundSelectStatement e);
-  T visitCompoundSelectPart(CompoundSelectPart e);
-  T visitResultColumn(ResultColumn e);
-  T visitInsertStatement(InsertStatement e);
-  T visitDeleteStatement(DeleteStatement e);
-  T visitUpdateStatement(UpdateStatement e);
-  T visitCreateTableStatement(CreateTableStatement e);
-  T visitCreateVirtualTableStatement(CreateVirtualTableStatement e);
-
-  T visitWithClause(WithClause e);
-  T visitCommonTableExpression(CommonTableExpression e);
-  T visitOrderBy(OrderBy e);
-  T visitOrderingTerm(OrderingTerm e);
-  T visitLimit(Limit e);
-  T visitQueryable(Queryable e);
-  T visitJoin(Join e);
-  T visitGroupBy(GroupBy e);
-
-  T visitSetComponent(SetComponent e);
-
-  T visitColumnDefinition(ColumnDefinition e);
-  T visitColumnConstraint(ColumnConstraint e);
-  T visitTableConstraint(TableConstraint e);
-  T visitForeignKeyClause(ForeignKeyClause e);
-
-  T visitBinaryExpression(BinaryExpression e);
-  T visitStringComparison(StringComparisonExpression e);
-  T visitUnaryExpression(UnaryExpression e);
-  T visitIsExpression(IsExpression e);
-  T visitBetweenExpression(BetweenExpression e);
-  T visitLiteral(Literal e);
-  T visitReference(Reference e);
-  T visitFunction(FunctionExpression e);
-  T visitSubQuery(SubQuery e);
-  T visitExists(ExistsExpression e);
-  T visitCaseExpression(CaseExpression e);
-  T visitWhen(WhenComponent e);
-  T visitTuple(Tuple e);
-  T visitInExpression(InExpression e);
-
-  T visitAggregateExpression(AggregateExpression e);
-  T visitWindowDefinition(WindowDefinition e);
-  T visitFrameSpec(FrameSpec e);
-
-  T visitNumberedVariable(NumberedVariable e);
-  T visitNamedVariable(ColonNamedVariable e);
-
-  T visitMoorFile(MoorFile e);
-  T visitMoorImportStatement(ImportStatement e);
-  T visitMoorDeclaredStatement(DeclaredStatement e);
-  T visitDartPlaceholder(DartPlaceholder e);
-}
-
-/// Visitor that walks down the entire tree, visiting all children in order.
-class RecursiveVisitor<T> extends AstVisitor<T> {
-  @override
-  T visitBinaryExpression(BinaryExpression e) => visitChildren(e);
-
-  @override
-  T visitStringComparison(StringComparisonExpression e) => visitChildren(e);
-
-  @override
-  T visitFunction(FunctionExpression e) => visitChildren(e);
-
-  @override
-  T visitGroupBy(GroupBy e) => visitChildren(e);
-
-  @override
-  T visitIsExpression(IsExpression e) => visitChildren(e);
-
-  @override
-  T visitBetweenExpression(BetweenExpression e) => visitChildren(e);
-
-  @override
-  T visitCaseExpression(CaseExpression e) => visitChildren(e);
-
-  @override
-  T visitWhen(WhenComponent e) => visitChildren(e);
-
-  @override
-  T visitTuple(Tuple e) => visitChildren(e);
-
-  @override
-  T visitInExpression(InExpression e) => visitChildren(e);
-
-  @override
-  T visitSubQuery(SubQuery e) => visitChildren(e);
-
-  @override
-  T visitExists(ExistsExpression e) => visitChildren(e);
-
-  @override
-  T visitSetComponent(SetComponent e) => visitChildren(e);
-
-  @override
-  T visitJoin(Join e) => visitChildren(e);
-
-  @override
-  T visitLimit(Limit e) => visitChildren(e);
-
-  @override
-  T visitLiteral(Literal e) => visitChildren(e);
-
-  @override
-  T visitNamedVariable(ColonNamedVariable e) => visitChildren(e);
-
-  @override
-  T visitNumberedVariable(NumberedVariable e) => visitChildren(e);
-
-  @override
-  T visitOrderBy(OrderBy e) => visitChildren(e);
-
-  @override
-  T visitOrderingTerm(OrderingTerm e) => visitChildren(e);
-
-  @override
-  T visitQueryable(Queryable e) => visitChildren(e);
-
-  @override
-  T visitReference(Reference e) => visitChildren(e);
-
-  @override
-  T visitResultColumn(ResultColumn e) => visitChildren(e);
-
-  @override
-  T visitSelectStatement(SelectStatement e) => visitChildren(e);
-
-  @override
-  T visitCompoundSelectStatement(CompoundSelectStatement e) => visitChildren(e);
-
-  @override
-  T visitCompoundSelectPart(CompoundSelectPart e) => visitChildren(e);
-
-  @override
-  T visitInsertStatement(InsertStatement e) => visitChildren(e);
-
-  @override
-  T visitDeleteStatement(DeleteStatement e) => visitChildren(e);
-
-  @override
-  T visitUpdateStatement(UpdateStatement e) => visitChildren(e);
-
-  @override
-  T visitCreateTableStatement(CreateTableStatement e) => visitChildren(e);
-
-  @override
-  T visitCreateVirtualTableStatement(CreateVirtualTableStatement e) =>
-      visitChildren(e);
-
-  @override
-  T visitUnaryExpression(UnaryExpression e) => visitChildren(e);
-
-  @override
-  T visitColumnDefinition(ColumnDefinition e) => visitChildren(e);
-
-  @override
-  T visitTableConstraint(TableConstraint e) => visitChildren(e);
-
-  @override
-  T visitColumnConstraint(ColumnConstraint e) => visitChildren(e);
-
-  @override
-  T visitForeignKeyClause(ForeignKeyClause e) => visitChildren(e);
-
-  @override
-  T visitAggregateExpression(AggregateExpression e) => visitChildren(e);
-
-  @override
-  T visitWindowDefinition(WindowDefinition e) => visitChildren(e);
-
-  @override
-  T visitFrameSpec(FrameSpec e) => visitChildren(e);
-
-  @override
-  T visitWithClause(WithClause e) => visitChildren(e);
-
-  @override
-  T visitCommonTableExpression(CommonTableExpression e) => visitChildren(e);
-
-  @override
-  T visitMoorFile(MoorFile e) => visitChildren(e);
-
-  @override
-  T visitMoorImportStatement(ImportStatement e) => visitChildren(e);
-
-  @override
-  T visitMoorDeclaredStatement(DeclaredStatement e) => visitChildren(e);
-
-  @override
-  T visitDartPlaceholder(DartPlaceholder e) => visitChildren(e);
-
-  @protected
-  T visitChildren(AstNode e) {
-    for (final child in e.childNodes) {
-      child.accept(this);
-    }
-    return null;
   }
 }

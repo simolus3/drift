@@ -24,7 +24,7 @@ CREATE TABLE bar (
 
 void main() {
   final mapper = TypeMapper();
-  final engine = SqlEngine(useMoorExtensions: true);
+  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
   final step = ParseMoorStep(
       Task(null, null, null), FoundFile(Uri.parse('foo'), FileType.moor), '');
 

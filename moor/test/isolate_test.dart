@@ -113,6 +113,35 @@ void _runTests(
     final result = await database.select(database.todosTable).get();
     expect(result, isNotEmpty);
   });
+
+  test('transactions have an isolate view on data', () async {
+    // regression test for https://github.com/simolus3/moor/issues/324
+    final db = TodoDb.connect(isolateConnection);
+
+    await db
+        .customStatement('create table tbl (id integer primary key not null)');
+
+    Future<void> expectRowCount(TodoDb db, int count) async {
+      final rows = await db.customSelectQuery('select * from tbl').get();
+      expect(rows, hasLength(count));
+    }
+
+    final rowInserted = Completer<void>();
+    final runTransaction = db.transaction(() async {
+      await db.customInsert('insert into tbl default values');
+      await expectRowCount(db, 1);
+      rowInserted.complete();
+      // Hold transaction open for expectRowCount() outside the transaction to
+      // finish
+      await Future.delayed(const Duration(seconds: 1));
+      await db.customStatement('delete from tbl');
+      await expectRowCount(db, 0);
+    });
+
+    await rowInserted.future;
+    await expectRowCount(db, 0);
+    await runTransaction; // wait for the transaction to complete
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

@@ -5,6 +5,7 @@ part of '../ast.dart';
 class DeclaredStatement extends Statement implements PartOfMoorFile {
   final DeclaredStatementIdentifier identifier;
   final CrudStatement statement;
+  final List<StatementParameter> parameters;
 
   Token colon;
 
@@ -13,14 +14,16 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   /// meaning.
   bool get isRegularQuery => identifier is SimpleName;
 
-  DeclaredStatement(this.identifier, this.statement);
+  DeclaredStatement(this.identifier, this.statement, {this.parameters});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) =>
-      visitor.visitMoorDeclaredStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorDeclaredStatement(this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => [statement];
+  Iterable<AstNode> get childNodes =>
+      [statement, if (parameters != null) ...parameters];
 
   @override
   bool contentEquals(DeclaredStatement other) {
@@ -75,5 +78,37 @@ class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
     return identical(this, other) ||
         (other is SpecialStatementIdentifier &&
             other.specialName == specialName);
+  }
+}
+
+/// A statement parameter, which appears between brackets after the statement
+/// identifier.
+/// In `selectString(:name AS TEXT): SELECT :name`, `:name AS TEXT` is a
+abstract class StatementParameter extends AstNode {
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorStatementParameter(this, arg);
+  }
+}
+
+/// Construct to explicitly set a variable type.
+///
+/// Users can use `:name AS TYPE` as a statement parameter. Any use of `:name`
+/// in the query will then be resolved to the type set here. This is useful for
+/// cases in which the resolver doesn't yield acceptable results.
+class VariableTypeHint extends StatementParameter {
+  final Variable variable;
+  final String typeName;
+
+  Token as;
+
+  VariableTypeHint(this.variable, this.typeName);
+
+  @override
+  Iterable<AstNode> get childNodes => [variable];
+
+  @override
+  bool contentEquals(VariableTypeHint other) {
+    return other.typeName == typeName;
   }
 }

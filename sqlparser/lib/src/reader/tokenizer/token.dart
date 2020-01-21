@@ -50,6 +50,8 @@ enum TokenType {
   $true,
   $false,
   $null,
+  isNull,
+  notNull,
   currentTime,
   currentDate,
   currentTimestamp,
@@ -121,6 +123,8 @@ enum TokenType {
   create,
   virtual,
   table,
+  trigger,
+  $index,
   $if,
   $with,
   without,
@@ -141,6 +145,14 @@ enum TokenType {
   no,
   action,
   recursive,
+
+  before,
+  after,
+  instead,
+  of,
+  $for,
+  each,
+  begin,
 
   semicolon,
   comment,
@@ -197,6 +209,8 @@ const Map<String, TokenType> keywords = {
   'TRUE': TokenType.$true,
   'FALSE': TokenType.$false,
   'NULL': TokenType.$null,
+  'ISNULL': TokenType.isNull,
+  'NOTNULL': TokenType.notNull,
   'CURRENT_TIME': TokenType.currentTime,
   'CURRENT_DATE': TokenType.currentDate,
   'CURRENT_TIMESTAMP': TokenType.currentTimestamp,
@@ -212,6 +226,8 @@ const Map<String, TokenType> keywords = {
   'IGNORE': TokenType.ignore,
   'CREATE': TokenType.create,
   'TABLE': TokenType.table,
+  'TRIGGER': TokenType.trigger,
+  'INDEX': TokenType.$index,
   'IF': TokenType.$if,
   'WITH': TokenType.$with,
   'WITHOUT': TokenType.without,
@@ -250,6 +266,13 @@ const Map<String, TokenType> keywords = {
   'UNION': TokenType.union,
   'INTERSECT': TokenType.intersect,
   'EXCEPT': TokenType.except,
+  'BEFORE': TokenType.before,
+  'AFTER': TokenType.after,
+  'INSTEAD': TokenType.instead,
+  'OF': TokenType.of,
+  'FOR': TokenType.$for,
+  'EACH': TokenType.each,
+  'BEGIN': TokenType.begin,
   'VIRTUAL': TokenType.virtual,
 };
 
@@ -267,6 +290,9 @@ const Map<String, TokenType> moorKeywords = {
 
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
+
+/// Returns true if [name] is a reserved keyword in sqlite.
+bool isKeywordLexeme(String name) => keywords.containsKey(name.toUpperCase());
 
 class Token implements SyntacticEntity {
   final TokenType type;

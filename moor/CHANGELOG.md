@@ -1,3 +1,25 @@
+## 2.3.0
+
+- New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for
+  each row. For instance, you can generate a uuid for each row with `text().clientDefault(() => Uuid().v4()();`
+- New CLI tool to analyze moor files: Learn more at [https://moor.simonbinder.eu/cli](https://moor.simonbinder.eu/cli)
+- Ability to override the default `ValueSerializer` globally by using `moorRuntimeOptions.valueSerializer`.
+- Moor files: You can now explicitly declare column types in those cases that the analyzer can't
+  infer it:
+  ```
+  selectVariable(:variable AS TEXT): SELECT :variable;
+  ```
+- Support for triggers and indices! You can declare them in a `.moor` file with a regular `CREATE TRIGGER`
+  or `CREATE INDEX` statement. Both triggers and indices will be created in the default `onCreate` function.
+  To create them in `onUpgrade`, use the new `createIndex` and `createTrigger` functions on a `Migrator`.
+- Support for moor-file queries that run on initialization ([#280](https://github.com/simolus3/moor/issues/280))
+  Declare them like this `@create: INSERT INTO users VALUES ('default', 'user')`
+- Support deletes in batches ([#325](https://github.com/simolus3/moor/issues/325))
+- Reduce unnecessary queries when a stream is unsubscribed and then re-subscribed ([#329](https://github.com/simolus3/moor/issues/329))
+- Experimental new type inference for the sql analyzer. For details, check the
+  `use_experimental_inference` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/)
+- Web: New `initializer` parameter to create the database when it doesn't exist
+  
 ## 2.2.0
 
 - Support custom expressions for selects in the Dart API:

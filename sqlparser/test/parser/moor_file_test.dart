@@ -15,6 +15,7 @@ CREATE TABLE tbl (
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
+typeHints(:foo AS TEXT): SELECT :foo;
 ''';
 
 void main() {
@@ -68,7 +69,46 @@ void main() {
             from: [TableReference('tbl', null)],
           ),
         ),
+        DeclaredStatement(
+          SimpleName('typeHints'),
+          SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+            ),
+          ]),
+          parameters: [
+            VariableTypeHint(
+              ColonNamedVariable(
+                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+              ),
+              'TEXT',
+            )
+          ],
+        ),
       ]),
+    );
+  });
+
+  test("reports error when the statement can't be parsed", () {
+    // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
+    final parsed = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+        .parseMoorFile('name: NSERT INTO foo DEFAULT VALUES;');
+
+    expect(
+      parsed.errors,
+      contains(const TypeMatcher<ParsingError>().having(
+        (e) => e.message,
+        'message',
+        contains('Expected a sql statement here'),
+      )),
+    );
+
+    final root = parsed.rootNode as MoorFile;
+    expect(
+      root.allDescendants,
+      isNot(contains(const TypeMatcher<DeclaredStatement>())),
     );
   });
 }

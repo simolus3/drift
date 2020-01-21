@@ -20,6 +20,8 @@ class MoorParser {
     final queryDeclarations = <DeclaredMoorQuery>[];
     final importStatements = <ImportStatement>[];
 
+    final createdEntities = <MoorSchemaEntity>[];
+
     for (final parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
@@ -27,9 +29,27 @@ class MoorParser {
         importStatements.add(importStmt);
       } else if (parsedStmt is TableInducingStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
+      } else if (parsedStmt is CreateTriggerStatement) {
+        // the table will be resolved in the analysis step
+        createdEntities.add(MoorTrigger.fromMoor(parsedStmt, step.file));
+      } else if (parsedStmt is CreateIndexStatement) {
+        createdEntities.add(MoorIndex.fromMoor(parsedStmt, step.file));
       } else if (parsedStmt is DeclaredStatement) {
         if (parsedStmt.isRegularQuery) {
           queryDeclarations.add(DeclaredMoorQuery.fromStatement(parsedStmt));
+        } else {
+          final identifier =
+              parsedStmt.identifier as SpecialStatementIdentifier;
+          if (identifier.specialName != 'create') {
+            step.reportError(
+              ErrorInMoorFile(
+                span: identifier.nameToken.span,
+                message: 'Only @create is supported at the moment.',
+              ),
+            );
+          } else {
+            createdEntities.add(SpecialQuery.fromMoor(parsedStmt, step.file));
+          }
         }
       }
     }
@@ -42,20 +62,18 @@ class MoorParser {
       ));
     }
 
-    final createdTables = <MoorTable>[];
     final tableDeclarations = <TableInducingStatement, MoorTable>{};
     for (final reader in createdReaders) {
       final table = reader.extractTable(step.mapper);
-      createdTables.add(table);
+      createdEntities.add(table);
       tableDeclarations[reader.stmt] = table;
     }
 
     final analyzedFile = ParsedMoorFile(
       result,
-      declaredTables: createdTables,
+      declaredEntities: createdEntities,
       queries: queryDeclarations,
       imports: importStatements,
-      tableDeclarations: tableDeclarations,
     );
     for (final decl in queryDeclarations) {
       decl.file = analyzedFile;

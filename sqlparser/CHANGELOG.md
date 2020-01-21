@@ -1,3 +1,12 @@
+## 0.6.0
+
+- __Breaking:__ Added an argument type and argument to the visitor classes
+- Experimental new type inference algorithm 
+(`SqlEngine.withOptions(EngineOptions(enableExperimentalTypeInference: true))`)
+- Support `CAST` expressions and the `ISNULL` / `NOTNULL` postfixes
+- Support parsing `CREATE TRIGGER` statements
+- Support parsing `CREATE INDEX` statements
+
 ## 0.5.0
 - Optionally support the `json1` module
 - Optionally support the `fts5` module
@@ -14,7 +23,6 @@
 - some features that are specific to moor
 
 __0.3.0+1__: Accept `\r` characters as whitespace
-
 
 ## 0.2.0
 - Parse `CREATE TABLE` statements

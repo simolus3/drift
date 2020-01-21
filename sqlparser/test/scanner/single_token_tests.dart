@@ -37,6 +37,7 @@ Map<String, TokenType> testCases = {
   '>': TokenType.more,
   '!=': TokenType.exclamationEqual,
   "'hello there'": TokenType.stringLiteral,
+  "''": TokenType.stringLiteral,
   '1.123': TokenType.numberLiteral,
   '1.32e5': TokenType.numberLiteral,
   '.123e-3': TokenType.numberLiteral,
@@ -46,10 +47,35 @@ Map<String, TokenType> testCases = {
   '"UPDATE"': TokenType.identifier,
   '@foo': TokenType.atSignVariable,
   ':named': TokenType.colonVariable,
+  '"spo\uD83C\uDF83ky"': TokenType.identifier,
 };
 
 void main() {
   test('parses single tokens', () {
     testCases.forEach(expectFullToken);
+  });
+
+  test('can escape strings', () {
+    final scanner = Scanner("'what''s up'");
+    scanner.scanTokens();
+
+    expect(scanner.tokens, hasLength(2)); // eof token at the end
+    expect(
+      scanner.tokens.first,
+      const TypeMatcher<StringLiteralToken>()
+          .having((token) => token.value, 'value', "what's up"),
+    );
+    expect(scanner.tokens[1].type, TokenType.eof);
+  });
+
+  test('issues error for unterminated string literals', () {
+    final scanner = Scanner("'unterminated");
+    scanner.scanTokens();
+
+    expect(
+      scanner.errors,
+      contains(const TypeMatcher<TokenizerError>()
+          .having((e) => e.message, 'message', 'Unterminated string')),
+    );
   });
 }

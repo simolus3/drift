@@ -22,7 +22,9 @@ class MoorError {
 
   @override
   String toString() {
-    return 'Error: $message';
+    final builder = StringBuffer();
+    writeDescription((msg, [_, __]) => builder.writeln(msg));
+    return 'Error: $builder';
   }
 
   void writeDescription(LogFunction log) {

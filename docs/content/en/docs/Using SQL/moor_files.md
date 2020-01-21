@@ -42,6 +42,9 @@ CREATE TABLE categories (
     description TEXT NOT NULL
 ) AS Category; -- the AS xyz after the table defines the data class name
 
+-- You can also create an index or triggers with moor files
+CREATE INDEX categories_description ON categories(description);
+
 -- we can put named sql queries in here as well:
 createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
 deleteById: DELETE FROM todos WHERE id = :id;
@@ -77,6 +80,13 @@ and colon-named variables (`:id`). We don't support variables declared
 with @ or $. The compiler will attempt to infer the variable's type by
 looking at its context. This lets moor generate typesafe apis for your
 queries, the variables will be written as parameters to your method.
+
+When it's ambigous, the analyzer might be unable to resolve the type of
+a variable. For those scenarios, you can also denote the explicit type
+of a variable:
+```sql
+myQuery(:variable AS TEXT): SELECT :variable;
+```
 
 ### Arrays
 If you want to check whether a value is in an array of values, you can
@@ -177,11 +187,12 @@ At the moment, the following statements can appear in a `.moor` file.
 
 - `import 'other.moor'`: Import all tables and queries declared in the other file
    into the current file.
-- DDL statements (`CREATE TABLE`): Declares a table. We don't currently support indices and views,
-   [#162](https://github.com/simolus3/moor/issues/162) tracks support for that.
+- DDL statements: You can put `CREATE TABLE`, `CREATE INDEX` and `CREATE TRIGGER` statements
+  into moor files. Views are not currently supported, but [#162](https://github.com/simolus3/moor/issues/162)
+  tracks support for them.
 - Query statements: We support `INSERT`, `SELECT`, `UPDATE` and `DELETE` statements.
 
-All imports must come before DDL statements, and those must come before the named queries.
+All imports must come before DDL statements, and those must come before named queries.
 
 If you need support for another statement, or if moor rejects a query you think is valid, please
 create an issue!

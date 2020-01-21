@@ -205,21 +205,41 @@ mixin ExpressionParser on ParserBase {
   }
 
   Expression _postfix() {
-    // todo parse ISNULL, NOTNULL, NOT NULL, etc.
-    // I don't even know the precedence ¯\_(ツ)_/¯ (probably not higher than
-    // unary)
     var expression = _primary();
 
-    while (_matchOne(TokenType.collate)) {
-      final collateOp = _previous;
-      final collateFun =
-          _consume(TokenType.identifier, 'Expected a collating sequence')
-              as IdentifierToken;
-      expression = CollateExpression(
-        inner: expression,
-        operator: collateOp,
-        collateFunction: collateFun,
-      )..setSpan(expression.first, collateFun);
+    // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
+    // with NOT BETWEEN / NOT IN / ... expressions
+    const matchedTokens = [
+      TokenType.collate,
+      TokenType.notNull,
+      TokenType.isNull
+    ];
+
+    while (_match(matchedTokens)) {
+      final operator = _previous;
+      switch (operator.type) {
+        case TokenType.collate:
+          final collateOp = _previous;
+          final collateFun =
+              _consume(TokenType.identifier, 'Expected a collating sequence')
+                  as IdentifierToken;
+          expression = CollateExpression(
+            inner: expression,
+            operator: collateOp,
+            collateFunction: collateFun,
+          );
+          break;
+        case TokenType.isNull:
+          expression = IsNullExpression(expression);
+          break;
+        case TokenType.notNull:
+          expression = IsNullExpression(expression, true);
+          break;
+        default:
+          // we checked with _match, this may never happen
+          throw AssertionError();
+      }
+      expression.setSpan(operator, _previous);
     }
 
     return expression;
@@ -284,7 +304,7 @@ mixin ExpressionParser on ParserBase {
       final first = _consumeIdentifier(
           'This error message should never be displayed. Please report.');
 
-      // could be table.column, function(...) or just column
+      // could be table.column, function(...), cast(...) or just column
       if (_matchOne(TokenType.dot)) {
         final second =
             _consumeIdentifier('Expected a column name here', lenient: true);
@@ -292,17 +312,28 @@ mixin ExpressionParser on ParserBase {
             tableName: first.identifier, columnName: second.identifier)
           ..setSpan(first, second);
       } else if (_matchOne(TokenType.leftParen)) {
-        final parameters = _functionParameters();
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
+        if (first.identifier.toLowerCase() == 'cast') {
+          final operand = expression();
+          _consume(TokenType.as, 'Expected AS operator here');
+          final type = _typeName();
+          final typeName = type.lexeme;
+          _consume(TokenType.rightParen, 'Expected closing bracket here');
 
-        if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-          return _aggregate(first, parameters);
+          return CastExpression(operand, typeName)..setSpan(first, _previous);
+        } else {
+          // regular function invocation
+          final parameters = _functionParameters();
+          final rightParen = _consume(TokenType.rightParen,
+              'Expected closing bracket after argument list');
+
+          if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+            return _aggregate(first, parameters);
+          }
+
+          return FunctionExpression(
+              name: first.identifier, parameters: parameters)
+            ..setSpan(first, rightParen);
         }
-
-        return FunctionExpression(
-            name: first.identifier, parameters: parameters)
-          ..setSpan(first, rightParen);
       } else {
         return Reference(columnName: first.identifier)..setSpan(first, first);
       }
@@ -311,6 +342,7 @@ mixin ExpressionParser on ParserBase {
     _error('Could not parse this expression');
   }
 
+  @override
   Variable _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
       return NumberedVariable(_previous as QuestionMarkVariableToken)
@@ -324,22 +356,27 @@ mixin ExpressionParser on ParserBase {
 
   FunctionParameters _functionParameters() {
     if (_matchOne(TokenType.star)) {
-      return const StarFunctionParameter();
+      return StarFunctionParameter()
+        ..starToken = _previous
+        ..setSpan(_previous, _previous);
     }
 
     if (_check(TokenType.rightParen)) {
-      // nothing between the brackets -> empty parameter list
-      return ExprFunctionParameters(parameters: const []);
+      // nothing between the brackets -> empty parameter list. We mark it as
+      // synthetic because it has an empty span in the file
+      return ExprFunctionParameters(parameters: const [])..synthetic = true;
     }
 
     final distinct = _matchOne(TokenType.distinct);
     final parameters = <Expression>[];
+    final first = _peek;
 
     do {
       parameters.add(expression());
     } while (_matchOne(TokenType.comma));
 
-    return ExprFunctionParameters(distinct: distinct, parameters: parameters);
+    return ExprFunctionParameters(distinct: distinct, parameters: parameters)
+      ..setSpan(first, _previous);
   }
 
   AggregateExpression _aggregate(

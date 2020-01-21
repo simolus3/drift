@@ -29,7 +29,13 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
 
   /// A list of tables specified in this database.
-  List<TableInfo> get allTables;
+  Iterable<TableInfo> get allTables;
+
+  /// A list of all [DatabaseSchemaEntity] that are specified in this database.
+  ///
+  /// This contains [allTables], but also advanced entities like triggers.
+  // return allTables for backwards compatibility
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => allTables;
 
   /// A [Type] can't be sent across isolates. Instances of this class shouldn't
   /// be sent over isolates either, so let's keep a reference to a [Type] that
@@ -126,6 +132,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await executor.close();
+    await streamQueries.close();
 
     if (_openedDbCount[runtimeType] != null) {
       _openedDbCount[runtimeType]--;

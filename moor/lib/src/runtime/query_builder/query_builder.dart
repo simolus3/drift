@@ -28,6 +28,7 @@ part 'expressions/text.dart';
 part 'expressions/variables.dart';
 
 part 'schema/columns.dart';
+part 'schema/entities.dart';
 part 'schema/table_info.dart';
 
 part 'statements/select/custom_select.dart';

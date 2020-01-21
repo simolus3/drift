@@ -63,6 +63,18 @@ void main() {
     verifyNoMoreInteractions(executor);
   });
 
+  test('same stream emits cached data when listening twice', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final stream = db.select(db.users).watch();
+    expect(await stream.first, isEmpty);
+
+    clearInteractions(executor);
+
+    await stream.first;
+    verifyNever(executor.runSelect(any, any));
+  });
+
   group('updating clears cached data', () {
     test('when an older stream is no longer listened to', () async {
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
@@ -187,11 +199,17 @@ void main() {
       verifyNever(executor.runSelect(any, any));
     });
 
-    test('when the data updates after the listener has detached', () {
+    test('when the data updates after the listener has detached', () async {
       final subscription = db.select(db.users).watch().listen((_) {});
       clearInteractions(executor);
 
-      subscription.cancel();
+      await subscription.cancel();
+
+      // The stream is kept open for the rest of this event iteration
+      final completer = Completer.sync();
+      Timer.run(completer.complete);
+      await completer.future;
+
       db.markTablesUpdated({db.users});
 
       verifyNever(executor.runSelect(any, any));

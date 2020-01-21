@@ -35,7 +35,7 @@ final Map<String, Expression> _testCases = {
     token(TokenType.doubleEqual),
     FunctionExpression(
       name: 'COUNT',
-      parameters: const StarFunctionParameter(),
+      parameters: StarFunctionParameter(),
     ),
   ),
   '? * ?3 + ?2 == :test': BinaryExpression(
@@ -136,6 +136,16 @@ final Map<String, Expression> _testCases = {
       ],
     ),
   ),
+  'CAST(3 + 4 AS TEXT)': CastExpression(
+    BinaryExpression(
+      NumericLiteral(3.0, token(TokenType.numberLiteral)),
+      token(TokenType.plus),
+      NumericLiteral(4.0, token(TokenType.numberLiteral)),
+    ),
+    'TEXT',
+  ),
+  'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
+  'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
 };
 
 void main() {

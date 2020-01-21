@@ -15,7 +15,9 @@ class ForeignKeyClause extends AstNode {
       this.onUpdate});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitForeignKeyClause(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitForeignKeyClause(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [foreignTable, ...columnNames];
@@ -28,11 +30,14 @@ class ForeignKeyClause extends AstNode {
 
 abstract class TableConstraint extends AstNode {
   final String name;
+  Token nameToken;
 
   TableConstraint(this.name);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitTableConstraint(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitTableConstraint(this, arg);
+  }
 
   @override
   bool contentEquals(TableConstraint other) {

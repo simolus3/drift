@@ -1,7 +1,7 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
-import 'data.dart';
+import '../data.dart';
 
 Map<String, ResolveResult> _types = {
   'SELECT * FROM demo WHERE id = ?':
@@ -30,6 +30,10 @@ Map<String, ResolveResult> _types = {
   'SELECT row_number() OVER (RANGE ? PRECEDING)':
       const ResolveResult(ResolvedType(type: BasicType.int)),
   'SELECT ?;': const ResolveResult.unknown(),
+  'SELECT CAST(3 AS TEXT) = ?':
+      const ResolveResult(ResolvedType(type: BasicType.text)),
+  'SELECT (3 * 4) = ?': const ResolveResult(ResolvedType(type: BasicType.int)),
+  'SELECT (3 / 4) = ?': const ResolveResult(ResolvedType(type: BasicType.int)),
 };
 
 void main() {
@@ -76,7 +80,8 @@ void main() {
   });
 
   test('can infer types for dart placeholder', () {
-    final ctx = (SqlEngine(useMoorExtensions: true)..registerTable(demoTable))
+    final ctx = (SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+          ..registerTable(demoTable))
         .analyze(r'SELECT * FROM demo WHERE $expr');
 
     final dartExpr =
@@ -84,5 +89,18 @@ void main() {
 
     expect(ctx.typeOf(dartExpr as Expression),
         const ResolveResult(ResolvedType.bool()));
+  });
+
+  test('respects explicit types for variables', () {
+    final ctx =
+        SqlEngine.withOptions(EngineOptions(useMoorExtensions: true)).analyze(
+      'SELECT ?',
+      stmtOptions: const AnalyzeStatementOptions(indexedVariableTypes: {
+        1: ResolvedType.bool(),
+      }),
+    );
+
+    final variable = ctx.root.allDescendants.whereType<Variable>().single;
+    expect(ctx.typeOf(variable), const ResolveResult(ResolvedType.bool()));
   });
 }

@@ -16,7 +16,9 @@ class ColumnDefinition extends AstNode {
       this.constraints = const []});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitColumnDefinition(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitColumnDefinition(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => constraints;
@@ -43,7 +45,9 @@ abstract class ColumnConstraint extends AstNode {
   ColumnConstraint(this.name);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitColumnConstraint(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitColumnConstraint(this, arg);
+  }
 
   T when<T>({
     T Function(NotNull) notNull,

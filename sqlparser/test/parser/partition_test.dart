@@ -22,7 +22,7 @@ final Map<String, Expression> _testCases = {
           'GROUPS BETWEEN UNBOUNDED PRECEDING AND 3 FOLLOWING EXCLUDE TIES)':
       AggregateExpression(
     function: identifier('row_number'),
-    parameters: const StarFunctionParameter(),
+    parameters: StarFunctionParameter(),
     filter: NumericLiteral(1, token(TokenType.numberLiteral)),
     windowDefinition: WindowDefinition(
       baseWindowName: 'base_name',

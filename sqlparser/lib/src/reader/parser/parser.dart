@@ -115,6 +115,7 @@ abstract class ParserBase {
   }
 
   bool _check(TokenType type) {
+    if (_reportAutoComplete) _suggestHintForToken(type);
     if (_isAtEnd) return false;
     return _peek.type == type;
   }
@@ -156,11 +157,18 @@ abstract class ParserBase {
     if (next is KeywordToken && (next.canConvertToIdentifier() || lenient)) {
       return (_advance() as KeywordToken).convertToIdentifier();
     }
+
+    if (next is KeywordToken) {
+      message = '$message (got keyword ${reverseKeywords[next.type]})';
+    }
+
     return _consume(TokenType.identifier, message) as IdentifierToken;
   }
 
   // Common operations that we are referenced very often
   Expression expression();
+
+  List<Token> _typeName();
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well.
@@ -183,11 +191,31 @@ abstract class ParserBase {
   /// [s-d]: https://sqlite.org/syntax/select-stmt.html
   BaseSelectStatement _fullSelect();
 
+  Variable _variableOrNull();
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();
 
   /// https://www.sqlite.org/syntax/window-defn.html
   WindowDefinition _windowDefinition();
+
+  /// Parses a block, which consists of statements between `BEGIN` and `END`.
+  Block _consumeBlock();
+
+  /// Skips all tokens until it finds one with [type]. If [skipTarget] is true,
+  /// that token will be skipped as well.
+  ///
+  /// When using `_synchronize(TokenType.semicolon, skipTarget: true)`,
+  /// this will move the parser to the next statement, which can be useful for
+  /// error recovery.
+  void _synchronize(TokenType type, {bool skipTarget = false}) {
+    if (skipTarget) {
+      while (!_isAtEnd && _advance().type != type) {}
+    } else {
+      while (!_isAtEnd && !_check(type)) {
+        _advance();
+      }
+    }
+  }
 }
 
 class Parser extends ParserBase
@@ -202,7 +230,7 @@ class Parser extends ParserBase
   Statement statement() {
     final first = _peek;
     Statement stmt = _crud();
-    stmt ??= _createTable();
+    stmt ??= _create();
 
     if (enableMoorExtensions) {
       stmt ??= _import() ?? _declaredStatement();
@@ -236,9 +264,9 @@ class Parser extends ParserBase
     }
 
     // next, table declarations
-    for (var stmt = _parseAsStatement(_createTable);
+    for (var stmt = _parseAsStatement(_create);
         stmt != null || _lastStmtHadParsingError;
-        stmt = _parseAsStatement(_createTable)) {
+        stmt = _parseAsStatement(_create)) {
       foundComponents.add(stmt);
     }
 
@@ -295,11 +323,44 @@ class Parser extends ParserBase
       return null;
     }
 
+    final parameters = <StatementParameter>[];
+    if (_matchOne(TokenType.leftParen)) {
+      do {
+        final first = _peek;
+        final variable = _variableOrNull();
+        if (variable == null) {
+          _error('Expected a variable here');
+        }
+        final as = _consume(TokenType.as, 'Expected AS followed by a type');
+
+        final typeNameTokens = _typeName();
+        if (typeNameTokens == null) {
+          _error('Expected a type name here');
+        }
+
+        final typeName = typeNameTokens.lexeme;
+        parameters.add(VariableTypeHint(variable, typeName)
+          ..as = as
+          ..setSpan(first, _previous));
+      } while (_matchOne(TokenType.comma));
+
+      _consume(TokenType.rightParen, 'Expected closing parenthesis');
+    }
+
     final colon =
         _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
     final stmt = _crud();
 
-    return DeclaredStatement(identifier, stmt)..colon = colon;
+    if (stmt == null) {
+      _error(
+          'Expected a sql statement here (SELECT, UPDATE, INSERT or DELETE)');
+    }
+
+    return DeclaredStatement(
+      identifier,
+      stmt,
+      parameters: parameters,
+    )..colon = colon;
   }
 
   /// Invokes [parser], sets the appropriate source span and attaches a
@@ -310,11 +371,11 @@ class Parser extends ParserBase
     T result;
     try {
       result = parser();
-    } on ParsingError catch (_) {
+    } on ParsingError {
       _lastStmtHadParsingError = true;
-      // the error is added to the list errors, so ignore. We skip to the next
-      // semicolon to parse the next statement.
-      _synchronize();
+      // the error is added to the list errors, so ignore. We skip after the
+      // next semicolon to parse the next statement.
+      _synchronize(TokenType.semicolon, skipTarget: true);
     }
 
     if (result == null) return null;
@@ -327,8 +388,26 @@ class Parser extends ParserBase
     return result;
   }
 
-  void _synchronize() {
-    // fast-forward to the token after th next semicolon
-    while (!_isAtEnd && _advance().type != TokenType.semicolon) {}
+  @override
+  Block _consumeBlock() {
+    final begin = _consume(TokenType.begin, 'Expected BEGIN');
+    final stmts = <CrudStatement>[];
+
+    for (var stmt = _parseAsStatement(_crud);
+        stmt != null || _lastStmtHadParsingError;
+        stmt = _parseAsStatement(_crud)) {
+      if (stmt != null) stmts.add(stmt);
+    }
+
+    final end = _consume(TokenType.end, 'Expected END');
+
+    return Block(stmts)
+      ..setSpan(begin, end)
+      ..begin = begin
+      ..end = end;
   }
+}
+
+extension on List<Token> {
+  String get lexeme => first.span.expand(last.span).text;
 }

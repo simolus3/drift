@@ -129,7 +129,7 @@ type of transformation, RxDart's `switchMap` comes in handy:
 ```dart
 Stream<List<CartWithItems>> watchAllCarts() {
   // start by watching all carts
-  final cartStream = Observable(select(shoppingCarts).watch());
+  final cartStream = select(shoppingCarts).watch();
 
   return cartStream.switchMap((carts) {
     // this method is called whenever the list of carts changes. For each
@@ -146,7 +146,7 @@ Stream<List<CartWithItems>> watchAllCarts() {
           buyableItems.id.equalsExp(shoppingCartEntries.item),
         )
       ],
-    )..where(isIn(shoppingCartEntries.shoppingCart, ids));
+    )..where(shoppingCartEntries.shoppingCart.isIn(ids));
 
     return entryQuery.watch().map((rows) {
       // Store the list of entries for each cart, again using maps for faster

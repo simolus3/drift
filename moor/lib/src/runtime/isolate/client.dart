@@ -65,16 +65,22 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) {
-    return client._channel.request(_ExecuteBatchedStatement(statements));
+    return client._channel
+        .request(_ExecuteBatchedStatement(statements, _transactionId));
   }
 
   Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
-    return client._channel.request<T>(_ExecuteQuery(method, sql, args));
+    return client._channel
+        .request<T>(_ExecuteQuery(method, sql, args, _transactionId));
   }
 
   @override
   Future<void> runCustom(String statement, [List args]) {
-    return _runRequest(_StatementMethod.custom, statement, args);
+    return _runRequest(
+      _StatementMethod.custom,
+      statement,
+      args,
+    );
   }
 
   @override
@@ -128,7 +134,7 @@ class _TransactionIsolateExecutor extends _BaseExecutor
     implements TransactionExecutor {
   _TransactionIsolateExecutor(_MoorClient client) : super(client);
 
-  bool _pendingOpen = false;
+  Completer<bool> _pendingOpen;
 
   // nested transactions aren't supported
   @override
@@ -136,17 +142,14 @@ class _TransactionIsolateExecutor extends _BaseExecutor
 
   @override
   Future<bool> ensureOpen() {
-    if (_transactionId == null && !_pendingOpen) {
-      _pendingOpen = true;
-      return _openAtServer().then((_) => true);
-    }
-    return Future.value(true);
+    _pendingOpen ??= Completer()..complete(_openAtServer());
+    return _pendingOpen.future;
   }
 
-  Future _openAtServer() async {
+  Future<bool> _openAtServer() async {
     _transactionId =
         await client._channel.request(_NoArgsRequest.startTransaction) as int;
-    _pendingOpen = false;
+    return true;
   }
 
   Future<void> _sendAction(_TransactionControl action) {

@@ -1,26 +1,28 @@
-import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:test/test.dart';
 
-void main() {
-  test('suggests a CREATE TABLE statements for an empty file', () {
-    final engine = SqlEngine(useMoorExtensions: true);
-    final parseResult = engine.parseMoorFile('');
+import 'utils.dart';
 
-    final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
+void main() {
+  test('suggests a CREATE an empty file', () {
+    final suggestions = completionsFor('^');
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE')));
+    expect(suggestions, suggests('CREATE'));
   });
 
-  test('suggests completions for started expressions', () {
-    final engine = SqlEngine(useMoorExtensions: true);
-    final parseResult = engine.parseMoorFile('creat');
+  test('suggests CREATE TABLE completion after CREATE', () async {
+    final suggestions = completionsFor('CREATE ^');
 
-    final suggestions = parseResult.autoCompleteEngine.suggestCompletions(0);
+    expect(suggestions.anchor, 7);
+    expect(suggestions, suggests('TABLE'));
+  });
+
+  test('suggests completions for started keywords', () {
+    final suggestions = completionsFor('creat^');
 
     expect(suggestions.anchor, 0);
-    expect(suggestions.suggestions, contains(hasCode('CREATE')));
+    expect(suggestions, suggests('CREATE'));
   });
 }
 

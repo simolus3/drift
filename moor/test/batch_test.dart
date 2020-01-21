@@ -37,6 +37,9 @@ void main() {
         CategoriesCompanion(id: Value(1), description: Value('new1')),
         CategoriesCompanion(id: Value(2), description: Value('new2')),
       ]);
+
+      b.deleteWhere(db.categories, (_) => const Constant(true));
+      b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
     });
 
     final transaction = executor.transactions;
@@ -65,6 +68,16 @@ void main() {
         [
           ['new1', 1],
           ['new2', 2],
+        ],
+      ),
+      BatchedStatement(
+        'DELETE FROM categories WHERE 1;',
+        [[]],
+      ),
+      BatchedStatement(
+        'DELETE FROM todos WHERE id = ?;',
+        [
+          [3]
         ],
       ),
     ]));

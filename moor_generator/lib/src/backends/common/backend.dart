@@ -12,7 +12,10 @@ class CommonBackend extends Backend {
 
   @override
   Uri resolve(Uri base, String import) {
-    return Uri.parse(driver.absolutePath(Uri.parse(import), base: base));
+    final absolute = driver.absolutePath(Uri.parse(import), base: base);
+    if (absolute == null) return null;
+
+    return Uri.parse(absolute);
   }
 }
 

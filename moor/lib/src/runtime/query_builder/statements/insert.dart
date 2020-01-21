@@ -93,8 +93,25 @@ class InsertStatement<D extends DataClass> {
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode) {
     _validateIntegrity(entry);
-    final map = table.entityToSql(entry.createCompanion(true))
-      ..removeWhere((_, value) => value == null);
+
+    final rawValues = table.entityToSql(entry.createCompanion(true));
+
+    // apply default values for columns that have one
+    final map = <String, Variable>{};
+    for (final column in table.$columns) {
+      final columnName = column.$name;
+
+      if (rawValues.containsKey(columnName)) {
+        map[columnName] = rawValues[columnName];
+      } else {
+        if (column.clientDefault != null) {
+          map[columnName] = column._evaluateClientDefault();
+        }
+      }
+
+      // column not set, and doesn't have a client default. So just don't
+      // include this column
+    }
 
     final ctx = GenerationContext.fromDb(database);
     ctx.buffer

@@ -32,7 +32,9 @@ class UpdateStatement extends CrudStatement implements HasWhereClause {
       : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitUpdateStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitUpdateStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [
@@ -59,7 +61,9 @@ class SetComponent extends AstNode {
   SetComponent({@required this.column, @required this.expression});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitSetComponent(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSetComponent(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [column, expression];

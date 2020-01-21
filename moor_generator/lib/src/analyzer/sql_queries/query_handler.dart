@@ -30,7 +30,7 @@ class QueryHandler {
     _verifyNoSkippedIndexes();
     final query = _mapToMoor();
 
-    final linter = Linter(this);
+    final linter = Linter.forHandler(this);
     linter.reportLints();
     query.lints = linter.lints;
 
@@ -53,7 +53,7 @@ class QueryHandler {
 
   UpdatingQuery _handleUpdate() {
     final updatedFinder = UpdatedTablesVisitor();
-    context.root.accept(updatedFinder);
+    context.root.acceptWithoutArg(updatedFinder);
     _foundTables = updatedFinder.writtenTables;
 
     final isInsert = context.root is InsertStatement;
@@ -70,7 +70,7 @@ class QueryHandler {
 
   SqlSelectQuery _handleSelect() {
     final tableFinder = ReferencedTablesVisitor();
-    _select.accept(tableFinder);
+    _select.acceptWithoutArg(tableFinder);
     _foundTables = tableFinder.foundTables;
     final moorTables =
         _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();

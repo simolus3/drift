@@ -55,6 +55,7 @@ abstract class BenchmarkBase implements Reportable {
     return result;
   }
 
+  @override
   void report() {
     emitter.emit(name, measure());
   }
@@ -107,6 +108,7 @@ abstract class AsyncBenchmarkBase implements Reportable {
     }
   }
 
+  @override
   Future<void> report() async {
     emitter.emit(name, await measure());
   }

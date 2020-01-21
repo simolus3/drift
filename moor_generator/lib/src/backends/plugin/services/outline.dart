@@ -16,12 +16,12 @@ class MoorOutlineContributor implements OutlineContributor {
     if (moorRequest.isMoorAndParsed) {
       final visitor = _OutlineVisitor(moorRequest, collector);
 
-      moorRequest.parsedMoor.parsedFile.accept(visitor);
+      moorRequest.parsedMoor.parsedFile.acceptWithoutArg(visitor);
     }
   }
 }
 
-class _OutlineVisitor extends RecursiveVisitor<void> {
+class _OutlineVisitor extends RecursiveVisitor<void, void> {
   final MoorRequest request;
   final OutlineCollector collector;
 
@@ -40,33 +40,52 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitCreateTableStatement(CreateTableStatement e) {
+  void visitCreateTableStatement(CreateTableStatement e, void arg) {
     _startElement(ElementKind.CLASS, e.tableName, e);
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
     collector.endElement();
   }
 
   @override
-  void visitColumnDefinition(ColumnDefinition e) {
+  void visitCreateVirtualTableStatement(
+      CreateVirtualTableStatement e, void arg) {
+    _startElement(ElementKind.CLASS, e.tableName, e);
+
+    // if the file is analyzed, we can report analyzed columns
+    final resolved = request.parsedMoor.declaredTables
+        ?.singleWhere((t) => t.sqlName == e.tableName, orElse: () => null);
+
+    if (resolved != null) {
+      for (final column in resolved.columns) {
+        _startElement(ElementKind.FIELD, column.name.name, e);
+        collector.endElement();
+      }
+    }
+
+    collector.endElement();
+  }
+
+  @override
+  void visitColumnDefinition(ColumnDefinition e, void arg) {
     // we use parameters instead of returnType because VS Code doesn't show
     // the return type but we'd really like it to be shown
     _startElement(ElementKind.FIELD, e.columnName, e).parameters = e.typeName;
 
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
     collector.endElement();
   }
 
   @override
-  void visitMoorFile(MoorFile e) {
+  void visitMoorFile(MoorFile e, void arg) {
     _startElement(ElementKind.LIBRARY, request.file.shortName, e);
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
     collector.endElement();
   }
 
   @override
-  void visitMoorDeclaredStatement(DeclaredStatement e) {
+  void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     if (!e.isRegularQuery) {
-      super.visitChildren(e);
+      super.visitChildren(e, arg);
       return;
     }
 
@@ -74,8 +93,9 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
     final element = _startElement(ElementKind.TOP_LEVEL_VARIABLE, name, e);
 
     // enrich information with variable types if the query has been analyzed.
+    // (resolvedQueries is null when the file isn't fully analyzed)
     final resolved = request.parsedMoor.resolvedQueries
-        .firstWhere((q) => q.name == name, orElse: () => null);
+        ?.firstWhere((q) => q.name == name, orElse: () => null);
 
     if (resolved != null) {
       final parameterBuilder = StringBuffer('(');
@@ -85,7 +105,7 @@ class _OutlineVisitor extends RecursiveVisitor<void> {
       element.parameters = parameterBuilder.toString();
     }
 
-    super.visitChildren(e);
+    super.visitChildren(e, arg);
     collector.endElement();
   }
 }

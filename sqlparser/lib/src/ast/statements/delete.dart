@@ -9,7 +9,9 @@ class DeleteStatement extends CrudStatement implements HasWhereClause {
       : super._(withClause);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitDeleteStatement(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitDeleteStatement(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [

@@ -23,20 +23,21 @@ class Category extends DataClass implements Insertable<Category> {
     );
   }
   factory Category.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
     );
   }
   factory Category.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       Category.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
@@ -137,14 +138,10 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
-    } else if (description.isRequired && isInserting) {
-      context.missing(_descriptionMeta);
     }
     return context;
   }
@@ -201,7 +198,8 @@ class Recipe extends DataClass implements Insertable<Recipe> {
     );
   }
   factory Recipe.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Recipe(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
@@ -210,12 +208,12 @@ class Recipe extends DataClass implements Insertable<Recipe> {
     );
   }
   factory Recipe.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       Recipe.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
@@ -363,13 +361,11 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
-    } else if (title.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (d.instructions.present) {
@@ -377,14 +373,12 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
           _instructionsMeta,
           instructions.isAcceptableValue(
               d.instructions.value, _instructionsMeta));
-    } else if (instructions.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_instructionsMeta);
     }
     if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
-    } else if (category.isRequired && isInserting) {
-      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -440,7 +434,8 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
     );
   }
   factory Ingredient.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Ingredient(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -448,13 +443,13 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
     );
   }
   factory Ingredient.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       Ingredient.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -579,13 +574,11 @@ class $IngredientsTable extends Ingredients
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
-    } else if (name.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (d.caloriesPer100g.present) {
@@ -593,7 +586,7 @@ class $IngredientsTable extends Ingredients
           _caloriesPer100gMeta,
           caloriesPer100g.isAcceptableValue(
               d.caloriesPer100g.value, _caloriesPer100gMeta));
-    } else if (caloriesPer100g.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_caloriesPer100gMeta);
     }
     return context;
@@ -651,7 +644,8 @@ class IngredientInRecipe extends DataClass
     );
   }
   factory IngredientInRecipe.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return IngredientInRecipe(
       recipe: serializer.fromJson<int>(json['recipe']),
       ingredient: serializer.fromJson<int>(json['ingredient']),
@@ -659,13 +653,13 @@ class IngredientInRecipe extends DataClass
     );
   }
   factory IngredientInRecipe.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       IngredientInRecipe.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'recipe': serializer.toJson<int>(recipe),
       'ingredient': serializer.toJson<int>(ingredient),
@@ -800,13 +794,13 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     if (d.recipe.present) {
       context.handle(
           _recipeMeta, recipe.isAcceptableValue(d.recipe.value, _recipeMeta));
-    } else if (recipe.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_recipeMeta);
     }
     if (d.ingredient.present) {
       context.handle(_ingredientMeta,
           ingredient.isAcceptableValue(d.ingredient.value, _ingredientMeta));
-    } else if (ingredient.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_ingredientMeta);
     }
     if (d.amountInGrams.present) {
@@ -814,7 +808,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
           _amountInGramsMeta,
           amountInGrams.isAcceptableValue(
               d.amountInGrams.value, _amountInGramsMeta));
-    } else if (amountInGrams.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_amountInGramsMeta);
     }
     return context;
@@ -884,7 +878,9 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables =>
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
       [categories, recipes, ingredients, ingredientInRecipes];
 }
 

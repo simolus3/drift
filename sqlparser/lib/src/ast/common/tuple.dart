@@ -12,10 +12,12 @@ class Tuple extends Expression {
   Tuple({@required this.expressions});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitTuple(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitTuple(this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => expressions;
+  List<Expression> get childNodes => expressions;
 
   @override
   bool contentEquals(Tuple other) => true;

@@ -35,16 +35,16 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// A [DeclaredQuery] read from a `.moor` file, where the AST is already
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
-  final AstNode query;
+  final DeclaredStatement astNode;
+  CrudStatement get query => astNode.statement;
   ParsedMoorFile file;
 
-  DeclaredMoorQuery(String name, this.query) : super(name);
+  DeclaredMoorQuery(String name, this.astNode) : super(name);
 
   factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
     assert(stmt.identifier is SimpleName);
     final name = (stmt.identifier as SimpleName).name;
-    final query = stmt.statement;
-    return DeclaredMoorQuery(name, query);
+    return DeclaredMoorQuery(name, stmt);
   }
 }
 

@@ -1,55 +1,91 @@
 part of '../ast.dart';
 // https://www.sqlite.org/syntax/literal-value.html
 
-abstract class Literal extends Expression {
+@optionalTypeArgs
+abstract class Literal<T> extends Expression {
   final Token token;
+  T get value;
 
   Literal(this.token);
-
-  @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitLiteral(this);
 
   @override
   final Iterable<AstNode> childNodes = const <AstNode>[];
 }
 
-class NullLiteral extends Literal {
+class NullLiteral<T> extends Literal {
   NullLiteral(Token token) : super(token);
+
+  @override
+  Null get value => null;
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitNullLiteral(this, arg);
+  }
 
   @override
   bool contentEquals(NullLiteral other) => true;
 }
 
-class NumericLiteral extends Literal {
-  final num number;
+class NumericLiteral extends Literal<num> {
+  @override
+  final num value;
 
-  bool get isInt => number.toInt() == number;
+  bool get isInt => value.toInt() == value;
 
-  NumericLiteral(this.number, Token token) : super(token);
+  NumericLiteral(this.value, Token token) : super(token);
 
   @override
-  bool contentEquals(NumericLiteral other) => other.number == number;
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitNumericLiteral(this, arg);
+  }
+
+  @override
+  bool contentEquals(NumericLiteral other) => other.value == value;
 }
 
-class BooleanLiteral extends NumericLiteral {
-  BooleanLiteral.withFalse(Token token) : super(0, token);
-  BooleanLiteral.withTrue(Token token) : super(1, token);
+class BooleanLiteral extends Literal<bool> {
+  @override
+  final bool value;
+
+  BooleanLiteral.withFalse(Token token)
+      : value = false,
+        super(token);
+  BooleanLiteral.withTrue(Token token)
+      : value = true,
+        super(token);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBooleanLiteral(this, arg);
+  }
+
+  @override
+  bool contentEquals(BooleanLiteral other) {
+    return other.value == value;
+  }
 }
 
 class StringLiteral extends Literal {
-  final String data;
+  @override
+  final String value;
   final bool isBinary;
 
   StringLiteral(StringLiteralToken token)
-      : data = token.value,
+      : value = token.value,
         isBinary = token.binary,
         super(token);
 
-  StringLiteral.from(Token token, this.data, {this.isBinary = false})
+  StringLiteral.from(Token token, this.value, {this.isBinary = false})
       : super(token);
 
   @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitStringLiteral(this, arg);
+  }
+
+  @override
   bool contentEquals(StringLiteral other) {
-    return other.isBinary == isBinary && other.data == data;
+    return other.isBinary == isBinary && other.value == value;
   }
 }

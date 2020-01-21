@@ -8,7 +8,9 @@ class CaseExpression extends Expression {
   CaseExpression({this.base, @required this.whens, this.elseExpr});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitCaseExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCaseExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes =>
@@ -25,7 +27,9 @@ class WhenComponent extends AstNode {
   WhenComponent({this.when, this.then});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitWhen(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitWhen(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [when, then];

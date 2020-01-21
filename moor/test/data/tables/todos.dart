@@ -1,4 +1,5 @@
 import 'package:moor/moor.dart';
+import 'package:uuid/uuid.dart';
 
 part 'todos.g.dart';
 
@@ -48,11 +49,14 @@ class SharedTodos extends Table {
       ];
 }
 
+final _uuid = Uuid();
+
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
 
-  TextColumn get custom => text().map(const CustomConverter())();
+  TextColumn get custom =>
+      text().map(const CustomConverter()).clientDefault(_uuid.v4)();
 }
 
 class PureDefaults extends Table with AutoIncrement {

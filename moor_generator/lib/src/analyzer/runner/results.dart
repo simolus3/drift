@@ -6,9 +6,11 @@ import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 abstract class FileResult {
-  final List<MoorTable> declaredTables;
+  final List<MoorSchemaEntity> declaredEntities;
 
-  FileResult(this.declaredTables);
+  Iterable<MoorTable> get declaredTables => declaredEntities.whereType();
+
+  FileResult(this.declaredEntities);
 }
 
 class ParsedDartFile extends FileResult {
@@ -35,14 +37,18 @@ class ParsedMoorFile extends FileResult {
   final List<ImportStatement> imports;
   final List<DeclaredQuery> queries;
 
+  /// Schema component that are neither tables nor queries. This can include
+  /// triggers or indexes.
+  final List<PartOfMoorFile> otherComponents;
+
   List<SqlQuery> resolvedQueries;
-  Map<TableInducingStatement, MoorTable> tableDeclarations;
   Map<ImportStatement, FoundFile> resolvedImports;
 
-  ParsedMoorFile(this.parseResult,
-      {List<MoorTable> declaredTables = const [],
-      this.queries = const [],
-      this.imports = const [],
-      this.tableDeclarations = const {}})
-      : super(declaredTables);
+  ParsedMoorFile(
+    this.parseResult, {
+    List<MoorSchemaEntity> declaredEntities = const [],
+    this.queries = const [],
+    this.imports = const [],
+    this.otherComponents = const [],
+  }) : super(declaredEntities);
 }

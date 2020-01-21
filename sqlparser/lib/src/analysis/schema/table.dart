@@ -31,7 +31,15 @@ class Table
     implements HumanReadable {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
+  ///
+  /// To obtain an escaped name, use [escapedName].
   final String name;
+
+  /// If [name] is a reserved sql keyword, wraps it in double ticks. Otherwise
+  /// just returns the [name] directly.
+  String get escapedName {
+    return isKeywordLexeme(name) ? '"$name"' : name;
+  }
 
   @override
   final List<TableColumn> resolvedColumns;

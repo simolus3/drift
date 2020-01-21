@@ -8,8 +8,10 @@ import 'package:moor_generator/src/backends/common/driver.dart';
 import 'package:moor_generator/src/backends/standalone.dart';
 import 'package:moor_generator/src/cli/project.dart';
 
+import 'commands/analyze.dart';
 import 'commands/debug_plugin.dart';
 import 'commands/identify_databases.dart';
+import 'commands/schema.dart';
 import 'logging.dart';
 
 Future run(List<String> args) {
@@ -37,9 +39,12 @@ class MoorCli {
     _runner = CommandRunner(
       'pub run moor_generator',
       'CLI utilities for the moor package, currently in an experimental state.',
+      usageLineLength: 80,
     )
+      ..addCommand(AnalyzeCommand(this))
       ..addCommand(IdentifyDatabases(this))
-      ..addCommand(DebugPluginCommand(this));
+      ..addCommand(DebugPluginCommand(this))
+      ..addCommand(SchemaCommand(this));
 
     _runner.argParser
         .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);
@@ -68,10 +73,20 @@ class MoorCli {
 
     await _runner.runCommand(results);
   }
+
+  void exit(String message) {
+    throw FatalToolError(message);
+  }
 }
 
 abstract class MoorCommand extends Command {
   final MoorCli cli;
 
   MoorCommand(this.cli);
+}
+
+class FatalToolError implements Exception {
+  final String message;
+
+  FatalToolError(this.message);
 }

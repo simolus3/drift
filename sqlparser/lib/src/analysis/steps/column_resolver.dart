@@ -4,23 +4,23 @@ part of '../analysis.dart';
 /// columns are returned and which columns are available. For instance, when
 /// we have a table "t" with two columns "a" and "b", the select statement
 /// "SELECT a FROM t" has one result column but two columns available.
-class ColumnResolver extends RecursiveVisitor<void> {
+class ColumnResolver extends RecursiveVisitor<void, void> {
   final AnalysisContext context;
 
   ColumnResolver(this.context);
 
   @override
-  void visitSelectStatement(SelectStatement e) {
+  void visitSelectStatement(SelectStatement e, void arg) {
     // visit children first so that common table expressions are resolved
-    visitChildren(e);
+    visitChildren(e, arg);
     _resolveSelect(e);
   }
 
   @override
-  void visitCompoundSelectStatement(CompoundSelectStatement e) {
+  void visitCompoundSelectStatement(CompoundSelectStatement e, void arg) {
     // first, visit all children so that the compound parts have their columns
     // resolved
-    visitChildren(e);
+    visitChildren(e, arg);
 
     final columnSets = [
       e.base.resolvedColumns,
@@ -55,8 +55,8 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitCommonTableExpression(CommonTableExpression e) {
-    visitChildren(e);
+  void visitCommonTableExpression(CommonTableExpression e, void arg) {
+    visitChildren(e, arg);
 
     final resolved = e.as.resolvedColumns;
     final names = e.columnNames;
@@ -71,25 +71,45 @@ class ColumnResolver extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitUpdateStatement(UpdateStatement e) {
+  void visitUpdateStatement(UpdateStatement e, void arg) {
     final table = _resolveTableReference(e.table);
     e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
     final table = _resolveTableReference(e.table);
-    visitChildren(e);
+    visitChildren(e, arg);
     e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitDeleteStatement(DeleteStatement e) {
+  void visitDeleteStatement(DeleteStatement e, void arg) {
     final table = _resolveTableReference(e.from);
     e.scope.availableColumns = table.resolvedColumns;
-    visitChildren(e);
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
+    final table = _resolveTableReference(e.onTable);
+    if (table == null) {
+      // further analysis is not really possible without knowing the table
+      super.visitCreateTriggerStatement(e, arg);
+      return;
+    }
+
+    final scope = e.scope;
+    if (e.target.introducesNew) {
+      scope.register('new', table);
+    }
+    if (e.target.introducesOld) {
+      scope.register('old', table);
+    }
+
+    visitChildren(e, arg);
   }
 
   void _handle(Queryable queryable, List<Column> availableColumns) {

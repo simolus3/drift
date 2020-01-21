@@ -104,6 +104,33 @@ class ColumnBuilder<
   Builder withDefault(Expression<ResultDartType, ResultSqlType> e) =>
       _isGenerated();
 
+  /// Sets a dynamic default value for this column.
+  ///
+  /// When a row is inserted into the table and no value has been specified for
+  /// this column, [onInsert] will be evaluated. Its return value will be used
+  /// for the missing column. [onInsert] may return different values when called
+  /// multiple times.
+  ///
+  /// Here's an example using the [uuid](https://pub.dev/packages/uuid) package:
+  ///
+  /// ```dart
+  /// final uuid = Uuid();
+  ///
+  /// class Pictures extends Table {
+  ///   TextColumn get id => text().clientDefault(() => uuid.v4())();
+  ///   BlobColumn get rawData => blob();
+  ///
+  ///   @override
+  ///   Set<Column> get primaryKey = {id};
+  /// }
+  /// ```
+  ///
+  /// For a default value that's constant, it is more efficient to use
+  /// [withDefault] instead. [withDefault] will write the default value into the
+  /// generated `CREATE TABLE` statement. The underlying sql engine will then
+  /// apply the default value.
+  Builder clientDefault(ResultDartType Function() onInsert) => _isGenerated();
+
   /// Uses a custom [converter] to store custom Dart objects in a single column
   /// and automatically mapping them from and to sql.
   ///

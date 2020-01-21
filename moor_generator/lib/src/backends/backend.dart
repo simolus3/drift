@@ -9,6 +9,8 @@ import 'package:logging/logging.dart';
 abstract class Backend {
   /// Resolves an [import] statement from the context of a [base] uri. This
   /// should support both relative and `package:` imports.
+  ///
+  /// Returns null if the url can't be resolved.
   Uri resolve(Uri base, String import);
 }
 

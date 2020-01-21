@@ -278,9 +278,10 @@ mixin CrudParser on ParserBase {
   }
 
   TableReference _tableReference() {
+    _suggestHint(const TableNameDescription());
     if (_matchOne(TokenType.identifier)) {
       // ignore the schema name, it's not supported. Besides that, we're on the
-      // first branch in the diagram here
+      // first branch in the diagram here https://www.sqlite.org/syntax/table-or-subquery.html
       final firstToken = _previous as IdentifierToken;
       final tableName = firstToken.identifier;
       final alias = _as();

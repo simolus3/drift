@@ -15,6 +15,9 @@ part 'query_engine.dart';
 class MoorRuntimeOptions {
   /// Don't warn when a database class isn't used as singleton.
   bool dontWarnAboutMultipleDatabases = false;
+
+  /// The [ValueSerializer] that will be used by default in [DataClass.toJson].
+  ValueSerializer defaultSerializer = const ValueSerializer.defaults();
 }
 
 /// Stores the [MoorRuntimeOptions] describing global moor behavior across

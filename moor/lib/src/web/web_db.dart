@@ -1,23 +1,33 @@
 part of 'package:moor/moor_web.dart';
 
+/// Signature of a function that asynchronously initializes a web database if it
+/// doesn't exist.
+/// The bytes returned should represent a valid sqlite3 database file.
+typedef CreateWebDatabase = Future<Uint8List> Function();
+
 /// Experimental moor backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
   /// A database executor that works on the web.
-  WebDatabase(String name, {bool logStatements = false})
-      : super(_WebDelegate(name),
+  ///
+  /// [name] can be used to identify multiple databases. The optional
+  /// [initializer] can be used to initialize the database if it doesn't exist.
+  WebDatabase(String name,
+      {bool logStatements = false, CreateWebDatabase initializer})
+      : super(_WebDelegate(name, initializer),
             logStatements: logStatements, isSequential: true);
 }
 
 class _WebDelegate extends DatabaseDelegate {
   final String name;
+  final CreateWebDatabase initializer;
   SqlJsDatabase _db;
 
   String get _persistenceKey => 'moor_db_str_$name';
 
   bool _inTransaction = false;
 
-  _WebDelegate(this.name);
+  _WebDelegate(this.name, this.initializer);
 
   @override
   set isInTransaction(bool value) {
@@ -33,10 +43,12 @@ class _WebDelegate extends DatabaseDelegate {
   bool get isInTransaction => _inTransaction;
 
   @override
-  final TransactionDelegate transactionDelegate = const NoTransactionDelegate();
+  TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
-  DbVersionDelegate get versionDelegate => _WebVersionDelegate(name);
+  DbVersionDelegate get versionDelegate =>
+      _versionDelegate ??= _WebVersionDelegate(this);
+  DbVersionDelegate _versionDelegate;
 
   @override
   bool get isOpen => _db != null;
@@ -47,7 +59,13 @@ class _WebDelegate extends DatabaseDelegate {
     assert(dbVersion >= 1, 'Database schema version needs to be at least 1');
 
     final module = await initSqlJs();
-    final restored = _restoreDb();
+    var restored = _restoreDb();
+
+    if (restored == null && initializer != null) {
+      restored = await initializer();
+      _storeData(restored);
+    }
+
     _db = module.createDatabase(restored);
   }
 
@@ -138,23 +156,31 @@ class _WebDelegate extends DatabaseDelegate {
 
   void _storeDb() {
     if (!isInTransaction) {
-      final data = _db.export();
-      final binStr = bin2str.encode(data);
-      window.localStorage[_persistenceKey] = binStr;
+      _storeData(_db.export());
     }
+  }
+
+  void _storeData(Uint8List data) {
+    final binStr = bin2str.encode(data);
+    window.localStorage[_persistenceKey] = binStr;
   }
 }
 
 class _WebVersionDelegate extends DynamicVersionDelegate {
-  String get _versionKey => 'moor_db_version_$name';
-  final String name;
+  String get _versionKey => 'moor_db_version_${delegate.name}';
 
-  _WebVersionDelegate(this.name);
+  final _WebDelegate delegate;
+
+  _WebVersionDelegate(this.delegate);
+
+  // Note: Earlier moor versions used to store the database version in a special
+  // field in local storage (moor_db_version_<name>). Since 2.3, we instead use
+  // the user_version pragma, but still need to keep backwards compatibility.
 
   @override
   Future<int> get schemaVersion async {
     if (!window.localStorage.containsKey(_versionKey)) {
-      return null;
+      return delegate._db?.userVersion;
     }
     final versionStr = window.localStorage[_versionKey];
 
@@ -163,6 +189,7 @@ class _WebVersionDelegate extends DynamicVersionDelegate {
 
   @override
   Future<void> setSchemaVersion(int version) {
+    delegate._db.userVersion = version;
     window.localStorage[_versionKey] = version.toString();
     return Future.value();
   }

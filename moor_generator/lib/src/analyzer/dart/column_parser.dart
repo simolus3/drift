@@ -23,6 +23,7 @@ const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
+const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 
 const String _errorMessage = 'This getter does not create a valid column that '
@@ -65,6 +66,7 @@ class ColumnParser {
     String foundExplicitName;
     String foundCustomConstraint;
     Expression foundDefaultExpression;
+    Expression clientDefaultExpression;
     Expression createdTypeConverter;
     DartType typeConverterRuntime;
     var nullable = false;
@@ -145,6 +147,9 @@ class ColumnParser {
           final expression = args.arguments.single;
           foundDefaultExpression = expression;
           break;
+        case _methodClientDefault:
+          clientDefaultExpression = remainingExpr.argumentList.arguments.single;
+          break;
         case _methodMap:
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
@@ -180,6 +185,18 @@ class ColumnParser {
           sqlType: columnType);
     }
 
+    if (foundDefaultExpression != null && clientDefaultExpression != null) {
+      base.step.reportError(
+        ErrorInDartCode(
+          severity: Severity.warning,
+          affectedElement: getter.declaredElement,
+          message: 'clientDefault() and withDefault() are mutually exclusive, '
+              "they can't both be used. Use clientDefault() for values that "
+              'are different for each row and withDefault() otherwise.',
+        ),
+      );
+    }
+
     return MoorColumn(
       type: columnType,
       dartGetterName: getter.name.name,
@@ -189,6 +206,7 @@ class ColumnParser {
       nullable: nullable,
       features: foundFeatures,
       defaultArgument: foundDefaultExpression?.toSource(),
+      clientDefaultCode: clientDefaultExpression?.toSource(),
       typeConverter: converter,
       declaration: DartColumnDeclaration(element, base.step.file),
     );

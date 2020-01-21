@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -30,18 +31,40 @@ class DatabaseWriter {
           '$className.connect(DatabaseConnection c): super.connect(c); \n');
     }
 
-    final tableGetters = <String>[];
+    final entityGetters = <MoorSchemaEntity, String>{};
 
-    for (final table in db.tables) {
-      tableGetters.add(table.tableFieldName);
-      final tableClassName = table.tableInfoName;
+    for (final entity in db.entities) {
+      final getterName = entity.dbGetterName;
+      if (getterName != null) {
+        entityGetters[entity] = entity.dbGetterName;
+      }
 
-      writeMemoizedGetter(
-        buffer: dbScope.leaf(),
-        getterName: table.tableFieldName,
-        returnType: tableClassName,
-        code: '$tableClassName(this)',
-      );
+      if (entity is MoorTable) {
+        final tableClassName = entity.tableInfoName;
+
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: tableClassName,
+          code: '$tableClassName(this)',
+        );
+      } else if (entity is MoorTrigger) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: 'Trigger',
+          code: 'Trigger(${asDartLiteral(entity.create)}, '
+              '${asDartLiteral(entity.displayName)})',
+        );
+      } else if (entity is MoorIndex) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: 'Index',
+          code: 'Index(${asDartLiteral(entity.displayName)}, '
+              '${asDartLiteral(entity.createStmt)})',
+        );
+      }
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
@@ -64,10 +87,23 @@ class DatabaseWriter {
       QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
     }
 
-    // Write List of tables, close bracket for class
-    dbScope.leaf()
-      ..write('@override\nList<TableInfo> get allTables => [')
-      ..write(tableGetters.join(','))
+    // Write List of tables
+    final schemaScope = dbScope.leaf();
+    schemaScope
+      ..write('@override\nIterable<TableInfo> get allTables => ')
+      ..write('allSchemaEntities.whereType<TableInfo>();\n')
+      ..write('@override\nList<DatabaseSchemaEntity> get allSchemaEntities ')
+      ..write('=> [');
+
+    schemaScope
+      ..write(db.entities.map((e) {
+        if (e is SpecialQuery) {
+          return 'OnCreateQuery(${asDartLiteral(e.sql)})';
+        }
+
+        return entityGetters[e];
+      }).join(', '))
+      // close list literal, getter and finally the class
       ..write('];\n}');
   }
 }

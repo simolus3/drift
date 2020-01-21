@@ -10,6 +10,8 @@ import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/services/ide/moor_ide.dart';
+import 'package:moor_generator/src/utils/options_reader.dart' as options;
 
 import 'backend.dart';
 import 'file_tracker.dart';
@@ -19,11 +21,13 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   final AnalysisDriverScheduler _scheduler;
   final AnalysisDriver dartDriver;
+  MoorIde ide;
 
   /// The content overlay exists so that we can perform up-to-date analysis on
   /// unsaved files.
   final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
+  final String contextRoot;
 
   /* late final */ MoorSession session;
   StreamSubscription _fileChangeSubscription;
@@ -31,11 +35,12 @@ class MoorDriver implements AnalysisDriverGeneric {
 
   MoorDriver(this._tracker, this._scheduler, this.dartDriver,
       this.contentOverlay, this._resourceProvider,
-      [MoorOptions options]) {
+      [MoorOptions options, this.contextRoot]) {
     _scheduler.add(this);
     final backend = CommonBackend(this);
 
     session = MoorSession(backend, options: options ?? const MoorOptions());
+    ide = MoorIde(session, _DriverBasedFileManagement(this));
 
     _fileChangeSubscription =
         session.changedFiles.listen(_tracker.notifyFilesChanged);
@@ -47,7 +52,8 @@ class MoorDriver implements AnalysisDriverGeneric {
       path.endsWith('.moor') || path.endsWith('.dart');
 
   FoundFile pathToFoundFile(String path) {
-    return session.registerFile(Uri.parse('file://$path'));
+    final uri = _resourceProvider.pathContext.toUri(path);
+    return session.registerFile(uri);
   }
 
   @override
@@ -106,6 +112,20 @@ class MoorDriver implements AnalysisDriverGeneric {
     }
   }
 
+  /// Attempt to load the appropriate [MoorOptions] by reading the `build.yaml`
+  /// located in the context root.
+  ///
+  /// When something fails, the default options will be used an an error message
+  /// will be logged.
+  Future<void> tryToLoadOptions() async {
+    try {
+      final result = await options.fromRootDir(contextRoot);
+      session.options = result;
+    } catch (e, s) {
+      Logger.root.info('Could not load options, using defaults', e, s);
+    }
+  }
+
   String readFile(String path) {
     final overlay = contentOverlay[path];
     if (overlay != null) {
@@ -133,12 +153,13 @@ class MoorDriver implements AnalysisDriverGeneric {
   /// Finds the absolute path of a [reference] url, optionally assuming that the
   /// [reference] appears in [base]. This supports both "package:"-based uris
   /// and relative imports.
+  /// Returns null if the uri can't be parsed.
   String absolutePath(Uri reference, {Uri base}) {
     final factory = dartDriver.sourceFactory;
     final baseSource = base == null ? null : factory.forUri2(base);
 
     final source = factory.resolveUri(baseSource, reference.toString());
-    return source.fullName;
+    return source?.fullName;
   }
 
   CommonTask _createTask(Uri uri) {
@@ -162,10 +183,6 @@ class MoorDriver implements AnalysisDriverGeneric {
     }
   }
 
-  Stream<FoundFile> completedFiles() {
-    return session.completedTasks.expand((task) => task.analyzedFiles);
-  }
-
   /// Waits for the file at [path] to be parsed. If the file is neither a Dart
   /// or a moor file, returns `null`.
   Future<FoundFile> waitFileParsed(String path) {
@@ -184,8 +201,25 @@ class MoorDriver implements AnalysisDriverGeneric {
         _scheduler.notify(this);
       });
 
-      return completedFiles()
+      return session
+          .completedFiles()
           .firstWhere((file) => file == found && file.isParsed);
     }
+  }
+}
+
+class _DriverBasedFileManagement implements IdeFileManagement {
+  final MoorDriver driver;
+
+  _DriverBasedFileManagement(this.driver);
+
+  @override
+  Uri fsPathToUri(String path) {
+    return driver._resourceProvider.pathContext.toUri(path);
+  }
+
+  @override
+  Future<void> waitUntilParsed(String path) {
+    return driver.waitFileParsed(path);
   }
 }

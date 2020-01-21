@@ -7,134 +7,169 @@ part of 'custom_tables.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
-class NoId extends DataClass implements Insertable<NoId> {
-  final Uint8List payload;
-  NoId({@required this.payload});
-  factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+class Config extends DataClass implements Insertable<Config> {
+  final String configKey;
+  final String configValue;
+  Config({@required this.configKey, this.configValue});
+  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
-    return NoId(
-      payload: uint8ListType
-          .mapFromDatabaseResponse(data['${effectivePrefix}payload']),
+    final stringType = db.typeSystem.forDartType<String>();
+    return Config(
+      configKey: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
+      configValue: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
     );
   }
-  factory NoId.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return NoId(
-      payload: serializer.fromJson<Uint8List>(json['payload']),
+  factory Config.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Config(
+      configKey: serializer.fromJson<String>(json['config_key']),
+      configValue: serializer.fromJson<String>(json['config_value']),
     );
   }
-  factory NoId.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
-      NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+  factory Config.fromJsonString(String encodedJson,
+          {ValueSerializer serializer}) =>
+      Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'payload': serializer.toJson<Uint8List>(payload),
+      'config_key': serializer.toJson<String>(configKey),
+      'config_value': serializer.toJson<String>(configValue),
     };
   }
 
   @override
-  NoIdsCompanion createCompanion(bool nullToAbsent) {
-    return NoIdsCompanion(
-      payload: payload == null && nullToAbsent
+  ConfigCompanion createCompanion(bool nullToAbsent) {
+    return ConfigCompanion(
+      configKey: configKey == null && nullToAbsent
           ? const Value.absent()
-          : Value(payload),
+          : Value(configKey),
+      configValue: configValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configValue),
     );
   }
 
-  NoId copyWith({Uint8List payload}) => NoId(
-        payload: payload ?? this.payload,
+  Config copyWith({String configKey, String configValue}) => Config(
+        configKey: configKey ?? this.configKey,
+        configValue: configValue ?? this.configValue,
       );
   @override
   String toString() {
-    return (StringBuffer('NoId(')..write('payload: $payload')..write(')'))
+    return (StringBuffer('Config(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue')
+          ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf(payload.hashCode);
+  int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is NoId && other.payload == this.payload);
+      (other is Config &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue);
 }
 
-class NoIdsCompanion extends UpdateCompanion<NoId> {
-  final Value<Uint8List> payload;
-  const NoIdsCompanion({
-    this.payload = const Value.absent(),
+class ConfigCompanion extends UpdateCompanion<Config> {
+  final Value<String> configKey;
+  final Value<String> configValue;
+  const ConfigCompanion({
+    this.configKey = const Value.absent(),
+    this.configValue = const Value.absent(),
   });
-  NoIdsCompanion.insert({
-    @required Uint8List payload,
-  }) : payload = Value(payload);
-  NoIdsCompanion copyWith({Value<Uint8List> payload}) {
-    return NoIdsCompanion(
-      payload: payload ?? this.payload,
+  ConfigCompanion.insert({
+    @required String configKey,
+    this.configValue = const Value.absent(),
+  }) : configKey = Value(configKey);
+  ConfigCompanion copyWith(
+      {Value<String> configKey, Value<String> configValue}) {
+    return ConfigCompanion(
+      configKey: configKey ?? this.configKey,
+      configValue: configValue ?? this.configValue,
     );
   }
 }
 
-class NoIds extends Table with TableInfo<NoIds, NoId> {
+class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final GeneratedDatabase _db;
   final String _alias;
-  NoIds(this._db, [this._alias]);
-  final VerificationMeta _payloadMeta = const VerificationMeta('payload');
-  GeneratedBlobColumn _payload;
-  GeneratedBlobColumn get payload => _payload ??= _constructPayload();
-  GeneratedBlobColumn _constructPayload() {
-    return GeneratedBlobColumn('payload', $tableName, false,
-        $customConstraints: 'NOT NULL PRIMARY KEY');
+  ConfigTable(this._db, [this._alias]);
+  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
+  GeneratedTextColumn _configKey;
+  GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
+  GeneratedTextColumn _constructConfigKey() {
+    return GeneratedTextColumn('config_key', $tableName, false,
+        $customConstraints: 'not null primary key');
+  }
+
+  final VerificationMeta _configValueMeta =
+      const VerificationMeta('configValue');
+  GeneratedTextColumn _configValue;
+  GeneratedTextColumn get configValue =>
+      _configValue ??= _constructConfigValue();
+  GeneratedTextColumn _constructConfigValue() {
+    return GeneratedTextColumn('config_value', $tableName, true,
+        $customConstraints: '');
   }
 
   @override
-  List<GeneratedColumn> get $columns => [payload];
+  List<GeneratedColumn> get $columns => [configKey, configValue];
   @override
-  NoIds get asDslTable => this;
+  ConfigTable get asDslTable => this;
   @override
-  String get $tableName => _alias ?? 'no_ids';
+  String get $tableName => _alias ?? 'config';
   @override
-  final String actualTableName = 'no_ids';
+  final String actualTableName = 'config';
   @override
-  VerificationContext validateIntegrity(NoIdsCompanion d,
+  VerificationContext validateIntegrity(ConfigCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.payload.present) {
-      context.handle(_payloadMeta,
-          payload.isAcceptableValue(d.payload.value, _payloadMeta));
-    } else if (payload.isRequired && isInserting) {
-      context.missing(_payloadMeta);
+    if (d.configKey.present) {
+      context.handle(_configKeyMeta,
+          configKey.isAcceptableValue(d.configKey.value, _configKeyMeta));
+    } else if (isInserting) {
+      context.missing(_configKeyMeta);
+    }
+    if (d.configValue.present) {
+      context.handle(_configValueMeta,
+          configValue.isAcceptableValue(d.configValue.value, _configValueMeta));
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {payload};
+  Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
-  NoId map(Map<String, dynamic> data, {String tablePrefix}) {
+  Config map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return NoId.fromData(data, _db, prefix: effectivePrefix);
+    return Config.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
-  Map<String, Variable> entityToSql(NoIdsCompanion d) {
+  Map<String, Variable> entityToSql(ConfigCompanion d) {
     final map = <String, Variable>{};
-    if (d.payload.present) {
-      map['payload'] = Variable<Uint8List, BlobType>(d.payload.value);
+    if (d.configKey.present) {
+      map['config_key'] = Variable<String, StringType>(d.configKey.value);
+    }
+    if (d.configValue.present) {
+      map['config_value'] = Variable<String, StringType>(d.configValue.value);
     }
     return map;
   }
 
   @override
-  NoIds createAlias(String alias) {
-    return NoIds(_db, alias);
+  ConfigTable createAlias(String alias) {
+    return ConfigTable(_db, alias);
   }
 
-  @override
-  bool get withoutRowId => true;
   @override
   bool get dontWriteConstraints => true;
 }
@@ -154,20 +189,21 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     );
   }
   factory WithDefault.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return WithDefault(
       a: serializer.fromJson<String>(json['a']),
       b: serializer.fromJson<int>(json['b']),
     );
   }
   factory WithDefault.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       WithDefault.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
@@ -258,13 +294,9 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
     final context = VerificationContext();
     if (d.a.present) {
       context.handle(_aMeta, a.isAcceptableValue(d.a.value, _aMeta));
-    } else if (a.isRequired && isInserting) {
-      context.missing(_aMeta);
     }
     if (d.b.present) {
       context.handle(_bMeta, b.isAcceptableValue(d.b.value, _bMeta));
-    } else if (b.isRequired && isInserting) {
-      context.missing(_bMeta);
     }
     return context;
   }
@@ -298,6 +330,139 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   bool get dontWriteConstraints => true;
 }
 
+class NoId extends DataClass implements Insertable<NoId> {
+  final Uint8List payload;
+  NoId({@required this.payload});
+  factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
+    return NoId(
+      payload: uint8ListType
+          .mapFromDatabaseResponse(data['${effectivePrefix}payload']),
+    );
+  }
+  factory NoId.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return NoId(
+      payload: serializer.fromJson<Uint8List>(json['payload']),
+    );
+  }
+  factory NoId.fromJsonString(String encodedJson,
+          {ValueSerializer serializer}) =>
+      NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'payload': serializer.toJson<Uint8List>(payload),
+    };
+  }
+
+  @override
+  NoIdsCompanion createCompanion(bool nullToAbsent) {
+    return NoIdsCompanion(
+      payload: payload == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payload),
+    );
+  }
+
+  NoId copyWith({Uint8List payload}) => NoId(
+        payload: payload ?? this.payload,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('NoId(')..write('payload: $payload')..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf(payload.hashCode);
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is NoId && other.payload == this.payload);
+}
+
+class NoIdsCompanion extends UpdateCompanion<NoId> {
+  final Value<Uint8List> payload;
+  const NoIdsCompanion({
+    this.payload = const Value.absent(),
+  });
+  NoIdsCompanion.insert({
+    @required Uint8List payload,
+  }) : payload = Value(payload);
+  NoIdsCompanion copyWith({Value<Uint8List> payload}) {
+    return NoIdsCompanion(
+      payload: payload ?? this.payload,
+    );
+  }
+}
+
+class NoIds extends Table with TableInfo<NoIds, NoId> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  NoIds(this._db, [this._alias]);
+  final VerificationMeta _payloadMeta = const VerificationMeta('payload');
+  GeneratedBlobColumn _payload;
+  GeneratedBlobColumn get payload => _payload ??= _constructPayload();
+  GeneratedBlobColumn _constructPayload() {
+    return GeneratedBlobColumn('payload', $tableName, false,
+        $customConstraints: 'NOT NULL PRIMARY KEY');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [payload];
+  @override
+  NoIds get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'no_ids';
+  @override
+  final String actualTableName = 'no_ids';
+  @override
+  VerificationContext validateIntegrity(NoIdsCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.payload.present) {
+      context.handle(_payloadMeta,
+          payload.isAcceptableValue(d.payload.value, _payloadMeta));
+    } else if (isInserting) {
+      context.missing(_payloadMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {payload};
+  @override
+  NoId map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return NoId.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(NoIdsCompanion d) {
+    final map = <String, Variable>{};
+    if (d.payload.present) {
+      map['payload'] = Variable<Uint8List, BlobType>(d.payload.value);
+    }
+    return map;
+  }
+
+  @override
+  NoIds createAlias(String alias) {
+    return NoIds(_db, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   final String a;
   final int b;
@@ -317,7 +482,8 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     );
   }
   factory WithConstraint.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return WithConstraint(
       a: serializer.fromJson<String>(json['a']),
       b: serializer.fromJson<int>(json['b']),
@@ -325,13 +491,13 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     );
   }
   factory WithConstraint.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       WithConstraint.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String>(a),
       'b': serializer.toJson<int>(b),
@@ -439,18 +605,14 @@ class WithConstraints extends Table
     final context = VerificationContext();
     if (d.a.present) {
       context.handle(_aMeta, a.isAcceptableValue(d.a.value, _aMeta));
-    } else if (a.isRequired && isInserting) {
-      context.missing(_aMeta);
     }
     if (d.b.present) {
       context.handle(_bMeta, b.isAcceptableValue(d.b.value, _bMeta));
-    } else if (b.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_bMeta);
     }
     if (d.c.present) {
       context.handle(_cMeta, c.isAcceptableValue(d.c.value, _cMeta));
-    } else if (c.isRequired && isInserting) {
-      context.missing(_cMeta);
     }
     return context;
   }
@@ -490,174 +652,6 @@ class WithConstraints extends Table
   bool get dontWriteConstraints => true;
 }
 
-class Config extends DataClass implements Insertable<Config> {
-  final String configKey;
-  final String configValue;
-  Config({@required this.configKey, this.configValue});
-  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    return Config(
-      configKey: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
-      configValue: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-    );
-  }
-  factory Config.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return Config(
-      configKey: serializer.fromJson<String>(json['config_key']),
-      configValue: serializer.fromJson<String>(json['config_value']),
-    );
-  }
-  factory Config.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
-      Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
-    return <String, dynamic>{
-      'config_key': serializer.toJson<String>(configKey),
-      'config_value': serializer.toJson<String>(configValue),
-    };
-  }
-
-  @override
-  ConfigCompanion createCompanion(bool nullToAbsent) {
-    return ConfigCompanion(
-      configKey: configKey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(configKey),
-      configValue: configValue == null && nullToAbsent
-          ? const Value.absent()
-          : Value(configValue),
-    );
-  }
-
-  Config copyWith({String configKey, String configValue}) => Config(
-        configKey: configKey ?? this.configKey,
-        configValue: configValue ?? this.configValue,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Config(')
-          ..write('configKey: $configKey, ')
-          ..write('configValue: $configValue')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf($mrjc(configKey.hashCode, configValue.hashCode));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is Config &&
-          other.configKey == this.configKey &&
-          other.configValue == this.configValue);
-}
-
-class ConfigCompanion extends UpdateCompanion<Config> {
-  final Value<String> configKey;
-  final Value<String> configValue;
-  const ConfigCompanion({
-    this.configKey = const Value.absent(),
-    this.configValue = const Value.absent(),
-  });
-  ConfigCompanion.insert({
-    @required String configKey,
-    this.configValue = const Value.absent(),
-  }) : configKey = Value(configKey);
-  ConfigCompanion copyWith(
-      {Value<String> configKey, Value<String> configValue}) {
-    return ConfigCompanion(
-      configKey: configKey ?? this.configKey,
-      configValue: configValue ?? this.configValue,
-    );
-  }
-}
-
-class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
-  final GeneratedDatabase _db;
-  final String _alias;
-  ConfigTable(this._db, [this._alias]);
-  final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
-  GeneratedTextColumn _configKey;
-  GeneratedTextColumn get configKey => _configKey ??= _constructConfigKey();
-  GeneratedTextColumn _constructConfigKey() {
-    return GeneratedTextColumn('config_key', $tableName, false,
-        $customConstraints: 'not null primary key');
-  }
-
-  final VerificationMeta _configValueMeta =
-      const VerificationMeta('configValue');
-  GeneratedTextColumn _configValue;
-  GeneratedTextColumn get configValue =>
-      _configValue ??= _constructConfigValue();
-  GeneratedTextColumn _constructConfigValue() {
-    return GeneratedTextColumn('config_value', $tableName, true,
-        $customConstraints: '');
-  }
-
-  @override
-  List<GeneratedColumn> get $columns => [configKey, configValue];
-  @override
-  ConfigTable get asDslTable => this;
-  @override
-  String get $tableName => _alias ?? 'config';
-  @override
-  final String actualTableName = 'config';
-  @override
-  VerificationContext validateIntegrity(ConfigCompanion d,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    if (d.configKey.present) {
-      context.handle(_configKeyMeta,
-          configKey.isAcceptableValue(d.configKey.value, _configKeyMeta));
-    } else if (configKey.isRequired && isInserting) {
-      context.missing(_configKeyMeta);
-    }
-    if (d.configValue.present) {
-      context.handle(_configValueMeta,
-          configValue.isAcceptableValue(d.configValue.value, _configValueMeta));
-    } else if (configValue.isRequired && isInserting) {
-      context.missing(_configValueMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {configKey};
-  @override
-  Config map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Config.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  Map<String, Variable> entityToSql(ConfigCompanion d) {
-    final map = <String, Variable>{};
-    if (d.configKey.present) {
-      map['config_key'] = Variable<String, StringType>(d.configKey.value);
-    }
-    if (d.configValue.present) {
-      map['config_value'] = Variable<String, StringType>(d.configValue.value);
-    }
-    return map;
-  }
-
-  @override
-  ConfigTable createAlias(String alias) {
-    return ConfigTable(_db, alias);
-  }
-
-  @override
-  bool get dontWriteConstraints => true;
-}
-
 class MytableData extends DataClass implements Insertable<MytableData> {
   final int someid;
   final String sometext;
@@ -683,7 +677,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
   factory MytableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return MytableData(
       someid: serializer.fromJson<int>(json['someid']),
       sometext: serializer.fromJson<String>(json['sometext']),
@@ -692,13 +687,13 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     );
   }
   factory MytableData.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       MytableData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String>(sometext),
@@ -838,26 +833,18 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
     if (d.someid.present) {
       context.handle(
           _someidMeta, someid.isAcceptableValue(d.someid.value, _someidMeta));
-    } else if (someid.isRequired && isInserting) {
-      context.missing(_someidMeta);
     }
     if (d.sometext.present) {
       context.handle(_sometextMeta,
           sometext.isAcceptableValue(d.sometext.value, _sometextMeta));
-    } else if (sometext.isRequired && isInserting) {
-      context.missing(_sometextMeta);
     }
     if (d.somebool.present) {
       context.handle(_someboolMeta,
           somebool.isAcceptableValue(d.somebool.value, _someboolMeta));
-    } else if (somebool.isRequired && isInserting) {
-      context.missing(_someboolMeta);
     }
     if (d.somedate.present) {
       context.handle(_somedateMeta,
           somedate.isAcceptableValue(d.somedate.value, _somedateMeta));
-    } else if (somedate.isRequired && isInserting) {
-      context.missing(_somedateMeta);
     }
     return context;
   }
@@ -915,7 +902,8 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
   factory EMail.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return EMail(
       sender: serializer.fromJson<String>(json['sender']),
       title: serializer.fromJson<String>(json['title']),
@@ -923,12 +911,12 @@ class EMail extends DataClass implements Insertable<EMail> {
     );
   }
   factory EMail.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       EMail.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'sender': serializer.toJson<String>(sender),
       'title': serializer.toJson<String>(title),
@@ -1044,19 +1032,19 @@ class Email extends Table
     if (d.sender.present) {
       context.handle(
           _senderMeta, sender.isAcceptableValue(d.sender.value, _senderMeta));
-    } else if (sender.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_senderMeta);
     }
     if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
-    } else if (title.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (d.body.present) {
       context.handle(
           _bodyMeta, body.isAcceptableValue(d.body.value, _bodyMeta));
-    } else if (body.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_bodyMeta);
     }
     return context;
@@ -1099,15 +1087,22 @@ class Email extends Table
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
-  NoIds _noIds;
-  NoIds get noIds => _noIds ??= NoIds(this);
+  ConfigTable _config;
+  ConfigTable get config => _config ??= ConfigTable(this);
+  Index _valueIdx;
+  Index get valueIdx => _valueIdx ??= Index('value_idx',
+      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);');
   WithDefaults _withDefaults;
   WithDefaults get withDefaults => _withDefaults ??= WithDefaults(this);
+  Trigger _myTrigger;
+  Trigger get myTrigger => _myTrigger ??= Trigger(
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
+      'my_trigger');
+  NoIds _noIds;
+  NoIds get noIds => _noIds ??= NoIds(this);
   WithConstraints _withConstraints;
   WithConstraints get withConstraints =>
       _withConstraints ??= WithConstraints(this);
-  ConfigTable _config;
-  ConfigTable get config => _config ??= ConfigTable(this);
   Mytable _mytable;
   Mytable get mytable => _mytable ??= Mytable(this);
   Email _email;
@@ -1222,8 +1217,19 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables =>
-      [noIds, withDefaults, withConstraints, config, mytable, email];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        config,
+        valueIdx,
+        withDefaults,
+        myTrigger,
+        OnCreateQuery('INSERT INTO config VALUES (\'key\', \'values\')'),
+        noIds,
+        withConstraints,
+        mytable,
+        email
+      ];
 }
 
 class MultipleResult {

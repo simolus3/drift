@@ -1,3 +1,7 @@
+## 0.3.2
+
+- Fix a bug where empty blobs would read as `null` instead of an empty list
+
 ## 0.3.1
 
 - Implement `overrideForAll` and `overrideFor` - thanks, [@negator](https://github.com/negator)

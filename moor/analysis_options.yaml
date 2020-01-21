@@ -6,3 +6,4 @@ analyzer:
   exclude:
     - "example_web/**"
     - "example/**"
+    - "**/*.g.dart"

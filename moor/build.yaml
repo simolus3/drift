@@ -7,6 +7,7 @@ targets:
           use_column_name_as_json_key_when_defined_in_moor_file: true
           generate_connect_constructor: true
           write_from_json_string_constructor: true
+          use_experimental_inference: true
           sqlite_modules:
             - json1
             - fts5

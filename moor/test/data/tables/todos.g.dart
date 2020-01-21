@@ -38,7 +38,8 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     );
   }
   factory TodoEntry.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return TodoEntry(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
@@ -48,13 +49,13 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     );
   }
   factory TodoEntry.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       TodoEntry.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
@@ -236,32 +237,24 @@ class $TodosTableTable extends TodosTable
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.title.present) {
       context.handle(
           _titleMeta, title.isAcceptableValue(d.title.value, _titleMeta));
-    } else if (title.isRequired && isInserting) {
-      context.missing(_titleMeta);
     }
     if (d.content.present) {
       context.handle(_contentMeta,
           content.isAcceptableValue(d.content.value, _contentMeta));
-    } else if (content.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_contentMeta);
     }
     if (d.targetDate.present) {
       context.handle(_targetDateMeta,
           targetDate.isAcceptableValue(d.targetDate.value, _targetDateMeta));
-    } else if (targetDate.isRequired && isInserting) {
-      context.missing(_targetDateMeta);
     }
     if (d.category.present) {
       context.handle(_categoryMeta,
           category.isAcceptableValue(d.category.value, _categoryMeta));
-    } else if (category.isRequired && isInserting) {
-      context.missing(_categoryMeta);
     }
     return context;
   }
@@ -317,20 +310,21 @@ class Category extends DataClass implements Insertable<Category> {
     );
   }
   factory Category.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
     );
   }
   factory Category.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       Category.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
@@ -428,13 +422,11 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.description.present) {
       context.handle(_descriptionMeta,
           description.isAcceptableValue(d.description.value, _descriptionMeta));
-    } else if (description.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
     return context;
@@ -498,7 +490,8 @@ class User extends DataClass implements Insertable<User> {
     );
   }
   factory User.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return User(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -508,12 +501,12 @@ class User extends DataClass implements Insertable<User> {
     );
   }
   factory User.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       User.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -691,27 +684,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.name.present) {
       context.handle(
           _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
-    } else if (name.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (d.isAwesome.present) {
       context.handle(_isAwesomeMeta,
           isAwesome.isAcceptableValue(d.isAwesome.value, _isAwesomeMeta));
-    } else if (isAwesome.isRequired && isInserting) {
-      context.missing(_isAwesomeMeta);
     }
     if (d.profilePicture.present) {
       context.handle(
           _profilePictureMeta,
           profilePicture.isAcceptableValue(
               d.profilePicture.value, _profilePictureMeta));
-    } else if (profilePicture.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_profilePictureMeta);
     }
     if (d.creationTime.present) {
@@ -719,8 +708,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           _creationTimeMeta,
           creationTime.isAcceptableValue(
               d.creationTime.value, _creationTimeMeta));
-    } else if (creationTime.isRequired && isInserting) {
-      context.missing(_creationTimeMeta);
     }
     return context;
   }
@@ -776,20 +763,21 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
     );
   }
   factory SharedTodo.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return SharedTodo(
       todo: serializer.fromJson<int>(json['todo']),
       user: serializer.fromJson<int>(json['user']),
     );
   }
   factory SharedTodo.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       SharedTodo.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'todo': serializer.toJson<int>(todo),
       'user': serializer.toJson<int>(user),
@@ -891,13 +879,13 @@ class $SharedTodosTable extends SharedTodos
     if (d.todo.present) {
       context.handle(
           _todoMeta, todo.isAcceptableValue(d.todo.value, _todoMeta));
-    } else if (todo.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_todoMeta);
     }
     if (d.user.present) {
       context.handle(
           _userMeta, user.isAcceptableValue(d.user.value, _userMeta));
-    } else if (user.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_userMeta);
     }
     return context;
@@ -955,7 +943,8 @@ class TableWithoutPKData extends DataClass
     );
   }
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return TableWithoutPKData(
       notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
       someFloat: serializer.fromJson<double>(json['someFloat']),
@@ -963,13 +952,13 @@ class TableWithoutPKData extends DataClass
     );
   }
   factory TableWithoutPKData.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       TableWithoutPKData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'notReallyAnId': serializer.toJson<int>(notReallyAnId),
       'someFloat': serializer.toJson<double>(someFloat),
@@ -1032,10 +1021,9 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   TableWithoutPKCompanion.insert({
     @required int notReallyAnId,
     @required double someFloat,
-    @required MyCustomObject custom,
+    this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
-        someFloat = Value(someFloat),
-        custom = Value(custom);
+        someFloat = Value(someFloat);
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
@@ -1088,7 +1076,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       'custom',
       $tableName,
       false,
-    );
+    )..clientDefault = _uuid.v4;
   }
 
   @override
@@ -1108,13 +1096,13 @@ class $TableWithoutPKTable extends TableWithoutPK
           _notReallyAnIdMeta,
           notReallyAnId.isAcceptableValue(
               d.notReallyAnId.value, _notReallyAnIdMeta));
-    } else if (notReallyAnId.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_notReallyAnIdMeta);
     }
     if (d.someFloat.present) {
       context.handle(_someFloatMeta,
           someFloat.isAcceptableValue(d.someFloat.value, _someFloatMeta));
-    } else if (someFloat.isRequired && isInserting) {
+    } else if (isInserting) {
       context.missing(_someFloatMeta);
     }
     context.handle(_customMeta, const VerificationResult.success());
@@ -1169,20 +1157,21 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     );
   }
   factory PureDefault.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return PureDefault(
       id: serializer.fromJson<int>(json['id']),
       txt: serializer.fromJson<String>(json['txt']),
     );
   }
   factory PureDefault.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
+          {ValueSerializer serializer}) =>
       PureDefault.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'txt': serializer.toJson<String>(txt),
@@ -1277,13 +1266,9 @@ class $PureDefaultsTable extends PureDefaults
     final context = VerificationContext();
     if (d.id.present) {
       context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
     }
     if (d.txt.present) {
       context.handle(_txtMeta, txt.isAcceptableValue(d.txt.value, _txtMeta));
-    } else if (txt.isRequired && isInserting) {
-      context.missing(_txtMeta);
     }
     return context;
   }
@@ -1439,7 +1424,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables => [
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
         todosTable,
         categories,
         users,

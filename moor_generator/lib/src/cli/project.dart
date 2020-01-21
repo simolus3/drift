@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:build_config/build_config.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
+import 'package:moor_generator/src/utils/options_reader.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_transform/stream_transform.dart';
 
@@ -15,7 +16,7 @@ class MoorProject {
   final Directory directory;
 
   MoorProject(this.buildConfig, this.directory)
-      : moorOptions = _readOptions(buildConfig);
+      : moorOptions = readOptionsFromConfig(buildConfig);
 
   Stream<File> get sourceFiles {
     const topLevelDirs = {'lib', 'test', 'bin', 'example'};
@@ -31,16 +32,6 @@ class MoorProject {
       }
       return const Stream.empty();
     }).whereType();
-  }
-
-  static MoorOptions _readOptions(BuildConfig config) {
-    final options = config.buildTargets.values
-        .map((t) => t.builders['moor_generator:moor_generator']?.options)
-        .where((t) => t != null)
-        .map((json) => MoorOptions.fromJson(json));
-
-    final iterator = options.iterator;
-    return iterator.moveNext() ? iterator.current : const MoorOptions();
   }
 
   static Future<MoorProject> readFromDir(Directory directory) async {

@@ -27,4 +27,9 @@ class Suggestion {
   final int relevance;
 
   Suggestion(this.code, this.relevance);
+
+  @override
+  String toString() {
+    return 'Suggestion($code, $relevance)';
+  }
 }

@@ -2,22 +2,22 @@ import 'package:sqlparser/sqlparser.dart';
 
 /// An AST-visitor that walks sql statements and finds all tables referenced in
 /// them.
-class ReferencedTablesVisitor extends RecursiveVisitor<void> {
+class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   /// All tables that have been referenced anywhere in this query.
   final Set<Table> foundTables = {};
 
   @override
-  void visitReference(Reference e) {
+  void visitReference(Reference e, void arg) {
     final column = e.resolved;
     if (column is TableColumn) {
       foundTables.add(column.table);
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitQueryable(Queryable e) {
+  void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
       final resolved = e.resolved;
       if (resolved != null && resolved is Table) {
@@ -25,7 +25,7 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void> {
       }
     }
 
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 }
 
@@ -48,20 +48,20 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
   }
 
   @override
-  void visitDeleteStatement(DeleteStatement e) {
+  void visitDeleteStatement(DeleteStatement e, void arg) {
     _addIfResolved(e.from);
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitUpdateStatement(UpdateStatement e) {
+  void visitUpdateStatement(UpdateStatement e, void arg) {
     _addIfResolved(e.table);
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 
   @override
-  void visitInsertStatement(InsertStatement e) {
+  void visitInsertStatement(InsertStatement e, void arg) {
     _addIfResolved(e.table);
-    visitChildren(e);
+    visitChildren(e, arg);
   }
 }

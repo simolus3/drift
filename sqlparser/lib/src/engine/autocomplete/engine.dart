@@ -1,7 +1,9 @@
 import 'package:collection/collection.dart';
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'descriptions/description.dart';
+part 'descriptions/references.dart';
 part 'descriptions/static.dart';
 
 part 'suggestion.dart';
@@ -22,6 +24,7 @@ class AutoCompleteEngine {
   UnmodifiableListView<Hint> _hintsView;
 
   final List<Token> _tokens;
+  final SqlEngine _engine;
 
   void addHint(Hint hint) {
     if (_hints.isEmpty) {
@@ -41,21 +44,25 @@ class AutoCompleteEngine {
     }
   }
 
-  AutoCompleteEngine(this._tokens) {
+  AutoCompleteEngine(this._tokens, this._engine) {
     _hintsView = UnmodifiableListView(_hints);
   }
 
-  /// Suggest completions at a specific position.
+  /// Suggest completions at a specific [offset].
   ///
-  /// This api will change in the future.
-  ComputedSuggestions suggestCompletions(int offset) {
+  /// If the caller knows that autocomplete is requested in a CRUD statement
+  /// that has been analyzed, providing the surrounding [context] can yield
+  /// better results (for instance when completing column names).
+  ComputedSuggestions suggestCompletions(int offset,
+      [AnalysisContext context]) {
     if (_hints.isEmpty) {
       return ComputedSuggestions(-1, -1, []);
     }
 
     final hint = foundHints[_lastHintBefore(offset)];
 
-    final suggestions = hint.description.suggest(CalculationRequest()).toList();
+    final suggestions =
+        hint.description.suggest(CalculationRequest(_engine, context)).toList();
 
     // when calculating the offset, respect whitespace that comes after the
     // last hint.
@@ -113,4 +120,9 @@ class Hint {
   Hint(this.before, this.description);
 }
 
-class CalculationRequest {}
+class CalculationRequest {
+  final SqlEngine engine;
+  final AnalysisContext context;
+
+  CalculationRequest(this.engine, [this.context]);
+}

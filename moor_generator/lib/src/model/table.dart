@@ -4,12 +4,13 @@ import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import 'base_entity.dart';
 import 'column.dart';
 import 'declarations/declaration.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class MoorTable implements HasDeclaration {
+class MoorTable implements MoorSchemaEntity {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
@@ -41,7 +42,8 @@ class MoorTable implements HasDeclaration {
   final String dartTypeName;
 
   /// The getter name used for this table in a generated database or dao class.
-  String get tableFieldName => _dbFieldName(_baseName);
+  @override
+  String get dbGetterName => dbFieldName(_baseName);
   String get tableInfoName {
     // if this table was parsed from sql, a user might want to refer to it
     // directly because there is no user defined parent class.
@@ -80,8 +82,7 @@ class MoorTable implements HasDeclaration {
   /// `customConstraints` getter in the table class with this value.
   final List<String> overrideTableConstraints;
 
-  /// The set of tables referenced somewhere in the declaration of this table,
-  /// for instance by using a `REFERENCES` column constraint.
+  @override
   final Set<MoorTable> references = {};
 
   /// Returns whether this table was created from a `CREATE VIRTUAL TABLE`
@@ -97,6 +98,15 @@ class MoorTable implements HasDeclaration {
 
     final node = (declaration as MoorTableDeclaration).node;
     return node is CreateVirtualTableStatement;
+  }
+
+  /// If this table [isVirtualTable], returns the `CREATE VIRTUAL TABLE`
+  /// statement to create this table. Otherwise returns null.
+  String get createVirtual {
+    if (!isVirtualTable) return null;
+
+    final node = (declaration as MoorTableDeclaration).node;
+    return (node as CreateVirtualTableStatement).span.text;
   }
 
   MoorTable({
@@ -116,6 +126,7 @@ class MoorTable implements HasDeclaration {
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
 
+  @override
   String get displayName {
     if (isFromSql) {
       return sqlName;
@@ -130,6 +141,6 @@ class MoorTable implements HasDeclaration {
   }
 }
 
-String _dbFieldName(String className) => ReCase(className).camelCase;
+String dbFieldName(String className) => ReCase(className).camelCase;
 
 String tableInfoNameForTableClass(String className) => '\$${className}Table';

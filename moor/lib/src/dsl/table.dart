@@ -104,10 +104,10 @@ abstract class Table {
   RealColumnBuilder real() => _isGenerated();
 }
 
-/// A class to to be used as an annotation on [Table] classes to customize the
+/// A class to be used as an annotation on [Table] classes to customize the
 /// name for the data class that will be generated for the table class. The data
 /// class is a dart object that will be used to represent a row in the table.
-/// {@template moor:custom_data_class}
+/// {@template moor_custom_data_class}
 /// By default, moor will attempt to use the singular form of the table name
 /// when naming data classes (e.g. a table named "Users" will generate a data
 /// class called "User"). However, this doesn't work for irregular plurals and
@@ -116,10 +116,10 @@ abstract class Table {
 /// {@template}
 class DataClassName {
   /// The overridden name to use when generating the data class for a table.
-  /// {@macro moor:custom_data_class}
+  /// {@macro moor_custom_data_class}
   final String name;
 
   /// Customize the data class name for a given table.
-  /// {@macro moor:custom_data_class}
+  /// {@macro moor_custom_data_class}
   const DataClassName(this.name);
 }

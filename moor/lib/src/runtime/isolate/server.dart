@@ -4,8 +4,21 @@ class _MoorServer {
   final Server server;
 
   DatabaseConnection connection;
+
   final Map<int, TransactionExecutor> _transactions = {};
   int _currentTransaction = 0;
+
+  /// when a transaction is active, all queries that don't operate on another
+  /// query executor have to wait!
+  ///
+  /// When this list is empty, the top-level executor is active. When not, the
+  /// first transaction id in the backlog is active at the moment. Whenever a
+  /// transaction completes, we emit an item on [_backlogUpdated]. This can be
+  /// used to implement a lock.
+  final List<int> _transactionBacklog = [];
+  final StreamController<void> _backlogUpdated =
+      StreamController.broadcast(sync: true);
+
   _FakeDatabase _fakeDb;
 
   ServerKey get key => server.key;
@@ -38,6 +51,7 @@ class _MoorServer {
         case _NoArgsRequest.startTransaction:
           return _spawnTransaction();
         case _NoArgsRequest.terminateAll:
+          _backlogUpdated.close();
           connection.executor.close();
           server.close();
           Isolate.current.kill();
@@ -54,7 +68,7 @@ class _MoorServer {
       return _runQuery(
           payload.method, payload.sql, payload.args, payload.transactionId);
     } else if (payload is _ExecuteBatchedStatement) {
-      return connection.executor.runBatched(payload.stmts);
+      return _runBatched(payload.stmts, payload.transactionId);
     } else if (payload is _NotifyTablesUpdated) {
       for (final connected in server.currentChannels) {
         connected.request(payload);
@@ -65,10 +79,8 @@ class _MoorServer {
   }
 
   Future<dynamic> _runQuery(
-      _StatementMethod method, String sql, List args, int transactionId) {
-    final executor = transactionId != null
-        ? _transactions[transactionId]
-        : connection.executor;
+      _StatementMethod method, String sql, List args, int transactionId) async {
+    final executor = await _loadExecutor(transactionId);
 
     switch (method) {
       case _StatementMethod.custom:
@@ -84,23 +96,69 @@ class _MoorServer {
     throw AssertionError("Unknown _StatementMethod, this can't happen.");
   }
 
-  int _spawnTransaction() {
+  Future<void> _runBatched(
+      List<BatchedStatement> stmts, int transactionId) async {
+    final executor = await _loadExecutor(transactionId);
+    await executor.runBatched(stmts);
+  }
+
+  Future<QueryExecutor> _loadExecutor(int transactionId) async {
+    await _waitForTurn(transactionId);
+    return transactionId != null
+        ? _transactions[transactionId]
+        : connection.executor;
+  }
+
+  Future<int> _spawnTransaction() async {
     final id = _currentTransaction++;
-    _transactions[id] = connection.executor.beginTransaction();
+    final transaction = connection.executor.beginTransaction();
+
+    _transactions[id] = transaction;
+    _transactionBacklog.add(id);
+    await transaction.ensureOpen();
     return id;
   }
 
   Future<void> _transactionControl(
-      _TransactionControl action, int transactionId) {
+      _TransactionControl action, int transactionId) async {
     final transaction = _transactions[transactionId];
-    _transactions.remove(transactionId);
-    switch (action) {
-      case _TransactionControl.commit:
-        return transaction.send();
-      case _TransactionControl.rollback:
-        return transaction.rollback();
+
+    try {
+      switch (action) {
+        case _TransactionControl.commit:
+          await transaction.send();
+          break;
+        case _TransactionControl.rollback:
+          await transaction.rollback();
+          break;
+      }
+    } finally {
+      _transactions.remove(transactionId);
+      _transactionBacklog.remove(transactionId);
+      _notifyTransactionsUpdated();
     }
-    throw AssertionError("Can't happen");
+  }
+
+  Future<void> _waitForTurn(int transactionId) {
+    bool idIsActive() {
+      if (transactionId == null) {
+        return _transactionBacklog.isEmpty;
+      } else {
+        return _transactionBacklog.isNotEmpty &&
+            _transactionBacklog.first == transactionId;
+      }
+    }
+
+    // Don't wait for a backlog update if the current transaction id is active
+    if (idIsActive()) return Future.value(null);
+
+    return _backlogUpdated.stream.firstWhere((_) => idIsActive());
+  }
+
+  void _notifyTransactionsUpdated() {
+    if (!_backlogUpdated.isClosed) {
+      _backlogUpdated.add(null);
+    }
   }
 }
 

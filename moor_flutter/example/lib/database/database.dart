@@ -65,7 +65,7 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) {
-        return m.createAllTables();
+        return m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from == 1) {

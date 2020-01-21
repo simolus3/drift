@@ -10,12 +10,12 @@ class AnalyzeDartStep extends AnalyzingStep {
     for (final accessor in parseResult.dbAccessors) {
       final transitiveImports = _transitiveImports(accessor.imports);
 
-      var availableTables = _availableTables(transitiveImports)
+      var availableEntities = _availableEntities(transitiveImports)
           .followedBy(accessor.declaredTables)
           .toList();
 
       try {
-        availableTables = sortTablesTopologically(availableTables);
+        availableEntities = sortEntitiesTopologically(availableEntities);
       } on CircularReferenceException catch (e) {
         final msg = StringBuffer(
             'Found a circular reference in your database. This can cause '
@@ -32,6 +32,13 @@ class AnalyzeDartStep extends AnalyzingStep {
           affectedElement: accessor.fromClass,
           message: msg.toString(),
         ));
+      } catch (e) {
+        // unknown error while sorting
+        reportError(ErrorInDartCode(
+          severity: Severity.warning,
+          affectedElement: accessor.fromClass,
+          message: 'Unknown error while sorting database entities: $e',
+        ));
       }
 
       final availableQueries = transitiveImports
@@ -39,11 +46,13 @@ class AnalyzeDartStep extends AnalyzingStep {
           .whereType<ParsedMoorFile>()
           .expand((f) => f.resolvedQueries);
 
-      final parser = SqlParser(this, availableTables, accessor.declaredQueries);
+      final availableTables = availableEntities.whereType<MoorTable>().toList();
+      final parser =
+          SqlAnalyzer(this, availableTables, accessor.declaredQueries);
       parser.parse();
 
       accessor
-        ..tables = availableTables
+        ..entities = availableEntities
         ..queries = availableQueries.followedBy(parser.foundQueries).toList();
     }
   }

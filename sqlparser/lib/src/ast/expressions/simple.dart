@@ -7,7 +7,9 @@ class UnaryExpression extends Expression {
   UnaryExpression(this.operator, this.inner);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitUnaryExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitUnaryExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [inner];
@@ -42,7 +44,9 @@ class BinaryExpression extends Expression {
   BinaryExpression(this.left, this.operator, this.right);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitBinaryExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBinaryExpression(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
@@ -53,6 +57,7 @@ class BinaryExpression extends Expression {
   }
 }
 
+/// A like, glob, match or regexp expression.
 class StringComparisonExpression extends Expression {
   final bool not;
   final Token operator;
@@ -68,7 +73,9 @@ class StringComparisonExpression extends Expression {
       this.escape});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitStringComparison(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitStringComparison(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [left, right, if (escape != null) escape];
@@ -86,8 +93,8 @@ class IsExpression extends Expression {
   IsExpression(this.negated, this.left, this.right);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return visitor.visitIsExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitIsExpression(this, arg);
   }
 
   @override
@@ -95,6 +102,28 @@ class IsExpression extends Expression {
 
   @override
   bool contentEquals(IsExpression other) {
+    return other.negated == negated;
+  }
+}
+
+class IsNullExpression extends Expression {
+  final Expression operand;
+
+  /// When true, this is a `NOT NULL` expression.
+  final bool negated;
+
+  IsNullExpression(this.operand, [this.negated = false]);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitIsNullExpression(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [operand];
+
+  @override
+  bool contentEquals(IsNullExpression other) {
     return other.negated == negated;
   }
 }
@@ -109,10 +138,12 @@ class BetweenExpression extends Expression {
   BetweenExpression({this.not = false, this.check, this.lower, this.upper});
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitBetweenExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitBetweenExpression(this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => [check, lower, upper];
+  List<Expression> get childNodes => [check, lower, upper];
 
   @override
   bool contentEquals(BetweenExpression other) => other.not == not;
@@ -133,10 +164,12 @@ class InExpression extends Expression {
       : assert(inside is Tuple || inside is Variable || inside is SubQuery);
 
   @override
-  T accept<T>(AstVisitor<T> visitor) => visitor.visitInExpression(this);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitInExpression(this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => [left, inside];
+  List<Expression> get childNodes => [left, inside];
 
   @override
   bool contentEquals(InExpression other) => other.not == not;
@@ -155,8 +188,8 @@ class Parentheses extends Expression {
   }
 
   @override
-  T accept<T>(AstVisitor<T> visitor) {
-    return expression.accept(visitor);
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitParentheses(this, arg);
   }
 
   @override
