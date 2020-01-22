@@ -75,8 +75,9 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   void _potentiallyNewFile(FoundFile file) {
+    final path = _resourceProvider.pathContext.fromUri(file.uri);
     if (!file.isParsed) {
-      handleFileChanged(file.uri.path);
+      handleFileChanged(path);
     }
   }
 

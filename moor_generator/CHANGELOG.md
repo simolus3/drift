@@ -1,3 +1,7 @@
+## 2.3.1
+
+- CLI/IDE: Fix path resolution on Windows
+
 ## 2.3.0
 
 - Support explicit type arguments for queries in moor files. In 

@@ -36,7 +36,7 @@ Exits with error code `1` if any error was found.
 
 ## Identify databases
 
-This is more of a test command to test that moor's analyzer is working correctly.
+This is more of a test command to verify that moor's analyzer is working correctly.
 It will identify all databases or daos defined in your project.
 
 ```
