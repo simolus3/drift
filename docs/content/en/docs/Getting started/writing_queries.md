@@ -71,6 +71,22 @@ If an entry with the provided id exists, it will be sent to the stream. Otherwis
 more than one entry (which is impossible in this case), an error will be added
 instead.
 
+### Mapping
+
+Before calling `watch` or `get` (or the single variants), you can use `map` to transform
+the result. 
+```dart
+Stream<List<String>> contentWithLongTitles() {
+  final query = select(todos)
+    ..where((t) => t.title.length.isBiggerOrEqualValue(16));
+
+  return query
+    .map((row) => row.content)
+    .watch();
+}
+```
+
+
 If you need more complex queries with joins or custom columns, see [this site]({{< relref "../Advanced Features/joins.md" >}}).
 
 ## Updates and deletes

@@ -41,6 +41,10 @@ hrefTargetBlank = false
 angledQuotes = false
 latexDashes = true
 
+[markup]
+# todo migrate to goldmark (will need configuration for backwards-compatibility https://gohugo.io/getting-started/configuration-markup/)
+defaultMarkdownHandler = "blackfriday"
+
 # Image processing configuration.
 [imaging]
 resampleFilter = "CatmullRom"
