@@ -46,6 +46,6 @@ class Database {
           allOf(contains('b.moor'), contains('file does not exist')),
         )),
       );
-    });
+    }, tags: 'analyzer');
   });
 }
