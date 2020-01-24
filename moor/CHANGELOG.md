@@ -1,3 +1,7 @@
+## unreleased
+
+- Support aggregate expressions and `group by` in the Dart api
+
 ## 2.3.0
 
 - New `clientDefault` method for columns. It can be used for dynamic defaults that might be different for

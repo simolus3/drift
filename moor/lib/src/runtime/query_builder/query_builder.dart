@@ -11,11 +11,13 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/types/sql_types.dart';
 import 'package:moor/src/utils/single_transformer.dart';
 
+part 'components/group_by.dart';
 part 'components/join.dart';
 part 'components/limit.dart';
 part 'components/order_by.dart';
 part 'components/where.dart';
 
+part 'expressions/aggregate.dart';
 part 'expressions/algebra.dart';
 part 'expressions/bools.dart';
 part 'expressions/comparable.dart';
@@ -50,6 +52,19 @@ abstract class Component {
   /// introduced. When a component consists of multiple composed component, it's
   /// responsible for introducing whitespace between its child components.
   void writeInto(GenerationContext context);
+}
+
+/// Writes all [components] into the [context], separated by commas.
+void _writeCommaSeparated(
+    GenerationContext context, Iterable<Component> components) {
+  var first = true;
+  for (final element in components) {
+    if (!first) {
+      context.buffer.write(', ');
+    }
+    element.writeInto(context);
+    first = false;
+  }
 }
 
 /// An enumeration of database systems supported by moor. Only

@@ -60,20 +60,10 @@ class OrderBy extends Component {
 
   @override
   void writeInto(GenerationContext context, {bool writeOrderBy = true}) {
-    var first = true;
-
     if (writeOrderBy) {
       context.buffer.write('ORDER BY ');
     }
 
-    for (final term in terms) {
-      if (first) {
-        first = false;
-      } else {
-        context.buffer.write(', ');
-      }
-
-      term.writeInto(context);
-    }
+    _writeCommaSeparated(context, terms);
   }
 }

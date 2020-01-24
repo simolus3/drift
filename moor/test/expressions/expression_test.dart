@@ -20,7 +20,6 @@ void main() {
 
   test('puts parentheses around expressions with unknown precedence', () {
     final expr = _UnknownExpr().equalsExp(_UnknownExpr());
-
-    expr.expectGenerates('(???) = (???)');
+    expect(expr, generates('(???) = (???)'));
   });
 }

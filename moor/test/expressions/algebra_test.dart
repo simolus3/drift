@@ -11,18 +11,18 @@ void main() {
   final s2 = GeneratedTextColumn('s2', 'tbl', true);
 
   test('arithmetic test', () {
-    (i1 + i2 * i1).expectGenerates('i1 + i2 * i1');
-    (i1 + i2 * i1).expectGenerates('i1 + i2 * i1');
-    ((i1 + i2) * i1).expectGenerates('(i1 + i2) * i1');
-    (i1 - i2).expectGenerates('i1 - i2');
-    (i1 - -i2).expectGenerates('i1 - -i2');
-    (i1 / i2).expectGenerates('i1 / i2');
+    expect(i1 + i2 * i1, generates('i1 + i2 * i1'));
+    expect(i1 + i2 * i1, generates('i1 + i2 * i1'));
+    expect((i1 + i2) * i1, generates('(i1 + i2) * i1'));
+    expect(i1 - i2, generates('i1 - i2'));
+    expect(i1 - -i2, generates('i1 - -i2'));
+    expect(i1 / i2, generates('i1 / i2'));
 
     expectEquals(i1 + i2, i1 + i2);
     expectNotEquals(i1 + i2, i2 + i1);
   });
 
   test('string concatenation', () {
-    (s1 + s2).expectGenerates('s1 || s2');
+    expect(s1 + s2, generates('s1 || s2'));
   });
 }

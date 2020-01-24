@@ -23,6 +23,6 @@ void main() {
     // ignore: deprecated_member_use_from_same_package
     final isNotIn = moor.isNotIn(innerExpression, ['Foo', 'Bar']);
 
-    isNotIn.expectGenerates('name NOT IN (?, ?)');
+    expect(isNotIn, generates('name NOT IN (?, ?)', ['Foo', 'Bar']));
   });
 }

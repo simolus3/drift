@@ -11,18 +11,18 @@ void main() {
   final b = GeneratedBoolColumn('b', 'tbl', false);
 
   test('boolean expressions via operators', () {
-    (a | b).expectGenerates('a OR b');
-    (a & b).expectGenerates('a AND b');
-    a.not().expectGenerates('NOT a');
+    expect(a | b, generates('a OR b'));
+    expect(a & b, generates('a AND b'));
+    expect(a.not(), generates('NOT a'));
 
     expectEquals(a & b, a & b);
     expectNotEquals(a | b, b | a);
   });
 
   test('boolean expressions via top-level methods', () {
-    or(a, b).expectGenerates('a OR b');
-    and(a, b).expectGenerates('a AND b');
-    not(a).expectGenerates('NOT a');
+    expect(or(a, b), generates('a OR b'));
+    expect(and(a, b), generates('a AND b'));
+    expect(not(a), generates('NOT a'));
 
     expectEquals(not(a), not(a));
     expectNotEquals(not(a), not(b));

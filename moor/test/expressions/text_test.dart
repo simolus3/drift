@@ -25,8 +25,8 @@ void main() {
   });
 
   test('can use string functions', () {
-    expression.upper().expectGenerates('UPPER(col)');
-    expression.lower().expectGenerates('LOWER(col)');
-    expression.length.expectGenerates('LENGTH(col)');
+    expect(expression.upper(), generates('UPPER(col)'));
+    expect(expression.lower(), generates('LOWER(col)'));
+    expect(expression.length, generates('LENGTH(col)'));
   });
 }

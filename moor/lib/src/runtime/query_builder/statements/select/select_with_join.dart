@@ -132,6 +132,14 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     _selectedColumns.addAll(expressions);
   }
 
+  /// Groups the result by values in [expressions].
+  ///
+  /// An optional [having] attribute can be set to exclude certain groups.
+  void groupBy(Iterable<Expression> expressions,
+      {Expression<bool, BoolType> having}) {
+    _groupBy = GroupBy._(expressions.toList(), having);
+  }
+
   @override
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();

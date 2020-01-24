@@ -2,10 +2,18 @@ part of '../query_builder.dart';
 
 const _equality = ListEquality();
 
+/// Base class for everything that can be used as a function parameter in sql.
+///
+/// Most prominently, this includes [Expression]s.
+///
+/// Used internally by moor.
+abstract class FunctionParameter implements Component {}
+
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
-abstract class Expression<D, T extends SqlType<D>> implements Component {
+abstract class Expression<D, T extends SqlType<D>>
+    implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
@@ -336,16 +344,7 @@ class FunctionCallExpression<R, S extends SqlType<R>> extends Expression<R, S> {
   @override
   void writeInto(GenerationContext context) {
     context.buffer..write(functionName)..write('(');
-
-    var first = true;
-    for (final arg in arguments) {
-      if (!first) {
-        context.buffer.write(', ');
-      }
-      arg.writeInto(context);
-      first = false;
-    }
-
+    _writeCommaSeparated(context, arguments);
     context.buffer.write(')');
   }
 

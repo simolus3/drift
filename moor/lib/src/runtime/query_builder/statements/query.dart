@@ -26,6 +26,8 @@ abstract class Query<T extends Table, D extends DataClass> {
   @protected
   Limit limitExpr;
 
+  GroupBy _groupBy;
+
   /// Subclasses must override this and write the part of the statement that
   /// comes before the where and limit expression..
   @visibleForOverriding
@@ -38,31 +40,25 @@ abstract class Query<T extends Table, D extends DataClass> {
   /// [moor-docs]: https://moor.simonbinder.eu/docs/getting-started/writing_queries/
   GenerationContext constructQuery() {
     final ctx = GenerationContext.fromDb(database);
+
+    // whether we need to insert a space before writing the next component
     var needsWhitespace = false;
+
+    void writeWithSpace(Component /*?*/ component) {
+      if (component == null) return;
+
+      if (needsWhitespace) ctx.writeWhitespace();
+      component.writeInto(ctx);
+      needsWhitespace = true;
+    }
 
     writeStartPart(ctx);
     needsWhitespace = true;
 
-    if (whereExpr != null) {
-      if (needsWhitespace) ctx.writeWhitespace();
-
-      whereExpr.writeInto(ctx);
-      needsWhitespace = true;
-    }
-
-    if (orderByExpr != null) {
-      if (needsWhitespace) ctx.writeWhitespace();
-
-      orderByExpr.writeInto(ctx);
-      needsWhitespace = true;
-    }
-
-    if (limitExpr != null) {
-      if (needsWhitespace) ctx.writeWhitespace();
-
-      limitExpr.writeInto(ctx);
-      needsWhitespace = true;
-    }
+    writeWithSpace(whereExpr);
+    writeWithSpace(orderByExpr);
+    writeWithSpace(limitExpr);
+    writeWithSpace(_groupBy);
 
     ctx.buffer.write(';');
 

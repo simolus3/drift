@@ -12,14 +12,16 @@ void main() {
   test('json1 functions generate valid sql', () {
     final column = GeneratedTextColumn('col', 'tbl', false);
 
-    column.jsonArrayLength().expectGenerates('json_array_length(col)');
-    column
-        .jsonArrayLength(r'$.c')
-        .expectGenerates('json_array_length(col, ?)', [r'$.c']);
+    expect(column.jsonArrayLength(), generates('json_array_length(col)'));
+    expect(
+      column.jsonArrayLength(r'$.c'),
+      generates('json_array_length(col, ?)', [r'$.c']),
+    );
 
-    column
-        .jsonExtract(r'$.c')
-        .expectGenerates('json_extract(col, ?)', [r'$.c']);
+    expect(
+      column.jsonExtract(r'$.c'),
+      generates('json_extract(col, ?)', [r'$.c']),
+    );
   });
 
   test('json1 integration test', () async {
