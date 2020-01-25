@@ -1,3 +1,5 @@
+import 'converter.dart';
+
 CREATE TABLE no_ids (
     payload BLOB NOT NULL PRIMARY KEY
 ) WITHOUT ROWID;
@@ -17,7 +19,8 @@ CREATE TABLE with_constraints (
 
 create table config (
     config_key TEXT not null primary key,
-    config_value TEXT
+    config_value TEXT,
+    sync_state INTEGER MAPPED BY `const SyncTypeConverter()`
 ) AS "Config";
 
 CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);
@@ -40,7 +43,7 @@ readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 findValidJsons: SELECT * FROM config WHERE json_valid(config_value);
 
-@create: INSERT INTO config VALUES ('key', 'values');
+@create: INSERT INTO config (config_key, config_value) VALUES ('key', 'values');
 
 multiple: SELECT * FROM with_constraints c
  INNER JOIN with_defaults d

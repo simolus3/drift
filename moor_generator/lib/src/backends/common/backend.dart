@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/backends/backend.dart';
@@ -28,11 +27,6 @@ class CommonTask extends BackendTask {
 
   @override
   final Logger log = Logger.root;
-
-  @override
-  Future<CompilationUnit> parseSource(String dart) async {
-    return null;
-  }
 
   @override
   Future<String> readMoor(Uri uri) async {

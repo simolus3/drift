@@ -8,14 +8,15 @@ class UseDaoParser {
   /// If [element] has a `@UseDao` annotation, parses the database model
   /// declared by that class and the referenced tables.
   Future<Dao> parseDao(ClassElement element, ConstantReader annotation) async {
-    final dbType = element.allSupertypes
-        .firstWhere((i) => i.name == 'DatabaseAccessor', orElse: () => null);
+    final dbType = element.allSupertypes.firstWhere(
+        (i) => i.element.name == 'DatabaseAccessor',
+        orElse: () => null);
 
     if (dbType == null) {
       step.reportError(ErrorInDartCode(
         affectedElement: element,
         severity: Severity.criticalError,
-        message: 'This class must directly inherit from DatabaseAccessor',
+        message: 'This class must inherit from DatabaseAccessor',
       ));
       return null;
     }

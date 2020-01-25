@@ -111,7 +111,7 @@ class MoorTable implements MoorSchemaEntity {
 
   MoorTable({
     this.fromClass,
-    this.columns,
+    this.columns = const [],
     this.sqlName,
     this.dartTypeName,
     this.primaryKey,
@@ -120,11 +120,22 @@ class MoorTable implements MoorSchemaEntity {
     this.overrideTableConstraints,
     this.overrideDontWriteConstraints,
     this.declaration,
-  }) : _overriddenName = overriddenName;
+  }) : _overriddenName = overriddenName {
+    _attachToConverters();
+  }
 
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
       columns.map((c) => c.typeConverter).where((t) => t != null);
+
+  void _attachToConverters() {
+    var index = 0;
+    for (final converter in converters) {
+      converter
+        ..index = index++
+        ..table = this;
+    }
+  }
 
   @override
   String get displayName {

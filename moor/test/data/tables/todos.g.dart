@@ -1139,7 +1139,8 @@ class $TableWithoutPKTable extends TableWithoutPK
     return $TableWithoutPKTable(_db, alias);
   }
 
-  static CustomConverter $converter0 = const CustomConverter();
+  static TypeConverter<MyCustomObject, String> $converter0 =
+      const CustomConverter();
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {

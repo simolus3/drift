@@ -1,3 +1,8 @@
+## 2.4.0
+
+- Support type converters in moor files. You can import the necessary Dart file with a regular `import`
+  statement and then use `MAPPED BY ``MyTypeConverter`` ` in a column definition.
+
 ## 2.3.1
 
 - CLI/IDE: Fix path resolution on Windows

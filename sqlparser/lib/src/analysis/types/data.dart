@@ -30,13 +30,20 @@ class ResolvedType {
       : this(type: BasicType.int, hint: const IsBoolean(), nullable: nullable);
 
   ResolvedType withNullable(bool nullable) {
-    return ResolvedType(
-        type: type, hint: hint, nullable: nullable, isArray: isArray);
+    return copyWith(nullable: nullable);
   }
 
   ResolvedType toArray(bool array) {
+    return copyWith(isArray: array);
+  }
+
+  ResolvedType copyWith({TypeHint hint, bool nullable, bool isArray}) {
     return ResolvedType(
-        type: type, hint: hint, nullable: nullable, isArray: array);
+      type: type,
+      hint: hint ?? this.hint,
+      nullable: nullable ?? this.nullable,
+      isArray: isArray ?? this.isArray,
+    );
   }
 
   @override

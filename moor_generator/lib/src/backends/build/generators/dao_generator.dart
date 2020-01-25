@@ -19,7 +19,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       final daoName = element.displayName;
 
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
-          'DatabaseAccessor<${dao.dbClass.displayName}> {\n');
+          'DatabaseAccessor<${dao.dbClass.getDisplayString()}> {\n');
 
       for (final table in dao.tables) {
         final infoType = table.tableInfoName;

@@ -180,7 +180,7 @@ class ColumnParser {
     UsedTypeConverter converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
-          expression: createdTypeConverter,
+          expression: createdTypeConverter.toSource(),
           mappedType: typeConverterRuntime,
           sqlType: columnType);
     }
@@ -227,7 +227,8 @@ class ColumnParser {
     final annotations = getter.metadata;
     final object = annotations.singleWhere((e) {
       final value = e.computeConstantValue();
-      return isFromMoor(value.type) && value.type.name == 'JsonKey';
+      return isFromMoor(value.type) &&
+          value.type.getDisplayString() == 'JsonKey';
     }, orElse: () => null);
 
     if (object == null) return null;

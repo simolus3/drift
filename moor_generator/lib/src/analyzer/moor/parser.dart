@@ -11,7 +11,7 @@ class MoorParser {
 
   MoorParser(this.step);
 
-  Future<ParsedMoorFile> parseAndAnalyze() {
+  Future<ParsedMoorFile> parseAndAnalyze() async {
     final engine = step.task.session.spawnEngine();
     final result = engine.parseMoorFile(step.content);
     final parsedFile = result.rootNode as MoorFile;
@@ -25,7 +25,6 @@ class MoorParser {
     for (final parsedStmt in parsedFile.statements) {
       if (parsedStmt is ImportStatement) {
         final importStmt = parsedStmt;
-        step.inlineDartResolver.importStatements.add(importStmt.importedFile);
         importStatements.add(importStmt);
       } else if (parsedStmt is TableInducingStatement) {
         createdReaders.add(CreateTableReader(parsedStmt, step));
@@ -62,11 +61,8 @@ class MoorParser {
       ));
     }
 
-    final tableDeclarations = <TableInducingStatement, MoorTable>{};
     for (final reader in createdReaders) {
-      final table = reader.extractTable(step.mapper);
-      createdEntities.add(table);
-      tableDeclarations[reader.stmt] = table;
+      createdEntities.add(await reader.extractTable(step.mapper));
     }
 
     final analyzedFile = ParsedMoorFile(
@@ -79,6 +75,6 @@ class MoorParser {
       decl.file = analyzedFile;
     }
 
-    return Future.value(analyzedFile);
+    return analyzedFile;
   }
 }

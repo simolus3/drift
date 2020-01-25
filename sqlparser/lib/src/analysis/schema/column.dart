@@ -27,8 +27,9 @@ class TableColumn extends Column {
   final String name;
 
   /// The type of this column, which is available before any resolution happens
-  /// (we know if from the table).
-  final ResolvedType type;
+  /// (we know ii from the table).
+  ResolvedType get type => _type;
+  ResolvedType _type;
 
   /// The column constraints set on this column.
   ///
@@ -49,7 +50,14 @@ class TableColumn extends Column {
   /// The table this column belongs to.
   Table table;
 
-  TableColumn(this.name, this.type, {this.definition});
+  TableColumn(this.name, this._type, {this.definition});
+
+  /// Applies a type hint to this column.
+  ///
+  /// The [hint] will then be reflected in the [type].
+  void applyTypeHint(TypeHint hint) {
+    _type = _type?.copyWith(hint: hint);
+  }
 
   /// Whether this column is an alias for the rowid, as defined in
   /// https://www.sqlite.org/lang_createtable.html#rowid

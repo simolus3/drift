@@ -137,7 +137,7 @@ class MoorColumn implements HasDeclaration {
   /// [int].
   String get dartTypeName {
     if (typeConverter != null) {
-      return typeConverter.mappedType?.displayName;
+      return typeConverter.mappedType?.getDisplayString();
     }
     return variableTypeName;
   }

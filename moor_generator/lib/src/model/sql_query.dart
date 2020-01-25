@@ -206,7 +206,7 @@ class ResultColumn {
   /// The dart type that can store a result of this column.
   String get dartType {
     if (converter != null) {
-      return converter.mappedType.displayName;
+      return converter.mappedType.getDisplayString();
     } else {
       return dartTypeNames[type];
     }

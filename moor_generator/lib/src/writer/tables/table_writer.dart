@@ -35,6 +35,7 @@ class TableWriter {
     if (table.isVirtualTable) {
       _buffer.write(', VirtualTableInfo$typeArgs ');
     }
+
     _buffer
       ..write('{\n')
       // write a GeneratedDatabase reference that is set in the constructor
@@ -78,8 +79,8 @@ class TableWriter {
 
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
-      final typeName = converter.typeOfConverter.displayName;
-      final code = converter.expression.toSource();
+      final typeName = converter.displayNameOfConverter;
+      final code = converter.expression;
       _buffer.write('static $typeName ${converter.fieldName} = $code;');
     }
   }

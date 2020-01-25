@@ -98,8 +98,8 @@ class SchemaWriter {
       'dsl_features': [...column.features.map(_dslFeatureData)],
       if (column.typeConverter != null)
         'type_converter': {
-          'dart_expr': column.typeConverter.expression.toSource(),
-          'dart_type_name': column.typeConverter.mappedType.displayName,
+          'dart_expr': column.typeConverter.expression,
+          'dart_type_name': column.typeConverter.mappedType.getDisplayString(),
         }
     };
   }

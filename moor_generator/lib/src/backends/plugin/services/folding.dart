@@ -1,5 +1,5 @@
-import 'package:analyzer_plugin/protocol/protocol_common.dart';
-import 'package:analyzer_plugin/utilities/folding/folding.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
+import 'package:analyzer_plugin_fork/utilities/folding/folding.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:sqlparser/sqlparser.dart';
 

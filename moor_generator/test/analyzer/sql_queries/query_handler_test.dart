@@ -22,18 +22,18 @@ CREATE TABLE bar (
 );
 ''';
 
-void main() {
+Future<void> main() async {
   final mapper = TypeMapper();
   final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
   final step = ParseMoorStep(
       Task(null, null, null), FoundFile(Uri.parse('foo'), FileType.moor), '');
 
   final parsedFoo = engine.parse(createFoo).rootNode as CreateTableStatement;
-  final foo = CreateTableReader(parsedFoo, step).extractTable(mapper);
+  final foo = await CreateTableReader(parsedFoo, step).extractTable(mapper);
   engine.registerTable(mapper.extractStructure(foo));
 
   final parsedBar = engine.parse(createBar).rootNode as CreateTableStatement;
-  final bar = CreateTableReader(parsedBar, step).extractTable(mapper);
+  final bar = await CreateTableReader(parsedBar, step).extractTable(mapper);
   engine.registerTable(mapper.extractStructure(bar));
 
   SqlQuery parse(String sql) {

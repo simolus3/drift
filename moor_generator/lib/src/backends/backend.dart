@@ -1,5 +1,5 @@
-import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 
 /// A backend for the moor generator.
@@ -25,8 +25,12 @@ abstract class BackendTask {
   /// If the file at [uri] isn't a library, for instance because it's a part
   /// file, throws a [NotALibraryException].
   Future<LibraryElement> resolveDart(Uri uri);
-  Future<CompilationUnit> parseSource(String dart);
+
   Future<String> readMoor(Uri uri);
+
+  Future<DartType> resolveTypeOf(Uri context, String dartExpression) {
+    throw UnsupportedError('Resolving dart expressions not supported');
+  }
 
   /// Checks whether a file at [uri] exists.
   Future<bool> exists(Uri uri);
