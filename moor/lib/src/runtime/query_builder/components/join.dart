@@ -33,9 +33,16 @@ class Join<T extends Table, D extends DataClass> extends Component {
   /// that must be matched for the join.
   final Expression<bool, BoolType> on;
 
+  /// Whether [table] should appear in the result set (defaults to true).
+  ///
+  /// It can be useful to exclude some tables. Sometimes, tables are used in a
+  /// join only to run aggregate functions on them.
+  final bool includeInResult;
+
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
-  Join._(this.type, this.table, this.on);
+  Join._(this.type, this.table, this.on, {bool includeInResult})
+      : includeInResult = includeInResult ?? true;
 
   @override
   void writeInto(GenerationContext context) {
@@ -53,28 +60,43 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
 /// Creates a sql inner join that can be used in [SimpleSelectStatement.join].
 ///
+/// {@template moor_join_include_results}
+/// The optional [useColumns] parameter (defaults to true) can be used to
+/// exclude the [other] table from the result set. When set,
+/// [TypedResult.readTable] will return `null` for that table.
+/// {@endtemplate}
+///
 /// See also:
+///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
 Join innerJoin<T extends Table, D extends DataClass>(
-    TableInfo<T, D> other, Expression<bool, BoolType> on) {
-  return Join._(_JoinType.inner, other, on);
+    TableInfo<T, D> other, Expression<bool, BoolType> on,
+    {bool useColumns}) {
+  return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
 /// Creates a sql left outer join that can be used in
 /// [SimpleSelectStatement.join].
 ///
+/// {@macro moor_join_include_results}
+///
 /// See also:
+///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
 Join leftOuterJoin<T extends Table, D extends DataClass>(
-    TableInfo<T, D> other, Expression<bool, BoolType> on) {
-  return Join._(_JoinType.leftOuter, other, on);
+    TableInfo<T, D> other, Expression<bool, BoolType> on,
+    {bool useColumns}) {
+  return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 
 /// Creates a sql cross join that can be used in
 /// [SimpleSelectStatement.join].
 ///
+/// {@macro moor_join_include_results}
+///
 /// See also:
+///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin<T, D>(TableInfo other) {
-  return Join._(_JoinType.cross, other, null);
+Join crossJoin<T, D>(TableInfo other, {bool useColumns}) {
+  return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }

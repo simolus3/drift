@@ -1,8 +1,11 @@
 ---
 title: "Expressions"
-linkTitle: "Expressions"
+linkTitle: "Expressions in Dart"
 description: Deep-dive into what kind of SQL expressions can be written in Dart
 weight: 200
+
+# used to be in the "getting started" section
+url: docs/getting-started/expressions/
 ---
 
 Expressions are pieces of sql that return a value when the database interprets them.
@@ -68,6 +71,8 @@ fields from that date:
 select(users)..where((u) => u.birthDate.year.isLessThan(1950))
 ```
 
+The individual fileds like `year`, `month` and so on are expressions themselves. This means
+that you can use operators and comparisons on them.
 To obtain the current date or the current time as an expression, use the `currentDate` 
 and `currentDateAndTime` constants provided by moor.
 
@@ -79,6 +84,51 @@ select(animals)..where((a) => a.amountOfLegs.isIn([3, 7, 4, 2]);
 ```
 
 Again, the `isNotIn` function works the other way around.
+
+## Aggregate functions (like count and sum) {#aggregate}
+
+Since moor 2.4, [aggregate functions](https://www.sqlite.org/lang_aggfunc.html) are available 
+from the Dart api. Unlike regular functions, aggregate functions operate on multiple rows at
+once. 
+By default, they combine all rows that would be returned by the select statement into a single value.
+You can also make them run over different groups in the result by using 
+[group by]({{< relref "joins.md#group-by" >}}).
+
+### Comparing
+
+You can use the `min` and `max` methods on numeric and datetime expressions. They return the smallest
+or largest value in the result set, respectively.
+
+### Arithmetic
+
+The `avg`, `sum` and `total` methods are available. For instance, you could watch the average length of
+a todo item with this query:
+```dart
+Stream<double> averageItemLength() {
+  final avgLength = todos.content.length.avg();
+
+  final query = selectOnly(todos)
+    ..addColumns([avgLength]);
+
+  return query.map((row) => row.read(avgLength)).watchSingle();
+}
+```
+
+__Note__: We're using `selectOnly` instead of `select` because we're not interested in any colum that
+`todos` provides - we only care about the average length. More details are available 
+[here]({{< relref "joins.md#group-by" >}})
+
+### Counting
+
+Sometimes, it's useful to count how many rows are present in a group. By using the
+[table layout from the example]({{<relref "../Getting started/_index.md">}}), this
+query will report how many todo entries are associated to each category:
+
+If you don't want to count duplicate values, you can use `count(distinct: true)`. 
+Sometimes, you only need to count values that match a condition. For that, you can
+use the `filter` parameter.
+
+To count all rows (instead of a single value), you can use the top-level `countAll()`.
 
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.

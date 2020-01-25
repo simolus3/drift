@@ -11,20 +11,21 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// instead.
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
-      [this.distinct = false])
+      [this.distinct = false, this._includeMainTableInResult = true])
       : super(database, table) {
     // use all columns across all tables as result column for this query
-    _selectedColumns ??=
-        _tables.expand((t) => t.$columns).cast<Expression>().toList();
+    _selectedColumns.addAll(
+        _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
   }
 
   /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
   /// rows from the result set.
   final bool distinct;
+  final bool _includeMainTableInResult;
   final List<Join> _joins;
 
   /// All columns that we're selecting from.
-  List<Expression> _selectedColumns;
+  final List<Expression> _selectedColumns = [];
 
   /// The `AS` aliases generated for each column that isn't from a table.
   ///
@@ -39,11 +40,23 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
   /// The tables this select statement reads from
   @visibleForOverriding
-  Set<TableInfo> get watchedTables => _tables.toSet();
+  Set<TableInfo> get watchedTables => _queriedTables().toSet();
 
-  // fixed order to make testing easier
-  Iterable<TableInfo> get _tables =>
-      <TableInfo>[table].followedBy(_joins.map((j) => j.table));
+  /// Lists all tables this query reads from.
+  ///
+  /// If [onlyResults] (defaults to false) is set, only tables that are included
+  /// in the result set are returned.
+  Iterable<TableInfo> _queriedTables([bool onlyResults = false]) sync* {
+    if (!onlyResults || _includeMainTableInResult) {
+      yield table;
+    }
+
+    for (final join in _joins) {
+      if (onlyResults && !join.includeInResult) continue;
+
+      yield join.table;
+    }
+  }
 
   @override
   void writeStartPart(GenerationContext ctx) {
@@ -164,7 +177,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
         return await e.runSelect(ctx.sql, ctx.boundVariables);
       } catch (e, s) {
         final foundTables = <String>{};
-        for (final table in _tables) {
+        for (final table in _queriedTables()) {
           if (!foundTables.add(table.$tableName)) {
             _warnAboutDuplicate(e, s, table);
           }
@@ -174,13 +187,11 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
       }
     });
 
-    final tables = _tables;
-
     return results.map((row) {
       final readTables = <TableInfo, dynamic>{};
       final readColumns = <Expression, dynamic>{};
 
-      for (final table in tables) {
+      for (final table in _queriedTables(true)) {
         final prefix = '${table.$tableName}.';
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {

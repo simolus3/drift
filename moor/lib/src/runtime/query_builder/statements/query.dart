@@ -56,9 +56,9 @@ abstract class Query<T extends Table, D extends DataClass> {
     needsWhitespace = true;
 
     writeWithSpace(whereExpr);
+    writeWithSpace(_groupBy);
     writeWithSpace(orderByExpr);
     writeWithSpace(limitExpr);
-    writeWithSpace(_groupBy);
 
     ctx.buffer.write(';');
 

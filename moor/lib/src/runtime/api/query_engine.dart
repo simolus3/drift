@@ -96,6 +96,46 @@ mixin QueryEngine on DatabaseConnectionUser {
         distinct: distinct);
   }
 
+  /// Starts a complex statement on [table] that doesn't necessarily use all of
+  /// [table]'s columns.
+  ///
+  /// Unlike [select], which automatically selects all columns of [table], this
+  /// method is suitable for more advanced queries that can use [table] without
+  /// using their column. As an example, assuming we have a table `comments`
+  /// with a `TextColumn content`, this query would report the average length of
+  /// a comment:
+  /// ```dart
+  /// Stream<num> watchAverageCommentLength() {
+  ///   final avgLength = comments.content.length.avg();
+  ///   final query = selectWithoutResults(comments)
+  ///     ..addColumns([avgLength]);
+  ///
+  ///   return query.map((row) => row.read(avgLength)).watchSingle();
+  /// }
+  /// ```
+  ///
+  /// While this query reads from `comments`, it doesn't use all of it's columns
+  /// (in fact, it uses none of them!). This makes it suitable for
+  /// [selectOnly] instead of [select].
+  ///
+  /// The [distinct] parameter (defaults to false) can be used to remove
+  /// duplicate rows from the result set.
+  ///
+  /// For simple queries, use [select].
+  ///
+  /// See also:
+  ///  - the documentation on [aggregate expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/#aggregate)
+  ///  - the documentation on [group by](https://moor.simonbinder.eu/docs/advanced-features/joins/#group-by)
+  @protected
+  @visibleForTesting
+  JoinedSelectStatement<T, R> selectOnly<T extends Table, R extends DataClass>(
+    TableInfo<T, R> table, {
+    bool distinct = false,
+  }) {
+    return JoinedSelectStatement<T, R>(
+        _resolvedEngine, table, const [], distinct, false);
+  }
+
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   ///
   /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)

@@ -147,3 +147,63 @@ FROM routes
     INNER JOIN geo_points s ON s.id = routes.start
     INNER JOIN geo_points d ON d.id = routes.destination
 ```
+
+## Group by
+
+Sometimes, you need to run queries that _aggregate_ data, meaning that data you're interested in
+comes from multiple rows. Common questions include
+
+- how many todo entries are in each category?
+- how many entries did a user complete each month?
+- what's the average length of a todo entry?
+
+What these queries have in common is that data from multiple rows needs to be combined into a single
+row. In sql, this can be achieved with "aggregate functins", for which moor has 
+[builtin support]({{< relref "expressions.md#aggregate" >}}).
+
+_Additional info_: A good tutorial for group by in sql is available [here](https://www.sqlitetutorial.net/sqlite-group-by/).
+
+To write a query that answers the first question for us, we can use the `count` function.
+We're going to select all categories and join each todo entry for each category. What's special is that we set
+`useColumns: false` on the join. We do that because we're not interested in the columns of the todo item.
+We only care about how many there are. By default, moor would attempt to read each todo item when it appears
+in a join.
+
+```dart
+final amountOfTodos = todos.id.count();
+
+final query = db.select(categories).join([
+  innerJoin(
+    todos,
+    todos.category.equalsExp(categories.id),
+    useColumns: false,
+  )
+]);
+query
+  ..addColumns([amountOfTodos])
+  ..groupBy([categories.id]);
+
+final result = await query.get();
+
+for (final row in result) {
+  print('there are ${row.read(amountOfTodos)} entries in ${row.readTable(todos)}');
+}
+```
+
+To find the average length of a todo entry, we use `avg`. In this case, we don't even have to use
+a `join` since all the data comes from a single table (todos).
+That's a problem though - in the join, we used `useColumns: false` because we weren't interested
+in the columns of each todo item. Here we don't care about an individual item either, but there's
+no join where we could set that flag.
+Moor provides a special method for this case - instead of using `select`, we use `selectOnly`.
+The "only" means that moor will only report columns we added via "addColumns". In a regular select,
+all columns from the table would be selected, which is what you'd usually need.
+
+```dart
+Stream<double> averageItemLength() {
+  final avgLength = todos.content.length.avg();
+  final query = selectOnly(todos)..addColumns([avgLength]);
+
+  return query.map((row) => row.read(avgLength)).watchSingle();
+}
+```

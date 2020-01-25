@@ -1,4 +1,4 @@
-import 'package:moor/moor.dart';
+import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
@@ -170,6 +170,59 @@ void main() {
     expect(result.readTable(categories),
         equals(Category(id: 3, description: 'Description')));
     expect(result.read(descriptionLength), 11);
+  });
+
+  test('group by', () async {
+    final categories = db.alias(db.categories, 'c');
+    final todos = db.alias(db.todosTable, 't');
+    final amountOfTodos = todos.id.count();
+
+    final query = db.select(categories).join([
+      innerJoin(
+        todos,
+        todos.category.equalsExp(categories.id),
+        useColumns: false,
+      )
+    ]);
+    query
+      ..addColumns([amountOfTodos])
+      ..groupBy([categories.id]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'c.id': 3, 'c.desc': 'desc', 'c2': 10}
+      ];
+    });
+
+    final result = await query.getSingle();
+
+    verify(executor.runSelect(
+        'SELECT c.id AS "c.id", c.`desc` AS "c.desc", COUNT(t.id) AS "c2" '
+        'FROM categories c INNER JOIN todos t ON t.category = c.id '
+        'GROUP BY c.id;',
+        []));
+
+    expect(result.readTable(todos), isNull);
+    expect(result.readTable(categories), Category(id: 3, description: 'desc'));
+    expect(result.read(amountOfTodos), 10);
+  });
+
+  test('selectWithoutResults', () async {
+    final avgLength = db.todosTable.content.length.avg();
+    final query = db.selectOnly(db.todosTable)..addColumns([avgLength]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'c0': 3.0}
+      ];
+    });
+
+    final result = await query.map((row) => row.read(avgLength)).getSingle();
+
+    verify(executor.runSelect(
+        'SELECT AVG(LENGTH(todos.content)) AS "c0" FROM todos;', []));
+
+    expect(result, 3.0);
   });
 
   test('injects custom error message when a table is used multiple times',
