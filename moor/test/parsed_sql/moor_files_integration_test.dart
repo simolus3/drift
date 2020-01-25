@@ -18,7 +18,8 @@ const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS with_constraints ('
 
 const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
     'config_key VARCHAR not null primary key, '
-    'config_value VARCHAR);';
+    'config_value VARCHAR, '
+    'sync_state INTEGER);';
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL PRIMARY KEY, '
@@ -37,7 +38,8 @@ END;''';
 const _createValueIndex =
     'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);';
 
-const _defaultInsert = "INSERT INTO config VALUES ('key', 'values')";
+const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
+    "VALUES ('key', 'values')";
 
 void main() {
   // see ../data/tables/tables.moor
