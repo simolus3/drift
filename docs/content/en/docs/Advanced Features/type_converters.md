@@ -10,6 +10,9 @@ You can achieve this by using `TypeConverters`. In this example, we'll use the t
 [json_serializable](https://pub.dev/packages/json_annotation) package to store a custom object in a
 text column. Moor supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.
+
+## Using converters in Dart
+
 ```dart
 import 'dart:convert';
 
@@ -72,3 +75,20 @@ The generated `User` class will then have a `preferences` column of type
 `Preferences`. Moor will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absolute_url }}).
+
+## Using converters in moor
+
+Since moor 2.4, type converters can also be used inside moor files.
+Assuming that the `Preferences` and `PreferenceConverter` are contained in
+`preferences.dart`, that file can imported into moor for the type converter to
+be available.
+
+```sql
+import 'preferences.dart';
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  preferences TEXT MAPPED BY `const PreferenceConverter()`
+);
+```

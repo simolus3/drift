@@ -117,13 +117,6 @@ Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 written as an `INTEGER` column when the table gets created.
 
 ## Imports
-{{% alert title="Limited support" %}}
-> Importing a moor file from another moor file will work as expected. 
-  Unfortunately, importing a Dart file from moor does not work in all
-  scenarios. Please upvote [this issue](https://github.com/dart-lang/build/issues/493)
-  on the build package to help solve this.
-{{% /alert %}}
-
 You can put import statements at the top of a `moor` file:
 ```sql
 import 'other.moor'; -- single quotes are required for imports
@@ -181,6 +174,22 @@ This feature also works for
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
+
+### Type converters
+
+You can import and use [type converters]({{< relref "../Advanced Features/type_converters.md" >}})
+written in Dart in a moor file. Importing a Dart file works with a regular `import` statement.
+To apply a type converter on a column definition, you can use the `MAPPED BY` column constraints:
+```sql
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  preferences TEXT MAPPED BY `const PreferenceConverter()`
+);
+```
+
+More details on type converts in moor files are available
+[here]({{< relref "../Advanced Features/type_converters.md#using-converters-in-moor" >}})
 
 ## Supported statements
 At the moment, the following statements can appear in a `.moor` file.
