@@ -397,7 +397,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitInvocation(SqlInvocation e, TypeExpectation arg) {
+  void visitExpressionInvocation(ExpressionInvocation e, TypeExpectation arg) {
     final type = _resolveInvocation(e);
     if (type != null) {
       session._checkAndResolve(e, type, arg);
@@ -411,7 +411,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  ResolvedType _resolveInvocation(SqlInvocation e) {
+  ResolvedType _resolveInvocation(ExpressionInvocation e) {
     final params = e.expandParameters();
     void nullableIfChildIs() {
       session._addRelation(NullableIfSomeOtherIs(e, params));

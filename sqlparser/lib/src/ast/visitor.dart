@@ -332,7 +332,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitFunction(FunctionExpression e, A arg) {
-    return visitInvocation(e, arg);
+    return visitExpressionInvocation(e, arg);
   }
 
   R visitFunctionParameters(FunctionParameters e, A arg) {
@@ -351,7 +351,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitAggregateExpression(AggregateExpression e, A arg) {
-    return visitInvocation(e, arg);
+    return visitExpressionInvocation(e, arg);
   }
 
   @override
@@ -403,8 +403,12 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
     return visitExpression(e, arg);
   }
 
+  R visitExpressionInvocation(ExpressionInvocation e, A arg) {
+    return visitInvocation(e, arg);
+  }
+
   R visitInvocation(SqlInvocation e, A arg) {
-    return visitExpression(e, arg);
+    return visitChildren(e, arg);
   }
 
   R visitExpression(Expression e, A arg) {

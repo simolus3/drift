@@ -8,10 +8,12 @@ abstract class Queryable extends AstNode {
     return visitor.visitQueryable(this, arg);
   }
 
+  // todo remove this, introduce more visit methods for subclasses
   T when<T>({
     @required T Function(TableReference) isTable,
     @required T Function(SelectStatementAsSource) isSelect,
     @required T Function(JoinClause) isJoin,
+    @required T Function(TableValuedFunction) isTableFunction,
   }) {
     if (this is TableReference) {
       return isTable(this as TableReference);
@@ -19,6 +21,8 @@ abstract class Queryable extends AstNode {
       return isSelect(this as SelectStatementAsSource);
     } else if (this is JoinClause) {
       return isJoin(this as JoinClause);
+    } else if (this is TableValuedFunction) {
+      return isTableFunction(this as TableValuedFunction);
     }
 
     throw StateError('Unknown subclass');
@@ -164,4 +168,26 @@ class UsingConstraint extends JoinConstraint {
   final List<String> columnNames;
 
   UsingConstraint({@required this.columnNames});
+}
+
+class TableValuedFunction extends Queryable
+    implements TableOrSubquery, SqlInvocation, Renamable {
+  @override
+  final String name;
+
+  @override
+  final String as;
+
+  @override
+  final FunctionParameters parameters;
+
+  TableValuedFunction(this.name, this.parameters, {this.as});
+
+  @override
+  Iterable<AstNode> get childNodes => [parameters];
+
+  @override
+  bool contentEquals(TableValuedFunction other) {
+    return other.name == name;
+  }
 }

@@ -112,7 +112,7 @@ class TypeResolver {
         } else {
           return const ResolveResult.unknown();
         }
-      } else if (expr is SqlInvocation) {
+      } else if (expr is ExpressionInvocation) {
         return resolveFunctionCall(expr);
       } else if (expr is IsExpression ||
           expr is IsNullExpression ||
@@ -167,8 +167,8 @@ class TypeResolver {
     }, l);
   }
 
-  ResolveResult resolveFunctionCall(SqlInvocation call) {
-    return _cache((SqlInvocation call) {
+  ResolveResult resolveFunctionCall(ExpressionInvocation call) {
+    return _cache((ExpressionInvocation call) {
       final parameters = call.expandParameters();
       final firstNullable =
           // ignore: avoid_bool_literals_in_conditional_expressions
@@ -413,7 +413,7 @@ class TypeResolver {
         parent is Tuple ||
         parent is UnaryExpression) {
       return const ResolveResult.needsContext();
-    } else if (parent is SqlInvocation) {
+    } else if (parent is ExpressionInvocation) {
       // if we have a special case for the mix of function and argument, use
       // that. Otherwise, just assume that the argument has the same type as the
       // return type of the function

@@ -10,6 +10,10 @@ Token token(TokenType type) {
   return Token(type, null);
 }
 
+StringLiteralToken stringLiteral(String value) {
+  return StringLiteralToken(value, null);
+}
+
 InlineDartToken inlineDart(String dartCode) {
   return InlineDartToken(fakeSpan('`$dartCode`'));
 }

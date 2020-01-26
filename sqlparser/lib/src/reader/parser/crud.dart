@@ -257,10 +257,23 @@ mixin CrudParser on ParserBase {
   }
 
   TableOrSubquery _tableOrSubquery() {
-    //  this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
-    // we currently only support regular tables and nested selects
+    // this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
+    // we currently only support regular tables, table functions and nested
+    // selects
     final tableRef = _tableReference();
     if (tableRef != null) {
+      // this is a bit hacky. If the table reference only consists of one
+      // identifer and it's followed by a (, it's a table-valued function
+      if (tableRef.as == null && _matchOne(TokenType.leftParen)) {
+        final params = _functionParameters();
+        _consume(TokenType.rightParen, 'Expected closing parenthesis');
+        final alias = _as();
+
+        return TableValuedFunction(tableRef.tableName, params,
+            as: alias?.identifier)
+          ..setSpan(tableRef.first, _previous);
+      }
+
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;

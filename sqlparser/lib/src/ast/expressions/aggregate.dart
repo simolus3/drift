@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 class AggregateExpression extends Expression
-    implements SqlInvocation, ReferenceOwner {
+    implements ExpressionInvocation, ReferenceOwner {
   final IdentifierToken function;
 
   @override

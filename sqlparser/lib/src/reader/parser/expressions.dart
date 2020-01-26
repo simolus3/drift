@@ -354,6 +354,7 @@ mixin ExpressionParser on ParserBase {
     return null;
   }
 
+  @override
   FunctionParameters _functionParameters() {
     if (_matchOne(TokenType.star)) {
       return StarFunctionParameter()

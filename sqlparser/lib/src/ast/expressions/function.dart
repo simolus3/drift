@@ -2,16 +2,19 @@ part of '../ast.dart';
 
 /// Interface for function calls, either a [FunctionExpression] or a
 /// [AggregateExpression].
-abstract class SqlInvocation extends Expression {
+abstract class SqlInvocation implements AstNode {
   /// The name of the function being called
   String get name;
 
   FunctionParameters get parameters;
 }
 
+/// Interface for [SqlInvocation]s that are also expressions.
+abstract class ExpressionInvocation implements SqlInvocation, Expression {}
+
 class FunctionExpression extends Expression
     with ReferenceOwner
-    implements SqlInvocation {
+    implements ExpressionInvocation {
   @override
   final String name;
   @override
@@ -75,6 +78,6 @@ class ExprFunctionParameters extends FunctionParameters {
 
   @override
   bool contentEquals(ExprFunctionParameters other) {
-    return other.distinct == distinct && other.parameters == parameters;
+    return other.distinct == distinct;
   }
 }

@@ -86,5 +86,37 @@ void main() {
         ),
       ]);
     });
+
+    test('table valued function', () {
+      testStatement(
+        '''
+SELECT DISTINCT user.name
+  FROM user, json_each(user.phone)
+WHERE json_each.value LIKE '704-%';
+        ''',
+        SelectStatement(
+          distinct: true,
+          columns: [
+            ExpressionResultColumn(
+              expression: Reference(tableName: 'user', columnName: 'name'),
+            ),
+          ],
+          from: [
+            TableReference('user'),
+            TableValuedFunction(
+              'json_each',
+              ExprFunctionParameters(parameters: [
+                Reference(tableName: 'user', columnName: 'phone')
+              ]),
+            ),
+          ],
+          where: StringComparisonExpression(
+            left: Reference(tableName: 'json_each', columnName: 'value'),
+            operator: token(TokenType.like),
+            right: StringLiteral(stringLiteral('704-%')),
+          ),
+        ),
+      );
+    });
   });
 }

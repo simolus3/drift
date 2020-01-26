@@ -201,6 +201,9 @@ abstract class ParserBase {
   /// Parses a block, which consists of statements between `BEGIN` and `END`.
   Block _consumeBlock();
 
+  /// Parses function parameters, without the surrounding parentheses.
+  FunctionParameters _functionParameters();
+
   /// Skips all tokens until it finds one with [type]. If [skipTarget] is true,
   /// that token will be skipped as well.
   ///
