@@ -16,7 +16,13 @@ class EngineOptions {
   final List<Extension> enabledExtensions;
 
   final List<FunctionHandler> _addedFunctionHandlers = [];
+
+  /// A map from lowercase function names to the associated handler.
   final Map<String, FunctionHandler> addedFunctions = {};
+
+  /// A map from lowercase function names (where the function is a table-valued
+  /// function) to the associated handler.
+  final Map<String, TableValuedFunctionHandler> addedTableFunctions = {};
 
   EngineOptions({
     this.useMoorExtensions = false,
@@ -31,5 +37,9 @@ class EngineOptions {
     for (final function in handler.functionNames) {
       addedFunctions[function.toLowerCase()] = handler;
     }
+  }
+
+  void addTableValuedFunctionHandler(TableValuedFunctionHandler handler) {
+    addedTableFunctions[handler.functionName.toLowerCase()] = handler;
   }
 }

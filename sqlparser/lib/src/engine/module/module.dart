@@ -47,7 +47,12 @@ abstract class FunctionHandler {
   void reportErrors(SqlInvocation call, AnalysisContext context) {}
 }
 
-abstract class TableValuedFunctionHandler implements FunctionHandler {
+/// Interface for a handler which can resolve the result set of a table-valued
+/// function.
+abstract class TableValuedFunctionHandler {
+  /// The name of the table-valued function implemented by this handler.
+  String get functionName;
+
   /// Resolve the result set of a table-valued function.
   ///
   /// Should return null when the result set can't be resolved.

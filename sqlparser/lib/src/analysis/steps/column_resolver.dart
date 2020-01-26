@@ -136,16 +136,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         }
       },
       isTableFunction: (function) {
-        final functions = context.engineOptions.addedFunctions;
-        final lowercaseName = function.name.toLowerCase();
-        ResultSet resolved;
-
-        if (functions.containsKey(lowercaseName)) {
-          final handler = functions[lowercaseName];
-          if (handler is TableValuedFunctionHandler) {
-            resolved = handler.resolveTableValued(context, function);
-          }
-        }
+        final handler = context
+            .engineOptions.addedTableFunctions[function.name.toLowerCase()];
+        final resolved = handler?.resolveTableValued(context, function);
 
         if (resolved == null) {
           context.reportError(AnalysisError(

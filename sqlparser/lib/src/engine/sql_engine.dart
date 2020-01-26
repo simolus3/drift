@@ -75,6 +75,12 @@ class SqlEngine {
     options.addFunctionHandler(handler);
   }
 
+  /// Registers the [handler], which can infer result sets for a table-valued
+  /// function.
+  void registerTableValuedFunctionHandler(TableValuedFunctionHandler handler) {
+    options.addTableValuedFunctionHandler(handler);
+  }
+
   ReferenceScope _constructRootScope({ReferenceScope parent}) {
     final scope = parent == null ? ReferenceScope(null) : parent.createChild();
     for (final table in knownTables) {
