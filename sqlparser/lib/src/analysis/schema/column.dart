@@ -13,8 +13,6 @@ abstract class Column
   /// Some columns, notably the rowid aliases, are exempt from this.
   bool get includedInResults => true;
 
-  Column();
-
   @override
   String humanReadableDescription() {
     return name;

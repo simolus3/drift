@@ -24,6 +24,14 @@ abstract class ResultSet implements ResolvesToResultSet {
   }
 }
 
+/// A custom result set that has columns but isn't a table.
+class CustomResultSet with ResultSet {
+  @override
+  final List<Column> resolvedColumns;
+
+  CustomResultSet(this.resolvedColumns);
+}
+
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
 class Table

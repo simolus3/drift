@@ -12,11 +12,18 @@ void main() {
 }
 
 void _runTests(bool types2) {
+  final engine = SqlEngine.withOptions(EngineOptions(
+    enableExperimentalTypeInference: types2,
+    enabledExtensions: const [Json1Extension()],
+  ));
+  // add user (name, phone) table
+  final table = engine.schemaReader.read(
+    engine.parse('CREATE TABLE user (name TEXT, phone TEXT)').rootNode
+        as TableInducingStatement,
+  );
+  engine.registerTable(table);
+
   ResolveResult findResult(String expression) {
-    final engine = SqlEngine.withOptions(EngineOptions(
-      enableExperimentalTypeInference: types2,
-      enabledExtensions: const [Json1Extension()],
-    ));
     final result = engine.analyze('SELECT $expression;');
 
     final select = result.root as SelectStatement;
@@ -62,5 +69,15 @@ void _runTests(bool types2) {
       findResult('json_array_length()'),
       const ResolveResult(ResolvedType(type: BasicType.int)),
     );
+  });
+
+  test('can use table-valued functions', () {
+    final result = engine.analyze('''
+SELECT DISTINCT user.name
+  FROM user, json_each(user.phone)
+ WHERE json_each.value LIKE '704-%';
+    ''');
+
+    expect(result.errors, isEmpty);
   });
 }

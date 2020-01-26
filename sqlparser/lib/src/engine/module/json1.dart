@@ -5,7 +5,10 @@ class Json1Extension implements Extension {
 
   @override
   void register(SqlEngine engine) {
-    engine.registerFunctionHandler(const _Json1Functions());
+    engine
+      ..registerFunctionHandler(const _Json1Functions())
+      ..registerTableValuedFunctionHandler(const _JsonEachFunction())
+      ..registerTableValuedFunctionHandler(const _JsonTreeFunction());
   }
 }
 
@@ -67,4 +70,43 @@ class _Json1Functions implements FunctionHandler {
 
   @override
   void reportErrors(SqlInvocation call, AnalysisContext context) {}
+}
+
+final _jsonFunctionResultSet = CustomResultSet([
+  // https://www.sqlite.org/json1.html#the_json_each_and_json_tree_table_valued_functions
+  // we use string for any
+  TableColumn('key', const ResolvedType(type: BasicType.text)),
+  TableColumn(
+      'value', const ResolvedType(type: BasicType.text, nullable: true)),
+  TableColumn('type', const ResolvedType(type: BasicType.text)),
+  TableColumn('atom', const ResolvedType(type: BasicType.text)),
+  TableColumn('type', const ResolvedType(type: BasicType.text)),
+  TableColumn('id', const ResolvedType(type: BasicType.int)),
+  TableColumn(
+      'parent', const ResolvedType(type: BasicType.int, nullable: true)),
+  TableColumn('fullkey', const ResolvedType(type: BasicType.text)),
+]);
+
+abstract class _JsonTableValuedFunction implements TableValuedFunctionHandler {
+  const _JsonTableValuedFunction();
+
+  @override
+  ResultSet resolveTableValued(
+      AnalysisContext context, TableValuedFunction call) {
+    return _jsonFunctionResultSet;
+  }
+}
+
+class _JsonEachFunction extends _JsonTableValuedFunction {
+  const _JsonEachFunction();
+
+  @override
+  String get functionName => 'json_each';
+}
+
+class _JsonTreeFunction extends _JsonTableValuedFunction {
+  const _JsonTreeFunction();
+
+  @override
+  String get functionName => 'json_tree';
 }
