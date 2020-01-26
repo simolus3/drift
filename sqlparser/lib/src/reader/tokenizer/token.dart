@@ -288,6 +288,12 @@ const Map<String, TokenType> moorKeywords = {
   'JSON': TokenType.json,
 };
 
+/// A set of [TokenType]s that can be parsed as an identifier.
+const Set<TokenType> _identifierKeywords = {
+  TokenType.join,
+  TokenType.rowid,
+};
+
 /// Returns true if the [type] belongs to a keyword
 bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 
@@ -416,7 +422,8 @@ class KeywordToken extends Token {
 
   bool canConvertToIdentifier() {
     // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.
-    return type == TokenType.join || moorKeywords.values.contains(type);
+    return _identifierKeywords.contains(type) ||
+        moorKeywords.values.contains(type);
   }
 
   IdentifierToken convertToIdentifier() {

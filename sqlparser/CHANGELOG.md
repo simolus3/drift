@@ -1,3 +1,7 @@
+## unreleased
+
+- Parse `rowid` as a valid reference when needed (`SELECT rowid FROM tbl` is now parsed correctly)
+
 ## 0.6.0
 
 - __Breaking:__ Added an argument type and argument to the visitor classes

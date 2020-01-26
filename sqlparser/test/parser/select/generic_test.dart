@@ -49,6 +49,12 @@ final Map<String, AstNode> testCases = {
       inside: Tuple(expressions: []),
     ),
   ),
+  'SELECT rowid FROM tbl': SelectStatement(
+    columns: [
+      ExpressionResultColumn(expression: Reference(columnName: 'rowid')),
+    ],
+    from: [TableReference('tbl')],
+  ),
 };
 
 void main() {
