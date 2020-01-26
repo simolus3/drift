@@ -2,54 +2,65 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('resolves return types of json functions', () {
-    ResolveResult findResult(String expression) {
-      final engine = SqlEngine.withOptions(EngineOptions(enableJson1: true));
-      final result = engine.analyze('SELECT $expression;');
+  group('json with stable inference', () {
+    _runTests(false);
+  });
 
-      final select = result.root as SelectStatement;
-      final column = select.resultSet.resolvedColumns.single;
+  group('json with types2', () {
+    _runTests(true);
+  });
+}
 
-      return result.typeOf(column);
-    }
+void _runTests(bool types2) {
+  ResolveResult findResult(String expression) {
+    final engine = SqlEngine.withOptions(EngineOptions(
+      enableExperimentalTypeInference: types2,
+      enabledExtensions: const [Json1Extension()],
+    ));
+    final result = engine.analyze('SELECT $expression;');
 
-    const resolvedString = ResolveResult(ResolvedType(type: BasicType.text));
+    final select = result.root as SelectStatement;
+    final column = select.resultSet.resolvedColumns.single;
 
-    test('create json', () {
-      expect(findResult("json('{}')"), resolvedString);
-      expect(findResult("json_array('foo', 'bar')"), resolvedString);
-      expect(findResult("json_insert('{}')"), resolvedString);
-      expect(findResult("json_replace('{}')"), resolvedString);
-      expect(findResult("json_set('{}')"), resolvedString);
-      expect(findResult('json_object()'), resolvedString);
-      expect(findResult("json_patch('{}', '{}')"), resolvedString);
-      expect(findResult("json_remove('{}', '{}')"), resolvedString);
-      expect(findResult("json_quote('foo')"), resolvedString);
-      expect(findResult('json_group_array()'), resolvedString);
-      expect(findResult('json_group_object()'), resolvedString);
-    });
+    return result.typeOf(column);
+  }
 
-    test('json_type', () {
-      expect(
-        findResult("json_type('foo', 'bar')"),
-        const ResolveResult(ResolvedType(type: BasicType.text, nullable: true)),
-      );
-    });
+  const resolvedString = ResolveResult(ResolvedType(type: BasicType.text));
 
-    test('json_valid', () {
-      expect(
-          findResult('json_valid()'), const ResolveResult(ResolvedType.bool()));
-    });
+  test('create json', () {
+    expect(findResult("json('{}')"), resolvedString);
+    expect(findResult("json_array('foo', 'bar')"), resolvedString);
+    expect(findResult("json_insert('{}')"), resolvedString);
+    expect(findResult("json_replace('{}')"), resolvedString);
+    expect(findResult("json_set('{}')"), resolvedString);
+    expect(findResult('json_object()'), resolvedString);
+    expect(findResult("json_patch('{}', '{}')"), resolvedString);
+    expect(findResult("json_remove('{}', '{}')"), resolvedString);
+    expect(findResult("json_quote('foo')"), resolvedString);
+    expect(findResult('json_group_array()'), resolvedString);
+    expect(findResult('json_group_object()'), resolvedString);
+  });
 
-    test('json_extract', () {
-      expect(findResult('json_extract()'), const ResolveResult.unknown());
-    });
+  test('json_type', () {
+    expect(
+      findResult("json_type('foo', 'bar')"),
+      const ResolveResult(ResolvedType(type: BasicType.text, nullable: true)),
+    );
+  });
 
-    test('json_array_length', () {
-      expect(
-        findResult('json_array_length()'),
-        const ResolveResult(ResolvedType(type: BasicType.int)),
-      );
-    });
+  test('json_valid', () {
+    expect(
+        findResult('json_valid()'), const ResolveResult(ResolvedType.bool()));
+  });
+
+  test('json_extract', () {
+    expect(findResult('json_extract()'), const ResolveResult.unknown());
+  });
+
+  test('json_array_length', () {
+    expect(
+      findResult('json_array_length()'),
+      const ResolveResult(ResolvedType(type: BasicType.int)),
+    );
   });
 }

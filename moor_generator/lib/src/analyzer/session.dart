@@ -38,9 +38,9 @@ class MoorSession {
   SqlEngine spawnEngine() {
     final sqlOptions = EngineOptions(
       useMoorExtensions: true,
-      enableJson1: options.hasModule(SqlModule.json1),
       enabledExtensions: [
         if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
+        if (options.hasModule(SqlModule.json1)) const Json1Extension(),
       ],
       enableExperimentalTypeInference: options.useExperimentalInference,
     );

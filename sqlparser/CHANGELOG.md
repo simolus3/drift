@@ -1,5 +1,8 @@
 ## unreleased
 
+- New feature: Table valued functions.
+- __Breaking__: Removed the `enableJson1` parameter on `EngineOptions`. Add a `Json1Extension` instance
+  to `enabledExtensions` instead.
 - Parse `rowid` as a valid reference when needed (`SELECT rowid FROM tbl` is now parsed correctly)
 
 ## 0.6.0

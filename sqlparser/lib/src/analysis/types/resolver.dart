@@ -277,34 +277,6 @@ class TypeResolver {
           ]).withNullable(true);
       }
 
-      if (options.enableJson1) {
-        switch (call.name.toLowerCase()) {
-          case 'json':
-          case 'json_array':
-          case 'json_insert':
-          case 'json_replace':
-          case 'json_set':
-          case 'json_object':
-          case 'json_patch':
-          case 'json_remove':
-          case 'json_quote':
-          case 'json_group_array':
-          case 'json_group_object':
-            return const ResolveResult(ResolvedType(type: BasicType.text));
-          case 'json_type':
-            return const ResolveResult(
-                ResolvedType(type: BasicType.text, nullable: true));
-          case 'json_valid':
-            return const ResolveResult(ResolvedType.bool());
-          case 'json_extract':
-            // return unknown so that we don't hide the state error. In reality
-            // we have no idea what json_extract returns
-            return const ResolveResult.unknown();
-          case 'json_array_length':
-            return const ResolveResult(ResolvedType(type: BasicType.int));
-        }
-      }
-
       if (options.addedFunctions.containsKey(lowercaseName)) {
         return options.addedFunctions[lowercaseName]
             .inferReturnType(context, call, parameters);

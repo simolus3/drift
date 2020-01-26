@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/analysis/types2/types.dart' as t2;
 import 'package:sqlparser/src/engine/module/fts5.dart';
+import 'package:sqlparser/src/engine/module/json1.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
@@ -234,10 +235,11 @@ class SqlEngine {
   static EngineOptions _constructOptions({bool moor, bool fts5, bool json1}) {
     final extensions = [
       if (fts5) const Fts5Extension(),
+      if (json1) const Json1Extension(),
     ];
+
     return EngineOptions(
       useMoorExtensions: moor,
-      enableJson1: json1,
       enabledExtensions: extensions,
     );
   }

@@ -6,9 +6,6 @@ class EngineOptions {
   /// extensions enabled.
   final bool useMoorExtensions;
 
-  /// Enables functions declared in the `json1` module for analysis
-  final bool enableJson1;
-
   /// Enables the new, experimental type inference.
   final bool enableExperimentalTypeInference;
 
@@ -26,7 +23,6 @@ class EngineOptions {
 
   EngineOptions({
     this.useMoorExtensions = false,
-    this.enableJson1 = false,
     this.enabledExtensions = const [],
     this.enableExperimentalTypeInference = false,
   });

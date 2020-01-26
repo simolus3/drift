@@ -510,34 +510,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return null;
     }
 
-    final options = session.options;
-    if (options.enableJson1) {
-      switch (lowercaseName) {
-        case 'json':
-        case 'json_array':
-        case 'json_insert':
-        case 'json_replace':
-        case 'json_set':
-        case 'json_object':
-        case 'json_patch':
-        case 'json_remove':
-        case 'json_quote':
-        case 'json_group_array':
-        case 'json_group_object':
-          return _textType;
-        case 'json_type':
-          return _textType;
-        case 'json_valid':
-          return const ResolvedType.bool();
-        case 'json_extract':
-          return null;
-        case 'json_array_length':
-          return _intType;
-      }
-    }
-
-    if (options.addedFunctions.containsKey(lowercaseName)) {
-      return options.addedFunctions[lowercaseName]
+    final addedFunctions = session.options.addedFunctions;
+    if (addedFunctions.containsKey(lowercaseName)) {
+      return addedFunctions[lowercaseName]
           .inferReturnType(session.context, e, params)
           ?.type;
     }
