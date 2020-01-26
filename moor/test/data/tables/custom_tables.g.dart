@@ -1181,11 +1181,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(_rowToConfig);
   }
 
-  Selectable<Config> findValidJsons() {
+  TableValuedResult _rowToTableValuedResult(QueryRow row) {
+    return TableValuedResult(
+      key: row.readString('key'),
+      value: row.readString('value'),
+    );
+  }
+
+  Selectable<TableValuedResult> tableValued() {
     return customSelectQuery(
-        'SELECT * FROM config WHERE json_valid(config_value)',
+        'SELECT\n   "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
-        readsFrom: {config}).map(_rowToConfig);
+        readsFrom: {config}).map(_rowToTableValuedResult);
   }
 
   MultipleResult _rowToMultipleResult(QueryRow row) {
@@ -1268,6 +1275,23 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         mytable,
         email
       ];
+}
+
+class TableValuedResult {
+  final String key;
+  final String value;
+  TableValuedResult({
+    this.key,
+    this.value,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is TableValuedResult &&
+          other.key == this.key &&
+          other.value == this.value);
 }
 
 class MultipleResult {
