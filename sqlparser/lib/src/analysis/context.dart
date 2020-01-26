@@ -17,6 +17,12 @@ class AnalysisContext {
   /// outside.
   final AnalyzeStatementOptions stmtOptions;
 
+  /// Options passed to the surrounding engine.
+  ///
+  /// This contains information about enabled sqlite modules and how to resolve
+  /// some functions.
+  final EngineOptions engineOptions;
+
   /// Utilities to read types.
   final SchemaFromCreateTable schemaSupport;
 
@@ -40,11 +46,11 @@ class AnalysisContext {
   TypeInferenceResults types2;
 
   /// Constructs a new analysis context from the AST and the source sql.
-  AnalysisContext(this.root, this.sql, EngineOptions options,
+  AnalysisContext(this.root, this.sql, this.engineOptions,
       {AnalyzeStatementOptions stmtOptions, this.schemaSupport})
       : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions() {
-    if (!options.enableExperimentalTypeInference) {
-      types = TypeResolver(this, options);
+    if (!engineOptions.enableExperimentalTypeInference) {
+      types = TypeResolver(this, engineOptions);
     }
   }
 

@@ -118,6 +118,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         // Queryables, so we can deal with them by visiting the children and
         // dont't need to do anything here.
       },
+      isTableFunction: (function) {
+        if (function.as != null) {
+          scope.register(function.as, function);
+        }
+        scope.register(function.name, function);
+      },
     );
 
     visitChildren(e, arg);

@@ -135,6 +135,29 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           _handle(query, availableColumns);
         }
       },
+      isTableFunction: (function) {
+        final functions = context.engineOptions.addedFunctions;
+        final lowercaseName = function.name.toLowerCase();
+        ResultSet resolved;
+
+        if (functions.containsKey(lowercaseName)) {
+          final handler = functions[lowercaseName];
+          if (handler is TableValuedFunctionHandler) {
+            resolved = handler.resolveTableValued(context, function);
+          }
+        }
+
+        if (resolved == null) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.unknownFunction,
+            message: 'Could not extract the result set for this table function',
+            relevantNode: function,
+          ));
+        } else {
+          function.resultSet = resolved;
+          availableColumns.addAll(resolved.resolvedColumns);
+        }
+      },
     );
   }
 

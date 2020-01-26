@@ -47,6 +47,17 @@ abstract class FunctionHandler {
   void reportErrors(SqlInvocation call, AnalysisContext context) {}
 }
 
+abstract class TableValuedFunctionHandler implements FunctionHandler {
+  /// Resolve the result set of a table-valued function.
+  ///
+  /// Should return null when the result set can't be resolved.
+  ///
+  /// See also:
+  ///  - https://www.sqlite.org/vtab.html#tabfunc2
+  ResultSet resolveTableValued(
+      AnalysisContext context, TableValuedFunction call);
+}
+
 /// An sqlite module, which can be used in a `CREATE VIRTUAL TABLE` statement
 /// to find providers.
 abstract class Module implements Referencable, VisibleToChildren {

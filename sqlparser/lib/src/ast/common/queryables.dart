@@ -171,7 +171,7 @@ class UsingConstraint extends JoinConstraint {
 }
 
 class TableValuedFunction extends Queryable
-    implements TableOrSubquery, SqlInvocation, Renamable {
+    implements TableOrSubquery, SqlInvocation, Renamable, ResolvesToResultSet {
   @override
   final String name;
 
@@ -180,6 +180,9 @@ class TableValuedFunction extends Queryable
 
   @override
   final FunctionParameters parameters;
+
+  @override
+  ResultSet resultSet;
 
   TableValuedFunction(this.name, this.parameters, {this.as});
 
