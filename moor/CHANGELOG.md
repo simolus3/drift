@@ -3,6 +3,8 @@
 - Support aggregate expressions and `group by` in the Dart api
 - Support type converters in moor files! The [documentation](https://moor.simonbinder.eu/docs/advanced-features/type_converters/)
   has been updated to explain how to use them.
+- Support table-valued functions (like `json_each` and `json_tree`) in moor files 
+  [#260](https://github.com/simolus3/moor/issues/260).
 
 ## 2.3.0
 
