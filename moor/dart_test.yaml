@@ -10,3 +10,8 @@ presets:
     platforms:
       - chrome
       - firefox
+
+override_platforms:
+  firefox:
+    settings:
+      arguments: -headless
