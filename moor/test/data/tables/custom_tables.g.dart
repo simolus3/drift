@@ -1190,7 +1190,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<TableValuedResult> tableValued() {
     return customSelectQuery(
-        'SELECT\n   "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
+        'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {config}).map(_rowToTableValuedResult);
   }

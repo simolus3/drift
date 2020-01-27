@@ -82,5 +82,7 @@ void main() {
     // regression test for https://github.com/simolus3/moor/issues/199 - the
     // mock will throw when used before opening
     expect(db.customStatement('UPDATE tbl SET a = b'), completes);
+  }, onPlatform: const {
+    'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
   });
 }

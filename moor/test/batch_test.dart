@@ -90,6 +90,8 @@ void main() {
 
     verifyNever(executor.runBatched(any));
     verify(executor.transactions.runBatched(any));
+  }, onPlatform: const {
+    'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
   });
 
   test('updates stream queries', () async {
