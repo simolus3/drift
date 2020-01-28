@@ -1,6 +1,8 @@
 # Run tasks with the dart SDK installed by default
 container:
   dockerfile: tool/Dockerfile
+  memory: 12G
+  cpu: 4
 
 task:
   pub_cache:
