@@ -12,11 +12,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   JoinedSelectStatement(
       QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
       [this.distinct = false, this._includeMainTableInResult = true])
-      : super(database, table) {
-    // use all columns across all tables as result column for this query
-    _selectedColumns.addAll(
-        _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
-  }
+      : super(database, table);
 
   /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
   /// rows from the result set.
@@ -60,6 +56,10 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
   @override
   void writeStartPart(GenerationContext ctx) {
+    // use all columns across all tables as result column for this query
+    _selectedColumns.insertAll(
+        0, _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
+
     ctx.hasMultipleTables = true;
     ctx.buffer..write(_beginOfSelect(distinct))..write(' ');
 
@@ -74,8 +74,8 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
         chosenAlias = '${column.tableName}.${column.$name}';
       } else {
         chosenAlias = 'c$i';
-        _columnAliases[column] = chosenAlias;
       }
+      _columnAliases[column] = chosenAlias;
 
       column.writeInto(ctx);
       ctx.buffer..write(' AS "')..write(chosenAlias)..write('"');
@@ -143,6 +143,23 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// {@endtemplate}
   void addColumns(Iterable<Expression> expressions) {
     _selectedColumns.addAll(expressions);
+  }
+
+  /// Adds more joined tables to this [JoinedSelectStatement].
+  ///
+  /// Always returns the same instance.
+  ///
+  /// See also:
+  ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+  ///  - [SimpleSelectStatement.join], which is used for the first join
+  ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
+  ///  construct a [Join].
+  ///  - [DatabaseConnectionUser.alias], which can be used to build statements
+  ///  that refer to the same table multiple times.
+  // ignore: avoid_returning_this
+  JoinedSelectStatement join(List<Join> joins) {
+    _joins.addAll(joins);
+    return this;
   }
 
   /// Groups the result by values in [expressions].

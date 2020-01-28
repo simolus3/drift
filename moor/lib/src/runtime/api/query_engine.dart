@@ -133,7 +133,7 @@ mixin QueryEngine on DatabaseConnectionUser {
     bool distinct = false,
   }) {
     return JoinedSelectStatement<T, R>(
-        _resolvedEngine, table, const [], distinct, false);
+        _resolvedEngine, table, [], distinct, false);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.

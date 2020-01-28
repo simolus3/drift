@@ -96,6 +96,26 @@ class _AggregateExpression<D, S extends SqlType<D>> extends Expression<D, S> {
       context.buffer.write(')');
     }
   }
+
+  @override
+  int get hashCode {
+    return $mrjf($mrjc(functionName.hashCode,
+        $mrjc(distinct.hashCode, $mrjc(parameter.hashCode, filter.hashCode))));
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (!identical(this, other) && other.runtimeType != runtimeType) {
+      return false;
+    }
+
+    // ignore: test_types_in_equals
+    final typedOther = other as _AggregateExpression;
+    return typedOther.functionName == functionName &&
+        typedOther.distinct == distinct &&
+        typedOther.parameter == parameter &&
+        typedOther.filter == filter;
+  }
 }
 
 class _StarFunctionParameter implements FunctionParameter {

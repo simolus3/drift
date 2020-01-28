@@ -12,6 +12,9 @@ abstract class FunctionParameter implements Component {}
 /// Any sql expression that evaluates to some generic value. This does not
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
+///
+/// It's important that all subclasses properly implement [hashCode] and
+/// [==].
 abstract class Expression<D, T extends SqlType<D>>
     implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.

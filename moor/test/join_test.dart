@@ -225,6 +225,42 @@ void main() {
     expect(result, 3.0);
   });
 
+  test('join on JoinedSelectStatement', () async {
+    final categories = db.categories;
+    final todos = db.todosTable;
+
+    final query = db.selectOnly(categories).join([
+      innerJoin(
+        todos,
+        todos.category.equalsExp(categories.id),
+        useColumns: false,
+      )
+    ]);
+    query
+      ..addColumns([categories.id, todos.id.count()])
+      ..groupBy([categories.id]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {
+          'categories.id': 2,
+          'c1': 10,
+        }
+      ];
+    });
+
+    final result = await query.getSingle();
+
+    verify(executor.runSelect(
+        'SELECT categories.id AS "categories.id", COUNT(todos.id) AS "c1" '
+        'FROM categories INNER JOIN todos ON todos.category = categories.id '
+        'GROUP BY categories.id;',
+        []));
+
+    expect(result.read(categories.id), equals(2));
+    expect(result.read(todos.id.count()), equals(10));
+  });
+
   test('injects custom error message when a table is used multiple times',
       () async {
     when(executor.runSelect(any, any)).thenAnswer((_) => Future.error('nah'));

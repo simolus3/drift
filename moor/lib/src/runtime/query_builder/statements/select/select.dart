@@ -60,6 +60,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// ```
   ///
   /// See also:
+  ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
   ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
   ///  construct a [Join].
   ///  - [DatabaseConnectionUser.alias], which can be used to build statements

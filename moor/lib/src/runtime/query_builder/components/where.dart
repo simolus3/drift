@@ -14,4 +14,13 @@ class Where extends Component {
     context.buffer.write('WHERE ');
     predicate.writeInto(context);
   }
+
+  @override
+  int get hashCode => predicate.hashCode * 7;
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        other is Where && other.predicate == predicate;
+  }
 }
