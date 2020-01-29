@@ -8,3 +8,4 @@ pubspec.lock
 .dart_tool/
 
 benchmark_results.json
+.flutter-plugins-dependencies

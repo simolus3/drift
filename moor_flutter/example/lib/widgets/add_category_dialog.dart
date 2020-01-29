@@ -22,7 +22,7 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
               padding: const EdgeInsets.all(8),
               child: Text(
                 'Add a category',
-                style: Theme.of(context).textTheme.title,
+                style: Theme.of(context).textTheme.headline6,
               ),
             ),
             TextField(

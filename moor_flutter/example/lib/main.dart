@@ -15,12 +15,7 @@ class MyApp extends StatelessWidget {
         title: 'moor Demo',
         theme: ThemeData(
           primarySwatch: Colors.orange,
-          // use the good-looking updated material text style
-          typography: Typography(
-            englishLike: Typography.englishLike2018,
-            dense: Typography.dense2018,
-            tall: Typography.tall2018,
-          ),
+          typography: Typography.material2018(),
         ),
         home: HomeScreen(),
       ),
