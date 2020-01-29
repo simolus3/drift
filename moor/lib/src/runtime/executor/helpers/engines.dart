@@ -176,6 +176,9 @@ class _TransactionExecutor extends TransactionExecutor
 
   @override
   Future<void> send() async {
+    // don't do anything if the transaction completes before it was opened
+    if (_openingCompleter == null) return;
+
     if (_sendOnCommit != null) {
       await runCustom(_sendOnCommit, const []);
       _db.delegate.isInTransaction = false;
@@ -186,6 +189,9 @@ class _TransactionExecutor extends TransactionExecutor
 
   @override
   Future<void> rollback() async {
+    // don't do anything if the transaction completes before it was opened
+    if (_openingCompleter == null) return;
+
     if (_sendOnRollback != null) {
       await runCustom(_sendOnRollback, const []);
       _db.delegate.isInTransaction = false;

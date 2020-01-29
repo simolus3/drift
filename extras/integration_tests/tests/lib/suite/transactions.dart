@@ -52,4 +52,9 @@ void transactionTests(TestExecutor executor) {
 
     await db.close();
   });
+
+  test('can use no-op transactions', () async {
+    final db = Database(executor.createExecutor());
+    await db.transaction(() => Future.value(null));
+  });
 }

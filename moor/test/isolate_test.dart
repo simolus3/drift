@@ -114,7 +114,14 @@ void _runTests(
     expect(result, isNotEmpty);
   });
 
-  test('transactions have an isolate view on data', () async {
+  test('supports no-op transactions', () async {
+    final database = TodoDb.connect(isolateConnection);
+    await database.transaction(() {
+      return Future.value(null);
+    });
+  });
+
+  test('transactions have an isolated view on data', () async {
     // regression test for https://github.com/simolus3/moor/issues/324
     final db = TodoDb.connect(isolateConnection);
 

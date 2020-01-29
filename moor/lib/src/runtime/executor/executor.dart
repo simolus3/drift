@@ -104,9 +104,17 @@ class BatchedStatement {
 abstract class TransactionExecutor extends QueryExecutor {
   /// Completes the transaction. No further queries may be sent to to this
   /// [QueryExecutor] after this method was called.
+  ///
+  /// This may be called before [ensureOpen] was awaited, implementations must
+  /// support this. That state implies that no query was sent, so it should be
+  /// a no-op.
   Future<void> send();
 
   /// Cancels this transaction. No further queries may be sent ot this
   /// [QueryExecutor] after this method was called.
+  ///
+  /// This may be called before [ensureOpen] was awaited, implementations must
+  /// support this. That state implies that no query was sent, so it should be
+  /// a no-op.
   Future<void> rollback();
 }

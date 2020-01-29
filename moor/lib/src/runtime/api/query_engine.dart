@@ -26,7 +26,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Here, the `update` method would be called on the [GeneratedDatabase]
   /// although it is very likely that the user meant to call it on the
   /// [Transaction] t. We can detect this by calling the function passed to
-  /// `transaction` in a forked [Zone] storing the transaction in
+  /// `transaction` in a forked [Zone].
   @protected
   bool get topLevel => false;
 

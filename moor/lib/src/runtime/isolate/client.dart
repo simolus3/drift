@@ -158,13 +158,19 @@ class _TransactionIsolateExecutor extends _BaseExecutor
   }
 
   @override
-  Future<void> rollback() {
-    return _sendAction(_TransactionControl.rollback);
+  Future<void> rollback() async {
+    // don't do anything if the transaction isn't open yet
+    if (_pendingOpen == null) return;
+
+    return await _sendAction(_TransactionControl.rollback);
   }
 
   @override
-  Future<void> send() {
-    return _sendAction(_TransactionControl.commit);
+  Future<void> send() async {
+    // don't do anything if the transaction isn't open yet
+    if (_pendingOpen == null) return;
+
+    return await _sendAction(_TransactionControl.commit);
   }
 }
 

@@ -5,6 +5,7 @@
   has been updated to explain how to use them.
 - Support table-valued functions (like `json_each` and `json_tree`) in moor files 
   [#260](https://github.com/simolus3/moor/issues/260).
+- Fix a crash when opening a transaction without using it ([#361](https://github.com/simolus3/moor/issues/361))
 
 ## 2.3.0
 
