@@ -1,3 +1,7 @@
+## 0.4.0
+
+- Use precompiled libraries for faster build times
+
 ## 0.3.2
 
 - Fix a bug where empty blobs would read as `null` instead of an empty list

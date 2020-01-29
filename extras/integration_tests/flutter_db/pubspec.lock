@@ -173,14 +173,14 @@ packages:
       path: "../../../moor"
       relative: true
     source: path
-    version: "2.1.0"
+    version: "2.3.0"
   moor_ffi:
     dependency: "direct main"
     description:
       path: "../../../moor_ffi"
       relative: true
     source: path
-    version: "0.2.0"
+    version: "0.4.0"
   moor_flutter:
     dependency: "direct main"
     description:

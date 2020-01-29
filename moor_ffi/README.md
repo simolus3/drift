@@ -14,13 +14,7 @@ Out of the box, this library supports all platforms where `sqlite3` is installed
 - macOS: Yes
 - Linux: Available on most distros
 - Windows: Additional setup is required
-- Android: Yes when used with Flutter
-
-Unless explicitly noted, this library works with and without Flutter. 
-If you're using Flutter, this library will bundle `sqlite3` in your Android app. This 
-requires the Android NDK to be installed (You can get the NDK in the [SDK Manager](https://developer.android.com/studio/intro/update.html#sdk-manager)
-of Android Studio). Note that the first `flutter run` is going to take a very long time as
-we need to compile sqlite.
+- Android: Yes when used with Flutter, this library includes the necessary native libraries on Android
 
 ### On other platforms
 Using this library on platforms that are not supported out of the box is fairly 

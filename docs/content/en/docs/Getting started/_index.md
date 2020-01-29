@@ -37,9 +37,6 @@ If you're wondering why so many packages are necessary, here's a quick overview 
 - `moor_generator`: Generates query code based on your tables
 - `build_runner`: Common tool for code-generation, maintained by the Dart team
 
-Note that, on Android, the NDK is required. You can easily install the NDK and CMake from the SDK Manager in Android Studio
-by following the instructions [here](https://developer.android.com/studio/projects/install-ndk.md).
-
 {{% changed_to_ffi %}}
 
 ### Declaring tables
