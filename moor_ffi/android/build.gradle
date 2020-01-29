@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath 'com.android.tools.build:gradle:3.5.3'
     }
 }
 
@@ -16,6 +16,10 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+
+        maven {
+            url 'https://dl.bintray.com/sbinder/sqlite3-native-library/'
+        }
     }
 }
 
@@ -28,23 +32,11 @@ android {
         minSdkVersion 16
     }
 
-    externalNativeBuild {
-        cmake {
-            path "cpp/CMakeLists.txt"
-        }
-    }
-
     lintOptions {
         disable 'InvalidPackage'
     }
 }
 
-task extractSqlite(type: Copy) {
-    from zipTree('sqlite.zip').matching {
-        include '*/sqlite3.c'
-        eachFile { it.setPath(it.getName()) } // Don't use top-level folder in zip
-    }
-    into 'cpp'
+dependencies {
+    implementation 'eu.simonbinder:sqlite3-native-library:3.30.1'
 }
-
-preBuild.dependsOn extractSqlite
