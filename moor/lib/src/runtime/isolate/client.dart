@@ -52,7 +52,8 @@ class _MoorClient {
       return connectedDb.beforeOpenCallback(
           _connection.executor, payload.details);
     } else if (payload is _NotifyTablesUpdated) {
-      _streamStore.handleTableUpdatesByName(payload.updatedTables.toSet());
+      _streamStore.handleTableUpdatesByName(
+          payload.updatedTables.toSet(), true);
     }
   }
 }
@@ -176,17 +177,39 @@ class _TransactionIsolateExecutor extends _BaseExecutor
 
 class _IsolateStreamQueryStore extends StreamQueryStore {
   final _MoorClient client;
+  final Set<Completer> _awaitingUpdates = {};
 
   _IsolateStreamQueryStore(this.client);
 
   @override
-  Future<void> handleTableUpdates(Set<TableInfo> tables) {
-    // we're not calling super.handleTableUpdates because the server will send
-    // a notification of those tables to all clients, including the one who sent
-    // this. When we get that reply, we update the tables.
-    // Note that we're not running into an infinite feedback loop because the
-    // client will call handleTableUpdatesByName. That's kind of a hack.
-    return client._channel.request(
-        _NotifyTablesUpdated(tables.map((t) => t.actualTableName).toList()));
+  void handleTableUpdatesByName(Set<String> updatedTableNames,
+      [bool comesFromServer = false]) {
+    if (comesFromServer) {
+      super.handleTableUpdatesByName(updatedTableNames);
+    } else {
+      // requests are async, but the function is synchronous. We await that
+      // future in close()
+      final completer = Completer<void>();
+      _awaitingUpdates.add(completer);
+
+      completer.complete(client._channel
+          .request(_NotifyTablesUpdated(updatedTableNames.toList())));
+
+      completer.future.catchError((_) {
+        // we don't care about errors if the connection is closed before the
+        // update is dispatched. Why?
+      }, test: (e) => e is ConnectionClosedException).whenComplete(() {
+        _awaitingUpdates.remove(completer);
+      });
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await super.close();
+
+    // create a copy because awaiting futures in here mutates the set
+    final updatesCopy = _awaitingUpdates.map((e) => e.future).toList();
+    await Future.wait(updatesCopy);
   }
 }

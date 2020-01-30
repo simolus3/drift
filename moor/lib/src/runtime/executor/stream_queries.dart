@@ -114,6 +114,8 @@ class StreamQueryStore {
   /// Handles updates on tables by their name. All queries reading from any of
   /// the tables in [updatedTableNames] will fetch their data again.
   void handleTableUpdatesByName(Set<String> updatedTableNames) {
+    if (_isShuttingDown) return;
+
     _updatedTableNames.add(updatedTableNames);
   }
 

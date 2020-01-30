@@ -58,6 +58,8 @@ class IsolateCommunication {
 
   /// Closes the connection to the server.
   void close() {
+    if (_closeCompleter.isCompleted) return;
+
     _send(_ConnectionClose());
     _closeLocally();
   }
@@ -67,7 +69,7 @@ class IsolateCommunication {
     _closeCompleter.complete();
 
     for (final pending in _pendingRequests.values) {
-      pending.completeError(StateError('connection closed'));
+      pending.completeError(const ConnectionClosedException());
     }
     _pendingRequests.clear();
   }
@@ -280,4 +282,11 @@ class _ErrorResponse extends _Response {
   String toString() {
     return 'error response (id = $requestId): $error at $stackTrace';
   }
+}
+
+/// Exception thrown when there are outstanding pending requests at the time the
+/// isolate connection was cancelled.
+class ConnectionClosedException implements Exception {
+  /// Constant constructor.
+  const ConnectionClosedException();
 }

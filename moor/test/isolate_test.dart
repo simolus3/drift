@@ -119,6 +119,7 @@ void _runTests(
     await database.transaction(() {
       return Future.value(null);
     });
+    await database.close();
   });
 
   test('transactions have an isolated view on data', () async {
@@ -148,6 +149,8 @@ void _runTests(
     await rowInserted.future;
     await expectRowCount(db, 0);
     await runTransaction; // wait for the transaction to complete
+
+    await db.close();
   });
 }
 
