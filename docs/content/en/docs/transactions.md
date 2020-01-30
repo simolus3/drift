@@ -36,15 +36,24 @@ There are a couple of things that should be kept in mind when working with trans
 1. __Await all calls__: All queries inside the transaction must be `await`-ed. The transaction
   will complete when the inner method completes. Without `await`, some queries might be operating
   on the transaction after it has been closed! This can cause data loss or runtime crashes.
-2. __No select streams in transactions__: Inside a `transaction` callback, select statements can't
-be `.watch()`ed. The reasons behind this is that it's unclear how a stream should behave when a
-transaction completes. Should the stream complete as well? Update to data changes made outside of the
-transaction? Both seem inconsistent, so moor forbids this.
+2. __Different behavior of stream queries__: Inside a `transaction` callback, stream queries behave
+differently. If you're creating streams inside a transaction, check the next section to learn how
+they behave.
 
 ## Transactions and query streams
 Query streams that have been created outside a transaction work nicely together with
 updates made in a transaction: All changes to tables will only be reported after the
 transaction completes. Updates inside a transaction don't have an immediate effect on
-streams, so your data will always be consistent.
+streams, so your data will always be consistent and there aren't any uneccessary updates.
 
-However, as mentioned above, note that streams can't be created inside a `transaction` block.
+With streams created _inside_ a `transaction` block (or a nested call in there), it's
+a different story. Notably, they
+
+- reflect on changes made in the transaction immediatly
+- complete when the transaction completes
+
+This behavior is useful if you're collapsing streams inside a transaction, for instance by
+calling `first` or `fold`.
+However, we recommend that streams created _inside_ a transaction are not listened to
+_outside_ of a transaction. While it's possible, it defeats the isolation principle
+of transactions as its state is exposed through the stream.

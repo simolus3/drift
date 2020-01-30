@@ -3,6 +3,7 @@
 - Support aggregate expressions and `group by` in the Dart api
 - Support type converters in moor files! The [documentation](https://moor.simonbinder.eu/docs/advanced-features/type_converters/)
   has been updated to explain how to use them.
+- Support stream queries in transactions ([#356](https://github.com/simolus3/moor/issues/365))
 - Support table-valued functions (like `json_each` and `json_tree`) in moor files 
   [#260](https://github.com/simolus3/moor/issues/260).
 - Fix a crash when opening a transaction without using it ([#361](https://github.com/simolus3/moor/issues/361))

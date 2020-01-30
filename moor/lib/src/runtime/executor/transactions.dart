@@ -17,10 +17,14 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
   /// Instructs the underlying executor to execute this instructions. Batched
   /// table updates will also be send to the stream query store.
   Future complete() async {
-    final streams = streamQueries as _TransactionStreamStore;
     await (executor as TransactionExecutor).send();
+  }
 
-    await streams.dispatchUpdates();
+  /// Closes all streams created in this transactions and applies table updates
+  /// to the main stream store.
+  Future<void> disposeChildStreams() async {
+    final streams = streamQueries as _TransactionStreamStore;
+    await streams._dispatchAndClose();
   }
 }
 
@@ -28,24 +32,47 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 /// updates to the outer stream query store when the transaction is completed.
 class _TransactionStreamStore extends StreamQueryStore {
   final StreamQueryStore parent;
-  final Set<TableInfo> affectedTables = <TableInfo>{};
+
+  final Set<String> affectedTables = <String>{};
+  final Set<QueryStream> _queriesWithoutKey = {};
 
   _TransactionStreamStore(this.parent);
 
   @override
-  Stream<T> registerStream<T>(QueryStreamFetcher<T> statement) {
-    throw StateError('Streams cannot be created inside a transaction. See the '
-        'documentation of GeneratedDatabase.transaction for details.');
+  void handleTableUpdatesByName(Set<String> tables) {
+    affectedTables.addAll(tables);
+    super.handleTableUpdatesByName(tables);
+  }
+
+  // Override lifecycle hooks for each stream. The regular StreamQueryStore
+  // keeps track of created streams if they have a key. It also takes care of
+  // closing the underlying stream controllers when calling close(), which we
+  // do.
+  // However, it doesn't keep track of keyless queries, as those can't be
+  // cached and keeping a reference would leak. A transaction is usually
+  // completed quickly, so we can keep a list and close that too.
+
+  @override
+  void markAsOpened(QueryStream stream) {
+    super.markAsOpened(stream);
+
+    if (!stream.hasKey) {
+      _queriesWithoutKey.add(stream);
+    }
   }
 
   @override
-  Future handleTableUpdates(Set<TableInfo> tables) {
-    affectedTables.addAll(tables);
-    return Future.value(null);
+  void markAsClosed(QueryStream stream, Function() whenRemoved) {
+    super.markAsClosed(stream, whenRemoved);
+
+    _queriesWithoutKey.add(stream);
   }
 
-  Future dispatchUpdates() {
-    return parent.handleTableUpdates(affectedTables);
+  Future _dispatchAndClose() async {
+    parent.handleTableUpdatesByName(affectedTables);
+
+    await super.close();
+    await Future.wait(_queriesWithoutKey.map((e) => e.close()));
   }
 }
 

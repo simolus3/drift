@@ -189,6 +189,8 @@ class QueryStream<T> {
     return _controller.stream.transform(StartWithValueTransformer(_cachedData));
   }
 
+  bool get hasKey => _fetcher.key != null;
+
   QueryStream(this._fetcher, this._store);
 
   /// Called when we have a new listener, makes the stream query behave similar
@@ -245,5 +247,9 @@ class QueryStream<T> {
         _controller.addError(e, s);
       }
     }
+  }
+
+  Future<void> close() {
+    return _controller.close();
   }
 }

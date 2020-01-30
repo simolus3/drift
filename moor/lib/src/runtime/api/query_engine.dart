@@ -47,6 +47,14 @@ mixin QueryEngine on DatabaseConnectionUser {
     }
   }
 
+  /// Marks the tables as updated. This method will be called internally
+  /// whenever a update, delete or insert statement is issued on the database.
+  /// We can then inform all active select-streams on those tables that their
+  /// snapshot might be out-of-date and needs to be fetched again.
+  void markTablesUpdated(Set<TableInfo> tables) {
+    _resolvedEngine.streamQueries.handleTableUpdates(tables);
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
@@ -253,14 +261,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Executes [action] in a transaction, which means that all its queries and
   /// updates will be called atomically.
   ///
-  /// Please be aware of the following limitations of transactions:
-  ///  1. Inside a transaction, auto-updating streams cannot be created. This
-  ///     operation will throw at runtime. The reason behind this is that a
-  ///     stream might have a longer lifespan than a transaction, but it still
-  ///     needs to know about the transaction because the data in a transaction
-  ///     might be different than that of the "global" database instance.
-  ///  2. Nested transactions are not supported. Creating another transaction
-  ///     inside a transaction returns the parent transaction.
+  /// Returns the value of [action].
+  /// When [action] throws an exception, the transaction will be reset and no
+  /// changes will be applied to the databases. The exception will be rethrown
+  /// by [transaction].
+  ///
+  /// The behavior of stream queries in transactions depends on where the stream
+  /// was created:
+  ///
+  /// - streams created outside of a [transaction] block: The stream will update
+  ///   with the tables modified in the transaction after it completes
+  ///   successfully. If the transaction fails, the stream will not update.
+  /// - streams created inside a [transaction] block: The stream will update for
+  ///   each write in the transaction. When the transaction completes,
+  ///   successful or not, streams created in it will close. Writes happening
+  ///   outside of this transaction will not affect the stream.
+  ///
+  /// Please note that nested transactions are not supported. Creating another
+  /// transaction inside a transaction returns the parent transaction.
+  ///
+  /// See also:
+  ///  - the docs on [transactions](https://moor.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action) async {
     final resolved = _resolvedEngine;
     if (resolved is Transaction) {
@@ -288,6 +309,7 @@ mixin QueryEngine on DatabaseConnectionUser {
             // complete() will also take care of committing the transaction
             await transaction.complete();
           }
+          await transaction.disposeChildStreams();
         }
       });
     });

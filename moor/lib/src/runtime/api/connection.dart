@@ -68,14 +68,6 @@ abstract class DatabaseConnectionUser {
   /// [DatabaseConnection].
   DatabaseConnectionUser.fromConnection(this.connection);
 
-  /// Marks the tables as updated. This method will be called internally
-  /// whenever a update, delete or insert statement is issued on the database.
-  /// We can then inform all active select-streams on those tables that their
-  /// snapshot might be out-of-date and needs to be fetched again.
-  void markTablesUpdated(Set<TableInfo> tables) {
-    streamQueries.handleTableUpdates(tables);
-  }
-
   /// Creates and auto-updating stream from the given select statement. This
   /// method should not be used directly.
   Stream<T> createStream<T>(QueryStreamFetcher<T> stmt) =>
