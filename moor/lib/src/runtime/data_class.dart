@@ -118,6 +118,10 @@ class _DefaultValueSerializer extends ValueSerializer {
       }
     }
 
+    if (T == double && json is int) {
+      return json.toDouble() as T;
+    }
+
     return json as T;
   }
 

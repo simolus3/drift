@@ -18,6 +18,16 @@ void main() {
     expect(deserialized, equals(deserialized));
   });
 
+  test('can deserialize ints as doubles', () {
+    final entry = TableWithoutPKData.fromJson({
+      'notReallyAnId': 3,
+      'someFloat': 4,
+    });
+
+    expect(entry,
+        TableWithoutPKData(notReallyAnId: 3, someFloat: 4, custom: null));
+  });
+
   test('default serializer can be overridden globally', () {
     final old = moorRuntimeOptions.defaultSerializer;
     moorRuntimeOptions.defaultSerializer = _MySerializer();
