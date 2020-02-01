@@ -10,8 +10,6 @@ class MoorSpecialQueryDeclaration
   @override
   final DeclaredStatement node;
 
-  MoorSpecialQueryDeclaration._(this.declaration, this.node);
-
   MoorSpecialQueryDeclaration.fromNodeAndFile(this.node, FoundFile file)
       : declaration = SourceRange.fromNodeAndFile(node, file);
 }

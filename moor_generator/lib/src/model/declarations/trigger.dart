@@ -9,8 +9,6 @@ class MoorTriggerDeclaration implements MoorDeclaration, TriggerDeclaration {
   @override
   final CreateTriggerStatement node;
 
-  MoorTriggerDeclaration._(this.declaration, this.node);
-
   MoorTriggerDeclaration.fromNodeAndFile(this.node, FoundFile file)
       : declaration = SourceRange.fromNodeAndFile(node, file);
 }
