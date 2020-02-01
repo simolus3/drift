@@ -265,7 +265,18 @@ mixin ExpressionParser on ParserBase {
       if (_matchOne(TokenType.$false)) {
         return BooleanLiteral.withFalse(token);
       }
-      // todo CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
+
+      const timeLiterals = {
+        TokenType.currentTime: TimeConstantKind.currentTime,
+        TokenType.currentDate: TimeConstantKind.currentDate,
+        TokenType.currentTimestamp: TimeConstantKind.currentTimestamp,
+      };
+
+      if (_match(timeLiterals.keys)) {
+        final token = _previous;
+        return TimeConstantLiteral(timeLiterals[token.type], token);
+      }
+
       return null;
     }
 

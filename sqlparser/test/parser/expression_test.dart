@@ -146,6 +146,12 @@ final Map<String, Expression> _testCases = {
   ),
   'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
   'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
+  'CURRENT_TIME': TimeConstantLiteral(
+      TimeConstantKind.currentTime, token(TokenType.currentTime)),
+  'CURRENT_TIMESTAMP': TimeConstantLiteral(
+      TimeConstantKind.currentTimestamp, token(TokenType.currentTimestamp)),
+  'CURRENT_DATE': TimeConstantLiteral(
+      TimeConstantKind.currentDate, token(TokenType.currentDate)),
 };
 
 void main() {

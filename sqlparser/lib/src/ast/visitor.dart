@@ -34,6 +34,7 @@ abstract class AstVisitor<A, R> {
   R visitNullLiteral(NullLiteral e, A arg);
   R visitBooleanLiteral(BooleanLiteral e, A arg);
   R visitStringLiteral(StringLiteral e, A arg);
+  R visitTimeConstantLiteral(TimeConstantLiteral e, A arg);
 
   R visitCastExpression(CastExpression e, A arg);
   R visitBinaryExpression(BinaryExpression e, A arg);
@@ -322,6 +323,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitStringLiteral(StringLiteral e, A arg) {
+    return visitLiteral(e, arg);
+  }
+
+  @override
+  R visitTimeConstantLiteral(TimeConstantLiteral e, A arg) {
     return visitLiteral(e, arg);
   }
 

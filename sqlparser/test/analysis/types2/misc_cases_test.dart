@@ -29,6 +29,7 @@ const Map<String, ResolvedType> _types = {
   'SELECT CAST(3 AS TEXT) = ?': ResolvedType(type: BasicType.text),
   'SELECT (3 * 4) = ?': ResolvedType(type: BasicType.int),
   'SELECT (3 / 4) = ?': ResolvedType(type: BasicType.int),
+  'SELECT CURRENT_TIMESTAMP = ?': ResolvedType(type: BasicType.text),
 };
 
 SqlEngine _spawnEngine() {

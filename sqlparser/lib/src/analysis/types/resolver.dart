@@ -161,6 +161,8 @@ class TypeResolver {
       } else if (l is NullLiteral) {
         return const ResolveResult(
             ResolvedType(type: BasicType.nullType, nullable: true));
+      } else if (l is TimeConstantLiteral) {
+        return const ResolveResult(ResolvedType(type: BasicType.text));
       }
 
       throw StateError('Unknown literal $l');

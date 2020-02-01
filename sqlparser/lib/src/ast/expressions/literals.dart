@@ -89,3 +89,24 @@ class StringLiteral extends Literal {
     return other.isBinary == isBinary && other.value == value;
   }
 }
+
+enum TimeConstantKind { currentTime, currentDate, currentTimestamp }
+
+class TimeConstantLiteral extends Literal {
+  final TimeConstantKind kind;
+
+  TimeConstantLiteral(this.kind, Token keyword) : super(keyword);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitTimeConstantLiteral(this, arg);
+  }
+
+  @override
+  bool contentEquals(TimeConstantLiteral other) {
+    return other.kind == kind;
+  }
+
+  @override
+  dynamic get value => throw UnimplementedError('TimeConstantLiteral.value');
+}

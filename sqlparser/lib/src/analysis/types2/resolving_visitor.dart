@@ -144,21 +144,22 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   @override
   void visitLiteral(Literal e, TypeExpectation arg) {
     ResolvedType type;
+    var nullable = false;
 
     if (e is NullLiteral) {
       type = const ResolvedType(type: BasicType.nullType, nullable: true);
-      session._hintNullability(e, true);
+      nullable = true;
     } else if (e is StringLiteral) {
       type = e.isBinary ? const ResolvedType(type: BasicType.blob) : _textType;
-      session._hintNullability(e, false);
     } else if (e is BooleanLiteral) {
       type = const ResolvedType.bool();
-      session._hintNullability(e, false);
     } else if (e is NumericLiteral) {
       type = e.isInt ? _intType : _realType;
-      session._hintNullability(e, false);
+    } else if (e is TimeConstantLiteral) {
+      type = _textType;
     }
 
+    session._hintNullability(e, nullable);
     session._checkAndResolve(e, type, arg);
   }
 
