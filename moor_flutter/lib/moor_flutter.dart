@@ -189,7 +189,7 @@ class FlutterQueryExecutor extends DelegatedDatabase {
                 singleInstance: singleInstance, creator: creator),
             logStatements: logStatements);
 
-  /// The underlying sqflite [s.Database] object used by moor to sent queries.
+  /// The underlying sqflite [s.Database] object used by moor to send queries.
   ///
   /// Using the sqflite database can cause unexpected behavior in moor. For
   /// instance, stream queries won't update for updates sent to the [s.Database]
