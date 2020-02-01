@@ -1,3 +1,8 @@
+## 2.1.0
+
+- Expose the underlying database from sqflite in `FlutterQueryExecutor`.
+  This exists only to make migrations to moor easier.
+
 ## 2.0.0
 See the changelog of [moor](https://pub.dev/packages/moor#-changelog-tab-) for details,
 or check out an overview of new features [here](https://moor.simonbinder.eu/v2])
