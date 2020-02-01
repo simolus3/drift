@@ -37,7 +37,7 @@ class TodoDb extends _$TodoDb {
 
 With the database class ready, let's open it on a background isolate
 ```dart
-import 'package:moor/isolates.dart';
+import 'package:moor/isolate.dart';
 
 // This needs to be a top-level method because it's run on a background isolate
 DatabaseConnection _backgroundConnection() {
