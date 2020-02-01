@@ -188,4 +188,10 @@ class FlutterQueryExecutor extends DelegatedDatabase {
             _SqfliteDelegate(true, path,
                 singleInstance: singleInstance, creator: creator),
             logStatements: logStatements);
+
+  /// The underlying sqflite [s.Database] object
+  s.Database get sqfliteDb {
+    final sqfliteDelegate = delegate as _SqfliteDelegate;
+    return sqfliteDelegate.db;
+  }
 }
