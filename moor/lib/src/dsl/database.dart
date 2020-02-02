@@ -16,7 +16,7 @@ part of 'dsl.dart';
 /// ```
 class UseMoor {
   /// The tables to include in the database
-  final List<Type> tables;
+  final List<Table> tables;
 
   /// Optionally, the list of daos to use. A dao can also make queries like a
   /// regular database class, making is suitable to extract parts of your
@@ -84,7 +84,7 @@ class UseMoor {
 /// - https://moor.simonbinder.eu/daos/
 class UseDao {
   /// The tables accessed by this DAO.
-  final List<Type> tables;
+  final List<Table> tables;
 
   /// {@macro moor_compile_queries_param}
   final Map<String, String> queries;
