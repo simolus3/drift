@@ -23,7 +23,7 @@ class UseMoor {
   /// database logic into smaller components.
   ///
   /// For instructions on how to write a dao, see the documentation of [UseDao]
-  final List<Type> daos;
+  final List<DatabaseAccessor> daos;
 
   /// {@template moor_compile_queries_param}
   /// Optionally, a list of named sql queries. During a build, moor will look at
