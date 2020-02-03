@@ -7,6 +7,7 @@
 - Support table-valued functions (like `json_each` and `json_tree`) in moor files 
   [#260](https://github.com/simolus3/moor/issues/260).
 - Fix a crash when opening a transaction without using it ([#361](https://github.com/simolus3/moor/issues/361))
+- New `mapFromCompanion` method in generated tables to convert a `UpdateCompanion` to a model.
 
 ## 2.3.0
 

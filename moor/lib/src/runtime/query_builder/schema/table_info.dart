@@ -79,6 +79,16 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
     return map(row.data, tablePrefix: tablePrefix);
   }
 
+  /// Converts a [companion] to the real model class, [D].
+  ///
+  /// Values that are [Value.absent] in the companion will be set to `null`.
+  D mapFromCompanion(UpdateCompanion<D> companion) {
+    final rawValues =
+        entityToSql(companion).map((key, value) => MapEntry(key, value.value));
+
+    return map(rawValues);
+  }
+
   TableInfo<TableDsl, D> createAlias(String alias);
 
   @override

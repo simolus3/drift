@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
@@ -31,5 +32,26 @@ void main() {
     expect(first.hashCode == aliasA.hashCode, isFalse);
     expect(anotherA.hashCode == aliasA.hashCode, isFalse);
     expect(aliasA.hashCode == db.alias(db.users, 'a').hashCode, isTrue);
+  });
+
+  test('can convert a companion to a row class', () {
+    const companion = UsersCompanion(
+      id: Value(3),
+      name: Value('hi'),
+      profilePicture: Value.absent(),
+      isAwesome: Value(true),
+    );
+
+    final user = db.users.mapFromCompanion(companion);
+    expect(
+      user,
+      User(
+        id: 3,
+        name: 'hi',
+        profilePicture: null,
+        isAwesome: true,
+        creationTime: null,
+      ),
+    );
   });
 }
