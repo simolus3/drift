@@ -1,4 +1,21 @@
-part of 'package:moor/connection_pool.dart';
+import 'package:meta/meta.dart';
+import 'package:moor/backends.dart';
+import 'package:moor/moor.dart';
+
+/// A query executor for moor that delegates work to multiple executors.
+abstract class MultiExecutor extends QueryExecutor {
+  /// Creates a query executor that will delegate work to different executors.
+  ///
+  /// Updating statements, or statements that run in a transaction, will be run
+  /// with [write]. Select statements outside of a transaction are executed on
+  /// [read].
+  factory MultiExecutor(
+      {@required QueryExecutor read, @required QueryExecutor write}) {
+    return _MultiExecutorImpl(read, write);
+  }
+
+  MultiExecutor._();
+}
 
 class _MultiExecutorImpl extends MultiExecutor {
   final QueryExecutor _reads;

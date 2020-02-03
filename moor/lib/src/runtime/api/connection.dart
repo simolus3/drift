@@ -25,6 +25,12 @@ class DatabaseConnection {
   DatabaseConnection.fromExecutor(this.executor)
       : typeSystem = SqlTypeSystem.defaultInstance,
         streamQueries = StreamQueryStore();
+
+  /// Returns a database connection that is identical to this one, except that
+  /// it uses the provided [executor].
+  DatabaseConnection withExecutor(QueryExecutor executor) {
+    return DatabaseConnection(typeSystem, executor, streamQueries);
+  }
 }
 
 /// Manages a [DatabaseConnection] to send queries to the database.

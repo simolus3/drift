@@ -10,6 +10,7 @@ export 'package:meta/meta.dart' show required;
 export 'package:moor/src/dsl/dsl.dart';
 export 'package:moor/src/runtime/query_builder/query_builder.dart';
 
+export 'package:moor/src/runtime/executor/connection_pool.dart';
 export 'package:moor/src/runtime/executor/executor.dart';
 export 'package:moor/src/runtime/executor/transactions.dart';
 export 'package:moor/src/runtime/data_verification.dart';
