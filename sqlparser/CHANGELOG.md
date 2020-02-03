@@ -5,6 +5,7 @@
   to `enabledExtensions` instead.
 - Parse `rowid` as a valid reference when needed (`SELECT rowid FROM tbl` is now parsed correctly)
 - Parse `CURRENT_TIME`, `CURRENT_DATE` and `CURRENT_TIMESTAMP`
+- Parse `UPSERT` clauses for insert statements
 
 ## 0.6.0
 

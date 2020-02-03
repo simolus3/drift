@@ -85,6 +85,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         }
       },
     );
+
+    visitNullable(e.upsert, const NoTypeExpectation());
   }
 
   @override
@@ -540,6 +542,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     return visited;
   }
 
+  @override
+  void visitUpsertClause(UpsertClause e, TypeExpectation arg) {
+    _handleWhereClause(e);
+    visitExcept(e, e.where, arg);
+  }
+
+  @override
+  void visitDoUpdate(DoUpdate e, TypeExpectation arg) {
+    _handleWhereClause(e);
+    visitExcept(e, e.where, arg);
+  }
+
   void _handleColumn(Column column) {
     if (session.graph.knowsType(column)) return;
 
@@ -561,12 +575,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  void _handleWhereClause(StatementWithWhere stmt) {
-    if (stmt.where != null) {
+  void _handleWhereClause(HasWhereClause e) {
+    if (e.where != null) {
       // assume that a where statement is a boolean expression. Sqlite
       // internally casts (https://www.sqlite.org/lang_expr.html#booleanexpr),
       // so be lax
-      visit(stmt.where, const ExactTypeExpectation.laxly(ResolvedType.bool()));
+      visit(e.where, const ExactTypeExpectation.laxly(ResolvedType.bool()));
     }
   }
 
