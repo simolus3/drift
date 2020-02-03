@@ -267,13 +267,7 @@ mixin SchemaParser on ParserBase {
 
     _consume(TokenType.leftParen, 'Expected indexed columns in parentheses');
 
-    final indexes = <IndexedColumn>[];
-    do {
-      final expr = expression();
-      final mode = _orderingModeOrNull();
-
-      indexes.add(IndexedColumn(expr, mode)..setSpan(expr.first, _previous));
-    } while (_matchOne(TokenType.comma));
+    final indexes = _indexedColumns();
 
     _consume(TokenType.rightParen, 'Expected closing bracket');
 
@@ -292,6 +286,19 @@ mixin SchemaParser on ParserBase {
     )
       ..nameToken = name
       ..setSpan(create, _previous);
+  }
+
+  @override
+  List<IndexedColumn> _indexedColumns() {
+    final indexes = <IndexedColumn>[];
+    do {
+      final expr = expression();
+      final mode = _orderingModeOrNull();
+
+      indexes.add(IndexedColumn(expr, mode)..setSpan(expr.first, _previous));
+    } while (_matchOne(TokenType.comma));
+
+    return indexes;
   }
 
   /// Parses `IF NOT EXISTS` | epsilon

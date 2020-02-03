@@ -14,6 +14,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateIndexStatement(CreateIndexStatement e, A arg);
 
   R visitWithClause(WithClause e, A arg);
+  R visitUpsertClause(UpsertClause e, A arg);
   R visitCommonTableExpression(CommonTableExpression e, A arg);
   R visitOrderBy(OrderBy e, A arg);
   R visitOrderingTerm(OrderingTerm e, A arg);
@@ -21,6 +22,9 @@ abstract class AstVisitor<A, R> {
   R visitQueryable(Queryable e, A arg);
   R visitJoin(Join e, A arg);
   R visitGroupBy(GroupBy e, A arg);
+
+  R visitDoNothing(DoNothing e, A arg);
+  R visitDoUpdate(DoUpdate e, A arg);
 
   R visitSetComponent(SetComponent e, A arg);
 
@@ -155,6 +159,25 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitWithClause(WithClause e, A arg) {
+    return visitChildren(e, arg);
+  }
+
+  @override
+  R visitUpsertClause(UpsertClause e, A arg) {
+    return visitChildren(e, arg);
+  }
+
+  @override
+  R visitDoNothing(DoNothing e, A arg) {
+    return defaultUpsertAction(e, arg);
+  }
+
+  @override
+  R visitDoUpdate(DoUpdate e, A arg) {
+    return defaultUpsertAction(e, arg);
+  }
+
+  R defaultUpsertAction(UpsertAction e, A arg) {
     return visitChildren(e, arg);
   }
 

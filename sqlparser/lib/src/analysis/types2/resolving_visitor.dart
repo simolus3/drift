@@ -89,8 +89,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitCrudStatement(CrudStatement stmt, TypeExpectation arg) {
-    if (stmt is HasWhereClause) {
-      final typedStmt = stmt as HasWhereClause;
+    if (stmt is StatementWithWhere) {
+      final typedStmt = stmt as StatementWithWhere;
       _handleWhereClause(typedStmt);
       visitExcept(stmt, typedStmt.where, arg);
     } else {
@@ -561,7 +561,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  void _handleWhereClause(HasWhereClause stmt) {
+  void _handleWhereClause(StatementWithWhere stmt) {
     if (stmt.where != null) {
       // assume that a where statement is a boolean expression. Sqlite
       // internally casts (https://www.sqlite.org/lang_expr.html#booleanexpr),

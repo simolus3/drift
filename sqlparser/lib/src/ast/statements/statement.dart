@@ -14,9 +14,7 @@ abstract class CrudStatement extends Statement {
 
 /// Interface for statements that have a primary where clause (select, update,
 /// delete).
-abstract class HasWhereClause extends Statement {
-  Expression get where;
-}
+abstract class StatementWithWhere extends Statement implements HasWhereClause {}
 
 /// Marker interface for statements that change the table structure.
 abstract class SchemaStatement extends Statement implements PartOfMoorFile {}

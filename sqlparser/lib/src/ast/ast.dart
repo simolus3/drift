@@ -8,6 +8,7 @@ import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
+part 'clauses/upsert.dart';
 part 'clauses/with.dart';
 part 'common/queryables.dart';
 part 'common/renamable.dart';
@@ -155,4 +156,9 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
     }
     return super.toString();
   }
+}
+
+/// Common interface for every node that has a `where` clause.
+abstract class HasWhereClause implements AstNode {
+  Expression get where;
 }

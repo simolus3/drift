@@ -1,7 +1,7 @@
 part of '../ast.dart';
 
 class CreateIndexStatement extends Statement
-    implements CreatingStatement, HasWhereClause {
+    implements CreatingStatement, StatementWithWhere {
   final String indexName;
   final bool unique;
   final bool ifNotExists;

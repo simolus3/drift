@@ -204,6 +204,8 @@ abstract class ParserBase {
   /// Parses function parameters, without the surrounding parentheses.
   FunctionParameters _functionParameters();
 
+  List<IndexedColumn> _indexedColumns();
+
   /// Skips all tokens until it finds one with [type]. If [skipTarget] is true,
   /// that token will be skipped as well.
   ///

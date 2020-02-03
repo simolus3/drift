@@ -562,6 +562,19 @@ mixin CrudParser on ParserBase {
     final table = _tableReference();
     _consume(TokenType.set, 'Expected SET after the table name');
 
+    final set = _setComponents();
+
+    final where = _where();
+    return UpdateStatement(
+      withClause: withClause,
+      or: failureMode,
+      table: table,
+      set: set,
+      where: where,
+    )..setSpan(withClause?.first ?? updateToken, _previous);
+  }
+
+  List<SetComponent> _setComponents() {
     final set = <SetComponent>[];
     do {
       final columnName =
@@ -576,14 +589,7 @@ mixin CrudParser on ParserBase {
         ..setSpan(columnName, _previous));
     } while (_matchOne(TokenType.comma));
 
-    final where = _where();
-    return UpdateStatement(
-      withClause: withClause,
-      or: failureMode,
-      table: table,
-      set: set,
-      where: where,
-    )..setSpan(withClause?.first ?? updateToken, _previous);
+    return set;
   }
 
   InsertStatement _insertStmt([WithClause withClause]) {
@@ -632,6 +638,7 @@ mixin CrudParser on ParserBase {
           'Expected clpsing parenthesis after column list');
     }
     final source = _insertSource();
+    final upsert = _upsertClauseOrNull();
 
     return InsertStatement(
       withClause: withClause,
@@ -639,6 +646,7 @@ mixin CrudParser on ParserBase {
       table: table,
       targetColumns: targetColumns,
       source: source,
+      upsert: upsert,
     )..setSpan(withClause?.first ?? firstToken, _previous);
   }
 
@@ -657,6 +665,54 @@ mixin CrudParser on ParserBase {
       return SelectInsertSource(
           _fullSelect() ?? _error('Expeced a select statement'));
     }
+  }
+
+  UpsertClause _upsertClauseOrNull() {
+    if (!_matchOne(TokenType.on)) return null;
+
+    final first = _previous;
+    _consume(TokenType.conflict, 'Expected CONFLICT keyword for upsert clause');
+
+    List<IndexedColumn> indexedColumns;
+    Expression where;
+    if (_matchOne(TokenType.leftParen)) {
+      indexedColumns = _indexedColumns();
+
+      _consume(TokenType.rightParen, 'Expected closing paren here');
+      if (_matchOne(TokenType.where)) {
+        where = expression();
+      }
+    }
+
+    _consume(TokenType.$do,
+        'Expected DO, followed by the action (NOTHING or UPDATE SET)');
+
+    UpsertAction action;
+    if (_matchOne(TokenType.nothing)) {
+      action = DoNothing()..setSpan(_previous, _previous);
+    } else if (_check(TokenType.update)) {
+      action = _doUpdate();
+    }
+
+    return UpsertClause(
+      onColumns: indexedColumns,
+      where: where,
+      action: action,
+    )..setSpan(first, _previous);
+  }
+
+  DoUpdate _doUpdate() {
+    _consume(TokenType.update, 'Expected UPDATE SET keyword here');
+    final first = _previous;
+    _consume(TokenType.set, 'Expected UPDATE SET keyword here');
+
+    final set = _setComponents();
+    Expression where;
+    if (_matchOne(TokenType.where)) {
+      where = expression();
+    }
+
+    return DoUpdate(set, where: where)..setSpan(first, _previous);
   }
 
   @override

@@ -15,6 +15,7 @@ class InsertStatement extends CrudStatement {
   final TableReference table;
   final List<Reference> targetColumns;
   final InsertSource source;
+  final UpsertClause upsert;
 
   List<Column> get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
@@ -25,14 +26,13 @@ class InsertStatement extends CrudStatement {
     }
   }
 
-  // todo parse upsert clauses
-
   InsertStatement(
       {WithClause withClause,
       this.mode = InsertMode.insert,
       @required this.table,
       @required this.targetColumns,
-      @required this.source})
+      @required this.source,
+      this.upsert})
       : super._(withClause);
 
   @override
@@ -46,6 +46,7 @@ class InsertStatement extends CrudStatement {
     yield table;
     yield* targetColumns;
     yield* source.childNodes;
+    if (upsert != null) yield upsert;
   }
 
   @override

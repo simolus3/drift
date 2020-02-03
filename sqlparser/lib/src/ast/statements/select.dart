@@ -9,7 +9,8 @@ abstract class BaseSelectStatement extends CrudStatement with ResultSet {
   BaseSelectStatement._(WithClause withClause) : super._(withClause);
 }
 
-class SelectStatement extends BaseSelectStatement implements HasWhereClause {
+class SelectStatement extends BaseSelectStatement
+    implements StatementWithWhere {
   final bool distinct;
   final List<ResultColumn> columns;
   final List<Queryable> from;
