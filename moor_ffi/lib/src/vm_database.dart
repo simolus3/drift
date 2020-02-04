@@ -91,6 +91,11 @@ class _VmDelegate extends DatabaseDelegate {
 
     return Future.value(QueryResult(result.columnNames, result.rows));
   }
+
+  @override
+  Future<void> close() async {
+    _db.close();
+  }
 }
 
 class _VmVersionDelegate extends DynamicVersionDelegate {

@@ -61,6 +61,8 @@ class Database {
   /// an error occurs while closing the database, an exception will be thrown.
   /// The allocated memory will be freed either way.
   void close() {
+    if (_isClosed) return;
+
     // close all prepared statements first
     _isClosed = true;
     for (final stmt in _preparedStmt) {
