@@ -152,6 +152,16 @@ void _runTests(
 
     await db.close();
   });
+
+  test("can't run queries on a closed database", () async {
+    final db = TodoDb.connect(isolateConnection);
+    await db.customSelectQuery('SELECT 1;').getSingle();
+
+    await db.close();
+
+    await expectLater(
+        () => db.customSelectQuery('SELECT 1;').getSingle(), throwsStateError);
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

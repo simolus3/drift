@@ -33,6 +33,9 @@ class IsolateCommunication {
   /// either via a call to [close] from this isolate or from the other isolate.
   Future<void> get closed => _closeCompleter.future;
 
+  /// Whether this channel is closed at the moment.
+  bool get isClosed => _closeCompleter.isCompleted;
+
   /// A stream of requests coming from the other peer.
   Stream<Request> get incomingRequests => _incomingRequests.stream;
 
@@ -58,7 +61,7 @@ class IsolateCommunication {
 
   /// Closes the connection to the server.
   void close() {
-    if (_closeCompleter.isCompleted) return;
+    if (isClosed) return;
 
     _send(_ConnectionClose());
     _closeLocally();
@@ -114,6 +117,11 @@ class IsolateCommunication {
   }
 
   void _send(dynamic msg) {
+    if (isClosed) {
+      throw StateError('Tried to send $msg over isolate channel, but the '
+          'connection was closed!');
+    }
+
     if (_debugLog) {
       print('[OUT]: $msg');
     }
@@ -127,6 +135,9 @@ class IsolateCommunication {
 
   /// Sends an erroneous response for a [Request].
   void respondError(Request request, dynamic error, [StackTrace trace]) {
+    // sending a message while closed with throw, so don't even try.
+    if (isClosed) return;
+
     _send(_ErrorResponse(request.id, error, trace.toString()));
   }
 

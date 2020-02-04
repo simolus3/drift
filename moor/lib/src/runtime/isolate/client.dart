@@ -126,7 +126,10 @@ class _IsolateQueryExecutor extends _BaseExecutor {
 
   @override
   Future<void> close() {
-    client._channel.close();
+    if (!client._channel.isClosed) {
+      client._channel.close();
+    }
+
     return Future.value();
   }
 }
