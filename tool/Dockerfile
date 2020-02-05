@@ -1,6 +1,6 @@
 FROM ubuntu:rolling
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-transport-https wget gnupg2 ca-certificates
+RUN apt-get update && apt-get install -y --no-install-recommends apt-transport-https wget gnupg2 ca-certificates curl
 
 # Setup for Dart
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
