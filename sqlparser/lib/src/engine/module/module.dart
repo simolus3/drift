@@ -65,7 +65,7 @@ abstract class TableValuedFunctionHandler {
 
 /// An sqlite module, which can be used in a `CREATE VIRTUAL TABLE` statement
 /// to find providers.
-abstract class Module implements Referencable, VisibleToChildren {
+abstract class Module implements Referencable {
   /// The name of this module, which is referenced by the `USING` clause in a
   /// `CREATE VIRTUAL TABLE` statement.
   final String name;
@@ -76,4 +76,7 @@ abstract class Module implements Referencable, VisibleToChildren {
   /// refers to this module. The module is responsible for setting
   /// [Table.definition].
   Table parseTable(CreateVirtualTableStatement stmt);
+
+  @override
+  bool get visibleToChildren => true;
 }

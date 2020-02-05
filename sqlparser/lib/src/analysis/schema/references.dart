@@ -7,17 +7,18 @@ mixin ReferenceOwner {
 }
 
 /// Mixin for classes which can be referenced by a [ReferenceOwner].
-mixin Referencable {}
-
-/// A referencable which is still visible in child scopes. This doesn't apply to
-/// many things, basically only tables.
-///
-/// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id)
-/// FROM demo AS out;"
-/// is a valid sql query when the demo table has an id column. However,
-/// "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = d) FROM demo AS out;" is
-/// not, the "d" referencable is not visible for the child select statement.
-mixin VisibleToChildren on Referencable {}
+mixin Referencable {
+  /// Whether this referencable is still visible in child scopes. This doesn't
+  /// apply to many things, basically only to tables.
+  ///
+  /// For instance: "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = out.id)
+  /// FROM demo AS out;"
+  /// is a valid sql query when the demo table has an id column. However,
+  /// "SELECT *, 1 AS d, (SELECT id FROM demo WHERE id = d) FROM demo AS out;"
+  /// is not, the "d" referencable is not visible for the child select
+  /// statement.
+  bool get visibleToChildren => false;
+}
 
 /// Class which keeps track of references for tables, columns and functions in a
 /// query.
@@ -86,7 +87,7 @@ class ReferenceScope {
       if (scope._references.containsKey(upper)) {
         final candidates = scope._references[upper];
         final resolved = candidates.whereType<T>().where((x) {
-          return x is VisibleToChildren || !isAtParent;
+          return x.visibleToChildren || !isAtParent;
         });
         if (resolved.isNotEmpty) {
           return resolved.first;
@@ -102,7 +103,7 @@ class ReferenceScope {
   }
 
   /// Returns everything that is in scope and a subtype of [T].
-  List<T> allOf<T>() {
+  List<T> allOf<T extends Referencable>() {
     var scope = this;
     var isInCurrentScope = true;
     final collected = <T>[];
@@ -112,7 +113,8 @@ class ReferenceScope {
           scope._references.values.expand((list) => list).whereType<T>();
 
       if (!isInCurrentScope) {
-        foundValues = foundValues.whereType<VisibleToChildren>().cast();
+        foundValues =
+            foundValues.where((element) => element.visibleToChildren).cast();
       }
 
       collected.addAll(foundValues);

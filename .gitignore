@@ -9,3 +9,4 @@ pubspec.lock
 
 benchmark_results.json
 .flutter-plugins-dependencies
+flutter_export_environment.sh

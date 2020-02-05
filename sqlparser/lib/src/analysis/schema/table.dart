@@ -18,6 +18,9 @@ abstract class ResultSet implements ResolvesToResultSet {
   @override
   ResultSet get resultSet => this;
 
+  @override
+  bool get visibleToChildren => false;
+
   Column findColumn(String name) {
     return resolvedColumns.firstWhere((c) => c.name == name,
         orElse: () => null);
@@ -34,9 +37,7 @@ class CustomResultSet with ResultSet {
 
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
-class Table
-    with ResultSet, VisibleToChildren, HasMetaMixin
-    implements HumanReadable {
+class Table with ResultSet, HasMetaMixin implements HumanReadable {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
   ///
@@ -65,6 +66,9 @@ class Table
 
   /// The ast node that created this table
   final TableInducingStatement definition;
+
+  @override
+  bool get visibleToChildren => true;
 
   TableColumn _rowIdColumn;
 
@@ -100,5 +104,33 @@ class Table
   @override
   String humanReadableDescription() {
     return name;
+  }
+}
+
+class TableAlias implements ResultSet, HumanReadable {
+  final ResultSet delegate;
+  final String alias;
+
+  TableAlias(this.delegate, this.alias);
+
+  @override
+  List<Column> get resolvedColumns => delegate.resolvedColumns;
+
+  @override
+  Column findColumn(String name) => delegate.findColumn(name);
+
+  @override
+  ResultSet get resultSet => this;
+
+  @override
+  bool get visibleToChildren => delegate.visibleToChildren;
+
+  @override
+  String humanReadableDescription() {
+    final delegateDescription = delegate is HumanReadable
+        ? (delegate as HumanReadable).humanReadableDescription()
+        : delegate.toString();
+
+    return '$alias (alias to $delegateDescription)';
   }
 }

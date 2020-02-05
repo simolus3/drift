@@ -22,7 +22,7 @@ class WithClause extends AstNode {
   bool contentEquals(WithClause other) => other.recursive == recursive;
 }
 
-class CommonTableExpression extends AstNode with ResultSet, VisibleToChildren {
+class CommonTableExpression extends AstNode with ResultSet {
   final String cteTableName;
 
   /// If this common table expression has explicit column names, e.g. with
@@ -78,4 +78,7 @@ class CommonTableExpression extends AstNode with ResultSet, VisibleToChildren {
 
     return _cachedColumns;
   }
+
+  @override
+  bool get visibleToChildren => true;
 }

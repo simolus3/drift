@@ -43,7 +43,7 @@ abstract class TableOrSubquery extends Queryable {}
 /// set.
 class TableReference extends TableOrSubquery
     with ReferenceOwner
-    implements Renamable, ResolvesToResultSet, VisibleToChildren {
+    implements Renamable, ResolvesToResultSet {
   final String tableName;
   Token tableNameToken;
 
@@ -64,6 +64,9 @@ class TableReference extends TableOrSubquery
   ResultSet get resultSet {
     return resolved as ResultSet;
   }
+
+  @override
+  bool get visibleToChildren => true;
 }
 
 /// A nested select statement that appears after a FROM clause. This is
@@ -188,6 +191,9 @@ class TableValuedFunction extends Queryable
 
   @override
   Iterable<AstNode> get childNodes => [parameters];
+
+  @override
+  bool get visibleToChildren => false;
 
   @override
   bool contentEquals(TableValuedFunction other) {

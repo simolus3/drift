@@ -123,6 +123,9 @@ class ExpressionResultColumn extends ResultColumn
   ExpressionResultColumn({@required this.expression, this.as});
 
   @override
+  bool get visibleToChildren => false;
+
+  @override
   Iterable<AstNode> get childNodes => [expression];
 
   @override

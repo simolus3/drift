@@ -73,12 +73,12 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitDoUpdate(DoUpdate e, void arg) {
     final surroundingInsert = e.parents.whereType<InsertStatement>().first;
-    final table = surroundingInsert.resolvedTable;
+    final table = surroundingInsert.table.resultSet;
 
     if (table != null) {
       // add "excluded" table qualifier that referring to the row that would
       // have been inserted had the uniqueness constraint not been violated.
-      e.scope.register('excluded', table);
+      e.scope.register('excluded', TableAlias(table, 'excluded'));
     }
 
     visitChildren(e, arg);
@@ -94,7 +94,6 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
     final table = _resolveTableReference(e.table);
-    e.resolvedTable = table;
     visitChildren(e, arg);
     e.scope.availableColumns = table.resolvedColumns;
     visitChildren(e, arg);
@@ -118,10 +117,10 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
     final scope = e.scope;
     if (e.target.introducesNew) {
-      scope.register('new', table);
+      scope.register('new', TableAlias(table, 'new'));
     }
     if (e.target.introducesOld) {
-      scope.register('old', table);
+      scope.register('old', TableAlias(table, 'old'));
     }
 
     visitChildren(e, arg);
@@ -251,7 +250,13 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   ResultSet _resolveTableReference(TableReference r) {
     final scope = r.scope;
     final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
-      final available = scope.allOf<Table>().map((t) => t.name);
+      final available = scope.allOf<ResultSet>().map((t) {
+        if (t is HumanReadable) {
+          return (t as HumanReadable).humanReadableDescription();
+        }
+
+        return t.toString();
+      });
 
       context.reportError(UnresolvedReferenceError(
         type: AnalysisErrorType.referencedUnknownTable,
