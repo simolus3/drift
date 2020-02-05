@@ -26,7 +26,7 @@ class InsertStatement<D extends DataClass> {
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned. If there is no auto-increment column, you can't rely on the
-  /// return value, but the future will resolve to an error when the insert
+  /// return value, but the future will complete with an error if the insert
   /// fails.
   Future<int> insert(
     Insertable<D> entity, {

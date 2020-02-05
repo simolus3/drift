@@ -74,4 +74,14 @@ END;
       expect(context.errors, isEmpty);
     });
   });
+
+  test("DO UPDATE action in upsert can refer to 'exluded'", () {
+    final context = engine.analyze('''
+INSERT INTO demo VALUES (?, ?)
+  ON CONFLICT (id) DO UPDATE SET
+    content = content || excluded.content;
+    ''');
+
+    expect(context.errors, isEmpty);
+  });
 }

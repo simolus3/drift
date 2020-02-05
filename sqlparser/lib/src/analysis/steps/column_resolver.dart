@@ -71,6 +71,20 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitDoUpdate(DoUpdate e, void arg) {
+    final surroundingInsert = e.parents.whereType<InsertStatement>().first;
+    final table = surroundingInsert.resolvedTable;
+
+    if (table != null) {
+      // add "excluded" table qualifier that referring to the row that would
+      // have been inserted had the uniqueness constraint not been violated.
+      e.scope.register('excluded', table);
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitUpdateStatement(UpdateStatement e, void arg) {
     final table = _resolveTableReference(e.table);
     e.scope.availableColumns = table.resolvedColumns;
@@ -80,6 +94,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
     final table = _resolveTableReference(e.table);
+    e.resolvedTable = table;
     visitChildren(e, arg);
     e.scope.availableColumns = table.resolvedColumns;
     visitChildren(e, arg);

@@ -17,6 +17,8 @@ class InsertStatement extends CrudStatement {
   final InsertSource source;
   final UpsertClause upsert;
 
+  ResultSet /*?*/ resolvedTable;
+
   List<Column> get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
       return targetColumns.map((c) => c.resolvedColumn).toList();

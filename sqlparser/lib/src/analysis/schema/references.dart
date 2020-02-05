@@ -25,24 +25,44 @@ class ReferenceScope {
   final ReferenceScope parent;
   final ReferenceScope root;
 
+  /// Whether the [availableColumns] of the [parent] are available in this scope
+  /// as well.
+  final bool inheritAvailableColumns;
+
   /// Gets the effective root scope. If no [root] scope has been set, this
   /// scope is assumed to be the root scope.
   ReferenceScope get effectiveRoot => root ?? this;
 
   final Map<String, List<Referencable>> _references = {};
 
+  List<Column> _availableColumns;
+
   /// All columns that would be available in this scope. Can be used to resolve
   /// a '*' expression for function calls or result columns
-  List<Column> availableColumns;
+  List<Column> get availableColumns {
+    if (_availableColumns != null) return _availableColumns;
+    if (inheritAvailableColumns) return parent.availableColumns;
 
-  ReferenceScope(this.parent, {this.root});
+    return null;
+  }
 
-  ReferenceScope createChild() {
+  set availableColumns(List<Column> value) {
+    _availableColumns = value;
+  }
+
+  ReferenceScope(this.parent,
+      {this.root, this.inheritAvailableColumns = false});
+
+  ReferenceScope createChild({bool inheritAvailableColumns}) {
     // wonder why we're creating a linked list of reference scopes instead of
     // just passing down a copy of [_references]? In sql, some variables can be
     // used before they're defined, even in child scopes:
     // SELECT *, (SELECT * FROM table2 WHERE id = t1.a) FROM table2 t1
-    return ReferenceScope(this, root: effectiveRoot);
+    return ReferenceScope(
+      this,
+      root: effectiveRoot,
+      inheritAvailableColumns: inheritAvailableColumns ?? false,
+    );
   }
 
   ReferenceScope createSibling() {

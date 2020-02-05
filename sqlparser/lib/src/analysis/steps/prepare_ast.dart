@@ -180,8 +180,9 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     }
   }
 
-  void _forkScope(AstNode node) {
-    node.scope = node.scope.createChild();
+  void _forkScope(AstNode node, {bool inheritAvailableColumns}) {
+    node.scope = node.scope
+        .createChild(inheritAvailableColumns: inheritAvailableColumns);
   }
 
   @override
@@ -192,5 +193,27 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     }
 
     super.visitChildren(e, arg);
+  }
+
+  @override
+  void visitUpsertClause(UpsertClause e, void arg) {
+    // report syntax error if DO UPDATE clause is used without specifying a
+    // conflict target.
+    if (e.onColumns == null && e.action is DoUpdate) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.synctactic,
+        message: 'Expected a conflict clause when using DO UPDATE',
+        relevantNode: e.action,
+      ));
+    }
+
+    // DO UPDATE clauses have their own reference scope, in which the row
+    // "excluded" can be referred. Setting that row happens in the column
+    // resolver
+    if (e.action is DoUpdate) {
+      _forkScope(e.action, inheritAvailableColumns: true);
+    }
+
+    visitChildren(e, arg);
   }
 }
