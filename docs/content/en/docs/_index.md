@@ -11,7 +11,7 @@ description: Welcome to the moor documentation. This site shows you what moor ca
 ## So what's moor?
 Moor is a reactive persistence library for Dart and Flutter applications. It's built ontop
 of database libraries like [sqflite](https://pub.dev/packages/sqflite) or [sql.js](https://github.com/kripken/sql.js/)
-and provides additional featues, like
+and provides additional features, like:
 
 - __Type safety__: Instead of writing sql queries manually and parsing the `List<Map<String, dynamic>>` that they 
 return, moor turns rows into objects of your choice.
