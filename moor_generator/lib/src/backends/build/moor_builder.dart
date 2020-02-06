@@ -10,28 +10,8 @@ import 'package:moor_generator/src/backends/build/generators/moor_generator.dart
 import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
-class MoorBuilder extends SharedPartBuilder {
-  final MoorOptions options;
-
-  MoorBuilder._(List<Generator> generators, String name, this.options)
-      : super(generators, name);
-
-  factory MoorBuilder(BuilderOptions options) {
-    final parsedOptions = MoorOptions.fromJson(options.config);
-
-    final generators = <Generator>[
-      MoorGenerator(),
-      DaoGenerator(),
-    ];
-
-    final builder = MoorBuilder._(generators, 'moor', parsedOptions);
-
-    for (final generator in generators.cast<BaseGenerator>()) {
-      generator.builder = builder;
-    }
-
-    return builder;
-  }
+mixin MoorBuilder on Builder {
+  MoorOptions get options;
 
   Writer createWriter() => Writer(options);
 
@@ -51,6 +31,54 @@ class MoorBuilder extends SharedPartBuilder {
     }
 
     return input?.currentResult as ParsedDartFile;
+  }
+}
+
+T _createBuilder<T extends MoorBuilder>(
+  BuilderOptions options,
+  T Function(List<Generator> generators, MoorOptions parsedOptions) creator,
+) {
+  final parsedOptions = MoorOptions.fromJson(options.config);
+
+  final generators = <Generator>[
+    MoorGenerator(),
+    DaoGenerator(),
+  ];
+
+  final builder = creator(generators, parsedOptions);
+
+  for (final generator in generators.cast<BaseGenerator>()) {
+    generator.builder = builder;
+  }
+
+  return builder;
+}
+
+class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
+  @override
+  final MoorOptions options;
+
+  MoorSharedPartBuilder._(List<Generator> generators, String name, this.options)
+      : super(generators, name);
+
+  factory MoorSharedPartBuilder(BuilderOptions options) {
+    return _createBuilder(options, (generators, parsedOptions) {
+      return MoorSharedPartBuilder._(generators, 'moor', parsedOptions);
+    });
+  }
+}
+
+class MoorPartBuilder extends PartBuilder with MoorBuilder {
+  @override
+  final MoorOptions options;
+
+  MoorPartBuilder._(List<Generator> generators, String extension, this.options)
+      : super(generators, extension);
+
+  factory MoorPartBuilder(BuilderOptions options) {
+    return _createBuilder(options, (generators, parsedOptions) {
+      return MoorPartBuilder._(generators, '.moor.dart', parsedOptions);
+    });
   }
 }
 

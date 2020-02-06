@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      moor_generator:
+        enabled: false
+      moor_generator|moor_generator_not_shared:
+        enabled: true
+      built_value_generator|built_value:
+        enabled: false
+  
+  run_built_value:
+    dependencies: ['with_built_value']
+    builders:
+      moor_generator:
+        enabled: false
