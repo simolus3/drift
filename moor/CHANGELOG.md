@@ -8,6 +8,7 @@
   [#260](https://github.com/simolus3/moor/issues/260).
 - Fix a crash when opening a transaction without using it ([#361](https://github.com/simolus3/moor/issues/361))
 - New `mapFromCompanion` method in generated tables to convert a `UpdateCompanion` to a model.
+- Support generated moor classes in other builders (like `built_value`). Details [in the docs](https://moor.simonbinder.eu/docs/advanced-features/builder_options/)
 
 ## 2.3.0
 
