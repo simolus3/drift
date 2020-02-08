@@ -6,18 +6,14 @@ part 'database.moor.dart';
 part 'database.g.dart';
 
 abstract class Foo implements Built<Foo, FooBuilder> {
-  SomeInt get moorField;
+  User get moorField;
 
   Foo._();
 
   factory Foo([void Function(FooBuilder) updates]) = _$Foo;
 }
 
-class SomeInts extends Table {
-  IntColumn get id => integer().autoIncrement()();
-}
-
-@UseMoor(tables: [SomeInts])
+@UseMoor(include: {'tables.moor'})
 class Database extends _$Database {
   Database() : super(VmDatabase.memory());
 

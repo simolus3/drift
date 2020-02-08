@@ -15,6 +15,6 @@ task:
   test_moor_script: tool/test_moor.sh
   test_sqlparser_script: tool/test_sqlparser.sh
   test_moor_ffi_script: tool/test_moor_ffi.sh
-  vm_integration_test_script: tool/vm_integration_test.sh
+  misc_integration_test_script: tool/misc_integration_test.sh
   test_moor_generator_script: tool/test_generator.sh
   format_coverage_script: tool/upload_coverage.sh

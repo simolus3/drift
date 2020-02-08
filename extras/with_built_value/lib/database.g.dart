@@ -8,7 +8,7 @@ part of 'database.dart';
 
 class _$Foo extends Foo {
   @override
-  final SomeInt moorField;
+  final User moorField;
 
   factory _$Foo([void Function(FooBuilder) updates]) =>
       (new FooBuilder()..update(updates)).build();
@@ -47,9 +47,9 @@ class _$Foo extends Foo {
 class FooBuilder implements Builder<Foo, FooBuilder> {
   _$Foo _$v;
 
-  SomeInt _moorField;
-  SomeInt get moorField => _$this._moorField;
-  set moorField(SomeInt moorField) => _$this._moorField = moorField;
+  User _moorField;
+  User get moorField => _$this._moorField;
+  set moorField(User moorField) => _$this._moorField = moorField;
 
   FooBuilder();
 
