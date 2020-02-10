@@ -1,4 +1,4 @@
-## unreleased
+## 0.7.0
 
 - New feature: Table valued functions.
 - __Breaking__: Removed the `enableJson1` parameter on `EngineOptions`. Add a `Json1Extension` instance

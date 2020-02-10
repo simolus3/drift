@@ -23,7 +23,7 @@ dependencies:
 
   # Moor-specific analysis
   moor: ^2.3.0
-  sqlparser: ^0.6.0
+  sqlparser: ^0.7.0
 
   # Dart analysis
   analyzer: '^0.39.0'

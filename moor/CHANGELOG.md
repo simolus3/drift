@@ -1,4 +1,4 @@
-## unreleased
+## 2.4.0
 
 - Support aggregate expressions and `group by` in the Dart api
 - Support type converters in moor files! The [documentation](https://moor.simonbinder.eu/docs/advanced-features/type_converters/)
