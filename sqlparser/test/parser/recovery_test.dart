@@ -41,8 +41,7 @@ CREATE TABLE foo (
   });
 
   test('parses trailing comma with error', () {
-    final engine =
-        SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
 
     final result = engine.parseMoorFile('''
 CREATE TABLE foo (

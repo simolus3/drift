@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+  final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
   final mapper = TypeMapper();
 
   test('warns when a result column is unresolved', () {

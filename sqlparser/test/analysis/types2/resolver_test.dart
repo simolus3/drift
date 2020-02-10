@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../data.dart';
 
 void main() {
-  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+  final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 

@@ -23,7 +23,7 @@ IdentifierToken identifier(String content) {
 }
 
 MoorFile parseMoor(String content) {
-  return SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+  return SqlEngine(EngineOptions(useMoorExtensions: true))
       .parseMoorFile(content)
       .rootNode as MoorFile;
 }
@@ -36,9 +36,7 @@ void testMoorFile(String moorFile, MoorFile expected) {
 
 void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
   final parsed =
-      SqlEngine.withOptions(EngineOptions(useMoorExtensions: moorMode))
-          .parse(sql)
-          .rootNode;
+      SqlEngine(EngineOptions(useMoorExtensions: moorMode)).parse(sql).rootNode;
   enforceHasSpan(parsed);
   enforceEqual(parsed, expected);
 }

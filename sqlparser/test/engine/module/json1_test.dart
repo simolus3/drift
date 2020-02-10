@@ -12,7 +12,7 @@ void main() {
 }
 
 void _runTests(bool types2) {
-  final engine = SqlEngine.withOptions(EngineOptions(
+  final engine = SqlEngine(EngineOptions(
     enableExperimentalTypeInference: types2,
     enabledExtensions: const [Json1Extension()],
   ));

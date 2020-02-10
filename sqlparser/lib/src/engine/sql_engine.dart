@@ -2,8 +2,6 @@ import 'dart:collection';
 
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/analysis/types2/types.dart' as t2;
-import 'package:sqlparser/src/engine/module/fts5.dart';
-import 'package:sqlparser/src/engine/module/json1.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
@@ -22,23 +20,7 @@ class SqlEngine {
 
   SchemaFromCreateTable _schemaReader;
 
-  SqlEngine(
-      {@Deprecated('Use SqlEngine.withOptions instead')
-          bool useMoorExtensions = false,
-      @Deprecated('Use SqlEngine.withOptions instead')
-          bool enableJson1Module = false,
-      @Deprecated('Use SqlEngine.withOptions instead')
-          bool enableFts5 = false})
-      : this.withOptions(_constructOptions(
-          // ignore: deprecated_member_use_from_same_package
-          moor: useMoorExtensions,
-          // ignore: deprecated_member_use_from_same_package
-          json1: enableJson1Module,
-          // ignore: deprecated_member_use_from_same_package
-          fts5: enableFts5,
-        ));
-
-  SqlEngine.withOptions(this.options) {
+  SqlEngine([EngineOptions options]) : options = options ?? EngineOptions() {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
     }
@@ -46,6 +28,9 @@ class SqlEngine {
     registerTable(sqliteMaster);
     registerTable(sqliteSequence);
   }
+
+  @Deprecated('Use SqlEngine(options) instead')
+  factory SqlEngine.withOptions(EngineOptions options) = SqlEngine;
 
   /// Obtain a [SchemaFromCreateTable] instance compatible with the
   /// configuration of this engine.
@@ -230,18 +215,6 @@ class SqlEngine {
         .firstWhere((e) => e != null, orElse: () => null);
 
     root.scope = _constructRootScope(parent: safeScope);
-  }
-
-  static EngineOptions _constructOptions({bool moor, bool fts5, bool json1}) {
-    final extensions = [
-      if (fts5) const Fts5Extension(),
-      if (json1) const Json1Extension(),
-    ];
-
-    return EngineOptions(
-      useMoorExtensions: moor,
-      enabledExtensions: extensions,
-    );
   }
 }
 

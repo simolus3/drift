@@ -36,8 +36,7 @@ class PreprocessBuilder extends Builder {
   FutureOr<void> build(BuildStep buildStep) async {
     final input = buildStep.inputId;
     final moorFileContent = await buildStep.readAsString(input);
-    final engine =
-        SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
 
     final parsed = engine.parseMoorFile(moorFileContent);
 

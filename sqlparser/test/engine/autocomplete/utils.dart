@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 ComputedSuggestions completionsFor(String moorFile,
     {void Function(SqlEngine) setup}) {
   final position = moorFile.indexOf('^');
-  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+  final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
   setup?.call(engine);
 
   final result = engine.parseMoorFile(moorFile.replaceFirst('^', ''));

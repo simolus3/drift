@@ -82,7 +82,7 @@ void main() {
   });
 
   test('can infer types for dart placeholder', () {
-    final ctx = (SqlEngine.withOptions(EngineOptions(useMoorExtensions: true))
+    final ctx = (SqlEngine(EngineOptions(useMoorExtensions: true))
           ..registerTable(demoTable))
         .analyze(r'SELECT * FROM demo WHERE $expr');
 
@@ -94,8 +94,7 @@ void main() {
   });
 
   test('respects explicit types for variables', () {
-    final ctx =
-        SqlEngine.withOptions(EngineOptions(useMoorExtensions: true)).analyze(
+    final ctx = SqlEngine(EngineOptions(useMoorExtensions: true)).analyze(
       'SELECT ?',
       stmtOptions: const AnalyzeStatementOptions(indexedVariableTypes: {
         1: ResolvedType.bool(),

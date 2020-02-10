@@ -10,7 +10,7 @@ final Table table =
     Table(name: 'todos', resolvedColumns: [_idColumn, _titleColumn]);
 
 void main() {
-  final engine = SqlEngine.withOptions(EngineOptions(useMoorExtensions: true));
+  final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
   final mapper = TypeMapper();
 
   test('extracts variables and sorts them by index', () {

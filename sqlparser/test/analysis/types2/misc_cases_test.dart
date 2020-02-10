@@ -37,8 +37,7 @@ const Map<String, ResolvedType> _types = {
 };
 
 SqlEngine _spawnEngine() {
-  return SqlEngine.withOptions(
-      EngineOptions(enableExperimentalTypeInference: true))
+  return SqlEngine(EngineOptions(enableExperimentalTypeInference: true))
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 }

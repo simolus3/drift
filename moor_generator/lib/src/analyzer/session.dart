@@ -45,7 +45,7 @@ class MoorSession {
       enableExperimentalTypeInference: options.useExperimentalInference,
     );
 
-    return SqlEngine.withOptions(sqlOptions);
+    return SqlEngine(sqlOptions);
   }
 
   FileType _findFileType(String path) {
