@@ -16,11 +16,21 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
+  Table /*?*/ _toTableOrNull(ResolvesToResultSet resultSet) {
+    var resolved = resultSet.resultSet;
+
+    while (resolved != null && resolved is TableAlias) {
+      resolved = (resolved as TableAlias).delegate;
+    }
+
+    return resolved is Table ? resolved : null;
+  }
+
   @override
   void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
-      final resolved = e.resolved;
-      if (resolved != null && resolved is Table) {
+      final resolved = _toTableOrNull(e.resultSet);
+      if (resolved != null) {
         foundTables.add(resolved);
       }
     }
@@ -41,8 +51,8 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
   final Set<Table> writtenTables = {};
 
   void _addIfResolved(ResolvesToResultSet r) {
-    final resolved = r.resultSet;
-    if (resolved is Table) {
+    final resolved = _toTableOrNull(r);
+    if (resolved != null) {
       writtenTables.add(resolved);
     }
   }
