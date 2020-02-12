@@ -35,6 +35,9 @@ Moor web is built on top of the [sql.js](https://github.com/kripken/sql.js/) lib
 You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](https://github.com/kripken/sql.js/tree/master/dist)
 and copy them into your `web` folder.
 
+A full example that works on the web (and all other platforms) is available
+[here](https://github.com/rodydavis/moor_shared).
+
 ## Gotchas
 The database implementation uses WebAssembly, which needs to be supported by your browser. 
 Also, make sure that your webserver serves the `.wasm` file as `application/wasm`, browsers
