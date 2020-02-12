@@ -20,7 +20,8 @@ class SqlEngine {
 
   SchemaFromCreateTable _schemaReader;
 
-  SqlEngine([EngineOptions options]) : options = options ?? EngineOptions() {
+  SqlEngine([EngineOptions engineOptions])
+      : options = engineOptions ?? EngineOptions() {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
     }
