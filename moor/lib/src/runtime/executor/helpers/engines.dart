@@ -298,6 +298,11 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   Future<void> _runBeforeOpen(OpeningDetails d) {
     return databaseInfo.beforeOpenCallback(_BeforeOpeningExecutor(this), d);
   }
+
+  @override
+  Future<void> close() {
+    return delegate.close();
+  }
 }
 
 /// Inside a `beforeOpen` callback, all moor apis must be available. At the same

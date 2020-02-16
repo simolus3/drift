@@ -1,3 +1,7 @@
+## unreleased
+
+- Experimentally support IndexedDB to store sqlite data on the web
+
 ## 2.4.0
 
 - Support aggregate expressions and `group by` in the Dart api

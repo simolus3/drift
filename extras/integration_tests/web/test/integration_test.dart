@@ -20,6 +20,24 @@ class WebExecutor extends TestExecutor {
   }
 }
 
+class WebExecutorIndexedDb extends TestExecutor {
+  @override
+  QueryExecutor createExecutor() {
+    return WebDatabase.withStorage(MoorWebStorage.indexedDb('foo'));
+  }
+
+  @override
+  Future deleteData() async {
+    await window.indexedDB.deleteDatabase('moor_databases');
+  }
+}
+
 void main() {
-  runAllTests(WebExecutor());
+  group('using local storage', () {
+    runAllTests(WebExecutor());
+  });
+
+  group('using IndexedDb', () {
+    runAllTests(WebExecutorIndexedDb());
+  });
 }

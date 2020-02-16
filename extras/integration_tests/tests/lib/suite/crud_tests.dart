@@ -5,23 +5,20 @@ import 'package:tests/suite/suite.dart';
 void crudTests(TestExecutor executor) {
   test('inserting updates a select stream', () async {
     final db = Database(executor.createExecutor());
-    final friends = db.watchFriendsOf(1);
+    final friends = db.watchFriendsOf(1).asBroadcastStream();
 
     final a = await db.getUserById(1);
     final b = await db.getUserById(2);
 
-    final expectation = expectLater(
-      friends,
-      emitsInOrder(
-        <Matcher>[
-          isEmpty, // initial state without friendships
-          equals(<User>[b]), // after we called makeFriends(a,b)
-        ],
-      ),
-    );
+    expect(await friends.first, isEmpty);
+
+    // after we called makeFriends(a,b)
+    final expectation = expectLater(friends, emits(equals(<User>[b])));
 
     await db.makeFriends(a, b);
     await expectation;
+
+    await db.close();
   });
 
   test('IN ? expressions can be expanded', () async {
@@ -31,5 +28,7 @@ void crudTests(TestExecutor executor) {
     final result = await db.usersById([1, 2, 3]);
 
     expect(result.map((u) => u.name), ['Dash', 'Duke', 'Go Gopher']);
+
+    await db.close();
   });
 }
