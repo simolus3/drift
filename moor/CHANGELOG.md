@@ -9,6 +9,8 @@
   - the `orReplace` boolean parameter on inserts (use `mode: InsertMode.orReplace` instead)
   - remove the top-level `isIn` and `isNotIn` functions
     (use the `.isIn` and `.isNotIn` instance methods instead)
+  - `CustomSelectStatement.execute` and `constructFetcher` - use `get()` or `watch()`,
+    respectively
 - __Breaking__: Remove the second type variable on `Expression` and subclasses.
 - __Breaking__: Remove `customSelectStream` from `QueryEngine`. The `customSelect`
   method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
