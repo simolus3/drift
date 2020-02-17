@@ -63,6 +63,8 @@ At the moment, moor supports these options:
   However, it's still in development and may not work in all cases yet. Please report any issues you can find.
   __Warning:__ The new type inference algorithm is in development and does not obey to semantic versioning.
   Results and generated code might change in moor versions not declared as breaking.
+* `eagerly_load_dart_ast`: Moor's builder will load the resolved AST whenever it encounters a Dart file,
+  instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
 
 ## Available extensions
 

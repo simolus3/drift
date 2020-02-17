@@ -5,10 +5,15 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
 import 'package:build/build.dart' as build show log;
 import 'package:logging/logging.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:moor_generator/src/backends/build/serialized_types.dart';
 
 class BuildBackend extends Backend {
+  final MoorOptions options;
+
+  BuildBackend([this.options = const MoorOptions()]);
+
   BuildBackendTask createTask(BuildStep step) {
     return BuildBackendTask(step, this);
   }
@@ -47,8 +52,11 @@ class BuildBackendTask extends BackendTask {
     try {
       final asset = _resolve(uri);
       final library = await step.resolver.libraryFor(asset);
-      _cachedResults[asset] =
-          await library.session.getResolvedLibraryByElement(library);
+
+      if (backend.options.eagerlyLoadDartAst) {
+        _cachedResults[asset] =
+            await library.session.getResolvedLibraryByElement(library);
+      }
 
       return library;
     } on NonLibraryAssetException catch (_) {
@@ -63,8 +71,12 @@ class BuildBackendTask extends BackendTask {
     // dart file was read...
     final assetId = await step.resolver.assetIdForElement(element);
     final result = _cachedResults[assetId];
-    return result.getElementDeclaration(element) ??
-        await super.loadElementDeclaration(element);
+
+    if (result != null) {
+      return result.getElementDeclaration(element);
+    } else {
+      return super.loadElementDeclaration(element);
+    }
   }
 
   @override

@@ -63,6 +63,9 @@ class MoorOptions {
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
   final List<SqlModule> modules;
 
+  @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
+  final bool eagerlyLoadDartAst;
+
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => modules.contains(module);
 
@@ -75,6 +78,7 @@ class MoorOptions {
       this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
       this.generateConnectConstructor = false,
       this.useExperimentalInference = false,
+      this.eagerlyLoadDartAst = false,
       this.modules = const []});
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>
