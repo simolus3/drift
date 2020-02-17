@@ -6,7 +6,8 @@
   - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
     Use the extension member on `Expression<DateTime>` instead.
 - __Breaking__: Remove the second type variable on `Expression` and subclasses.
-
+- __Breaking__: Remove `InsertStatement.insertAll` (use batches instead) and `insert(orReplace: true)`
+  (use `mode: InsertMode.orReplace` instead).
 - Experimentally support IndexedDB to store sqlite data on the web
 
 ## 2.4.0

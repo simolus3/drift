@@ -51,73 +51,10 @@ void main() {
         [113, 'Done']));
   });
 
-  test('generates insert or replace statements with legacy parameter',
-      () async {
-    await db.into(db.todosTable).insert(
-        TodoEntry(
-          id: 113,
-          content: 'Done',
-        ),
-        orReplace: true);
-
-    verify(executor.runInsert(
-        'INSERT OR REPLACE INTO todos (id, content) VALUES (?, ?)',
-        [113, 'Done']));
-  });
-
   test('generates DEFAULT VALUES statement when otherwise empty', () async {
     await db.into(db.pureDefaults).insert(const PureDefaultsCompanion());
 
     verify(executor.runInsert('INSERT INTO pure_defaults DEFAULT VALUES', []));
-  });
-
-  test('runs bulk inserts', () async {
-    // ignore: deprecated_member_use_from_same_package
-    await db.into(db.todosTable).insertAll(const [
-      TodosTableCompanion(content: Value('a')),
-      TodosTableCompanion(title: Value('title'), content: Value('b')),
-      TodosTableCompanion(title: Value('title'), content: Value('c')),
-    ]);
-
-    const insertSimple = 'INSERT INTO todos (content) VALUES (?)';
-    const insertTitle = 'INSERT INTO todos (title, content) VALUES (?, ?)';
-
-    verify(executor.runBatched([
-      BatchedStatement(insertSimple, [
-        ['a']
-      ]),
-      BatchedStatement(insertTitle, [
-        ['title', 'b'],
-        ['title', 'c']
-      ]),
-    ]));
-
-    verify(streamQueries.handleTableUpdates({db.todosTable}));
-  });
-
-  test('runs bulk inserts with OR REPLACE', () async {
-    // ignore: deprecated_member_use_from_same_package
-    await db.into(db.todosTable).insertAll(const [
-      TodosTableCompanion(content: Value('a')),
-      TodosTableCompanion(title: Value('title'), content: Value('b')),
-      TodosTableCompanion(title: Value('title'), content: Value('c')),
-    ], orReplace: true);
-
-    const insertSimple = 'INSERT OR REPLACE INTO todos (content) VALUES (?)';
-    const insertTitle =
-        'INSERT OR REPLACE INTO todos (title, content) VALUES (?, ?)';
-
-    verify(executor.runBatched([
-      BatchedStatement(insertSimple, [
-        ['a']
-      ]),
-      BatchedStatement(insertTitle, [
-        ['title', 'b'],
-        ['title', 'c']
-      ]),
-    ]));
-
-    verify(streamQueries.handleTableUpdates({db.todosTable}));
   });
 
   test('notifies stream queries on inserts', () async {

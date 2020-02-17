@@ -153,7 +153,7 @@ class Database extends _$Database {
       reallyGoodFriends: friendsValue,
     );
 
-    await into(friendships).insert(companion, orReplace: true);
+    await into(friendships).insert(companion, mode: InsertMode.insertOrReplace);
   }
 
   Future<void> updateSettings(int userId, Preferences c) async {
