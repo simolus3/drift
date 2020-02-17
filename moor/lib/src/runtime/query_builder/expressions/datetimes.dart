@@ -1,41 +1,5 @@
 part of '../query_builder.dart';
 
-/// Extracts the (UTC) year from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.year instead')
-Expression<int, IntType> year(Expression<DateTime, DateTimeType> date) =>
-    date.year;
-
-/// Extracts the (UTC) month from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.month instead')
-Expression<int, IntType> month(Expression<DateTime, DateTimeType> date) =>
-    date.month;
-
-/// Extracts the (UTC) day from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.day instead')
-Expression<int, IntType> day(Expression<DateTime, DateTimeType> date) =>
-    date.day;
-
-/// Extracts the (UTC) hour from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.hour instead')
-Expression<int, IntType> hour(Expression<DateTime, DateTimeType> date) =>
-    date.hour;
-
-/// Extracts the (UTC) minute from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.minute instead')
-Expression<int, IntType> minute(Expression<DateTime, DateTimeType> date) =>
-    date.minute;
-
-/// Extracts the (UTC) second from the given expression that resolves
-/// to a datetime.
-@Deprecated('Use date.second instead')
-Expression<int, IntType> second(Expression<DateTime, DateTimeType> date) =>
-    date.second;
-
 /// A sql expression that evaluates to the current date represented as a unix
 /// timestamp. The hour, minute and second fields will be set to 0.
 const Expression<DateTime, DateTimeType> currentDate =

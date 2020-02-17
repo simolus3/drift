@@ -1,30 +1,5 @@
 part of '../query_builder.dart';
 
-/// Returns an expression that is true iff both [a] and [b] are true.
-///
-/// This is now deprecated. Instead of `and(a, b)`, use `a & b`.
-@Deprecated('Use the operator on BooleanExpressionOperators instead')
-Expression<bool, BoolType> and(
-    Expression<bool, BoolType> a, Expression<bool, BoolType> b) {
-  return a & b;
-}
-
-/// Returns an expression that is true iff [a], [b] or both are true.
-///
-/// This is now deprecated. Instead of `or(a, b)`, use `a | b`;
-@Deprecated('Use the operator on BooleanExpressionOperators instead')
-Expression<bool, BoolType> or(
-    Expression<bool, BoolType> a, Expression<bool, BoolType> b) {
-  return a | b;
-}
-
-/// Returns an expression that is true iff [a] is not true.
-///
-/// This is now deprecated. Instead of `not(a)`, prefer to use `a.not()` now.
-@Deprecated('Use BooleanExpressionOperators.not() as a extension instead')
-Expression<bool, BoolType> not(Expression<bool, BoolType> a) =>
-    _NotExpression(a);
-
 /// Defines operations on boolean values.
 extension BooleanExpressionOperators on Expression<bool, BoolType> {
   /// Negates this boolean expression. The returned expression is true if

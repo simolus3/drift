@@ -1,6 +1,10 @@
 ## 3.0.0-dev
 
 - __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`.
+- __Breaking__: Remove deprecated members:
+  - top-level `and`, `or` and `not` methods. Use the `&`, `|` and `.not()` instead.
+  - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
+    Use the extension member on `Expression<DateTime>` instead.
 
 - Experimentally support IndexedDB to store sqlite data on the web
 
