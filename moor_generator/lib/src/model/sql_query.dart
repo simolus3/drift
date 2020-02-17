@@ -297,8 +297,7 @@ class FoundDartPlaceholder extends FoundElement {
         if (columnType == null) return 'Expression';
 
         final dartType = dartTypeNames[columnType];
-        final sqlImplType = sqlTypes[columnType];
-        return 'Expression<$dartType, $sqlImplType>';
+        return 'Expression<$dartType>';
         break;
       case DartPlaceholderType.limit:
         return 'Limit';

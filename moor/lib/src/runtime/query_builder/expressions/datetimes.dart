@@ -2,16 +2,15 @@ part of '../query_builder.dart';
 
 /// A sql expression that evaluates to the current date represented as a unix
 /// timestamp. The hour, minute and second fields will be set to 0.
-const Expression<DateTime, DateTimeType> currentDate =
+const Expression<DateTime> currentDate =
     _CustomDateTimeExpression("strftime('%s', CURRENT_DATE)");
 
 /// A sql expression that evaluates to the current date and time, similar to
 /// [DateTime.now]. Timestamps are stored with a second accuracy.
-const Expression<DateTime, DateTimeType> currentDateAndTime =
+const Expression<DateTime> currentDateAndTime =
     _CustomDateTimeExpression("strftime('%s', CURRENT_TIMESTAMP)");
 
-class _CustomDateTimeExpression
-    extends CustomExpression<DateTime, DateTimeType> {
+class _CustomDateTimeExpression extends CustomExpression<DateTime> {
   @override
   Precedence get precedence => Precedence.primary;
 
@@ -20,44 +19,38 @@ class _CustomDateTimeExpression
 
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
-extension DateTimeExpressions on Expression<DateTime, DateTimeType> {
+extension DateTimeExpressions on Expression<DateTime> {
   /// Extracts the (UTC) year from `this` datetime expression.
-  Expression<int, IntType> get year =>
-      _StrftimeSingleFieldExpression('%Y', this);
+  Expression<int> get year => _StrftimeSingleFieldExpression('%Y', this);
 
   /// Extracts the (UTC) month from `this` datetime expression.
-  Expression<int, IntType> get month =>
-      _StrftimeSingleFieldExpression('%m', this);
+  Expression<int> get month => _StrftimeSingleFieldExpression('%m', this);
 
   /// Extracts the (UTC) day from `this` datetime expression.
-  Expression<int, IntType> get day =>
-      _StrftimeSingleFieldExpression('%d', this);
+  Expression<int> get day => _StrftimeSingleFieldExpression('%d', this);
 
   /// Extracts the (UTC) hour from `this` datetime expression.
-  Expression<int, IntType> get hour =>
-      _StrftimeSingleFieldExpression('%H', this);
+  Expression<int> get hour => _StrftimeSingleFieldExpression('%H', this);
 
   /// Extracts the (UTC) minute from `this` datetime expression.
-  Expression<int, IntType> get minute =>
-      _StrftimeSingleFieldExpression('%M', this);
+  Expression<int> get minute => _StrftimeSingleFieldExpression('%M', this);
 
   /// Extracts the (UTC) second from `this` datetime expression.
-  Expression<int, IntType> get second =>
-      _StrftimeSingleFieldExpression('%S', this);
+  Expression<int> get second => _StrftimeSingleFieldExpression('%S', this);
 
   /// Returns an expression containing the amount of seconds from the unix
   /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
   /// assumed to be in utc.
   // for moor, date times are just unix timestamps, so we don't need to rewrite
   // anything when converting
-  Expression<int, IntType> get secondsSinceEpoch => dartCast();
+  Expression<int> get secondsSinceEpoch => dartCast();
 }
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.
-class _StrftimeSingleFieldExpression extends Expression<int, IntType> {
+class _StrftimeSingleFieldExpression extends Expression<int> {
   final String format;
-  final Expression<DateTime, DateTimeType> date;
+  final Expression<DateTime> date;
 
   _StrftimeSingleFieldExpression(this.format, this.date);
 

@@ -3,8 +3,7 @@ import 'package:test/test.dart';
 
 import '../data/utils/expect_equality.dart';
 
-typedef _Extractor = Expression<int, IntType> Function(
-    Expression<DateTime, DateTimeType> d);
+typedef _Extractor = Expression<int> Function(Expression<DateTime> d);
 
 void main() {
   final column = GeneratedDateTimeColumn('val', null, false);

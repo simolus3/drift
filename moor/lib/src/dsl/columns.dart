@@ -1,41 +1,38 @@
 part of 'dsl.dart';
 
-/// Base class for columns in sql. The [T] type refers to the type a value of
-/// this column will have in Dart, [S] is the mapping class from moor.
-abstract class Column<T, S extends SqlType<T>> extends Expression<T, S> {
+/// Base class for columns in sql. Type [T] refers to the type a value of this
+/// column will have in Dart.
+abstract class Column<T> extends Expression<T> {
   @override
   final Precedence precedence = Precedence.primary;
 }
 
 /// A column that stores int values.
-abstract class IntColumn extends Column<int, IntType> {}
+abstract class IntColumn extends Column<int> {}
 
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
-abstract class BoolColumn extends Column<bool, BoolType> {}
+abstract class BoolColumn extends Column<bool> {}
 
 /// A column that stores text.
-abstract class TextColumn extends Column<String, StringType> {}
+abstract class TextColumn extends Column<String> {}
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime, DateTimeType> {}
+abstract class DateTimeColumn extends Column<DateTime> {}
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
-abstract class BlobColumn extends Column<Uint8List, BlobType> {}
+abstract class BlobColumn extends Column<Uint8List> {}
 
 /// A column that stores floating point numeric values.
-abstract class RealColumn extends Column<double, RealType> {}
+abstract class RealColumn extends Column<double> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, moor_generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
-class ColumnBuilder<
-    Builder,
-    ResultColumn extends Column<ResultDartType, ResultSqlType>,
-    ResultSqlType extends SqlType<ResultDartType>,
+class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
     ResultDartType> {
   /// By default, the field name will be used as the column name, e.g.
   /// `IntColumn get id = integer()` will have "id" as its associated name.
@@ -101,8 +98,7 @@ class ColumnBuilder<
   /// TABLE statements.
   /// - [currentDate] and [currentDateAndTime], which are useful expressions to
   /// store the current date/time as a default value.
-  Builder withDefault(Expression<ResultDartType, ResultSqlType> e) =>
-      _isGenerated();
+  Builder withDefault(Expression<ResultDartType> e) => _isGenerated();
 
   /// Sets a dynamic default value for this column.
   ///
@@ -177,8 +173,7 @@ class ColumnBuilder<
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
 /// for details.
-class IntColumnBuilder
-    extends ColumnBuilder<IntColumnBuilder, IntColumn, IntType, int> {
+class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
   IntColumnBuilder autoIncrement() => _isGenerated();
@@ -187,22 +182,22 @@ class IntColumnBuilder
 /// Tells the generator to build an [BoolColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class BoolColumnBuilder
-    extends ColumnBuilder<BoolColumnBuilder, BoolColumn, BoolType, bool> {}
+    extends ColumnBuilder<BoolColumnBuilder, BoolColumn, bool> {}
 
 /// Tells the generator to build an [BlobColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class BlobColumnBuilder
-    extends ColumnBuilder<BlobColumnBuilder, BlobColumn, BlobType, Uint8List> {}
+    extends ColumnBuilder<BlobColumnBuilder, BlobColumn, Uint8List> {}
 
 /// Tells the generator to build an [RealColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class RealColumnBuilder
-    extends ColumnBuilder<RealColumnBuilder, RealColumn, RealType, num> {}
+    extends ColumnBuilder<RealColumnBuilder, RealColumn, num> {}
 
 /// Tells the generator to build an [TextColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class TextColumnBuilder
-    extends ColumnBuilder<TextColumnBuilder, TextColumn, StringType, String> {
+    extends ColumnBuilder<TextColumnBuilder, TextColumn, String> {
   /// Puts a constraint on the minimum and maximum length of text that can be
   /// stored in this column (will be validated whenever this column is updated
   /// or a value is inserted). If [min] is not null and one tries to write a
@@ -214,8 +209,8 @@ class TextColumnBuilder
 
 /// Tells the generator to build an [DateTimeColumn]. See the docs at
 /// [ColumnBuilder] for details.
-class DateTimeColumnBuilder extends ColumnBuilder<DateTimeColumnBuilder,
-    DateTimeColumn, DateTimeType, DateTime> {}
+class DateTimeColumnBuilder
+    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn, DateTime> {}
 
 /// Annotation to use on column getters inside of a [Table] to define the name
 /// of the column in the json used by [DataClass.toJson].

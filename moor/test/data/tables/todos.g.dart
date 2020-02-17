@@ -271,19 +271,19 @@ class $TodosTableTable extends TodosTable
   Map<String, Variable> entityToSql(TodosTableCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.title.present) {
-      map['title'] = Variable<String, StringType>(d.title.value);
+      map['title'] = Variable<String>(d.title.value);
     }
     if (d.content.present) {
-      map['content'] = Variable<String, StringType>(d.content.value);
+      map['content'] = Variable<String>(d.content.value);
     }
     if (d.targetDate.present) {
-      map['target_date'] = Variable<DateTime, DateTimeType>(d.targetDate.value);
+      map['target_date'] = Variable<DateTime>(d.targetDate.value);
     }
     if (d.category.present) {
-      map['category'] = Variable<int, IntType>(d.category.value);
+      map['category'] = Variable<int>(d.category.value);
     }
     return map;
   }
@@ -444,10 +444,10 @@ class $CategoriesTable extends Categories
   Map<String, Variable> entityToSql(CategoriesCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.description.present) {
-      map['desc'] = Variable<String, StringType>(d.description.value);
+      map['desc'] = Variable<String>(d.description.value);
     }
     return map;
   }
@@ -724,21 +724,19 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Map<String, Variable> entityToSql(UsersCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.name.present) {
-      map['name'] = Variable<String, StringType>(d.name.value);
+      map['name'] = Variable<String>(d.name.value);
     }
     if (d.isAwesome.present) {
-      map['is_awesome'] = Variable<bool, BoolType>(d.isAwesome.value);
+      map['is_awesome'] = Variable<bool>(d.isAwesome.value);
     }
     if (d.profilePicture.present) {
-      map['profile_picture'] =
-          Variable<Uint8List, BlobType>(d.profilePicture.value);
+      map['profile_picture'] = Variable<Uint8List>(d.profilePicture.value);
     }
     if (d.creationTime.present) {
-      map['creation_time'] =
-          Variable<DateTime, DateTimeType>(d.creationTime.value);
+      map['creation_time'] = Variable<DateTime>(d.creationTime.value);
     }
     return map;
   }
@@ -903,10 +901,10 @@ class $SharedTodosTable extends SharedTodos
   Map<String, Variable> entityToSql(SharedTodosCompanion d) {
     final map = <String, Variable>{};
     if (d.todo.present) {
-      map['todo'] = Variable<int, IntType>(d.todo.value);
+      map['todo'] = Variable<int>(d.todo.value);
     }
     if (d.user.present) {
-      map['user'] = Variable<int, IntType>(d.user.value);
+      map['user'] = Variable<int>(d.user.value);
     }
     return map;
   }
@@ -1121,15 +1119,14 @@ class $TableWithoutPKTable extends TableWithoutPK
   Map<String, Variable> entityToSql(TableWithoutPKCompanion d) {
     final map = <String, Variable>{};
     if (d.notReallyAnId.present) {
-      map['not_really_an_id'] = Variable<int, IntType>(d.notReallyAnId.value);
+      map['not_really_an_id'] = Variable<int>(d.notReallyAnId.value);
     }
     if (d.someFloat.present) {
-      map['some_float'] = Variable<double, RealType>(d.someFloat.value);
+      map['some_float'] = Variable<double>(d.someFloat.value);
     }
     if (d.custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] =
-          Variable<String, StringType>(converter.mapToSql(d.custom.value));
+      map['custom'] = Variable<String>(converter.mapToSql(d.custom.value));
     }
     return map;
   }
@@ -1286,10 +1283,10 @@ class $PureDefaultsTable extends PureDefaults
   Map<String, Variable> entityToSql(PureDefaultsCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.txt.present) {
-      map['insert'] = Variable<String, StringType>(d.txt.value);
+      map['insert'] = Variable<String>(d.txt.value);
     }
     return map;
   }

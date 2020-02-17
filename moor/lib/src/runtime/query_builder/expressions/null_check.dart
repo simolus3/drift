@@ -4,14 +4,13 @@ part of '../query_builder.dart';
 // look together with NNBD in the future
 
 /// Expression that is true if the inner expression resolves to a null value.
-Expression<bool, BoolType> isNull(Expression inner) => _NullCheck(inner, true);
+Expression<bool> isNull(Expression inner) => _NullCheck(inner, true);
 
 /// Expression that is true if the inner expression resolves to a non-null
 /// value.
-Expression<bool, BoolType> isNotNull(Expression inner) =>
-    _NullCheck(inner, false);
+Expression<bool> isNotNull(Expression inner) => _NullCheck(inner, false);
 
-class _NullCheck extends Expression<bool, BoolType> {
+class _NullCheck extends Expression<bool> {
   final Expression _inner;
   final bool _isNull;
 

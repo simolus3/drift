@@ -15,8 +15,7 @@ abstract class FunctionParameter implements Component {}
 ///
 /// It's important that all subclasses properly implement [hashCode] and
 /// [==].
-abstract class Expression<D, T extends SqlType<D>>
-    implements FunctionParameter {
+abstract class Expression<D> implements FunctionParameter {
   /// Constant constructor so that subclasses can be constant.
   const Expression();
 
@@ -29,34 +28,35 @@ abstract class Expression<D, T extends SqlType<D>>
   bool get isLiteral => false;
 
   /// Whether this expression is equal to the given expression.
-  Expression<bool, BoolType> equalsExp(Expression<D, T> compare) =>
+  Expression<bool> equalsExp(Expression<D> compare) =>
       _Comparison.equal(this, compare);
 
   /// Whether this column is equal to the given value, which must have a fitting
   /// type. The [compare] value will be written
   /// as a variable using prepared statements, so there is no risk of
   /// an SQL-injection.
-  Expression<bool, BoolType> equals(D compare) =>
-      _Comparison.equal(this, Variable<D, T>(compare));
+  Expression<bool> equals(D compare) =>
+      _Comparison.equal(this, Variable<D>(compare));
 
-  /// Casts this expression to an expression with [D] and [T] parameter without
-  /// changing what's written with [writeInto]. In particular, using [dartCast]
+  /// Casts this expression to an expression of [D].
+  ///
+  /// Calling [dartCast] will not affect the generated sql. In particular, it
   /// will __NOT__ generate a `CAST` expression in sql.
   ///
   /// This method is used internally by moor.
-  Expression<D2, T2> dartCast<D2, T2 extends SqlType<D2>>() {
-    return _CastExpression<D, D2, T, T2>(this);
+  Expression<D2> dartCast<D2>() {
+    return _CastExpression<D, D2>(this);
   }
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
-  Expression<bool, BoolType> isIn(Iterable<D> values) {
+  Expression<bool> isIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), false);
   }
 
   /// An expression that is true if `this` does not resolve to any of the values
   /// in [values].
-  Expression<bool, BoolType> isNotIn(Iterable<D> values) {
+  Expression<bool> isNotIn(Iterable<D> values) {
     return _InExpression(this, values.toList(), true);
   }
 
@@ -87,7 +87,7 @@ abstract class Expression<D, T extends SqlType<D>>
     inner.writeAroundPrecedence(ctx, precedence);
   }
 
-  /// Finds the runtime implementation of [T] in the provided [types].
+  /// Finds the runtime implementation of [D] in the provided [types].
   SqlType<D> findType(SqlTypeSystem types) {
     return types.forDartType<D>();
   }
@@ -169,8 +169,7 @@ class Precedence implements Comparable<Precedence> {
 
 /// An expression that looks like "$a operator $b", where $a and $b itself
 /// are expressions and the operator is any string.
-abstract class _InfixOperator<D, T extends SqlType<D>>
-    extends Expression<D, T> {
+abstract class _InfixOperator<D> extends Expression<D> {
   /// The left-hand side of this expression
   Expression get left;
 
@@ -202,15 +201,15 @@ abstract class _InfixOperator<D, T extends SqlType<D>>
   }
 }
 
-class _BaseInfixOperator<D, T extends SqlType<D>> extends _InfixOperator<D, T> {
+class _BaseInfixOperator<D> extends _InfixOperator<D> {
   @override
-  final Expression<D, T> left;
+  final Expression<D> left;
 
   @override
   final String operator;
 
   @override
-  final Expression<D, T> right;
+  final Expression<D> right;
 
   @override
   final Precedence precedence;
@@ -239,7 +238,7 @@ enum _ComparisonOperator {
 }
 
 /// An expression that compares two child expressions.
-class _Comparison extends _InfixOperator<bool, BoolType> {
+class _Comparison extends _InfixOperator<bool> {
   static const Map<_ComparisonOperator, String> _operatorNames = {
     _ComparisonOperator.less: '<',
     _ComparisonOperator.lessOrEqual: '<=',
@@ -276,8 +275,8 @@ class _Comparison extends _InfixOperator<bool, BoolType> {
   _Comparison.equal(this.left, this.right) : op = _ComparisonOperator.equal;
 }
 
-class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
-  final Expression<DT, ST> inner;
+class _UnaryMinus<DT> extends Expression<DT> {
+  final Expression<DT> inner;
 
   _UnaryMinus(this.inner);
 
@@ -299,9 +298,8 @@ class _UnaryMinus<DT, ST extends SqlType<DT>> extends Expression<DT, ST> {
   }
 }
 
-class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
-    extends Expression<D2, S2> {
-  final Expression<D1, S1> inner;
+class _CastExpression<D1, D2> extends Expression<D2> {
+  final Expression<D1> inner;
 
   _CastExpression(this.inner);
 
@@ -330,7 +328,7 @@ class _CastExpression<D1, D2, S1 extends SqlType<D1>, S2 extends SqlType<D2>>
 /// This class is mainly used by moor internally. If you find yourself using
 /// this class, consider [creating an issue](https://github.com/simolus3/moor/issues/new)
 /// to request native support in moor.
-class FunctionCallExpression<R, S extends SqlType<R>> extends Expression<R, S> {
+class FunctionCallExpression<R> extends Expression<R> {
   /// The name of the function to call
   final String functionName;
 

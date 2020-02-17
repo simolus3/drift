@@ -5,6 +5,7 @@
   - top-level `and`, `or` and `not` methods. Use the `&`, `|` and `.not()` instead.
   - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
     Use the extension member on `Expression<DateTime>` instead.
+- __Breaking__: Remove the second type variable on `Expression` and subclasses.
 
 - Experimentally support IndexedDB to store sqlite data on the web
 

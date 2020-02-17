@@ -1,24 +1,24 @@
 part of '../query_builder.dart';
 
 /// Defines operations on boolean values.
-extension BooleanExpressionOperators on Expression<bool, BoolType> {
+extension BooleanExpressionOperators on Expression<bool> {
   /// Negates this boolean expression. The returned expression is true if
   /// `this` is false, and vice versa.
-  Expression<bool, BoolType> not() => _NotExpression(this);
+  Expression<bool> not() => _NotExpression(this);
 
   /// Returns an expression that is true iff both `this` and [other] are true.
-  Expression<bool, BoolType> operator &(Expression<bool, BoolType> other) {
+  Expression<bool> operator &(Expression<bool> other) {
     return _BaseInfixOperator(this, 'AND', other, precedence: Precedence.and);
   }
 
   /// Returns an expression that is true if `this` or [other] are true.
-  Expression<bool, BoolType> operator |(Expression<bool, BoolType> other) {
+  Expression<bool> operator |(Expression<bool> other) {
     return _BaseInfixOperator(this, 'OR', other, precedence: Precedence.or);
   }
 }
 
-class _NotExpression extends Expression<bool, BoolType> {
-  final Expression<bool, BoolType> inner;
+class _NotExpression extends Expression<bool> {
+  final Expression<bool> inner;
 
   _NotExpression(this.inner);
 

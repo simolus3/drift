@@ -1,50 +1,48 @@
 part of '../query_builder.dart';
 
 /// Defines extension functions to express comparisons in sql
-extension ComparableExpr<DT, ST extends ComparableType<DT>>
-    on Expression<DT, ST> {
+extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
-  Expression<bool, BoolType> isBiggerThan(Expression<DT, ST> other) {
+  Expression<bool> isBiggerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.more, other);
   }
 
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other value.
-  Expression<bool, BoolType> isBiggerThanValue(DT other) =>
-      isBiggerThan(Variable(other));
+  Expression<bool> isBiggerThanValue(DT other) => isBiggerThan(Variable(other));
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other expression.
-  Expression<bool, BoolType> isBiggerOrEqual(Expression<DT, ST> other) {
+  Expression<bool> isBiggerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.moreOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is bigger than or
   /// equal to he other value.
-  Expression<bool, BoolType> isBiggerOrEqualValue(DT other) =>
+  Expression<bool> isBiggerOrEqualValue(DT other) =>
       isBiggerOrEqual(Variable(other));
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other expression.
-  Expression<bool, BoolType> isSmallerThan(Expression<DT, ST> other) {
+  Expression<bool> isSmallerThan(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.less, other);
   }
 
   /// Returns an expression that is true if this expression is strictly smaller
   /// than the other value.
-  Expression<bool, BoolType> isSmallerThanValue(DT other) =>
+  Expression<bool> isSmallerThanValue(DT other) =>
       isSmallerThan(Variable(other));
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other expression.
-  Expression<bool, BoolType> isSmallerOrEqual(Expression<DT, ST> other) {
+  Expression<bool> isSmallerOrEqual(Expression<DT> other) {
     return _Comparison(this, _ComparisonOperator.lessOrEqual, other);
   }
 
   /// Returns an expression that is true if this expression is smaller than or
   /// equal to he other value.
-  Expression<bool, BoolType> isSmallerOrEqualValue(DT other) =>
+  Expression<bool> isSmallerOrEqualValue(DT other) =>
       isSmallerOrEqual(Variable(other));
 
   /// Returns an expression evaluating to true if this expression is between
@@ -52,8 +50,7 @@ extension ComparableExpr<DT, ST extends ComparableType<DT>>
   ///
   /// If [not] is set, the expression will be negated. To compare this
   /// expression against two values, see
-  Expression<bool, BoolType> isBetween(
-      Expression<DT, ST> lower, Expression<DT, ST> higher,
+  Expression<bool> isBetween(Expression<DT> lower, Expression<DT> higher,
       {bool not = false}) {
     return _BetweenExpression(
         target: this, lower: lower, higher: higher, not: not);
@@ -63,18 +60,17 @@ extension ComparableExpr<DT, ST extends ComparableType<DT>>
   /// [lower] and [higher] (both inclusive).
   ///
   /// If [not] is set, the expression will be negated.
-  Expression<bool, BoolType> isBetweenValues(DT lower, DT higher,
-      {bool not = false}) {
+  Expression<bool> isBetweenValues(DT lower, DT higher, {bool not = false}) {
     return _BetweenExpression(
       target: this,
-      lower: Variable<DT, ST>(lower),
-      higher: Variable<DT, ST>(higher),
+      lower: Variable<DT>(lower),
+      higher: Variable<DT>(higher),
       not: not,
     );
   }
 }
 
-class _BetweenExpression extends Expression<bool, BoolType> {
+class _BetweenExpression extends Expression<bool> {
   final Expression target;
 
   // https://www.sqlite.org/lang_expr.html#between

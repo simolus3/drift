@@ -6,7 +6,7 @@ class GroupBy extends Component {
   final List<Expression> groupBy;
 
   /// Optional, a having clause to exclude some groups.
-  final Expression<bool, BoolType> /*?*/ having;
+  final Expression<bool> /*?*/ having;
 
   GroupBy._(this.groupBy, this.having);
 

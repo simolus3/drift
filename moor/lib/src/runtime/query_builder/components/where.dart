@@ -4,7 +4,7 @@ part of '../query_builder.dart';
 class Where extends Component {
   /// The expression that determines whether a given row should be included in
   /// the result.
-  final Expression<bool, BoolType> predicate;
+  final Expression<bool> predicate;
 
   /// Construct a [Where] clause from its [predicate].
   Where(this.predicate);

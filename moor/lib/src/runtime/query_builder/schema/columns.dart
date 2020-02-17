@@ -5,7 +5,7 @@ const VerificationResult _invalidNull = VerificationResult.failure(
     "Null fields thus can't be inserted.");
 
 /// Base class for the implementation of [Column].
-abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
+abstract class GeneratedColumn<T> extends Column<T> {
   /// The sql name of this column.
   final String $name;
 
@@ -25,7 +25,7 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
 
   /// The default expression to be used during inserts when no value has been
   /// specified. Can be null if no default value is set.
-  final Expression<T, S> defaultValue;
+  final Expression<T> defaultValue;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -123,12 +123,12 @@ abstract class GeneratedColumn<T, S extends SqlType<T>> extends Column<T, S> {
   }
 
   Variable _evaluateClientDefault() {
-    return Variable<T, S>(clientDefault());
+    return Variable<T>(clientDefault());
   }
 }
 
 /// Implementation for [TextColumn].
-class GeneratedTextColumn extends GeneratedColumn<String, StringType>
+class GeneratedTextColumn extends GeneratedColumn<String>
     implements TextColumn {
   /// Optional. The minimum text length.
   final int minTextLength;
@@ -144,7 +144,7 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
     this.minTextLength,
     this.maxTextLength,
     String $customConstraints,
-    Expression<String, StringType> defaultValue,
+    Expression<String> defaultValue,
   }) : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -171,11 +171,10 @@ class GeneratedTextColumn extends GeneratedColumn<String, StringType>
 }
 
 /// Implementation for [BoolColumn].
-class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
-    implements BoolColumn {
+class GeneratedBoolColumn extends GeneratedColumn<bool> implements BoolColumn {
   /// Used by generated code
   GeneratedBoolColumn(String name, String tableName, bool nullable,
-      {String $customConstraints, Expression<bool, BoolType> defaultValue})
+      {String $customConstraints, Expression<bool> defaultValue})
       : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -189,8 +188,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool, BoolType>
 }
 
 /// Implementation for [IntColumn]
-class GeneratedIntColumn extends GeneratedColumn<int, IntType>
-    implements IntColumn {
+class GeneratedIntColumn extends GeneratedColumn<int> implements IntColumn {
   /// Whether this column was declared to be a primary key via a column
   /// constraint. The only way to do this in Dart is with
   /// [IntColumnBuilder.autoIncrement]. In `.moor` files, declaring a column
@@ -215,7 +213,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
     this.declaredAsPrimaryKey = false,
     this.hasAutoIncrement = false,
     String $customConstraints,
-    Expression<int, IntType> defaultValue,
+    Expression<int> defaultValue,
   }) : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -236,7 +234,7 @@ class GeneratedIntColumn extends GeneratedColumn<int, IntType>
 }
 
 /// Implementation for [DateTimeColumn].
-class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
+class GeneratedDateTimeColumn extends GeneratedColumn<DateTime>
     implements DateTimeColumn {
   /// Used by generated code.
   GeneratedDateTimeColumn(
@@ -244,7 +242,7 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
     String tableName,
     bool $nullable, {
     String $customConstraints,
-    Expression<DateTime, DateTimeType> defaultValue,
+    Expression<DateTime> defaultValue,
   }) : super($name, tableName, $nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -253,11 +251,11 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime, DateTimeType>
 }
 
 /// Implementation for [BlobColumn]
-class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
+class GeneratedBlobColumn extends GeneratedColumn<Uint8List>
     implements BlobColumn {
   /// Used by generated code.
   GeneratedBlobColumn(String $name, String tableName, bool $nullable,
-      {String $customConstraints, Expression<Uint8List, BlobType> defaultValue})
+      {String $customConstraints, Expression<Uint8List> defaultValue})
       : super($name, tableName, $nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -266,14 +264,14 @@ class GeneratedBlobColumn extends GeneratedColumn<Uint8List, BlobType>
 }
 
 /// Implementation for [RealColumn]
-class GeneratedRealColumn extends GeneratedColumn<double, RealType>
+class GeneratedRealColumn extends GeneratedColumn<double>
     implements RealColumn {
   /// Used by generated code
   GeneratedRealColumn(
     String $name,
     String tableName,
     bool $nullable, {
-    Expression<double, RealType> defaultValue,
+    Expression<double> defaultValue,
     String $customConstraints,
   }) : super($name, tableName, $nullable,
             defaultValue: defaultValue, $customConstraints: $customConstraints);

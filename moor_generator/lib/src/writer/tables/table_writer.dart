@@ -108,7 +108,7 @@ class TableWriter {
     for (final column in table.columns) {
       _buffer.write('if (d.${column.dartGetterName}.present) {');
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
-          'Variable<${column.variableTypeName}, ${column.sqlTypeName}>';
+          'Variable<${column.variableTypeName}>';
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable

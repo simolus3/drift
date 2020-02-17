@@ -144,10 +144,10 @@ class Users extends Table with TableInfo<Users, User> {
   Map<String, Variable> entityToSql(UsersCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.name.present) {
-      map['name'] = Variable<String, StringType>(d.name.value);
+      map['name'] = Variable<String>(d.name.value);
     }
     return map;
   }

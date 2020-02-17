@@ -10,13 +10,13 @@ part of '../query_builder.dart';
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
-Expression<int, IntType> countAll({Expression<bool, BoolType> filter}) {
+Expression<int> countAll({Expression<bool> filter}) {
   return _AggregateExpression('COUNT', const _StarFunctionParameter(),
       filter: filter);
 }
 
 /// Provides aggregate functions that are available for each expression.
-extension BaseAggregate<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
+extension BaseAggregate<DT> on Expression<DT> {
   /// Returns how often this expression is non-null in the current group.
   ///
   /// For `COUNT(*)`, which would count all rows, see [countAll].
@@ -24,28 +24,26 @@ extension BaseAggregate<DT, ST extends SqlType<DT>> on Expression<DT, ST> {
   /// If [distinct] is set (defaults to false), duplicate values will not be
   /// counted twice. An optional [filter] can be used to only include values
   /// matching the filter.
-  Expression<int, IntType> count(
-      {bool distinct, Expression<bool, BoolType> filter}) {
+  Expression<int> count({bool distinct, Expression<bool> filter}) {
     return _AggregateExpression('COUNT', this,
         filter: filter, distinct: distinct);
   }
 }
 
 /// Provides aggregate functions that are available for numeric expressions.
-extension ArithmeticAggregates<DT, ST extends FullArithmetic<DT>>
-    on Expression<DT, ST> {
+extension ArithmeticAggregates<DT extends num> on Expression<DT> {
   /// Return the average of all non-null values in this group.
-  Expression<double, RealType> avg() => _AggregateExpression('AVG', this);
+  Expression<double> avg() => _AggregateExpression('AVG', this);
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DT, ST> max() => _AggregateExpression('MAX', this);
+  Expression<DT> max() => _AggregateExpression('MAX', this);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DT, ST> min() => _AggregateExpression('MIN', this);
+  Expression<DT> min() => _AggregateExpression('MIN', this);
 
   /// Calculate the sum of all non-null values in the group.
   ///
@@ -55,16 +53,16 @@ extension ArithmeticAggregates<DT, ST extends FullArithmetic<DT>>
   ///
   /// See also [total], which behaves similarly but returns a floating point
   /// value and doesn't throw an overflow exception.
-  Expression<DT, ST> sum() => _AggregateExpression('SUM', this);
+  Expression<DT> sum() => _AggregateExpression('SUM', this);
 
   /// Calculate the sum of all non-null values in the group.
   ///
   /// If all values in the group are null, [total] returns `0.0`. This function
   /// uses floating-point values internally.
-  Expression<double, RealType> total() => _AggregateExpression('TOTAL', this);
+  Expression<double> total() => _AggregateExpression('TOTAL', this);
 }
 
-class _AggregateExpression<D, S extends SqlType<D>> extends Expression<D, S> {
+class _AggregateExpression<D> extends Expression<D> {
   final String functionName;
   final bool distinct;
   final FunctionParameter parameter;
@@ -72,7 +70,7 @@ class _AggregateExpression<D, S extends SqlType<D>> extends Expression<D, S> {
   final Where /*?*/ filter;
 
   _AggregateExpression(this.functionName, this.parameter,
-      {Expression<bool, BoolType> filter, bool distinct})
+      {Expression<bool> filter, bool distinct})
       : filter = filter != null ? Where(filter) : null,
         distinct = distinct ?? false;
 
