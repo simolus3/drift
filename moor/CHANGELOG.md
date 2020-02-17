@@ -5,9 +5,11 @@
   - top-level `and`, `or` and `not` methods. Use the `&`, `|` and `.not()` instead.
   - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
     Use the extension member on `Expression<DateTime>` instead.
+  - `InsertStatement.insertAll` (use batches instead)
+  - the `orReplace` boolean parameter on inserts (use `mode: InsertMode.orReplace` instead)
+  - remove the top-level `isIn` and `isNotIn` functions
+    (use the `.isIn` and `.isNotIn` instance methods instead)
 - __Breaking__: Remove the second type variable on `Expression` and subclasses.
-- __Breaking__: Remove `InsertStatement.insertAll` (use batches instead) and `insert(orReplace: true)`
-  (use `mode: InsertMode.orReplace` instead).
 - __Breaking__: Remove `customSelectStream` from `QueryEngine`. The `customSelect`
   method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
 - Experimentally support IndexedDB to store sqlite data on the web

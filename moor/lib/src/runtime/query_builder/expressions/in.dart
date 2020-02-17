@@ -1,23 +1,5 @@
 part of '../query_builder.dart';
 
-/// An expression that is true if the given [expression] resolves to any of the
-/// values in [values].
-@Deprecated('Use Expression.isIn instead')
-Expression<bool> isIn<T>(Expression<T> expression, Iterable<T> values,
-    {bool not = false}) {
-  if (not == true) {
-    return expression.isNotIn(values);
-  } else {
-    return expression.isIn(values);
-  }
-}
-
-/// An expression that is true if the given [expression] does not resolve to any
-/// of the values in [values].
-@Deprecated('Use Expression.isNotIn instead')
-Expression<bool> isNotIn<T>(Expression<T> expression, Iterable<T> values) =>
-    isIn(expression, values, not: true);
-
 class _InExpression<T> extends Expression<bool> {
   final Expression<T> _expression;
   final List<T> _values;

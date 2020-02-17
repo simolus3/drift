@@ -862,7 +862,7 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<TotalWeightResult> _totalWeight() {
+  Selectable<TotalWeightResult> totalWeight() {
     return customSelect(
         'SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id',
         variables: [],

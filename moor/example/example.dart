@@ -42,7 +42,7 @@ class IngredientInRecipes extends Table {
   queries: {
     // query to load the total weight for each recipe by loading all ingredients
     // and taking the sum of their amountInGrams.
-    '_totalWeight': '''
+    'totalWeight': '''
       SELECT r.title, SUM(ir.amount) AS total_weight
         FROM recipes r
         INNER JOIN recipe_ingredients ir ON ir.recipe = r.id
