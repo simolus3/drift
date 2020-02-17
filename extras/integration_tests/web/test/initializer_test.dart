@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:moor/moor.dart';
 import 'package:moor/moor_web.dart';
+
 import 'package:test/test.dart';
 
 // Created from an empty sqlite file with

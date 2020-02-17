@@ -1,6 +1,7 @@
 @TestOn('browser')
 import 'dart:html';
 
+import 'package:moor/moor.dart';
 import 'package:moor/moor_web.dart';
 import 'package:test/test.dart';
 
