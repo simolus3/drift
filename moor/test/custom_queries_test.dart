@@ -49,7 +49,7 @@ void main() {
       ]);
     });
 
-    final rows = await db.customSelectQuery('').get();
+    final rows = await db.customSelect('').get();
     final row = rows.single;
 
     expect(row.readBool('bool'), isTrue);

@@ -47,7 +47,7 @@ void main() {
   test('saves the database after creating it', () async {
     var db = _FakeDb(WebDatabase('foo'), 1);
     // ensure the database is opened
-    await db.customSelectQuery('SELECT 1').get();
+    await db.customSelect('SELECT 1').get();
 
     await db.close();
     db = _FakeDb(WebDatabase('foo'), 1);
@@ -58,12 +58,12 @@ void main() {
 
   test('saves the database after an update', () async {
     var db = _FakeDb(WebDatabase('foo'), 1);
-    await db.customSelectQuery('SELECT 1').get();
+    await db.customSelect('SELECT 1').get();
     await db.close();
 
     // run a migration to version 2
     db = _FakeDb(WebDatabase('foo'), 2);
-    await db.customSelectQuery('SELECT 1').get();
+    await db.customSelect('SELECT 1').get();
     await db.close();
 
     db = _FakeDb(WebDatabase('foo'), 2);

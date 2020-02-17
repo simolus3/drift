@@ -158,7 +158,7 @@ void main() {
     when(executor.runSelect(any, any))
         .thenAnswer((_) => Future.error(exception));
 
-    final result = db.customSelectQuery('select 1').watch().first;
+    final result = db.customSelect('select 1').watch().first;
     expectLater(result, throwsA(exception));
   });
 

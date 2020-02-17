@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
@@ -24,6 +25,8 @@ class BuildBackendTask extends BackendTask {
   final BuildBackend backend;
   final TypeDeserializer typeDeserializer;
 
+  final Map<AssetId, ResolvedLibraryResult> _cachedResults = {};
+
   BuildBackendTask(this.step, this.backend)
       : typeDeserializer = TypeDeserializer(step);
 
@@ -42,13 +45,26 @@ class BuildBackendTask extends BackendTask {
   @override
   Future<LibraryElement> resolveDart(Uri uri) async {
     try {
-      final library = await step.resolver.libraryFor(_resolve(uri));
-      // older versions of the resolver used to return null instead of throwing
-      if (library == null) throw NotALibraryException(uri);
+      final asset = _resolve(uri);
+      final library = await step.resolver.libraryFor(asset);
+      _cachedResults[asset] =
+          await library.session.getResolvedLibraryByElement(library);
+
       return library;
     } on NonLibraryAssetException catch (_) {
       throw NotALibraryException(uri);
     }
+  }
+
+  @override
+  Future<ElementDeclarationResult> loadElementDeclaration(
+      Element element) async {
+    // prefer to use a cached value in case the session changed because another
+    // dart file was read...
+    final assetId = await step.resolver.assetIdForElement(element);
+    final result = _cachedResults[assetId];
+    return result.getElementDeclaration(element) ??
+        await super.loadElementDeclaration(element);
   }
 
   @override

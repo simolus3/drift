@@ -130,7 +130,7 @@ void _runTests(
         .customStatement('create table tbl (id integer primary key not null)');
 
     Future<void> expectRowCount(TodoDb db, int count) async {
-      final rows = await db.customSelectQuery('select * from tbl').get();
+      final rows = await db.customSelect('select * from tbl').get();
       expect(rows, hasLength(count));
     }
 
@@ -155,12 +155,12 @@ void _runTests(
 
   test("can't run queries on a closed database", () async {
     final db = TodoDb.connect(isolateConnection);
-    await db.customSelectQuery('SELECT 1;').getSingle();
+    await db.customSelect('SELECT 1;').getSingle();
 
     await db.close();
 
     await expectLater(
-        () => db.customSelectQuery('SELECT 1;').getSingle(), throwsStateError);
+        () => db.customSelect('SELECT 1;').getSingle(), throwsStateError);
   });
 }
 

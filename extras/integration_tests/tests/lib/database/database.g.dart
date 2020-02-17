@@ -548,7 +548,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<User> mostPopularUsersQuery(int amount) {
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
         variables: [Variable.withInt(amount)],
         readsFrom: {users, friendships}).map(_rowToUser);
@@ -563,7 +563,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<int> amountOfGoodFriendsQuery(int user) {
-    return customSelectQuery(
+    return customSelect(
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
         variables: [
           Variable.withInt(user)
@@ -582,7 +582,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<User> friendsOfQuery(int user) {
-    return customSelectQuery(
+    return customSelect(
         'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
         variables: [Variable.withInt(user)],
         readsFrom: {friendships, users}).map(_rowToUser);
@@ -597,7 +597,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<int> userCountQuery() {
-    return customSelectQuery('SELECT COUNT(id) FROM users',
+    return customSelect('SELECT COUNT(id) FROM users',
         variables: [],
         readsFrom: {users}).map((QueryRow row) => row.readInt('COUNT(id)'));
   }
@@ -611,7 +611,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<Preferences> settingsForQuery(int user) {
-    return customSelectQuery('SELECT preferences FROM users WHERE id = :user',
+    return customSelect('SELECT preferences FROM users WHERE id = :user',
             variables: [Variable.withInt(user)], readsFrom: {users})
         .map((QueryRow row) =>
             $UsersTable.$converter0.mapToDart(row.readString('preferences')));
@@ -629,7 +629,7 @@ abstract class _$Database extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    return customSelectQuery('SELECT * FROM users WHERE id IN ($expandedvar1)',
+    return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
         variables: [for (var $ in var1) Variable.withInt($)],
         readsFrom: {users}).map(_rowToUser);
   }

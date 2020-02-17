@@ -1149,7 +1149,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readConfig(String var1) {
-    return customSelectQuery('SELECT * FROM config WHERE config_key = ?',
+    return customSelect('SELECT * FROM config WHERE config_key = ?',
         variables: [Variable.withString(var1)],
         readsFrom: {config}).map(_rowToConfig);
   }
@@ -1160,7 +1160,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += var1.length;
     final generatedclause = $write(clause);
     $arrayStartIndex += generatedclause.amountOfVariables;
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable.withString($),
@@ -1173,8 +1173,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<Config> readDynamic(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate);
-    return customSelectQuery(
-        'SELECT * FROM config WHERE ${generatedpredicate.sql}',
+    return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {config}).map(_rowToConfig);
   }
@@ -1187,7 +1186,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<TableValuedResult> tableValued() {
-    return customSelectQuery(
+    return customSelect(
         'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {config}).map(_rowToTableValuedResult);
@@ -1205,7 +1204,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<MultipleResult> multiple(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
@@ -1220,7 +1219,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<EMail> searchEmails(String term) {
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable.withString(term)],
         readsFrom: {email}).map(_rowToEMail);
@@ -1237,14 +1236,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<ReadRowIdResult> readRowId(Expression<int> expr) {
     final generatedexpr = $write(expr);
-    return customSelectQuery(
+    return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [...generatedexpr.introducedVariables],
         readsFrom: {config}).map(_rowToReadRowIdResult);
   }
 
   Selectable<int> cfeTest() {
-    return customSelectQuery(
+    return customSelect(
         'WITH RECURSIVE\n  cnt(x) AS (\n    SELECT 1\n      UNION ALL\n      SELECT x+1 FROM cnt\n      LIMIT 1000000\n    )\n  SELECT x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.readInt('x'));

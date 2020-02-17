@@ -49,7 +49,7 @@ void main() {
 
     final transaction = db.transaction(() async {
       stream = db
-          .customSelectQuery(
+          .customSelect(
             'SELECT _mocked_',
             readsFrom: {db.users},
           )

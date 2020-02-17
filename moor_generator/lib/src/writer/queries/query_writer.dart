@@ -142,7 +142,7 @@ class QueryWriter {
     _buffer.write(') {\n');
 
     _writeExpandedDeclarations();
-    _buffer.write('return customSelectQuery(${_queryCode()}, ');
+    _buffer.write('return customSelect(${_queryCode()}, ');
     _writeVariables();
     _buffer.write(', ');
     _writeReadsFrom();

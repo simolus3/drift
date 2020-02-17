@@ -1328,22 +1328,14 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<AllTodosWithCategoryResult> allTodosWithCategoryQuery() {
-    return customSelectQuery(
+  Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
+    return customSelect(
         'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
         variables: [],
         readsFrom: {
           categories,
           todosTable
         }).map(_rowToAllTodosWithCategoryResult);
-  }
-
-  Future<List<AllTodosWithCategoryResult>> allTodosWithCategory() {
-    return allTodosWithCategoryQuery().get();
-  }
-
-  Stream<List<AllTodosWithCategoryResult>> watchAllTodosWithCategory() {
-    return allTodosWithCategoryQuery().watch();
   }
 
   Future<int> deleteTodoById(int var1) {
@@ -1364,11 +1356,11 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<TodoEntry> withInQuery(String var1, String var2, List<int> var3) {
+  Selectable<TodoEntry> withIn(String var1, String var2, List<int> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
           Variable.withString(var1),
@@ -1380,45 +1372,20 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map(_rowToTodoEntry);
   }
 
-  Future<List<TodoEntry>> withIn(String var1, String var2, List<int> var3) {
-    return withInQuery(var1, var2, var3).get();
-  }
-
-  Stream<List<TodoEntry>> watchWithIn(
-      String var1, String var2, List<int> var3) {
-    return withInQuery(var1, var2, var3).watch();
-  }
-
-  Selectable<TodoEntry> searchQuery(int id) {
-    return customSelectQuery(
+  Selectable<TodoEntry> search(int id) {
+    return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [Variable.withInt(id)],
         readsFrom: {todosTable}).map(_rowToTodoEntry);
   }
 
-  Future<List<TodoEntry>> search(int id) {
-    return searchQuery(id).get();
-  }
-
-  Stream<List<TodoEntry>> watchSearch(int id) {
-    return searchQuery(id).watch();
-  }
-
-  Selectable<MyCustomObject> findCustomQuery() {
-    return customSelectQuery(
+  Selectable<MyCustomObject> findCustom() {
+    return customSelect(
             'SELECT custom FROM table_without_p_k WHERE some_float < 10',
             variables: [],
             readsFrom: {tableWithoutPK})
         .map((QueryRow row) => $TableWithoutPKTable.$converter0
             .mapToDart(row.readString('custom')));
-  }
-
-  Future<List<MyCustomObject>> findCustom() {
-    return findCustomQuery().get();
-  }
-
-  Stream<List<MyCustomObject>> watchFindCustom() {
-    return findCustomQuery().watch();
   }
 
   @override
@@ -1493,18 +1460,10 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
     );
   }
 
-  Selectable<TodoEntry> todosForUserQuery(int user) {
-    return customSelectQuery(
+  Selectable<TodoEntry> todosForUser(int user) {
+    return customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [Variable.withInt(user)],
         readsFrom: {todosTable, sharedTodos, users}).map(_rowToTodoEntry);
-  }
-
-  Future<List<TodoEntry>> todosForUser(int user) {
-    return todosForUserQuery(user).get();
-  }
-
-  Stream<List<TodoEntry>> watchTodosForUser(int user) {
-    return todosForUserQuery(user).watch();
   }
 }

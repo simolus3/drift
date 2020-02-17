@@ -862,19 +862,11 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<TotalWeightResult> _totalWeightQuery() {
-    return customSelectQuery(
+  Selectable<TotalWeightResult> _totalWeight() {
+    return customSelect(
         'SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id',
         variables: [],
         readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
-  }
-
-  Future<List<TotalWeightResult>> _totalWeight() {
-    return _totalWeightQuery().get();
-  }
-
-  Stream<List<TotalWeightResult>> _watchTotalWeight() {
-    return _totalWeightQuery().watch();
   }
 
   @override

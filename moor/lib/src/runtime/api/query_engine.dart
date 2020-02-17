@@ -204,31 +204,6 @@ mixin QueryEngine on DatabaseConnectionUser {
     return result;
   }
 
-  /// Executes a custom select statement once. To use the variables, mark them
-  /// with a "?" in your [query]. They will then be changed to the appropriate
-  /// value.
-  @protected
-  @visibleForTesting
-  @Deprecated('use customSelectQuery(...).get() instead')
-  Future<List<QueryRow>> customSelect(String query,
-      {List<Variable> variables = const []}) async {
-    return customSelectQuery(query, variables: variables).get();
-  }
-
-  /// Creates a stream from a custom select statement.To use the variables, mark
-  /// them with a "?" in your [query]. They will then be changed to the
-  /// appropriate value. The stream will re-emit items when any table in
-  /// [readsFrom] changes, so be sure to set it to the set of tables your query
-  /// reads data from.
-  @protected
-  @visibleForTesting
-  @Deprecated('use customSelectQuery(...).watch() instead')
-  Stream<List<QueryRow>> customSelectStream(String query,
-      {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
-    return customSelectQuery(query, variables: variables, readsFrom: readsFrom)
-        .watch();
-  }
-
   /// Creates a custom select statement from the given sql [query]. To run the
   /// query once, use [Selectable.get]. For an auto-updating streams, set the
   /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
@@ -240,11 +215,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// bound to the [variables] you specify on this query.
   @protected
   @visibleForTesting
-  Selectable<QueryRow> customSelectQuery(String query,
+  Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<TableInfo> readsFrom = const {}}) {
     readsFrom ??= {};
     return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
+  }
+
+  /// Creates a custom select statement from the given sql [query]. To run the
+  /// query once, use [Selectable.get]. For an auto-updating streams, set the
+  /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
+  /// know the query will never emit more than one row, you can also use
+  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
+  /// directly or wrapping it into a list.
+  ///
+  /// If you use variables in your query (for instance with "?"), they will be
+  /// bound to the [variables] you specify on this query.
+  @Deprecated('Renamed to customSelect')
+  Selectable<QueryRow> customSelectQuery(String query,
+      {List<Variable> variables = const [],
+      Set<TableInfo> readsFrom = const {}}) {
+    return customSelect(query, variables: variables, readsFrom: readsFrom);
   }
 
   /// Executes the custom sql [statement] on the database.
