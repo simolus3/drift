@@ -20,6 +20,6 @@ void main() {
     final innerExpression = GeneratedTextColumn('name', null, true);
     final isNotIn = innerExpression.isNotIn(['Max', 'Tobias']);
 
-    expect(isNotIn, generates('name NOT IN (?, ?)', ['Foo', 'Bar']));
+    expect(isNotIn, generates('name NOT IN (?, ?)', ['Max', 'Tobias']));
   });
 }
