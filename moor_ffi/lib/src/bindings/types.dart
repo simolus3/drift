@@ -98,8 +98,16 @@ extension SqliteValuePointer on Pointer<SqliteValue> {
   }
 }
 
-extension SqliteFunctonContextPointer on Pointer<FunctionContext> {
+extension SqliteFunctionContextPointer on Pointer<FunctionContext> {
   void resultNull() {
     bindings.sqlite3_result_null(this);
+  }
+
+  void resultInt(int value) {
+    bindings.sqlite3_result_int64(this, value);
+  }
+
+  void resultDouble(double value) {
+    bindings.sqlite3_result_double(this, value);
   }
 }

@@ -19,17 +19,6 @@ part 'prepared_statement.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
 
-/// Signature of a Dart function that can be called from sql statements.
-///
-/// It receives a pointer to a [types.FunctionContext], which can be used to
-/// set the return value (or indicate execution failure). Under no circumstances
-/// should this function throw a Dart exception.
-typedef SqliteFunctionHandler = void Function(
-  Pointer<types.FunctionContext> context,
-  int argumentCount,
-  Pointer<Pointer<types.SqliteValue>> arguments,
-);
-
 /// A opened sqlite database.
 class Database {
   final Pointer<types.Database> _db;
