@@ -124,3 +124,14 @@ moor. Important options are marked in bold.
 - `SQLITE_ENABLE_JSON1`: Enable the [json1](https://www.sqlite.org/json1.html) extension for json support in sql query.
 
 For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).
+
+## Moor-only functions
+
+`moor_ffi` includes additional sql functions not available in standard sqlite:
+
+- `pow(base, exponent)` and `power(base, exponent)`: This function takes two numerical arguments and returns `base` raised to the power of `exponent`.
+  If `base` or `exponent` aren't numerical values or null, this function will return `null`. This function behaves exactly like `pow` in `dart:math`.
+- `sqrt`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`: These functions take a single argument. If that argument is null or not a numerical value,
+  returns null. Otherwise, returns the result of applying the matching function in `dart:math`:
+
+Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.

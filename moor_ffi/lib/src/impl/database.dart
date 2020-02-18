@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
@@ -15,6 +16,7 @@ import 'package:moor_ffi/src/ffi/blob.dart';
 import 'package:moor_ffi/src/ffi/utils.dart';
 
 part 'errors.dart';
+part 'moor_functions.dart';
 part 'prepared_statement.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
@@ -169,7 +171,6 @@ class Database {
   ///
   /// See also:
   ///  - https://sqlite.org/c3ref/create_function.html
-  ///  - [SqliteFunctionHandler]
   @visibleForTesting
   void createFunction(
     String name,
@@ -216,6 +217,21 @@ class Database {
     if (result != Errors.SQLITE_OK) {
       throw SqliteException._fromErrorCode(_db, result);
     }
+  }
+
+  /// Enables non-standard mathematical functions that ship with `moor_ffi`.
+  ///
+  /// After calling [enableMathematicalFunctions], the following functions can
+  /// be used in sql: `power`, `pow`, `sqrt`, `sin`, `cos`, `tan`, `asin`,
+  /// `acos`, `atan`.
+  ///
+  /// At the moment, these functions are only available in statements. In
+  /// particular, they're not available in triggers, check constraints, index
+  /// expressions.
+  ///
+  /// This should only be called once per database.
+  void enableMathematicalFunctions() {
+    _registerOn(this);
   }
 
   /// Get the application defined version of this database.

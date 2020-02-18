@@ -110,4 +110,14 @@ extension SqliteFunctionContextPointer on Pointer<FunctionContext> {
   void resultDouble(double value) {
     bindings.sqlite3_result_double(this, value);
   }
+
+  void resultNum(num value) {
+    if (value is int) {
+      resultInt(value);
+    } else if (value is double) {
+      resultDouble(value);
+    }
+
+    throw AssertionError();
+  }
 }

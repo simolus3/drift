@@ -40,6 +40,7 @@ class _VmDelegate extends DatabaseDelegate {
     } else {
       _db = Database.memory();
     }
+    _db.enableMathematicalFunctions();
     versionDelegate = _VmVersionDelegate(_db);
     return Future.value();
   }
