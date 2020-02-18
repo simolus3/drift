@@ -88,6 +88,30 @@ class _SQLiteBindings {
       Pointer<Void> disposeCb) sqlite3_bind_blob;
   int Function(Pointer<Statement> statement, int columnIndex) sqlite3_bind_null;
 
+  int Function(
+    Pointer<Database> db,
+    Pointer<Uint8> zFunctionName,
+    int argCount,
+    int eTextRep,
+    Pointer<Void> arg,
+    Pointer<NativeFunction<sqlite3_function_handler>> handler,
+    Pointer<NativeFunction<sqlite3_function_handler>> step,
+    Pointer<NativeFunction<sqlite3_function_finalizer>> finalizer,
+    Pointer<NativeFunction<sqlite3_finalizer>> destroyArg,
+  ) sqlite3_create_function_v2;
+
+  Pointer<CBlob> Function(Pointer<SqliteValue> value) sqlite3_value_blob;
+  Pointer<CBlob> Function(Pointer<SqliteValue> value) sqlite3_value_text;
+  double Function(Pointer<SqliteValue> value) sqlite3_value_double;
+  int Function(Pointer<SqliteValue> value) sqlite3_value_int64;
+  int Function(Pointer<SqliteValue> value) sqlite3_value_bytes;
+  int Function(Pointer<SqliteValue> value) sqlite3_value_type;
+
+  void Function(Pointer<FunctionContext> ctx) sqlite3_result_null;
+  void Function(Pointer<FunctionContext> ctx, int value) sqlite3_result_int64;
+  void Function(Pointer<FunctionContext> ctx, double value)
+      sqlite3_result_double;
+
   _SQLiteBindings() {
     sqlite = open.openSqlite();
 
@@ -176,6 +200,43 @@ class _SQLiteBindings {
     sqlite3_column_bytes = sqlite
         .lookup<NativeFunction<sqlite3_column_bytes_native_t>>(
             'sqlite3_column_bytes')
+        .asFunction();
+    sqlite3_create_function_v2 = sqlite
+        .lookup<NativeFunction<sqlite3_create_function_v2_native>>(
+            'sqlite3_create_function_v2')
+        .asFunction();
+    sqlite3_value_blob = sqlite
+        .lookup<NativeFunction<sqlite3_value_blob_native>>('sqlite3_value_blob')
+        .asFunction();
+    sqlite3_value_text = sqlite
+        .lookup<NativeFunction<sqlite3_value_text_native>>('sqlite3_value_text')
+        .asFunction();
+    sqlite3_value_double = sqlite
+        .lookup<NativeFunction<sqlite3_value_double_native>>(
+            'sqlite3_value_double')
+        .asFunction();
+    sqlite3_value_int64 = sqlite
+        .lookup<NativeFunction<sqlite3_value_int64_native>>(
+            'sqlite3_value_int64')
+        .asFunction();
+    sqlite3_value_bytes = sqlite
+        .lookup<NativeFunction<sqlite3_value_bytes_native>>(
+            'sqlite3_value_bytes')
+        .asFunction();
+    sqlite3_value_type = sqlite
+        .lookup<NativeFunction<sqlite3_value_type_native>>('sqlite3_value_type')
+        .asFunction();
+    sqlite3_result_null = sqlite
+        .lookup<NativeFunction<sqlite3_result_null_native>>(
+            'sqlite3_result_null')
+        .asFunction();
+    sqlite3_result_int64 = sqlite
+        .lookup<NativeFunction<sqlite3_result_int64_native>>(
+            'sqlite3_result_int64')
+        .asFunction();
+    sqlite3_result_double = sqlite
+        .lookup<NativeFunction<sqlite3_result_double_native>>(
+            'sqlite3_result_double')
         .asFunction();
   }
 }

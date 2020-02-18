@@ -4,6 +4,12 @@
 
 import 'dart:ffi';
 
+import 'package:moor/moor.dart';
+
+import '../ffi/blob.dart';
+import 'bindings.dart';
+import 'constants.dart';
+
 // ignore_for_file: comment_references
 
 /// Database Connection Handle
@@ -39,3 +45,61 @@ class Database extends Struct {}
 /// Refer to documentation on individual methods above for additional
 /// information.
 class Statement extends Struct {}
+
+/// The context in which an SQL function executes is stored in this object.
+/// A pointer to this object is always the first paramater to
+/// application-defined SQL functions.
+///
+/// See also:
+/// - https://www.sqlite.org/c3ref/context.html
+class FunctionContext extends Struct {}
+
+/// A value object in sqlite, which can represent all values that can be stored
+/// in a database table.
+class SqliteValue extends Struct {}
+
+/// Extension to extract value from a [SqliteValue].
+extension SqliteValuePointer on Pointer<SqliteValue> {
+  /// Extracts the raw value from the object.
+  ///
+  /// Depending on the type of this value as set in sqlite, [value] returns
+  ///  - a [String]
+  ///  - a [Uint8List]
+  ///  - a [int]
+  ///  - a [double]
+  ///  - `null`
+  ///
+  /// For texts and bytes, the value be copied.
+  dynamic get value {
+    final api = bindings;
+
+    final type = api.sqlite3_value_type(this);
+    switch (type) {
+      case Types.SQLITE_INTEGER:
+        return api.sqlite3_value_int64(this);
+      case Types.SQLITE_FLOAT:
+        return api.sqlite3_value_double(this);
+      case Types.SQLITE_TEXT:
+        final length = api.sqlite3_value_bytes(this);
+        return api.sqlite3_value_text(this).readAsStringWithLength(length);
+      case Types.SQLITE_BLOB:
+        final length = api.sqlite3_value_bytes(this);
+        if (length == 0) {
+          // sqlite3_value_bytes returns a null pointer for non-null blobs with
+          // a length of 0. Note that we can distinguish this from a proper null
+          // by checking the type (which isn't SQLITE_NULL)
+          return Uint8List(0);
+        }
+        return api.sqlite3_value_blob(this).readBytes(length);
+      case Types.SQLITE_NULL:
+      default:
+        return null;
+    }
+  }
+}
+
+extension SqliteFunctonContextPointer on Pointer<FunctionContext> {
+  void resultNull() {
+    bindings.sqlite3_result_null(this);
+  }
+}

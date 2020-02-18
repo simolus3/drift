@@ -8,11 +8,15 @@ import 'package:ffi/ffi.dart' as ffi;
 
 /// Pointer to arbitrary blobs in C.
 class CBlob extends Struct {
-  static Pointer<CBlob> allocate(Uint8List blob) {
-    final str = ffi.allocate<Uint8>(count: blob.length);
+  static Pointer<CBlob> allocate(Uint8List blob, {int paddingAtEnd = 0}) {
+    final str = ffi.allocate<Uint8>(count: blob.length + paddingAtEnd);
 
-    final asList = str.asTypedList(blob.length);
+    final asList = str.asTypedList(blob.length + paddingAtEnd);
     asList.setAll(0, blob);
+
+    if (paddingAtEnd != 0) {
+      asList.fillRange(blob.length, blob.length + paddingAtEnd, 0);
+    }
 
     return str.cast();
   }

@@ -175,6 +175,15 @@ class Flags {
   static const int SQLITE_OPEN_WAL = 0x00080000;
 }
 
+class TextEncodings {
+  static const int SQLITE_UTF8 = 1;
+}
+
+class FunctionFlags {
+  static const int SQLITE_DETERMINISTIC = 0x000000800;
+  static const int SQLITE_DIRECTONLY = 0x000080000;
+}
+
 class Types {
   static const int SQLITE_INTEGER = 1;
   static const int SQLITE_FLOAT = 2;
