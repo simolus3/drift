@@ -84,4 +84,22 @@ void main() {
       ]);
     });
   });
+
+  test('throws when using a long function name', () {
+    final db = Database.memory();
+
+    expect(
+        () => db.createFunction('foo' * 100, 10, nullptr), throwsArgumentError);
+
+    db.close();
+  });
+
+  test('throws when using an invalid argument count', () {
+    final db = Database.memory();
+
+    expect(() => db.createFunction('foo', -2, nullptr), throwsArgumentError);
+    expect(() => db.createFunction('foo', 128, nullptr), throwsArgumentError);
+
+    db.close();
+  });
 }
