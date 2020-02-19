@@ -42,6 +42,13 @@ void main() {
           'SELECT * FROM users LIMIT 10 OFFSET 0;', argThat(isEmpty)));
     });
 
+    test('with simple limits', () async {
+      await (db.select(db.users)..limit(10)).get();
+
+      verify(executor.runSelect(
+          'SELECT * FROM users LIMIT 10;', argThat(isEmpty)));
+    });
+
     test('with like expressions', () {
       (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
       verify(executor

@@ -56,4 +56,14 @@ void main() {
 
     verify(inner.databaseInfo = db);
   });
+
+  test('returns the existing delegate if it was open', () async {
+    final inner = MockExecutor();
+    final lazy = LazyDatabase(() => inner);
+
+    await lazy.ensureOpen();
+    await lazy.ensureOpen();
+
+    verify(inner.ensureOpen());
+  });
 }

@@ -162,6 +162,48 @@ void _runTests(
     await expectLater(
         () => db.customSelect('SELECT 1;').getSingle(), throwsStateError);
   });
+
+  test('can run deletes, updates and batches', () async {
+    final db = TodoDb.connect(isolateConnection);
+
+    await db.into(db.users).insert(
+        UsersCompanion.insert(name: 'simon.', profilePicture: Uint8List(0)));
+
+    await db
+        .update(db.users)
+        .write(const UsersCompanion(name: Value('changed name')));
+    var result = await db.select(db.users).getSingle();
+    expect(result.name, 'changed name');
+
+    await db.delete(db.users).go();
+
+    await db.batch((batch) {
+      batch.insert(
+        db.users,
+        UsersCompanion.insert(name: 'not simon', profilePicture: Uint8List(0)),
+      );
+    });
+
+    result = await db.select(db.users).getSingle();
+    expect(result.name, 'not simon');
+
+    await db.close();
+  });
+
+  test('transactions can be rolled back', () async {
+    final db = TodoDb.connect(isolateConnection);
+
+    await expectLater(db.transaction(() async {
+      await db.into(db.categories).insert(
+          CategoriesCompanion.insert(description: 'my fancy description'));
+      throw Exception('expected');
+    }), throwsException);
+
+    final result = await db.select(db.categories).get();
+    expect(result, isEmpty);
+
+    await db.close();
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

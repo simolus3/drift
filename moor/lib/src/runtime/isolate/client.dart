@@ -108,10 +108,15 @@ abstract class _BaseExecutor extends QueryExecutor {
 class _IsolateQueryExecutor extends _BaseExecutor {
   _IsolateQueryExecutor(_MoorClient client) : super(client);
 
+  Completer<void> _setSchemaVersion;
+
   @override
   set databaseInfo(GeneratedDatabase db) {
     super.databaseInfo = db;
-    client._channel.request(_SetSchemaVersion(db.schemaVersion));
+
+    _setSchemaVersion = Completer();
+    _setSchemaVersion
+        .complete(client._channel.request(_SetSchemaVersion(db.schemaVersion)));
   }
 
   @override
@@ -120,7 +125,11 @@ class _IsolateQueryExecutor extends _BaseExecutor {
   }
 
   @override
-  Future<bool> ensureOpen() {
+  Future<bool> ensureOpen() async {
+    if (_setSchemaVersion != null) {
+      await _setSchemaVersion.future;
+      _setSchemaVersion = null;
+    }
     return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
   }
 
