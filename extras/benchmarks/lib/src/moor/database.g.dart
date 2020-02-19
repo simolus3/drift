@@ -155,10 +155,10 @@ class $KeyValuesTable extends KeyValues
   Map<String, Variable> entityToSql(KeyValuesCompanion d) {
     final map = <String, Variable>{};
     if (d.key.present) {
-      map['key'] = Variable<String, StringType>(d.key.value);
+      map['key'] = Variable<String>(d.key.value);
     }
     if (d.value.present) {
-      map['value'] = Variable<String, StringType>(d.value.value);
+      map['value'] = Variable<String>(d.value.value);
     }
     return map;
   }
