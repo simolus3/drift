@@ -162,6 +162,19 @@ void main() {
     expectLater(result, throwsA(exception));
   });
 
+  test('database can be closed when a stream has a paused subscription',
+      () async {
+    // this test is more relevant than it seems - some test stream matchers
+    // leave the stream in an empty state.
+    final stream = db.select(db.users).watch();
+    final subscription = stream.listen((_) {})..pause();
+
+    await db.close();
+
+    subscription.resume();
+    await subscription.cancel();
+  });
+
   group('stream keys', () {
     final keyA = StreamKey('SELECT * FROM users;', [], User);
     final keyB = StreamKey('SELECT * FROM users;', [], User);

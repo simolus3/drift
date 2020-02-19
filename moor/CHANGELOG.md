@@ -15,6 +15,8 @@
 - __Breaking__: Remove `customSelectStream` from `QueryEngine`. The `customSelect`
   method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
 - Experimentally support IndexedDB to store sqlite data on the web
+- Moor will no longer wait for query stream listeners to receive a done event when closing a database
+  or transaction.
 
 ## 2.4.0
 

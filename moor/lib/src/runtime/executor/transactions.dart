@@ -72,7 +72,9 @@ class _TransactionStreamStore extends StreamQueryStore {
     parent.handleTableUpdatesByName(affectedTables);
 
     await super.close();
-    await Future.wait(_queriesWithoutKey.map((e) => e.close()));
+    for (final query in _queriesWithoutKey) {
+      query.close();
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/utils/start_with_value_transformer.dart';
+import 'package:pedantic/pedantic.dart';
 
 const _listEquality = ListEquality<dynamic>();
 
@@ -161,8 +162,15 @@ class StreamQueryStore {
     _isShuttingDown = true;
 
     for (final stream in _activeKeyStreams.values) {
-      await stream._controller.close();
+      // Note: StreamController.close waits until the done event has been
+      // received by a subscriber. If there is a paused StreamSubscription on
+      // a query stream, this would pause forever. In particular, this is
+      // causing deadlocks in tests.
+      // https://github.com/dart-lang/test/issues/1183#issuecomment-588357154
+      unawaited(stream._controller.close());
     }
+    // awaiting this is fine - the stream is never exposed to users and we don't
+    // pause any subscriptions on it.
     await _updatedTableNames.close();
 
     while (_pendingTimers.isNotEmpty) {
@@ -251,7 +259,7 @@ class QueryStream<T> {
     }
   }
 
-  Future<void> close() {
-    return _controller.close();
+  void close() {
+    _controller.close();
   }
 }
