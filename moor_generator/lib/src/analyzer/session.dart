@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/backends/backend.dart';
@@ -41,6 +42,7 @@ class MoorSession {
       enabledExtensions: [
         if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
         if (options.hasModule(SqlModule.json1)) const Json1Extension(),
+        if (options.hasModule(SqlModule.moor_ffi)) const MoorFfiExtension(),
       ],
       enableExperimentalTypeInference: options.useExperimentalInference,
     );

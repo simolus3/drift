@@ -47,6 +47,41 @@ abstract class FunctionHandler {
   void reportErrors(SqlInvocation call, AnalysisContext context) {}
 }
 
+/// Should be mixed on on [FunctionHandler] implementations only.
+mixin ArgumentCountLinter {
+  /// Returns the amount of arguments expected for [function] (lowercase).
+  ///
+  /// If the function is unknown, or if the result would be ambiguous, returns
+  /// null.
+  int /*?*/ argumentCountFor(String function);
+
+  int actualArgumentCount(SqlInvocation call) {
+    return call.expandParameters().length;
+  }
+
+  void reportMismatches(SqlInvocation call, AnalysisContext context) {
+    final expectedArgs = argumentCountFor(call.name.toLowerCase());
+
+    if (expectedArgs != null) {
+      final actualArgs = actualArgumentCount(call);
+
+      if (actualArgs != expectedArgs) {
+        reportArgumentCountMismatch(call, context, expectedArgs, actualArgs);
+      }
+    }
+  }
+
+  void reportArgumentCountMismatch(
+      SqlInvocation call, AnalysisContext context, int expected, int actual) {
+    context.reportError(AnalysisError(
+      relevantNode: call,
+      message: '${call.name} expects $expected arguments, '
+          'got $actual.',
+      type: AnalysisErrorType.other,
+    ));
+  }
+}
+
 /// Interface for a handler which can resolve the result set of a table-valued
 /// function.
 abstract class TableValuedFunctionHandler {

@@ -18,7 +18,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'generate_connect_constructor',
       'use_experimental_inference',
       'sqlite_modules',
-      'eagerly_load_dart_ast',
+      'eagerly_load_dart_ast'
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -70,6 +70,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
         'use_column_name_as_json_key_when_defined_in_moor_file',
     'generateConnectConstructor': 'generate_connect_constructor',
     'useExperimentalInference': 'use_experimental_inference',
+    'eagerlyLoadDartAst': 'eagerly_load_dart_ast',
     'modules': 'sqlite_modules'
   });
 }
@@ -109,4 +110,5 @@ T _$enumDecodeNullable<T>(
 const _$SqlModuleEnumMap = {
   SqlModule.json1: 'json1',
   SqlModule.fts5: 'fts5',
+  SqlModule.moor_ffi: 'moor_ffi',
 };

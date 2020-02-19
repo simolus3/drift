@@ -53,7 +53,7 @@ class _Fts5Table extends Table {
 }
 
 /// Provides type inference and lints for
-class _Fts5Functions implements FunctionHandler {
+class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
   const _Fts5Functions();
 
   @override
@@ -113,6 +113,15 @@ class _Fts5Functions implements FunctionHandler {
   }
 
   @override
+  int argumentCountFor(String function) {
+    return const {
+      'bm25': 1,
+      'highlight': 4,
+      'snippet': 6,
+    }[function];
+  }
+
+  @override
   void reportErrors(SqlInvocation call, AnalysisContext context) {
     // it doesn't make sense to call fts5 functions with a star parameter
     if (call.parameters is StarFunctionParameter) {
@@ -125,19 +134,10 @@ class _Fts5Functions implements FunctionHandler {
     }
 
     final args = (call.parameters as ExprFunctionParameters).parameters;
-    final expectedArgCount = const {
-      'bm25': 1,
-      'highlight': 4,
-      'snippet': 6,
-    }[call.name.toLowerCase()];
+    final expectedArgCount = argumentCountFor(call.name.toLowerCase());
 
     if (expectedArgCount != args.length) {
-      context.reportError(AnalysisError(
-        relevantNode: call,
-        message: '${call.name} expects $expectedArgCount arguments, '
-            'got ${args.length}.',
-        type: AnalysisErrorType.other,
-      ));
+      reportArgumentCountMismatch(call, context, expectedArgCount, args.length);
       return;
     }
 

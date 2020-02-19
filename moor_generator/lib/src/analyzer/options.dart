@@ -94,4 +94,9 @@ enum SqlModule {
   /// Enables support for the fts5 module and its functions when parsing sql
   /// queries.
   fts5,
+
+  /// Enables support for mathematical functions only available in `moor_ffi`.
+  // note: We're ignoring the warning because we can't change the json key
+  // ignore: constant_identifier_names
+  moor_ffi,
 }
