@@ -70,15 +70,22 @@ void _atanImpl(Pointer<FunctionContext> ctx, int argCount,
 void _registerOn(Database db) {
   final powImplPointer =
       Pointer.fromFunction<sqlite3_function_handler>(_powImpl);
-  db.createFunction('power', 2, powImplPointer);
-  db.createFunction('pow', 2, powImplPointer);
+  db.createFunction('power', 2, powImplPointer, isDeterministic: true);
+  db.createFunction('pow', 2, powImplPointer, isDeterministic: true);
 
-  db.createFunction('sqrt', 1, Pointer.fromFunction(_sqrtImpl));
+  db.createFunction('sqrt', 1, Pointer.fromFunction(_sqrtImpl),
+      isDeterministic: true);
 
-  db.createFunction('sin', 1, Pointer.fromFunction(_sinImpl));
-  db.createFunction('cos', 1, Pointer.fromFunction(_cosImpl));
-  db.createFunction('tan', 1, Pointer.fromFunction(_tanImpl));
-  db.createFunction('asin', 1, Pointer.fromFunction(_asinImpl));
-  db.createFunction('acos', 1, Pointer.fromFunction(_acosImpl));
-  db.createFunction('atan', 1, Pointer.fromFunction(_atanImpl));
+  db.createFunction('sin', 1, Pointer.fromFunction(_sinImpl),
+      isDeterministic: true);
+  db.createFunction('cos', 1, Pointer.fromFunction(_cosImpl),
+      isDeterministic: true);
+  db.createFunction('tan', 1, Pointer.fromFunction(_tanImpl),
+      isDeterministic: true);
+  db.createFunction('asin', 1, Pointer.fromFunction(_asinImpl),
+      isDeterministic: true);
+  db.createFunction('acos', 1, Pointer.fromFunction(_acosImpl),
+      isDeterministic: true);
+  db.createFunction('atan', 1, Pointer.fromFunction(_atanImpl),
+      isDeterministic: true);
 }
