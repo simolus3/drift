@@ -30,4 +30,9 @@ extension ArithmeticExpr<DT extends num> on Expression<DT> {
     return _BaseInfixOperator(this, '/', other,
         precedence: Precedence.mulDivide);
   }
+
+  /// Calculates the absolute value of this number.
+  Expression<DT> abs() {
+    return FunctionCallExpression('abs', [this]);
+  }
 }

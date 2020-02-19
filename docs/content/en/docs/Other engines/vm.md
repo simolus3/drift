@@ -135,3 +135,31 @@ For more details on sqlite compile options, see [their documentation](https://ww
   returns null. Otherwise, returns the result of applying the matching function in `dart:math`:
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
+
+When enabling the `moor_ffi` module in your [build options]({{< relref "../Advanced Features/builder_options.md#available-extensions" >}}),
+the generator will allow you to use those functions in moor files or compiled queries. 
+
+To use those methods from Dart, you need to import `package:moor/extensions/moor_ffi.dart`.
+You can then use the additional functions like this:
+```dart
+import 'package:moor/moor.dart';
+// those methods are hidden behind another import because they're only available on moor_ffi
+import 'package:moor/extensions/moor_ffi.dart';
+
+class Coordinates extends Table {
+  RealColumn get x => real()();
+  RealColumn get y => real()();
+}
+
+// Can now be used like this:
+Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
+  return (select(coordinates)..where((other) {
+    // find coordinates where sqrt((center - x)² + (center.y - y)²) < radius
+    final distanceSquared = sqlPow(center.x - row.x, 2) + sqlPow(center.y - row.y, 2);
+    return sqlSqrt(distanceSquared).isLessThanValue(radius);
+  })).get();
+}
+```
+
+Aller the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
+They have that `sql` prefix to avoid clashes with `dart:math`.
