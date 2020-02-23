@@ -1,3 +1,7 @@
+## 2.1.1
+
+- Fix `runCustom` not using the provided variables ([#406](https://github.com/simolus3/moor/issues/406))
+
 ## 2.1.0
 
 - Expose the underlying database from sqflite in `FlutterQueryExecutor`.
