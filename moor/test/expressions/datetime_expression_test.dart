@@ -14,12 +14,12 @@ void main() {
 
   group('extracting information via top-level method', () {
     final expectedResults = <_Extractor, String>{
-      year: 'CAST(strftime("%Y", val, "unixepoch") AS INTEGER)',
-      month: 'CAST(strftime("%m", val, "unixepoch") AS INTEGER)',
-      day: 'CAST(strftime("%d", val, "unixepoch") AS INTEGER)',
-      hour: 'CAST(strftime("%H", val, "unixepoch") AS INTEGER)',
-      minute: 'CAST(strftime("%M", val, "unixepoch") AS INTEGER)',
-      second: 'CAST(strftime("%S", val, "unixepoch") AS INTEGER)',
+      year: "CAST(strftime('%Y', val, 'unixepoch') AS INTEGER)",
+      month: "CAST(strftime('%m', val, 'unixepoch') AS INTEGER)",
+      day: "CAST(strftime('%d', val, 'unixepoch') AS INTEGER)",
+      hour: "CAST(strftime('%H', val, 'unixepoch') AS INTEGER)",
+      minute: "CAST(strftime('%M', val, 'unixepoch') AS INTEGER)",
+      second: "CAST(strftime('%S', val, 'unixepoch') AS INTEGER)",
     };
 
     expectedResults.forEach((key, value) {

@@ -1,3 +1,7 @@
+## 2.4.1
+
+- Don't generate double quoted string literals in date time functions
+
 ## 2.4.0
 
 - Support aggregate expressions and `group by` in the Dart api
