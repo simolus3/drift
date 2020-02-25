@@ -31,4 +31,16 @@ void crudTests(TestExecutor executor) {
 
     await db.close();
   });
+
+  test('runCustom with args', () async {
+    // https://github.com/simolus3/moor/issues/406
+    final db = Database(executor.createExecutor());
+
+    // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+    await db.customStatement(
+        'INSERT INTO friendships (first_user, second_user) VALUES (?, ?)',
+        <int>[1, 2]);
+
+    expect(await db.friendsOf(1), isNotEmpty);
+  });
 }

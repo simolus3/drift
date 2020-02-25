@@ -49,4 +49,6 @@ void main() {
     await db.close();
     await isolate.shutdownAll();
   });
+
+  tearDown(_file.delete);
 }

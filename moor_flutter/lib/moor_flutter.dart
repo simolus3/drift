@@ -126,7 +126,7 @@ mixin _SqfliteExecutor on QueryDelegate {
 
   @override
   Future<void> runCustom(String statement, List args) {
-    return db.execute(statement);
+    return db.execute(statement, args);
   }
 
   @override

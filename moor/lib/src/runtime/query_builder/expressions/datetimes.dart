@@ -56,9 +56,9 @@ class _StrftimeSingleFieldExpression extends Expression<int> {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer.write('CAST(strftime("$format", ');
+    context.buffer.write("CAST(strftime('$format', ");
     date.writeInto(context);
-    context.buffer.write(', "unixepoch") AS INTEGER)');
+    context.buffer.write(", 'unixepoch') AS INTEGER)");
   }
 
   @override

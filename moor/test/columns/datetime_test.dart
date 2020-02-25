@@ -19,6 +19,6 @@ void main() {
     final ctx = GenerationContext(null, null);
     nonNull.isSmallerThan(currentDateAndTime).writeInto(ctx);
 
-    expect(ctx.sql, 'name < strftime(\'%s\', CURRENT_TIMESTAMP)');
+    expect(ctx.sql, "name < strftime('%s', CURRENT_TIMESTAMP)");
   });
 }
