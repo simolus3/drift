@@ -87,6 +87,12 @@ class Database extends _$Database {
 
   Database(QueryExecutor e, {this.schemaVersion = 2}) : super(e);
 
+  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  int schemaVersionChangedFrom;
+  
+  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  int schemaVersionChangedTo;
+
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -97,6 +103,9 @@ class Database extends _$Database {
         }
       },
       onUpgrade: (m, from, to) async {
+        schemaVersionChangedFrom = from;
+        schemaVersionChangedTo = to;
+
         if (from == 1) {
           await m.createTable(friendships);
         }

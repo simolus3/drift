@@ -25,6 +25,22 @@ void migrationTests(TestExecutor executor) {
     // the 3 initial users plus People.florian
     final count = await database.userCountQuery().getSingle();
     expect(count, 4);
+    expect(database.schemaVersionChangedFrom, 1);
+    expect(database.schemaVersionChangedTo, 2);
+
+    await database.close();
+  });
+
+  test('runs the migrator when downgrading', () async {
+    var database = Database(executor.createExecutor(), schemaVersion: 2);
+    await database.executor.ensureOpen(); // Create the database
+    await database.close();
+
+    database = Database(executor.createExecutor(), schemaVersion: 1);
+    await database.executor.ensureOpen(); // Let the migrator run
+    
+    expect(database.schemaVersionChangedFrom, 2);
+    expect(database.schemaVersionChangedTo, 1);
 
     await database.close();
   });
