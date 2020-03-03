@@ -9,7 +9,7 @@
 
 ## 2.0.0
 See the changelog of [moor](https://pub.dev/packages/moor#-changelog-tab-) for details,
-or check out an overview of new features [here](https://moor.simonbinder.eu/v2])
+or check out an overview of new features [here](https://moor.simonbinder.eu/v2)
 
 ## 1.7.0
 - Support custom columns via type converters. See the [docs](https://moor.simonbinder.eu/type_converters)

@@ -48,8 +48,12 @@ can be used together with [`issueCustomQuery`](https://pub.dev/documentation/moo
 to run the statements.
 
 ## Post-migration callbacks
-Starting from moor 1.5, you can use the `beforeOpen` parameter in the `MigrationStrategy` which will be called after
-migrations, but after any other queries are run. You could use it to populate data after the database has been created:
+
+The `beforeOpen` parameter in `MigrationStrategy` can be used to populate data after the database has been created.
+It runs after migrations, but before any other query. Note that it will be called whenever the database is opened,
+regardless of whether a migration actually ran or not. You can use `details.hadUpgrade` or `details.wasCreated` to
+check whether migrations were necessary:
+
 ```dart
 beforeOpen: (details) async {
     if (details.wasCreated) {
