@@ -64,7 +64,8 @@ void main() {
           profilePicture: Value(Uint8List(0)),
         ));
 
-    verify(streamQueries.handleTableUpdates({db.users}));
+    verify(streamQueries.handleTableUpdates(
+        {const TableUpdate('users', kind: UpdateKind.insert)}));
   });
 
   test('enforces data integrity', () async {

@@ -108,8 +108,8 @@ class StreamQueryStore {
 
   /// Handles updates on a given table by re-executing all queries that read
   /// from that table.
-  Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    handleTableUpdatesByName(tables.map((t) => t.actualTableName).toSet());
+  Future<void> handleTableUpdates(Set<TableUpdate> updates) async {
+    handleTableUpdatesByName(updates.map((t) => t.table).toSet());
   }
 
   /// Handles updates on tables by their name. All queries reading from any of
@@ -261,5 +261,40 @@ class QueryStream<T> {
 
   void close() {
     _controller.close();
+  }
+}
+
+// Note: These classes are here because we want them to be public, but not
+// exposed without an src import.
+
+class AnyUpdateQuery extends TableUpdateQuery {
+  const AnyUpdateQuery();
+
+  @override
+  bool matches(TableUpdate update) => true;
+}
+
+class MultipleUpdateQuery extends TableUpdateQuery {
+  final Set<TableUpdateQuery> queries;
+
+  const MultipleUpdateQuery(this.queries);
+
+  @override
+  bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
+}
+
+class SpecificUpdateQuery extends TableUpdateQuery {
+  final UpdateKind limitUpdateKind;
+  final String table;
+
+  const SpecificUpdateQuery(this.table, {this.limitUpdateKind});
+
+  @override
+  bool matches(TableUpdate update) {
+    if (update.table != table) return false;
+
+    return update.kind == null ||
+        limitUpdateKind == null ||
+        update.kind == limitUpdateKind;
   }
 }

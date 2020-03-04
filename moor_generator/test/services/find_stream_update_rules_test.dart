@@ -39,8 +39,8 @@ class MyDatabase {}
     expect(
       rules.rules.single,
       isA<WritePropagation>()
-          .having((e) => e.onTable, 'onTable', 'users')
-          .having((e) => e.updates, 'updates', {'users'}),
+          .having((e) => e.on, 'on', const TableUpdateQuery.onTable('users'))
+          .having((e) => e.result, 'result', {const TableUpdate('users')}),
     );
   });
 }

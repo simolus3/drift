@@ -99,6 +99,6 @@ void main() {
       b.update(db.users, const UsersCompanion(name: Value('new user name')));
     });
 
-    verify(streamQueries.handleTableUpdates({db.users}));
+    verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
   });
 }

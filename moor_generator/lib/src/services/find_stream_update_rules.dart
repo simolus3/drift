@@ -12,8 +12,11 @@ class FindStreamUpdateRules {
     for (final trigger in db.entities.whereType<MoorTrigger>()) {
       rules.add(
         WritePropagation(
-          trigger.on.sqlName,
-          trigger.bodyUpdates.map((t) => t.sqlName).toSet(),
+          TableUpdateQuery.onTable(trigger.on.sqlName),
+          {
+            for (final update in trigger.bodyUpdates)
+              TableUpdate(update.sqlName)
+          },
         ),
       );
     }

@@ -4,10 +4,6 @@ part of 'runtime_api.dart';
 /// direct updates to a table affects other updates.
 ///
 /// This is used to implement query streams in databases that have triggers.
-///
-/// Note that all the members in this class are visible for generated code and
-/// internal moor code. They don't adhere to Semantic Versioning and should not
-/// be used manually.
 class StreamQueryUpdateRules {
   /// All rules active in a database.
   final List<UpdateRule> rules;
@@ -18,25 +14,22 @@ class StreamQueryUpdateRules {
   /// The default implementation, which doesn't have any rules.
   const StreamQueryUpdateRules.none() : this(const []);
 
-  /// Obtain a set of all tables that might be affected by direct updates to
-  /// [updatedTables].
-  ///
-  /// This method should be used in internal moor code only, it does not respect
-  /// Semantic Versioning and might change at any time.
-  Set<String> apply(Iterable<String> updatedTables) {
+  /// Obtain a set of all tables that might be affected by direct updates in
+  /// [input].
+  Set<TableUpdate> apply(Iterable<TableUpdate> input) {
     // Most users don't have any update rules, and this check is much faster
     // than crawling through all updates.
-    if (rules.isEmpty) return updatedTables.toSet();
+    if (rules.isEmpty) return input.toSet();
 
-    final pending = List.of(updatedTables);
-    final seen = <String>{};
+    final pending = List.of(input);
+    final seen = <TableUpdate>{};
     while (pending.isNotEmpty) {
-      final updatedTable = pending.removeLast();
-      seen.add(updatedTable);
+      final update = pending.removeLast();
+      seen.add(update);
 
       for (final rule in rules) {
-        if (rule is WritePropagation && rule.onTable == updatedTable) {
-          pending.addAll(rule.updates.where((u) => !seen.contains(u)));
+        if (rule is WritePropagation && rule.on.matches(update)) {
+          pending.addAll(rule.result.where((u) => !seen.contains(u)));
         }
       }
     }
@@ -45,25 +38,89 @@ class StreamQueryUpdateRules {
   }
 }
 
+/// A common rule that describes how a [TableUpdate] has other [TableUpdate]s.
+///
 /// Users should not extend or implement this class.
 abstract class UpdateRule {
   /// Common const constructor so that subclasses can be const.
-  const UpdateRule();
+  const UpdateRule._();
 }
 
 /// An [UpdateRule] for triggers that exist in a database.
 ///
-/// An update on [onTable] implicitly triggers updates on [updates].
+/// An update on [on] implicitly triggers updates on [result].
 ///
 /// This class is for use by generated or moor-internal code only. It does not
 /// adhere to Semantic Versioning and should not be used manually.
 class WritePropagation extends UpdateRule {
-  /// The table name that the trigger is active on.
-  final String onTable;
+  /// The updates that cause further writes in [result].
+  final TableUpdateQuery on;
 
-  /// All tables potentially updated by the trigger.
-  final Set<String> updates;
+  /// All updates that will be performed by the trigger listening on [on].
+  final Set<TableUpdate> result;
 
   /// Default constructor. See [WritePropagation] for details.
-  const WritePropagation(this.onTable, this.updates);
+  const WritePropagation(this.on, this.result) : super._();
+}
+
+/// Classifies a [TableUpdate] by what kind of write happened - an insert, an
+/// update or a delete operation.
+enum UpdateKind {
+  /// An insert statement ran on the affected table.
+  insert,
+
+  /// An update statement ran on the affected table.
+  update,
+
+  /// A delete statement ran on the affected table.
+  delete
+}
+
+/// Contains information on how a table was updated, which can be used to find
+/// queries that are affected by this.
+class TableUpdate {
+  /// What kind of update was applied to the [table].
+  ///
+  /// Can be null, which indicates that the update is not known.
+  final UpdateKind /*?*/ kind;
+
+  /// Name of the table that was updated.
+  final String table;
+
+  /// Default constant constructor.
+  const TableUpdate(this.table, {this.kind});
+
+  @override
+  int get hashCode => $mrjf($mrjc(kind.hashCode, table.hashCode));
+
+  @override
+  bool operator ==(dynamic other) {
+    return other is TableUpdate && other.kind == kind && other.table == table;
+  }
+}
+
+/// A table update query describes information to listen for [TableUpdate]s.
+///
+/// Users should not extend implement this class.
+abstract class TableUpdateQuery {
+  /// Default const constructor so that subclasses can have constant
+  /// constructors.
+  const TableUpdateQuery();
+
+  /// A query that listens for all table updates in a database.
+  const factory TableUpdateQuery.any() = AnyUpdateQuery;
+
+  /// A query that listens for all updates that match any query in [queries].
+  const factory TableUpdateQuery.allOf(Set<TableUpdateQuery> queries) =
+      MultipleUpdateQuery;
+
+  /// A query that listens for all updates on a specific [table].
+  ///
+  /// The optional [limitUpdateKind] parameter can be used to limit the updates
+  /// to a certain kind.
+  const factory TableUpdateQuery.onTable(String table,
+      {UpdateKind limitUpdateKind}) = SpecificUpdateQuery;
+
+  /// Determines whether the [update] would be picked up by this query.
+  bool matches(TableUpdate update);
 }

@@ -64,7 +64,7 @@ void main() {
         variables: [Variable.withString('hi')], updates: {db.users});
 
     verify(executor.runUpdate('UPDATE tbl SET a = ?', ['hi']));
-    verify(streamQueries.handleTableUpdates({db.users}));
+    verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
   });
 
   test('custom insert', () async {

@@ -1,4 +1,6 @@
 import 'package:moor/moor.dart';
+// ignore: implementation_imports
+import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/services/find_stream_update_rules.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -120,18 +122,77 @@ class DatabaseWriter {
           schemaScope.write(', ');
         }
         isFirst = false;
-
-        if (rule is WritePropagation) {
-          final updateNames = rule.updates.map(asDartLiteral).join(', ');
-          schemaScope.write('WritePropagation('
-              '${asDartLiteral(rule.onTable)}, {$updateNames})');
-        }
+        rule.writeConstructor(schemaScope);
       }
 
-      schemaScope.write(']);');
+      schemaScope.write(']);\n');
     }
 
     // close the class
-    schemaScope.write('}');
+    schemaScope.write('}\n');
+  }
+}
+
+const _kindToDartExpr = {
+  UpdateKind.delete: 'UpdateKind.delete',
+  UpdateKind.insert: 'UpdateKind.insert',
+  UpdateKind.update: 'UpdateKind.update',
+  null: 'null',
+};
+
+extension on UpdateRule {
+  void writeConstructor(StringBuffer buffer) {
+    if (this is WritePropagation) {
+      final write = this as WritePropagation;
+
+      buffer.write('WritePropagation(');
+      write.on.writeConstructor(buffer);
+      buffer.write(', {');
+
+      var isFirst = true;
+      for (final update in write.result) {
+        if (!isFirst) {
+          buffer.write(', ');
+        }
+        isFirst = false;
+
+        update.writeConstructor(buffer);
+      }
+
+      buffer.write('})');
+    }
+  }
+}
+
+extension on TableUpdate {
+  void writeConstructor(StringBuffer buffer) {
+    buffer.write(
+        'TableUpdate(${asDartLiteral(table)}, kind: ${_kindToDartExpr[kind]})');
+  }
+}
+
+extension on TableUpdateQuery {
+  void writeConstructor(StringBuffer buffer) {
+    if (this is AnyUpdateQuery) {
+      buffer.write('TableUpdateQuery.any()');
+    } else if (this is SpecificUpdateQuery) {
+      final query = this as SpecificUpdateQuery;
+      buffer.write('TableUpdateQuery.onTable(${asDartLiteral(query.table)}, '
+          'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
+    } else if (this is MultipleUpdateQuery) {
+      final queries = (this as MultipleUpdateQuery).queries;
+      var isFirst = true;
+
+      buffer.write('TableUpdateQuery.allOf({');
+      for (final query in queries) {
+        if (!isFirst) {
+          buffer.write(', ');
+        }
+        isFirst = false;
+
+        query.writeConstructor(buffer);
+      }
+      buffer.write('})');
+    }
   }
 }

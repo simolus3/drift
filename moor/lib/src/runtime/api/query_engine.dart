@@ -56,10 +56,20 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// We can then inform all active select-streams on those tables that their
   /// snapshot might be out-of-date and needs to be fetched again.
   void markTablesUpdated(Set<TableInfo> tables) {
-    final withRulesApplied = attachedDatabase.streamUpdateRules
-        .apply(tables.map((t) => t.actualTableName));
+    notifyUpdates(
+      {for (final table in tables) TableUpdate(table.actualTableName)},
+    );
+  }
 
-    _resolvedEngine.streamQueries.handleTableUpdatesByName(withRulesApplied);
+  /// Dispatches the set of [updates] to the stream query manager.
+  ///
+  /// Internally, moor will call this method whenever a update, delete or insert
+  /// statement is issued on the database. We can then inform all active select-
+  /// streams affected that their snapshot might be out-of-date and needs to be
+  /// fetched again.
+  void notifyUpdates(Set<TableUpdate> updates) {
+    final withRulesApplied = attachedDatabase.streamUpdateRules.apply(updates);
+    _resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
   }
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
@@ -171,9 +181,15 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   Future<int> customUpdate(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) async {
-    return _customWrite(query, variables, updates, (executor, sql, vars) {
-      return executor.runUpdate(sql, vars);
-    });
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      null, // could be delete or update, so don't specify kind
+      (executor, sql, vars) {
+        return executor.runUpdate(sql, vars);
+      },
+    );
   }
 
   /// Executes a custom insert statement and returns the last inserted rowid.
@@ -185,16 +201,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   Future<int> customInsert(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) {
-    return _customWrite(query, variables, updates, (executor, sql, vars) {
-      return executor.runInsert(sql, vars);
-    });
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      UpdateKind.insert,
+      (executor, sql, vars) {
+        return executor.runInsert(sql, vars);
+      },
+    );
   }
 
   /// Common logic for [customUpdate] and [customInsert] which takes care of
   /// mapping the variables, running the query and optionally informing the
   /// stream-queries.
-  Future<T> _customWrite<T>(String query, List<Variable> variables,
-      Set<TableInfo> updates, _CustomWriter<T> writer) async {
+  Future<T> _customWrite<T>(
+    String query,
+    List<Variable> variables,
+    Set<TableInfo> updates,
+    UpdateKind updateKind,
+    _CustomWriter<T> writer,
+  ) async {
     final engine = _resolvedEngine;
     final executor = engine.executor;
 
@@ -205,7 +232,10 @@ mixin QueryEngine on DatabaseConnectionUser {
         await executor.doWhenOpened((e) => writer(e, query, mappedArgs));
 
     if (updates != null) {
-      await engine.streamQueries.handleTableUpdates(updates);
+      engine.notifyUpdates({
+        for (final table in updates)
+          TableUpdate(table.actualTableName, kind: updateKind),
+      });
     }
 
     return result;

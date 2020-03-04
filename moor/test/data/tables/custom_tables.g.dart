@@ -1274,7 +1274,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-        WritePropagation('config', {'with_defaults'})
+        WritePropagation(
+            TableUpdateQuery.onTable('config', limitUpdateKind: null),
+            {TableUpdate('with_defaults', kind: null)})
       ]);
 }
 
