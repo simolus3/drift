@@ -77,6 +77,10 @@ END;
               .having((table) => table.displayName, 'displayName', 'users'),
         },
       );
+
+      expect(trigger.bodyReferences.map((t) => t.sqlName),
+          {'users', 'friendships'});
+      expect(trigger.bodyUpdates.map((t) => t.sqlName), {'friendships'});
     });
 
     test('in an index', () async {
