@@ -111,6 +111,8 @@ class _SQLiteBindings {
   void Function(Pointer<FunctionContext> ctx, int value) sqlite3_result_int64;
   void Function(Pointer<FunctionContext> ctx, double value)
       sqlite3_result_double;
+  void Function(Pointer<FunctionContext> ctx, Pointer<CBlob> msg, int length)
+      sqlite3_result_error;
 
   _SQLiteBindings() {
     sqlite = open.openSqlite();
@@ -237,6 +239,10 @@ class _SQLiteBindings {
     sqlite3_result_double = sqlite
         .lookup<NativeFunction<sqlite3_result_double_native>>(
             'sqlite3_result_double')
+        .asFunction();
+    sqlite3_result_error = sqlite
+        .lookup<NativeFunction<sqlite3_result_error_native>>(
+            'sqlite3_result_error')
         .asFunction();
   }
 }

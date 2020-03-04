@@ -132,7 +132,9 @@ For more details on sqlite compile options, see [their documentation](https://ww
 - `pow(base, exponent)` and `power(base, exponent)`: This function takes two numerical arguments and returns `base` raised to the power of `exponent`.
   If `base` or `exponent` aren't numerical values or null, this function will return `null`. This function behaves exactly like `pow` in `dart:math`.
 - `sqrt`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`: These functions take a single argument. If that argument is null or not a numerical value,
-  returns null. Otherwise, returns the result of applying the matching function in `dart:math`:
+  returns null. Otherwise, returns the result of applying the matching function in `dart:math`.
+- `regexp`: Wraps the Dart `RegExp` apis, so that `foo REGEXP bar` is equivalent to `RegExp(bar).hasMatch(foo)`. Note that we have to create a new
+  `RegExp` instance for each `regexp` sql call, which can impact performance on large queries.
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 

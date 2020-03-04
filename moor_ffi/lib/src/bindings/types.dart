@@ -2,11 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:moor/moor.dart';
 
 import '../ffi/blob.dart';
+import '../ffi/utils.dart';
 import 'bindings.dart';
 import 'constants.dart';
 
@@ -119,5 +121,20 @@ extension SqliteFunctionContextPointer on Pointer<FunctionContext> {
     }
 
     throw AssertionError();
+  }
+
+  void resultBool(bool value) {
+    resultInt(value ? 1 : 0);
+  }
+
+  void resultError(String message) {
+    final encoded = Uint8List.fromList(utf8.encode(message));
+    final ptr = CBlob.allocate(encoded);
+
+    bindings.sqlite3_result_error(this, ptr, encoded.length);
+
+    // Note that sqlite3_result_error makes a private copy of error message
+    // before returning. Hence, we can deallocate the message here.
+    ptr.free();
   }
 }

@@ -67,6 +67,32 @@ void _atanImpl(Pointer<FunctionContext> ctx, int argCount,
   _unaryNumFunction(ctx, argCount, args, atan);
 }
 
+void _regexpImpl(Pointer<FunctionContext> ctx, int argCount,
+    Pointer<Pointer<SqliteValue>> args) {
+  if (argCount != 2) {
+    ctx.resultError('Expected two arguments to regexp');
+    return;
+  }
+
+  final firstParam = args[0].value;
+  final secondParam = args[1].value;
+
+  if (firstParam is! String || secondParam is! String) {
+    ctx.resultError('Expected two strings as parameters to regexp');
+    return;
+  }
+
+  RegExp regex;
+  try {
+    regex = RegExp(firstParam as String);
+  } on FormatException catch (e) {
+    ctx.resultError('Invalid regex: $e');
+    return;
+  }
+
+  ctx.resultBool(regex.hasMatch(secondParam as String));
+}
+
 void _registerOn(Database db) {
   final powImplPointer =
       Pointer.fromFunction<sqlite3_function_handler>(_powImpl);
@@ -87,5 +113,8 @@ void _registerOn(Database db) {
   db.createFunction('acos', 1, Pointer.fromFunction(_acosImpl),
       isDeterministic: true);
   db.createFunction('atan', 1, Pointer.fromFunction(_atanImpl),
+      isDeterministic: true);
+
+  db.createFunction('regexp', 2, Pointer.fromFunction(_regexpImpl),
       isDeterministic: true);
 }

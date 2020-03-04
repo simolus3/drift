@@ -126,3 +126,5 @@ typedef sqlite3_result_double_native = Void Function(
     Pointer<FunctionContext> context, Double value);
 typedef sqlite3_result_int64_native = Void Function(
     Pointer<FunctionContext> context, Int64 value);
+typedef sqlite3_result_error_native = Void Function(
+    Pointer<FunctionContext> context, Pointer<CBlob> char, Int32 len);

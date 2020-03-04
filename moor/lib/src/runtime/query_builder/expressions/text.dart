@@ -9,6 +9,14 @@ extension StringExpressionOperators on Expression<String> {
     return _LikeOperator(this, Variable.withString(regex));
   }
 
+  /// Matches this string against the regular expression in [regex].
+  ///
+  /// Note that this function is only available when using `moor_ffi`. If
+  /// possible, consider using [like] instead.
+  Expression<bool> regexp(String regex) {
+    return _LikeOperator(this, Variable.withString(regex), operator: 'REGEXP');
+  }
+
   /// Uses the given [collate] sequence when comparing this column to other
   /// values.
   Expression<String> collate(Collate collate) {
@@ -59,27 +67,34 @@ class _LikeOperator extends Expression<bool> {
   /// The regex-like expression to test the [target] against.
   final Expression<String> regex;
 
+  /// The operator to use when matching. Defaults to `LIKE`.
+  final String operator;
+
   @override
   final Precedence precedence = Precedence.comparisonEq;
 
   /// Perform a like operator with the target and the regex.
-  _LikeOperator(this.target, this.regex);
+  _LikeOperator(this.target, this.regex, {this.operator = 'LIKE'});
 
   @override
   void writeInto(GenerationContext context) {
     writeInner(context, target);
-    context.buffer.write(' LIKE ');
+    context.writeWhitespace();
+    context.buffer.write(operator);
+    context.writeWhitespace();
     writeInner(context, regex);
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(target.hashCode, regex.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(target.hashCode, $mrjc(regex.hashCode, operator.hashCode)));
 
   @override
   bool operator ==(dynamic other) {
     return other is _LikeOperator &&
         other.target == target &&
-        other.regex == regex;
+        other.regex == regex &&
+        other.operator == operator;
   }
 }
 

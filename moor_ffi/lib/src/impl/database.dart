@@ -219,18 +219,18 @@ class Database {
     }
   }
 
-  /// Enables non-standard mathematical functions that ship with `moor_ffi`.
+  /// Enables non-standard functions that ship with `moor_ffi`.
   ///
-  /// After calling [enableMathematicalFunctions], the following functions can
+  /// After calling [enableMoorFfiFunctions], the following functions can
   /// be used in sql: `power`, `pow`, `sqrt`, `sin`, `cos`, `tan`, `asin`,
-  /// `acos`, `atan`.
+  /// `acos`, `atan` and `regexp`.
   ///
   /// At the moment, these functions are only available in statements. In
   /// particular, they're not available in triggers, check constraints, index
   /// expressions.
   ///
   /// This should only be called once per database.
-  void enableMathematicalFunctions() {
+  void enableMoorFfiFunctions() {
     _registerOn(this);
   }
 
