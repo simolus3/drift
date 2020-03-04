@@ -36,9 +36,6 @@ DynamicLibrary _openOnLinux() {
 
 ## Migrating from moor_flutter to moor_ffi
 
-If you're not running into a limitation that forces you to use `moor_ffi`, be aware
-that staying on `moor_flutter` is a more stable solution at the moment.
-
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
 add both the `moor` and `moor_ffi` dependencies:
 ```yaml
