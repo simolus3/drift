@@ -3,6 +3,7 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:test/test.dart';
 
+import 'data/tables/custom_tables.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
@@ -227,5 +228,15 @@ void main() {
 
       verifyNever(executor.runSelect(any, any));
     });
+  });
+
+  test('updates streams for updates caused by triggers', () async {
+    final db = CustomTablesDb(executor);
+    db.select(db.withDefaults).watch().listen((_) {});
+
+    db.markTablesUpdated({db.config});
+    await pumpEventQueue(times: 1);
+
+    verify(executor.runSelect(any, any)).called(2);
   });
 }
