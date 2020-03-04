@@ -100,7 +100,7 @@ class _RunBeforeOpen {
 /// receives this message, it replies with `null` but forwards a new request
 /// with this payload to all connected clients.
 class _NotifyTablesUpdated {
-  final List<String> updatedTables;
+  final List<TableUpdate> updates;
 
-  _NotifyTablesUpdated(this.updatedTables);
+  _NotifyTablesUpdated(this.updates);
 }

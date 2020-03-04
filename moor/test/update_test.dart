@@ -105,7 +105,8 @@ void main() {
             content: Value('Updated content'),
           ));
 
-      verify(streamQueries.handleTableUpdates({const TableUpdate('todos')}));
+      verify(streamQueries.handleTableUpdates(
+          {TableUpdate.fromTable(db.todosTable, kind: UpdateKind.update)}));
     });
 
     test('are not issued when no data was changed', () async {

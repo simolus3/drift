@@ -133,6 +133,16 @@ abstract class TableUpdateQuery {
   const factory TableUpdateQuery.onTable(String table,
       {UpdateKind limitUpdateKind}) = SpecificUpdateQuery;
 
+  /// A query that listens for any change on any table in [tables].
+  factory TableUpdateQuery.onAllTables(Iterable<TableInfo> tables) {
+    // analyzer bug, remove when Dart 2.8 is stable
+    // ignore: prefer_const_constructors
+    return TableUpdateQuery.allOf([
+      for (final table in tables)
+        TableUpdateQuery.onTable(table.actualTableName)
+    ]);
+  }
+
   /// Determines whether the [update] would be picked up by this query.
   bool matches(TableUpdate update);
 }

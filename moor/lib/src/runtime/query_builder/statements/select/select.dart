@@ -106,7 +106,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   Stream<List<D>> watch() {
     final query = constructQuery();
     final fetcher = QueryStreamFetcher<List<D>>(
-      readsFrom: watchedTables,
+      readsFrom: TableUpdateQuery.onAllTables(watchedTables),
       fetchData: () => _getWithQuery(query),
       key: StreamKey(query.sql, query.boundVariables, D),
     );

@@ -155,7 +155,10 @@ void main() {
     });
 
     // After the transaction completes, the queries should be updated
-    verify(streamQueries.handleTableUpdatesByName({'users'})).called(1);
+    verify(
+      streamQueries.handleTableUpdates(
+          {TableUpdate.fromTable(db.users, kind: UpdateKind.update)}),
+    ).called(1);
     verify(executor.transactions.send());
   });
 

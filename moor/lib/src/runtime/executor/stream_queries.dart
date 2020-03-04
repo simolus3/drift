@@ -15,9 +15,10 @@ const _listEquality = ListEquality<dynamic>();
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
 class QueryStreamFetcher<T> {
-  /// The set of tables this query reads from. If any of these tables changes,
-  /// the stream must fetch its data again.
-  final Set<TableInfo> readsFrom;
+  /// Table updates that will affect this stream.
+  ///
+  /// If any of these tables changes, the stream must fetch its data again.
+  final TableUpdateQuery readsFrom;
 
   /// Key that can be used to check whether two fetchers will yield the same
   /// result when operating on the same data.
@@ -78,7 +79,7 @@ class StreamQueryStore {
   // their cached data before the user can send another query.
   // There shouldn't be a problem as this stream is not exposed in any user-
   // facing api.
-  final StreamController<Set<String>> _updatedTableNames =
+  final StreamController<Set<TableUpdate>> _tableUpdates =
       StreamController.broadcast(sync: true);
 
   StreamQueryStore();
@@ -106,18 +107,17 @@ class StreamQueryStore {
     return stream.stream;
   }
 
-  /// Handles updates on a given table by re-executing all queries that read
-  /// from that table.
-  Future<void> handleTableUpdates(Set<TableUpdate> updates) async {
-    handleTableUpdatesByName(updates.map((t) => t.table).toSet());
+  Stream<Null> _updatesFor(TableUpdateQuery query) {
+    return _tableUpdates.stream
+        .where((e) => e.any(query.matches))
+        .map((_) => null);
   }
 
-  /// Handles updates on tables by their name. All queries reading from any of
-  /// the tables in [updatedTableNames] will fetch their data again.
-  void handleTableUpdatesByName(Set<String> updatedTableNames) {
+  /// Handles updates on a given table by re-executing all queries that read
+  /// from that table.
+  void handleTableUpdates(Set<TableUpdate> updates) {
     if (_isShuttingDown) return;
-
-    _updatedTableNames.add(updatedTableNames);
+    _tableUpdates.add(updates);
   }
 
   void markAsClosed(QueryStream stream, Function() whenRemoved) {
@@ -171,7 +171,7 @@ class StreamQueryStore {
     }
     // awaiting this is fine - the stream is never exposed to users and we don't
     // pause any subscriptions on it.
-    await _updatedTableNames.close();
+    await _tableUpdates.close();
 
     while (_pendingTimers.isNotEmpty) {
       await _pendingTimers.first.future;
@@ -218,10 +218,8 @@ class QueryStream<T> {
       // first listener added, fetch query
       fetchAndEmitData();
 
-      final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
-      _tablesChangedSubscription = _store._updatedTableNames.stream
-          .where((changed) => changed.any(names.contains))
-          .listen((_) {
+      _tablesChangedSubscription =
+          _store._updatesFor(_fetcher.readsFrom).listen((_) {
         // table has changed, invalidate cache
         _lastData = null;
         fetchAndEmitData();

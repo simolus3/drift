@@ -26,7 +26,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
     final args = _mapArgs();
 
     return QueryStreamFetcher<List<QueryRow>>(
-      readsFrom: tables,
+      readsFrom: TableUpdateQuery.onAllTables(tables),
       fetchData: () => _executeWithMappedArgs(args),
       key: StreamKey(query, args, QueryRow),
     );

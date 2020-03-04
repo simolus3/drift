@@ -38,15 +38,15 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 class _TransactionStreamStore extends StreamQueryStore {
   final StreamQueryStore parent;
 
-  final Set<String> affectedTables = <String>{};
+  final Set<TableUpdate> affectedTables = <TableUpdate>{};
   final Set<QueryStream> _queriesWithoutKey = {};
 
   _TransactionStreamStore(this.parent);
 
   @override
-  void handleTableUpdatesByName(Set<String> tables) {
-    affectedTables.addAll(tables);
-    super.handleTableUpdatesByName(tables);
+  void handleTableUpdates(Set<TableUpdate> updates) {
+    super.handleTableUpdates(updates);
+    affectedTables.addAll(updates);
   }
 
   // Override lifecycle hooks for each stream. The regular StreamQueryStore
@@ -74,7 +74,7 @@ class _TransactionStreamStore extends StreamQueryStore {
   }
 
   Future _dispatchAndClose() async {
-    parent.handleTableUpdatesByName(affectedTables);
+    parent.handleTableUpdates(affectedTables);
 
     await super.close();
     for (final query in _queriesWithoutKey) {

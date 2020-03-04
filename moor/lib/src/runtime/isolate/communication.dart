@@ -138,7 +138,7 @@ class IsolateCommunication {
     // sending a message while closed with throw, so don't even try.
     if (isClosed) return;
 
-    _send(_ErrorResponse(request.id, error, trace.toString()));
+    _send(_ErrorResponse(request.id, error.toString(), trace.toString()));
   }
 
   /// Utility that listens to [incomingRequests] and invokes the [handler] on

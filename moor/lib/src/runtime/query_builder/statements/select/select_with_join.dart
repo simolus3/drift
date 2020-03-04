@@ -173,7 +173,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher<List<TypedResult>>(
-      readsFrom: watchedTables,
+      readsFrom: TableUpdateQuery.onAllTables(watchedTables),
       fetchData: () => _getWithQuery(ctx),
       key: StreamKey(ctx.sql, ctx.boundVariables, TypedResult),
     );
