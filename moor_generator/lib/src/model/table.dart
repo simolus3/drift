@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:moor/moor.dart' show UpdateKind;
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:recase/recase.dart';
@@ -150,6 +151,13 @@ class MoorTable implements MoorSchemaEntity {
   String toString() {
     return 'SpecifiedTable: $displayName';
   }
+}
+
+class WrittenMoorTable {
+  final MoorTable table;
+  final UpdateKind kind;
+
+  WrittenMoorTable(this.table, this.kind);
 }
 
 String dbFieldName(String className) => ReCase(className).camelCase;

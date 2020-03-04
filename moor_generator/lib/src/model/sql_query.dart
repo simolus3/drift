@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart' show UpdateKind;
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/utils/hash.dart';
 import 'package:recase/recase.dart';
@@ -129,8 +130,11 @@ class SqlSelectQuery extends SqlQuery {
 }
 
 class UpdatingQuery extends SqlQuery {
-  final List<MoorTable> updates;
+  final List<WrittenMoorTable> updates;
   final bool isInsert;
+
+  bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
+  bool get isOnlyUpdate => updates.every((w) => w.kind == UpdateKind.update);
 
   UpdatingQuery(String name, AnalysisContext fromContext,
       List<FoundElement> elements, this.updates,

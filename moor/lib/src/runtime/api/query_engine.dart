@@ -176,16 +176,23 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// rows that have been changed.
   /// You can use the [updates] parameter so that moor knows which tables are
   /// affected by your query. All select streams that depend on a table
-  /// specified there will then issue another query.
+  /// specified there will then update their data. For more accurate results,
+  /// you can also set the [updateKind] parameter to [UpdateKind.delete] or
+  /// [UpdateKind.update]. This is optional, but can improve the accuracy of
+  /// query updates, especially when using triggers.
   @protected
   @visibleForTesting
-  Future<int> customUpdate(String query,
-      {List<Variable> variables = const [], Set<TableInfo> updates}) async {
+  Future<int> customUpdate(
+    String query, {
+    List<Variable> variables = const [],
+    Set<TableInfo> updates,
+    UpdateKind updateKind,
+  }) async {
     return _customWrite(
       query,
       variables,
       updates,
-      null, // could be delete or update, so don't specify kind
+      updateKind,
       (executor, sql, vars) {
         return executor.runUpdate(sql, vars);
       },

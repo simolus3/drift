@@ -1279,7 +1279,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
             on: TableUpdateQuery.onTable('config',
                 limitUpdateKind: UpdateKind.insert),
             result: [
-              TableUpdate('with_defaults', kind: null),
+              TableUpdate('with_defaults', kind: UpdateKind.insert),
             ],
           ),
         ],

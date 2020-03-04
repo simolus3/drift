@@ -1343,6 +1343,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
       'DELETE FROM todos WHERE id = ?',
       variables: [Variable.withInt(var1)],
       updates: {todosTable},
+      updateKind: UpdateKind.delete,
     );
   }
 

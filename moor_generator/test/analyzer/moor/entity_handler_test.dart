@@ -80,7 +80,7 @@ END;
 
       expect(trigger.bodyReferences.map((t) => t.sqlName),
           {'users', 'friendships'});
-      expect(trigger.bodyUpdates.map((t) => t.sqlName), {'friendships'});
+      expect(trigger.bodyUpdates.map((t) => t.table.sqlName), {'friendships'});
     });
 
     test('in an index', () async {

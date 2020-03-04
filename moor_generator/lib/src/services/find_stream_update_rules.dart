@@ -29,7 +29,7 @@ class FindStreamUpdateRules {
           ),
           result: [
             for (final update in trigger.bodyUpdates)
-              TableUpdate(update.sqlName)
+              TableUpdate(update.table.sqlName, kind: update.kind)
           ],
         ),
       );

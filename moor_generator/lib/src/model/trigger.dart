@@ -14,7 +14,7 @@ class MoorTrigger implements MoorSchemaEntity {
   ///
   /// This field can be null in case the table wasn't resolved.
   MoorTable on;
-  List<MoorTable> bodyUpdates = [];
+  List<WrittenMoorTable> bodyUpdates = [];
   List<MoorTable> bodyReferences = [];
 
   String _create;
@@ -42,7 +42,7 @@ class MoorTrigger implements MoorSchemaEntity {
   String get create {
     if (_create != null) return _create;
 
-    final node = (declaration as MoorTriggerDeclaration).node;
+    final node = declaration.node;
     return node.span.text;
   }
 
