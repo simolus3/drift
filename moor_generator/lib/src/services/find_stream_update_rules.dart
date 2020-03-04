@@ -23,7 +23,7 @@ class FindStreamUpdateRules {
 
       rules.add(
         WritePropagation(
-          on: TableUpdateQuery.onTable(
+          on: TableUpdateQuery.onTableName(
             trigger.on.sqlName,
             limitUpdateKind: targetKind,
           ),

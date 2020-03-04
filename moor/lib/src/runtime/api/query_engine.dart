@@ -72,6 +72,23 @@ mixin QueryEngine on DatabaseConnectionUser {
     _resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
   }
 
+  /// Creates a stream that emits `null` each time a table that would affect
+  /// [query] is changed.
+  ///
+  /// When called inside a transaction, the stream will close when the
+  /// transaction completes or is rolled back. Otherwise, the stream will
+  /// complete as the database is closed.
+  Stream<Null> tableUpdates(
+      [TableUpdateQuery query = const TableUpdateQuery.any()]) {
+    return _resolvedEngine.streamQueries
+        .updatesForSync(query)
+        .asyncMap((event) async {
+      // streamQueries.updatesForSync is a synchronous stream - make it
+      // asynchronous by awaiting null for each event.
+      return await null;
+    });
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected

@@ -36,8 +36,8 @@ class InsertStatement<D extends DataClass> {
 
     return await database.executor.doWhenOpened((e) async {
       final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
-      database.notifyUpdates(
-          {TableUpdate.fromTable(table, kind: UpdateKind.insert)});
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
       return id;
     });
   }

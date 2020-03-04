@@ -106,7 +106,7 @@ void main() {
           ));
 
       verify(streamQueries.handleTableUpdates(
-          {TableUpdate.fromTable(db.todosTable, kind: UpdateKind.update)}));
+          {TableUpdate.onTable(db.todosTable, kind: UpdateKind.update)}));
     });
 
     test('are not issued when no data was changed', () async {

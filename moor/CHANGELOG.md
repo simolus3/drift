@@ -19,6 +19,8 @@
   or transaction.
 - Updated stream queries: They now take triggers into account and more accurately detect when an update
   is necessary.
+- New `tableUpdates` method that can be used to listen for a subset of table updates outside of
+  a query.
 
 ## 2.4.1
 

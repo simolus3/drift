@@ -1276,7 +1276,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
           WritePropagation(
-            on: TableUpdateQuery.onTable('config',
+            on: TableUpdateQuery.onTableName('config',
                 limitUpdateKind: UpdateKind.insert),
             result: [
               TableUpdate('with_defaults', kind: UpdateKind.insert),

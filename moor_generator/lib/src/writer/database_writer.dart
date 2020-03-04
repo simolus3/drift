@@ -168,8 +168,9 @@ extension on TableUpdateQuery {
       buffer.write('TableUpdateQuery.any()');
     } else if (this is SpecificUpdateQuery) {
       final query = this as SpecificUpdateQuery;
-      buffer.write('TableUpdateQuery.onTable(${asDartLiteral(query.table)}, '
-          'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
+      buffer
+          .write('TableUpdateQuery.onTableName(${asDartLiteral(query.table)}, '
+              'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
     } else if (this is MultipleUpdateQuery) {
       final queries = (this as MultipleUpdateQuery).queries;
 

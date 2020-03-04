@@ -33,7 +33,7 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
 
       if (rows > 0) {
         database.notifyUpdates(
-            {TableUpdate.fromTable(table, kind: UpdateKind.delete)});
+            {TableUpdate.onTable(table, kind: UpdateKind.delete)});
       }
       return rows;
     });

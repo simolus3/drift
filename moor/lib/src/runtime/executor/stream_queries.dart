@@ -107,7 +107,7 @@ class StreamQueryStore {
     return stream.stream;
   }
 
-  Stream<Null> _updatesFor(TableUpdateQuery query) {
+  Stream<Null> updatesForSync(TableUpdateQuery query) {
     return _tableUpdates.stream
         .where((e) => e.any(query.matches))
         .map((_) => null);
@@ -219,7 +219,7 @@ class QueryStream<T> {
       fetchAndEmitData();
 
       _tablesChangedSubscription =
-          _store._updatesFor(_fetcher.readsFrom).listen((_) {
+          _store.updatesForSync(_fetcher.readsFrom).listen((_) {
         // table has changed, invalidate cache
         _lastData = null;
         fetchAndEmitData();

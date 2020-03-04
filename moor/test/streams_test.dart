@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:test/test.dart';
 
@@ -249,5 +250,70 @@ void main() {
     await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(1);
+  });
+
+  group('listen for table updates', () {
+    test('any', () async {
+      var counter = 0;
+      db.tableUpdates().listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.markTablesUpdated({db.users});
+      await pumpEventQueue(times: 1);
+      expect(counter, 2);
+    });
+
+    test('stream is async', () {
+      var counter = 0;
+      db.tableUpdates().listen((event) => counter++);
+
+      db.markTablesUpdated({});
+      // no wait here, the counter should not be updated yet.
+      expect(counter, 0);
+    });
+
+    test('specific table', () async {
+      var counter = 0;
+      db
+          .tableUpdates(TableUpdateQuery.onTable(db.users))
+          .listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 0);
+
+      db.markTablesUpdated({db.users});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.markTablesUpdated({db.categories});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+    });
+
+    test('specific table and update kind', () async {
+      var counter = 0;
+      db
+          .tableUpdates(TableUpdateQuery.onTable(db.users,
+              limitUpdateKind: UpdateKind.update))
+          .listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 0);
+
+      db.notifyUpdates(
+          {TableUpdate.onTable(db.users, kind: UpdateKind.update)});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.notifyUpdates(
+          {TableUpdate.onTable(db.users, kind: UpdateKind.delete)});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+    });
   });
 }

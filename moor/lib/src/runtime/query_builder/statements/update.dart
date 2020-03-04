@@ -36,8 +36,8 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     });
 
     if (rows > 0) {
-      database.notifyUpdates(
-          {TableUpdate.fromTable(table, kind: UpdateKind.update)});
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.update)});
     }
 
     return rows;

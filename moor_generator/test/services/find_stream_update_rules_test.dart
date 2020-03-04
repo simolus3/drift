@@ -42,7 +42,7 @@ class MyDatabase {}
           .having(
               (e) => e.on,
               'on',
-              const TableUpdateQuery.onTable('users',
+              const TableUpdateQuery.onTableName('users',
                   limitUpdateKind: UpdateKind.insert))
           .having((e) => e.result, 'result', {const TableUpdate('users')}),
     );

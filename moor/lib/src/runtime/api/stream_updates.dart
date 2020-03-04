@@ -93,7 +93,7 @@ class TableUpdate {
 
   /// Creates a [TableUpdate] instance based on a [TableInfo] instead of the raw
   /// name.
-  factory TableUpdate.fromTable(TableInfo table, {UpdateKind kind}) {
+  factory TableUpdate.onTable(TableInfo table, {UpdateKind kind}) {
     return TableUpdate(table.actualTableName, kind: kind);
   }
 
@@ -126,21 +126,32 @@ abstract class TableUpdateQuery {
   const factory TableUpdateQuery.allOf(List<TableUpdateQuery> queries) =
       MultipleUpdateQuery;
 
+  /// A query that listens for all updates on a specific [table] by its name.
+  ///
+  /// The optional [limitUpdateKind] parameter can be used to limit the updates
+  /// to a certain kind.
+  const factory TableUpdateQuery.onTableName(String table,
+      {UpdateKind limitUpdateKind}) = SpecificUpdateQuery;
+
   /// A query that listens for all updates on a specific [table].
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
-  const factory TableUpdateQuery.onTable(String table,
-      {UpdateKind limitUpdateKind}) = SpecificUpdateQuery;
+  factory TableUpdateQuery.onTable(TableInfo table,
+      {UpdateKind limitUpdateKind}) {
+    return TableUpdateQuery.onTableName(
+      table.actualTableName,
+      limitUpdateKind: limitUpdateKind,
+    );
+  }
 
   /// A query that listens for any change on any table in [tables].
   factory TableUpdateQuery.onAllTables(Iterable<TableInfo> tables) {
     // analyzer bug, remove when Dart 2.8 is stable
     // ignore: prefer_const_constructors
-    return TableUpdateQuery.allOf([
-      for (final table in tables)
-        TableUpdateQuery.onTable(table.actualTableName)
-    ]);
+    return TableUpdateQuery.allOf(
+      [for (final table in tables) TableUpdateQuery.onTable(table)],
+    );
   }
 
   /// Determines whether the [update] would be picked up by this query.
