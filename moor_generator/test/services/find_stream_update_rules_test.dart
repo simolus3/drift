@@ -44,7 +44,8 @@ class MyDatabase {}
               'on',
               const TableUpdateQuery.onTableName('users',
                   limitUpdateKind: UpdateKind.insert))
-          .having((e) => e.result, 'result', {const TableUpdate('users')}),
+          .having((e) => e.result, 'result',
+              {const TableUpdate('users', kind: UpdateKind.insert)}),
     );
   });
 }
