@@ -14,6 +14,7 @@ class MoorTrigger implements MoorSchemaEntity {
   ///
   /// This field can be null in case the table wasn't resolved.
   MoorTable on;
+  List<MoorTable> bodyUpdates = [];
   List<MoorTable> bodyReferences = [];
 
   String _create;
@@ -26,6 +27,12 @@ class MoorTrigger implements MoorSchemaEntity {
       MoorTriggerDeclaration.fromNodeAndFile(stmt, file),
       null, // must be resolved later
     );
+  }
+
+  void clearResolvedReferences() {
+    on = null;
+    bodyUpdates.clear();
+    bodyReferences.clear();
   }
 
   @override

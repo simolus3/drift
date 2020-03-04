@@ -1,4 +1,6 @@
+import 'package:moor/moor.dart';
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/services/find_stream_update_rules.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
@@ -103,7 +105,33 @@ class DatabaseWriter {
 
         return entityGetters[e];
       }).join(', '))
-      // close list literal, getter and finally the class
-      ..write('];\n}');
+      // close list literal and allSchemaEntities getter
+      ..write('];\n');
+
+    final updateRules = FindStreamUpdateRules(db).identifyRules();
+    if (updateRules.rules.isNotEmpty) {
+      schemaScope
+        ..write('@override\nStreamQueryUpdateRules get streamUpdateRules => ')
+        ..write('const StreamQueryUpdateRules([');
+
+      var isFirst = true;
+      for (final rule in updateRules.rules) {
+        if (!isFirst) {
+          schemaScope.write(', ');
+        }
+        isFirst = false;
+
+        if (rule is WritePropagation) {
+          final updateNames = rule.updates.map(asDartLiteral).join(', ');
+          schemaScope.write('WritePropagation('
+              '${asDartLiteral(rule.onTable)}, {$updateNames})');
+        }
+      }
+
+      schemaScope.write(']);');
+    }
+
+    // close the class
+    schemaScope.write('}');
   }
 }

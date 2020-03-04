@@ -1272,6 +1272,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         mytable,
         email
       ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+        WritePropagation('config', {'with_defaults'})
+      ]);
 }
 
 class TableValuedResult {

@@ -33,8 +33,7 @@ class EntityHandler extends BaseAnalyzer {
         entity.references.clear();
         _handleMoorDeclaration<MoorTableDeclaration>(entity, _tables);
       } else if (entity is MoorTrigger) {
-        entity.on = null;
-        entity.bodyReferences.clear();
+        entity.clearResolvedReferences();
 
         final node =
             _handleMoorDeclaration(entity, _triggers) as CreateTriggerStatement;
@@ -43,7 +42,9 @@ class EntityHandler extends BaseAnalyzer {
         _lint(node, entity.displayName);
 
         // find additional tables that might be referenced in the body
+
         entity.bodyReferences.addAll(_findTables(node.action));
+        entity.bodyUpdates.addAll(_findUpdatedTables(node.action));
       } else if (entity is MoorIndex) {
         entity.table = null;
 
@@ -70,6 +71,12 @@ class EntityHandler extends BaseAnalyzer {
     final tablesFinder = ReferencedTablesVisitor();
     node.acceptWithoutArg(tablesFinder);
     return tablesFinder.foundTables.map(mapper.tableToMoor);
+  }
+
+  Iterable<MoorTable> _findUpdatedTables(AstNode node) {
+    final finder = UpdatedTablesVisitor();
+    node.acceptWithoutArg(finder);
+    return finder.writtenTables.map(mapper.tableToMoor);
   }
 
   AstNode _handleMoorDeclaration<T extends MoorDeclaration>(
