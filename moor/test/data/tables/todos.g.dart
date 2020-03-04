@@ -1447,9 +1447,9 @@ class AllTodosWithCategoryResult {
 // **************************************************************************
 
 mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
-  $UsersTable get users => db.users;
-  $SharedTodosTable get sharedTodos => db.sharedTodos;
-  $TodosTableTable get todosTable => db.todosTable;
+  $UsersTable get users => attachedDatabase.users;
+  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $TodosTableTable get todosTable => attachedDatabase.todosTable;
   TodoEntry _rowToTodoEntry(QueryRow row) {
     return TodoEntry(
       id: row.readInt('id'),

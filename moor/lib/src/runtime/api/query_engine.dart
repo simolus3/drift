@@ -30,6 +30,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   @protected
   bool get topLevel => false;
 
+  /// The database that this query engine is attached to.
+  @visibleForOverriding
+  GeneratedDatabase get attachedDatabase;
+
   /// We can detect when a user called methods on the wrong [QueryEngine]
   /// (e.g. calling [QueryEngine.into] in a transaction, where
   /// [QueryEngine.into] should have been called instead). See the documentation
@@ -52,7 +56,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// We can then inform all active select-streams on those tables that their
   /// snapshot might be out-of-date and needs to be fetched again.
   void markTablesUpdated(Set<TableInfo> tables) {
-    _resolvedEngine.streamQueries.handleTableUpdates(tables);
+    final withRulesApplied = attachedDatabase.streamUpdateRules
+        .apply(tables.map((t) => t.actualTableName));
+
+    _resolvedEngine.streamQueries.handleTableUpdatesByName(withRulesApplied);
   }
 
   /// Starts an [InsertStatement] for a given table. You can use that statement

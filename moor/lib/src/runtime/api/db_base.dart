@@ -13,7 +13,10 @@ Map<Type, int> _openedDbCount = {};
 abstract class GeneratedDatabase extends DatabaseConnectionUser
     with QueryEngine {
   @override
-  final bool topLevel = true;
+  bool get topLevel => true;
+
+  @override
+  GeneratedDatabase get attachedDatabase => this;
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
@@ -27,6 +30,14 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   MigrationStrategy get migration => MigrationStrategy();
   MigrationStrategy _cachedMigration;
   MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
+
+  /// The collection of update rules contains information on how updates on
+  /// tables result in other updates, for instance due to a trigger.
+  ///
+  /// There should be no need to overwrite this field, moor will generate an
+  /// appropriate implementation automatically.
+  StreamQueryUpdateRules get streamUpdateRules =>
+      const StreamQueryUpdateRules.none();
 
   /// A list of tables specified in this database.
   Iterable<TableInfo> get allTables;

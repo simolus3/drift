@@ -9,6 +9,7 @@ part 'connection.dart';
 part 'db_base.dart';
 part 'dao_base.dart';
 part 'query_engine.dart';
+part 'stream_updates.dart';
 
 /// Defines additional runtime behavior for moor. Changing the fields of this
 /// class is rarely necessary.
