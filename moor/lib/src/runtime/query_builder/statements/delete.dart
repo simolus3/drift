@@ -32,7 +32,8 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
       final rows = await ctx.executor.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {
-        database.markTablesUpdated({table});
+        database.notifyUpdates(
+            {TableUpdate.fromTable(table, kind: UpdateKind.delete)});
       }
       return rows;
     });

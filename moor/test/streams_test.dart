@@ -230,13 +230,24 @@ void main() {
     });
   });
 
+  // note: There's a trigger on config inserts that updates with_defaults
   test('updates streams for updates caused by triggers', () async {
     final db = CustomTablesDb(executor);
     db.select(db.withDefaults).watch().listen((_) {});
 
-    db.markTablesUpdated({db.config});
+    db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.insert)});
     await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(2);
+  });
+
+  test('limits trigger propagation to the target type of trigger', () async {
+    final db = CustomTablesDb(executor);
+    db.select(db.withDefaults).watch().listen((_) {});
+
+    db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.delete)});
+    await pumpEventQueue(times: 1);
+
+    verify(executor.runSelect(any, any)).called(1);
   });
 }

@@ -17,6 +17,8 @@
 - Experimentally support IndexedDB to store sqlite data on the web
 - Moor will no longer wait for query stream listeners to receive a done event when closing a database
   or transaction.
+- Updated stream queries: They now take triggers into account and more accurately detect when an update
+  is necessary.
 
 ## 2.4.1
 

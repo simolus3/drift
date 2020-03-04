@@ -8,7 +8,7 @@ class MoorTrigger implements MoorSchemaEntity {
   final String displayName;
 
   @override
-  final TriggerDeclaration declaration;
+  final MoorTriggerDeclaration declaration;
 
   /// The table on which this trigger operates.
   ///

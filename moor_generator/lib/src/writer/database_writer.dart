@@ -116,16 +116,12 @@ class DatabaseWriter {
         ..write('@override\nStreamQueryUpdateRules get streamUpdateRules => ')
         ..write('const StreamQueryUpdateRules([');
 
-      var isFirst = true;
       for (final rule in updateRules.rules) {
-        if (!isFirst) {
-          schemaScope.write(', ');
-        }
-        isFirst = false;
         rule.writeConstructor(schemaScope);
+        schemaScope.write(', ');
       }
 
-      schemaScope.write(']);\n');
+      schemaScope.write('],);\n');
     }
 
     // close the class
@@ -145,21 +141,16 @@ extension on UpdateRule {
     if (this is WritePropagation) {
       final write = this as WritePropagation;
 
-      buffer.write('WritePropagation(');
+      buffer.write('WritePropagation(on: ');
       write.on.writeConstructor(buffer);
-      buffer.write(', {');
+      buffer.write(', result: [');
 
-      var isFirst = true;
       for (final update in write.result) {
-        if (!isFirst) {
-          buffer.write(', ');
-        }
-        isFirst = false;
-
         update.writeConstructor(buffer);
+        buffer.write(', ');
       }
 
-      buffer.write('})');
+      buffer.write('],)');
     }
   }
 }
@@ -181,18 +172,13 @@ extension on TableUpdateQuery {
           'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
     } else if (this is MultipleUpdateQuery) {
       final queries = (this as MultipleUpdateQuery).queries;
-      var isFirst = true;
 
-      buffer.write('TableUpdateQuery.allOf({');
+      buffer.write('TableUpdateQuery.allOf([');
       for (final query in queries) {
-        if (!isFirst) {
-          buffer.write(', ');
-        }
-        isFirst = false;
-
         query.writeConstructor(buffer);
+        buffer.write(', ');
       }
-      buffer.write('})');
+      buffer.write('])');
     }
   }
 }

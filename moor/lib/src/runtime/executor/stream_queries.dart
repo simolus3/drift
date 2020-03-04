@@ -275,7 +275,7 @@ class AnyUpdateQuery extends TableUpdateQuery {
 }
 
 class MultipleUpdateQuery extends TableUpdateQuery {
-  final Set<TableUpdateQuery> queries;
+  final List<TableUpdateQuery> queries;
 
   const MultipleUpdateQuery(this.queries);
 
@@ -296,5 +296,15 @@ class SpecificUpdateQuery extends TableUpdateQuery {
     return update.kind == null ||
         limitUpdateKind == null ||
         update.kind == limitUpdateKind;
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(limitUpdateKind.hashCode, table.hashCode));
+
+  @override
+  bool operator ==(dynamic other) {
+    return other is SpecificUpdateQuery &&
+        other.limitUpdateKind == limitUpdateKind &&
+        other.table == table;
   }
 }

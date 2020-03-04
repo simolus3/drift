@@ -57,10 +57,11 @@ class WritePropagation extends UpdateRule {
   final TableUpdateQuery on;
 
   /// All updates that will be performed by the trigger listening on [on].
-  final Set<TableUpdate> result;
+  final List<TableUpdate> result;
 
   /// Default constructor. See [WritePropagation] for details.
-  const WritePropagation(this.on, this.result) : super._();
+  const WritePropagation({@required this.on, @required this.result})
+      : super._();
 }
 
 /// Classifies a [TableUpdate] by what kind of write happened - an insert, an
@@ -90,12 +91,23 @@ class TableUpdate {
   /// Default constant constructor.
   const TableUpdate(this.table, {this.kind});
 
+  /// Creates a [TableUpdate] instance based on a [TableInfo] instead of the raw
+  /// name.
+  factory TableUpdate.fromTable(TableInfo table, {UpdateKind kind}) {
+    return TableUpdate(table.actualTableName, kind: kind);
+  }
+
   @override
   int get hashCode => $mrjf($mrjc(kind.hashCode, table.hashCode));
 
   @override
   bool operator ==(dynamic other) {
     return other is TableUpdate && other.kind == kind && other.table == table;
+  }
+
+  @override
+  String toString() {
+    return 'TableUpdate($table, kind: $kind)';
   }
 }
 
@@ -111,7 +123,7 @@ abstract class TableUpdateQuery {
   const factory TableUpdateQuery.any() = AnyUpdateQuery;
 
   /// A query that listens for all updates that match any query in [queries].
-  const factory TableUpdateQuery.allOf(Set<TableUpdateQuery> queries) =
+  const factory TableUpdateQuery.allOf(List<TableUpdateQuery> queries) =
       MultipleUpdateQuery;
 
   /// A query that listens for all updates on a specific [table].

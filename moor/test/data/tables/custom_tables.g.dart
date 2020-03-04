@@ -1273,11 +1273,17 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         email
       ];
   @override
-  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-        WritePropagation(
-            TableUpdateQuery.onTable('config', limitUpdateKind: null),
-            {TableUpdate('with_defaults', kind: null)})
-      ]);
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTable('config',
+                limitUpdateKind: UpdateKind.insert),
+            result: [
+              TableUpdate('with_defaults', kind: null),
+            ],
+          ),
+        ],
+      );
 }
 
 class TableValuedResult {
