@@ -67,6 +67,7 @@ class _SQLiteBindings {
   int Function(Pointer<Database> db) sqlite3_changes;
   int Function(Pointer<Database> db) sqlite3_last_insert_rowid;
 
+  int Function(Pointer<Database> db) sqlite3_extended_errcode;
   Pointer<CBlob> Function(int code) sqlite3_errstr;
   Pointer<CBlob> Function(Pointer<Database> database) sqlite3_errmsg;
 
@@ -138,6 +139,10 @@ class _SQLiteBindings {
         .asFunction();
     sqlite3_finalize = sqlite
         .lookup<NativeFunction<sqlite3_finalize_native_t>>('sqlite3_finalize')
+        .asFunction();
+    sqlite3_extended_errcode = sqlite
+        .lookup<NativeFunction<sqlite3_extended_errcode_native_t>>(
+            'sqlite3_extended_errcode')
         .asFunction();
     sqlite3_errstr = sqlite
         .lookup<NativeFunction<sqlite3_errstr_native_t>>('sqlite3_errstr')

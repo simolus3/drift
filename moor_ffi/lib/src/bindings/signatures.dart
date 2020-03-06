@@ -36,6 +36,9 @@ typedef sqlite3_reset_native_t = Int32 Function(Pointer<Statement> statement);
 typedef sqlite3_finalize_native_t = Int32 Function(
     Pointer<Statement> statement);
 
+typedef sqlite3_extended_errcode_native_t = Int32 Function(
+    Pointer<Database> database);
+
 typedef sqlite3_errstr_native_t = Pointer<CBlob> Function(Int32 error);
 
 typedef sqlite3_errmsg_native_t = Pointer<CBlob> Function(

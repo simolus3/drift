@@ -16,7 +16,12 @@ class SqliteException implements Exception {
 
     String explanation;
     if (code != null) {
-      explanation = bindings.sqlite3_errstr(code).readString();
+      // Getting hold of more explanatory error code as SQLITE_IOERR error group
+      // has an extensive list of extended error codes
+      final extendedCode = bindings.sqlite3_extended_errcode(db);
+      final errStr = bindings.sqlite3_errstr(extendedCode).readString();
+
+      explanation = '$errStr (code $extendedCode)';
     }
 
     return SqliteException(dbMessage, explanation);
