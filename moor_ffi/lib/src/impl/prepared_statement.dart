@@ -45,8 +45,13 @@ class PreparedStatement {
       names[i] = bindings.sqlite3_column_name(_stmt, i).readString();
     }
 
-    while (_step() == Errors.SQLITE_ROW) {
+    int resultCode;
+    while ((resultCode = _step()) == Errors.SQLITE_ROW) {
       rows.add([for (var i = 0; i < columnCount; i++) _readValue(i)]);
+    }
+
+    if (resultCode != Errors.SQLITE_OK && resultCode != Errors.SQLITE_DONE) {
+      throw SqliteException._fromErrorCode(_db._db, resultCode);
     }
 
     return Result(names, rows);
