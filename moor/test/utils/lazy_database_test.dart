@@ -52,8 +52,18 @@ void main() {
     final db = TodoDb(LazyDatabase(() => inner));
 
     // run a statement to make sure the database has been opened
-    await db.customSelectQuery('custom_select').get();
+    await db.customSelect('custom_select').get();
 
     verify(inner.databaseInfo = db);
+  });
+
+  test('returns the existing delegate if it was open', () async {
+    final inner = MockExecutor();
+    final lazy = LazyDatabase(() => inner);
+
+    await lazy.ensureOpen();
+    await lazy.ensureOpen();
+
+    verify(inner.ensureOpen());
   });
 }

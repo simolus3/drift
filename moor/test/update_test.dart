@@ -105,7 +105,8 @@ void main() {
             content: Value('Updated content'),
           ));
 
-      verify(streamQueries.handleTableUpdates({db.todosTable}));
+      verify(streamQueries.handleTableUpdates(
+          {TableUpdate.onTable(db.todosTable, kind: UpdateKind.update)}));
     });
 
     test('are not issued when no data was changed', () async {
@@ -147,7 +148,8 @@ void main() {
     test('informs about updated tables', () async {
       await db.customUpdate('', updates: {db.users, db.todosTable});
 
-      verify(streamQueries.handleTableUpdates({db.users, db.todosTable}));
+      verify(streamQueries.handleTableUpdates(
+          {const TableUpdate('users'), const TableUpdate('todos')}));
     });
   });
 }

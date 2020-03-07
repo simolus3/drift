@@ -12,7 +12,7 @@ import 'package:meta/meta.dart';
 import '../moor.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.
-extension JsonExtensions on Expression<String, StringType> {
+extension JsonExtensions on Expression<String> {
   /// Assuming that this string is a json array, returns the length of this json
   /// array.
   ///
@@ -28,7 +28,7 @@ extension JsonExtensions on Expression<String, StringType> {
   ///
   /// See also:
   ///  - the [sqlite documentation for this function](https://www.sqlite.org/json1.html#the_json_array_length_function)
-  Expression<int, IntType> jsonArrayLength([String path]) {
+  Expression<int> jsonArrayLength([String path]) {
     return FunctionCallExpression('json_array_length', [
       this,
       if (path != null) Variable.withString(path),
@@ -44,17 +44,14 @@ extension JsonExtensions on Expression<String, StringType> {
   /// Evaluating this expression will cause an error if [path] has an invalid
   /// format or `this` isn't well-formatted json.
   ///
-  /// Note that the [T] and [S] type parameters have to be set if this function
-  /// is used in [JoinedSelectStatement.addColumns] or compared via
-  /// [Expression.equals]. The [T] parameter denotes the mapped Dart type for
-  /// this expression, such as [String]. THe [S] parameter denotes the mapper
-  /// from moor that's responsible for mapping Dart objects to sqlite and vice
-  /// versa. If [T] was set to [String], the matching value for [S] would be
-  /// [StringType].
-  Expression<T, S> jsonExtract<T, S extends SqlType<T>>(String path) {
+  /// Note that the [T] type parameter has to be set if this function is used
+  /// in [JoinedSelectStatement.addColumns] or compared via [Expression.equals].
+  /// The [T] parameter denotes the mapped Dart type for this expression,
+  /// such as [String].
+  Expression<T> jsonExtract<T>(String path) {
     return FunctionCallExpression('json_extract', [
       this,
       Variable.withString(path),
-    ]).dartCast<T, S>();
+    ]).dartCast<T>();
   }
 }

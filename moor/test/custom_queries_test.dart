@@ -22,7 +22,7 @@ void main() {
   group('compiled custom queries', () {
     // defined query: SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1
     test('work with arrays', () async {
-      await db.withIn('one', 'two', [1, 2, 3]);
+      await db.withIn('one', 'two', [1, 2, 3]).get();
 
       verify(
         executor.runSelect(
@@ -49,7 +49,7 @@ void main() {
       ]);
     });
 
-    final rows = await db.customSelectQuery('').get();
+    final rows = await db.customSelect('').get();
     final row = rows.single;
 
     expect(row.readBool('bool'), isTrue);
@@ -64,7 +64,7 @@ void main() {
         variables: [Variable.withString('hi')], updates: {db.users});
 
     verify(executor.runUpdate('UPDATE tbl SET a = ?', ['hi']));
-    verify(streamQueries.handleTableUpdates({db.users}));
+    verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
   });
 
   test('custom insert', () async {

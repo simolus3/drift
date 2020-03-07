@@ -1,3 +1,7 @@
+## unreleased
+
+-Enable mathematical functions in sql (`pow`, `power`, `sin`, `cos`, `tan`, `asin`, `atan`, `acos`, `sqrt`)
+
 ## 0.4.0
 
 - Use precompiled libraries for faster build times

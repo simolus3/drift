@@ -209,7 +209,7 @@ const expected = r'''
                   "moor_type":"ColumnType.boolean",
                   "nullable":false,
                   "customConstraints":"NOT NULL DEFAULT FALSE",
-                  "default_dart":"const CustomExpression<bool, BoolType>('FALSE')",
+                  "default_dart":"const CustomExpression<bool>('FALSE')",
                   "default_client_dart":null,
                   "dsl_features":[
 

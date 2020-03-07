@@ -186,15 +186,14 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   Map<String, Variable> entityToSql(ConfigCompanion d) {
     final map = <String, Variable>{};
     if (d.configKey.present) {
-      map['config_key'] = Variable<String, StringType>(d.configKey.value);
+      map['config_key'] = Variable<String>(d.configKey.value);
     }
     if (d.configValue.present) {
-      map['config_value'] = Variable<String, StringType>(d.configValue.value);
+      map['config_value'] = Variable<String>(d.configValue.value);
     }
     if (d.syncState.present) {
       final converter = ConfigTable.$converter0;
-      map['sync_state'] =
-          Variable<int, IntType>(converter.mapToSql(d.syncState.value));
+      map['sync_state'] = Variable<int>(converter.mapToSql(d.syncState.value));
     }
     return map;
   }
@@ -303,8 +302,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   GeneratedTextColumn _constructA() {
     return GeneratedTextColumn('a', $tableName, true,
         $customConstraints: 'DEFAULT \'something\'',
-        defaultValue:
-            const CustomExpression<String, StringType>('\'something\''));
+        defaultValue: const CustomExpression<String>('\'something\''));
   }
 
   final VerificationMeta _bMeta = const VerificationMeta('b');
@@ -348,10 +346,10 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   Map<String, Variable> entityToSql(WithDefaultsCompanion d) {
     final map = <String, Variable>{};
     if (d.a.present) {
-      map['a'] = Variable<String, StringType>(d.a.value);
+      map['a'] = Variable<String>(d.a.value);
     }
     if (d.b.present) {
-      map['b'] = Variable<int, IntType>(d.b.value);
+      map['b'] = Variable<int>(d.b.value);
     }
     return map;
   }
@@ -482,7 +480,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   Map<String, Variable> entityToSql(NoIdsCompanion d) {
     final map = <String, Variable>{};
     if (d.payload.present) {
-      map['payload'] = Variable<Uint8List, BlobType>(d.payload.value);
+      map['payload'] = Variable<Uint8List>(d.payload.value);
     }
     return map;
   }
@@ -664,13 +662,13 @@ class WithConstraints extends Table
   Map<String, Variable> entityToSql(WithConstraintsCompanion d) {
     final map = <String, Variable>{};
     if (d.a.present) {
-      map['a'] = Variable<String, StringType>(d.a.value);
+      map['a'] = Variable<String>(d.a.value);
     }
     if (d.b.present) {
-      map['b'] = Variable<int, IntType>(d.b.value);
+      map['b'] = Variable<int>(d.b.value);
     }
     if (d.c.present) {
-      map['c'] = Variable<double, RealType>(d.c.value);
+      map['c'] = Variable<double>(d.c.value);
     }
     return map;
   }
@@ -896,16 +894,16 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   Map<String, Variable> entityToSql(MytableCompanion d) {
     final map = <String, Variable>{};
     if (d.someid.present) {
-      map['someid'] = Variable<int, IntType>(d.someid.value);
+      map['someid'] = Variable<int>(d.someid.value);
     }
     if (d.sometext.present) {
-      map['sometext'] = Variable<String, StringType>(d.sometext.value);
+      map['sometext'] = Variable<String>(d.sometext.value);
     }
     if (d.somebool.present) {
-      map['somebool'] = Variable<bool, BoolType>(d.somebool.value);
+      map['somebool'] = Variable<bool>(d.somebool.value);
     }
     if (d.somedate.present) {
-      map['somedate'] = Variable<DateTime, DateTimeType>(d.somedate.value);
+      map['somedate'] = Variable<DateTime>(d.somedate.value);
     }
     return map;
   }
@@ -1097,13 +1095,13 @@ class Email extends Table
   Map<String, Variable> entityToSql(EmailCompanion d) {
     final map = <String, Variable>{};
     if (d.sender.present) {
-      map['sender'] = Variable<String, StringType>(d.sender.value);
+      map['sender'] = Variable<String>(d.sender.value);
     }
     if (d.title.present) {
-      map['title'] = Variable<String, StringType>(d.title.value);
+      map['title'] = Variable<String>(d.title.value);
     }
     if (d.body.present) {
-      map['body'] = Variable<String, StringType>(d.body.value);
+      map['body'] = Variable<String>(d.body.value);
     }
     return map;
   }
@@ -1151,7 +1149,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readConfig(String var1) {
-    return customSelectQuery('SELECT * FROM config WHERE config_key = ?',
+    return customSelect('SELECT * FROM config WHERE config_key = ?',
         variables: [Variable.withString(var1)],
         readsFrom: {config}).map(_rowToConfig);
   }
@@ -1162,7 +1160,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += var1.length;
     final generatedclause = $write(clause);
     $arrayStartIndex += generatedclause.amountOfVariables;
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable.withString($),
@@ -1173,10 +1171,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(_rowToConfig);
   }
 
-  Selectable<Config> readDynamic(Expression<bool, BoolType> predicate) {
+  Selectable<Config> readDynamic(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate);
-    return customSelectQuery(
-        'SELECT * FROM config WHERE ${generatedpredicate.sql}',
+    return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {config}).map(_rowToConfig);
   }
@@ -1189,7 +1186,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<TableValuedResult> tableValued() {
-    return customSelectQuery(
+    return customSelect(
         'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {config}).map(_rowToTableValuedResult);
@@ -1205,9 +1202,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<MultipleResult> multiple(Expression<bool, BoolType> predicate) {
+  Selectable<MultipleResult> multiple(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
@@ -1222,7 +1219,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<EMail> searchEmails(String term) {
-    return customSelectQuery(
+    return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable.withString(term)],
         readsFrom: {email}).map(_rowToEMail);
@@ -1237,16 +1234,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<ReadRowIdResult> readRowId(Expression<int, IntType> expr) {
+  Selectable<ReadRowIdResult> readRowId(Expression<int> expr) {
     final generatedexpr = $write(expr);
-    return customSelectQuery(
+    return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [...generatedexpr.introducedVariables],
         readsFrom: {config}).map(_rowToReadRowIdResult);
   }
 
   Selectable<int> cfeTest() {
-    return customSelectQuery(
+    return customSelect(
         'WITH RECURSIVE\n  cnt(x) AS (\n    SELECT 1\n      UNION ALL\n      SELECT x+1 FROM cnt\n      LIMIT 1000000\n    )\n  SELECT x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.readInt('x'));
@@ -1275,6 +1272,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         mytable,
         email
       ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('config',
+                limitUpdateKind: UpdateKind.insert),
+            result: [
+              TableUpdate('with_defaults', kind: UpdateKind.insert),
+            ],
+          ),
+        ],
+      );
 }
 
 class TableValuedResult {

@@ -30,6 +30,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   @protected
   bool get topLevel => false;
 
+  /// The database that this query engine is attached to.
+  @visibleForOverriding
+  GeneratedDatabase get attachedDatabase;
+
   /// We can detect when a user called methods on the wrong [QueryEngine]
   /// (e.g. calling [QueryEngine.into] in a transaction, where
   /// [QueryEngine.into] should have been called instead). See the documentation
@@ -52,7 +56,37 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// We can then inform all active select-streams on those tables that their
   /// snapshot might be out-of-date and needs to be fetched again.
   void markTablesUpdated(Set<TableInfo> tables) {
-    _resolvedEngine.streamQueries.handleTableUpdates(tables);
+    notifyUpdates(
+      {for (final table in tables) TableUpdate(table.actualTableName)},
+    );
+  }
+
+  /// Dispatches the set of [updates] to the stream query manager.
+  ///
+  /// Internally, moor will call this method whenever a update, delete or insert
+  /// statement is issued on the database. We can then inform all active select-
+  /// streams affected that their snapshot might be out-of-date and needs to be
+  /// fetched again.
+  void notifyUpdates(Set<TableUpdate> updates) {
+    final withRulesApplied = attachedDatabase.streamUpdateRules.apply(updates);
+    _resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
+  }
+
+  /// Creates a stream that emits `null` each time a table that would affect
+  /// [query] is changed.
+  ///
+  /// When called inside a transaction, the stream will close when the
+  /// transaction completes or is rolled back. Otherwise, the stream will
+  /// complete as the database is closed.
+  Stream<Null> tableUpdates(
+      [TableUpdateQuery query = const TableUpdateQuery.any()]) {
+    return _resolvedEngine.streamQueries
+        .updatesForSync(query)
+        .asyncMap((event) async {
+      // streamQueries.updatesForSync is a synchronous stream - make it
+      // asynchronous by awaiting null for each event.
+      return await null;
+    });
   }
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
@@ -159,14 +193,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// rows that have been changed.
   /// You can use the [updates] parameter so that moor knows which tables are
   /// affected by your query. All select streams that depend on a table
-  /// specified there will then issue another query.
+  /// specified there will then update their data. For more accurate results,
+  /// you can also set the [updateKind] parameter to [UpdateKind.delete] or
+  /// [UpdateKind.update]. This is optional, but can improve the accuracy of
+  /// query updates, especially when using triggers.
   @protected
   @visibleForTesting
-  Future<int> customUpdate(String query,
-      {List<Variable> variables = const [], Set<TableInfo> updates}) async {
-    return _customWrite(query, variables, updates, (executor, sql, vars) {
-      return executor.runUpdate(sql, vars);
-    });
+  Future<int> customUpdate(
+    String query, {
+    List<Variable> variables = const [],
+    Set<TableInfo> updates,
+    UpdateKind updateKind,
+  }) async {
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      updateKind,
+      (executor, sql, vars) {
+        return executor.runUpdate(sql, vars);
+      },
+    );
   }
 
   /// Executes a custom insert statement and returns the last inserted rowid.
@@ -178,16 +225,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   @visibleForTesting
   Future<int> customInsert(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) {
-    return _customWrite(query, variables, updates, (executor, sql, vars) {
-      return executor.runInsert(sql, vars);
-    });
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      UpdateKind.insert,
+      (executor, sql, vars) {
+        return executor.runInsert(sql, vars);
+      },
+    );
   }
 
   /// Common logic for [customUpdate] and [customInsert] which takes care of
   /// mapping the variables, running the query and optionally informing the
   /// stream-queries.
-  Future<T> _customWrite<T>(String query, List<Variable> variables,
-      Set<TableInfo> updates, _CustomWriter<T> writer) async {
+  Future<T> _customWrite<T>(
+    String query,
+    List<Variable> variables,
+    Set<TableInfo> updates,
+    UpdateKind updateKind,
+    _CustomWriter<T> writer,
+  ) async {
     final engine = _resolvedEngine;
     final executor = engine.executor;
 
@@ -198,35 +256,13 @@ mixin QueryEngine on DatabaseConnectionUser {
         await executor.doWhenOpened((e) => writer(e, query, mappedArgs));
 
     if (updates != null) {
-      await engine.streamQueries.handleTableUpdates(updates);
+      engine.notifyUpdates({
+        for (final table in updates)
+          TableUpdate(table.actualTableName, kind: updateKind),
+      });
     }
 
     return result;
-  }
-
-  /// Executes a custom select statement once. To use the variables, mark them
-  /// with a "?" in your [query]. They will then be changed to the appropriate
-  /// value.
-  @protected
-  @visibleForTesting
-  @Deprecated('use customSelectQuery(...).get() instead')
-  Future<List<QueryRow>> customSelect(String query,
-      {List<Variable> variables = const []}) async {
-    return customSelectQuery(query, variables: variables).get();
-  }
-
-  /// Creates a stream from a custom select statement.To use the variables, mark
-  /// them with a "?" in your [query]. They will then be changed to the
-  /// appropriate value. The stream will re-emit items when any table in
-  /// [readsFrom] changes, so be sure to set it to the set of tables your query
-  /// reads data from.
-  @protected
-  @visibleForTesting
-  @Deprecated('use customSelectQuery(...).watch() instead')
-  Stream<List<QueryRow>> customSelectStream(String query,
-      {List<Variable> variables = const [], Set<TableInfo> readsFrom}) {
-    return customSelectQuery(query, variables: variables, readsFrom: readsFrom)
-        .watch();
   }
 
   /// Creates a custom select statement from the given sql [query]. To run the
@@ -240,11 +276,27 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// bound to the [variables] you specify on this query.
   @protected
   @visibleForTesting
-  Selectable<QueryRow> customSelectQuery(String query,
+  Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<TableInfo> readsFrom = const {}}) {
     readsFrom ??= {};
     return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
+  }
+
+  /// Creates a custom select statement from the given sql [query]. To run the
+  /// query once, use [Selectable.get]. For an auto-updating streams, set the
+  /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
+  /// know the query will never emit more than one row, you can also use
+  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
+  /// directly or wrapping it into a list.
+  ///
+  /// If you use variables in your query (for instance with "?"), they will be
+  /// bound to the [variables] you specify on this query.
+  @Deprecated('Renamed to customSelect')
+  Selectable<QueryRow> customSelectQuery(String query,
+      {List<Variable> variables = const [],
+      Set<TableInfo> readsFrom = const {}}) {
+    return customSelect(query, variables: variables, readsFrom: readsFrom);
   }
 
   /// Executes the custom sql [statement] on the database.

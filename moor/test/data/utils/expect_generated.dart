@@ -41,7 +41,8 @@ class _GeneratesSqlMatcher extends Matcher {
     if (matchState.containsKey('vars')) {
       final vars = matchState['vars'] as List;
 
-      mismatchDescription = mismatchDescription.add('generated $vars, which ');
+      mismatchDescription =
+          mismatchDescription.add('used variables $vars, which ');
       mismatchDescription = _matchVariables.describeMismatch(
           vars, mismatchDescription, matchState, verbose);
     }

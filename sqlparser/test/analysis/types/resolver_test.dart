@@ -36,6 +36,7 @@ Map<String, ResolveResult> _types = {
   'SELECT (3 / 4) = ?': const ResolveResult(ResolvedType(type: BasicType.int)),
   'SELECT CURRENT_TIME  = ?':
       const ResolveResult(ResolvedType(type: BasicType.text)),
+  "SELECT ? || 'foo'": const ResolveResult(ResolvedType(type: BasicType.text)),
 };
 
 void main() {

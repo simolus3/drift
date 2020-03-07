@@ -7,6 +7,7 @@ library moor_web;
 
 import 'dart:async';
 import 'dart:html';
+import 'dart:indexed_db';
 
 import 'package:meta/meta.dart';
 
@@ -15,6 +16,5 @@ import 'moor.dart';
 import 'src/web/binary_string_conversion.dart';
 import 'src/web/sql_js.dart';
 
-export 'moor.dart';
-
+part 'src/web/storage.dart';
 part 'src/web/web_db.dart';

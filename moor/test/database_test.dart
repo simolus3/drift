@@ -18,7 +18,7 @@ class _FakeDb extends GeneratedDatabase {
       },
       beforeOpen: (details) async {
         // this fake select query is verified via mocks
-        await customSelectQuery(
+        await customSelect(
                 'opened: ${details.versionBefore} to ${details.versionNow}')
             .get();
       },
@@ -74,7 +74,7 @@ void main() {
     final executor = MockExecutor();
     final db = TodoDb(executor);
 
-    await db.someDao.todosForUser(1);
+    await db.someDao.todosForUser(1).get();
 
     verify(executor.runSelect(argThat(contains('SELECT t.* FROM todos')), [1]));
   });

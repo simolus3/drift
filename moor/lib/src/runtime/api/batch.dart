@@ -60,7 +60,7 @@ class Batch {
   /// [UpdateStatement.write] or the [documentation with examples](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   void update<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row,
-      {Expression<bool, BoolType> Function(T table) where}) {
+      {Expression<bool> Function(T table) where}) {
     _affectedTables.add(table);
     final stmt = UpdateStatement(_engine, table);
     if (where != null) stmt.where(where);
@@ -109,8 +109,8 @@ class Batch {
   ///
   /// See also:
   ///  - [QueryEngine.delete]
-  void deleteWhere<T extends Table, D extends DataClass>(TableInfo<T, D> table,
-      Expression<bool, BoolType> Function(T tbl) filter) {
+  void deleteWhere<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, Expression<bool> Function(T tbl) filter) {
     final stmt = DeleteStatement(_engine, table)..where(filter);
     _addContext(stmt.constructQuery());
   }

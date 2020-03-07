@@ -56,12 +56,8 @@ class MoorDartParser {
     return (method.body as ExpressionFunctionBody).expression;
   }
 
-  Future<ElementDeclarationResult> loadElementDeclaration(
-      Element element) async {
-    final resolvedLibrary = await element.library.session
-        .getResolvedLibraryByElement(element.library);
-
-    return resolvedLibrary.getElementDeclaration(element);
+  Future<ElementDeclarationResult> loadElementDeclaration(Element element) {
+    return step.task.backend.loadElementDeclaration(element);
   }
 
   String readStringLiteral(Expression expression, void Function() onError) {

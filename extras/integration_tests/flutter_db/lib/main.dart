@@ -35,9 +35,19 @@ Future<void> main() async {
 
   // Additional integration test for flutter: Test loading a database from asset
   test('can load a database from asset', () async {
+    const dbNameInDevice = 'app_from_asset.db';
+
+    final folder = await getDatabasesPath();
+    final file = File(join(folder, dbNameInDevice));
+
+    if (await file.exists()) {
+      await file.delete();
+    }
+
+
     var didCallCreator = false;
     final executor = FlutterQueryExecutor.inDatabaseFolder(
-      path: 'app_from_asset.db',
+      path: dbNameInDevice,
       singleInstance: true,
       creator: (file) async {
         final content = await rootBundle.load('test_asset.db');
@@ -46,7 +56,7 @@ Future<void> main() async {
       },
     );
     final database = Database(executor);
-    await database.getUserById(0); // load user so that the db is opened
+    await database.executor.ensureOpen();
 
     expect(didCallCreator, isTrue);
   });

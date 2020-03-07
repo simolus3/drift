@@ -54,7 +54,7 @@ class QueryHandler {
   UpdatingQuery _handleUpdate() {
     final updatedFinder = UpdatedTablesVisitor();
     context.root.acceptWithoutArg(updatedFinder);
-    _foundTables = updatedFinder.writtenTables;
+    _foundTables = updatedFinder.writtenTables.map((w) => w.table).toSet();
 
     final isInsert = context.root is InsertStatement;
 
@@ -62,7 +62,7 @@ class QueryHandler {
       name,
       context,
       _foundElements,
-      _foundTables.map(mapper.tableToMoor).toList(),
+      updatedFinder.writtenTables.map(mapper.writtenToMoor).toList(),
       isInsert: isInsert,
       hasMultipleTables: updatedFinder.foundTables.length > 1,
     );

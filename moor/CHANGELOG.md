@@ -1,3 +1,27 @@
+## 3.0.0-dev
+
+- __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`.
+- __Breaking__: Remove deprecated members:
+  - top-level `and`, `or` and `not` methods. Use the `&`, `|` and `.not()` instead.
+  - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
+    Use the extension member on `Expression<DateTime>` instead.
+  - `InsertStatement.insertAll` (use batches instead)
+  - the `orReplace` boolean parameter on inserts (use `mode: InsertMode.orReplace` instead)
+  - remove the top-level `isIn` and `isNotIn` functions
+    (use the `.isIn` and `.isNotIn` instance methods instead)
+  - `CustomSelectStatement.execute` and `constructFetcher` - use `get()` or `watch()`,
+    respectively
+- __Breaking__: Remove the second type variable on `Expression` and subclasses.
+- __Breaking__: Remove `customSelectStream` from `QueryEngine`. The `customSelect`
+  method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
+- Experimentally support IndexedDB to store sqlite data on the web
+- Moor will no longer wait for query stream listeners to receive a done event when closing a database
+  or transaction.
+- Updated stream queries: They now take triggers into account and more accurately detect when an update
+  is necessary.
+- New `tableUpdates` method that can be used to listen for a subset of table updates outside of
+  a query.
+
 ## 2.4.1
 
 - Don't generate double quoted string literals in date time functions

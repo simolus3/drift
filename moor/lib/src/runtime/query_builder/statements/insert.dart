@@ -30,61 +30,16 @@ class InsertStatement<D extends DataClass> {
   /// fails.
   Future<int> insert(
     Insertable<D> entity, {
-    @Deprecated('Use mode: InsertMode.replace instead') bool orReplace = false,
     InsertMode mode,
   }) async {
-    assert(
-      mode == null || (orReplace != true),
-      'If the mode parameter is set on insertAll, orReplace must be null or '
-      'false',
-    );
-    final ctx = createContext(entity, _resolveMode(mode, orReplace));
+    final ctx = createContext(entity, mode ?? InsertMode.insert);
 
     return await database.executor.doWhenOpened((e) async {
       final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
-      database.markTablesUpdated({table});
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
       return id;
     });
-  }
-
-  /// Inserts all [rows] into the table.
-  ///
-  /// All fields in a row that don't have a default value or auto-increment
-  /// must be set and non-null. Otherwise, an [InvalidDataException] will be
-  /// thrown.
-  /// By default, an exception will be thrown if another row with the same
-  /// primary key already exists. This behavior can be overridden with [mode],
-  /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
-  @Deprecated('Call batch() on a generated database, then use Batch.insertAll')
-  Future<void> insertAll(
-    List<Insertable<D>> rows, {
-    @Deprecated('Use mode: InsertMode.replace instead') bool orReplace = false,
-    InsertMode mode,
-  }) async {
-    assert(
-      mode == null || (orReplace != true),
-      'If the mode parameter is set on insertAll, orReplace must be null or '
-      'false',
-    );
-    final statements = <String, List<GenerationContext>>{};
-
-    // Not every insert has the same sql, as fields which are set to null are
-    // not included. So, we have a map for sql -> list of variables which we can
-    // then turn into prepared statements
-    for (final row in rows) {
-      final ctx = createContext(row, _resolveMode(mode, orReplace));
-      statements.putIfAbsent(ctx.sql, () => []).add(ctx);
-    }
-
-    final batchedStatements = statements.entries.map((e) {
-      final vars = e.value.map((context) => context.boundVariables).toList();
-      return BatchedStatement(e.key, vars);
-    }).toList(growable: false);
-
-    await database.executor.doWhenOpened((e) async {
-      await e.runBatched(batchedStatements);
-    });
-    database.markTablesUpdated({table});
   }
 
   /// Creates a [GenerationContext] which contains the sql necessary to run an
@@ -145,11 +100,6 @@ class InsertStatement<D extends DataClass> {
     }
 
     return ctx;
-  }
-
-  InsertMode _resolveMode(InsertMode mode, bool orReplace) {
-    return mode ??
-        (orReplace == true ? InsertMode.insertOrReplace : InsertMode.insert);
   }
 
   void _validateIntegrity(Insertable<D> d) {

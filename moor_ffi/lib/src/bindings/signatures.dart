@@ -90,3 +90,44 @@ typedef sqlite3_bind_blob_native = Int32 Function(
     Pointer<Void> callback);
 typedef sqlite3_bind_null_native = Int32 Function(
     Pointer<Statement> statement, Int32 columnIndex);
+
+typedef sqlite3_function_handler = Void Function(
+    Pointer<FunctionContext> context,
+    Int32 argCount,
+    Pointer<Pointer<SqliteValue>> args);
+
+typedef sqlite3_function_finalizer = Void Function(
+    Pointer<FunctionContext> context);
+
+typedef sqlite3_finalizer = Void Function(Pointer<Void> ptr);
+
+typedef sqlite3_create_function_v2_native = Int32 Function(
+  Pointer<Database> db,
+  Pointer<Uint8> zFunctionName,
+  Int32 nArg,
+  Int32 eTextRep,
+  Pointer<Void> pApp,
+  Pointer<NativeFunction<sqlite3_function_handler>> xFunc,
+  Pointer<NativeFunction<sqlite3_function_handler>> xStep,
+  Pointer<NativeFunction<sqlite3_function_finalizer>> xDestroy,
+  Pointer<NativeFunction<sqlite3_finalizer>> finalizePApp,
+);
+
+typedef sqlite3_value_blob_native = Pointer<CBlob> Function(
+    Pointer<SqliteValue> value);
+typedef sqlite3_value_double_native = Double Function(
+    Pointer<SqliteValue> value);
+typedef sqlite3_value_int64_native = Int64 Function(Pointer<SqliteValue> value);
+typedef sqlite3_value_text_native = Pointer<CBlob> Function(
+    Pointer<SqliteValue> value);
+typedef sqlite3_value_bytes_native = Int32 Function(Pointer<SqliteValue> value);
+typedef sqlite3_value_type_native = Int32 Function(Pointer<SqliteValue> value);
+
+typedef sqlite3_result_null_native = Void Function(
+    Pointer<FunctionContext> context);
+typedef sqlite3_result_double_native = Void Function(
+    Pointer<FunctionContext> context, Double value);
+typedef sqlite3_result_int64_native = Void Function(
+    Pointer<FunctionContext> context, Int64 value);
+typedef sqlite3_result_error_native = Void Function(
+    Pointer<FunctionContext> context, Pointer<CBlob> char, Int32 len);

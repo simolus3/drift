@@ -49,7 +49,7 @@ void main() {
 
     final transaction = db.transaction(() async {
       stream = db
-          .customSelectQuery(
+          .customSelect(
             'SELECT _mocked_',
             readsFrom: {db.users},
           )
@@ -155,7 +155,10 @@ void main() {
     });
 
     // After the transaction completes, the queries should be updated
-    verify(streamQueries.handleTableUpdatesByName({'users'})).called(1);
+    verify(
+      streamQueries.handleTableUpdates(
+          {TableUpdate.onTable(db.users, kind: UpdateKind.update)}),
+    ).called(1);
     verify(executor.transactions.send());
   });
 

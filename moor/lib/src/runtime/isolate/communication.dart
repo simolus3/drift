@@ -138,7 +138,7 @@ class IsolateCommunication {
     // sending a message while closed with throw, so don't even try.
     if (isClosed) return;
 
-    _send(_ErrorResponse(request.id, error, trace.toString()));
+    _send(_ErrorResponse(request.id, error.toString(), trace.toString()));
   }
 
   /// Utility that listens to [incomingRequests] and invokes the [handler] on
@@ -151,7 +151,12 @@ class IsolateCommunication {
         final result = handler(request);
 
         if (result is Future) {
-          result.then((value) => respond(request, value));
+          result.then(
+            (value) => respond(request, value),
+            onError: (e, StackTrace s) {
+              respondError(request, e, s);
+            },
+          );
         } else {
           respond(request, result);
         }

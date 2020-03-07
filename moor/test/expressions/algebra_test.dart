@@ -25,4 +25,8 @@ void main() {
   test('string concatenation', () {
     expect(s1 + s2, generates('s1 || s2'));
   });
+
+  test('absolute values', () {
+    expect(i2.abs(), generates('abs(i2)'));
+  });
 }

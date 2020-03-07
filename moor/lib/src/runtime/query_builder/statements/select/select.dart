@@ -106,7 +106,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   Stream<List<D>> watch() {
     final query = constructQuery();
     final fetcher = QueryStreamFetcher<List<D>>(
-      readsFrom: watchedTables,
+      readsFrom: TableUpdateQuery.onAllTables(watchedTables),
       fetchData: () => _getWithQuery(query),
       key: StreamKey(query.sql, query.boundVariables, D),
     );
@@ -140,7 +140,7 @@ class TypedResult {
   /// as a column, for instance via [JoinedSelectStatement.addColumns].
   ///
   /// To access the underlying columns directly, use
-  D read<D, T extends SqlType<D>>(Expression<D, T> expr) {
+  D read<D, T extends SqlType<D>>(Expression<D> expr) {
     if (_parsedExpressions != null) {
       return _parsedExpressions[expr] as D;
     }

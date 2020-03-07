@@ -20,6 +20,12 @@ DatabaseConnection _forBackgroundIsolate() {
 }
 
 void main() {
+  setUp(() async {
+    if (await _file.exists()) {
+      await _file.delete();
+    }
+  });
+
   test('can use a multi-executor setup', () async {
     final isolate = await MoorIsolate.spawn(_forBackgroundIsolate);
 

@@ -17,8 +17,12 @@ class TestBackend extends Backend {
   /// input files have been parsed and analyzed by the Dart analyzer.
   Future get _ready => _initCompleter.future;
 
-  TestBackend(this.fakeContent) {
-    _init();
+  TestBackend(this.fakeContent, {bool enableDartAnalyzer = true}) {
+    if (enableDartAnalyzer) {
+      _init();
+    } else {
+      _initCompleter.complete();
+    }
   }
 
   void _init() {

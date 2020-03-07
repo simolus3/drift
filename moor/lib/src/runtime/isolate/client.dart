@@ -52,8 +52,7 @@ class _MoorClient {
       return connectedDb.beforeOpenCallback(
           _connection.executor, payload.details);
     } else if (payload is _NotifyTablesUpdated) {
-      _streamStore.handleTableUpdatesByName(
-          payload.updatedTables.toSet(), true);
+      _streamStore.handleTableUpdates(payload.updates.toSet(), true);
     }
   }
 }
@@ -108,10 +107,15 @@ abstract class _BaseExecutor extends QueryExecutor {
 class _IsolateQueryExecutor extends _BaseExecutor {
   _IsolateQueryExecutor(_MoorClient client) : super(client);
 
+  Completer<void> _setSchemaVersion;
+
   @override
   set databaseInfo(GeneratedDatabase db) {
     super.databaseInfo = db;
-    client._channel.request(_SetSchemaVersion(db.schemaVersion));
+
+    _setSchemaVersion = Completer();
+    _setSchemaVersion
+        .complete(client._channel.request(_SetSchemaVersion(db.schemaVersion)));
   }
 
   @override
@@ -120,7 +124,11 @@ class _IsolateQueryExecutor extends _BaseExecutor {
   }
 
   @override
-  Future<bool> ensureOpen() {
+  Future<bool> ensureOpen() async {
+    if (_setSchemaVersion != null) {
+      await _setSchemaVersion.future;
+      _setSchemaVersion = null;
+    }
     return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
   }
 
@@ -185,18 +193,18 @@ class _IsolateStreamQueryStore extends StreamQueryStore {
   _IsolateStreamQueryStore(this.client);
 
   @override
-  void handleTableUpdatesByName(Set<String> updatedTableNames,
+  void handleTableUpdates(Set<TableUpdate> updates,
       [bool comesFromServer = false]) {
     if (comesFromServer) {
-      super.handleTableUpdatesByName(updatedTableNames);
+      super.handleTableUpdates(updates);
     } else {
       // requests are async, but the function is synchronous. We await that
       // future in close()
       final completer = Completer<void>();
       _awaitingUpdates.add(completer);
 
-      completer.complete(client._channel
-          .request(_NotifyTablesUpdated(updatedTableNames.toList())));
+      completer.complete(
+          client._channel.request(_NotifyTablesUpdated(updates.toList())));
 
       completer.future.catchError((_) {
         // we don't care about errors if the connection is closed before the

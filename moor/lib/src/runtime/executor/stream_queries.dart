@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/utils/start_with_value_transformer.dart';
+import 'package:pedantic/pedantic.dart';
 
 const _listEquality = ListEquality<dynamic>();
 
@@ -14,9 +15,10 @@ const _listEquality = ListEquality<dynamic>();
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
 class QueryStreamFetcher<T> {
-  /// The set of tables this query reads from. If any of these tables changes,
-  /// the stream must fetch its data again.
-  final Set<TableInfo> readsFrom;
+  /// Table updates that will affect this stream.
+  ///
+  /// If any of these tables changes, the stream must fetch its data again.
+  final TableUpdateQuery readsFrom;
 
   /// Key that can be used to check whether two fetchers will yield the same
   /// result when operating on the same data.
@@ -77,7 +79,7 @@ class StreamQueryStore {
   // their cached data before the user can send another query.
   // There shouldn't be a problem as this stream is not exposed in any user-
   // facing api.
-  final StreamController<Set<String>> _updatedTableNames =
+  final StreamController<Set<TableUpdate>> _tableUpdates =
       StreamController.broadcast(sync: true);
 
   StreamQueryStore();
@@ -105,18 +107,17 @@ class StreamQueryStore {
     return stream.stream;
   }
 
-  /// Handles updates on a given table by re-executing all queries that read
-  /// from that table.
-  Future<void> handleTableUpdates(Set<TableInfo> tables) async {
-    handleTableUpdatesByName(tables.map((t) => t.actualTableName).toSet());
+  Stream<Null> updatesForSync(TableUpdateQuery query) {
+    return _tableUpdates.stream
+        .where((e) => e.any(query.matches))
+        .map((_) => null);
   }
 
-  /// Handles updates on tables by their name. All queries reading from any of
-  /// the tables in [updatedTableNames] will fetch their data again.
-  void handleTableUpdatesByName(Set<String> updatedTableNames) {
+  /// Handles updates on a given table by re-executing all queries that read
+  /// from that table.
+  void handleTableUpdates(Set<TableUpdate> updates) {
     if (_isShuttingDown) return;
-
-    _updatedTableNames.add(updatedTableNames);
+    _tableUpdates.add(updates);
   }
 
   void markAsClosed(QueryStream stream, Function() whenRemoved) {
@@ -161,9 +162,16 @@ class StreamQueryStore {
     _isShuttingDown = true;
 
     for (final stream in _activeKeyStreams.values) {
-      await stream._controller.close();
+      // Note: StreamController.close waits until the done event has been
+      // received by a subscriber. If there is a paused StreamSubscription on
+      // a query stream, this would pause forever. In particular, this is
+      // causing deadlocks in tests.
+      // https://github.com/dart-lang/test/issues/1183#issuecomment-588357154
+      unawaited(stream._controller.close());
     }
-    await _updatedTableNames.close();
+    // awaiting this is fine - the stream is never exposed to users and we don't
+    // pause any subscriptions on it.
+    await _tableUpdates.close();
 
     while (_pendingTimers.isNotEmpty) {
       await _pendingTimers.first.future;
@@ -210,10 +218,8 @@ class QueryStream<T> {
       // first listener added, fetch query
       fetchAndEmitData();
 
-      final names = _fetcher.readsFrom.map((t) => t.actualTableName).toSet();
-      _tablesChangedSubscription = _store._updatedTableNames.stream
-          .where((changed) => changed.any(names.contains))
-          .listen((_) {
+      _tablesChangedSubscription =
+          _store.updatesForSync(_fetcher.readsFrom).listen((_) {
         // table has changed, invalidate cache
         _lastData = null;
         fetchAndEmitData();
@@ -251,7 +257,52 @@ class QueryStream<T> {
     }
   }
 
-  Future<void> close() {
-    return _controller.close();
+  void close() {
+    _controller.close();
+  }
+}
+
+// Note: These classes are here because we want them to be public, but not
+// exposed without an src import.
+
+class AnyUpdateQuery extends TableUpdateQuery {
+  const AnyUpdateQuery();
+
+  @override
+  bool matches(TableUpdate update) => true;
+}
+
+class MultipleUpdateQuery extends TableUpdateQuery {
+  final List<TableUpdateQuery> queries;
+
+  const MultipleUpdateQuery(this.queries);
+
+  @override
+  bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
+}
+
+class SpecificUpdateQuery extends TableUpdateQuery {
+  final UpdateKind limitUpdateKind;
+  final String table;
+
+  const SpecificUpdateQuery(this.table, {this.limitUpdateKind});
+
+  @override
+  bool matches(TableUpdate update) {
+    if (update.table != table) return false;
+
+    return update.kind == null ||
+        limitUpdateKind == null ||
+        update.kind == limitUpdateKind;
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(limitUpdateKind.hashCode, table.hashCode));
+
+  @override
+  bool operator ==(dynamic other) {
+    return other is SpecificUpdateQuery &&
+        other.limitUpdateKind == limitUpdateKind &&
+        other.table == table;
   }
 }

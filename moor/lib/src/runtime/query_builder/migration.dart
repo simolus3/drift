@@ -3,13 +3,11 @@ part of 'query_builder.dart';
 /// Signature of a function that will be invoked when a database is created.
 typedef OnCreate = Future<void> Function(Migrator m);
 
-/// Signature of a function that will be invoked when a database is upgraded.
+/// Signature of a function that will be invoked when a database is upgraded
+/// or downgraded.
+/// In version upgrades: from < to
+/// In version downgrades: from > to
 typedef OnUpgrade = Future<void> Function(Migrator m, int from, int to);
-
-/// Signature of a function that's called after a migration has finished and the
-/// database is ready to be used. Useful to populate data.
-@Deprecated('This is never used')
-typedef OnMigrationFinished = Future<void> Function();
 
 /// Signature of a function that's called before a database is marked opened by
 /// moor, but after migrations took place. This is a suitable callback to to
@@ -29,7 +27,8 @@ class MigrationStrategy {
   final OnCreate onCreate;
 
   /// Executes when the database has been opened previously, but the last access
-  /// happened at a lower [GeneratedDatabase.schemaVersion].
+  /// happened at a different [GeneratedDatabase.schemaVersion].
+  /// Schema version upgrades and downgrades will both be run here.
   final OnUpgrade onUpgrade;
 
   /// Executes after the database is ready to be used (ie. it has been opened

@@ -8,12 +8,13 @@ class MoorTrigger implements MoorSchemaEntity {
   final String displayName;
 
   @override
-  final TriggerDeclaration declaration;
+  final MoorTriggerDeclaration declaration;
 
   /// The table on which this trigger operates.
   ///
   /// This field can be null in case the table wasn't resolved.
   MoorTable on;
+  List<WrittenMoorTable> bodyUpdates = [];
   List<MoorTable> bodyReferences = [];
 
   String _create;
@@ -28,6 +29,12 @@ class MoorTrigger implements MoorSchemaEntity {
     );
   }
 
+  void clearResolvedReferences() {
+    on = null;
+    bodyUpdates.clear();
+    bodyReferences.clear();
+  }
+
   @override
   Iterable<MoorSchemaEntity> get references => {on, ...bodyReferences};
 
@@ -35,7 +42,7 @@ class MoorTrigger implements MoorSchemaEntity {
   String get create {
     if (_create != null) return _create;
 
-    final node = (declaration as MoorTriggerDeclaration).node;
+    final node = declaration.node;
     return node.span.text;
   }
 

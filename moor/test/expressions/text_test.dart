@@ -16,6 +16,13 @@ void main() {
     expect(ctx.boundVariables, ['pattern']);
   });
 
+  test('generates regexp expressions', () {
+    expect(
+      expression.regexp('fo+'),
+      generates('col REGEXP ?', ['fo+']),
+    );
+  });
+
   test('generates collate expressions', () {
     final ctx = GenerationContext.fromDb(db);
     expression.collate(Collate.noCase).writeInto(ctx);

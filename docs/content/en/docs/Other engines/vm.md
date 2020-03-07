@@ -36,9 +36,6 @@ DynamicLibrary _openOnLinux() {
 
 ## Migrating from moor_flutter to moor_ffi
 
-If you're not running into a limitation that forces you to use `moor_ffi`, be aware
-that staying on `moor_flutter` is a more stable solution at the moment.
-
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
 add both the `moor` and `moor_ffi` dependencies:
 ```yaml
@@ -124,3 +121,44 @@ moor. Important options are marked in bold.
 - `SQLITE_ENABLE_JSON1`: Enable the [json1](https://www.sqlite.org/json1.html) extension for json support in sql query.
 
 For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).
+
+## Moor-only functions
+
+`moor_ffi` includes additional sql functions not available in standard sqlite:
+
+- `pow(base, exponent)` and `power(base, exponent)`: This function takes two numerical arguments and returns `base` raised to the power of `exponent`.
+  If `base` or `exponent` aren't numerical values or null, this function will return `null`. This function behaves exactly like `pow` in `dart:math`.
+- `sqrt`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`: These functions take a single argument. If that argument is null or not a numerical value,
+  returns null. Otherwise, returns the result of applying the matching function in `dart:math`.
+- `regexp`: Wraps the Dart `RegExp` apis, so that `foo REGEXP bar` is equivalent to `RegExp(bar).hasMatch(foo)`. Note that we have to create a new
+  `RegExp` instance for each `regexp` sql call, which can impact performance on large queries.
+
+Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
+
+When enabling the `moor_ffi` module in your [build options]({{< relref "../Advanced Features/builder_options.md#available-extensions" >}}),
+the generator will allow you to use those functions in moor files or compiled queries. 
+
+To use those methods from Dart, you need to import `package:moor/extensions/moor_ffi.dart`.
+You can then use the additional functions like this:
+```dart
+import 'package:moor/moor.dart';
+// those methods are hidden behind another import because they're only available on moor_ffi
+import 'package:moor/extensions/moor_ffi.dart';
+
+class Coordinates extends Table {
+  RealColumn get x => real()();
+  RealColumn get y => real()();
+}
+
+// Can now be used like this:
+Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
+  return (select(coordinates)..where((other) {
+    // find coordinates where sqrt((center - x)² + (center.y - y)²) < radius
+    final distanceSquared = sqlPow(center.x - row.x, 2) + sqlPow(center.y - row.y, 2);
+    return sqlSqrt(distanceSquared).isLessThanValue(radius);
+  })).get();
+}
+```
+
+Aller the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
+They have that `sql` prefix to avoid clashes with `dart:math`.

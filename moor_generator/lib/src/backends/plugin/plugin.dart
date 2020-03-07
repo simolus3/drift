@@ -1,6 +1,5 @@
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
-import 'package:analyzer_plugin_fork/plugin/assist_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/navigation_mixin.dart';
@@ -8,7 +7,6 @@ import 'package:analyzer_plugin_fork/plugin/outline_mixin.dart';
 import 'package:analyzer_plugin_fork/protocol/protocol.dart';
 import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart'
     as plugin;
-import 'package:analyzer_plugin_fork/utilities/assist/assist.dart';
 import 'package:analyzer_plugin_fork/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin_fork/utilities/folding/folding.dart';
 import 'package:analyzer_plugin_fork/utilities/navigation/navigation.dart';
@@ -16,7 +14,6 @@ import 'package:analyzer_plugin_fork/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/common/base_plugin.dart';
 import 'package:moor_generator/src/backends/common/driver.dart';
-import 'package:moor_generator/src/backends/plugin/services/assists/assist_service.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
 import 'package:moor_generator/src/backends/plugin/services/folding.dart';
@@ -27,12 +24,7 @@ import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'logger.dart';
 
 class MoorPlugin extends BaseMoorPlugin
-    with
-        OutlineMixin,
-        FoldingMixin,
-        CompletionMixin,
-        AssistsMixin,
-        NavigationMixin {
+    with OutlineMixin, FoldingMixin, CompletionMixin, NavigationMixin {
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
     errorService = ErrorService(this);
@@ -128,18 +120,13 @@ class MoorPlugin extends BaseMoorPlugin
   }
 
   @override
-  List<AssistContributor> getAssistContributors(String path) {
-    return const [AssistService()];
-  }
-
-  @override
-  Future<AssistRequest> getAssistRequest(
+  Future<plugin.EditGetAssistsResult> handleEditGetAssists(
       plugin.EditGetAssistsParams parameters) async {
-    final path = parameters.file;
-    final file = await _waitParsed(path);
+    final driver = driverForPath(parameters.file);
+    final results = await driver.ide
+        .assists(parameters.file, parameters.offset, parameters.length);
 
-    return MoorRequestAtPosition(
-        file, parameters.length, parameters.offset, resourceProvider);
+    return plugin.EditGetAssistsResult(results);
   }
 
   @override

@@ -1,3 +1,7 @@
+## unreleased
+
+- Remove `SqlEngine.withOptions` constructor - just use the regular one
+
 ## 0.7.0
 
 - New feature: Table valued functions.

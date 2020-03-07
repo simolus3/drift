@@ -63,6 +63,9 @@ class MoorOptions {
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
   final List<SqlModule> modules;
 
+  @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
+  final bool eagerlyLoadDartAst;
+
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => modules.contains(module);
 
@@ -75,6 +78,7 @@ class MoorOptions {
       this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
       this.generateConnectConstructor = false,
       this.useExperimentalInference = false,
+      this.eagerlyLoadDartAst = false,
       this.modules = const []});
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>
@@ -90,4 +94,9 @@ enum SqlModule {
   /// Enables support for the fts5 module and its functions when parsing sql
   /// queries.
   fts5,
+
+  /// Enables support for mathematical functions only available in `moor_ffi`.
+  // note: We're ignoring the warning because we can't change the json key
+  // ignore: constant_identifier_names
+  moor_ffi,
 }

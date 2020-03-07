@@ -58,8 +58,7 @@ class CreateTableReader {
         }
         if (constraint is Default) {
           final dartType = dartTypeNames[moorType];
-          final sqlType = sqlTypes[moorType];
-          final expressionName = 'const CustomExpression<$dartType, $sqlType>';
+          final expressionName = 'const CustomExpression<$dartType>';
           final sqlDefault = constraint.expression.span.text;
           defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
         }

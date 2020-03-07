@@ -73,6 +73,9 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       onUpgrade: (db, from, to) {
         _loadedSchemaVersion = from;
       },
+      onDowngrade: (db, from, to) {
+        _loadedSchemaVersion = from;
+      },
       singleInstance: singleInstance,
     );
   }

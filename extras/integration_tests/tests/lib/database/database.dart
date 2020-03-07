@@ -87,6 +87,12 @@ class Database extends _$Database {
 
   Database(QueryExecutor e, {this.schemaVersion = 2}) : super(e);
 
+  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  int schemaVersionChangedFrom;
+  
+  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  int schemaVersionChangedTo;
+
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -97,6 +103,9 @@ class Database extends _$Database {
         }
       },
       onUpgrade: (m, from, to) async {
+        schemaVersionChangedFrom = from;
+        schemaVersionChangedTo = to;
+
         if (from == 1) {
           await m.createTable(friendships);
         }
@@ -105,7 +114,7 @@ class Database extends _$Database {
         if (details.wasCreated) {
           // make sure that transactions can be used in the beforeOpen callback.
           await transaction(() async {
-            batch((batch) {
+            await batch((batch) {
               batch.insertAll(users, [people.dash, people.duke, people.gopher]);
             });
           });
@@ -153,7 +162,7 @@ class Database extends _$Database {
       reallyGoodFriends: friendsValue,
     );
 
-    await into(friendships).insert(companion, orReplace: true);
+    await into(friendships).insert(companion, mode: InsertMode.insertOrReplace);
   }
 
   Future<void> updateSettings(int userId, Preferences c) async {

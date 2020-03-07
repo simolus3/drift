@@ -19,7 +19,7 @@ mixin MoorBuilder on Builder {
     Task task;
     FoundFile input;
     try {
-      final backend = BuildBackend();
+      final backend = BuildBackend(options);
       final backendTask = backend.createTask(step);
       final session = MoorSession(backend, options: options);
 

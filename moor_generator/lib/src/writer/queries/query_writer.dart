@@ -142,7 +142,7 @@ class QueryWriter {
     _buffer.write(') {\n');
 
     _writeExpandedDeclarations();
-    _buffer.write('return customSelectQuery(${_queryCode()}, ');
+    _buffer.write('return customSelect(${_queryCode()}, ');
     _writeVariables();
     _buffer.write(', ');
     _writeReadsFrom();
@@ -204,6 +204,12 @@ class QueryWriter {
     _writeVariables();
     _buffer.write(',');
     _writeUpdates();
+
+    if (_update.isOnlyDelete) {
+      _buffer.write(', updateKind: UpdateKind.delete');
+    } else if (_update.isOnlyUpdate) {
+      _buffer.write(', updateKind: UpdateKind.update');
+    }
 
     _buffer.write(',);\n}\n');
   }
@@ -399,7 +405,7 @@ class QueryWriter {
   }
 
   void _writeUpdates() {
-    final from = _update.updates.map((t) => t.dbGetterName).join(', ');
+    final from = _update.updates.map((t) => t.table.dbGetterName).join(', ');
     _buffer..write('updates: {')..write(from)..write('}');
   }
 }

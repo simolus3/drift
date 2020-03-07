@@ -130,7 +130,7 @@ void _runTests(
         .customStatement('create table tbl (id integer primary key not null)');
 
     Future<void> expectRowCount(TodoDb db, int count) async {
-      final rows = await db.customSelectQuery('select * from tbl').get();
+      final rows = await db.customSelect('select * from tbl').get();
       expect(rows, hasLength(count));
     }
 
@@ -155,12 +155,54 @@ void _runTests(
 
   test("can't run queries on a closed database", () async {
     final db = TodoDb.connect(isolateConnection);
-    await db.customSelectQuery('SELECT 1;').getSingle();
+    await db.customSelect('SELECT 1;').getSingle();
 
     await db.close();
 
     await expectLater(
-        () => db.customSelectQuery('SELECT 1;').getSingle(), throwsStateError);
+        () => db.customSelect('SELECT 1;').getSingle(), throwsStateError);
+  });
+
+  test('can run deletes, updates and batches', () async {
+    final db = TodoDb.connect(isolateConnection);
+
+    await db.into(db.users).insert(
+        UsersCompanion.insert(name: 'simon.', profilePicture: Uint8List(0)));
+
+    await db
+        .update(db.users)
+        .write(const UsersCompanion(name: Value('changed name')));
+    var result = await db.select(db.users).getSingle();
+    expect(result.name, 'changed name');
+
+    await db.delete(db.users).go();
+
+    await db.batch((batch) {
+      batch.insert(
+        db.users,
+        UsersCompanion.insert(name: 'not simon', profilePicture: Uint8List(0)),
+      );
+    });
+
+    result = await db.select(db.users).getSingle();
+    expect(result.name, 'not simon');
+
+    await db.close();
+  });
+
+  test('transactions can be rolled back', () async {
+    final db = TodoDb.connect(isolateConnection);
+
+    await expectLater(db.transaction(() async {
+      await db.into(db.categories).insert(
+          CategoriesCompanion.insert(description: 'my fancy description'));
+      throw Exception('expected');
+    }), throwsException);
+
+    final result = await db.select(db.categories).get();
+    expect(result, isEmpty);
+
+    await db.close();
   });
 }
 

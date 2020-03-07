@@ -5,13 +5,18 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 ///
 /// Moor users should use [QueryEngine.transaction] to use this api.
 class Transaction extends DatabaseConnectionUser with QueryEngine {
-  /// Constructs a transaction executor from the [other] user and the underlying
-  /// [executor].
-  Transaction(DatabaseConnectionUser other, TransactionExecutor executor)
+  final QueryEngine _parent;
+
+  @override
+  GeneratedDatabase get attachedDatabase => _parent.attachedDatabase;
+
+  /// Constructs a transaction executor from the [_parent] engine and the
+  /// underlying [executor].
+  Transaction(this._parent, TransactionExecutor executor)
       : super.delegate(
-          other,
+          _parent,
           executor: executor,
-          streamQueries: _TransactionStreamStore(other.streamQueries),
+          streamQueries: _TransactionStreamStore(_parent.streamQueries),
         );
 
   /// Instructs the underlying executor to execute this instructions. Batched
@@ -33,15 +38,15 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 class _TransactionStreamStore extends StreamQueryStore {
   final StreamQueryStore parent;
 
-  final Set<String> affectedTables = <String>{};
+  final Set<TableUpdate> affectedTables = <TableUpdate>{};
   final Set<QueryStream> _queriesWithoutKey = {};
 
   _TransactionStreamStore(this.parent);
 
   @override
-  void handleTableUpdatesByName(Set<String> tables) {
-    affectedTables.addAll(tables);
-    super.handleTableUpdatesByName(tables);
+  void handleTableUpdates(Set<TableUpdate> updates) {
+    super.handleTableUpdates(updates);
+    affectedTables.addAll(updates);
   }
 
   // Override lifecycle hooks for each stream. The regular StreamQueryStore
@@ -69,10 +74,12 @@ class _TransactionStreamStore extends StreamQueryStore {
   }
 
   Future _dispatchAndClose() async {
-    parent.handleTableUpdatesByName(affectedTables);
+    parent.handleTableUpdates(affectedTables);
 
     await super.close();
-    await Future.wait(_queriesWithoutKey.map((e) => e.close()));
+    for (final query in _queriesWithoutKey) {
+      query.close();
+    }
   }
 }
 
@@ -81,8 +88,13 @@ class _TransactionStreamStore extends StreamQueryStore {
 /// To use this api, moor users should use the [MigrationStrategy.beforeOpen]
 /// parameter inside the [GeneratedDatabase.migration] getter.
 class BeforeOpenRunner extends DatabaseConnectionUser with QueryEngine {
-  /// Creates a [BeforeOpenRunner] from the [database] and the special
+  final QueryEngine _parent;
+
+  @override
+  GeneratedDatabase get attachedDatabase => _parent.attachedDatabase;
+
+  /// Creates a [BeforeOpenRunner] from a [QueryEngine] and the special
   /// [executor] running the queries.
-  BeforeOpenRunner(DatabaseConnectionUser database, QueryExecutor executor)
-      : super.delegate(database, executor: executor);
+  BeforeOpenRunner(this._parent, QueryExecutor executor)
+      : super.delegate(_parent, executor: executor);
 }

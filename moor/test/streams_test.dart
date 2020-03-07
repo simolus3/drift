@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:test/test.dart';
 
+import 'data/tables/custom_tables.dart';
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
@@ -158,8 +160,21 @@ void main() {
     when(executor.runSelect(any, any))
         .thenAnswer((_) => Future.error(exception));
 
-    final result = db.customSelectQuery('select 1').watch().first;
+    final result = db.customSelect('select 1').watch().first;
     expectLater(result, throwsA(exception));
+  });
+
+  test('database can be closed when a stream has a paused subscription',
+      () async {
+    // this test is more relevant than it seems - some test stream matchers
+    // leave the stream in an empty state.
+    final stream = db.select(db.users).watch();
+    final subscription = stream.listen((_) {})..pause();
+
+    await db.close();
+
+    subscription.resume();
+    await subscription.cancel();
   });
 
   group('stream keys', () {
@@ -213,6 +228,92 @@ void main() {
       db.markTablesUpdated({db.users});
 
       verifyNever(executor.runSelect(any, any));
+    });
+  });
+
+  // note: There's a trigger on config inserts that updates with_defaults
+  test('updates streams for updates caused by triggers', () async {
+    final db = CustomTablesDb(executor);
+    db.select(db.withDefaults).watch().listen((_) {});
+
+    db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.insert)});
+    await pumpEventQueue(times: 1);
+
+    verify(executor.runSelect(any, any)).called(2);
+  });
+
+  test('limits trigger propagation to the target type of trigger', () async {
+    final db = CustomTablesDb(executor);
+    db.select(db.withDefaults).watch().listen((_) {});
+
+    db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.delete)});
+    await pumpEventQueue(times: 1);
+
+    verify(executor.runSelect(any, any)).called(1);
+  });
+
+  group('listen for table updates', () {
+    test('any', () async {
+      var counter = 0;
+      db.tableUpdates().listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.markTablesUpdated({db.users});
+      await pumpEventQueue(times: 1);
+      expect(counter, 2);
+    });
+
+    test('stream is async', () {
+      var counter = 0;
+      db.tableUpdates().listen((event) => counter++);
+
+      db.markTablesUpdated({});
+      // no wait here, the counter should not be updated yet.
+      expect(counter, 0);
+    });
+
+    test('specific table', () async {
+      var counter = 0;
+      db
+          .tableUpdates(TableUpdateQuery.onTable(db.users))
+          .listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 0);
+
+      db.markTablesUpdated({db.users});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.markTablesUpdated({db.categories});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+    });
+
+    test('specific table and update kind', () async {
+      var counter = 0;
+      db
+          .tableUpdates(TableUpdateQuery.onTable(db.users,
+              limitUpdateKind: UpdateKind.update))
+          .listen((event) => counter++);
+
+      db.markTablesUpdated({db.todosTable});
+      await pumpEventQueue(times: 1);
+      expect(counter, 0);
+
+      db.notifyUpdates(
+          {TableUpdate.onTable(db.users, kind: UpdateKind.update)});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
+
+      db.notifyUpdates(
+          {TableUpdate.onTable(db.users, kind: UpdateKind.delete)});
+      await pumpEventQueue(times: 1);
+      expect(counter, 1);
     });
   });
 }

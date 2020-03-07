@@ -63,6 +63,8 @@ At the moment, moor supports these options:
   However, it's still in development and may not work in all cases yet. Please report any issues you can find.
   __Warning:__ The new type inference algorithm is in development and does not obey to semantic versioning.
   Results and generated code might change in moor versions not declared as breaking.
+* `eagerly_load_dart_ast`: Moor's builder will load the resolved AST whenever it encounters a Dart file,
+  instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
 
 ## Available extensions
 
@@ -80,10 +82,16 @@ targets:
           sqlite_modules:
             - json1
             - fts5
+            - moor_ffi
 ```
 
-We currently support the [json1](https://www.sqlite.org/json1.html) and [fts5](https://www.sqlite.org/fts5.html) extensions
-for static analysis. Feel free to create an issue if you need support for different extensions.
+We currently support the following extensions:
+
+- [json1](https://www.sqlite.org/json1.html): Support static analysis for `json_` functions in moor files
+- [fts5](https://www.sqlite.org/fts5.html): Support `CREATE VIRTUAL TABLE` statements for `fts5` tables and the `MATCH` operator.
+  Functions like `highlight` or `bm25` are available as well.
+- `moor_ffi`: Enables support for functions that are only available when using `moor_ffi`. This contains `pow`, `sqrt` and a variety
+  of trigonometric functions. Details on those functions are available [here]({{< relref "../Other engines/vm.md#moor-only-functions" >}}).
 
 ## Recommended options
 

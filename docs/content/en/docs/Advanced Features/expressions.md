@@ -130,6 +130,12 @@ use the `filter` parameter.
 
 To count all rows (instead of a single value), you can use the top-level `countAll()`.
 
+## Mathematical functions and regexp
+
+When using `moor_ffi`, a basic set of trigonometric functions will be available. 
+It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in sql queries.
+For more information, see the [list of functions]({{< relref "../Other engines/vm.md#moor-only-functions" >}}) here.
+
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
 It takes a `sql` parameter that let's you write custom expressions:

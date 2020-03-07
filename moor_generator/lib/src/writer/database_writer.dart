@@ -1,4 +1,8 @@
+import 'package:moor/moor.dart';
+// ignore: implementation_imports
+import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/services/find_stream_update_rules.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
@@ -103,7 +107,79 @@ class DatabaseWriter {
 
         return entityGetters[e];
       }).join(', '))
-      // close list literal, getter and finally the class
-      ..write('];\n}');
+      // close list literal and allSchemaEntities getter
+      ..write('];\n');
+
+    final updateRules = FindStreamUpdateRules(db).identifyRules();
+    if (updateRules.rules.isNotEmpty) {
+      schemaScope
+        ..write('@override\nStreamQueryUpdateRules get streamUpdateRules => ')
+        ..write('const StreamQueryUpdateRules([');
+
+      for (final rule in updateRules.rules) {
+        rule.writeConstructor(schemaScope);
+        schemaScope.write(', ');
+      }
+
+      schemaScope.write('],);\n');
+    }
+
+    // close the class
+    schemaScope.write('}\n');
+  }
+}
+
+const _kindToDartExpr = {
+  UpdateKind.delete: 'UpdateKind.delete',
+  UpdateKind.insert: 'UpdateKind.insert',
+  UpdateKind.update: 'UpdateKind.update',
+  null: 'null',
+};
+
+extension on UpdateRule {
+  void writeConstructor(StringBuffer buffer) {
+    if (this is WritePropagation) {
+      final write = this as WritePropagation;
+
+      buffer.write('WritePropagation(on: ');
+      write.on.writeConstructor(buffer);
+      buffer.write(', result: [');
+
+      for (final update in write.result) {
+        update.writeConstructor(buffer);
+        buffer.write(', ');
+      }
+
+      buffer.write('],)');
+    }
+  }
+}
+
+extension on TableUpdate {
+  void writeConstructor(StringBuffer buffer) {
+    buffer.write(
+        'TableUpdate(${asDartLiteral(table)}, kind: ${_kindToDartExpr[kind]})');
+  }
+}
+
+extension on TableUpdateQuery {
+  void writeConstructor(StringBuffer buffer) {
+    if (this is AnyUpdateQuery) {
+      buffer.write('TableUpdateQuery.any()');
+    } else if (this is SpecificUpdateQuery) {
+      final query = this as SpecificUpdateQuery;
+      buffer
+          .write('TableUpdateQuery.onTableName(${asDartLiteral(query.table)}, '
+              'limitUpdateKind: ${_kindToDartExpr[query.limitUpdateKind]})');
+    } else if (this is MultipleUpdateQuery) {
+      final queries = (this as MultipleUpdateQuery).queries;
+
+      buffer.write('TableUpdateQuery.allOf([');
+      for (final query in queries) {
+        query.writeConstructor(buffer);
+        buffer.write(', ');
+      }
+      buffer.write('])');
+    }
   }
 }

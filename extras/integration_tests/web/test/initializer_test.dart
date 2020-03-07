@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:moor/moor.dart';
 import 'package:moor/moor_web.dart';
+
 import 'package:test/test.dart';
 
 // Created from an empty sqlite file with
@@ -182,21 +184,33 @@ AAAAAAAAAAAAAAAAAAAAAAANAQIjaGVsbG8gd29ybGQ=
 
 void main() {
   test('can initialize database when absent', () async {
-    var didCallInitializer = false;
-    final db = WebDatabase('name', initializer: () async {
-      didCallInitializer = true;
-      return base64.decode(_rawDataBase64.replaceAll('\n', ''));
-    });
-
-    db.databaseInfo = _FakeDatabase(db);
-    await db.ensureOpen();
-    expect(didCallInitializer, isTrue);
-
-    final result = await db.runSelect('SELECT * FROM foo', const []);
-    expect(result, [
-      {'name': 'hello world'}
-    ]);
+    await _testWith(const MoorWebStorage('name'));
   });
+
+  test('can initialize database when absent - IndexedDB', () async {
+    await _testWith(MoorWebStorage.indexedDb('name'));
+  });
+}
+
+Future<void> _testWith(MoorWebStorage storage) async {
+  var didCallInitializer = false;
+  final db = WebDatabase.withStorage(storage, initializer: () async {
+    didCallInitializer = true;
+    return base64.decode(_rawDataBase64.replaceAll('\n', ''));
+  });
+
+  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  db.databaseInfo = _FakeDatabase(db);
+
+  await db.ensureOpen();
+  expect(didCallInitializer, isTrue);
+
+  final result = await db.runSelect('SELECT * FROM foo', const []);
+  expect(result, [
+    {'name': 'hello world'}
+  ]);
+
+  await db.close();
 }
 
 class _FakeDatabase extends GeneratedDatabase {

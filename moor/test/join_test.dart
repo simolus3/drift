@@ -186,7 +186,10 @@ void main() {
     ]);
     query
       ..addColumns([amountOfTodos])
-      ..groupBy([categories.id]);
+      ..groupBy(
+        [categories.id],
+        having: amountOfTodos.isBiggerOrEqualValue(10),
+      );
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
@@ -199,8 +202,8 @@ void main() {
     verify(executor.runSelect(
         'SELECT c.id AS "c.id", c.`desc` AS "c.desc", COUNT(t.id) AS "c2" '
         'FROM categories c INNER JOIN todos t ON t.category = c.id '
-        'GROUP BY c.id;',
-        []));
+        'GROUP BY c.id HAVING COUNT(t.id) >= ?;',
+        [10]));
 
     expect(result.readTable(todos), isNull);
     expect(result.readTable(categories), Category(id: 3, description: 'desc'));

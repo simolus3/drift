@@ -158,10 +158,10 @@ class $CategoriesTable extends Categories
   Map<String, Variable> entityToSql(CategoriesCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.description.present) {
-      map['description'] = Variable<String, StringType>(d.description.value);
+      map['description'] = Variable<String>(d.description.value);
     }
     return map;
   }
@@ -395,16 +395,16 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   Map<String, Variable> entityToSql(RecipesCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.title.present) {
-      map['title'] = Variable<String, StringType>(d.title.value);
+      map['title'] = Variable<String>(d.title.value);
     }
     if (d.instructions.present) {
-      map['instructions'] = Variable<String, StringType>(d.instructions.value);
+      map['instructions'] = Variable<String>(d.instructions.value);
     }
     if (d.category.present) {
-      map['category'] = Variable<int, IntType>(d.category.value);
+      map['category'] = Variable<int>(d.category.value);
     }
     return map;
   }
@@ -604,13 +604,13 @@ class $IngredientsTable extends Ingredients
   Map<String, Variable> entityToSql(IngredientsCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+      map['id'] = Variable<int>(d.id.value);
     }
     if (d.name.present) {
-      map['name'] = Variable<String, StringType>(d.name.value);
+      map['name'] = Variable<String>(d.name.value);
     }
     if (d.caloriesPer100g.present) {
-      map['calories'] = Variable<int, IntType>(d.caloriesPer100g.value);
+      map['calories'] = Variable<int>(d.caloriesPer100g.value);
     }
     return map;
   }
@@ -826,13 +826,13 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   Map<String, Variable> entityToSql(IngredientInRecipesCompanion d) {
     final map = <String, Variable>{};
     if (d.recipe.present) {
-      map['recipe'] = Variable<int, IntType>(d.recipe.value);
+      map['recipe'] = Variable<int>(d.recipe.value);
     }
     if (d.ingredient.present) {
-      map['ingredient'] = Variable<int, IntType>(d.ingredient.value);
+      map['ingredient'] = Variable<int>(d.ingredient.value);
     }
     if (d.amountInGrams.present) {
-      map['amount'] = Variable<int, IntType>(d.amountInGrams.value);
+      map['amount'] = Variable<int>(d.amountInGrams.value);
     }
     return map;
   }
@@ -862,19 +862,11 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<TotalWeightResult> _totalWeightQuery() {
-    return customSelectQuery(
+  Selectable<TotalWeightResult> totalWeight() {
+    return customSelect(
         'SELECT r.title, SUM(ir.amount) AS total_weight\n        FROM recipes r\n        INNER JOIN recipe_ingredients ir ON ir.recipe = r.id\n      GROUP BY r.id',
         variables: [],
         readsFrom: {recipes, ingredientInRecipes}).map(_rowToTotalWeightResult);
-  }
-
-  Future<List<TotalWeightResult>> _totalWeight() {
-    return _totalWeightQuery().get();
-  }
-
-  Stream<List<TotalWeightResult>> _watchTotalWeight() {
-    return _totalWeightQuery().watch();
   }
 
   @override

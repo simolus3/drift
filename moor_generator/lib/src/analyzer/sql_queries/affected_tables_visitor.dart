@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart' show UpdateKind;
 import 'package:sqlparser/sqlparser.dart';
 
 /// An AST-visitor that walks sql statements and finds all tables referenced in
@@ -39,6 +40,13 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   }
 }
 
+class WrittenTable {
+  final Table table;
+  final UpdateKind kind;
+
+  WrittenTable(this.table, this.kind);
+}
+
 /// Finds all tables that could be affected when executing a query. In
 /// contrast to [ReferencedTablesVisitor], which finds all references, this
 /// visitor only collects tables a query writes to.
@@ -48,30 +56,30 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
   /// Note that this is a subset of [foundTables], since an updating tables
   /// could reference tables it's not updating (e.g. with `INSERT INTO foo
   /// SELECT * FROM bar`).
-  final Set<Table> writtenTables = {};
+  final Set<WrittenTable> writtenTables = {};
 
-  void _addIfResolved(ResolvesToResultSet r) {
+  void _addIfResolved(ResolvesToResultSet r, UpdateKind kind) {
     final resolved = _toTableOrNull(r);
     if (resolved != null) {
-      writtenTables.add(resolved);
+      writtenTables.add(WrittenTable(resolved, kind));
     }
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
-    _addIfResolved(e.from);
+    _addIfResolved(e.from, UpdateKind.delete);
     visitChildren(e, arg);
   }
 
   @override
   void visitUpdateStatement(UpdateStatement e, void arg) {
-    _addIfResolved(e.table);
+    _addIfResolved(e.table, UpdateKind.update);
     visitChildren(e, arg);
   }
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
-    _addIfResolved(e.table);
+    _addIfResolved(e.table, UpdateKind.insert);
     visitChildren(e, arg);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/affected_tables_visitor.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -221,5 +222,9 @@ class TypeMapper {
 
   MoorTable tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
+  }
+
+  WrittenMoorTable writtenToMoor(WrittenTable table) {
+    return WrittenMoorTable(tableToMoor(table.table), table.kind);
   }
 }

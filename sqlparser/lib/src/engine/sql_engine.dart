@@ -30,9 +30,6 @@ class SqlEngine {
     registerTable(sqliteSequence);
   }
 
-  @Deprecated('Use SqlEngine(options) instead')
-  factory SqlEngine.withOptions(EngineOptions options) = SqlEngine;
-
   /// Obtain a [SchemaFromCreateTable] instance compatible with the
   /// configuration of this engine.
   ///
