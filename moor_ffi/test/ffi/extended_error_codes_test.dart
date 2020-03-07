@@ -16,9 +16,8 @@ void main() {
     expect(
       statement.execute,
       throwsA(
-        predicate(
-          (e) => e is SqliteException && e.explanation.endsWith(' (code 1299)'),
-        ),
+        isA<SqliteException>().having(
+            (e) => e.explanation, 'explanation', endsWith(' (code 1299)')),
       ),
     );
   });

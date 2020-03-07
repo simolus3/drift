@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:moor_ffi/database.dart';
@@ -85,4 +86,38 @@ void main() {
 
     db.close();
   });
+
+  test('throws an exception when iterating over result rows', () {
+    final db = Database.memory()
+      ..createFunction(
+        'raise_if_two',
+        1,
+        Pointer.fromFunction(_raiseIfTwo),
+      );
+
+    db.execute(
+        'CREATE TABLE tbl (a INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)');
+    // insert with a = 1..3
+    for (var i = 0; i < 3; i++) {
+      db.execute('INSERT INTO tbl DEFAULT VALUES');
+    }
+
+    final statement = db.prepare('SELECT raise_if_two(a) FROM tbl ORDER BY a');
+
+    expect(
+      statement.select,
+      throwsA(isA<SqliteException>()
+          .having((e) => e.message, 'message', contains('was two'))),
+    );
+  });
+}
+
+void _raiseIfTwo(Pointer<FunctionContext> ctx, int argCount,
+    Pointer<Pointer<SqliteValue>> args) {
+  final value = args[0].value;
+  if (value == 2) {
+    ctx.resultError('parameter was two');
+  } else {
+    ctx.resultNull();
+  }
 }
