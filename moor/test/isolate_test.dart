@@ -88,6 +88,21 @@ void _runTests(
     expect(result, isEmpty);
   });
 
+  test('can run beforeOpen', () async {
+    var beforeOpenCalled = false;
+
+    final database = TodoDb.connect(isolateConnection);
+    database.migration = MigrationStrategy(beforeOpen: (details) async {
+      await database.customStatement('PRAGMA foreign_keys = ON');
+      beforeOpenCalled = true;
+    });
+
+    // run a select statement to verify that the database is open
+    await database.customSelectQuery('SELECT 1').get();
+    await database.close();
+    expect(beforeOpenCalled, isTrue);
+  });
+
   test('stream queries work as expected', () async {
     final database = TodoDb.connect(isolateConnection);
     final initialCompanion = TodosTableCompanion.insert(content: 'my content');

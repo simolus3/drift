@@ -152,7 +152,7 @@ class _TransactionIsolateExecutor extends _BaseExecutor
 
   Future<bool> _openAtServer() async {
     _transactionId =
-        await client._channel.request(_NoArgsRequest.startTransaction) as int;
+        await client._channel.request<int>(_NoArgsRequest.startTransaction);
     return true;
   }
 

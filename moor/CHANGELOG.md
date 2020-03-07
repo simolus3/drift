@@ -1,3 +1,8 @@
+## 2.4.2
+
+- Fix `beforeOpen` callback deadlocking when using the isolate executor 
+  ([#431](https://github.com/simolus3/moor/issues/431))
+
 ## 2.4.1
 
 - Don't generate double quoted string literals in date time functions

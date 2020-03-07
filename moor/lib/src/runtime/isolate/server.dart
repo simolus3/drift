@@ -25,7 +25,7 @@ class _MoorServer {
 
   _MoorServer(DatabaseOpener opener) : server = Server() {
     server.openedConnections.listen((connection) {
-      connection.setRequestHandler(_handleRequest);
+      connection.setRequestHandler((r) => _handleRequest(connection, r));
     });
     connection = opener();
 
@@ -33,13 +33,21 @@ class _MoorServer {
     connection.executor.databaseInfo = _fakeDb;
   }
 
+  /// The executor running the special beforeOpen callback, if that callback
+  /// is currently running. Otherwise null.
+  QueryExecutor _beforeOpenExecutor;
+
+  /// The client currently running the beforeOpen callback, or null if that
+  /// callback is not currently active.
+  IsolateCommunication _beforeOpenClient;
+
   /// Returns the first connected client, or null if no client is connected.
   IsolateCommunication get firstClient {
     final channels = server.currentChannels;
     return channels.isEmpty ? null : channels.first;
   }
 
-  dynamic _handleRequest(Request r) {
+  dynamic _handleRequest(IsolateCommunication channel, Request r) {
     final payload = r.payload;
 
     if (payload is _NoArgsRequest) {
@@ -47,7 +55,7 @@ class _MoorServer {
         case _NoArgsRequest.getTypeSystem:
           return connection.typeSystem;
         case _NoArgsRequest.ensureOpen:
-          return connection.executor.ensureOpen();
+          return _runEnsureOpen(channel);
         case _NoArgsRequest.startTransaction:
           return _spawnTransaction();
         case _NoArgsRequest.terminateAll:
@@ -75,6 +83,14 @@ class _MoorServer {
       }
     } else if (payload is _RunTransactionAction) {
       return _transactionControl(payload.control, payload.transactionId);
+    }
+  }
+
+  Future<bool> _runEnsureOpen(IsolateCommunication requestingChannel) {
+    if (requestingChannel == _beforeOpenClient) {
+      return _beforeOpenExecutor.ensureOpen();
+    } else {
+      return connection.executor.ensureOpen();
     }
   }
 
@@ -191,7 +207,15 @@ class _FakeDatabase extends GeneratedDatabase {
 
   @override
   Future<void> beforeOpenCallback(
-      QueryExecutor executor, OpeningDetails details) {
-    return server.firstClient.request(_RunBeforeOpen(details));
+      QueryExecutor executor, OpeningDetails details) async {
+    final client = server._beforeOpenClient = server.firstClient;
+    server._beforeOpenExecutor = executor;
+
+    try {
+      await client.request(_RunBeforeOpen(details));
+    } finally {
+      server._beforeOpenExecutor = null;
+      server._beforeOpenClient = null;
+    }
   }
 }

@@ -112,7 +112,7 @@ class TodoDb extends _$TodoDb {
   }
 
   @override
-  MigrationStrategy get migration => MigrationStrategy();
+  MigrationStrategy migration = MigrationStrategy();
 
   @override
   int get schemaVersion => 1;
