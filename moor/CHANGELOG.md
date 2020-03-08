@@ -2,6 +2,8 @@
 
 - Fix `beforeOpen` callback deadlocking when using the isolate executor 
   ([#431](https://github.com/simolus3/moor/issues/431))
+- Fix limit clause not being applied when using `.join` afterwards
+  ([#433](https://github.com/simolus3/moor/issues/433))
 
 ## 2.4.1
 
