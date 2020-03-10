@@ -108,3 +108,31 @@ test('stream emits a new user when the name updates', () async {
   await expectation;
 });
 ```
+
+To test batch queries act like that:
+```dart
+test('runs generated statements', () async {
+    await db.batch((b) {
+      b.insertAll(
+        db.todosTable,
+        [
+          TodosTableCompanion.insert(content: 'first'),
+          TodosTableCompanion.insert(content: 'second'),
+        ],
+      );
+
+      b.update(db.users, const UsersCompanion(name: Value('new name')));
+      b.update(
+        db.users,
+        const UsersCompanion(name: Value('Another')),
+        where: (Users row) => row.name.equals('old'),
+      );
+
+      b.replaceAll(db.categories, const [
+        CategoriesCompanion(id: Value(1), description: Value('new1')),
+        CategoriesCompanion(id: Value(2), description: Value('new2')),
+      ]);
+    });
+```
+
+
