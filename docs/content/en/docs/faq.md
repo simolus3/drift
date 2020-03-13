@@ -27,7 +27,7 @@ provider that manages the database instance:
 void main() {
   runApp(
     Provider<MyDatabase>(
-      builder: (context) => MyDatabase(),
+      creator: (context) => MyDatabase(),
       child: MyFlutterApp(),
       dispose: (context, db) => db.close(),
    ),
