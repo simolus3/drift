@@ -260,9 +260,8 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
       // version has already been set during open
       oldVersion = await versionDelegate.loadSchemaVersion();
     } else if (versionDelegate is DynamicVersionDelegate) {
-      // set version now
       oldVersion = await versionDelegate.schemaVersion;
-      await versionDelegate.setSchemaVersion(currentVersion);
+      // Note: We only update the schema version after migrations ran
     } else {
       throw Exception('Invalid delegate: $delegate. The versionDelegate getter '
           'must not subclass DBVersionDelegate directly');
@@ -276,6 +275,11 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
     final openingDetails = OpeningDetails(oldVersion, currentVersion);
     await user.beforeOpen(_BeforeOpeningExecutor(this), openingDetails);
+
+    if (versionDelegate is DynamicVersionDelegate) {
+      // set version now, after migrations ran successfully
+      await versionDelegate.setSchemaVersion(currentVersion);
+    }
 
     delegate.notifyDatabaseOpened(openingDetails);
   }
