@@ -49,10 +49,17 @@ class MigrationStrategy {
 /// Runs migrations declared by a [MigrationStrategy].
 class Migrator {
   final GeneratedDatabase _db;
-  final QueryEngine _resolvedEngineForMigrations;
+
+  /// Function to obtain a [QueryEngine] to run the generated sql statements for
+  /// migrations.
+  /// If a `transaction` callback is used inside a migration, then we'd have to
+  /// run a subset of migration steps on a different query executor. This
+  /// function is used to find the correct implementation, usually by looking at
+  /// the current zone.
+  final QueryEngine Function() _resolveEngineForMigrations;
 
   /// Used internally by moor when opening the database.
-  Migrator(this._db, this._resolvedEngineForMigrations);
+  Migrator(this._db, this._resolveEngineForMigrations);
 
   /// Creates all tables specified for the database, if they don't exist
   @Deprecated('Use createAll() instead')
@@ -188,7 +195,7 @@ class Migrator {
 
   /// Executes the custom query.
   Future<void> issueCustomQuery(String sql, [List<dynamic> args]) async {
-    await _resolvedEngineForMigrations.doWhenOpened(
+    await _resolveEngineForMigrations().doWhenOpened(
       (executor) => executor.runCustom(sql, args),
     );
   }

@@ -106,7 +106,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   @protected
   @visibleForTesting
   Migrator createMigrator() {
-    return Migrator(this, _resolvedEngine);
+    return Migrator(this, () => _resolvedEngine);
   }
 
   @override

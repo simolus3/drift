@@ -102,6 +102,23 @@ void main() {
       throwsA(const TypeMatcher<Exception>()),
     );
   });
+
+  test('can use migrations inside schema callbacks', () async {
+    final executor = MockExecutor();
+    TodoDb db;
+    db = TodoDb(executor)
+      ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {
+        await db.transaction(() async {
+          await m.createTable(db.users);
+        });
+      });
+
+    await db.beforeOpen(executor, const OpeningDetails(2, 3));
+
+    verify(executor.beginTransaction());
+    verify(executor.transactions.runCustom(any, any));
+    verifyNever(executor.runCustom(any, any));
+  });
 }
 
 class _DefaultDb extends GeneratedDatabase {
