@@ -100,7 +100,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   ///
   /// This api is mainly used internally in moor, especially to implement the
   /// [beforeOpen] callback from the database site.
-  /// However, it can also be used if yuo need to create tables manually and
+  /// However, it can also be used if you need to create tables manually and
   /// outside of a [MigrationStrategy]. For almost all use cases, overriding
   /// [migration] should suffice.
   @protected

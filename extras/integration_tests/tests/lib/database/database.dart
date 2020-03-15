@@ -89,7 +89,7 @@ class Database extends _$Database {
 
   /// It will be set in the onUpgrade callback. Null if no migration ocurred
   int schemaVersionChangedFrom;
-  
+
   /// It will be set in the onUpgrade callback. Null if no migration ocurred
   int schemaVersionChangedTo;
 
@@ -99,7 +99,10 @@ class Database extends _$Database {
       onCreate: (m) async {
         await m.createTable(users);
         if (schemaVersion >= 2) {
-          await m.createTable(friendships);
+          // ensure that transactions can be used in a migration callback.
+          await transaction(() async {
+            await m.createTable(friendships);
+          });
         }
       },
       onUpgrade: (m, from, to) async {
