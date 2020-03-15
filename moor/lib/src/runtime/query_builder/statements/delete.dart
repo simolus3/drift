@@ -29,7 +29,7 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
     final ctx = constructQuery();
 
     return ctx.executor.doWhenOpened((e) async {
-      final rows = await ctx.executor.runDelete(ctx.sql, ctx.boundVariables);
+      final rows = await e.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {
         database.notifyUpdates(

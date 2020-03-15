@@ -164,7 +164,7 @@ void main() {
 
   test('the database is opened before starting a transaction', () async {
     await db.transaction(() async {
-      verify(executor.doWhenOpened(any));
+      verify(executor.ensureOpen(db));
     });
   });
 

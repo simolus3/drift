@@ -20,12 +20,6 @@ class LazyDatabase extends QueryExecutor {
   /// first requested to be opened.
   LazyDatabase(this.opener);
 
-  @override
-  set databaseInfo(GeneratedDatabase db) {
-    super.databaseInfo = db;
-    _delegate?.databaseInfo = db;
-  }
-
   Future<void> _awaitOpened() {
     if (_delegate != null) {
       return Future.value();
@@ -35,7 +29,6 @@ class LazyDatabase extends QueryExecutor {
       _openDelegate = Completer();
       Future.value(opener()).then((database) {
         _delegate = database;
-        _delegate.databaseInfo = databaseInfo;
         _openDelegate.complete();
       });
       return _openDelegate.future;
@@ -46,8 +39,8 @@ class LazyDatabase extends QueryExecutor {
   TransactionExecutor beginTransaction() => _delegate.beginTransaction();
 
   @override
-  Future<bool> ensureOpen() {
-    return _awaitOpened().then((_) => _delegate.ensureOpen());
+  Future<bool> ensureOpen(QueryExecutorUser user) {
+    return _awaitOpened().then((_) => _delegate.ensureOpen(user));
   }
 
   @override

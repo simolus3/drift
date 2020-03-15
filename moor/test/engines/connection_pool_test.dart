@@ -18,17 +18,14 @@ void main() {
   });
 
   test('opens delegated executors when opening', () async {
-    await multi.ensureOpen();
+    await multi.ensureOpen(db);
 
-    verify(write.databaseInfo = db);
-    verify(read.databaseInfo = any);
-
-    verify(read.ensureOpen());
-    verify(write.ensureOpen());
+    verify(read.ensureOpen(argThat(isNot(db))));
+    verify(write.ensureOpen(db));
   });
 
   test('runs selects on the reading executor', () async {
-    await multi.ensureOpen();
+    await multi.ensureOpen(db);
 
     when(read.runSelect(any, any)).thenAnswer((_) async {
       return [
@@ -47,7 +44,7 @@ void main() {
   });
 
   test('runs updates on the writing executor', () async {
-    await multi.ensureOpen();
+    await multi.ensureOpen(db);
 
     await multi.runUpdate('update', []);
     await multi.runInsert('insert', []);
@@ -61,15 +58,14 @@ void main() {
   });
 
   test('runs transactions on the writing executor', () async {
-    await multi.ensureOpen();
+    await multi.ensureOpen(db);
 
-    final transation = multi.beginTransaction();
-    await transation.doWhenOpened((e) async {
-      await e.runSelect('select', []);
-    });
+    final transaction = multi.beginTransaction();
+    await transaction.ensureOpen(db);
+    await transaction.runSelect('select', []);
 
     verify(write.beginTransaction());
-    verify(write.transactions.doWhenOpened(any));
+    verify(write.transactions.ensureOpen(any));
     verify(write.transactions.runSelect('select', []));
   });
 }

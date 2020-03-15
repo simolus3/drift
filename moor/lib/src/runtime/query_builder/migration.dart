@@ -35,7 +35,7 @@ class MigrationStrategy {
   /// and all migrations ran), but before any other queries will be sent. This
   /// makes it a suitable place to populate data after the database has been
   /// created or set sqlite `PRAGMAS` that you need.
-  final OnBeforeOpen beforeOpen;
+  final OnBeforeOpen /*?*/ beforeOpen;
 
   /// Construct a migration strategy from the provided [onCreate] and
   /// [onUpgrade] methods.
@@ -46,16 +46,13 @@ class MigrationStrategy {
   });
 }
 
-/// A function that executes queries and ignores what they return.
-typedef SqlExecutor = Future<void> Function(String sql, [List<dynamic> args]);
-
 /// Runs migrations declared by a [MigrationStrategy].
 class Migrator {
   final GeneratedDatabase _db;
-  final SqlExecutor _executor;
+  final QueryEngine _resolvedEngineForMigrations;
 
   /// Used internally by moor when opening the database.
-  Migrator(this._db, this._executor);
+  Migrator(this._db, this._resolvedEngineForMigrations);
 
   /// Creates all tables specified for the database, if they don't exist
   @Deprecated('Use createAll() instead')
@@ -84,10 +81,7 @@ class Migrator {
   }
 
   GenerationContext _createContext() {
-    return GenerationContext(
-      _db.typeSystem,
-      _SimpleSqlAsQueryExecutor(_executor),
-    );
+    return GenerationContext.fromDb(_db);
   }
 
   /// Creates the given table if it doesn't exist
@@ -194,7 +188,9 @@ class Migrator {
 
   /// Executes the custom query.
   Future<void> issueCustomQuery(String sql, [List<dynamic> args]) async {
-    return _executor(sql, args);
+    await _resolvedEngineForMigrations.doWhenOpened(
+      (executor) => executor.runCustom(sql, args),
+    );
   }
 }
 
@@ -216,50 +212,4 @@ class OpeningDetails {
 
   /// Used internally by moor when opening a database.
   const OpeningDetails(this.versionBefore, this.versionNow);
-}
-
-class _SimpleSqlAsQueryExecutor extends QueryExecutor {
-  final SqlExecutor executor;
-
-  _SimpleSqlAsQueryExecutor(this.executor);
-
-  @override
-  TransactionExecutor beginTransaction() {
-    throw UnsupportedError('Not supported for migrations');
-  }
-
-  @override
-  Future<bool> ensureOpen() {
-    return Future.value(true);
-  }
-
-  @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
-    throw UnsupportedError('Not supported for migrations');
-  }
-
-  @override
-  Future<void> runCustom(String statement, [List<dynamic> args]) {
-    return executor(statement, args);
-  }
-
-  @override
-  Future<int> runDelete(String statement, List args) {
-    throw UnsupportedError('Not supported for migrations');
-  }
-
-  @override
-  Future<int> runInsert(String statement, List args) {
-    throw UnsupportedError('Not supported for migrations');
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
-    throw UnsupportedError('Not supported for migrations');
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List args) {
-    throw UnsupportedError('Not supported for migrations');
-  }
 }

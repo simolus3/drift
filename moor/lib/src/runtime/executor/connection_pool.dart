@@ -24,19 +24,11 @@ class _MultiExecutorImpl extends MultiExecutor {
   _MultiExecutorImpl(this._reads, this._writes) : super._();
 
   @override
-  set databaseInfo(GeneratedDatabase database) {
-    super.databaseInfo = database;
-
-    _writes.databaseInfo = database;
-    _reads.databaseInfo = _NoMigrationsWrapper(database);
-  }
-
-  @override
-  Future<bool> ensureOpen() async {
+  Future<bool> ensureOpen(QueryExecutorUser user) async {
     // note: It's crucial that we open the writes first. The reading connection
     // doesn't run migrations, but has to set the user version.
-    await _writes.ensureOpen();
-    await _reads.ensureOpen();
+    await _writes.ensureOpen(user);
+    await _reads.ensureOpen(_NoMigrationsWrapper(user));
 
     return true;
   }
@@ -84,30 +76,17 @@ class _MultiExecutorImpl extends MultiExecutor {
   }
 }
 
-// query executors are responsible for starting the migration process on
-// a database after they open. We don't want to run migrations twice, so
-// we give the reading executor a database handle that doesn't do any
-// migrations.
-class _NoMigrationsWrapper extends GeneratedDatabase {
-  final GeneratedDatabase _inner;
+class _NoMigrationsWrapper extends QueryExecutorUser {
+  final QueryExecutorUser inner;
 
-  _NoMigrationsWrapper(this._inner)
-      : super(const SqlTypeSystem.withDefaults(), null);
+  _NoMigrationsWrapper(this.inner);
 
   @override
-  Iterable<TableInfo<Table, DataClass>> get allTables => const [];
+  int get schemaVersion => inner.schemaVersion;
 
   @override
-  int get schemaVersion => _inner.schemaVersion;
-
-  @override
-  Future<void> handleDatabaseCreation({@required SqlExecutor executor}) async {}
-
-  @override
-  Future<void> handleDatabaseVersionChange(
-      {@required SqlExecutor executor, int from, int to}) async {}
-
-  @override
-  Future<void> beforeOpenCallback(
-      QueryExecutor executor, OpeningDetails details) async {}
+  Future<void> beforeOpen(
+      QueryExecutor executor, OpeningDetails details) async {
+    // don't run any migrations
+  }
 }

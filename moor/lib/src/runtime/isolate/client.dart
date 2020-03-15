@@ -7,9 +7,7 @@ class _MoorClient {
 
   DatabaseConnection _connection;
 
-  GeneratedDatabase get connectedDb => _connection.executor.databaseInfo;
-
-  SqlExecutor get executor => _connection.executor.runCustom;
+  QueryExecutorUser _connectedDb;
 
   _MoorClient(this._channel, this.typeSystem) {
     _streamStore = _IsolateStreamQueryStore(this);
@@ -35,22 +33,9 @@ class _MoorClient {
   dynamic _handleRequest(Request request) {
     final payload = request.payload;
 
-    if (payload is _NoArgsRequest) {
-      switch (payload) {
-        case _NoArgsRequest.runOnCreate:
-          return connectedDb.handleDatabaseCreation(executor: executor);
-        default:
-          throw UnsupportedError('This operation must be run on the server');
-      }
-    } else if (payload is _RunOnUpgrade) {
-      return connectedDb.handleDatabaseVersionChange(
-        executor: executor,
-        from: payload.versionBefore,
-        to: payload.versionNow,
-      );
-    } else if (payload is _RunBeforeOpen) {
-      return connectedDb.beforeOpenCallback(
-          _connection.executor, payload.details);
+    if (payload is _RunBeforeOpen) {
+      final executor = _IsolateQueryExecutor(this, payload.createdExecutor);
+      return _connectedDb.beforeOpen(executor, payload.details);
     } else if (payload is _NotifyTablesUpdated) {
       _streamStore.handleTableUpdates(payload.updates.toSet(), true);
     }
@@ -59,19 +44,19 @@ class _MoorClient {
 
 abstract class _BaseExecutor extends QueryExecutor {
   final _MoorClient client;
-  int _transactionId;
+  int _executorId;
 
-  _BaseExecutor(this.client);
+  _BaseExecutor(this.client, [this._executorId]);
 
   @override
   Future<void> runBatched(List<BatchedStatement> statements) {
     return client._channel
-        .request(_ExecuteBatchedStatement(statements, _transactionId));
+        .request(_ExecuteBatchedStatement(statements, _executorId));
   }
 
   Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
     return client._channel
-        .request<T>(_ExecuteQuery(method, sql, args, _transactionId));
+        .request<T>(_ExecuteQuery(method, sql, args, _executorId));
   }
 
   @override
@@ -105,18 +90,10 @@ abstract class _BaseExecutor extends QueryExecutor {
 }
 
 class _IsolateQueryExecutor extends _BaseExecutor {
-  _IsolateQueryExecutor(_MoorClient client) : super(client);
+  _IsolateQueryExecutor(_MoorClient client, [int executorId])
+      : super(client, executorId);
 
   Completer<void> _setSchemaVersion;
-
-  @override
-  set databaseInfo(GeneratedDatabase db) {
-    super.databaseInfo = db;
-
-    _setSchemaVersion = Completer();
-    _setSchemaVersion
-        .complete(client._channel.request(_SetSchemaVersion(db.schemaVersion)));
-  }
 
   @override
   TransactionExecutor beginTransaction() {
@@ -124,12 +101,14 @@ class _IsolateQueryExecutor extends _BaseExecutor {
   }
 
   @override
-  Future<bool> ensureOpen() async {
+  Future<bool> ensureOpen(QueryExecutorUser user) async {
+    client._connectedDb = user;
     if (_setSchemaVersion != null) {
       await _setSchemaVersion.future;
       _setSchemaVersion = null;
     }
-    return client._channel.request<bool>(_NoArgsRequest.ensureOpen);
+    return client._channel
+        .request<bool>(_EnsureOpen(user.schemaVersion, _executorId));
   }
 
   @override
@@ -153,20 +132,19 @@ class _TransactionIsolateExecutor extends _BaseExecutor
   TransactionExecutor beginTransaction() => null;
 
   @override
-  Future<bool> ensureOpen() {
+  Future<bool> ensureOpen(_) {
     _pendingOpen ??= Completer()..complete(_openAtServer());
     return _pendingOpen.future;
   }
 
   Future<bool> _openAtServer() async {
-    _transactionId =
+    _executorId =
         await client._channel.request(_NoArgsRequest.startTransaction) as int;
     return true;
   }
 
   Future<void> _sendAction(_TransactionControl action) {
-    return client._channel
-        .request(_RunTransactionAction(action, _transactionId));
+    return client._channel.request(_RunTransactionAction(action, _executorId));
   }
 
   @override

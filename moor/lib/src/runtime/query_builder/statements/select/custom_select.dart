@@ -50,7 +50,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
   Future<List<QueryRow>> _executeWithMappedArgs(
       List<dynamic> mappedArgs) async {
     final result =
-        await _db.executor.doWhenOpened((e) => e.runSelect(query, mappedArgs));
+        await _db.doWhenOpened((e) => e.runSelect(query, mappedArgs));
 
     return result.map((row) => QueryRow(row, _db)).toList();
   }

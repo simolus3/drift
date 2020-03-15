@@ -122,14 +122,17 @@ class Batch {
   }
 
   Future<void> _commit() async {
-    await _engine.executor.ensureOpen();
+    await _engine.executor.ensureOpen(_engine.attachedDatabase);
 
     if (_startTransaction) {
       TransactionExecutor transaction;
 
       try {
         transaction = _engine.executor.beginTransaction();
-        await transaction.doWhenOpened(_runWith);
+        await transaction.ensureOpen(null);
+
+        await _runWith(transaction);
+
         await transaction.send();
       } catch (e) {
         await transaction.rollback();

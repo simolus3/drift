@@ -62,7 +62,7 @@ class _WebDelegate extends DatabaseDelegate {
   bool get isOpen => _db != null;
 
   @override
-  Future<void> open([GeneratedDatabase db]) async {
+  Future<void> open([QueryExecutorUser db]) async {
     final dbVersion = db.schemaVersion;
     assert(dbVersion >= 1, 'Database schema version needs to be at least 1');
 

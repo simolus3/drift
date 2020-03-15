@@ -47,7 +47,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   bool get isOpen => db != null;
 
   @override
-  Future<void> open([GeneratedDatabase db]) async {
+  Future<void> open(QueryExecutorUser user) async {
     String resolvedPath;
     if (inDbFolder) {
       resolvedPath = join(await s.getDatabasesPath(), path);
@@ -61,11 +61,11 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
     }
 
     // default value when no migration happened
-    _loadedSchemaVersion = db.schemaVersion;
+    _loadedSchemaVersion = user.schemaVersion;
 
-    this.db = await s.openDatabase(
+    db = await s.openDatabase(
       resolvedPath,
-      version: db.schemaVersion,
+      version: user.schemaVersion,
       password: password,
       onCreate: (db, version) {
         _loadedSchemaVersion = 0;

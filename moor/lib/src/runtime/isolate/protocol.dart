@@ -6,17 +6,9 @@ enum _NoArgsRequest {
   /// [SqlTypeSystem] of the [_MoorServer.connection] it's managing.
   getTypeSystem,
 
-  /// Sent from the client to the server. The server will reply with
-  /// [QueryExecutor.ensureOpen], based on the [_MoorServer.connection].
-  ensureOpen,
-
-  /// Sent from the server to a client. The client should run the on create
-  /// method of the attached database
-  runOnCreate,
-
   /// Sent from the client to start a transaction. The server must reply with an
   /// integer, which serves as an identifier for the transaction in
-  /// [_ExecuteQuery.transactionId].
+  /// [_ExecuteQuery.executorId].
   startTransaction,
 
   /// Close the background isolate, disconnect all clients, release all
@@ -42,14 +34,14 @@ class _ExecuteQuery {
   final _StatementMethod method;
   final String sql;
   final List<dynamic> args;
-  final int transactionId;
+  final int executorId;
 
-  _ExecuteQuery(this.method, this.sql, this.args, [this.transactionId]);
+  _ExecuteQuery(this.method, this.sql, this.args, [this.executorId]);
 
   @override
   String toString() {
-    if (transactionId != null) {
-      return '$method: $sql with $args (@$transactionId)';
+    if (executorId != null) {
+      return '$method: $sql with $args (@$executorId)';
     }
     return '$method: $sql with $args';
   }
@@ -58,9 +50,9 @@ class _ExecuteQuery {
 /// Sent from the client to run a list of [BatchedStatement]s.
 class _ExecuteBatchedStatement {
   final List<BatchedStatement> stmts;
-  final int transactionId;
+  final int executorId;
 
-  _ExecuteBatchedStatement(this.stmts, [this.transactionId]);
+  _ExecuteBatchedStatement(this.stmts, [this.executorId]);
 }
 
 /// Sent from the client to commit or rollback a transaction
@@ -71,29 +63,22 @@ class _RunTransactionAction {
   _RunTransactionAction(this.control, this.transactionId);
 }
 
-/// Sent from the client to notify the server of the
-/// [GeneratedDatabase.schemaVersion] used by the attached database.
-class _SetSchemaVersion {
+/// Sent from the client to the server. The server should open the underlying
+/// database connection, using the [schemaVersion].
+class _EnsureOpen {
   final int schemaVersion;
+  final int executorId;
 
-  _SetSchemaVersion(this.schemaVersion);
-}
-
-/// Sent from the server to the client. The client should run a database upgrade
-/// migration.
-class _RunOnUpgrade {
-  final int versionBefore;
-  final int versionNow;
-
-  _RunOnUpgrade(this.versionBefore, this.versionNow);
+  _EnsureOpen(this.schemaVersion, this.executorId);
 }
 
 /// Sent from the server to the client when it should run the before open
 /// callback.
 class _RunBeforeOpen {
   final OpeningDetails details;
+  final int createdExecutor;
 
-  _RunBeforeOpen(this.details);
+  _RunBeforeOpen(this.details, this.createdExecutor);
 }
 
 /// Sent to notify that a previous query has updated some tables. When a server

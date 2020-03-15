@@ -6,34 +6,32 @@ import 'data/utils/mocks.dart';
 
 void main() {
   TodoDb db;
-  MockQueryExecutor mockQueryExecutor;
   QueryExecutor mockExecutor;
 
   setUp(() {
-    mockQueryExecutor = MockQueryExecutor();
     mockExecutor = MockExecutor();
     db = TodoDb(mockExecutor);
   });
 
   group('Migrations', () {
     test('creates all tables', () async {
-      await db.handleDatabaseCreation(executor: mockQueryExecutor);
+      await db.beforeOpen(mockExecutor, const OpeningDetails(null, 1));
 
       // should create todos, categories, users and shared_todos table
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS todos '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
           'content VARCHAR NOT NULL, target_date INTEGER NULL, '
           'category INTEGER NULL);',
           []));
 
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '`desc` VARCHAR NOT NULL UNIQUE);',
           []));
 
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           'name VARCHAR NOT NULL, '
@@ -43,7 +41,7 @@ void main() {
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));",
           []));
 
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS shared_todos ('
           'todo INTEGER NOT NULL, '
           'user INTEGER NOT NULL, '
@@ -53,7 +51,7 @@ void main() {
           ');',
           []));
 
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS '
           'table_without_p_k ('
           'not_really_an_id INTEGER NOT NULL, '
@@ -64,9 +62,9 @@ void main() {
     });
 
     test('creates individual tables', () async {
-      await Migrator(db, mockQueryExecutor).createTable(db.users);
+      await db.createMigrator().createTable(db.users);
 
-      verify(mockQueryExecutor.call(
+      verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           'name VARCHAR NOT NULL, '
@@ -78,16 +76,15 @@ void main() {
     });
 
     test('drops tables', () async {
-      await Migrator(db, mockQueryExecutor).deleteTable('users');
+      await db.createMigrator().deleteTable('users');
 
-      verify(mockQueryExecutor.call('DROP TABLE IF EXISTS users;'));
+      verify(mockExecutor.runCustom('DROP TABLE IF EXISTS users;'));
     });
 
     test('adds columns', () async {
-      await Migrator(db, mockQueryExecutor)
-          .addColumn(db.users, db.users.isAwesome);
+      await db.createMigrator().addColumn(db.users, db.users.isAwesome);
 
-      verify(mockQueryExecutor.call('ALTER TABLE users ADD COLUMN '
+      verify(mockExecutor.runCustom('ALTER TABLE users ADD COLUMN '
           'is_awesome INTEGER NOT NULL DEFAULT 1 '
           'CHECK (is_awesome in (0, 1));'));
     });
@@ -101,9 +98,9 @@ void main() {
   test('upgrading a database without schema migration throws', () async {
     final db = _DefaultDb(MockExecutor());
     expect(
-        () => db.handleDatabaseVersionChange(
-            executor: MockQueryExecutor(), from: 1, to: 2),
-        throwsA(const TypeMatcher<Exception>()));
+      () => db.beforeOpen(db.executor, const OpeningDetails(2, 3)),
+      throwsA(const TypeMatcher<Exception>()),
+    );
   });
 }
 

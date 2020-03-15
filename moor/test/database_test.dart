@@ -45,27 +45,24 @@ void main() {
   group('callbacks', () {
     _FakeDb db;
     MockExecutor executor;
-    MockQueryExecutor queryExecutor;
 
     setUp(() {
       executor = MockExecutor();
-      queryExecutor = MockQueryExecutor();
       db = _FakeDb(SqlTypeSystem.defaultInstance, executor);
     });
 
     test('onCreate', () async {
-      await db.handleDatabaseCreation(executor: queryExecutor);
-      verify(queryExecutor.call('created'));
+      await db.beforeOpen(executor, const OpeningDetails(null, 1));
+      verify(executor.runCustom('created', any));
     });
 
     test('onUpgrade', () async {
-      await db.handleDatabaseVersionChange(
-          executor: queryExecutor, from: 2, to: 3);
-      verify(queryExecutor.call('updated from 2 to 3'));
+      await db.beforeOpen(executor, const OpeningDetails(2, 3));
+      verify(executor.runCustom('updated from 2 to 3', any));
     });
 
     test('beforeOpen', () async {
-      await db.beforeOpenCallback(executor, const OpeningDetails(3, 4));
+      await db.beforeOpen(executor, const OpeningDetails(3, 4));
       verify(executor.runSelect('opened: 3 to 4', []));
     });
   });

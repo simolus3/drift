@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:moor/backends.dart';
-import 'package:moor/moor.dart' show GeneratedDatabase;
+import 'package:moor/moor.dart' show OpeningDetails;
 import 'package:moor/src/utils/hash.dart';
 
 /// A query executor is responsible for executing statements on a database and
@@ -15,22 +15,11 @@ import 'package:moor/src/utils/hash.dart';
 /// engine to use with moor and run into issues, please consider creating an
 /// issue.
 abstract class QueryExecutor {
-  /// The higher-level database class attached to this executor. This
-  /// information can be used to read the [GeneratedDatabase.schemaVersion] when
-  /// opening the database.
-  GeneratedDatabase databaseInfo;
-
   /// The [SqlDialect] to use for this database engine.
   SqlDialect get dialect => SqlDialect.sqlite;
 
-  /// Performs the async [fn] after this executor is ready, or directly if it's
-  /// already ready.
-  Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor e) fn) {
-    return ensureOpen().then((_) => fn(this));
-  }
-
   /// Opens the executor, if it has not yet been opened.
-  Future<bool> ensureOpen();
+  Future<bool> ensureOpen(QueryExecutorUser user);
 
   /// Runs a select statement with the given variables and returns the raw
   /// results.
@@ -65,6 +54,23 @@ abstract class QueryExecutor {
   Future<void> close() async {
     // no-op per default for backwards compatibility
   }
+}
+
+/// Callbacks passed to [QueryExecutor.ensureOpen] to run schema migrations when
+/// the database is first opened.
+abstract class QueryExecutorUser {
+  /// The schema version to set on the database when it's opened.
+  int get schemaVersion;
+
+  /// A callbacks that runs after the database connection has been established,
+  /// but before any other query is sent.
+  ///
+  /// The query executor will wait for this future to complete before running
+  /// any other query. Queries running on the [executor] are an exception to
+  /// this, they can be used to run migrations.
+  /// No matter how often [QueryExecutor.ensureOpen] is called, this method will
+  /// not be called more than once.
+  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details);
 }
 
 /// A statement that should be executed in a batch. Used internally by moor.

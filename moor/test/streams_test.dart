@@ -16,12 +16,13 @@ void main() {
     db = TodoDb(executor);
   });
 
-  test('streams fetch when the first listener attaches', () {
+  test('streams fetch when the first listener attaches', () async {
     final stream = db.select(db.users).watch();
 
     verifyNever(executor.runSelect(any, any));
 
     stream.listen((_) {});
+    await pumpEventQueue(times: 1);
 
     verify(executor.runSelect(any, any)).called(1);
   });
@@ -216,9 +217,9 @@ void main() {
 
     test('when the data updates after the listener has detached', () async {
       final subscription = db.select(db.users).watch().listen((_) {});
-      clearInteractions(executor);
 
       await subscription.cancel();
+      clearInteractions(executor);
 
       // The stream is kept open for the rest of this event iteration
       final completer = Completer.sync();

@@ -13,6 +13,15 @@ class _MockDynamicVersionDelegate extends Mock
 class _MockTransactionDelegate extends Mock
     implements SupportedTransactionDelegate {}
 
+class _FakeExecutorUser extends QueryExecutorUser {
+  @override
+  Future<void> beforeOpen(
+      QueryExecutor executor, OpeningDetails details) async {}
+
+  @override
+  int get schemaVersion => 1;
+}
+
 void main() {
   _MockDelegate delegate;
   setUp(() {
@@ -31,14 +40,13 @@ void main() {
     void _runTests(bool sequential) {
       test('when sequential = $sequential', () async {
         final db = DelegatedDatabase(delegate, isSequential: sequential);
+        await db.ensureOpen(_FakeExecutorUser());
 
-        await db.doWhenOpened((_) async {
-          expect(await db.runSelect(null, null), isEmpty);
-          expect(await db.runUpdate(null, null), 3);
-          expect(await db.runInsert(null, null), 4);
-          await db.runCustom(null);
-          await db.runBatched(null);
-        });
+        expect(await db.runSelect(null, null), isEmpty);
+        expect(await db.runUpdate(null, null), 3);
+        expect(await db.runInsert(null, null), 4);
+        await db.runCustom(null);
+        await db.runBatched(null);
 
         verifyInOrder([
           delegate.isOpen,
@@ -63,29 +71,26 @@ void main() {
       when(userDb.schemaVersion).thenReturn(3);
 
       when(delegate.isOpen).thenAnswer((_) => Future.value(false));
-      db = DelegatedDatabase(delegate)..databaseInfo = userDb;
+      db = DelegatedDatabase(delegate);
 
-      when(userDb.handleDatabaseCreation(executor: anyNamed('executor')))
-          .thenAnswer((i) async {
-        final executor = i.namedArguments.values.single as SqlExecutor;
-        await executor('created', []);
-      });
+      when(userDb.beforeOpen(any, any)).thenAnswer((i) async {
+        final executor = i.positionalArguments[0] as QueryExecutor;
+        final details = i.positionalArguments[1] as OpeningDetails;
 
-      when(userDb.handleDatabaseVersionChange(
-        executor: anyNamed('executor'),
-        from: anyNamed('from'),
-        to: anyNamed('to'),
-      )).thenAnswer((i) async {
-        final executor = i.namedArguments[#executor] as SqlExecutor;
-        final from = i.namedArguments[#from] as int;
-        final to = i.namedArguments[#to] as int;
-        await executor('upgraded', [from, to]);
+        await executor.ensureOpen(userDb);
+
+        if (details.wasCreated) {
+          await executor.runCustom('created', []);
+        } else if (details.hadUpgrade) {
+          await executor.runCustom(
+              'updated', [details.versionBefore, details.versionNow]);
+        }
       });
     });
 
     test('when the database does not support versions', () async {
       when(delegate.versionDelegate).thenReturn(const NoVersionDelegate());
-      await db.doWhenOpened((_) async {});
+      await db.ensureOpen(userDb);
 
       verify(delegate.open(userDb));
       verifyNever(delegate.runCustom(any, any));
@@ -94,7 +99,7 @@ void main() {
     test('when the database supports versions at opening', () async {
       when(delegate.versionDelegate)
           .thenReturn(OnOpenVersionDelegate(() => Future.value(3)));
-      await db.doWhenOpened((_) async {});
+      await db.ensureOpen(userDb);
 
       verify(delegate.open(userDb));
       verifyNever(delegate.runCustom(any, any));
@@ -105,7 +110,7 @@ void main() {
       when(version.schemaVersion).thenAnswer((_) => Future.value(3));
 
       when(delegate.versionDelegate).thenReturn(version);
-      await db.doWhenOpened((_) async {});
+      await db.ensureOpen(userDb);
 
       verify(delegate.open(userDb));
       verifyNever(delegate.runCustom(any, any));
@@ -116,7 +121,7 @@ void main() {
     test('handles database creations', () async {
       when(delegate.versionDelegate)
           .thenReturn(OnOpenVersionDelegate(() => Future.value(0)));
-      await db.doWhenOpened((_) async {});
+      await db.ensureOpen(userDb);
 
       verify(delegate.runCustom('created', []));
     });
@@ -124,9 +129,9 @@ void main() {
     test('handles database upgrades', () async {
       when(delegate.versionDelegate)
           .thenReturn(OnOpenVersionDelegate(() => Future.value(1)));
-      await db.doWhenOpened((_) async {});
+      await db.ensureOpen(userDb);
 
-      verify(delegate.runCustom('upgraded', [1, 3]));
+      verify(delegate.runCustom('updated', argThat(equals([1, 3]))));
     });
   });
 
@@ -140,14 +145,12 @@ void main() {
     test('when the delegate does not support transactions', () async {
       when(delegate.transactionDelegate)
           .thenReturn(const NoTransactionDelegate());
-      await db.doWhenOpened((_) async {
-        final transaction = db.beginTransaction();
-        await transaction.doWhenOpened((e) async {
-          await e.runSelect(null, null);
+      await db.ensureOpen(_FakeExecutorUser());
 
-          await transaction.send();
-        });
-      });
+      final transaction = db.beginTransaction();
+      await transaction.ensureOpen(_FakeExecutorUser());
+      await transaction.runSelect(null, null);
+      await transaction.send();
 
       verifyInOrder([
         delegate.runCustom('BEGIN TRANSACTION', []),
@@ -157,23 +160,19 @@ void main() {
     });
 
     test('when the database supports transactions', () async {
-      final transaction = _MockTransactionDelegate();
-      when(transaction.startTransaction(any)).thenAnswer((i) {
+      final transactionDelegate = _MockTransactionDelegate();
+      when(transactionDelegate.startTransaction(any)).thenAnswer((i) {
         (i.positionalArguments.single as Function(QueryDelegate))(delegate);
       });
 
-      when(delegate.transactionDelegate).thenReturn(transaction);
+      when(delegate.transactionDelegate).thenReturn(transactionDelegate);
 
-      await db.doWhenOpened((_) async {
-        final transaction = db.beginTransaction();
-        await transaction.doWhenOpened((e) async {
-          await e.runSelect(null, null);
+      await db.ensureOpen(_FakeExecutorUser());
+      final transaction = db.beginTransaction();
+      await transaction.ensureOpen(_FakeExecutorUser());
+      await transaction.send();
 
-          await transaction.send();
-        });
-      });
-
-      verify(transaction.startTransaction(any));
+      verify(transactionDelegate.startTransaction(any));
     });
   });
 }

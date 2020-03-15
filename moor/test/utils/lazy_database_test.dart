@@ -5,12 +5,23 @@ import 'package:test/test.dart';
 import '../data/tables/todos.dart';
 import '../data/utils/mocks.dart';
 
+class _LazyQueryUserForTest extends QueryExecutorUser {
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
+    // do nothing
+    return Future.value();
+  }
+}
+
 void main() {
   test('lazy database delegates work', () async {
     final inner = MockExecutor();
     final lazy = LazyDatabase(() => inner);
 
-    await lazy.ensureOpen();
+    await lazy.ensureOpen(_LazyQueryUserForTest());
     clearInteractions(inner);
 
     lazy.beginTransaction();
@@ -39,31 +50,33 @@ void main() {
       return inner;
     });
 
+    final user = _LazyQueryUserForTest();
     for (var i = 0; i < 10; i++) {
-      unawaited(lazy.ensureOpen());
+      unawaited(lazy.ensureOpen(user));
     }
 
     await pumpEventQueue();
     expect(openCount, 1);
   });
 
-  test('sets generated database property', () async {
+  test('opens the inner database with the outer user', () async {
     final inner = MockExecutor();
     final db = TodoDb(LazyDatabase(() => inner));
 
     // run a statement to make sure the database has been opened
     await db.customSelect('custom_select').get();
 
-    verify(inner.databaseInfo = db);
+    verify(inner.ensureOpen(db));
   });
 
   test('returns the existing delegate if it was open', () async {
     final inner = MockExecutor();
     final lazy = LazyDatabase(() => inner);
+    final user = _LazyQueryUserForTest();
 
-    await lazy.ensureOpen();
-    await lazy.ensureOpen();
+    await lazy.ensureOpen(user);
+    await lazy.ensureOpen(user);
 
-    verify(inner.ensureOpen());
+    verify(inner.ensureOpen(user));
   });
 }

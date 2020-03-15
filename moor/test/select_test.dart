@@ -30,14 +30,14 @@ void main() {
   });
 
   group('SELECT statements are generated', () {
-    test('for simple statements', () {
-      db.select(db.users, distinct: true).get();
+    test('for simple statements', () async {
+      await db.select(db.users, distinct: true).get();
       verify(executor.runSelect(
           'SELECT DISTINCT * FROM users;', argThat(isEmpty)));
     });
 
-    test('with limit statements', () {
-      (db.select(db.users)..limit(10, offset: 0)).get();
+    test('with limit statements', () async {
+      await (db.select(db.users)..limit(10, offset: 0)).get();
       verify(executor.runSelect(
           'SELECT * FROM users LIMIT 10 OFFSET 0;', argThat(isEmpty)));
     });
@@ -49,8 +49,8 @@ void main() {
           'SELECT * FROM users LIMIT 10;', argThat(isEmpty)));
     });
 
-    test('with like expressions', () {
-      (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
+    test('with like expressions', () async {
+      await (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
       verify(executor
           .runSelect('SELECT * FROM users WHERE name LIKE ?;', ['Dash%']));
     });
@@ -69,8 +69,8 @@ void main() {
           argThat(isEmpty)));
     });
 
-    test('with complex predicates', () {
-      (db.select(db.users)
+    test('with complex predicates', () async {
+      await (db.select(db.users)
             ..where((u) =>
                 u.name.equals('Dash').not() & u.id.isBiggerThanValue(12)))
           .get();
@@ -80,8 +80,8 @@ void main() {
           ['Dash', 12]));
     });
 
-    test('with expressions from boolean columns', () {
-      (db.select(db.users)..where((u) => u.isAwesome)).get();
+    test('with expressions from boolean columns', () async {
+      await (db.select(db.users)..where((u) => u.isAwesome)).get();
 
       verify(executor.runSelect(
           'SELECT * FROM users WHERE is_awesome;', argThat(isEmpty)));

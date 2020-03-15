@@ -44,7 +44,6 @@ Future<void> main() async {
       await file.delete();
     }
 
-
     var didCallCreator = false;
     final executor = FlutterQueryExecutor.inDatabaseFolder(
       path: dbNameInDevice,
@@ -56,7 +55,7 @@ Future<void> main() async {
       },
     );
     final database = Database(executor);
-    await database.executor.ensureOpen();
+    await database.executor.ensureOpen(database);
 
     expect(didCallCreator, isTrue);
   });

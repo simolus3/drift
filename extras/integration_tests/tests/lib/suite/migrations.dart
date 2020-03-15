@@ -33,11 +33,11 @@ void migrationTests(TestExecutor executor) {
 
   test('runs the migrator when downgrading', () async {
     var database = Database(executor.createExecutor(), schemaVersion: 2);
-    await database.executor.ensureOpen(); // Create the database
+    await database.executor.ensureOpen(database); // Create the database
     await database.close();
 
     database = Database(executor.createExecutor(), schemaVersion: 1);
-    await database.executor.ensureOpen(); // Let the migrator run
+    await database.executor.ensureOpen(database); // Let the migrator run
     
     expect(database.schemaVersionChangedFrom, 2);
     expect(database.schemaVersionChangedTo, 1);

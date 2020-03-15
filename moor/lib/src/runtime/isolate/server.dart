@@ -5,8 +5,8 @@ class _MoorServer {
 
   DatabaseConnection connection;
 
-  final Map<int, TransactionExecutor> _transactions = {};
-  int _currentTransaction = 0;
+  final Map<int, QueryExecutor> _managedExecutors = {};
+  int _currentExecutorId = 0;
 
   /// when a transaction is active, all queries that don't operate on another
   /// query executor have to wait!
@@ -15,11 +15,11 @@ class _MoorServer {
   /// first transaction id in the backlog is active at the moment. Whenever a
   /// transaction completes, we emit an item on [_backlogUpdated]. This can be
   /// used to implement a lock.
-  final List<int> _transactionBacklog = [];
+  final List<int> _executorBacklog = [];
   final StreamController<void> _backlogUpdated =
       StreamController.broadcast(sync: true);
 
-  _FakeDatabase _fakeDb;
+  _IsolateDelegatedUser _dbUser;
 
   ServerKey get key => server.key;
 
@@ -28,9 +28,7 @@ class _MoorServer {
       connection.setRequestHandler(_handleRequest);
     });
     connection = opener();
-
-    _fakeDb = _FakeDatabase(connection, this);
-    connection.executor.databaseInfo = _fakeDb;
+    _dbUser = _IsolateDelegatedUser(this);
   }
 
   /// Returns the first connected client, or null if no client is connected.
@@ -46,8 +44,6 @@ class _MoorServer {
       switch (payload) {
         case _NoArgsRequest.getTypeSystem:
           return connection.typeSystem;
-        case _NoArgsRequest.ensureOpen:
-          return connection.executor.ensureOpen();
         case _NoArgsRequest.startTransaction:
           return _spawnTransaction();
         case _NoArgsRequest.terminateAll:
@@ -56,19 +52,14 @@ class _MoorServer {
           server.close();
           Isolate.current.kill();
           break;
-        // the following are requests which are handled on the client side
-        case _NoArgsRequest.runOnCreate:
-          throw UnsupportedError(
-              'This operation needs to be run on the client');
       }
-    } else if (payload is _SetSchemaVersion) {
-      _fakeDb.schemaVersion = payload.schemaVersion;
-      return null;
+    } else if (payload is _EnsureOpen) {
+      return _handleEnsureOpen(payload);
     } else if (payload is _ExecuteQuery) {
       return _runQuery(
-          payload.method, payload.sql, payload.args, payload.transactionId);
+          payload.method, payload.sql, payload.args, payload.executorId);
     } else if (payload is _ExecuteBatchedStatement) {
-      return _runBatched(payload.stmts, payload.transactionId);
+      return _runBatched(payload.stmts, payload.executorId);
     } else if (payload is _NotifyTablesUpdated) {
       for (final connected in server.currentChannels) {
         connected.request(payload);
@@ -76,6 +67,13 @@ class _MoorServer {
     } else if (payload is _RunTransactionAction) {
       return _transactionControl(payload.control, payload.transactionId);
     }
+  }
+
+  Future<bool> _handleEnsureOpen(_EnsureOpen open) async {
+    _dbUser.schemaVersion = open.schemaVersion;
+    final executor = await _loadExecutor(open.executorId);
+
+    return await executor.ensureOpen(_dbUser);
   }
 
   Future<dynamic> _runQuery(
@@ -105,23 +103,34 @@ class _MoorServer {
   Future<QueryExecutor> _loadExecutor(int transactionId) async {
     await _waitForTurn(transactionId);
     return transactionId != null
-        ? _transactions[transactionId]
+        ? _managedExecutors[transactionId]
         : connection.executor;
   }
 
   Future<int> _spawnTransaction() async {
-    final id = _currentTransaction++;
     final transaction = connection.executor.beginTransaction();
+    final id = _putExecutor(transaction);
 
-    _transactions[id] = transaction;
-    _transactionBacklog.add(id);
-    await transaction.ensureOpen();
+    await transaction.ensureOpen(_dbUser);
+    return id;
+  }
+
+  int _putExecutor(QueryExecutor executor) {
+    final id = _currentExecutorId++;
+    _managedExecutors[id] = executor;
+    _executorBacklog.add(id);
     return id;
   }
 
   Future<void> _transactionControl(
       _TransactionControl action, int transactionId) async {
-    final transaction = _transactions[transactionId];
+    final executor = _managedExecutors[transactionId];
+    if (executor is! TransactionExecutor) {
+      throw ArgumentError.value(
+          transactionId, 'transactionId', 'Does not reference a transaction');
+    }
+
+    final transaction = executor as TransactionExecutor;
 
     try {
       switch (action) {
@@ -133,19 +142,23 @@ class _MoorServer {
           break;
       }
     } finally {
-      _transactions.remove(transactionId);
-      _transactionBacklog.remove(transactionId);
-      _notifyTransactionsUpdated();
+      _releaseExecutor(transactionId);
     }
+  }
+
+  void _releaseExecutor(int id) {
+    _managedExecutors.remove(id);
+    _executorBacklog.remove(id);
+    _notifyActiveExecutorUpdated();
   }
 
   Future<void> _waitForTurn(int transactionId) {
     bool idIsActive() {
       if (transactionId == null) {
-        return _transactionBacklog.isEmpty;
+        return _executorBacklog.isEmpty;
       } else {
-        return _transactionBacklog.isNotEmpty &&
-            _transactionBacklog.first == transactionId;
+        return _executorBacklog.isNotEmpty &&
+            _executorBacklog.first == transactionId;
       }
     }
 
@@ -155,43 +168,29 @@ class _MoorServer {
     return _backlogUpdated.stream.firstWhere((_) => idIsActive());
   }
 
-  void _notifyTransactionsUpdated() {
+  void _notifyActiveExecutorUpdated() {
     if (!_backlogUpdated.isClosed) {
       _backlogUpdated.add(null);
     }
   }
 }
 
-/// A mock database so that the [QueryExecutor] which is running on a background
-/// isolate can have the [QueryExecutor.databaseInfo] set. The query executor
-/// uses that to set the schema version and to run migration callbacks. For a
-/// server, all of that is delegated via clients.
-class _FakeDatabase extends GeneratedDatabase {
+class _IsolateDelegatedUser implements QueryExecutorUser {
   final _MoorServer server;
 
-  _FakeDatabase(DatabaseConnection connection, this.server)
-      : super.connect(connection);
+  @override
+  int schemaVersion = 0;
+
+  _IsolateDelegatedUser(this.server); // will be overridden by client requests
 
   @override
-  final List<TableInfo<Table, DataClass>> allTables = const [];
-
-  @override
-  int schemaVersion = 0; // will be overridden by client requests
-
-  @override
-  Future<void> handleDatabaseCreation({SqlExecutor executor}) {
-    return server.firstClient.request(_NoArgsRequest.runOnCreate);
-  }
-
-  @override
-  Future<void> handleDatabaseVersionChange(
-      {SqlExecutor executor, int from, int to}) {
-    return server.firstClient.request(_RunOnUpgrade(from, to));
-  }
-
-  @override
-  Future<void> beforeOpenCallback(
-      QueryExecutor executor, OpeningDetails details) {
-    return server.firstClient.request(_RunBeforeOpen(details));
+  Future<void> beforeOpen(
+      QueryExecutor executor, OpeningDetails details) async {
+    final id = server._putExecutor(executor);
+    try {
+      await server.firstClient.request(_RunBeforeOpen(details, id));
+    } finally {
+      server._releaseExecutor(id);
+    }
   }
 }

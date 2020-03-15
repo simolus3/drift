@@ -194,23 +194,23 @@ void main() {
 
 Future<void> _testWith(MoorWebStorage storage) async {
   var didCallInitializer = false;
-  final db = WebDatabase.withStorage(storage, initializer: () async {
+  final executor = WebDatabase.withStorage(storage, initializer: () async {
     didCallInitializer = true;
     return base64.decode(_rawDataBase64.replaceAll('\n', ''));
   });
 
   moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-  db.databaseInfo = _FakeDatabase(db);
+  final attachedDb = _FakeDatabase(executor);
 
-  await db.ensureOpen();
+  await executor.ensureOpen(attachedDb);
   expect(didCallInitializer, isTrue);
 
-  final result = await db.runSelect('SELECT * FROM foo', const []);
+  final result = await executor.runSelect('SELECT * FROM foo', const []);
   expect(result, [
     {'name': 'hello world'}
   ]);
 
-  await db.close();
+  await executor.close();
 }
 
 class _FakeDatabase extends GeneratedDatabase {

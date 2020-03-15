@@ -46,11 +46,11 @@ abstract class DatabaseDelegate implements QueryDelegate {
   /// times, so you don't have to worry about a connection being created
   /// multiple times.
   ///
-  /// The [GeneratedDatabase] is the user-defined database annotated with
+  /// The [QueryExecutorUser] is the user-defined database annotated with
   /// [UseMoor]. It might be useful to read the
-  /// [GeneratedDatabase.schemaVersion] if that information is required while
+  /// [QueryExecutorUser.schemaVersion] if that information is required while
   /// opening the database.
-  Future<void> open([GeneratedDatabase db]);
+  Future<void> open(QueryExecutorUser db);
 
   /// Closes this database. When the future completes, all resources used
   /// by this database should have been disposed.

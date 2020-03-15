@@ -34,7 +34,7 @@ class _VmDelegate extends DatabaseDelegate {
   Future<bool> get isOpen => Future.value(_db != null);
 
   @override
-  Future<void> open([GeneratedDatabase db]) async {
+  Future<void> open(QueryExecutorUser user) async {
     if (file != null) {
       _db = Database.openFile(file);
     } else {

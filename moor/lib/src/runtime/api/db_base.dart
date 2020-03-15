@@ -11,7 +11,8 @@ Map<Type, int> _openedDbCount = {};
 
 /// A base class for all generated databases.
 abstract class GeneratedDatabase extends DatabaseConnectionUser
-    with QueryEngine {
+    with QueryEngine
+    implements QueryExecutorUser {
   @override
   bool get topLevel => true;
 
@@ -20,6 +21,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
+  @override
   int get schemaVersion;
 
   /// Defines the migration strategy that will determine how to deal with an
@@ -58,14 +60,12 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
       {StreamQueryStore streamStore})
       : super(types, executor, streamQueries: streamStore) {
-    executor?.databaseInfo = this;
     assert(_handleInstantiated());
   }
 
   /// Used by generated code to connect to a database that is already open.
   GeneratedDatabase.connect(DatabaseConnection connection)
       : super.fromConnection(connection) {
-    connection?.executor?.databaseInfo = this;
     assert(_handleInstantiated());
   }
 
@@ -98,46 +98,31 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Creates a [Migrator] with the provided query executor. Migrators generate
   /// sql statements to create or drop tables.
   ///
-  /// This api is mainly used internally in moor, for instance in
-  /// [handleDatabaseCreation] and [handleDatabaseVersionChange]. However, it
-  /// can also be used if you need to create tables manually and outside of a
-  /// [MigrationStrategy]. For almost all use cases, overriding [migration]
-  /// should suffice.
+  /// This api is mainly used internally in moor, especially to implement the
+  /// [beforeOpen] callback from the database site.
+  /// However, it can also be used if yuo need to create tables manually and
+  /// outside of a [MigrationStrategy]. For almost all use cases, overriding
+  /// [migration] should suffice.
   @protected
-  Migrator createMigrator([SqlExecutor executor]) {
-    final actualExecutor = executor ?? customStatement;
-    return Migrator(this, actualExecutor);
+  @visibleForTesting
+  Migrator createMigrator() {
+    return Migrator(this, _resolvedEngine);
   }
 
-  /// Handles database creation by delegating the work to the [migration]
-  /// strategy. This method should not be called by users.
-  Future<void> handleDatabaseCreation({@required SqlExecutor executor}) {
-    final migrator = createMigrator(executor);
-    return _resolvedMigration.onCreate(migrator);
-  }
+  @override
+  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
+    return _runEngineZoned(BeforeOpenRunner(this, executor), () async {
+      if (details.wasCreated) {
+        final migrator = createMigrator();
+        await _resolvedMigration.onCreate(migrator);
+      } else if (details.hadUpgrade) {
+        final migrator = createMigrator();
+        await _resolvedMigration.onUpgrade(
+            migrator, details.versionBefore, details.versionNow);
+      }
 
-  /// Handles database updates by delegating the work to the [migration]
-  /// strategy. This method should not be called by users.
-  Future<void> handleDatabaseVersionChange(
-      {@required SqlExecutor executor, int from, int to}) {
-    final migrator = createMigrator(executor);
-    return _resolvedMigration.onUpgrade(migrator, from, to);
-  }
-
-  /// Handles the before opening callback as set in the [migration]. This method
-  /// is used internally by database implementations and should not be called by
-  /// users.
-  Future<void> beforeOpenCallback(
-      QueryExecutor executor, OpeningDetails details) {
-    final migration = _resolvedMigration;
-
-    if (migration.beforeOpen != null) {
-      return _runEngineZoned(
-        BeforeOpenRunner(this, executor),
-        () => migration.beforeOpen(details),
-      );
-    }
-    return Future.value();
+      await _resolvedMigration.beforeOpen?.call(details);
+    });
   }
 
   /// Closes this database and releases associated resources.

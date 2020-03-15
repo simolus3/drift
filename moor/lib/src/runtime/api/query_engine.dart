@@ -89,6 +89,15 @@ mixin QueryEngine on DatabaseConnectionUser {
     });
   }
 
+  /// Performs the async [fn] after this executor is ready, or directly if it's
+  /// already ready.
+  ///
+  /// Calling this method directly might circumvent the current transaction. For
+  /// that reason, it should only be called inside moor.
+  Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor e) fn) {
+    return executor.ensureOpen(attachedDatabase).then((_) => fn(executor));
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
@@ -247,13 +256,12 @@ mixin QueryEngine on DatabaseConnectionUser {
     _CustomWriter<T> writer,
   ) async {
     final engine = _resolvedEngine;
-    final executor = engine.executor;
 
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
 
     final result =
-        await executor.doWhenOpened((e) => writer(e, query, mappedArgs));
+        await engine.doWhenOpened((e) => writer(e, query, mappedArgs));
 
     if (updates != null) {
       engine.notifyUpdates({
@@ -305,7 +313,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   Future<void> customStatement(String statement, [List<dynamic> args]) {
     final engine = _resolvedEngine;
 
-    return engine.executor.doWhenOpened((executor) {
+    return engine.doWhenOpened((executor) {
       return executor.runCustom(statement, args);
     });
   }
@@ -340,8 +348,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       return action();
     }
 
-    final executor = resolved.executor;
-    return await executor.doWhenOpened((executor) {
+    return await resolved.doWhenOpened((executor) {
       final transactionExecutor = executor.beginTransaction();
       final transaction = Transaction(this, transactionExecutor);
 

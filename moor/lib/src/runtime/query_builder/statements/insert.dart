@@ -34,8 +34,8 @@ class InsertStatement<D extends DataClass> {
   }) async {
     final ctx = createContext(entity, mode ?? InsertMode.insert);
 
-    return await database.executor.doWhenOpened((e) async {
-      final id = await database.executor.runInsert(ctx.sql, ctx.boundVariables);
+    return await database.doWhenOpened((e) async {
+      final id = await e.runInsert(ctx.sql, ctx.boundVariables);
       database
           .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
       return id;

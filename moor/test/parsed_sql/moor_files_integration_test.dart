@@ -45,35 +45,34 @@ void main() {
   // see ../data/tables/tables.moor
   test('creates everything as specified in .moor files', () async {
     final mockExecutor = MockExecutor();
-    final mockQueryExecutor = MockQueryExecutor();
     final db = CustomTablesDb(mockExecutor);
-    await Migrator(db, mockQueryExecutor).createAll();
+    await db.createMigrator().createAll();
 
-    verify(mockQueryExecutor.call(_createNoIds, []));
-    verify(mockQueryExecutor.call(_createWithDefaults, []));
-    verify(mockQueryExecutor.call(_createWithConstraints, []));
-    verify(mockQueryExecutor.call(_createConfig, []));
-    verify(mockQueryExecutor.call(_createMyTable, []));
-    verify(mockQueryExecutor.call(_createEmail, []));
-    verify(mockQueryExecutor.call(_createMyTrigger, []));
-    verify(mockQueryExecutor.call(_createValueIndex, []));
-    verify(mockQueryExecutor.call(_defaultInsert, []));
+    verify(mockExecutor.runCustom(_createNoIds, []));
+    verify(mockExecutor.runCustom(_createWithDefaults, []));
+    verify(mockExecutor.runCustom(_createWithConstraints, []));
+    verify(mockExecutor.runCustom(_createConfig, []));
+    verify(mockExecutor.runCustom(_createMyTable, []));
+    verify(mockExecutor.runCustom(_createEmail, []));
+    verify(mockExecutor.runCustom(_createMyTrigger, []));
+    verify(mockExecutor.runCustom(_createValueIndex, []));
+    verify(mockExecutor.runCustom(_defaultInsert, []));
   });
 
   test('can create trigger manually', () async {
-    final mockQueryExecutor = MockQueryExecutor();
-    final db = CustomTablesDb(MockExecutor());
+    final mockExecutor = MockExecutor();
+    final db = CustomTablesDb(mockExecutor);
 
-    await Migrator(db, mockQueryExecutor).createTrigger(db.myTrigger);
-    verify(mockQueryExecutor.call(_createMyTrigger, []));
+    await db.createMigrator().createTrigger(db.myTrigger);
+    verify(mockExecutor.runCustom(_createMyTrigger, []));
   });
 
   test('can create index manually', () async {
-    final mockQueryExecutor = MockQueryExecutor();
-    final db = CustomTablesDb(MockExecutor());
+    final mockExecutor = MockExecutor();
+    final db = CustomTablesDb(mockExecutor);
 
-    await Migrator(db, mockQueryExecutor).createIndex(db.valueIdx);
-    verify(mockQueryExecutor.call(_createValueIndex, []));
+    await db.createMigrator().createIndex(db.valueIdx);
+    verify(mockExecutor.runCustom(_createValueIndex, []));
   });
 
   test('infers primary keys correctly', () async {
