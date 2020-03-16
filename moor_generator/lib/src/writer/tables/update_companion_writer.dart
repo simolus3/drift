@@ -59,7 +59,7 @@ class UpdateCompanionWriter {
     for (final column in table.columns) {
       final param = column.dartGetterName;
 
-      if (column.requiredDuringInsert) {
+      if (table.isColumnRequiredForInsert(column)) {
         requiredColumns.add(column);
 
         _buffer.write('@required ${column.dartTypeName} $param,');

@@ -65,6 +65,14 @@ void main() {
         TextColumn get archivedBy => text()();
         DateTimeColumn get archivedOn => dateTime()();
       }
+      
+      class WithAliasForRowId extends Table {
+        IntColumn get id => integer()();
+        TextColumn get name => text()();
+        
+        @override
+        Set<Column> get primaryKey => {id};
+      }
       '''
     });
   });
@@ -173,6 +181,13 @@ void main() {
 
     expect(table.primaryKey, containsAll(table.columns));
     expect(table.columns.any((column) => column.hasAI), isFalse);
+  });
+
+  test('recognizes aliases for rowid', () async {
+    final table = await parse('WithAliasForRowId');
+    final idColumn = table.columns.singleWhere((c) => c.name.name == 'id');
+
+    expect(table.isColumnRequiredForInsert(idColumn), isFalse);
   });
 
   group('inheritance', () {

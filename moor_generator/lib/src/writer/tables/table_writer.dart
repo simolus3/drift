@@ -235,7 +235,7 @@ class TableWriter {
             '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
         ..write('}');
 
-      if (column.requiredDuringInsert) {
+      if (table.isColumnRequiredForInsert(column)) {
         _buffer
           ..write(' else if (isInserting) {\n')
           ..write('context.missing($metaName);\n')

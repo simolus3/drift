@@ -93,8 +93,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
     // second, check that no required columns are left out
     final specifiedTable = linter.mapper.tableToMoor(e.table.resolved as Table);
-    final required =
-        specifiedTable.columns.where((c) => c.requiredDuringInsert).toList();
+    final required = specifiedTable.columns
+        .where(specifiedTable.isColumnRequiredForInsert)
+        .toList();
 
     if (required.isNotEmpty && e.source is DefaultValues) {
       linter.lints.add(AnalysisError(

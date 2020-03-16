@@ -1,9 +1,11 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';
+import '../utils.dart';
 
 void main() {
   const content = '''
@@ -45,5 +47,35 @@ usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25
         ['id', 'name', 'field', 'another', 'myJsonKey']);
 
     backend.finish();
+  });
+
+  test('recognizes aliases to rowid', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': '''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+      );
+      
+      CREATE TABLE users2 (
+        id INTEGER,
+        name TEXT NOT NULL,
+        PRIMARY KEY (id)
+      );
+      '''
+    });
+
+    final result = await state.analyze('package:foo/a.moor');
+    final file = result.currentResult as ParsedMoorFile;
+
+    final users1 = file.declaredTables.singleWhere((t) => t.sqlName == 'users');
+    final users2 =
+        file.declaredTables.singleWhere((t) => t.sqlName == 'users2');
+
+    expect(users1.isColumnRequiredForInsert(users1.columns[0]), isFalse);
+    expect(users1.isColumnRequiredForInsert(users1.columns[1]), isTrue);
+
+    expect(users2.isColumnRequiredForInsert(users2.columns[0]), isFalse);
+    expect(users2.isColumnRequiredForInsert(users2.columns[1]), isTrue);
   });
 }

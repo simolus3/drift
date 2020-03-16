@@ -69,7 +69,19 @@ class MoorTable implements MoorSchemaEntity {
   /// The set of primary keys, if they have been explicitly defined by
   /// overriding `primaryKey` in the table class. `null` if the primary key has
   /// not been defined that way.
+  ///
+  /// For the full primary key, see [fullPrimaryKey].
   final Set<MoorColumn> primaryKey;
+
+  /// The primary key for this table.
+  ///
+  /// Unlikely [primaryKey], this method is not limited to the `primaryKey`
+  /// override in Dart table declarations.
+  Set<MoorColumn> get fullPrimaryKey {
+    if (primaryKey != null) return primaryKey;
+
+    return columns.where((c) => c.features.any((f) => f is PrimaryKey)).toSet();
+  }
 
   /// When non-null, the generated table class will override the `withoutRowId`
   /// getter on the table class with this value.
@@ -136,6 +148,30 @@ class MoorTable implements MoorSchemaEntity {
         ..index = index++
         ..table = this;
     }
+  }
+
+  /// Determines whether [column] would be required for inserts performed via
+  /// companions.
+  bool isColumnRequiredForInsert(MoorColumn column) {
+    assert(columns.contains(column));
+
+    if (column.defaultArgument != null ||
+        column.clientDefaultCode != null ||
+        column.nullable) {
+      // default value would be applied, so it's not required for inserts
+      return false;
+    }
+
+    // A column isn't required if it's an alias for the rowid, as explained
+    // at https://www.sqlite.org/lang_createtable.html#rowid
+    final isWithoutRowId = overrideWithoutRowId ?? false;
+    final fullPk = fullPrimaryKey;
+    final isAliasForRowId = !isWithoutRowId &&
+        column.type == ColumnType.integer &&
+        fullPk.length == 1 &&
+        fullPk.single == column;
+
+    return !isAliasForRowId;
   }
 
   @override
