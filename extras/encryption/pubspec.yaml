@@ -8,10 +8,7 @@ environment:
 
 dependencies:
   moor: ^2.0.0
-  sqflite:
-    git:
-      url: https://www.github.com/davidmartos96/sqflite_sqlcipher.git
-      path: sqflite
+  sqflite_sqlcipher: ^1.0.0+3
 
 dependency_overrides:
   moor:
