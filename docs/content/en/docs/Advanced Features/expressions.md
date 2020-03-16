@@ -124,11 +124,29 @@ Sometimes, it's useful to count how many rows are present in a group. By using t
 [table layout from the example]({{<relref "../Getting started/_index.md">}}), this
 query will report how many todo entries are associated to each category:
 
+```dart
+final amountOfTodos = todos.id.count();
+
+final query = db.select(categories).join([
+  innerJoin(
+    todos,
+    todos.category.equalsExp(categories.id),
+    useColumns: false,
+  )
+]);
+query
+  ..addColumns([amountOfTodos])
+  ..groupBy([categories.id]);
+```
+
 If you don't want to count duplicate values, you can use `count(distinct: true)`. 
 Sometimes, you only need to count values that match a condition. For that, you can
-use the `filter` parameter.
+use the `filter` parameter on `count`.
+To count all rows (instead of a single value), you can use the top-level `countAll()`
+function.
 
-To count all rows (instead of a single value), you can use the top-level `countAll()`.
+More information on how to write aggregate queries with moor's Dart api is available
+[here]({{< relref "joins.md#group-by" >}})
 
 ## Mathematical functions and regexp
 
