@@ -10,13 +10,15 @@ class AnalyzeDartStep extends AnalyzingStep {
     for (final accessor in parseResult.dbAccessors) {
       final transitiveImports = _transitiveImports(accessor.imports);
 
-      var availableEntities = _availableEntities(transitiveImports)
-          .followedBy(accessor.declaredTables)
-          .toList();
+      final unsortedEntities = _availableEntities(transitiveImports)
+          .followedBy(accessor.declaredTables);
+      List<MoorSchemaEntity> availableEntities;
 
       try {
-        availableEntities = sortEntitiesTopologically(availableEntities);
+        availableEntities = sortEntitiesTopologically(unsortedEntities.toSet());
       } on CircularReferenceException catch (e) {
+        // Just keep them unsorted so that we can generate some code
+        availableEntities = unsortedEntities.toList();
         final msg = StringBuffer(
             'Found a circular reference in your database. This can cause '
             'exceptions at runtime when opening the database. This is the '
