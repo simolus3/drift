@@ -11,7 +11,7 @@ CREATE TABLE tbl (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   -- this is a single-line comment
   place VARCHAR REFERENCES other(location)
-) AS RowName
+) AS RowName;
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
@@ -110,5 +110,20 @@ void main() {
       root.allDescendants,
       isNot(contains(const TypeMatcher<DeclaredStatement>())),
     );
+  });
+
+  test('syntax errors contain correct position', () {
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+    final result = engine.parseMoorFile('''
+worksByComposer:
+SELECT DISTINCT A.* FROM works A, works B ON A.id = B.part_of
+    WHERE A.composer = :id OR B.composer = :id;
+    ''');
+
+    expect(result.errors, hasLength(1));
+    expect(
+        result.errors.single,
+        isA<ParsingError>()
+            .having((e) => e.token.lexeme, 'token.lexeme', 'ON'));
   });
 }

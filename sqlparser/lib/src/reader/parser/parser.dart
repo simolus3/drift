@@ -376,20 +376,27 @@ class Parser extends ParserBase
     T result;
     try {
       result = parser();
+
+      if (result != null) {
+        result.semicolon = _consume(TokenType.semicolon,
+            'Expected a semicolon after the statement ended');
+        result.setSpan(first, _previous);
+      }
     } on ParsingError {
       _lastStmtHadParsingError = true;
       // the error is added to the list errors, so ignore. We skip after the
       // next semicolon to parse the next statement.
       _synchronize(TokenType.semicolon, skipTarget: true);
+
+      if (result == null) return null;
+
+      if (_matchOne(TokenType.semicolon)) {
+        result.semicolon = _previous;
+      }
+
+      result.setSpan(first, _previous);
     }
 
-    if (result == null) return null;
-
-    if (_matchOne(TokenType.semicolon)) {
-      result.semicolon = _previous;
-    }
-
-    result.setSpan(first, _previous);
     return result;
   }
 
