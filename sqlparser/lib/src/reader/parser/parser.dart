@@ -22,14 +22,6 @@ const _binaryOperators = [
   TokenType.pipe,
 ];
 
-const _startOperators = [
-  TokenType.natural,
-  TokenType.left,
-  TokenType.inner,
-  TokenType.cross,
-  TokenType.join,
-];
-
 class ParsingError implements Exception {
   final Token token;
   final String message;

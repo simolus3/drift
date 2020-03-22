@@ -89,11 +89,11 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
         orElse: () => null) as SelectStatement;
 
     if (select == null) return null;
-    if (select.from.length != 1 || select.from.single is! TableReference) {
+    if (select.from is! TableReference) {
       return null;
     }
 
-    final table = (select.from.single as TableReference).resolved as Table;
+    final table = (select.from as TableReference).resolved as Table;
     if (table == null) return null;
 
     // table.findColumn contains logic to resolve row id aliases

@@ -31,7 +31,7 @@ void main() {
 
     final firstColumn = select.columns[0] as ExpressionResultColumn;
     final secondColumn = select.columns[1] as ExpressionResultColumn;
-    final from = select.from[0] as TableReference;
+    final from = select.from as TableReference;
 
     expect((firstColumn.expression as Reference).resolved, id);
     expect((secondColumn.expression as Reference).resolved, content);

@@ -29,7 +29,7 @@ void main() {
           SimpleName('b'),
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: [TableReference('tbl', null)],
+            from: TableReference('tbl', null),
           ),
         ),
       ]),
@@ -48,7 +48,7 @@ void main() {
         SimpleName('b'),
         SelectStatement(
           columns: [StarResultColumn(null)],
-          from: [TableReference('tbl', null)],
+          from: TableReference('tbl', null),
         ),
       ),
     );
@@ -78,7 +78,7 @@ void main() {
         SimpleName('query'),
         SelectStatement(
           columns: [StarResultColumn(null)],
-          from: [TableReference('tbl', null)],
+          from: TableReference('tbl', null),
         ),
       ),
     );

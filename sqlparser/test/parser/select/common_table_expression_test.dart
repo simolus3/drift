@@ -47,7 +47,7 @@ void main() {
                           ),
                         ),
                       ],
-                      from: [TableReference('cnt')],
+                      from: TableReference('cnt'),
                       limit: Limit(
                         count: NumericLiteral(
                           1000000,
@@ -64,7 +64,7 @@ void main() {
         columns: [
           ExpressionResultColumn(expression: Reference(columnName: 'x')),
         ],
-        from: [TableReference('cnt')],
+        from: TableReference('cnt'),
       ),
     );
   });

@@ -116,13 +116,13 @@ class Join extends AstNode {
   final bool natural;
   final JoinOperator operator;
   final TableOrSubquery query;
-  final JoinConstraint constraint;
+  final JoinConstraint /*?*/ constraint;
 
   Join(
       {this.natural = false,
       @required this.operator,
       @required this.query,
-      @required this.constraint});
+      this.constraint});
 
   @override
   Iterable<AstNode> get childNodes {

@@ -58,7 +58,7 @@ void main() {
           SimpleName('all'),
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: [TableReference('tbl', null)],
+            from: TableReference('tbl', null),
             where: DartExpressionPlaceholder(name: 'predicate'),
           ),
         ),
@@ -66,7 +66,7 @@ void main() {
           SpecialStatementIdentifier('special'),
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: [TableReference('tbl', null)],
+            from: TableReference('tbl', null),
           ),
         ),
         DeclaredStatement(
@@ -116,7 +116,7 @@ void main() {
     final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
     final result = engine.parseMoorFile('''
 worksByComposer:
-SELECT DISTINCT A.* FROM works A, works B ON A.id = B.part_of
+SELECT DISTINCT A.* FROM works A, works B ON A.id = 
     WHERE A.composer = :id OR B.composer = :id;
     ''');
 
@@ -124,6 +124,6 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id = B.part_of
     expect(
         result.errors.single,
         isA<ParsingError>()
-            .having((e) => e.token.lexeme, 'token.lexeme', 'ON'));
+            .having((e) => e.token.lexeme, 'token.lexeme', 'WHERE'));
   });
 }

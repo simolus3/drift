@@ -77,9 +77,7 @@ final Map<String, Expression> _testCases = {
     ExistsExpression(
       select: SelectStatement(
         columns: [StarResultColumn(null)],
-        from: [
-          TableReference('demo', null),
-        ],
+        from: TableReference('demo', null),
       ),
     ),
   ),
@@ -114,9 +112,7 @@ final Map<String, Expression> _testCases = {
             expression: Reference(columnName: 'col'),
           )
         ],
-        from: [
-          TableReference('tbl', null),
-        ],
+        from: TableReference('tbl', null),
       ),
     ),
   ),

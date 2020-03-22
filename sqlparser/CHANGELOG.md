@@ -1,6 +1,8 @@
 ## unreleased
 
 - Remove `SqlEngine.withOptions` constructor - just use the regular one
+- Changed `SelectStatement.from` from `List<Queryable>` to `Queryable?`. Selecting from multiple
+  tables with a comma will now be parsed as a `JoinClause`.
 
 ## 0.7.0
 

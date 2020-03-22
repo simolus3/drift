@@ -13,7 +13,7 @@ class SelectStatement extends BaseSelectStatement
     implements StatementWithWhere {
   final bool distinct;
   final List<ResultColumn> columns;
-  final List<Queryable> from;
+  final Queryable /*?*/ from;
 
   @override
   final Expression where;
@@ -45,7 +45,7 @@ class SelectStatement extends BaseSelectStatement
     return [
       if (withClause != null) withClause,
       ...columns,
-      if (from != null) ...from,
+      if (from != null) from,
       if (where != null) where,
       if (groupBy != null) groupBy,
       for (var windowDecl in windowDeclarations) windowDecl.definition,

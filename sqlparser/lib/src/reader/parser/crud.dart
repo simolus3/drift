@@ -1,5 +1,14 @@
 part of 'parser.dart';
 
+const _startJoinOperators = [
+  TokenType.natural,
+  TokenType.left,
+  TokenType.inner,
+  TokenType.cross,
+  TokenType.join,
+  TokenType.comma,
+];
+
 mixin CrudParser on ParserBase {
   CrudStatement _crud() {
     final withClause = _withClause();
@@ -235,25 +244,14 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  List<Queryable> _from() {
-    if (!_matchOne(TokenType.from)) return [];
+  Queryable /*?*/ _from() {
+    if (!_matchOne(TokenType.from)) return null;
 
     // Can either be a list of <TableOrSubquery> or a join. Joins also start
     // with a TableOrSubquery, so let's first parse that.
     final start = _tableOrSubquery();
-    // parse join, if it is one
-    final join = _joinClause(start);
-    if (join != null) {
-      return [join];
-    }
-
-    // not a join. Keep the TableOrSubqueries coming!
-    final queries = [start];
-    while (_matchOne(TokenType.comma)) {
-      queries.add(_tableOrSubquery());
-    }
-
-    return queries;
+    // parse join, if there is one
+    return _joinClause(start) ?? start;
   }
 
   TableOrSubquery _tableOrSubquery() {
@@ -306,7 +304,7 @@ mixin CrudParser on ParserBase {
   }
 
   JoinClause _joinClause(TableOrSubquery start) {
-    var operator = _parseJoinOperatorNoComma();
+    var operator = _parseJoinOperator();
     if (operator == null) {
       return null;
     }
@@ -341,24 +339,21 @@ mixin CrudParser on ParserBase {
       )..setSpan(first, _previous));
 
       // parse the next operator, if there is more than one join
-      if (_matchOne(TokenType.comma)) {
-        operator = [TokenType.comma];
-      } else {
-        operator = _parseJoinOperatorNoComma();
-      }
+      operator = _parseJoinOperator();
     }
 
     return JoinClause(primary: start, joins: joins)
       ..setSpan(start.first, _previous);
   }
 
-  /// Parses https://www.sqlite.org/syntax/join-operator.html, minus the comma.
-  List<TokenType> _parseJoinOperatorNoComma() {
-    if (_match(_startOperators)) {
+  /// Parses https://www.sqlite.org/syntax/join-operator.html
+  List<TokenType> _parseJoinOperator() {
+    if (_match(_startJoinOperators)) {
       final operators = [_previous.type];
 
-      if (_previous.type == TokenType.join) {
-        // just join, without any specific operators
+      if (_previous.type == TokenType.join ||
+          _previous.type == TokenType.comma) {
+        // just join or comma, without any specific operators
         return operators;
       } else {
         // natural is a prefix, another operator can follow.
@@ -379,7 +374,7 @@ mixin CrudParser on ParserBase {
   }
 
   /// Parses https://www.sqlite.org/syntax/join-constraint.html
-  JoinConstraint _joinConstraint() {
+  JoinConstraint /*?*/ _joinConstraint() {
     if (_matchOne(TokenType.on)) {
       return OnConstraint(expression: expression());
     } else if (_matchOne(TokenType.using)) {
@@ -395,8 +390,9 @@ mixin CrudParser on ParserBase {
       _consume(TokenType.rightParen, 'Expected an closing paranthesis');
 
       return UsingConstraint(columnNames: columnNames);
+    } else {
+      return null;
     }
-    _error('Expected a constraint with ON or USING');
   }
 
   /// Parses a where clause if there is one at the current position

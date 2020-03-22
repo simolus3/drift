@@ -170,8 +170,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   void _resolveSelect(SelectStatement s) {
     final availableColumns = <Column>[];
-    for (final queryable in s.from) {
-      _handle(queryable, availableColumns);
+    if (s.from != null) {
+      _handle(s.from, availableColumns);
     }
 
     final usedColumns = <Column>[];

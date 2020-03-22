@@ -48,7 +48,7 @@ void main() {
         source: SelectInsertSource(
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: [TableReference('tbl', null)],
+            from: TableReference('tbl', null),
           ),
         ),
       ),

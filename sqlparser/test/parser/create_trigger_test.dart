@@ -12,7 +12,7 @@ final _block = Block([
   ]),
   SelectStatement(
     columns: [StarResultColumn()],
-    from: [TableReference('tbl')],
+    from: TableReference('tbl'),
   ),
 ]);
 
