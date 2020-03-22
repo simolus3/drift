@@ -20,7 +20,7 @@ CREATE TABLE users(
   different_json INT JSON KEY myJsonKey
 );
 
-usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25
+usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25;
   ''';
 
   test('parses standalone .moor files', () async {
