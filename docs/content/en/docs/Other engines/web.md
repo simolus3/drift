@@ -80,3 +80,17 @@ object via `window.db`. If you need to quickly run a query to check the state of
 If you need to delete your databases, there stored using local storage. You can clear all your data with `localStorage.clear()`.
 
 Web support is experimental at the moment, so please [report all issues](https://github.com/simolus3/moor/issues/new) you find.
+
+## Using IndexedDb
+
+The default `WebDatabase` uses local storage to store the raw sqlite database file. On browsers that support it, you can also
+use `IndexedDb` to store that blob. In general, browsers allow a larger size for `IndexedDb`. The implementation is also more
+performant, since we don't have to encode binary blobs as strings.
+
+To use this implementation on browsers that support it, replace `WebDatabase(name)` with:
+
+```dart
+WebDatabase.withStorage(MoorWebStorage.indexedDbIfSupported(name))
+```
+
+Moor will automatically migrate data from local storage to `IndexeDb` when it is available.

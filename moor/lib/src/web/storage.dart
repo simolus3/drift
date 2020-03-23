@@ -29,9 +29,30 @@ abstract class MoorWebStorage {
   /// This implementation is significantly faster than the default
   /// implementation in local storage. Browsers also tend to allow more data
   /// to be saved in IndexedDB.
+  ///
+  /// When the [migrateFromLocalStorage] parameter (defaults to `true`) is set,
+  /// old data saved using the default [MoorWebStorage] will be migrated to the
+  /// IndexedDB based implementation. This parameter can be turned off for
+  /// applications that never used the local storage implementation as a small
+  /// performance improvement.
+  ///
   /// However, older browsers might not support IndexedDB.
   @experimental
-  factory MoorWebStorage.indexedDb(String name) = _IndexedDbStorage;
+  factory MoorWebStorage.indexedDb(String name,
+      {bool migrateFromLocalStorage}) = _IndexedDbStorage;
+
+  /// Uses [MoorWebStorage.indexedDb] if the current browser supports it.
+  /// Otherwise, falls back to the local storage based implementation.
+  factory MoorWebStorage.indexedDbIfSupported(String name) {
+    return supportsIndexedDb
+        ? MoorWebStorage.indexedDb(name)
+        : MoorWebStorage(name);
+  }
+
+  /// Attempts to check whether the current browser supports the
+  /// [MoorWebStorage.indexedDb] storage implementation.
+  static bool get supportsIndexedDb =>
+      IdbFactory.supported && context.hasProperty('FileReader');
 }
 
 abstract class _CustomSchemaVersionSave implements MoorWebStorage {
@@ -39,11 +60,27 @@ abstract class _CustomSchemaVersionSave implements MoorWebStorage {
   set schemaVersion(int value);
 }
 
+String _persistenceKeyForLocalStorage(String name) {
+  return 'moor_db_str_$name';
+}
+
+String _legacyVersionKeyForLocalStorage(String name) {
+  return 'moor_db_version_$name';
+}
+
+Uint8List /*?*/ _restoreLocalStorage(String name) {
+  final raw = window.localStorage[_persistenceKeyForLocalStorage(name)];
+  if (raw != null) {
+    return bin2str.decode(raw);
+  }
+  return null;
+}
+
 class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
   final String name;
 
-  String get _persistenceKey => 'moor_db_str_$name';
-  String get _versionKey => 'moor_db_version_$name';
+  String get _persistenceKey => _persistenceKeyForLocalStorage(name);
+  String get _versionKey => _legacyVersionKeyForLocalStorage(name);
 
   const _LocalStorageImpl(this.name);
 
@@ -69,11 +106,7 @@ class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
 
   @override
   Future<Uint8List> restore() async {
-    final raw = window.localStorage[_persistenceKey];
-    if (raw != null) {
-      return bin2str.decode(raw);
-    }
-    return null;
+    return _restoreLocalStorage(name);
   }
 
   @override
@@ -89,21 +122,33 @@ class _IndexedDbStorage implements MoorWebStorage {
   static const _objectStoreName = 'moor_databases';
 
   final String name;
+  final bool migrateFromLocalStorage;
 
   Database _database;
 
-  _IndexedDbStorage(this.name);
+  _IndexedDbStorage(this.name, {this.migrateFromLocalStorage = true});
 
   @override
   Future<void> open() async {
+    var wasCreated = false;
+
     _database = await window.indexedDB.open(
       _objectStoreName,
       version: 1,
       onUpgradeNeeded: (event) {
         final database = event.target.result as Database;
+
         database.createObjectStore(_objectStoreName);
+        wasCreated = true;
       },
     );
+
+    if (migrateFromLocalStorage && wasCreated) {
+      final fromLocalStorage = _restoreLocalStorage(name);
+      if (fromLocalStorage != null) {
+        await store(fromLocalStorage);
+      }
+    }
   }
 
   @override
