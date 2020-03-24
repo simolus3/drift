@@ -189,7 +189,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     if (resolved != null) {
       session._checkAndResolve(e, resolved, arg);
     } else if (arg is RoughTypeExpectation) {
-      session._addRelation(DefaultType(e, arg.defaultType()));
+      session._addRelation(DefaultType(e, defaultType: arg.defaultType()));
     }
 
     visitChildren(e, arg);
@@ -434,7 +434,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         throw AssertionError(); // required so that this switch compiles
       case 'sum':
         session._addRelation(CopyAndCast(e, params.first, CastMode.numeric));
-        session._addRelation(DefaultType(e, _realType));
+        session._addRelation(DefaultType(e, defaultType: _realType));
         nullableIfChildIs();
         return null;
       case 'lower':
@@ -494,6 +494,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'coalesce':
       case 'ifnull':
         session._addRelation(CopyEncapsulating(e, params));
+        for (final param in params) {
+          session._addRelation(DefaultType(param, isNullable: true));
+        }
         return null;
       case 'nullif':
         session._hintNullability(e, true);

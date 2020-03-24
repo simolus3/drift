@@ -30,6 +30,8 @@ const Map<String, ResolvedType> _types = {
   'SELECT (3 * 4) = ?': ResolvedType(type: BasicType.int),
   'SELECT (3 / 4) = ?': ResolvedType(type: BasicType.int),
   'SELECT CURRENT_TIMESTAMP = ?': ResolvedType(type: BasicType.text),
+  "SELECT COALESCE(NULL, 'foo') = ?": ResolvedType(type: BasicType.text),
+  'SELECT NULLIF(3, 4) = ?': ResolvedType(type: BasicType.int, nullable: true),
   'INSERT INTO demo DEFAULT VALUES ON CONFLICT (id) WHERE ? DO NOTHING':
       ResolvedType.bool(),
   'INSERT INTO demo DEFAULT VALUES ON CONFLICT DO UPDATE SET id = id WHERE ?':

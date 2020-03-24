@@ -26,11 +26,17 @@ class ResolvedType {
 
   const ResolvedType(
       {this.type, this.hint, this.nullable = false, this.isArray = false});
-  const ResolvedType.bool({bool nullable})
+  const ResolvedType.bool({bool nullable = false})
       : this(type: BasicType.int, hint: const IsBoolean(), nullable: nullable);
 
+  ResolvedType get withoutNullabilityInfo {
+    return nullable == null
+        ? this
+        : ResolvedType(type: type, hint: hint, isArray: isArray);
+  }
+
   ResolvedType withNullable(bool nullable) {
-    return copyWith(nullable: nullable);
+    return nullable == this.nullable ? this : copyWith(nullable: nullable);
   }
 
   ResolvedType toArray(bool array) {

@@ -56,9 +56,10 @@ class HaveSameType extends TypeRelation {
 class DefaultType extends TypeRelation implements DirectedRelation {
   @override
   final Typeable target;
-  final ResolvedType defaultType;
+  final ResolvedType /*?*/ defaultType;
+  final bool /*?*/ isNullable;
 
-  DefaultType(this.target, this.defaultType);
+  DefaultType(this.target, {this.defaultType, this.isNullable});
 }
 
 enum CastMode { numeric, boolean }

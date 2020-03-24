@@ -46,6 +46,7 @@ class TypeInferenceSession {
   /// This is not currently implemented.
   void _hintNullability(Typeable t, bool nullable) {
     assert(nullable != null);
+    graph.markNullability(t, nullable);
   }
 
   /// Asks the underlying [TypeGraph] to propagate known types via known

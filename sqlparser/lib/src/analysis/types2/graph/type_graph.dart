@@ -12,13 +12,17 @@ class TypeGraph {
   final Set<MultiSourceRelation> _multiSources = {};
   final List<DefaultType> _defaultTypes = [];
 
-  TypeGraph();
-
   ResolvedType operator [](Typeable t) {
     final normalized = variables.normalize(t);
 
     if (_knownTypes.containsKey(normalized)) {
-      return _knownTypes[normalized];
+      final type = _knownTypes[normalized];
+      final nullability = _knownNullability[normalized];
+
+      if (nullability != null) {
+        return type.withNullable(nullability);
+      }
+      return type;
     }
 
     return null;
@@ -28,7 +32,7 @@ class TypeGraph {
     final normalized = variables.normalize(t);
     _knownTypes[normalized] = type;
 
-    if (type.nullable != null) {
+    if (type.nullable != null && !_knownNullability.containsKey(normalized)) {
       // nullability is known
       _knownNullability[normalized] = type.nullable;
     }
@@ -38,6 +42,10 @@ class TypeGraph {
 
   void addRelation(TypeRelation relation) {
     _relations.add(relation);
+  }
+
+  void markNullability(Typeable t, bool isNullable) {
+    _knownNullability[variables.normalize(t)] = isNullable;
   }
 
   void performResolve() {
@@ -55,8 +63,16 @@ class TypeGraph {
 
     // apply default types
     for (final applyDefault in _defaultTypes) {
-      if (!knowsType(applyDefault.target)) {
-        this[applyDefault.target] = applyDefault.defaultType;
+      final target = applyDefault.target;
+
+      final type = applyDefault.defaultType;
+      if (type != null && !knowsType(target)) {
+        this[target] = applyDefault.defaultType;
+      }
+
+      final nullability = applyDefault.isNullable;
+      if (nullability != null && _knownNullability.containsKey(target)) {
+        markNullability(target, nullability);
       }
     }
   }
@@ -87,13 +103,22 @@ class TypeGraph {
   }
 
   void _propagateManyToOne(MultiSourceRelation edge, List<Typeable> resolved) {
-    if (!knowsType(edge.target)) {
-      final fromTypes = edge.from.map((t) => this[t]).where((e) => e != null);
-      final encapsulated = _encapsulate(fromTypes);
-      if (encapsulated != null) {
-        this[edge.target] = encapsulated;
-        resolved.add(edge.target);
+    if (edge is CopyEncapsulating) {
+      if (!knowsType(edge.target)) {
+        final fromTypes = edge.from.map((t) => this[t]).where((e) => e != null);
+        final encapsulated = _encapsulate(fromTypes);
+        if (encapsulated != null) {
+          this[edge.target] = encapsulated;
+          resolved.add(edge.target);
+        }
       }
+    } else if (edge is NullableIfSomeOtherIs &&
+        !_knownNullability.containsKey(edge.target)) {
+      final nullable = edge.from
+          .map((e) => _knownNullability[e])
+          .any((nullable) => nullable == true);
+
+      _knownNullability[edge.target] = nullable;
     }
   }
 
@@ -108,8 +133,27 @@ class TypeGraph {
   }
 
   ResolvedType /*?*/ _encapsulate(Iterable<ResolvedType> targets) {
-    return targets.fold<ResolvedType>(null, (previous, element) {
-      return previous?.union(element) ?? element;
+    return targets.map((e) => e.withoutNullabilityInfo).fold<ResolvedType>(null,
+        (previous, element) {
+      if (previous == null) return element;
+
+      final previousType = previous.type;
+      final elementType = element.type;
+
+      if (previousType == elementType) return previous;
+      if (previousType == BasicType.nullType) return element;
+
+      bool isIntOrNumeric(BasicType type) {
+        return type == BasicType.int || type == BasicType.real;
+      }
+
+      // encapsulate two different numeric types to real
+      if (isIntOrNumeric(previousType) && isIntOrNumeric(elementType)) {
+        return const ResolvedType(type: BasicType.real);
+      }
+
+      // fallback to text if everything else fails
+      return const ResolvedType(type: BasicType.text);
     });
   }
 
@@ -181,19 +225,6 @@ class _ResolvedVariables {
 }
 
 extension on ResolvedType {
-  ResolvedType union(ResolvedType other) {
-    if (other == this) return this;
-
-    if (other.type == type) {
-      final thisNullable = nullable ?? true;
-      final otherNullable = other.nullable ?? true;
-      return withNullable(thisNullable || otherNullable);
-    }
-
-    // fallback. todo: Support more cases
-    return const ResolvedType(type: BasicType.text, nullable: true);
-  }
-
   ResolvedType cast(CastMode mode) {
     switch (mode) {
       case CastMode.numeric:
