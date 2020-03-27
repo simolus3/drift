@@ -52,6 +52,25 @@ void main() {
 
     moorRuntimeOptions.defaultSerializer = old;
   });
+
+  test('can serialize and deserialize blob columns', () {
+    final user = User(
+      id: 3,
+      name: 'Username',
+      isAwesome: true,
+      profilePicture: Uint8List.fromList([1, 2, 3, 4]),
+      creationTime: DateTime.now(),
+    );
+
+    final recovered = User.fromJsonString(user.toJsonString());
+
+    // Note: Some precision is lost when serializing DateTimes, so we're using
+    // custom expects instead of expect(recovered, user)
+    expect(recovered.id, user.id);
+    expect(recovered.name, user.name);
+    expect(recovered.isAwesome, user.isAwesome);
+    expect(recovered.profilePicture, user.profilePicture);
+  });
 }
 
 class _MySerializer extends ValueSerializer {
