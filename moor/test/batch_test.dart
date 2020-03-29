@@ -96,9 +96,25 @@ void main() {
 
   test('updates stream queries', () async {
     await db.batch((b) {
+      b.insert(db.todosTable, TodoEntry(id: 3, content: 'content'));
+
       b.update(db.users, const UsersCompanion(name: Value('new user name')));
+      b.replace(
+        db.todosTable,
+        const TodosTableCompanion(id: Value(3), content: Value('new')),
+      );
+
+      b.deleteWhere(db.todosTable, (TodosTable row) => row.id.equals(3));
+      b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
     });
 
-    verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
+    verify(
+      streamQueries.handleTableUpdates({
+        const TableUpdate('todos', kind: UpdateKind.insert),
+        const TableUpdate('users', kind: UpdateKind.update),
+        const TableUpdate('todos', kind: UpdateKind.update),
+        const TableUpdate('todos', kind: UpdateKind.delete),
+      }),
+    );
   });
 }

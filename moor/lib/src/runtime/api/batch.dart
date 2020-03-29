@@ -10,9 +10,13 @@ class Batch {
   /// Whether we should start a transaction when completing.
   final bool _startTransaction;
 
-  final Set<TableInfo> _affectedTables = {};
+  final Set<TableUpdate> _createdUpdates = {};
 
   Batch._(this._engine, this._startTransaction);
+
+  void _addUpdate(TableInfo table, UpdateKind kind) {
+    _createdUpdates.add(TableUpdate.onTable(table, kind: kind));
+  }
 
   /// Inserts a row constructed from the fields in [row].
   ///
@@ -28,7 +32,7 @@ class Batch {
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
   void insert<D extends DataClass>(TableInfo<Table, D> table, Insertable<D> row,
       {InsertMode mode}) {
-    _affectedTables.add(table);
+    _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
     final context =
         InsertStatement<D>(_engine, table).createContext(row, actualMode);
@@ -61,7 +65,7 @@ class Batch {
   void update<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row,
       {Expression<bool> Function(T table) where}) {
-    _affectedTables.add(table);
+    _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_engine, table);
     if (where != null) stmt.where(where);
 
@@ -80,7 +84,7 @@ class Batch {
     TableInfo<T, D> table,
     Insertable<D> row,
   ) {
-    _affectedTables.add(table);
+    _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_engine, table)
       ..replace(row, dontExecute: true);
     _addContext(stmt.constructQuery());
@@ -101,6 +105,7 @@ class Batch {
   /// - [DeleteStatement.delete]
   void delete<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row) {
+    _addUpdate(table, UpdateKind.delete);
     final stmt = DeleteStatement(_engine, table)..whereSamePrimaryKey(row);
     _addContext(stmt.constructQuery());
   }
@@ -111,6 +116,7 @@ class Batch {
   ///  - [QueryEngine.delete]
   void deleteWhere<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Expression<bool> Function(T tbl) filter) {
+    _addUpdate(table, UpdateKind.delete);
     final stmt = DeleteStatement(_engine, table)..where(filter);
     _addContext(stmt.constructQuery());
   }
@@ -142,7 +148,7 @@ class Batch {
       await _runWith(_engine.executor);
     }
 
-    _engine.markTablesUpdated(_affectedTables);
+    _engine.notifyUpdates(_createdUpdates);
   }
 
   Future<void> _runWith(QueryExecutor executor) async {
