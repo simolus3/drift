@@ -58,7 +58,10 @@ void main() {
       
       class Socks extends Table {
         TextColumn get name => text()();
-        IntColumn get id => integer().autoIncrement()();
+        IntColumn get id => integer()();
+        
+        @override
+        Set<Column> get primaryKey => {id};
       }
       
       class ArchivedSocks extends Socks {
@@ -209,6 +212,7 @@ void main() {
       expect(archivedSocks.columns, hasLength(4));
       expect(archivedSocks.columns.map((c) => c.name.name),
           ['name', 'id', 'archived_by', 'archived_on']);
+      expect(archivedSocks.primaryKey.map((e) => e.name.name), ['id']);
     });
   });
 }

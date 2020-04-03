@@ -74,7 +74,8 @@ class TableParser {
 
   Future<Set<MoorColumn>> _readPrimaryKey(
       ClassElement element, List<MoorColumn> columns) async {
-    final primaryKeyGetter = element.getGetter('primaryKey');
+    final primaryKeyGetter =
+        element.lookUpGetter('primaryKey', element.library);
     if (primaryKeyGetter == null) {
       return null;
     }
