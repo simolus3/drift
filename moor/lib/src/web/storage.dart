@@ -39,20 +39,32 @@ abstract class MoorWebStorage {
   /// However, older browsers might not support IndexedDB.
   @experimental
   factory MoorWebStorage.indexedDb(String name,
-      {bool migrateFromLocalStorage}) = _IndexedDbStorage;
+      {bool migrateFromLocalStorage, bool inWebWorker}) = _IndexedDbStorage;
 
   /// Uses [MoorWebStorage.indexedDb] if the current browser supports it.
   /// Otherwise, falls back to the local storage based implementation.
-  factory MoorWebStorage.indexedDbIfSupported(String name) {
-    return supportsIndexedDb
-        ? MoorWebStorage.indexedDb(name)
+  factory MoorWebStorage.indexedDbIfSupported(String name,
+      {bool inWebWorker = false}) {
+    return supportsIndexedDb(inWebWorker: inWebWorker)
+        ? MoorWebStorage.indexedDb(name, inWebWorker: inWebWorker)
         : MoorWebStorage(name);
   }
 
   /// Attempts to check whether the current browser supports the
   /// [MoorWebStorage.indexedDb] storage implementation.
-  static bool get supportsIndexedDb =>
-      IdbFactory.supported && context.hasProperty('FileReader');
+  static bool supportsIndexedDb({bool inWebWorker = false}) {
+    var isIndexedDbSupported = false;
+    if (inWebWorker && WorkerGlobalScope.instance.indexedDB != null) {
+      isIndexedDbSupported = true;
+    } else {
+      try {
+        isIndexedDbSupported = IdbFactory.supported;
+      } catch (error) {
+        isIndexedDbSupported = false;
+      }
+    }
+    return isIndexedDbSupported && context.hasProperty('FileReader');
+  }
 }
 
 abstract class _CustomSchemaVersionSave implements MoorWebStorage {
@@ -123,16 +135,21 @@ class _IndexedDbStorage implements MoorWebStorage {
 
   final String name;
   final bool migrateFromLocalStorage;
+  final bool inWebWorker;
 
   Database _database;
 
-  _IndexedDbStorage(this.name, {this.migrateFromLocalStorage = true});
+  _IndexedDbStorage(this.name,
+      {this.migrateFromLocalStorage = true, this.inWebWorker = false});
 
   @override
   Future<void> open() async {
     var wasCreated = false;
 
-    _database = await window.indexedDB.open(
+    final indexedDb =
+    inWebWorker ? WorkerGlobalScope.instance.indexedDB : window.indexedDB;
+
+    _database = await indexedDb.open(
       _objectStoreName,
       version: 1,
       onUpgradeNeeded: (event) {
@@ -159,7 +176,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   @override
   Future<void> store(Uint8List data) async {
     final transaction =
-        _database.transactionStore(_objectStoreName, 'readwrite');
+    _database.transactionStore(_objectStoreName, 'readwrite');
     final store = transaction.objectStore(_objectStoreName);
 
     await store.put(Blob([data]), name);
@@ -169,7 +186,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   @override
   Future<Uint8List> restore() async {
     final transaction =
-        _database.transactionStore(_objectStoreName, 'readonly');
+    _database.transactionStore(_objectStoreName, 'readonly');
     final store = transaction.objectStore(_objectStoreName);
 
     final result = await store.getObject(name) as Blob /*?*/;
