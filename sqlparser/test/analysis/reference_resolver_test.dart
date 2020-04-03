@@ -41,6 +41,16 @@ void main() {
     expect((where.left as Reference).resolved, id);
   });
 
+  test("resolved columns don't include moor nested results", () {
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+      ..registerTable(demoTable);
+
+    final context = engine.analyze('SELECT demo.** FROM demo;');
+
+    expect(context.errors, isEmpty);
+    expect((context.root as SelectStatement).resolvedColumns, isEmpty);
+  });
+
   test('resolves the column for order by clauses', () {
     final engine = SqlEngine()..registerTable(demoTable);
 

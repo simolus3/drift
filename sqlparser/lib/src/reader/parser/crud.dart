@@ -198,13 +198,13 @@ mixin CrudParser on ParserBase {
   /// Parses a [ResultColumn] or throws if none is found.
   /// https://www.sqlite.org/syntax/result-column.html
   ResultColumn _resultColumn() {
-    if (_match(const [TokenType.star])) {
+    if (_matchOne(TokenType.star)) {
       return StarResultColumn(null)..setSpan(_previous, _previous);
     }
 
     final positionBefore = _current;
 
-    if (_match(const [TokenType.identifier])) {
+    if (_matchOne(TokenType.identifier)) {
       // two options. the identifier could be followed by ".*", in which case
       // we have a star result column. If it's followed by anything else, it can
       // still refer to a column in a table as part of a expression

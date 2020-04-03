@@ -225,6 +225,17 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
             availableColumns.add(column);
           }
         }
+      } else if (resultColumn is NestedStarResultColumn) {
+        final target = scope
+            .resolve<ResolvesToResultSet>(resultColumn.tableName, orElse: () {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.referencedUnknownTable,
+            message: 'Unknown table: ${resultColumn.tableName}',
+            relevantNode: resultColumn,
+          ));
+        });
+
+        if (target != null) resultColumn.resultSet = target.resultSet;
       }
     }
 

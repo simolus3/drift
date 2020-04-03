@@ -147,11 +147,18 @@ class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  final MoorTable matchingTable;
+  final MoorTable /*?*/ matchingTable;
+
+  /// Tables in the result set that should appear as a class.
+  ///
+  /// See [NestedResultTable] for further discussion and examples.
+  final List<NestedResultTable> nestedResults;
+
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 
-  InferredResultSet(this.matchingTable, this.columns);
+  InferredResultSet(this.matchingTable, this.columns,
+      {this.nestedResults = const []});
 
   /// Whether a new class needs to be written to store the result of this query.
   /// We don't need to do that for queries which return an existing table model
@@ -215,6 +222,39 @@ class ResultColumn {
       return dartTypeNames[type];
     }
   }
+}
+
+/// A nested table extracted from a `**` column.
+///
+/// For instance, consider this query:
+/// ```sql
+/// CREATE TABLE groups (id INTEGER NOT NULL PRIMARY KEY);
+/// CREATE TABLE users (id INTEGER NOT NULL PRIMARY KEY);
+/// CREATE TABLE members (
+///   group INT REFERENCES ..,
+///   user INT REFERENCES ...,
+///   is_admin BOOLEAN
+/// );
+///
+/// membersOf: SELECT users.**, members.is_admin FROM members
+///   INNER JOIN users ON users.id = members.user;
+/// ```
+///
+/// The generated result set should now look like this:
+/// ```dart
+/// class MembersOfResult {
+///   final User users;
+///   final bool isAdmin;
+/// }
+/// ```
+///
+/// Knowing that `User` should be extracted into a field is represented with a
+/// [NestedResultTable] information as part of the result set.
+class NestedResultTable {
+  final String name;
+  final MoorTable table;
+
+  NestedResultTable(this.name, this.table);
 }
 
 /// Something in the query that needs special attention when generating code,

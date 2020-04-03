@@ -1,12 +1,15 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
+
+import '../utils.dart';
 
 const createFoo = '''
 CREATE TABLE foo (
@@ -66,5 +69,41 @@ Future<void> main() async {
     expect(() => parse('SELECT ?2'), throwsStateError);
     expect(() => parse('SELECT ?1 = ?3'), throwsStateError);
     expect(() => parse('SELECT ?1 = ?3 OR ?2'), returnsNormally);
+  });
+
+  test('resolves nested result sets', () async {
+    final state = TestState.withContent({
+      'foo|lib/main.moor': r'''
+CREATE TABLE points (
+  id INTEGER NOT NULL PRIMARY KEY,
+  lat REAL NOT NULL,
+  long REAL NOT NULL
+);
+CREATE TABLE routes (
+  id INTEGER NOT NULL PRIMARY KEY,
+  "from" INTEGER NOT NULL REFERENCES points (id),
+  to INTEGER NOT NULL REFERENCES points (id)
+);
+
+allRoutes: SELECT routes.*, "from".**, to.**
+FROM routes r
+  INNER JOIN points "from" ON "from".id = routes.from
+  INNER JOIN points to ON to.id = routes.to;
+      ''',
+    });
+
+    final file = await state.analyze('package:foo/main.moor');
+    final result = file.currentResult as ParsedMoorFile;
+
+    expect(file.errors.errors, isEmpty);
+
+    final query = result.resolvedQueries.single;
+    final resultSet = (query as SqlSelectQuery).resultSet;
+
+    expect(resultSet.columns.map((e) => e.name), ['id', 'from', 'to']);
+    expect(resultSet.matchingTable, isNull);
+    expect(resultSet.nestedResults.map((e) => e.name), ['from', 'to']);
+    expect(resultSet.nestedResults.map((e) => e.table.sqlName),
+        ['points', 'points']);
   });
 }

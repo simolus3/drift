@@ -9,12 +9,14 @@ class Linter {
   final AnalysisContext context;
   final TypeMapper mapper;
   final List<AnalysisError> lints = [];
+  final bool contextRootIsQuery;
 
-  Linter(this.context, this.mapper);
+  Linter(this.context, this.mapper, {this.contextRootIsQuery = false});
 
   Linter.forHandler(QueryHandler handler)
       : context = handler.context,
-        mapper = handler.mapper;
+        mapper = handler.mapper,
+        contextRootIsQuery = true;
 
   void reportLints() {
     context.root.acceptWithoutArg(_LintingVisitor(this));
@@ -53,6 +55,31 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           type: AnalysisErrorType.other,
           message: 'The name of this column depends on a Dart template, which '
               'breaks generated code. Try adding an `AS` alias to fix this.',
+          relevantNode: e,
+        ));
+      }
+    }
+
+    if (e is NestedStarResultColumn) {
+      // check that a table.** column only appears in a top-level select
+      // statement
+      if (!linter.contextRootIsQuery || e.parent != linter.context.root) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'Nested star columns may only appear in a top-level select '
+              "query. They're not supported in compound selects or select "
+              'expressions',
+          relevantNode: e,
+        ));
+      }
+
+      // check that it actually refers to a table
+      if (e.resultSet is! Table) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'Nested star columns must refer to a table directly. They '
+              "can't refer to a table-valued function or another select "
+              'statement.',
           relevantNode: e,
         ));
       }

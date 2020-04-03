@@ -84,6 +84,7 @@ class QueryHandler {
     final columns = <ResultColumn>[];
     final rawColumns = _select.resolvedColumns;
 
+    // First, go through regular result columns
     for (final column in rawColumns) {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
@@ -97,6 +98,13 @@ class QueryHandler {
 
       final table = _tableOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != table);
+    }
+
+    final nestedResults = _findNestedResultTables();
+    if (nestedResults.isNotEmpty) {
+      // The single table optimization doesn't make sense when nested result
+      // sets are present.
+      candidatesForSingleTable.clear();
     }
 
     // if all columns read from the same table, and all columns in that table
@@ -146,7 +154,27 @@ class QueryHandler {
       }
     }
 
-    return InferredResultSet(null, columns);
+    return InferredResultSet(null, columns, nestedResults: nestedResults);
+  }
+
+  List<NestedResultTable> _findNestedResultTables() {
+    final query = _select;
+    // We don't currently support nested results for compound statements
+    if (query is! SelectStatement) return const [];
+
+    final nestedTables = <NestedResultTable>[];
+
+    for (final column in (query as SelectStatement).columns) {
+      if (column is NestedStarResultColumn) {
+        final result = column.resultSet;
+        if (result is! Table) continue;
+
+        final moorTable = mapper.tableToMoor(result as Table);
+        nestedTables.add(NestedResultTable(column.tableName, moorTable));
+      }
+    }
+
+    return nestedTables;
   }
 
   /// The table a given result column is from, or null if this column doesn't
