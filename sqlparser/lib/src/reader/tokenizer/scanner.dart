@@ -78,6 +78,9 @@ class Scanner {
         }
         break;
       case charStar:
+        if (scanMoorTokens && _match(charStar)) {
+          _addToken(TokenType.doubleStar);
+        }
         _addToken(TokenType.star);
         break;
       case charSlash:

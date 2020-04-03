@@ -9,6 +9,9 @@ enum TokenType {
   $do,
   doublePipe,
   star,
+
+  /// A `**` token. This is only scanned when scanning for moor tokens.
+  doubleStar,
   slash,
   percent,
   plus,

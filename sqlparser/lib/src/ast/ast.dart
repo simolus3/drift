@@ -27,6 +27,7 @@ part 'moor/declared_statement.dart';
 part 'moor/import_statement.dart';
 part 'moor/inline_dart.dart';
 part 'moor/moor_file.dart';
+part 'moor/nested_star_result_column.dart';
 part 'schema/column_definition.dart';
 part 'schema/table_definition.dart';
 part 'statements/block.dart';

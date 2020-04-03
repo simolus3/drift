@@ -209,11 +209,16 @@ mixin CrudParser on ParserBase {
       // we have a star result column. If it's followed by anything else, it can
       // still refer to a column in a table as part of a expression
       // result column
-      final identifier = _previous;
+      final identifier = _previous as IdentifierToken;
 
-      if (_match(const [TokenType.dot]) && _match(const [TokenType.star])) {
-        return StarResultColumn((identifier as IdentifierToken).identifier)
-          ..setSpan(identifier, _previous);
+      if (_matchOne(TokenType.dot)) {
+        if (_matchOne(TokenType.star)) {
+          return StarResultColumn(identifier.identifier)
+            ..setSpan(identifier, _previous);
+        } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
+          return NestedStarResultColumn(identifier.identifier)
+            ..setSpan(identifier, _previous);
+        }
       }
 
       // not a star result column. go back and parse the expression.
