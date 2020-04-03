@@ -1196,16 +1196,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return MultipleResult(
       a: row.readString('a'),
       b: row.readInt('b'),
-      c: row.readDouble('c'),
-      a1: row.readString('a'),
-      b1: row.readInt('b'),
+      c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
     );
   }
 
   Selectable<MultipleResult> multiple(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
-        'SELECT * FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
+        'SELECT d.*, "c.a" AS "nested_0.a", "c.b" AS "nested_0.b", "c.c" AS "nested_0.c" FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
   }
@@ -1306,28 +1304,21 @@ class TableValuedResult {
 class MultipleResult {
   final String a;
   final int b;
-  final double c;
-  final String a1;
-  final int b1;
+  final WithConstraint c;
   MultipleResult({
     this.a,
     this.b,
     this.c,
-    this.a1,
-    this.b1,
   });
   @override
-  int get hashCode => $mrjf($mrjc(a.hashCode,
-      $mrjc(b.hashCode, $mrjc(c.hashCode, $mrjc(a1.hashCode, b1.hashCode)))));
+  int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is MultipleResult &&
           other.a == this.a &&
           other.b == this.b &&
-          other.c == this.c &&
-          other.a1 == this.a1 &&
-          other.b1 == this.b1);
+          other.c == this.c);
 }
 
 class ReadRowIdResult {

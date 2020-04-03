@@ -167,7 +167,8 @@ class InferredResultSet {
 
   /// Whether this query returns a single column that should be returned
   /// directly.
-  bool get singleColumn => matchingTable == null && columns.length == 1;
+  bool get singleColumn =>
+      matchingTable == null && nestedResults.isEmpty && columns.length == 1;
 
   void forceDartNames(Map<ResultColumn, String> names) {
     _dartNames
@@ -251,10 +252,13 @@ class ResultColumn {
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
 class NestedResultTable {
+  final NestedStarResultColumn from;
   final String name;
   final MoorTable table;
 
-  NestedResultTable(this.name, this.table);
+  NestedResultTable(this.from, this.name, this.table);
+
+  String get dartFieldName => ReCase(name).camelCase;
 }
 
 /// Something in the query that needs special attention when generating code,

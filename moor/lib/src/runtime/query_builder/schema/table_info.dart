@@ -32,17 +32,6 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   @override
   String get entityName => actualTableName;
 
-  /// The table name, optionally suffixed with the alias if one exists. This
-  /// can be used in select statements, as it returns something like "users u"
-  /// for a table called users that has been aliased as "u".
-  String get tableWithAlias {
-    if ($tableName == actualTableName) {
-      return actualTableName;
-    } else {
-      return '$actualTableName ${$tableName}';
-    }
-  }
-
   /// All columns defined in this table.
   List<GeneratedColumn> get $columns;
 
@@ -73,11 +62,6 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
 
   /// Maps the given row returned by the database into the fitting data class.
   D map(Map<String, dynamic> data, {String tablePrefix});
-
-  /// Like [map], but from a [row] instead of the low-level map.
-  D mapFromRow(QueryRow row, {String tablePrefix}) {
-    return map(row.data, tablePrefix: tablePrefix);
-  }
 
   /// Converts a [companion] to the real model class, [D].
   ///
@@ -112,4 +96,40 @@ mixin VirtualTableInfo<TableDsl extends Table, D extends DataClass>
   /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name>
   /// USING <moduleAndArgs>;` can be used to create this table in sql.
   String get moduleAndArgs;
+}
+
+/// Static extension members for generated table classes.
+///
+/// Most of these are accessed internally by moor or by generated code.
+extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
+    on TableInfo<TableDsl, D> {
+  /// The table name, optionally suffixed with the alias if one exists. This
+  /// can be used in select statements, as it returns something like "users u"
+  /// for a table called users that has been aliased as "u".
+  String get tableWithAlias {
+    if ($tableName == actualTableName) {
+      return actualTableName;
+    } else {
+      return '$actualTableName ${$tableName}';
+    }
+  }
+
+  /// Like [map], but from a [row] instead of the low-level map.
+  D mapFromRow(QueryRow row, {String tablePrefix}) {
+    return map(row.data, tablePrefix: tablePrefix);
+  }
+
+  /// Like [mapFromRow], but returns null if a non-nullable column of this table
+  /// is null in [row].
+  D /*?*/ mapFromRowOrNull(QueryRow row, {String tablePrefix}) {
+    final resolvedPrefix = tablePrefix ?? '';
+
+    final notInRow = $columns
+        .where((c) => !c.$nullable)
+        .any((e) => row.data['$resolvedPrefix'] == null);
+
+    if (notInRow) return null;
+
+    return mapFromRow(row, tablePrefix: tablePrefix);
+  }
 }

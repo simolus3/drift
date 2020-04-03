@@ -49,7 +49,7 @@ tableValued:
 
 @create: INSERT INTO config (config_key, config_value) VALUES ('key', 'values');
 
-multiple: SELECT * FROM with_constraints c
+multiple: SELECT d.*, c.** FROM with_constraints c
  INNER JOIN with_defaults d
    ON d.a = c.a AND d.b = c.b
  WHERE $predicate;

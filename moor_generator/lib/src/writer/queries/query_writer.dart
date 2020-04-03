@@ -19,6 +19,8 @@ class QueryWriter {
   final SqlQuery query;
   final Scope scope;
 
+  final Map<NestedResultTable, String> _expandedNestedPrefixes = {};
+
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
@@ -64,6 +66,7 @@ class QueryWriter {
   }
 
   void _writeSelect() {
+    _createNamesForNestedResults();
     if (!_select.resultSet.singleColumn) {
       _writeMapping();
     }
@@ -88,6 +91,14 @@ class QueryWriter {
     }
   }
 
+  void _createNamesForNestedResults() {
+    var index = 0;
+
+    for (final nested in _select.resultSet.nestedResults) {
+      _expandedNestedPrefixes[nested] = 'nested_${index++}';
+    }
+  }
+
   /// Writes a mapping method that turns a "QueryRow" into the desired custom
   /// return type.
   void _writeMapping() {
@@ -105,6 +116,16 @@ class QueryWriter {
       for (final column in _select.resultSet.columns) {
         final fieldName = _select.resultSet.dartNameFor(column);
         _buffer.write('$fieldName: ${_readingCode(column)},');
+      }
+      for (final nested in _select.resultSet.nestedResults) {
+        final prefix = _expandedNestedPrefixes[nested];
+        if (prefix == null) continue;
+
+        final fieldName = nested.dartFieldName;
+        final tableGetter = nested.table.dbGetterName;
+
+        _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
+            'tablePrefix: ${asDartLiteral(prefix)}),');
       }
       _buffer.write(');\n}\n');
 
@@ -354,11 +375,24 @@ class QueryWriter {
   String _queryCode() {
     // sort variables and placeholders by the order in which they appear
     final toReplace = query.fromContext.root.allDescendants
-        .where((node) => node is Variable || node is DartPlaceholder)
+        .where((node) =>
+            node is Variable ||
+            node is DartPlaceholder ||
+            node is NestedStarResultColumn)
         .toList()
           ..sort(_compareNodes);
 
     final buffer = StringBuffer("'");
+
+    // Index nested results by their syntactic origin for faster lookups later
+    var doubleStarColumnToResolvedTable =
+        const <NestedStarResultColumn, NestedResultTable>{};
+    if (query is SqlSelectQuery) {
+      doubleStarColumnToResolvedTable = {
+        for (final nestedResult in _select.resultSet.nestedResults)
+          nestedResult.from: nestedResult
+      };
+    }
 
     var lastIndex = query.fromContext.root.firstPosition;
 
@@ -387,6 +421,29 @@ class QueryWriter {
 
         replaceNode(rewriteTarget,
             '\${${_placeholderContextName(moorPlaceholder)}.sql}');
+      } else if (rewriteTarget is NestedStarResultColumn) {
+        final result = doubleStarColumnToResolvedTable[rewriteTarget];
+        if (result == null) continue;
+
+        final prefix = _expandedNestedPrefixes[result];
+        final table = rewriteTarget.tableName;
+
+        // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
+        final expanded = StringBuffer();
+        var isFirst = true;
+
+        for (final column in result.table.columns) {
+          if (isFirst) {
+            isFirst = false;
+          } else {
+            expanded.write(', ');
+          }
+
+          final columnName = column.name.name;
+          expanded.write('"$table.$columnName" AS "$prefix.$columnName"');
+        }
+
+        replaceNode(rewriteTarget, expanded.toString());
       }
     }
 

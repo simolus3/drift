@@ -170,7 +170,8 @@ class QueryHandler {
         if (result is! Table) continue;
 
         final moorTable = mapper.tableToMoor(result as Table);
-        nestedTables.add(NestedResultTable(column.tableName, moorTable));
+        nestedTables
+            .add(NestedResultTable(column, column.tableName, moorTable));
       }
     }
 
