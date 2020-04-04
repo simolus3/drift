@@ -132,6 +132,71 @@ all the tables declared via Dart tables can be used inside queries.
 We support both relative imports and the `package:` imports you
 know from Dart.
 
+## Nested results
+
+Many queries fetch all columns from some table, typically by using the 
+`SELECT table.*` syntax. That approach can become a bit tedious when applied
+over multiple tables from a join, as shown in this example:
+
+```sql
+CREATE TABLE coordinates (
+  id INTEGER NOT NULL PRIMARY KEY,
+  lat REAL NOT NULL,
+  long REAL NOT NULL
+);
+
+CREATE TABLE saved_routes (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  "from" INTEGER NOT NULL REFERENCES coordinates (id),
+  to INTEGER NOT NULL REFERENCES coordinates (id)
+);
+
+routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
+  INNER JOIN coordinates f ON f.id = r."from"
+  INNER JOIN coordinates t ON f.id = r.to;
+```
+
+To match the returned column names, moor will generate a class having an `id`,
+`name`,  `id1`, `lat`, `long`, `lat1` and a `long1` field.
+Of course, that's not helpful at all - was `lat1` coming from `from` or `to` 
+again? Let's rewrite the query, this time using nested results:
+
+```sql
+routesWithNestedPoints: SELECT r.id, r.name, f.**, t.** FROM routes r
+  INNER JOIN coordinates f ON f.id = r."from"
+  INNER JOIN coordinates t ON f.id = r.to;
+```
+
+As you can see, we can nest a result simply by using the moor-specific 
+`table.**` syntax.
+For this query, moor will generate the following class:
+```dart
+class RoutesWithNestedPointsResult {
+  final int id;
+  final String name;
+  final Point from;
+  final Point to;
+  // ...
+}
+```
+
+Great! This class matches our intent much better than the flat result class 
+from before.
+
+At the moment, there are some limitations with this approach:
+
+- `**` is not yet supported in compound select statements
+- you can only use `table.**` if table is an actual table or a reference to it.
+  In particular, it doesn't work for result sets from `WITH` clauses or table-
+  valued functions.
+
+You might be wondering how `**` works under the hood, since it's not valid sql.
+At build time, moor's generator will transform `**` into a list of all columns
+from the referred table. For instance, if we had a table `foo` with an `id INT`
+and a `bar TEXT` column. Then, `SELECT foo.** FROM foo` might be desugared to
+`SELECT foo.id AS "nested_0.id", foo.bar AS "nested_0".bar FROM foo`.
+
 ## Dart interop
 Moor files work perfectly together with moor's existing Dart API:
 

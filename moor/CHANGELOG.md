@@ -23,7 +23,10 @@
   is necessary.
 - New `tableUpdates` method that can be used to listen for a subset of table updates outside of
   a query.
-
+- New feature: Nested results for compiled queries ([#288](https://github.com/simolus3/moor/issues/288))
+  See the [documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#nested-results) for
+  details on how and when to use this feature.
+ 
 ## 2.4.1
 
 - Don't generate double quoted string literals in date time functions
