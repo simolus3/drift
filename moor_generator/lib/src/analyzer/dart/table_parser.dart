@@ -76,7 +76,12 @@ class TableParser {
       ClassElement element, List<MoorColumn> columns) async {
     final primaryKeyGetter =
         element.lookUpGetter('primaryKey', element.library);
-    if (primaryKeyGetter == null) {
+    final parentOfResolved = primaryKeyGetter.enclosingElement;
+
+    if (parentOfResolved is ClassElement &&
+        isFromMoor(parentOfResolved.thisType)) {
+      // resolved primaryKey is from the Table dsl superclass. That means there
+      // is no primary key
       return null;
     }
 
