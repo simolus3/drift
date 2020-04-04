@@ -163,7 +163,8 @@ class InferredResultSet {
   /// Whether a new class needs to be written to store the result of this query.
   /// We don't need to do that for queries which return an existing table model
   /// or if they only return exactly one column.
-  bool get needsOwnClass => matchingTable == null && columns.length > 1;
+  bool get needsOwnClass => matchingTable == null && columns.length > 1
+    || nestedResults.isNotEmpty;
 
   /// Whether this query returns a single column that should be returned
   /// directly.
