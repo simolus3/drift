@@ -26,6 +26,41 @@ void main() {
         anyElement((AnalysisError q) => q.message.contains('Dart template')));
   });
 
+  test('warns when nested results refer to table-valued functions', () {
+    final result = engine.analyze("SELECT json_each.** FROM json_each('')");
+    final moorQuery = QueryHandler('query', result, mapper).handle();
+
+    expect(
+      moorQuery.lints,
+      contains(isA<AnalysisError>().having((e) => e.message, 'message',
+          contains('must refer to a table directly'))),
+    );
+  });
+
+  test('warns when nested results appear in compound statements', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY,
+  content VARCHAR
+);
+
+all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
+      ''',
+    });
+
+    final result = await state.analyze('package:foo/a.moor');
+
+    expect(
+      result.errors.errors,
+      contains(isA<MoorError>().having(
+        (e) => e.message,
+        'message',
+        contains('may only appear in a top-level select'),
+      )),
+    );
+  });
+
   group('warns about insert column count mismatch', () {
     TestState state;
 
