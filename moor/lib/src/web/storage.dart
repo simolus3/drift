@@ -36,6 +36,10 @@ abstract class MoorWebStorage {
   /// applications that never used the local storage implementation as a small
   /// performance improvement.
   ///
+  /// When the [inWebWorker] parameter (defaults to false) is set,
+  /// the implementation will use [WorkerGlobalScope] instead of [window] as
+  /// it isn't accessible from the worker.
+  ///
   /// However, older browsers might not support IndexedDB.
   @experimental
   factory MoorWebStorage.indexedDb(String name,
@@ -147,7 +151,7 @@ class _IndexedDbStorage implements MoorWebStorage {
     var wasCreated = false;
 
     final indexedDb =
-    inWebWorker ? WorkerGlobalScope.instance.indexedDB : window.indexedDB;
+        inWebWorker ? WorkerGlobalScope.instance.indexedDB : window.indexedDB;
 
     _database = await indexedDb.open(
       _objectStoreName,
@@ -176,7 +180,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   @override
   Future<void> store(Uint8List data) async {
     final transaction =
-    _database.transactionStore(_objectStoreName, 'readwrite');
+        _database.transactionStore(_objectStoreName, 'readwrite');
     final store = transaction.objectStore(_objectStoreName);
 
     await store.put(Blob([data]), name);
@@ -186,7 +190,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   @override
   Future<Uint8List> restore() async {
     final transaction =
-    _database.transactionStore(_objectStoreName, 'readonly');
+        _database.transactionStore(_objectStoreName, 'readonly');
     final store = transaction.objectStore(_objectStoreName);
 
     final result = await store.getObject(name) as Blob /*?*/;
