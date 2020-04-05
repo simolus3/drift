@@ -440,7 +440,7 @@ class QueryWriter {
           }
 
           final columnName = column.name.name;
-          expanded.write('"$table.$columnName" AS "$prefix.$columnName"');
+          expanded.write('"$table"."$columnName" AS "$prefix.$columnName"');
         }
 
         replaceNode(rewriteTarget, expanded.toString());
