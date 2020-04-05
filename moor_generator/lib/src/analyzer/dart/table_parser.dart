@@ -79,6 +79,7 @@ class TableParser {
     final parentOfResolved = primaryKeyGetter.enclosingElement;
 
     if (parentOfResolved is ClassElement &&
+        parentOfResolved.name == 'Table' &&
         isFromMoor(parentOfResolved.thisType)) {
       // resolved primaryKey is from the Table dsl superclass. That means there
       // is no primary key
