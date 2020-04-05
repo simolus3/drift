@@ -34,7 +34,11 @@ class MoorDartParser {
     return _tableParser.parseTable(classElement);
   }
 
-  Future<MoorColumn> parseColumn(
+  /// Attempts to parse the column created from the Dart getter.
+  ///
+  /// When the column is invalid, an error will be logged and `null` is
+  /// returned.
+  Future<MoorColumn /*?*/ > parseColumn(
       MethodDeclaration declaration, Element element) {
     return Future.value(_columnParser.parse(declaration, element));
   }

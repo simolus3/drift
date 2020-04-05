@@ -10,7 +10,7 @@ class TableParser {
     final sqlName = await _parseTableName(element);
     if (sqlName == null) return null;
 
-    final columns = await _parseColumns(element);
+    final columns = (await _parseColumns(element)).toList();
 
     final table = MoorTable(
       fromClass: element,
@@ -116,7 +116,7 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
-  Future<List<MoorColumn>> _parseColumns(ClassElement element) {
+  Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
         .map((t) => t.element)
         .followedBy([element])
@@ -134,11 +134,13 @@ class TableParser {
       return getter.variable;
     });
 
-    return Future.wait(fields.map((field) async {
+    final results = await Future.wait(fields.map((field) async {
       final resolved = await base.loadElementDeclaration(field.getter);
       final node = resolved.node as MethodDeclaration;
 
       return await base.parseColumn(node, field.getter);
     }));
+
+    return results.where((c) => c != null);
   }
 }
