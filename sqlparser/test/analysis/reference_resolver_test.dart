@@ -74,6 +74,24 @@ void main() {
     );
   });
 
+  test('resolves columns from nested results', () {
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+      ..registerTable(demoTable)
+      ..registerTable(anotherTable);
+
+    final context = engine.analyze('SELECT SUM(*) AS rst FROM '
+        '(SELECT COUNT(*) FROM demo UNION ALL SELECT COUNT(*) FROM tbl);');
+
+    expect(context.errors, isEmpty);
+
+    final select = context.root as SelectStatement;
+    expect(select.resolvedColumns, hasLength(1));
+    expect(
+      context.typeOf(select.resolvedColumns.single).type.type,
+      BasicType.int,
+    );
+  });
+
   group('reports correct column name for rowid aliases', () {
     final engine = SqlEngine()
       ..registerTable(demoTable)

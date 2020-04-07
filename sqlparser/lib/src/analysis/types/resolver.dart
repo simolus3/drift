@@ -190,12 +190,13 @@ class TypeResolver {
           }
           break;
         case 'sum':
-          final firstType = justResolve(parameters.first);
-          if (firstType.type?.type == BasicType.int) {
+          final firstType =
+              parameters.isEmpty ? null : justResolve(parameters.first);
+          if (firstType?.type?.type == BasicType.int) {
             return firstType;
           } else {
             return ResolveResult(ResolvedType(
-                type: BasicType.real, nullable: firstType.nullable));
+                type: BasicType.real, nullable: firstType?.nullable));
           }
           break; // can't happen, though
         case 'lower':

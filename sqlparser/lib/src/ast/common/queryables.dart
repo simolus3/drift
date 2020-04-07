@@ -74,7 +74,7 @@ class TableReference extends TableOrSubquery
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
   final String as;
-  final SelectStatement statement;
+  final BaseSelectStatement statement;
 
   SelectStatementAsSource({@required this.statement, this.as});
 

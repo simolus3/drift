@@ -16,7 +16,18 @@ extension ExpandParameters on SqlInvocation {
     } else if (sqlParameters is StarFunctionParameter) {
       // if * is used as a parameter, it refers to all columns in all tables
       // that are available in the current scope.
-      return scope.availableColumns.whereType<TableColumn>().toList();
+      final allColumns = scope.availableColumns;
+
+      // When we look at `SELECT SUM(*), foo FROM ...`, the star in `SUM`
+      // shouldn't expand to include itself.
+      final unrelated = allColumns.where((column) {
+        if (column is! ExpressionColumn) return true;
+
+        final expression = (column as ExpressionColumn).expression;
+        return !expression.selfAndDescendants.contains(this);
+      });
+
+      return unrelated.toList();
     }
 
     throw ArgumentError('Unknown parameters: $sqlParameters');

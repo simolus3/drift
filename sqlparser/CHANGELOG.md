@@ -3,6 +3,8 @@
 - Remove `SqlEngine.withOptions` constructor - just use the regular one
 - Changed `SelectStatement.from` from `List<Queryable>` to `Queryable?`. Selecting from multiple
   tables with a comma will now be parsed as a `JoinClause`.
+- Changed `SelectStatementAsSource.statement` from `SelectStatement` to `BaseSelectStatement` and allow
+  compound select statements to appear in a `FROM` clause
 
 ## 0.7.0
 

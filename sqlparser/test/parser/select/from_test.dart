@@ -60,7 +60,7 @@ void main() {
       );
     });
 
-    test('from inner select statements', () {
+    test('inner select statements', () {
       final stmt = SqlEngine()
           .parse(
               'SELECT * FROM table1, (SELECT * FROM table2 WHERE a) as "inner"')
@@ -83,6 +83,41 @@ void main() {
               ),
             ),
           ],
+        ),
+      );
+    });
+
+    test('inner compound select statements', () {
+      final stmt = SqlEngine()
+          .parse('SELECT SUM(*) FROM (SELECT COUNT(*) FROM table1 UNION ALL '
+              'SELECT COUNT(*) from table2)')
+          .rootNode as SelectStatement;
+
+      final countStar = ExpressionResultColumn(
+        expression: FunctionExpression(
+          name: 'COUNT',
+          parameters: StarFunctionParameter(),
+        ),
+      );
+
+      _enforceFrom(
+        stmt,
+        SelectStatementAsSource(
+          statement: CompoundSelectStatement(
+            base: SelectStatement(
+              columns: [countStar],
+              from: TableReference('table1'),
+            ),
+            additional: [
+              CompoundSelectPart(
+                mode: CompoundSelectMode.unionAll,
+                select: SelectStatement(
+                  columns: [countStar],
+                  from: TableReference('table2'),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     });

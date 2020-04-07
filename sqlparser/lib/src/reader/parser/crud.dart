@@ -280,7 +280,7 @@ mixin CrudParser on ParserBase {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;
-      final innerStmt = _selectNoCompound();
+      final innerStmt = select();
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 

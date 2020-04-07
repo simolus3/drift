@@ -22,36 +22,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     // resolved
     visitChildren(e, arg);
 
-    final columnSets = [
-      e.base.resolvedColumns,
-      for (var part in e.additional) part.select.resolvedColumns
-    ];
-
-    // each select statement must return the same amount of columns
-    final amount = columnSets.first.length;
-    for (var i = 1; i < columnSets.length; i++) {
-      if (columnSets[i].length != amount) {
-        context.reportError(AnalysisError(
-          type: AnalysisErrorType.compoundColumnCountMismatch,
-          relevantNode: e,
-          message: 'The parts of this compound statement return different '
-              'amount of columns',
-        ));
-        break;
-      }
-    }
-
-    final resolved = <CompoundSelectColumn>[];
-
-    // merge all columns at each position into a CompoundSelectColumn
-    for (var i = 0; i < amount; i++) {
-      final columnsAtThisIndex = [
-        for (var set in columnSets) if (set.length > i) set[i]
-      ];
-
-      resolved.add(CompoundSelectColumn(columnsAtThisIndex));
-    }
-    e.resolvedColumns = resolved;
+    _resolveCompoundSelect(e);
   }
 
   @override
@@ -140,8 +111,16 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         // the inner select statement doesn't have access to columns defined in
         // the outer statements, which is why we use _resolveSelect instead of
         // passing availableColumns down to a recursive call of _handle
-        _resolveSelect(select.statement);
-        availableColumns.addAll(select.statement.resolvedColumns);
+        final stmt = select.statement;
+        if (stmt is CompoundSelectStatement) {
+          _resolveCompoundSelect(stmt);
+        } else if (stmt is SelectStatement) {
+          _resolveSelect(stmt);
+        } else {
+          throw AssertionError('Unknown type of select statement: $stmt');
+        }
+
+        availableColumns.addAll(stmt.resolvedColumns);
       },
       isJoin: (join) {
         _handle(join.primary, availableColumns);
@@ -241,6 +220,39 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
     s.resolvedColumns = usedColumns;
     scope.availableColumns = availableColumns;
+  }
+
+  void _resolveCompoundSelect(CompoundSelectStatement statement) {
+    final columnSets = [
+      statement.base.resolvedColumns,
+      for (var part in statement.additional) part.select.resolvedColumns
+    ];
+
+    // each select statement must return the same amount of columns
+    final amount = columnSets.first.length;
+    for (var i = 1; i < columnSets.length; i++) {
+      if (columnSets[i].length != amount) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.compoundColumnCountMismatch,
+          relevantNode: statement,
+          message: 'The parts of this compound statement return different '
+              'amount of columns',
+        ));
+        break;
+      }
+    }
+
+    final resolved = <CompoundSelectColumn>[];
+
+    // merge all columns at each position into a CompoundSelectColumn
+    for (var i = 0; i < amount; i++) {
+      final columnsAtThisIndex = [
+        for (var set in columnSets) if (set.length > i) set[i]
+      ];
+
+      resolved.add(CompoundSelectColumn(columnsAtThisIndex));
+    }
+    statement.resolvedColumns = resolved;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {
