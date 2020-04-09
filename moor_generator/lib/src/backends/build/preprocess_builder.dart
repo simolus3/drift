@@ -38,26 +38,51 @@ class PreprocessBuilder extends Builder {
     final moorFileContent = await buildStep.readAsString(input);
     final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
 
-    final parsed = engine.parseMoorFile(moorFileContent);
+    final parsedInput = engine.parseMoorFile(moorFileContent);
 
-    final dartLexemes = parsed.tokens
+    final dartLexemes = parsedInput.tokens
         .whereType<InlineDartToken>()
         .map((token) => token.dartCode)
         .toList();
 
     if (dartLexemes.isEmpty) return; // nothing to do, no Dart in this moor file
 
-    final importedFiles = parsed.rootNode.allDescendants
-        .whereType<ImportStatement>()
-        .map((stmt) => stmt.importedFile)
-        .where((import) => import.endsWith('.dart'));
+    // Crawl through transitive imports and find all Dart libraries
+    final seenFiles = <AssetId>{};
+    final queue = <AssetId>[input];
+
+    while (queue.isNotEmpty) {
+      final asset = queue.removeLast();
+
+      if (!seenFiles.contains(asset)) {
+        seenFiles.add(asset);
+
+        if (asset.extension == '.moor') {
+          final parsed = asset == input
+              ? parsedInput
+              : engine.parseMoorFile(await buildStep.readAsString(asset));
+
+          parsed.rootNode.allDescendants
+              .whereType<ImportStatement>()
+              .map((stmt) => AssetId.resolve(stmt.importedFile, from: asset))
+              .where((importedId) =>
+                  !seenFiles.contains(importedId) &&
+                  !queue.contains(importedId))
+              .forEach(queue.add);
+        }
+      }
+    }
+
+    final importedDartFiles =
+        seenFiles.where((asset) => asset.extension == '.dart');
 
     // to analyze the expressions, generate a fake Dart file that declares each
     // expression in a `var`, we can then read the static type.
 
     final dartBuffer = StringBuffer();
-    for (final import in importedFiles) {
-      dartBuffer.write('import ${asDartLiteral(import)};\n');
+    for (final import in importedDartFiles) {
+      final importUri = import.uri.toString();
+      dartBuffer.write('import ${asDartLiteral(importUri)};\n');
     }
 
     for (var i = 0; i < dartLexemes.length; i++) {

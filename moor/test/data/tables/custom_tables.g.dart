@@ -1203,7 +1203,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
-        'SELECT d.*, "c.a" AS "nested_0.a", "c.b" AS "nested_0.b", "c.c" AS "nested_0.c" FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
+        'SELECT d.*, "c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
   }
