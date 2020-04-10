@@ -94,6 +94,25 @@ void main() {
     'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
   });
 
+  test('supports async batch functions', () async {
+    await db.batch((batch) async {
+      batch.insert(
+          db.categories, CategoriesCompanion.insert(description: 'first'));
+
+      await Future.delayed(Duration.zero);
+
+      batch.insert(
+          db.categories, CategoriesCompanion.insert(description: 'second'));
+    });
+
+    verify(executor.transactions.runBatched([
+      BatchedStatement('INSERT INTO categories (`desc`) VALUES (?)', [
+        ['first'],
+        ['second']
+      ]),
+    ]));
+  });
+
   test('updates stream queries', () async {
     await db.batch((b) {
       b.insert(db.todosTable, TodoEntry(id: 3, content: 'content'));

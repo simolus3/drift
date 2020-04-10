@@ -405,8 +405,13 @@ mixin QueryEngine on DatabaseConnectionUser {
     final engine = _resolvedEngine;
 
     final batch = Batch._(engine, engine is! Transaction);
-    runInBatch(batch);
-    return batch._commit();
+    final result = runInBatch(batch);
+
+    if (result is Future) {
+      return result.then((_) => batch._commit());
+    } else {
+      return batch._commit();
+    }
   }
 
   /// Runs [calculation] in a forked [Zone] that has its [_resolvedEngine] set
