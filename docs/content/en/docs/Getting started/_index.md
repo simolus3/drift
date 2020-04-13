@@ -92,6 +92,8 @@ follows:
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:moor/moor.dart';
+import 'dart:io';
 
 LazyDatabase _openConnection() {
   // the LazyDatabase util lets us find the right location for the file async.
