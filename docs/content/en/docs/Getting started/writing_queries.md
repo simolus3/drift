@@ -27,7 +27,7 @@ class MyDatabase extends _$MyDatabase {
 
   // watches all todo entries in a given category. The stream will automatically
   // emit new items whenever the underlying data changes.
-  Stream<List<TodoEntry>> watchEntriesInCategory(Category c) {
+  Stream<List<Todo>> watchEntriesInCategory(Category c) {
     return (select(todos)..where((t) => t.category.equals(c.id))).watch();
   }
 }
@@ -51,7 +51,7 @@ the amount of rows to return and an optional offset.
 You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
 ordering terms from the table.
 ```dart
-Future<List<TodoEntry>> sortEntriesAlphabetically() {
+Future<List<Todo>> sortEntriesAlphabetically() {
   return (select(todos)..orderBy([(t) => OrderingTerm(expression: t.title)])).get();
 }
 ```
@@ -62,7 +62,7 @@ You can also reverse the order by setting the `mode` property of the `OrderingTe
 If you know a query is never going to return more than one row, wrapping the result in a `List`
 can be tedious. Moor lets you work around that with `getSingle` and `watchSingle`:
 ```dart
-Stream<TodoEntry> entryById(int id) {
+Stream<Todo> entryById(int id) {
   return (select(todos)..where((t) => t.id.equals(id))).watchSingle();
 }
 ```
@@ -105,7 +105,7 @@ Future moveImportantTasksIntoCategory(Category target) {
   );
 }
 
-Future update(TodoEntry entry) {
+Future update(Todo entry) {
   // using replace will update all fields from the entry that are not marked as a primary key.
   // it will also make sure that only the entry with the same primary key will be updated.
   // Here, this means that the row that has the same id as entry will be updated to reflect
@@ -124,7 +124,7 @@ the statement will affect all rows in the table!
 
 {{% alert title="Entries, companions - why do we need all of this?"  %}}
 You might have noticed that we used a `TodosCompanion` for the first update instead of
-just passing a `TodoEntry`. Moor generates the `TodoEntry` class (also called _data
+just passing a `Todo`. Moor generates the `Todo` class (also called _data
 class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
 prefer to use companions. In the example above, we only set the the `category` column,
 so we used a companion. 
@@ -143,13 +143,13 @@ You can very easily insert any valid object into tables. As some values can be a
 companion version.
 ```dart
 // returns the generated id
-Future<int> addTodoEntry(TodosCompanion entry) {
+Future<int> addTodo(TodosCompanion entry) {
   return into(todos).insert(entry);
 }
 ```
 All row classes generated will have a constructor that can be used to create objects:
 ```dart
-addTodoEntry(
+addTodo(
   TodosCompanion(
     title: Value('Important task'),
     content: Value('Refactor persistence code'),
