@@ -30,5 +30,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dbPath = await getDatabasesPath();
+  Directory(dbPath).createSync(recursive: true);
   runAllTests(FfiExecutor(dbPath));
 }
