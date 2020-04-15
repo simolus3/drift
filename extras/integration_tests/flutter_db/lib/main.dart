@@ -35,9 +35,15 @@ Future<void> main() async {
 
   // Additional integration test for flutter: Test loading a database from asset
   test('can load a database from asset', () async {
+    final databasesPath = await getDatabasesPath();
+    final dbFile = File(join(databasesPath, 'app_from_asset.db'));
+    if (await dbFile.exists()) {
+      await dbFile.delete();
+    }
+
     var didCallCreator = false;
-    final executor = FlutterQueryExecutor.inDatabaseFolder(
-      path: 'app_from_asset.db',
+    final executor = FlutterQueryExecutor(
+      path: dbFile.path,
       singleInstance: true,
       creator: (file) async {
         final content = await rootBundle.load('test_asset.db');
