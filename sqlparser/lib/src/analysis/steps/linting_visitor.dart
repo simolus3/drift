@@ -17,4 +17,24 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     visitChildren(e, arg);
   }
+
+  @override
+  void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
+    final expectedColumns = e.resolvedColumns.length;
+
+    for (final tuple in e.values) {
+      final elementsInTuple = tuple.expressions.length;
+
+      if (elementsInTuple != expectedColumns) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.valuesSelectCountMismatch,
+          relevantNode: tuple,
+          message: 'The surrounding VALUES clause has $expectedColumns '
+              'columns, but this tuple only has $elementsInTuple',
+        ));
+      }
+    }
+
+    visitChildren(e, arg);
+  }
 }

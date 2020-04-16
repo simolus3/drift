@@ -229,6 +229,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitTuple(Tuple e, TypeExpectation arg) {
+    final expectationForChildren = arg.clearArray();
+    visitChildren(e, expectationForChildren);
+
     // make children non-arrays
     for (final child in e.childNodes) {
       session._addRelation(CopyTypeFrom(child, e, array: false));
@@ -593,6 +596,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     } else if (column is CompoundSelectColumn) {
       session._addRelation(CopyEncapsulating(column, column.columns));
       column.columns.forEach(_handleColumn);
+    } else if (column is ValuesSelectColumn) {
+      session._addRelation(CopyEncapsulating(column, column.expressions));
     } else if (column is DelegatedColumn && column.innerColumn != null) {
       _handleColumn(column.innerColumn);
       _lazyCopy(column, column.innerColumn);

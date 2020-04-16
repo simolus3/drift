@@ -9,8 +9,12 @@ abstract class BaseSelectStatement extends CrudStatement with ResultSet {
   BaseSelectStatement._(WithClause withClause) : super._(withClause);
 }
 
+/// Marker interface for classes that are a [BaseSelectStatement] but aren't a
+/// [CompoundSelectStatement].
+abstract class SelectStatementNoCompound implements BaseSelectStatement {}
+
 class SelectStatement extends BaseSelectStatement
-    implements StatementWithWhere {
+    implements StatementWithWhere, SelectStatementNoCompound {
   final bool distinct;
   final List<ResultColumn> columns;
   final Queryable /*?*/ from;
@@ -61,7 +65,7 @@ class SelectStatement extends BaseSelectStatement
 }
 
 class CompoundSelectStatement extends BaseSelectStatement {
-  final SelectStatement base;
+  final SelectStatementNoCompound base;
   final List<CompoundSelectPart> additional;
 
   // the grammar under https://www.sqlite.org/syntax/compound-select-stmt.html
@@ -89,6 +93,26 @@ class CompoundSelectStatement extends BaseSelectStatement {
     // this class doesn't contain anything but child nodes
     return true;
   }
+}
+
+/// A select statement of the form `VALUES (expr-list), ..., (expr-list-N)`.
+class ValuesSelectStatement extends BaseSelectStatement
+    implements SelectStatementNoCompound {
+  final List<Tuple> values;
+
+  ValuesSelectStatement(this.values, {WithClause withClause})
+      : super._(withClause);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitValuesSelectStatement(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => values;
+
+  @override
+  bool contentEquals(ValuesSelectStatement other) => true;
 }
 
 abstract class ResultColumn extends AstNode {
@@ -164,7 +188,7 @@ enum CompoundSelectMode {
 
 class CompoundSelectPart extends AstNode {
   final CompoundSelectMode mode;
-  final SelectStatement select;
+  final SelectStatementNoCompound select;
 
   /// The first token of this statement, so either union, intersect or except.
   Token firstModeToken;

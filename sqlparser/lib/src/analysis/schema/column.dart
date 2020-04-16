@@ -173,3 +173,18 @@ class CommonTableExpressionColumn extends Column with DelegatedColumn {
 
   CommonTableExpressionColumn(this.name, this.innerColumn);
 }
+
+/// Result column coming from a `VALUES` select statement.
+class ValuesSelectColumn extends Column {
+  @override
+  final String name;
+
+  /// The expressions from a `VALUES` clause contributing to this column.
+  ///
+  /// Essentially, each [ValuesSelectColumn] consists of a column in the values
+  /// of a [ValuesSelectStatement].
+  final List<Expression> expressions;
+
+  ValuesSelectColumn(this.name, this.expressions)
+      : assert(expressions.isNotEmpty);
+}

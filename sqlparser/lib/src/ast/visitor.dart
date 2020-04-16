@@ -4,6 +4,7 @@ abstract class AstVisitor<A, R> {
   R visitSelectStatement(SelectStatement e, A arg);
   R visitCompoundSelectStatement(CompoundSelectStatement e, A arg);
   R visitCompoundSelectPart(CompoundSelectPart e, A arg);
+  R visitValuesSelectStatement(ValuesSelectStatement e, A arg);
   R visitResultColumn(ResultColumn e, A arg);
   R visitInsertStatement(InsertStatement e, A arg);
   R visitDeleteStatement(DeleteStatement e, A arg);
@@ -82,6 +83,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitSelectStatement(SelectStatement e, A arg) {
+    return visitBaseSelectStatement(e, arg);
+  }
+
+  @override
+  R visitValuesSelectStatement(ValuesSelectStatement e, A arg) {
     return visitBaseSelectStatement(e, arg);
   }
 

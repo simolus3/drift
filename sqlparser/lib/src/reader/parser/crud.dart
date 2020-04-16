@@ -13,7 +13,7 @@ mixin CrudParser on ParserBase {
   CrudStatement _crud() {
     final withClause = _withClause();
 
-    if (_check(TokenType.select)) {
+    if (_check(TokenType.select) || _check(TokenType.$values)) {
       return select(withClause: withClause);
     } else if (_check(TokenType.delete)) {
       return _deleteStmt(withClause);
@@ -128,7 +128,8 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  SelectStatement _selectNoCompound([WithClause withClause]) {
+  SelectStatementNoCompound _selectNoCompound([WithClause withClause]) {
+    if (_peek.type == TokenType.$values) return _valuesSelect(withClause);
     if (!_match(const [TokenType.select])) return null;
     final selectToken = _previous;
 
@@ -164,6 +165,19 @@ mixin CrudParser on ParserBase {
       orderBy: orderBy,
       limit: limit,
     )..setSpan(first, _previous);
+  }
+
+  ValuesSelectStatement _valuesSelect([WithClause withClause]) {
+    if (!_matchOne(TokenType.$values)) return null;
+    final firstToken = _previous;
+
+    final tuples = <Tuple>[];
+    do {
+      tuples.add(_consumeTuple() as Tuple);
+    } while (_matchOne(TokenType.comma));
+
+    return ValuesSelectStatement(tuples, withClause: withClause)
+      ..setSpan(firstToken, _previous);
   }
 
   CompoundSelectPart _compoundSelectPart() {

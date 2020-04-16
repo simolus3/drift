@@ -84,4 +84,32 @@ INSERT INTO demo VALUES (?, ?)
 
     expect(context.errors, isEmpty);
   });
+
+  test('columns from values statement', () {
+    final context = engine.analyze("VALUES ('foo', 3), ('bar', 5)");
+
+    expect(context.errors, isEmpty);
+    final columns = (context.root as ResultSet).resolvedColumns;
+
+    expect(columns.map((e) => e.name), ['Column1', 'Column2']);
+    expect(columns.map((e) => context.typeOf(e).type?.type),
+        [BasicType.text, BasicType.int]);
+  });
+
+  test('columns from nested VALUES', () {
+    final context = engine.analyze('SELECT Column1 FROM (VALUES (3))');
+
+    expect(context.errors, isEmpty);
+  });
+
+  test('gracefully handles tuples of different lengths in VALUES', () {
+    final context = engine.analyze("VALUES ('foo', 3), ('bar')");
+
+    expect(context.errors, isNotEmpty);
+    final columns = (context.root as ResultSet).resolvedColumns;
+
+    expect(columns.map((e) => e.name), ['Column1', 'Column2']);
+    expect(columns.map((e) => context.typeOf(e).type?.type),
+        [BasicType.text, BasicType.int]);
+  });
 }

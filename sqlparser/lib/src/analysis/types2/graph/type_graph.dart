@@ -231,7 +231,7 @@ class _ResolvedVariables {
   }
 }
 
-extension on ResolvedType {
+extension ResolvedTypeUtils on ResolvedType {
   ResolvedType cast(CastMode mode) {
     switch (mode) {
       case CastMode.numeric:

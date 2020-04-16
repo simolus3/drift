@@ -26,6 +26,14 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
+    // visit children to resolve CTEs
+    visitChildren(e, arg);
+
+    _resolveValuesSelect(e);
+  }
+
+  @override
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     visitChildren(e, arg);
 
@@ -116,6 +124,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           _resolveCompoundSelect(stmt);
         } else if (stmt is SelectStatement) {
           _resolveSelect(stmt);
+        } else if (stmt is ValuesSelectStatement) {
+          _resolveValuesSelect(stmt);
         } else {
           throw AssertionError('Unknown type of select statement: $stmt');
         }
@@ -253,6 +263,32 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       resolved.add(CompoundSelectColumn(columnsAtThisIndex));
     }
     statement.resolvedColumns = resolved;
+  }
+
+  void _resolveValuesSelect(ValuesSelectStatement statement) {
+    // ideally all tuples should have the same arity, but the parser doesn't
+    // enforce that.
+    final amountOfColumns =
+        statement.values.fold<int>(null, (maxLength, tuple) {
+      final lengthHere = tuple.expressions.length;
+      return maxLength == null ? lengthHere : max(maxLength, lengthHere);
+    });
+
+    final columns = <Column>[];
+
+    for (var i = 0; i < amountOfColumns; i++) {
+      // Columns in a VALUES clause appear to be named "Column$i", where i is a
+      // one-based index.
+      final columnName = 'Column${i + 1}';
+      final expressions = statement.values
+          .where((tuple) => tuple.expressions.length > i)
+          .map((tuple) => tuple.expressions[i])
+          .toList();
+
+      columns.add(ValuesSelectColumn(columnName, expressions));
+    }
+
+    statement.resolvedColumns = columns;
   }
 
   String _nameOfResultColumn(ExpressionResultColumn c) {

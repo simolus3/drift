@@ -28,6 +28,8 @@ class ExactTypeExpectation extends TypeExpectation {
   /// When false, we can report a compile-time error for a type mismatch.
   final bool lax;
 
+  const ExactTypeExpectation._(this.type, this.lax);
+
   const ExactTypeExpectation(this.type) : lax = false;
 
   const ExactTypeExpectation.laxly(this.type) : lax = true;
@@ -76,4 +78,18 @@ class SelectTypeExpectation extends TypeExpectation {
   final List<TypeExpectation> columnExpectations;
 
   SelectTypeExpectation(this.columnExpectations);
+}
+
+extension on TypeExpectation {
+  TypeExpectation clearArray() {
+    if (this is ExactTypeExpectation) {
+      final expectation = this as ExactTypeExpectation;
+      if (expectation.type.isArray) {
+        return ExactTypeExpectation._(
+            expectation.type.toArray(false), expectation.lax);
+      }
+    }
+
+    return this;
+  }
 }
