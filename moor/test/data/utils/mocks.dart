@@ -8,9 +8,11 @@ export 'package:mockito/mockito.dart';
 
 class MockExecutor extends Mock implements QueryExecutor {
   final MockTransactionExecutor transactions = MockTransactionExecutor();
+  final OpeningDetails openingDetails;
+
   var _opened = false;
 
-  MockExecutor() {
+  MockExecutor([this.openingDetails]) {
     when(runSelect(any, any)).thenAnswer((_) {
       assert(_opened);
       return Future.value([]);
@@ -36,9 +38,16 @@ class MockExecutor extends Mock implements QueryExecutor {
       return transactions;
     });
 
-    when(ensureOpen(any)).thenAnswer((i) {
+    when(ensureOpen(any)).thenAnswer((i) async {
+      if (!_opened && openingDetails != null) {
+        _opened = true;
+        await (i.positionalArguments.single as QueryExecutorUser)
+            .beforeOpen(this, openingDetails);
+      }
+
       _opened = true;
-      return Future.value(true);
+
+      return true;
     });
 
     when(close()).thenAnswer((_) async {

@@ -84,4 +84,12 @@ void main() {
 
     verify(executor.close());
   });
+
+  test('throws when migration fails', () async {
+    final executor = MockExecutor(const OpeningDetails(null, 1));
+    when(executor.runCustom(any, any)).thenAnswer((_) => Future.error('error'));
+
+    final db = TodoDb(executor);
+    expect(db.customSelect('SELECT 1').getSingle(), throwsA('error'));
+  });
 }
