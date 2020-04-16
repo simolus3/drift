@@ -138,6 +138,7 @@ abstract class ParserBase {
 
   Token _consume(TokenType type, String message) {
     if (_check(type)) return _advance();
+
     _error(message);
   }
 

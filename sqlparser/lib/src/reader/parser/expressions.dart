@@ -351,7 +351,7 @@ mixin ExpressionParser on ParserBase {
     }
 
     if (_peek is KeywordToken) {
-      _error('Could not parse this expressions. Note: This is a reserved '
+      _error('Could not parse this expression. Note: This is a reserved '
           'keyword, you can escape it in double ticks');
     } else {
       _error('Could not parse this expression');
