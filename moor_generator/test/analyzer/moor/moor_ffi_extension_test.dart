@@ -89,10 +89,7 @@ import 'a.moor';
 wrongArgs: SELECT sin(oid, foo) FROM numbers;
         '''
       },
-      options: const MoorOptions(
-        useExperimentalInference: true,
-        modules: [SqlModule.moor_ffi],
-      ),
+      options: const MoorOptions(modules: [SqlModule.moor_ffi]),
     );
 
     final fileA = await state.analyze('package:foo/a.moor');

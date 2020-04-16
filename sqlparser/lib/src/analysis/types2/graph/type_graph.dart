@@ -9,7 +9,7 @@ class TypeGraph {
   final List<TypeRelation> _relations = [];
 
   final Map<Typeable, List<TypeRelation>> _edges = {};
-  final Set<MultiSourceRelation> _multiSources = {};
+  final Set<Typeable> _candidateForLaxMultiPropagation = {};
   final List<DefaultType> _defaultTypes = [];
 
   ResolvedType operator [](Typeable t) {
@@ -51,14 +51,17 @@ class TypeGraph {
   void performResolve() {
     _indexRelations();
 
-    final queue = List.of(_knownTypes.keys);
+    var queue = List.of(_knownTypes.keys);
     while (queue.isNotEmpty) {
       _propagateTypeInfo(queue, queue.removeLast());
     }
 
-    // propagate many-to-one sources where we don't know each source type
-    for (final remaining in _multiSources) {
-      _propagateManyToOne(remaining, queue);
+    // propagate many-to-one sources where we don't know each source type, but
+    // some of them.
+    queue = List.of(_candidateForLaxMultiPropagation);
+    while (queue.isNotEmpty) {
+      _propagateTypeInfo(queue, queue.removeLast(),
+          laxMultiSourcePropagation: true);
     }
 
     // apply default types
@@ -77,7 +80,8 @@ class TypeGraph {
     }
   }
 
-  void _propagateTypeInfo(List<Typeable> resolved, Typeable t) {
+  void _propagateTypeInfo(List<Typeable> resolved, Typeable t,
+      {bool laxMultiSourcePropagation = false}) {
     if (!_edges.containsKey(t)) return;
 
     // propagate changes
@@ -93,10 +97,14 @@ class TypeGraph {
       } else if (edge is CopyAndCast) {
         _copyType(resolved, t, edge.target, this[t].cast(edge.cast));
       } else if (edge is MultiSourceRelation) {
-        // handle many-to-one changes, if all targets have been resolved
-        if (edge.from.every(knowsType)) {
-          _multiSources.remove(edge);
+        // handle many-to-one changes, if all targets have been resolved or
+        // lax handling is enabled.
+        if (laxMultiSourcePropagation || edge.from.every(knowsType)) {
           _propagateManyToOne(edge, resolved);
+
+          _candidateForLaxMultiPropagation.removeAll(edge.from);
+        } else {
+          _candidateForLaxMultiPropagation.add(t);
         }
       }
     }
@@ -165,7 +173,6 @@ class TypeGraph {
     }
 
     void putAll(MultiSourceRelation r) {
-      _multiSources.add(r);
       for (final element in r.from) {
         put(element, r);
       }

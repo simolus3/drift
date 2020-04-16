@@ -7,6 +7,7 @@ analyzer:
     unused_local_variable: error
     dead_code: error
     public_member_api_docs: ignore # turned on by user-facing subpackages
+    deprecated_member_use_from_same_package: ignore
   exclude:
     - "**/*.g.dart"
     # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround

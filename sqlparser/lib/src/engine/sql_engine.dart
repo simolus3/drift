@@ -190,13 +190,13 @@ class SqlEngine {
         ..acceptWithoutArg(ColumnResolver(context))
         ..acceptWithoutArg(ReferenceResolver(context));
 
-      if (options.enableExperimentalTypeInference) {
+      if (options.useLegacyTypeInference) {
+        node.acceptWithoutArg(TypeResolvingVisitor(context));
+      } else {
         final session = t2.TypeInferenceSession(context, options);
         final resolver = t2.TypeResolver(session);
         resolver.run(node);
         context.types2 = session.results;
-      } else {
-        node.acceptWithoutArg(TypeResolvingVisitor(context));
       }
 
       node.acceptWithoutArg(LintingVisitor(options, context));

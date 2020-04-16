@@ -11,6 +11,8 @@ const _expectString = ExactTypeExpectation.laxly(_textType);
 class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   final TypeInferenceSession session;
 
+  final Set<Column> _handledColumns = {};
+
   TypeResolver(this.session);
 
   void run(AstNode root) {
@@ -414,6 +416,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
+  FunctionHandler /*?*/ _functionHandlerFor(ExpressionInvocation e) {
+    return session.options.addedFunctions[e.name.toLowerCase()];
+  }
+
   ResolvedType _resolveInvocation(ExpressionInvocation e) {
     final params = e.expandParameters();
     void nullableIfChildIs() {
@@ -516,11 +522,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return null;
     }
 
-    final addedFunctions = session.options.addedFunctions;
-    if (addedFunctions.containsKey(lowercaseName)) {
-      return addedFunctions[lowercaseName]
-          .inferReturnType(session.context, e, params)
-          ?.type;
+    final extensionHandler = _functionHandlerFor(e);
+    if (extensionHandler != null) {
+      return extensionHandler.inferReturnType(session.context, e, params)?.type;
     }
 
     session.context.reportError(AnalysisError(
@@ -542,6 +546,25 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       visited.add(secondParam);
     }
 
+    final extensionHandler =
+        e is ExpressionInvocation ? _functionHandlerFor(e) : null;
+    if (extensionHandler != null) {
+      for (final arg in params) {
+        if (arg is! Expression) continue;
+
+        final expressionArgument = arg as Expression;
+
+        final result = extensionHandler.inferArgumentType(
+            session.context, e, expressionArgument);
+        final type = result?.type;
+        if (type != null) {
+          session._markTypeResolved(expressionArgument, type);
+        }
+
+        visited.add(expressionArgument);
+      }
+    }
+
     return visited;
   }
 
@@ -558,12 +581,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   void _handleColumn(Column column) {
-    if (session.graph.knowsType(column)) return;
+    if (session.graph.knowsType(column) || _handledColumns.contains(column)) {
+      return;
+    }
+    _handledColumns.add(column);
 
     if (column is TableColumn) {
       session._markTypeResolved(column, column.type);
     } else if (column is ExpressionColumn) {
       _lazyCopy(column, column.expression);
+    } else if (column is CompoundSelectColumn) {
+      session._addRelation(CopyEncapsulating(column, column.columns));
+      column.columns.forEach(_handleColumn);
     } else if (column is DelegatedColumn && column.innerColumn != null) {
       _handleColumn(column.innerColumn);
       _lazyCopy(column, column.innerColumn);
@@ -605,5 +634,7 @@ class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
     if (stmt.resolvedColumns != null) {
       stmt.resolvedColumns.forEach(resolver._handleColumn);
     }
+
+    visitChildren(stmt, arg);
   }
 }

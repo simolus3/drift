@@ -42,7 +42,7 @@ Map<String, ResolveResult> _types = {
 void main() {
   _types.forEach((sql, resolvedType) {
     test('types: resolves in $sql', () {
-      final engine = SqlEngine()
+      final engine = SqlEngine(EngineOptions(useLegacyTypeInference: true))
         ..registerTable(demoTable)
         ..registerTable(anotherTable);
       final content = engine.analyze(sql);

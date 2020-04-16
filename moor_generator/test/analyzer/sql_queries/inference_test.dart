@@ -3,7 +3,7 @@ import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:test/test.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   test('experimental inference - integration test', () async {
@@ -35,7 +35,7 @@ totalDurationByArtist:
     INNER JOIN tracks ON tracks.album = albums.id
   GROUP BY artists.id;
     '''
-    }, options: const MoorOptions(useExperimentalInference: true));
+    }, options: const MoorOptions());
 
     final file = await state.analyze('package:foo/a.moor');
     final result = file.currentResult as ParsedMoorFile;

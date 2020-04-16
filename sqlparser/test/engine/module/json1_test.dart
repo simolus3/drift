@@ -2,18 +2,18 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('json with stable inference', () {
+  group('json with legacy inference', () {
     _runTests(false);
   });
 
-  group('json with types2', () {
+  group('json with new type inference', () {
     _runTests(true);
   });
 }
 
 void _runTests(bool types2) {
   final engine = SqlEngine(EngineOptions(
-    enableExperimentalTypeInference: types2,
+    useLegacyTypeInference: !types2,
     enabledExtensions: const [Json1Extension()],
   ));
   // add user (name, phone) table

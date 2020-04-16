@@ -5,6 +5,8 @@
   tables with a comma will now be parsed as a `JoinClause`.
 - Changed `SelectStatementAsSource.statement` from `SelectStatement` to `BaseSelectStatement` and allow
   compound select statements to appear in a `FROM` clause
+- The new type inference engine is now enabled by default and the `enableExperimentalTypeInference` option
+  has been removed. To continue using the old engine, the `useLegacyTypeInference` flag can be used.
 
 ## 0.7.0
 

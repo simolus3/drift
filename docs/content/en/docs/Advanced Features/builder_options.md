@@ -52,19 +52,14 @@ At the moment, moor supports these options:
   column constraint (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`)
 * `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{< relref "isolates.md" >}}).
   This is a build option because isolates are still experimental. This will be the default option eventually.
-* `use_experimental_inference`: Use a new, experimental type inference algorithm when analyzing sql statements. The 
-  algorithm is designed to yield more accurate results on nullability and complex constructs. Note that it's in a 
-  preview state at the moment, which means that generated code might change after a minor update.
 * `sqlite_modules`: This list can be used to enable sqlite extensions, like those for json or full-text search.
   Modules have to be enabled explicitly because they're not supported on all platforms. See the following section for
   details.
-* `use_experimental_inference`: Enables a new type inference algorithm for sql statements.
-  The new algorithm is much better at handling complex statements and nullability. 
-  However, it's still in development and may not work in all cases yet. Please report any issues you can find.
-  __Warning:__ The new type inference algorithm is in development and does not obey to semantic versioning.
-  Results and generated code might change in moor versions not declared as breaking.
 * `eagerly_load_dart_ast`: Moor's builder will load the resolved AST whenever it encounters a Dart file,
   instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
+* `legacy_type_inference`: Use the old type inference from moor 1 and 2. Note that `use_experimental_inference`
+   is now the default and no longer exists.
+   If you're using this flag, please open an issue and explain how the new inference isn't working for you, thanks!
 
 ## Available extensions
 

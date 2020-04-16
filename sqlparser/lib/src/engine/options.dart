@@ -6,8 +6,10 @@ class EngineOptions {
   /// extensions enabled.
   final bool useMoorExtensions;
 
-  /// Enables the new, experimental type inference.
-  final bool enableExperimentalTypeInference;
+  /// Whether the old type inference algorithm should be used.
+  ///
+  /// Defaults to false.
+  final bool useLegacyTypeInference;
 
   /// All [Extension]s that have been enabled in this sql engine.
   final List<Extension> enabledExtensions;
@@ -24,7 +26,7 @@ class EngineOptions {
   EngineOptions({
     this.useMoorExtensions = false,
     this.enabledExtensions = const [],
-    this.enableExperimentalTypeInference = false,
+    this.useLegacyTypeInference = false,
   });
 
   void addFunctionHandler(FunctionHandler handler) {

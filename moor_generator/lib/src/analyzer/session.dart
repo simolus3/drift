@@ -44,7 +44,7 @@ class MoorSession {
         if (options.hasModule(SqlModule.json1)) const Json1Extension(),
         if (options.hasModule(SqlModule.moor_ffi)) const MoorFfiExtension(),
       ],
-      enableExperimentalTypeInference: options.useExperimentalInference,
+      useLegacyTypeInference: options.legacyTypeInference,
     );
 
     return SqlEngine(sqlOptions);

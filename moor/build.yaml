@@ -8,7 +8,6 @@ targets:
           generate_connect_constructor: true
           compact_query_methods: true
           write_from_json_string_constructor: true
-          use_experimental_inference: true
           eagerly_load_dart_ast: true
           sqlite_modules:
             - json1

@@ -29,6 +29,7 @@ class AnalysisContext {
   /// A resolver that can be used to obtain the type of a [Typeable]. This
   /// mostly applies to [Expression]s, [Reference]s, [Variable]s and
   /// [ResultSet.resolvedColumns] of a select statement.
+  @Deprecated('Used for legacy types only - consider migrating to types2')
   /* late final */ TypeResolver types;
 
   /// Experimental new type resolver with better support for nullability and
@@ -38,18 +39,13 @@ class AnalysisContext {
   /// a [Variable] and [ResultSet.resolvedColumns] may be resolved or inferred.
   ///
   /// This field is null when experimental type inference is disabled.
-  ///
-  /// Please note that types2 is experimental at the moment. Changes to how
-  /// [types] resolves types are considered breaking and are handled
-  /// accordingly. [types2] may change results in any update.
-  @experimental
   TypeInferenceResults types2;
 
   /// Constructs a new analysis context from the AST and the source sql.
   AnalysisContext(this.root, this.sql, this.engineOptions,
       {AnalyzeStatementOptions stmtOptions, this.schemaSupport})
       : stmtOptions = stmtOptions ?? const AnalyzeStatementOptions() {
-    if (!engineOptions.enableExperimentalTypeInference) {
+    if (engineOptions.useLegacyTypeInference) {
       types = TypeResolver(this, engineOptions);
     }
   }
