@@ -102,8 +102,10 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// to write data into the [table] by using [InsertStatement.insert].
   @protected
   @visibleForTesting
-  InsertStatement<T> into<T extends DataClass>(TableInfo<Table, T> table) =>
-      InsertStatement<T>(_resolvedEngine, table);
+  InsertStatement<T, D> into<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table) {
+    return InsertStatement<T, D>(_resolvedEngine, table);
+  }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where

@@ -34,8 +34,8 @@ class Batch {
       {InsertMode mode}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
-    final context =
-        InsertStatement<D>(_engine, table).createContext(row, actualMode);
+    final context = InsertStatement<Table, D>(_engine, table)
+        .createContext(row, actualMode);
     _addContext(context);
   }
 

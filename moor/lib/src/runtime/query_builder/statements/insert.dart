@@ -1,14 +1,14 @@
 part of '../query_builder.dart';
 
 /// Represents an insert statements
-class InsertStatement<D extends DataClass> {
+class InsertStatement<T extends Table, D extends DataClass> {
   /// The database to use then executing this statement
   @protected
   final QueryEngine database;
 
   /// The table we're inserting into
   @protected
-  final TableInfo<Table, D> table;
+  final TableInfo<T, D> table;
 
   /// Constructs an insert statement from the database and the table. Used
   /// internally by moor.
@@ -24,6 +24,31 @@ class InsertStatement<D extends DataClass> {
   /// primary key already exists. This behavior can be overridden with [mode],
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
   ///
+  /// To apply a partial or custom update in case of a conflict, you can also
+  /// use an [upsert clause](https://sqlite.org/lang_UPSERT.html) by using
+  /// [onConflict].
+  /// For instance, you could increase a counter whenever a conflict occurs:
+  ///
+  /// ```dart
+  /// class Words extends Table {
+  ///   TextColumn get word => text()();
+  ///   IntColumn get occurrences => integer()();
+  /// }
+  ///
+  /// Future<void> addWord(String word) async {
+  ///   await into(words).insert(
+  ///     WordsCompanion.insert(word: word, occurrences: 1),
+  ///     onConflict: DoUpdate((old) => WordsCompanion.custom(
+  ///       occurrences: old.occurrences + Constant(1),
+  ///     )),
+  ///   );
+  /// }
+  /// ```
+  ///
+  /// When calling `addWord` with a word not yet saved, the regular insert will
+  /// write it with one occurrence. If it already exists however, the insert
+  /// behaves like an update incrementing occurrences by one.
+  ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned. If there is no auto-increment column, you can't rely on the
   /// return value, but the future will complete with an error if the insert
@@ -31,8 +56,10 @@ class InsertStatement<D extends DataClass> {
   Future<int> insert(
     Insertable<D> entity, {
     InsertMode mode,
+    DoUpdate<T, D> onConflict,
   }) async {
-    final ctx = createContext(entity, mode ?? InsertMode.insert);
+    final ctx = createContext(entity, mode ?? InsertMode.insert,
+        onConflict: onConflict);
 
     return await database.doWhenOpened((e) async {
       final id = await e.runInsert(ctx.sql, ctx.boundVariables);
@@ -46,7 +73,8 @@ class InsertStatement<D extends DataClass> {
   /// insert statement fro the [entry] with the [mode].
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
-  GenerationContext createContext(Insertable<D> entry, InsertMode mode) {
+  GenerationContext createContext(Insertable<D> entry, InsertMode mode,
+      {DoUpdate onConflict}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -97,6 +125,23 @@ class InsertStatement<D extends DataClass> {
       }
 
       ctx.buffer.write(')');
+    }
+
+    if (onConflict != null) {
+      final updateSet = onConflict._createInsertable(table).toColumns(true);
+
+      ctx.buffer.write(' ON CONFLICT DO UPDATE SET ');
+
+      var first = true;
+      for (final update in updateSet.entries) {
+        final column = escapeIfNeeded(update.key);
+
+        if (!first) ctx.buffer.write(', ');
+        ctx.buffer.write('$column = ');
+        update.value.writeInto(ctx);
+
+        first = false;
+      }
     }
 
     return ctx;
@@ -154,3 +199,18 @@ const _insertKeywords = <InsertMode, String>{
   InsertMode.insertOrFail: 'INSERT OR FAIL',
   InsertMode.insertOrIgnore: 'INSERT OR IGNORE',
 };
+
+/// A [DoUpdate] upsert clause can be used to insert or update a custom
+/// companion when the underlying companion already exists.
+///
+/// For an example, see [InsertStatement.insert].
+class DoUpdate<T extends Table, D extends DataClass> {
+  final Insertable<D> Function(T old) _creator;
+
+  /// For an example, see [InsertStatement.insert].
+  DoUpdate(Insertable<D> Function(T old) update) : _creator = update;
+
+  Insertable<D> _createInsertable(T table) {
+    return _creator(table);
+  }
+}

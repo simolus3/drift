@@ -145,4 +145,20 @@ void main() {
       ),
     );
   });
+
+  test('can use an upsert clause', () async {
+    await db.into(db.todosTable).insert(
+      TodosTableCompanion.insert(content: 'my content'),
+      onConflict: DoUpdate((old) {
+        return TodosTableCompanion.custom(
+            content: const Variable('important: ') + old.content);
+      }),
+    );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT DO UPDATE SET content = ? || content',
+      argThat(equals(['my content', 'important: '])),
+    ));
+  });
 }
