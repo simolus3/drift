@@ -46,19 +46,12 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
 
   /// Validates that the given entity can be inserted into this table, meaning
   /// that it respects all constraints (nullability, text length, etc.).
-  VerificationContext validateIntegrity(covariant UpdateCompanion<D> instance,
+  VerificationContext validateIntegrity(Insertable<D> instance,
       {bool isInserting = false}) {
     // default behavior when users chose to not verify the integrity (build time
     // option)
     return const VerificationContext.notEnabled();
   }
-
-  /// Maps the given update companion to a [Map] that can be inserted into sql.
-  /// The keys should represent the column name in sql, the values the
-  /// corresponding values of the field. All fields of the [instance] which are
-  /// present will be written, absent fields will be omitted.
-  /// Note that column names aren't escaped in the [Map.keys].
-  Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance);
 
   /// Maps the given row returned by the database into the fitting data class.
   D map(Map<String, dynamic> data, {String tablePrefix});
@@ -67,8 +60,17 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   ///
   /// Values that are [Value.absent] in the companion will be set to `null`.
   D mapFromCompanion(UpdateCompanion<D> companion) {
-    final rawValues =
-        entityToSql(companion).map((key, value) => MapEntry(key, value.value));
+    final asColumnMap = companion.toColumns(false);
+
+    if (asColumnMap.values.any((e) => e is! Variable)) {
+      throw ArgumentError('The companion $companion cannot be transformed '
+          'into a dataclass as it contains expressions that need to be '
+          'evaluated by a database engine.');
+    }
+
+    final rawValues = asColumnMap
+        .cast<String, Variable>()
+        .map((key, value) => MapEntry(key, value.value));
 
     return map(rawValues);
   }

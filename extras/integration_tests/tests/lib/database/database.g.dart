@@ -52,6 +52,28 @@ class User extends DataClass implements Insertable<User> {
           .mapFromDatabaseResponse(data['${effectivePrefix}preferences'])),
     );
   }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || birthDate != null) {
+      map['birth_date'] = Variable<DateTime>(birthDate);
+    }
+    if (!nullToAbsent || profilePicture != null) {
+      map['profile_picture'] = Variable<Uint8List>(profilePicture);
+    }
+    if (!nullToAbsent || preferences != null) {
+      final converter = $UsersTable.$converter0;
+      map['preferences'] = Variable<String>(converter.mapToSql(preferences));
+    }
+    return map;
+  }
+
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -73,23 +95,6 @@ class User extends DataClass implements Insertable<User> {
       'profilePicture': serializer.toJson<Uint8List>(profilePicture),
       'preferences': serializer.toJson<Preferences>(preferences),
     };
-  }
-
-  @override
-  UsersCompanion createCompanion(bool nullToAbsent) {
-    return UsersCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      birthDate: birthDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(birthDate),
-      profilePicture: profilePicture == null && nullToAbsent
-          ? const Value.absent()
-          : Value(profilePicture),
-      preferences: preferences == null && nullToAbsent
-          ? const Value.absent()
-          : Value(preferences),
-    );
   }
 
   User copyWith(
@@ -170,6 +175,29 @@ class UsersCompanion extends UpdateCompanion<User> {
       preferences: preferences ?? this.preferences,
     );
   }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (birthDate.present) {
+      map['birth_date'] = Variable<DateTime>(birthDate.value);
+    }
+    if (profilePicture.present) {
+      map['profile_picture'] = Variable<Uint8List>(profilePicture.value);
+    }
+    if (preferences.present) {
+      final converter = $UsersTable.$converter0;
+      map['preferences'] =
+          Variable<String>(converter.mapToSql(preferences.value));
+    }
+    return map;
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -247,29 +275,30 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final String actualTableName = 'users';
   @override
-  VerificationContext validateIntegrity(UsersCompanion d,
+  VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.id.present) {
-      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
     }
-    if (d.name.present) {
+    if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (d.birthDate.present) {
+    if (data.containsKey('birth_date')) {
       context.handle(_birthDateMeta,
-          birthDate.isAcceptableValue(d.birthDate.value, _birthDateMeta));
+          birthDate.isAcceptableOrUnknown(data['birth_date'], _birthDateMeta));
     } else if (isInserting) {
       context.missing(_birthDateMeta);
     }
-    if (d.profilePicture.present) {
+    if (data.containsKey('profile_picture')) {
       context.handle(
           _profilePictureMeta,
-          profilePicture.isAcceptableValue(
-              d.profilePicture.value, _profilePictureMeta));
+          profilePicture.isAcceptableOrUnknown(
+              data['profile_picture'], _profilePictureMeta));
     }
     context.handle(_preferencesMeta, const VerificationResult.success());
     return context;
@@ -281,29 +310,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return User.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  Map<String, Variable> entityToSql(UsersCompanion d) {
-    final map = <String, Variable>{};
-    if (d.id.present) {
-      map['id'] = Variable<int>(d.id.value);
-    }
-    if (d.name.present) {
-      map['name'] = Variable<String>(d.name.value);
-    }
-    if (d.birthDate.present) {
-      map['birth_date'] = Variable<DateTime>(d.birthDate.value);
-    }
-    if (d.profilePicture.present) {
-      map['profile_picture'] = Variable<Uint8List>(d.profilePicture.value);
-    }
-    if (d.preferences.present) {
-      final converter = $UsersTable.$converter0;
-      map['preferences'] =
-          Variable<String>(converter.mapToSql(d.preferences.value));
-    }
-    return map;
   }
 
   @override
@@ -337,6 +343,21 @@ class Friendship extends DataClass implements Insertable<Friendship> {
           data['${effectivePrefix}really_good_friends']),
     );
   }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || firstUser != null) {
+      map['first_user'] = Variable<int>(firstUser);
+    }
+    if (!nullToAbsent || secondUser != null) {
+      map['second_user'] = Variable<int>(secondUser);
+    }
+    if (!nullToAbsent || reallyGoodFriends != null) {
+      map['really_good_friends'] = Variable<bool>(reallyGoodFriends);
+    }
+    return map;
+  }
+
   factory Friendship.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -354,21 +375,6 @@ class Friendship extends DataClass implements Insertable<Friendship> {
       'secondUser': serializer.toJson<int>(secondUser),
       'reallyGoodFriends': serializer.toJson<bool>(reallyGoodFriends),
     };
-  }
-
-  @override
-  FriendshipsCompanion createCompanion(bool nullToAbsent) {
-    return FriendshipsCompanion(
-      firstUser: firstUser == null && nullToAbsent
-          ? const Value.absent()
-          : Value(firstUser),
-      secondUser: secondUser == null && nullToAbsent
-          ? const Value.absent()
-          : Value(secondUser),
-      reallyGoodFriends: reallyGoodFriends == null && nullToAbsent
-          ? const Value.absent()
-          : Value(reallyGoodFriends),
-    );
   }
 
   Friendship copyWith(
@@ -425,6 +431,21 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
       reallyGoodFriends: reallyGoodFriends ?? this.reallyGoodFriends,
     );
   }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (firstUser.present) {
+      map['first_user'] = Variable<int>(firstUser.value);
+    }
+    if (secondUser.present) {
+      map['second_user'] = Variable<int>(secondUser.value);
+    }
+    if (reallyGoodFriends.present) {
+      map['really_good_friends'] = Variable<bool>(reallyGoodFriends.value);
+    }
+    return map;
+  }
 }
 
 class $FriendshipsTable extends Friendships
@@ -477,26 +498,29 @@ class $FriendshipsTable extends Friendships
   @override
   final String actualTableName = 'friendships';
   @override
-  VerificationContext validateIntegrity(FriendshipsCompanion d,
+  VerificationContext validateIntegrity(Insertable<Friendship> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.firstUser.present) {
+    final data = instance.toColumns(true);
+    if (data.containsKey('first_user')) {
       context.handle(_firstUserMeta,
-          firstUser.isAcceptableValue(d.firstUser.value, _firstUserMeta));
+          firstUser.isAcceptableOrUnknown(data['first_user'], _firstUserMeta));
     } else if (isInserting) {
       context.missing(_firstUserMeta);
     }
-    if (d.secondUser.present) {
-      context.handle(_secondUserMeta,
-          secondUser.isAcceptableValue(d.secondUser.value, _secondUserMeta));
+    if (data.containsKey('second_user')) {
+      context.handle(
+          _secondUserMeta,
+          secondUser.isAcceptableOrUnknown(
+              data['second_user'], _secondUserMeta));
     } else if (isInserting) {
       context.missing(_secondUserMeta);
     }
-    if (d.reallyGoodFriends.present) {
+    if (data.containsKey('really_good_friends')) {
       context.handle(
           _reallyGoodFriendsMeta,
-          reallyGoodFriends.isAcceptableValue(
-              d.reallyGoodFriends.value, _reallyGoodFriendsMeta));
+          reallyGoodFriends.isAcceptableOrUnknown(
+              data['really_good_friends'], _reallyGoodFriendsMeta));
     }
     return context;
   }
@@ -507,21 +531,6 @@ class $FriendshipsTable extends Friendships
   Friendship map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Friendship.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  Map<String, Variable> entityToSql(FriendshipsCompanion d) {
-    final map = <String, Variable>{};
-    if (d.firstUser.present) {
-      map['first_user'] = Variable<int>(d.firstUser.value);
-    }
-    if (d.secondUser.present) {
-      map['second_user'] = Variable<int>(d.secondUser.value);
-    }
-    if (d.reallyGoodFriends.present) {
-      map['really_good_friends'] = Variable<bool>(d.reallyGoodFriends.value);
-    }
-    return map;
   }
 
   @override

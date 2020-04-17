@@ -49,10 +49,10 @@ class InsertStatement<D extends DataClass> {
   GenerationContext createContext(Insertable<D> entry, InsertMode mode) {
     _validateIntegrity(entry);
 
-    final rawValues = table.entityToSql(entry.createCompanion(true));
+    final rawValues = entry.toColumns(true);
 
     // apply default values for columns that have one
-    final map = <String, Variable>{};
+    final map = <String, Expression>{};
     for (final column in table.$columns) {
       final columnName = column.$name;
 
@@ -108,9 +108,7 @@ class InsertStatement<D extends DataClass> {
           'Cannot write null row into ${table.$tableName}');
     }
 
-    table
-        .validateIntegrity(d.createCompanion(true), isInserting: true)
-        .throwIfInvalid(d);
+    table.validateIntegrity(d, isInserting: true).throwIfInvalid(d);
   }
 }
 

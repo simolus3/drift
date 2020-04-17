@@ -43,8 +43,8 @@ class VerificationContext {
   /// check results. Used by generated code.
   VerificationContext() : _errors = {};
 
-  /// Constructs a verification context that can't be used to report error. This
-  /// is used internally by moor if integrity checks have been disabled.
+  /// Constructs a verification context that can't be used to report errors.
+  /// This is used internally by moor if integrity checks have been disabled.
   const VerificationContext.notEnabled() : _errors = const {};
 
   /// Used internally by moor when inserting

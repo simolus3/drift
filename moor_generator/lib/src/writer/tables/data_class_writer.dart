@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -38,10 +39,11 @@ class DataClassWriter {
     // Also write parsing factory
     _writeMappingConstructor();
 
+    _writeToColumnsOverride();
+
     // And a serializer and deserializer method
     _writeFromJson();
     _writeToJson();
-    _writeCompanionOverride();
 
     // And a convenience method to copy data from this class.
     _writeCopyWith();
@@ -178,6 +180,40 @@ class DataClassWriter {
     _buffer.write(');');
   }
 
+  void _writeToColumnsOverride() {
+    _buffer
+      ..write('@override\nMap<String, Expression> toColumns'
+          '(bool nullToAbsent) {\n')
+      ..write('final map = <String, Expression> {};');
+
+    for (final column in table.columns) {
+      _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null) {');
+      final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
+          'Variable<${column.variableTypeName}>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        final converter = column.typeConverter;
+        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        _buffer
+          ..write('final converter = $fieldName;\n')
+          ..write(mapSetter)
+          ..write('(converter.mapToSql(${column.dartGetterName}));');
+      } else {
+        // no type converter. Write variable directly
+        _buffer
+          ..write(mapSetter)
+          ..write('(')
+          ..write(column.dartGetterName)
+          ..write(');');
+      }
+
+      _buffer.write('}');
+    }
+
+    _buffer.write('return map; \n}\n');
+  }
+
   void _writeToString() {
     /*
       @override
@@ -213,21 +249,5 @@ class DataClassWriter {
     final fields = table.columns.map((c) => c.dartGetterName).toList();
     const HashCodeWriter().writeHashCode(fields, _buffer);
     _buffer.write(';');
-  }
-
-  void _writeCompanionOverride() {
-    // TableCompanion createCompanion(bool nullToAbsent)
-
-    final companionClass = table.getNameForCompanionClass(scope.options);
-    _buffer.write('@override\n'
-        '$companionClass createCompanion(bool nullToAbsent) {\n'
-        'return $companionClass(');
-
-    for (final column in table.columns) {
-      final getter = column.dartGetterName;
-      _buffer.write('$getter: $getter == null && nullToAbsent ? '
-          'const Value.absent() : Value($getter),');
-    }
-    _buffer.write(');}\n');
   }
 }

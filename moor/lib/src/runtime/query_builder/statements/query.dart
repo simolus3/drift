@@ -205,8 +205,8 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
       return MapEntry(column.$name, column);
     }));
 
-    final updatedFields = table.entityToSql(d.createCompanion(false));
-    // Construct a map of [GeneratedColumn] to [Variable] where each column is
+    final updatedFields = d.toColumns(false);
+    // Construct a map of [GeneratedColumn] to [Expression] where each column is
     // a primary key and the associated value was extracted from d.
     final primaryKeyValues = Map.fromEntries(updatedFields.entries
             .where((entry) => primaryKeyColumns.containsKey(entry.key)))

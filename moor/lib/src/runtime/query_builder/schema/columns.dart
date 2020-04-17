@@ -104,6 +104,20 @@ abstract class GeneratedColumn<T> extends Column<T> {
     }
   }
 
+  /// A more general version of [isAcceptableValue] that supports any sql
+  /// expression.
+  ///
+  /// The default implementation will not perform any check if [value] is not
+  /// a [Variable].
+  VerificationResult isAcceptableOrUnknown(
+      Expression value, VerificationMeta meta) {
+    if (value is Variable) {
+      return isAcceptableValue(value.value as T, meta);
+    } else {
+      return const VerificationResult.success();
+    }
+  }
+
   /// Returns true if this column needs to be set when writing a new row into
   /// a table.
   bool get isRequired {

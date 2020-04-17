@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 
 class UpdateCompanionWriter {
@@ -18,6 +19,7 @@ class UpdateCompanionWriter {
     _writeConstructor();
     _writeInsertConstructor();
     _writeCopyWith();
+    _writeToColumnsOverride();
 
     _buffer.write('}\n');
   }
@@ -106,5 +108,40 @@ class UpdateCompanionWriter {
       _buffer.write('$name: $name ?? this.$name,');
     }
     _buffer.write(');\n}\n');
+  }
+
+  void _writeToColumnsOverride() {
+    // Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance)
+    _buffer
+      ..write('@override\nMap<String, Expression> toColumns'
+          '(bool nullToAbsent) {\n')
+      ..write('final map = <String, Expression> {};');
+
+    for (final column in table.columns) {
+      _buffer.write('if (${column.dartGetterName}.present) {');
+      final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
+          'Variable<${column.variableTypeName}>';
+
+      if (column.typeConverter != null) {
+        // apply type converter before writing the variable
+        final converter = column.typeConverter;
+        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        _buffer
+          ..write('final converter = $fieldName;\n')
+          ..write(mapSetter)
+          ..write('(converter.mapToSql(${column.dartGetterName}.value));');
+      } else {
+        // no type converter. Write variable directly
+        _buffer
+          ..write(mapSetter)
+          ..write('(')
+          ..write('${column.dartGetterName}.value')
+          ..write(');');
+      }
+
+      _buffer.write('}');
+    }
+
+    _buffer.write('return map; \n}\n');
   }
 }

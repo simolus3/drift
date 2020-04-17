@@ -60,10 +60,9 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(Insertable<D> entity, {bool dontExecute = false}) async {
-    final companion = entity.createCompanion(true);
-    table.validateIntegrity(companion).throwIfInvalid(entity);
+    table.validateIntegrity(entity).throwIfInvalid(entity);
 
-    _updatedFields = table.entityToSql(companion)
+    _updatedFields = entity.toColumns(true)
       ..remove((_, value) => value == null);
 
     if (_updatedFields.isEmpty) {
@@ -100,10 +99,8 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   Future<bool> replace(Insertable<D> entity, {bool dontExecute = false}) async {
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
-    final companion = entity.createCompanion(false);
-    table
-        .validateIntegrity(companion, isInserting: true)
-        .throwIfInvalid(entity);
+    final columns = entity.toColumns(false);
+    table.validateIntegrity(entity, isInserting: true).throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'
@@ -114,8 +111,9 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     // copying to work around type issues - Map<String, Variable> extends
     // Map<String, Expression> but crashes when adding anything that is not
     // a Variable.
-    _updatedFields = <String, Expression>{}
-      ..addAll(table.entityToSql(companion));
+    _updatedFields = columns is Map<String, Variable>
+        ? Map<String, Expression>.of(columns)
+        : columns;
 
     final primaryKeys = table.$primaryKey.map((c) => c.$name);
 

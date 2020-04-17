@@ -16,6 +16,10 @@
   method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
 - __Breaking__: Columns that are aliases to sqlite's `rowid` column are now longer considered required
   for inserts
+- __Breaking__: Changes the way data classes and companions are inserted:
+  - Removed `Insertable.toCompanion`
+  - Added `Insertable.toColumns` to obtain a map from column names to values that should be inserted
+  - Removed `TableInfo.entityToSql` - use `Insertable.toColumns` instead
 - Experimentally support IndexedDB to store sqlite data on the web
 - Moor will no longer wait for query stream listeners to receive a done event when closing a database
   or transaction.

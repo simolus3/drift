@@ -66,7 +66,7 @@ class TableWriter {
     _writePrimaryKeyOverride();
 
     _writeMappingMethod();
-    _writeReverseMappingMethod();
+    // _writeReverseMappingMethod();
 
     _writeAliasGenerator();
 
@@ -96,41 +96,6 @@ class TableWriter {
       ..write('return $dataClassName.fromData'
           '(data, _db, prefix: effectivePrefix);\n')
       ..write('}\n');
-  }
-
-  void _writeReverseMappingMethod() {
-    // Map<String, Variable> entityToSql(covariant UpdateCompanion<D> instance)
-    _buffer
-      ..write('@override\nMap<String, Variable> entityToSql('
-          '${table.getNameForCompanionClass(scope.options)} d) {\n')
-      ..write('final map = <String, Variable> {};');
-
-    for (final column in table.columns) {
-      _buffer.write('if (d.${column.dartGetterName}.present) {');
-      final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
-          'Variable<${column.variableTypeName}>';
-
-      if (column.typeConverter != null) {
-        // apply type converter before writing the variable
-        final converter = column.typeConverter;
-        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
-        _buffer
-          ..write('final converter = $fieldName;\n')
-          ..write(mapSetter)
-          ..write('(converter.mapToSql(d.${column.dartGetterName}.value));');
-      } else {
-        // no type converter. Write variable directly
-        _buffer
-          ..write(mapSetter)
-          ..write('(')
-          ..write('d.${column.dartGetterName}.value')
-          ..write(');');
-      }
-
-      _buffer.write('}');
-    }
-
-    _buffer.write('return map; \n}\n');
   }
 
   void _writeColumnGetter(MoorColumn column) {
@@ -212,9 +177,10 @@ class TableWriter {
 
     _buffer
       ..write('@override\nVerificationContext validateIntegrity'
-          '(${table.getNameForCompanionClass(scope.options)} d, '
+          '(Insertable<${table.dartTypeName}> instance, '
           '{bool isInserting = false}) {\n')
-      ..write('final context = VerificationContext();\n');
+      ..write('final context = VerificationContext();\n')
+      ..write('final data = instance.toColumns(true);\n');
 
     for (final column in table.columns) {
       final getterName = column.dartGetterName;
@@ -228,11 +194,13 @@ class TableWriter {
         continue;
       }
 
+      final columnNameString = asDartLiteral(column.name.name);
       _buffer
-        ..write('if (d.$getterName.present) {\n')
+        ..write('if (data.containsKey($columnNameString)) {\n')
         ..write('context.handle('
             '$metaName, '
-            '$getterName.isAcceptableValue(d.$getterName.value, $metaName));')
+            '$getterName.isAcceptableOrUnknown('
+            'data[$columnNameString], $metaName));')
         ..write('}');
 
       if (table.isColumnRequiredForInsert(column)) {
