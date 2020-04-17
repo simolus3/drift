@@ -335,11 +335,11 @@ void main() {
     });
 
     final a = db
-        .customSelectQuery("select 'a' as a")
+        .customSelect("select 'a' as a")
         .map(($) => $.readString('a'))
         .watchSingle();
     final b = db
-        .customSelectQuery("select 'b' as b")
+        .customSelect("select 'b' as b")
         .map(($) => $.readString('b'))
         .watchSingle();
     final c = a.switchMap((_) => b);
