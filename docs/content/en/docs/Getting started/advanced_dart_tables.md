@@ -94,3 +94,24 @@ Don't know when to use which? Prefer to use `withDefault` when the default value
 simple like `currentDate`. For more complicated values, like a randomly generated id, you need to use
 `clientDefault`. Internally, `withDefault` writes the default value into the `CREATE TABLE` statement. This
 can be more efficient, but doesn't suppport dynamic values.
+
+## Primary keys
+
+If your table has an `IntColumn` with an `autoIncrement()` constraint, moor recognizes that as the default
+primary key. If you want to specify a custom primary key for your table, you can override the `primaryKey`
+getter in your table:
+
+```dart
+class GroupMemberships extends Table {
+  IntColumn get group => integer()();
+  IntColumn get user => integer()();
+
+  @override
+  Set<Column> get primaryKey => {group, user};
+}
+```
+
+Note that the primary key must essentially be constant so that the generator can recognize it. That means:
+
+- it must be defined with the `=>` syntax, function bodies aren't supported
+- it must return a set literal without collection elements like `if`, `for` or spread operators
