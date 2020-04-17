@@ -2,6 +2,7 @@ import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 import '../data/utils/expect_equality.dart';
+import '../data/utils/expect_generated.dart';
 
 typedef _Extractor = Expression<int> Function(Expression<DateTime> d);
 
@@ -36,5 +37,14 @@ void main() {
     expr.writeInto(ctx);
 
     expect(ctx.sql, 'strftime(\'%s\', CURRENT_TIMESTAMP) + 10');
+  });
+
+  test('plus and minus durations', () {
+    final expr = currentDateAndTime +
+        const Duration(days: 3) -
+        const Duration(seconds: 5);
+
+    expect(expr,
+        generates('strftime(\'%s\', CURRENT_TIMESTAMP) + ? - ?', [259200, 5]));
   });
 }

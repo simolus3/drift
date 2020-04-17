@@ -44,6 +44,18 @@ extension DateTimeExpressions on Expression<DateTime> {
   // for moor, date times are just unix timestamps, so we don't need to rewrite
   // anything when converting
   Expression<int> get secondsSinceEpoch => dartCast();
+
+  /// Adds [duration] from this date.
+  Expression<DateTime> operator +(Duration duration) {
+    return _BaseInfixOperator(this, '+', Variable<int>(duration.inSeconds),
+        precedence: Precedence.plusMinus);
+  }
+
+  /// Subtracts [duration] from this date.
+  Expression<DateTime> operator -(Duration duration) {
+    return _BaseInfixOperator(this, '-', Variable<int>(duration.inSeconds),
+        precedence: Precedence.plusMinus);
+  }
 }
 
 /// Expression that extracts components out of a date time by using the builtin

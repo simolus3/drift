@@ -76,6 +76,13 @@ that you can use operators and comparisons on them.
 To obtain the current date or the current time as an expression, use the `currentDate` 
 and `currentDateAndTime` constants provided by moor.
 
+You can also use the `+` and `-` operators to add or subtract a duration from a time column:
+
+```dart
+final toNextWeek = TasksCompanion.custom(dueDate: tasks.dueDate + Duration(weeks: 1));
+update(tasks).write(toNextWeek);
+```
+
 ## `IN` and `NOT IN`
 You can check whether an expression is in a list of values by using the `isIn` and `isNotIn`
 methods:

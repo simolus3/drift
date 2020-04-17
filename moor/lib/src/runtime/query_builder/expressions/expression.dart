@@ -203,13 +203,13 @@ abstract class _InfixOperator<D> extends Expression<D> {
 
 class _BaseInfixOperator<D> extends _InfixOperator<D> {
   @override
-  final Expression<D> left;
+  final Expression left;
 
   @override
   final String operator;
 
   @override
-  final Expression<D> right;
+  final Expression right;
 
   @override
   final Precedence precedence;

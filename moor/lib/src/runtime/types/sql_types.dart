@@ -84,7 +84,10 @@ class IntType extends SqlType<int> {
   const IntType();
 
   @override
-  int mapFromDatabaseResponse(dynamic response) => response as int;
+  int mapFromDatabaseResponse(dynamic response) {
+    if (response is int) return response;
+    return int.parse(response.toString());
+  }
 
   @override
   String mapToSqlConstant(int content) => content?.toString() ?? 'NULL';

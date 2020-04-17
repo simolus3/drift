@@ -118,6 +118,20 @@ void main() {
     });
   });
 
+  test('can update with custom companions', () async {
+    await db.update(db.todosTable).replace(TodosTableCompanion.custom(
+          id: const Variable(4),
+          content: db.todosTable.content,
+          targetDate: db.todosTable.targetDate + const Duration(days: 1),
+        ));
+
+    verify(executor.runUpdate(
+      'UPDATE todos SET content = content, target_date = target_date + ? '
+      'WHERE id = ?;',
+      argThat(equals([86400, 4])),
+    ));
+  });
+
   group('custom updates', () {
     test('execute the correct sql', () async {
       await db.customUpdate('DELETE FROM users');
