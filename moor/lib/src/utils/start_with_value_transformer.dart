@@ -26,6 +26,9 @@ class _StartWithValueStream<T> extends Stream<T> {
   _StartWithValueStream(this._value, this._inner);
 
   @override
+  bool get isBroadcast => _inner.isBroadcast;
+
+  @override
   StreamSubscription<T> listen(void Function(T event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
     var didReceiveData = false;
