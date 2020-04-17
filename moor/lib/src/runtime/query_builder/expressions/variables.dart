@@ -65,6 +65,9 @@ class Variable<T> extends Expression<T> {
       context.buffer.write('NULL');
     }
   }
+
+  @override
+  String toString() => 'Variable($value)';
 }
 
 /// An expression that represents the value of a dart object encoded to sql
@@ -98,4 +101,7 @@ class Constant<T> extends Expression<T> {
         // ignore: test_types_in_equals
         (other as Constant<T>).value == value;
   }
+
+  @override
+  String toString() => 'Constant($value)';
 }

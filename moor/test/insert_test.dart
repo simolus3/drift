@@ -129,4 +129,20 @@ void main() {
     verify(executor
         .runInsert('INSERT INTO pure_defaults (`insert`) VALUES (?)', ['foo']));
   });
+
+  test('can insert custom companions', () async {
+    await db.into(db.users).insert(UsersCompanion.custom(
+        isAwesome: const Constant(true),
+        name: const Variable('User name'),
+        profilePicture: const CustomExpression('_custom_'),
+        creationTime: currentDateAndTime));
+
+    verify(
+      executor.runInsert(
+        'INSERT INTO users (name, is_awesome, profile_picture, creation_time) '
+        "VALUES (?, 1, _custom_, strftime('%s', CURRENT_TIMESTAMP))",
+        ['User name'],
+      ),
+    );
+  });
 }

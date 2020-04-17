@@ -61,6 +61,28 @@ abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
   const UpdateCompanion();
 }
 
+/// An [Insertable] implementation based on raw column expressions.
+///
+/// Mostly used in generated code.
+class RawValuesInsertable<D extends DataClass> implements Insertable<D> {
+  /// A map from column names to a value that should be inserted or updated.
+  ///
+  /// See also:
+  ///  - [toColumns], which returns [data] in a [RawValuesInsertable]
+  final Map<String, Expression> data;
+
+  /// Creates a [RawValuesInsertable] based on the [data] to insert or update.
+  const RawValuesInsertable(this.data);
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) => data;
+
+  @override
+  String toString() {
+    return 'RawValuesInsertable($data)';
+  }
+}
+
 /// A wrapper around arbitrary data [T] to indicate presence or absence
 /// explicitly. We can use [Value]s in companions to distinguish between null
 /// and absent values.

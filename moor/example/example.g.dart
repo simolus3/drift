@@ -90,6 +90,16 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     this.description = const Value.absent(),
   });
+  static Insertable<Category> custom({
+    Expression<int> id,
+    Expression<String> description,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (description != null) 'description': description,
+    });
+  }
+
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -294,6 +304,20 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     this.category = const Value.absent(),
   })  : title = Value(title),
         instructions = Value(instructions);
+  static Insertable<Recipe> custom({
+    Expression<int> id,
+    Expression<String> title,
+    Expression<String> instructions,
+    Expression<int> category,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (instructions != null) 'instructions': instructions,
+      if (category != null) 'category': category,
+    });
+  }
+
   RecipesCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -523,6 +547,18 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     @required int caloriesPer100g,
   })  : name = Value(name),
         caloriesPer100g = Value(caloriesPer100g);
+  static Insertable<Ingredient> custom({
+    Expression<int> id,
+    Expression<String> name,
+    Expression<int> caloriesPer100g,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (caloriesPer100g != null) 'calories': caloriesPer100g,
+    });
+  }
+
   IngredientsCompanion copyWith(
       {Value<int> id, Value<String> name, Value<int> caloriesPer100g}) {
     return IngredientsCompanion(
@@ -741,6 +777,18 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
   })  : recipe = Value(recipe),
         ingredient = Value(ingredient),
         amountInGrams = Value(amountInGrams);
+  static Insertable<IngredientInRecipe> custom({
+    Expression<int> recipe,
+    Expression<int> ingredient,
+    Expression<int> amountInGrams,
+  }) {
+    return RawValuesInsertable({
+      if (recipe != null) 'recipe': recipe,
+      if (ingredient != null) 'ingredient': ingredient,
+      if (amountInGrams != null) 'amount': amountInGrams,
+    });
+  }
+
   IngredientInRecipesCompanion copyWith(
       {Value<int> recipe, Value<int> ingredient, Value<int> amountInGrams}) {
     return IngredientInRecipesCompanion(

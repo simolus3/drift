@@ -149,6 +149,22 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     this.targetDate = const Value.absent(),
     this.category = const Value.absent(),
   }) : content = Value(content);
+  static Insertable<TodoEntry> custom({
+    Expression<int> id,
+    Expression<String> title,
+    Expression<String> content,
+    Expression<DateTime> targetDate,
+    Expression<int> category,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (content != null) 'content': content,
+      if (targetDate != null) 'target_date': targetDate,
+      if (category != null) 'category': category,
+    });
+  }
+
   TodosTableCompanion copyWith(
       {Value<int> id,
       Value<String> title,
@@ -383,6 +399,16 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.id = const Value.absent(),
     @required String description,
   }) : description = Value(description);
+  static Insertable<Category> custom({
+    Expression<int> id,
+    Expression<String> description,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (description != null) 'desc': description,
+    });
+  }
+
   CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -610,6 +636,22 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.creationTime = const Value.absent(),
   })  : name = Value(name),
         profilePicture = Value(profilePicture);
+  static Insertable<User> custom({
+    Expression<int> id,
+    Expression<String> name,
+    Expression<bool> isAwesome,
+    Expression<Uint8List> profilePicture,
+    Expression<DateTime> creationTime,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (isAwesome != null) 'is_awesome': isAwesome,
+      if (profilePicture != null) 'profile_picture': profilePicture,
+      if (creationTime != null) 'creation_time': creationTime,
+    });
+  }
+
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -843,6 +885,16 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
     @required int user,
   })  : todo = Value(todo),
         user = Value(user);
+  static Insertable<SharedTodo> custom({
+    Expression<int> todo,
+    Expression<int> user,
+  }) {
+    return RawValuesInsertable({
+      if (todo != null) 'todo': todo,
+      if (user != null) 'user': user,
+    });
+  }
+
   SharedTodosCompanion copyWith({Value<int> todo, Value<int> user}) {
     return SharedTodosCompanion(
       todo: todo ?? this.todo,
@@ -1043,6 +1095,18 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
         someFloat = Value(someFloat);
+  static Insertable<TableWithoutPKData> createCustom({
+    Expression<int> notReallyAnId,
+    Expression<double> someFloat,
+    Expression<String> custom,
+  }) {
+    return RawValuesInsertable({
+      if (notReallyAnId != null) 'not_really_an_id': notReallyAnId,
+      if (someFloat != null) 'some_float': someFloat,
+      if (custom != null) 'custom': custom,
+    });
+  }
+
   TableWithoutPKCompanion copyWith(
       {Value<int> notReallyAnId,
       Value<double> someFloat,
@@ -1242,6 +1306,16 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
+  static Insertable<PureDefault> custom({
+    Expression<int> id,
+    Expression<String> txt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (txt != null) 'insert': txt,
+    });
+  }
+
   PureDefaultsCompanion copyWith({Value<int> id, Value<String> txt}) {
     return PureDefaultsCompanion(
       id: id ?? this.id,

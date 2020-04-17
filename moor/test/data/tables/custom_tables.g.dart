@@ -107,6 +107,18 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
   }) : configKey = Value(configKey);
+  static Insertable<Config> custom({
+    Expression<String> configKey,
+    Expression<String> configValue,
+    Expression<int> syncState,
+  }) {
+    return RawValuesInsertable({
+      if (configKey != null) 'config_key': configKey,
+      if (configValue != null) 'config_value': configValue,
+      if (syncState != null) 'sync_state': syncState,
+    });
+  }
+
   ConfigCompanion copyWith(
       {Value<String> configKey,
       Value<String> configValue,
@@ -292,6 +304,16 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
     this.a = const Value.absent(),
     this.b = const Value.absent(),
   });
+  static Insertable<WithDefault> custom({
+    Expression<String> a,
+    Expression<int> b,
+  }) {
+    return RawValuesInsertable({
+      if (a != null) 'a': a,
+      if (b != null) 'b': b,
+    });
+  }
+
   WithDefaultsCompanion copyWith({Value<String> a, Value<int> b}) {
     return WithDefaultsCompanion(
       a: a ?? this.a,
@@ -437,6 +459,14 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   NoIdsCompanion.insert({
     @required Uint8List payload,
   }) : payload = Value(payload);
+  static Insertable<NoId> custom({
+    Expression<Uint8List> payload,
+  }) {
+    return RawValuesInsertable({
+      if (payload != null) 'payload': payload,
+    });
+  }
+
   NoIdsCompanion copyWith({Value<Uint8List> payload}) {
     return NoIdsCompanion(
       payload: payload ?? this.payload,
@@ -603,6 +633,18 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     @required int b,
     this.c = const Value.absent(),
   }) : b = Value(b);
+  static Insertable<WithConstraint> custom({
+    Expression<String> a,
+    Expression<int> b,
+    Expression<double> c,
+  }) {
+    return RawValuesInsertable({
+      if (a != null) 'a': a,
+      if (b != null) 'b': b,
+      if (c != null) 'c': c,
+    });
+  }
+
   WithConstraintsCompanion copyWith(
       {Value<String> a, Value<int> b, Value<double> c}) {
     return WithConstraintsCompanion(
@@ -819,6 +861,20 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     this.somebool = const Value.absent(),
     this.somedate = const Value.absent(),
   });
+  static Insertable<MytableData> custom({
+    Expression<int> someid,
+    Expression<String> sometext,
+    Expression<bool> somebool,
+    Expression<DateTime> somedate,
+  }) {
+    return RawValuesInsertable({
+      if (someid != null) 'someid': someid,
+      if (sometext != null) 'sometext': sometext,
+      if (somebool != null) 'somebool': somebool,
+      if (somedate != null) 'somedate': somedate,
+    });
+  }
+
   MytableCompanion copyWith(
       {Value<int> someid,
       Value<String> sometext,
@@ -1034,6 +1090,18 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   })  : sender = Value(sender),
         title = Value(title),
         body = Value(body);
+  static Insertable<EMail> custom({
+    Expression<String> sender,
+    Expression<String> title,
+    Expression<String> body,
+  }) {
+    return RawValuesInsertable({
+      if (sender != null) 'sender': sender,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
+    });
+  }
+
   EmailCompanion copyWith(
       {Value<String> sender, Value<String> title, Value<String> body}) {
     return EmailCompanion(

@@ -30,6 +30,7 @@
 - New feature: Nested results for compiled queries ([#288](https://github.com/simolus3/moor/issues/288))
   See the [documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#nested-results) for
   details on how and when to use this feature.
+- New feature: Use sql expressions for inserts with `Companion.custom`.
  
 ## 2.4.1
 

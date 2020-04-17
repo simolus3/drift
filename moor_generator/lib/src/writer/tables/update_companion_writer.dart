@@ -16,8 +16,11 @@ class UpdateCompanionWriter {
     _buffer.write('class ${table.getNameForCompanionClass(scope.options)} '
         'extends UpdateCompanion<${table.dartTypeName}> {\n');
     _writeFields();
+
     _writeConstructor();
     _writeInsertConstructor();
+    _writeCustomConstructor();
+
     _writeCopyWith();
     _writeToColumnsOverride();
 
@@ -85,6 +88,38 @@ class UpdateCompanionWriter {
     }
 
     _buffer.write(';\n');
+  }
+
+  void _writeCustomConstructor() {
+    // Prefer a .custom constructor, unless there already is a field called
+    // "custom", in which case we'll use createCustom
+    final constructorName = table.columns
+            .map((e) => e.dartGetterName)
+            .any((name) => name == 'custom')
+        ? 'createCustom'
+        : 'custom';
+
+    _buffer
+      ..write('static Insertable<${table.dartTypeName}> $constructorName')
+      ..write('({');
+
+    for (final column in table.columns) {
+      _buffer
+        ..write('Expression<${column.variableTypeName}> ')
+        ..write(column.dartGetterName)
+        ..write(',\n');
+    }
+
+    _buffer..write('}) {\n')..write('return RawValuesInsertable({');
+
+    for (final column in table.columns) {
+      _buffer
+        ..write('if (${column.dartGetterName} != null)')
+        ..write(asDartLiteral(column.name.name))
+        ..write(': ${column.dartGetterName},');
+    }
+
+    _buffer.write('});\n}');
   }
 
   void _writeCopyWith() {
