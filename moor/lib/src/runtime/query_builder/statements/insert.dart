@@ -48,11 +48,14 @@ class InsertStatement<T extends Table, D extends DataClass> {
   /// When calling `addWord` with a word not yet saved, the regular insert will
   /// write it with one occurrence. If it already exists however, the insert
   /// behaves like an update incrementing occurrences by one.
+  /// Be aware that upsert clauses and [onConflict] are not available on older
+  /// sqlite versions.
   ///
   /// If the table contains an auto-increment column, the generated value will
   /// be returned. If there is no auto-increment column, you can't rely on the
   /// return value, but the future will complete with an error if the insert
   /// fails.
+
   Future<int> insert(
     Insertable<D> entity, {
     InsertMode mode,
@@ -67,6 +70,21 @@ class InsertStatement<T extends Table, D extends DataClass> {
           .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
       return id;
     });
+  }
+
+  /// Attempts to [insert] [entity] into the database. If the insert would
+  /// violate a primary key or uniqueness constraint, updates the columns that
+  /// are present on [entity].
+  ///
+  /// Note that this is subtly different from [InsertMode.replace]! When using
+  /// [InsertMode.replace], the old row will be deleted and replaced with the
+  /// new row. With [insertOnConflictUpdate], columns from the old row that are
+  /// not present on [entity] are unchanged, and no row will be deleted.
+  ///
+  /// Be aware that [insertOnConflictUpdate] uses an upsert clause, which is not
+  /// available on older sqlite implementations.
+  Future<void> insertOnConflictUpdate(Insertable<D> entity) {
+    return insert(entity, onConflict: DoUpdate((_) => entity));
   }
 
   /// Creates a [GenerationContext] which contains the sql necessary to run an

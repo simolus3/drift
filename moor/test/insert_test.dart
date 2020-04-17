@@ -161,4 +161,15 @@ void main() {
       argThat(equals(['my content', 'important: '])),
     ));
   });
+
+  test('insertOnConflictUpdate', () async {
+    await db.into(db.todosTable).insertOnConflictUpdate(
+        TodosTableCompanion.insert(content: 'content', id: const Value(3)));
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (id, content) VALUES (?, ?) '
+      'ON CONFLICT DO UPDATE SET id = ?, content = ?',
+      [3, 'content', 3, 'content'],
+    ));
+  });
 }
