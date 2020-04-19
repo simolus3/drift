@@ -89,7 +89,7 @@ class BatchedStatement {
 
   @override
   int get hashCode {
-    return $mrjf($mrjc(sql.hashCode, const ListEquality().hash(variables)));
+    return $mrjf($mrjc(sql.hashCode, _nestedListEquality.hash(variables)));
   }
 
   @override

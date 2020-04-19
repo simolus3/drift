@@ -83,6 +83,50 @@ void main() {
     ]));
   });
 
+  test('supports inserts with upsert clause', () async {
+    await db.batch((batch) {
+      batch.insert(
+        db.categories,
+        CategoriesCompanion.insert(description: 'description'),
+        onConflict: DoUpdate((old) {
+          return const CategoriesCompanion(id: Value(42));
+        }),
+      );
+    });
+
+    verify(executor.transactions.runBatched([
+      BatchedStatement(
+        'INSERT INTO categories (`desc`) VALUES (?) '
+        'ON CONFLICT DO UPDATE SET id = ?',
+        [
+          ['description', 42]
+        ],
+      ),
+    ]));
+  });
+
+  test('insertAllOnConflictUpdate', () async {
+    final entries = [
+      CategoriesCompanion.insert(description: 'first'),
+      CategoriesCompanion.insert(description: 'second'),
+    ];
+
+    await db.batch((batch) {
+      batch.insertAllOnConflictUpdate(db.categories, entries);
+    });
+
+    verify(executor.transactions.runBatched([
+      BatchedStatement(
+        'INSERT INTO categories (`desc`) VALUES (?) '
+        'ON CONFLICT DO UPDATE SET `desc` = ?',
+        [
+          ['first', 'first'],
+          ['second', 'second'],
+        ],
+      ),
+    ]));
+  });
+
   test('can re-use an outer transaction', () async {
     await db.transaction(() async {
       await db.batch((b) {});

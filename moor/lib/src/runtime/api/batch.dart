@@ -28,14 +28,18 @@ class Batch {
   /// primary key already exists. This behavior can be overridden with [mode],
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
   ///
+  /// [onConflict] can be used to create an upsert clause for engines that
+  /// support it. For details and examples, see [InsertStatement.insert].
+  ///
   /// See also:
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
-  void insert<D extends DataClass>(TableInfo<Table, D> table, Insertable<D> row,
-      {InsertMode mode}) {
+  void insert<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, Insertable<D> row,
+      {InsertMode mode, DoUpdate<T, D> onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
     final context = InsertStatement<Table, D>(_engine, table)
-        .createContext(row, actualMode);
+        .createContext(row, actualMode, onConflict: onConflict);
     _addContext(context);
   }
 
@@ -49,11 +53,22 @@ class Batch {
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
   /// Using [insertAll] will not disable primary keys or any column constraint
   /// checks.
-  void insertAll<D extends DataClass>(
-      TableInfo<Table, D> table, List<Insertable<D>> rows,
-      {InsertMode mode}) {
+  /// [onConflict] can be used to create an upsert clause for engines that
+  /// support it. For details and examples, see [InsertStatement.insert].
+  void insertAll<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, List<Insertable<D>> rows,
+      {InsertMode mode, DoUpdate<T, D> onConflict}) {
     for (final row in rows) {
-      insert<D>(table, row, mode: mode);
+      insert<T, D>(table, row, mode: mode, onConflict: onConflict);
+    }
+  }
+
+  /// Equivalent of [InsertStatement.insertOnConflictUpdate] for multiple rows
+  /// that will be inserted in this batch.
+  void insertAllOnConflictUpdate<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, List<Insertable<D>> rows) {
+    for (final row in rows) {
+      insert<T, D>(table, row, onConflict: DoUpdate((_) => row));
     }
   }
 
