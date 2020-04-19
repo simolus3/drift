@@ -7,6 +7,7 @@ import '../data.dart';
 const Map<String, ResolvedType> _types = {
   'SELECT * FROM demo WHERE id = ?': ResolvedType(type: BasicType.int),
   'SELECT * FROM demo WHERE content = ?': ResolvedType(type: BasicType.text),
+  'SELECT * FROM demo WHERE content == ?': ResolvedType(type: BasicType.text),
   'SELECT * FROM demo LIMIT ?': ResolvedType(type: BasicType.int),
   'SELECT 1 FROM demo GROUP BY id HAVING COUNT(*) = ?':
       ResolvedType(type: BasicType.int),

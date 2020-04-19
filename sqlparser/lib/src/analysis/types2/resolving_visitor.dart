@@ -260,6 +260,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         visitChildren(e, const ExactTypeExpectation.laxly(ResolvedType.bool()));
         break;
       case TokenType.equal:
+      case TokenType.doubleEqual:
       case TokenType.exclamationEqual:
       case TokenType.lessMore:
       case TokenType.less:
