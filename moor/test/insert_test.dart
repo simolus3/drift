@@ -68,21 +68,48 @@ void main() {
         {const TableUpdate('users', kind: UpdateKind.insert)}));
   });
 
-  test('enforces data integrity', () async {
-    InvalidDataException exception;
-    try {
-      await db.into(db.todosTable).insert(
-            const TodosTableCompanion(
-              // not declared as nullable in table definition
-              content: Value(null),
-            ),
-          );
-      fail('inserting invalid data did not throw');
-    } on InvalidDataException catch (e) {
-      exception = e;
-    }
+  group('enforces integrity', () {
+    test('for regular inserts', () async {
+      InvalidDataException exception;
+      try {
+        await db.into(db.todosTable).insert(
+              const TodosTableCompanion(
+                // not declared as nullable in table definition
+                content: Value(null),
+              ),
+            );
+        fail('inserting invalid data did not throw');
+      } on InvalidDataException catch (e) {
+        exception = e;
+      }
 
-    expect(exception.toString(), startsWith('InvalidDataException'));
+      expect(exception.toString(), startsWith('InvalidDataException'));
+    });
+
+    test("for upserts that aren't valid inserts", () {
+      expect(
+        () {
+          return db
+              .into(db.todosTable)
+              // content would be required
+              .insertOnConflictUpdate(const TodosTableCompanion());
+        },
+        throwsA(isA<InvalidDataException>()),
+      );
+    });
+
+    test("for upserts that aren't valid updates", () {
+      expect(
+        () {
+          final insert = TodosTableCompanion.insert(content: 'content');
+          const update = TodosTableCompanion(content: Value(null));
+          return db
+              .into(db.todosTable)
+              .insert(insert, onConflict: DoUpdate((_) => update));
+        },
+        throwsA(isA<InvalidDataException>()),
+      );
+    });
   });
 
   test("doesn't allow writing null rows", () {

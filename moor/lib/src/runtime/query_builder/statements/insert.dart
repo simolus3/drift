@@ -92,7 +92,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
-      {DoUpdate onConflict}) {
+      {DoUpdate<T, D> onConflict}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -146,7 +146,19 @@ class InsertStatement<T extends Table, D extends DataClass> {
     }
 
     if (onConflict != null) {
-      final updateSet = onConflict._createInsertable(table).toColumns(true);
+      final upsertInsertable = onConflict._createInsertable(table.asDslTable);
+
+      if (!identical(entry, upsertInsertable)) {
+        // We run a ON CONFLICT DO UPDATE, so make sure upsertInsertable is
+        // valid for updates.
+        // the identical check is a performance optimization - for the most
+        // common call (insertOnConflictUpdate) we don't have to check twice.
+        table
+            .validateIntegrity(upsertInsertable, isInserting: false)
+            .throwIfInvalid(upsertInsertable);
+      }
+
+      final updateSet = upsertInsertable.toColumns(true);
 
       ctx.buffer.write(' ON CONFLICT DO UPDATE SET ');
 
