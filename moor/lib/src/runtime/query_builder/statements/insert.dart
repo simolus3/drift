@@ -160,9 +160,20 @@ class InsertStatement<T extends Table, D extends DataClass> {
 
       final updateSet = upsertInsertable.toColumns(true);
 
-      ctx.buffer.write(' ON CONFLICT DO UPDATE SET ');
+      ctx.buffer.write(' ON CONFLICT(');
 
+      final conflictTarget = onConflict.target ?? table.$primaryKey.toList();
       var first = true;
+      for (final target in conflictTarget) {
+        if (!first) ctx.buffer.write(', ');
+
+        target.writeInto(ctx);
+        first = false;
+      }
+
+      ctx.buffer.write(') DO UPDATE SET ');
+
+      first = true;
       for (final update in updateSet.entries) {
         final column = escapeIfNeeded(update.key);
 
@@ -237,8 +248,15 @@ const _insertKeywords = <InsertMode, String>{
 class DoUpdate<T extends Table, D extends DataClass> {
   final Insertable<D> Function(T old) _creator;
 
+  /// An optional list of columns to serve as an "conflict target", which
+  /// specifies the uniqueness constraint that will trigger the upsert.
+  ///
+  /// By default, the primary key of the table will be used.
+  final List<Column> /*?*/ target;
+
   /// For an example, see [InsertStatement.insert].
-  DoUpdate(Insertable<D> Function(T old) update) : _creator = update;
+  DoUpdate(Insertable<D> Function(T old) update, {this.target})
+      : _creator = update;
 
   Insertable<D> _createInsertable(T table) {
     return _creator(table);

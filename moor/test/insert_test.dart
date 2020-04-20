@@ -184,8 +184,24 @@ void main() {
 
     verify(executor.runInsert(
       'INSERT INTO todos (content) VALUES (?) '
-      'ON CONFLICT DO UPDATE SET content = ? || content',
+      'ON CONFLICT(id) DO UPDATE SET content = ? || content',
       argThat(equals(['my content', 'important: '])),
+    ));
+  });
+
+  test('can use a custom conflict clause', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate(
+            (old) => TodosTableCompanion.insert(content: 'changed'),
+            target: [db.todosTable.content],
+          ),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT(content) DO UPDATE SET content = ?',
+      argThat(equals(['my content', 'changed'])),
     ));
   });
 
@@ -195,7 +211,7 @@ void main() {
 
     verify(executor.runInsert(
       'INSERT INTO todos (id, content) VALUES (?, ?) '
-      'ON CONFLICT DO UPDATE SET id = ?, content = ?',
+      'ON CONFLICT(id) DO UPDATE SET id = ?, content = ?',
       [3, 'content', 3, 'content'],
     ));
   });

@@ -97,7 +97,7 @@ void main() {
     verify(executor.transactions.runBatched([
       BatchedStatement(
         'INSERT INTO categories (`desc`) VALUES (?) '
-        'ON CONFLICT DO UPDATE SET id = ?',
+        'ON CONFLICT(id) DO UPDATE SET id = ?',
         [
           ['description', 42]
         ],
@@ -118,7 +118,7 @@ void main() {
     verify(executor.transactions.runBatched([
       BatchedStatement(
         'INSERT INTO categories (`desc`) VALUES (?) '
-        'ON CONFLICT DO UPDATE SET `desc` = ?',
+        'ON CONFLICT(id) DO UPDATE SET `desc` = ?',
         [
           ['first', 'first'],
           ['second', 'second'],
