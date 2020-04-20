@@ -121,5 +121,5 @@ void main() {
       expect(e.resultCode, Errors.SQLITE_NOTADB);
     }
     db.close();
-  }, solo: true);
+  });
 }
