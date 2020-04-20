@@ -49,6 +49,9 @@ class Database {
     pathC.free();
 
     if (resultCode == Errors.SQLITE_OK) {
+      // Turn extended result code to on.
+      bindings.sqlite3_extended_result_codes(dbPointer, 1);
+
       return Database._(dbPointer);
     } else {
       bindings.sqlite3_close_v2(dbPointer);
@@ -104,7 +107,6 @@ class Database {
 
     final result =
         bindings.sqlite3_exec(_db, sqlPtr, nullPtr(), nullPtr(), errorOut);
-
     sqlPtr.free();
 
     final errorPtr = errorOut.value;
@@ -118,7 +120,7 @@ class Database {
     }
 
     if (result != Errors.SQLITE_OK) {
-      throw SqliteException(errorMsg);
+      throw SqliteException(result, errorMsg);
     }
   }
 

@@ -69,6 +69,8 @@ class _SQLiteBindings {
 
   Pointer<CBlob> Function(int code) sqlite3_errstr;
   Pointer<CBlob> Function(Pointer<Database> database) sqlite3_errmsg;
+  int Function(Pointer<Database> database, int onOff)
+      sqlite3_extended_result_codes;
 
   int Function(Pointer<Statement> statement, int columnIndex, double value)
       sqlite3_bind_double;
@@ -144,6 +146,10 @@ class _SQLiteBindings {
         .asFunction();
     sqlite3_errmsg = sqlite
         .lookup<NativeFunction<sqlite3_errmsg_native_t>>('sqlite3_errmsg')
+        .asFunction();
+    sqlite3_extended_result_codes = sqlite
+        .lookup<NativeFunction<sqlite3_extended_result_codes_t>>(
+            'sqlite3_extended_result_codes')
         .asFunction();
     sqlite3_column_count = sqlite
         .lookup<NativeFunction<sqlite3_column_count_native_t>>(
