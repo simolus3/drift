@@ -34,7 +34,7 @@ class Database {
 
   /// Opens an sqlite3 database from a filename.
   ///
-  /// Unless [readOnly] is set to true, database is open in read/write mode.
+  /// Unless [readOnly] is set to true, database is opened in read/write mode.
   factory Database.open(String fileName, {bool readOnly = false}) {
     final dbOut = allocate<Pointer<types.Database>>();
     final pathC = CBlob.allocateString(fileName);
