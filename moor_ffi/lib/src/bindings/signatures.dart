@@ -41,6 +41,9 @@ typedef sqlite3_errstr_native_t = Pointer<CBlob> Function(Int32 error);
 typedef sqlite3_errmsg_native_t = Pointer<CBlob> Function(
     Pointer<Database> database);
 
+typedef sqlite3_extended_result_codes_t = Int32 Function(
+    Pointer<Database> database, Int32 onOff);
+
 typedef sqlite3_column_count_native_t = Int32 Function(
     Pointer<Statement> statement);
 
