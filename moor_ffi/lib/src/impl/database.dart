@@ -15,6 +15,7 @@ part 'errors.dart';
 part 'prepared_statement.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
+const _readOnlyOpeningFlags = Flags.SQLITE_OPEN_READONLY;
 
 /// A opened sqlite database.
 class Database {
@@ -32,12 +33,16 @@ class Database {
   factory Database.memory() => Database.open(':memory:');
 
   /// Opens an sqlite3 database from a filename.
-  factory Database.open(String fileName) {
+  ///
+  /// Unless [readOnly] is set to true, database is open in read/write mode.
+  factory Database.open(String fileName, {bool readOnly = false}) {
     final dbOut = allocate<Pointer<types.Database>>();
     final pathC = CBlob.allocateString(fileName);
+    final openingFlags =
+        (readOnly ?? false) ? _readOnlyOpeningFlags : _openingFlags;
 
     final resultCode =
-        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullPtr());
+        bindings.sqlite3_open_v2(pathC, dbOut, openingFlags, nullPtr());
     final dbPointer = dbOut.value;
 
     dbOut.free();
