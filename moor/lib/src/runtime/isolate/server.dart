@@ -23,7 +23,7 @@ class _MoorServer {
 
   SendPort get portToOpenConnection => server.portToOpenConnection;
 
-  _MoorServer(DatabaseOpener opener) : server = Server() {
+  _MoorServer(DatabaseOpener opener) : server = Server(const _MoorCodec()) {
     server.openedConnections.listen((connection) {
       connection.setRequestHandler(_handleRequest);
     });

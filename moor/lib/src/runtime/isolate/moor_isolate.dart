@@ -55,7 +55,8 @@ class MoorIsolate {
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
   Future<void> shutdownAll() async {
-    final connection = await IsolateCommunication.connectAsClient(connectPort);
+    final connection = await IsolateCommunication.connectAsClient(
+        connectPort, const _MoorCodec());
     unawaited(connection.request(_NoArgsRequest.terminateAll).then((_) {},
         onError: (_) {
       // the background isolate is closed before it gets a chance to reply

@@ -23,7 +23,7 @@ class _MoorClient {
   static Future<_MoorClient> connect(
       MoorIsolate isolate, bool isolateDebugLog) async {
     final connection = await IsolateCommunication.connectAsClient(
-        isolate.connectPort, isolateDebugLog);
+        isolate.connectPort, const _MoorCodec(), isolateDebugLog);
 
     final typeSystem =
         await connection.request<SqlTypeSystem>(_NoArgsRequest.getTypeSystem);
@@ -56,7 +56,7 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
     return client._channel
-        .request<T>(_ExecuteQuery(method, sql, args, _executorId));
+        .request<T>(_ExecuteQuery(method, sql, args ?? const [], _executorId));
   }
 
   @override

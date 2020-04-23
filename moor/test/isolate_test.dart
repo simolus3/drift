@@ -68,7 +68,7 @@ void _runTests(
 
   setUp(() async {
     isolate = await spawner();
-    isolateConnection = await isolate.connect(isolateDebugLog: false);
+    isolateConnection = await isolate.connect(isolateDebugLog: true);
   });
 
   tearDown(() {

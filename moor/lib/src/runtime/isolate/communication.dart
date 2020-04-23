@@ -14,6 +14,11 @@ class IsolateCommunication {
 
   /// The input stream of this channel. This could be a [ReceivePort].
   final Stream<dynamic> input;
+
+  /// The coded responsible to transform application-specific messages into
+  /// primitive objects.
+  final MessageCodec messageCodec;
+
   StreamSubscription _inputSubscription;
 
   // note that there are two IsolateCommunication instances in each connection,
@@ -25,7 +30,8 @@ class IsolateCommunication {
 
   final bool _debugLog;
 
-  IsolateCommunication._(this.sendPort, this.input, [this._debugLog = false]) {
+  IsolateCommunication._(this.sendPort, this.input, this.messageCodec,
+      [this._debugLog = false]) {
     _inputSubscription = input.listen(_handleMessage);
   }
 
@@ -44,17 +50,19 @@ class IsolateCommunication {
   /// The server must listen for incoming connections on the receiving end of
   /// [openConnectionPort].
   static Future<IsolateCommunication> connectAsClient(
-      SendPort openConnectionPort,
+      SendPort openConnectionPort, MessageCodec messageCodec,
       [bool debugLog = false]) async {
     final clientReceive = ReceivePort();
     final stream = clientReceive.asBroadcastStream();
 
-    openConnectionPort.send(_ClientConnectionRequest(clientReceive.sendPort));
+    openConnectionPort.send(messageCodec
+        ._encodeMessage(_ClientConnectionRequest(clientReceive.sendPort)));
 
-    final response = await stream.first as _ServerConnectionResponse;
+    final response = messageCodec._decodeMessage(await stream.first)
+        as _ServerConnectionResponse;
 
-    final communication =
-        IsolateCommunication._(response.sendPort, stream, debugLog);
+    final communication = IsolateCommunication._(
+        response.sendPort, stream, messageCodec, debugLog);
 
     unawaited(communication.closed.then((_) => clientReceive.close()));
 
@@ -65,7 +73,7 @@ class IsolateCommunication {
   void close() {
     if (isClosed) return;
 
-    _send(_ConnectionClose());
+    _send(const _ConnectionClose());
     _closeLocally();
   }
 
@@ -80,6 +88,8 @@ class IsolateCommunication {
   }
 
   void _handleMessage(dynamic msg) {
+    msg = messageCodec._decodeMessage(msg);
+
     if (_debugLog) {
       print('[IN]: $msg');
     }
@@ -118,7 +128,7 @@ class IsolateCommunication {
     return completer.future;
   }
 
-  void _send(dynamic msg) {
+  void _send(IsolateMessage msg) {
     if (isClosed) {
       throw StateError('Tried to send $msg over isolate channel, but the '
           'connection was closed!');
@@ -127,7 +137,7 @@ class IsolateCommunication {
     if (_debugLog) {
       print('[OUT]: $msg');
     }
-    sendPort.send(msg);
+    sendPort.send(messageCodec._encodeMessage(msg));
   }
 
   /// Sends a response for a handled [Request].
@@ -176,6 +186,10 @@ class Server {
   final ReceivePort _openConnectionPort = ReceivePort();
   final StreamController<IsolateCommunication> _opened = StreamController();
 
+  /// The coded responsible to transform application-specific messages into
+  /// primitive objects.
+  final MessageCodec messageCodec;
+
   /// The port that should be used by new clients when they want to establish
   /// a new connection.
   SendPort get portToOpenConnection => _openConnectionPort.sendPort;
@@ -188,7 +202,7 @@ class Server {
   Stream<IsolateCommunication> get openedConnections => _opened.stream;
 
   /// Opens a server in the current isolate.
-  Server() {
+  Server(this.messageCodec) {
     _openConnectionPort.listen(_handleMessageOnConnectionPort);
   }
 
@@ -203,16 +217,21 @@ class Server {
   }
 
   void _handleMessageOnConnectionPort(dynamic message) {
+    message = messageCodec._decodeMessage(message);
+
     if (message is _ClientConnectionRequest) {
       final receiveFromClient = ReceivePort();
-      final communication =
-          IsolateCommunication._(message.sendPort, receiveFromClient);
+      final communication = IsolateCommunication._(
+        message.sendPort,
+        receiveFromClient,
+        messageCodec,
+      );
 
       currentChannels.add(communication);
       _opened.add(communication);
 
       final response = _ServerConnectionResponse(receiveFromClient.sendPort);
-      message.sendPort.send(response);
+      message.sendPort.send(messageCodec._encodeMessage(response));
 
       communication.closed.whenComplete(() {
         currentChannels.remove(communication);
@@ -222,8 +241,94 @@ class Server {
   }
 }
 
+/// Class used to encode and decode messages.
+///
+/// As explained in [SendPort.send], we can only send some objects across
+/// isolates, notably:
+/// - primitive types (null, num, bool, double, String)
+/// - instances of [SendPort]
+/// - [TransferableTypedData]
+/// - lists and maps thereof.
+///
+/// This class is used to ensure we only send those types over isolates.
+abstract class MessageCodec {
+  /// Default constant constructor so that subclasses can be constant.
+  const MessageCodec();
+
+  dynamic _encodeMessage(IsolateMessage message) {
+    if (message is _ClientConnectionRequest) {
+      return [_ClientConnectionRequest._tag, message.sendPort];
+    } else if (message is _ServerConnectionResponse) {
+      return [_ServerConnectionResponse._tag, message.sendPort];
+    } else if (message is _ConnectionClose) {
+      return _ConnectionClose._tag;
+    } else if (message is Request) {
+      return [Request._tag, message.id, encodePayload(message.payload)];
+    } else if (message is _ErrorResponse) {
+      return [
+        _ErrorResponse._tag,
+        message.requestId,
+        Error.safeToString(message.error),
+        message.stackTrace,
+      ];
+    } else if (message is _Response) {
+      return [
+        _Response._tag,
+        message.requestId,
+        encodePayload(message.response),
+      ];
+    }
+
+    throw AssertionError('Unknown message: $message');
+  }
+
+  IsolateMessage _decodeMessage(dynamic encoded) {
+    if (encoded is int) {
+      // _ConnectionClosed is the only message only consisting of a tag
+      assert(encoded == _ConnectionClose._tag);
+      return const _ConnectionClose();
+    }
+
+    final components = encoded as List;
+    final tag = components.first as int;
+
+    switch (tag) {
+      case _ClientConnectionRequest._tag:
+        return _ClientConnectionRequest(components[1] as SendPort);
+      case _ServerConnectionResponse._tag:
+        return _ServerConnectionResponse(components[1] as SendPort);
+      case Request._tag:
+        return Request._(components[1] as int, decodePayload(components[2]));
+      case _ErrorResponse._tag:
+        return _ErrorResponse(
+          components[1] as int, // request id
+          components[2], // error
+          components[3] as String /*?*/,
+        );
+      case _Response._tag:
+        return _Response(components[1] as int, decodePayload(encoded[2]));
+    }
+
+    throw AssertionError('Unrecognized message: $encoded');
+  }
+
+  /// Encodes an application-specific [payload], which can be any Dart object,
+  /// so that it can be sent via [SendPort.send].
+  dynamic encodePayload(dynamic payload);
+
+  /// Counter-part of [encodePayload], which should decode a payload encoded by
+  /// that function.
+  dynamic decodePayload(dynamic encoded);
+}
+
+/// Marker interface for classes that can be sent over this communication
+/// protocol.
+abstract class IsolateMessage {}
+
 /// Sent from a client to a server in order to establish a connection.
-class _ClientConnectionRequest {
+class _ClientConnectionRequest implements IsolateMessage {
+  static const _tag = 1;
+
   /// The [SendPort] for server to client communication.
   final SendPort sendPort;
 
@@ -232,7 +337,9 @@ class _ClientConnectionRequest {
 
 /// Reply from a [Server] to a [_ClientConnectionRequest] to indicate that the
 /// connection has been established.
-class _ServerConnectionResponse {
+class _ServerConnectionResponse implements IsolateMessage {
+  static const _tag = 2;
+
   /// The [SendPort] used by the client to send further messages to the
   /// [Server].
   final SendPort sendPort;
@@ -241,11 +348,17 @@ class _ServerConnectionResponse {
 }
 
 /// Sent from any peer to close the connection.
-class _ConnectionClose {}
+class _ConnectionClose implements IsolateMessage {
+  static const _tag = 3;
+
+  const _ConnectionClose();
+}
 
 /// A request sent over an isolate connection. It is expected that the other
 /// peer eventually answers with a matching response.
-class Request {
+class Request implements IsolateMessage {
+  static const _tag = 4;
+
   /// The id of this request, generated by the sender.
   final int id;
 
@@ -260,7 +373,9 @@ class Request {
   }
 }
 
-class _Response {
+class _Response implements IsolateMessage {
+  static const _tag = 5;
+
   final int requestId;
   final dynamic response;
 
@@ -273,6 +388,8 @@ class _Response {
 }
 
 class _ErrorResponse extends _Response {
+  static const _tag = 6;
+
   final String stackTrace;
 
   dynamic get error => response;
