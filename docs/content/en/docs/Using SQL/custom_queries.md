@@ -13,10 +13,10 @@ be supported, moor files will get better tooling support in the future and we re
 migrate. See [their api]({{%relref "moor_files.md"%}}) for details.
 {{% /alert %}}
 
-Altough moor includes a fluent api that can be used to model most statements, advanced
+Although moor includes a fluent api that can be used to model most statements, advanced
 features like `GROUP BY` statements or window functions are not yet supported. You can
 use these features with custom statements. You don't have to miss out on other benefits
-moor brings, though: Moor helps you parse the result rows and qustom queries also 
+moor brings, though: Moor helps you parse the result rows and custom queries also
 support auto-updating streams.
 
 ## Statements with a generated api

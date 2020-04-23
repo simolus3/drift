@@ -44,12 +44,12 @@ they behave.
 Query streams that have been created outside a transaction work nicely together with
 updates made in a transaction: All changes to tables will only be reported after the
 transaction completes. Updates inside a transaction don't have an immediate effect on
-streams, so your data will always be consistent and there aren't any uneccessary updates.
+streams, so your data will always be consistent and there aren't any unnecessary updates.
 
 With streams created _inside_ a `transaction` block (or a nested call in there), it's
 a different story. Notably, they
 
-- reflect on changes made in the transaction immediatly
+- reflect on changes made in the transaction immediately
 - complete when the transaction completes
 
 This behavior is useful if you're collapsing streams inside a transaction, for instance by

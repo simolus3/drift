@@ -87,7 +87,7 @@ Future<CartWithItems> createEmptyCart() async {
 ```
 
 ## Selecting a cart
-As our `CartWithItems` class consists of multiple compontents that are separated in the
+As our `CartWithItems` class consists of multiple components that are separated in the
 database (information about the cart, and information about the added items), we'll have
 to merge two streams together. The `rxdart` library helps here by providing the 
 `combineLatest2` method, allowing us to write
