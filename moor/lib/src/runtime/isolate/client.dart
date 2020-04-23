@@ -23,7 +23,7 @@ class _MoorClient {
   static Future<_MoorClient> connect(
       MoorIsolate isolate, bool isolateDebugLog) async {
     final connection = await IsolateCommunication.connectAsClient(
-        isolate._server, isolateDebugLog);
+        isolate.connectPort, isolateDebugLog);
 
     final typeSystem =
         await connection.request<SqlTypeSystem>(_NoArgsRequest.getTypeSystem);

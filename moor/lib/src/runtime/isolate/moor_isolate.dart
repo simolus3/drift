@@ -31,10 +31,16 @@ typedef DatabaseOpener = DatabaseConnection Function();
 /// - The [detailed documentation](https://moor.simonbinder.eu/docs/advanced-features/isolates),
 ///   which provides example codes on how to use this api.
 class MoorIsolate {
-  /// Identifier for the server isolate that we can connect to.
-  final ServerKey _server;
+  /// THe underlying port used to establish a connection with this
+  /// [MoorIsolate].
+  ///
+  /// This [SendPort] can safely be sent over isolates. The receiving isolate
+  /// can reconstruct a[MoorIsolate] by using [MoorIsolate.fromConnectPort].
+  final SendPort connectPort;
 
-  MoorIsolate._(this._server);
+  /// Creates a [MoorIsolate] talking to another isolate by using the
+  /// [connectPort].
+  MoorIsolate.fromConnectPort(this.connectPort);
 
   /// Connects to this [MoorIsolate] from another isolate. All operations on the
   /// returned [DatabaseConnection] will be executed on a background isolate.
@@ -49,7 +55,7 @@ class MoorIsolate {
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
   Future<void> shutdownAll() async {
-    final connection = await IsolateCommunication.connectAsClient(_server);
+    final connection = await IsolateCommunication.connectAsClient(connectPort);
     unawaited(connection.request(_NoArgsRequest.terminateAll).then((_) {},
         onError: (_) {
       // the background isolate is closed before it gets a chance to reply
@@ -73,8 +79,8 @@ class MoorIsolate {
     final keyFuture = receiveServer.first;
 
     await Isolate.spawn(_startMoorIsolate, [receiveServer.sendPort, opener]);
-    final key = await keyFuture as ServerKey;
-    return MoorIsolate._(key);
+    final key = await keyFuture as SendPort;
+    return MoorIsolate.fromConnectPort(key);
   }
 
   /// Creates a [MoorIsolate] in the [Isolate.current] isolate. The returned
@@ -83,17 +89,21 @@ class MoorIsolate {
   /// connection which operations are all executed on this isolate.
   factory MoorIsolate.inCurrent(DatabaseOpener opener) {
     final server = _MoorServer(opener);
-    return MoorIsolate._(server.key);
+    return MoorIsolate.fromConnectPort(server.portToOpenConnection);
   }
 }
 
-/// Creates a [_MoorServer] and sends the resulting [ServerKey] over a
-/// [SendPort]. The [args] param must have two parameters, the first one being
-/// a [SendPort] and the second one being a [DatabaseOpener].
+/// Creates a [_MoorServer] and sends a [SendPort] that can be used to establish
+/// connections.
+///
+/// Te [args] list must contain two elements. The first one is the [SendPort]
+/// that [_startMoorIsolate] will use to send the new [SendPort] used to
+/// establish further connections. The second element is a [DatabaseOpener]
+/// used to open the underlying database connection.
 void _startMoorIsolate(List args) {
   final sendPort = args[0] as SendPort;
   final opener = args[1] as DatabaseOpener;
 
   final server = _MoorServer(opener);
-  sendPort.send(server.key);
+  sendPort.send(server.portToOpenConnection);
 }

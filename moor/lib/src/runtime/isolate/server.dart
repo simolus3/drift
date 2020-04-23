@@ -21,7 +21,7 @@ class _MoorServer {
 
   _IsolateDelegatedUser _dbUser;
 
-  ServerKey get key => server.key;
+  SendPort get portToOpenConnection => server.portToOpenConnection;
 
   _MoorServer(DatabaseOpener opener) : server = Server() {
     server.openedConnections.listen((connection) {
