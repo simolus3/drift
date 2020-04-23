@@ -87,5 +87,5 @@ yet. You can just delete your apps' data and reinstall the app - the database wi
 will be created again. Please note that uninstalling is not enough sometimes - Android might have backed up
 the database file and will re-create it when installing the app again.
 
-You can also delete and re-create all tables everytime your app is opened, see [this comment](https://github.com/simolus3/moor/issues/188#issuecomment-542682912)
+You can also delete and re-create all tables every time your app is opened, see [this comment](https://github.com/simolus3/moor/issues/188#issuecomment-542682912)
 on how that can be achieved.

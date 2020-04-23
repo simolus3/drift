@@ -53,7 +53,7 @@ INFO: test/fake_db.dart has moor databases or daos: TodoDb, SomeDao
 ### Export
 
 This subcommand expects two paths, a Dart file and a target. The Dart file should contain
-excactly one class annotated with `@UseMoor`. Running the following command will export
+exactly one class annotated with `@UseMoor`. Running the following command will export
 the database schema to json.
 
 ```
@@ -68,4 +68,4 @@ The generated file (`schema.json` in this case) contains information about all
 - `@create`-queries from included moor files
 - dependecies thereof
 
-The schema format is still work-in-progress and might change in the future.
+The schema format is still a work-in-progress and might change in the future.

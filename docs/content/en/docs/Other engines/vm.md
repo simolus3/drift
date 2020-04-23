@@ -103,7 +103,7 @@ LazyDatabase(() async {
 ## Used compile options on Android
 
 Note: Android is the only platform where moor_ffi will compile sqlite. The sqlite3 library from the system
-is used on all other platforms. The choosen options help reduce binary size by removing features not used by
+is used on all other platforms. The chosen options help reduce binary size by removing features not used by
 moor. Important options are marked in bold.
 
 - We use the `-O3` performance option

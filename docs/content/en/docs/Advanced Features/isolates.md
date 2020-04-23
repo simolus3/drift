@@ -92,7 +92,7 @@ Future<MoorIsolate> _createMoorIsolate() async {
 }
 
 void _startBackground(_IsolateStartRequest request) {
-  // this is the entrypoint from the background isolate! Let's create
+  // this is the entry point from the background isolate! Let's create
   // the database from the path we received
   final executor = VmDatabase(File(request.targetPath));
   // we're using MoorIsolate.inCurrent here as this method already runs on a
@@ -105,7 +105,7 @@ void _startBackground(_IsolateStartRequest request) {
   request.sendMoorIsolate.send(moorIsolate);
 }
 
-// used to bundle the SendPort and the target path, since isolate entrypoint
+// used to bundle the SendPort and the target path, since isolate entry point
 // functions can only take one parameter.
 class _IsolateStartRequest {
   final SendPort sendMoorIsolate;
