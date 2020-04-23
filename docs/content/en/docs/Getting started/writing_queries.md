@@ -47,6 +47,12 @@ details on expressions, see [this guide]({{< relref "expressions.md" >}}).
 ### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
 the amount of rows to return and an optional offset.
+```dart
+Future<List<Todo>> limitTodos(int limit, {int offset}) {
+  return (select(todos)..limit(limit, offset: offset)).get();
+}
+```
+
 ### Ordering
 You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
 ordering terms from the table.
