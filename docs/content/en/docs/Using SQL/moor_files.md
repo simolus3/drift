@@ -48,7 +48,7 @@ CREATE INDEX categories_description ON categories(description);
 -- we can put named sql queries in here as well:
 createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
 deleteById: DELETE FROM todos WHERE id = :id;
-watchAllTodos: SELECT * FROM todos;
+allTodos: SELECT * FROM todos;
 ```
 
 After running the build runner with `flutter pub run build_runner build`,
@@ -75,7 +75,8 @@ what we got:
   `todos` and the description of the associated category.
 
 ## Variables
-We support regular variables (`?`), explictly indexed variables (`?123`)
+Inside of named queries, you can use variables just like you would expect with
+sql. We support regular variables (`?`), explictly indexed variables (`?123`)
 and colon-named variables (`:id`). We don't support variables declared
 with @ or $. The compiler will attempt to infer the variable's type by
 looking at its context. This lets moor generate typesafe apis for your
@@ -94,14 +95,13 @@ use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for
 ```sql
 entriesWithId: SELECT * FROM todos WHERE id IN ?;
 ```
-Moor will generate a `Selectable<Todo> entriesWithId(List<int> ids)` 
-method (`entriesWithId([1,2])` would run `SELECT * ... id IN (?1, ?2)`
-and bind the arguments accordingly). To support this, we only have two
-restrictions:
+Moor will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
+Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and
+bind the arguments accordingly. To make sure this works as expected, moor 
+imposes two small restrictions:
 
-1. __No explicit variables__: Running `WHERE id IN ?2` will be rejected
-at build time. As the variable is expanded, giving it a single index is
-invalid.
+1. __No explicit variables__: `WHERE id IN ?2` will be rejected at build time. 
+As the variable is expanded, giving it a single index is invalid.
 2. __No higher explicit index after a variable__: Running 
 `WHERE id IN ? OR title = ?2` will also be rejected. Expanding the 
 variable can clash with the explicit index, which is why moor forbids
@@ -126,6 +126,9 @@ the current file and to the database that `includes` it. If you want
 to declare queries on tables that were defined in another moor
 file, you also need to import that file for the tables to be
 visible.
+Note that imports in moor file are always transitive, so in the above example
+you would have all imports declared in `other.moor` available as well.
+There is no `export` mechanism for moor files.
 
 Importing Dart files into a moor file will also work - then, 
 all the tables declared via Dart tables can be used inside queries.
@@ -157,8 +160,9 @@ routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
   INNER JOIN coordinates t ON f.id = r.to;
 ```
 
-To match the returned column names, moor will generate a class having an `id`,
-`name`,  `id1`, `lat`, `long`, `lat1` and a `long1` field.
+To match the returned column names while avoiding name clashes in Dart, moor 
+will generate a class having an `id`, `name`,  `id1`, `lat`, `long`, `lat1` and
+a `long1` field.
 Of course, that's not helpful at all - was `lat1` coming from `from` or `to` 
 again? Let's rewrite the query, this time using nested results:
 
@@ -224,17 +228,17 @@ $-variable in a query:
 ```sql
 _filterTodos: SELECT * FROM todos WHERE $predicate;
 ```
-Moor will generate a `Selectable<Todo> _filterTodos(Expression<bool, BoolType> predicate)` method which can be used to construct dynamic
-filters at runtime:
+Moor will generate a `Selectable<Todo> _filterTodos(Expression<bool> predicate)`
+method that can be used to construct dynamic filters at runtime:
 ```dart
 Stream<List<Todo>> watchInCategory(int category) {
     return _filterTodos(todos.category.equals(category)).watch();
 }
 ```
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
-This feature also works for
+This feature works for
 
-- expressions
+- expressions, as you've seen in the example above
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
@@ -254,7 +258,7 @@ CREATE TABLE users (
 ```
 
 More details on type converts in moor files are available
-[here]({{< relref "../Advanced Features/type_converters.md#using-converters-in-moor" >}})
+[here]({{< relref "../Advanced Features/type_converters.md#using-converters-in-moor" >}}).
 
 ## Supported statements
 At the moment, the following statements can appear in a `.moor` file.
