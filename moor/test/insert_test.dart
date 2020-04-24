@@ -206,7 +206,9 @@ void main() {
   });
 
   test('insertOnConflictUpdate', () async {
-    await db.into(db.todosTable).insertOnConflictUpdate(
+    when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(3));
+
+    final id = await db.into(db.todosTable).insertOnConflictUpdate(
         TodosTableCompanion.insert(content: 'content', id: const Value(3)));
 
     verify(executor.runInsert(
@@ -214,5 +216,6 @@ void main() {
       'ON CONFLICT(id) DO UPDATE SET id = ?, content = ?',
       [3, 'content', 3, 'content'],
     ));
+    expect(id, 3);
   });
 }

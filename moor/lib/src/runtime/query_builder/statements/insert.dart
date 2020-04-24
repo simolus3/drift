@@ -1,6 +1,6 @@
 part of '../query_builder.dart';
 
-/// Represents an insert statements
+/// Represents an insert statement
 class InsertStatement<T extends Table, D extends DataClass> {
   /// The database to use then executing this statement
   @protected
@@ -55,7 +55,6 @@ class InsertStatement<T extends Table, D extends DataClass> {
   /// be returned. If there is no auto-increment column, you can't rely on the
   /// return value, but the future will complete with an error if the insert
   /// fails.
-
   Future<int> insert(
     Insertable<D> entity, {
     InsertMode mode,
@@ -83,7 +82,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
   ///
   /// Be aware that [insertOnConflictUpdate] uses an upsert clause, which is not
   /// available on older sqlite implementations.
-  Future<void> insertOnConflictUpdate(Insertable<D> entity) {
+  Future<int> insertOnConflictUpdate(Insertable<D> entity) {
     return insert(entity, onConflict: DoUpdate((_) => entity));
   }
 
