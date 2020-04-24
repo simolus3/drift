@@ -35,7 +35,12 @@ class _MoorCodec extends MessageCodec {
     } else if (payload is _ExecuteBatchedStatement) {
       return [
         _tag_ExecuteBatchedStatement,
-        for (final stmt in payload.stmts) _encodeBatchedStatement(stmt),
+        payload.stmts.statements,
+        for (final arg in payload.stmts.arguments)
+          [
+            arg.statementIndex,
+            for (final value in arg.arguments) _encodeDbValue(value),
+          ],
         payload.executorId,
       ];
     } else if (payload is _RunTransactionAction) {
@@ -101,12 +106,19 @@ class _MoorCodec extends MessageCodec {
         final executorId = fullMessage[4] as int /*?*/;
         return _ExecuteQuery(method, sql, args, executorId);
       case _tag_ExecuteBatchedStatement:
-        final stmts = <BatchedStatement>[];
-        for (var i = 1; i < fullMessage.length - 1; i++) {
-          stmts.add(_decodeBatchedStatement(fullMessage[i] as List));
+        final sql = (fullMessage[1] as List).cast<String>();
+        final args = <ArgumentsForBatchedStatement>[];
+
+        for (var i = 2; i < fullMessage.length - 1; i++) {
+          final list = fullMessage[i] as List;
+          args.add(ArgumentsForBatchedStatement(list[0] as int, [
+            for (var j = 1; j < list.length; j++) _decodeDbValue(list[j]),
+          ]));
         }
+
         final executorId = fullMessage.last as int;
-        return _ExecuteBatchedStatement(stmts, executorId);
+        return _ExecuteBatchedStatement(
+            BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:
         final control = _TransactionControl.values[readInt(1)];
         return _RunTransactionAction(control, readInt(2));
@@ -150,28 +162,6 @@ class _MoorCodec extends MessageCodec {
     } else {
       return encoded;
     }
-  }
-
-  dynamic _encodeBatchedStatement(BatchedStatement stmt) {
-    return [
-      stmt.sql,
-      for (final variableSet in stmt.variables)
-        [
-          for (final variable in variableSet) _encodeDbValue(variable),
-        ],
-    ];
-  }
-
-  BatchedStatement _decodeBatchedStatement(List encoded) {
-    final sql = encoded[0] as String;
-    final args = <List>[];
-
-    for (var i = 1; i < encoded.length; i++) {
-      final encodedVariableSet = encoded[i] as List;
-      args.add(encodedVariableSet.map(_decodeDbValue).toList());
-    }
-
-    return BatchedStatement(sql, args);
   }
 }
 
@@ -222,9 +212,9 @@ class _ExecuteQuery {
   }
 }
 
-/// Sent from the client to run a list of [BatchedStatement]s.
+/// Sent from the client to run [BatchedStatements]
 class _ExecuteBatchedStatement {
-  final List<BatchedStatement> stmts;
+  final BatchedStatements stmts;
   final int executorId;
 
   _ExecuteBatchedStatement(this.stmts, [this.executorId]);

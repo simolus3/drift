@@ -39,7 +39,7 @@ class _MultiExecutorImpl extends MultiExecutor {
   }
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) async {
+  Future<void> runBatched(BatchedStatements statements) async {
     await _writes.runBatched(statements);
   }
 

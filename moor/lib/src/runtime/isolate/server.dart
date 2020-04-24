@@ -94,8 +94,7 @@ class _MoorServer {
     throw AssertionError("Unknown _StatementMethod, this can't happen.");
   }
 
-  Future<void> _runBatched(
-      List<BatchedStatement> stmts, int transactionId) async {
+  Future<void> _runBatched(BatchedStatements stmts, int transactionId) async {
     final executor = await _loadExecutor(transactionId);
     await executor.runBatched(stmts);
   }

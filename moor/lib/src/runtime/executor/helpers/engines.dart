@@ -81,7 +81,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
+  Future<void> runBatched(BatchedStatements statements) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       if (logStatements) {

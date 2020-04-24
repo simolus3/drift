@@ -20,6 +20,8 @@
   - Removed `Insertable.toCompanion`
   - Added `Insertable.toColumns` to obtain a map from column names to values that should be inserted
   - Removed `TableInfo.entityToSql` - use `Insertable.toColumns` instead
+- Batches now run statements in the order they were issued. This required a breaking change for engine
+  implementers.
 - Experimentally support IndexedDB to store sqlite data on the web
 - Moor will no longer wait for query stream listeners to receive a done event when closing a database
   or transaction.
@@ -31,6 +33,7 @@
   See the [documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#nested-results) for
   details on how and when to use this feature.
 - New feature: Use sql expressions for inserts with `Companion.custom`.
+- Support using `MoorIsolates` in scenarios where only primitive messages can be passed between isolates.
  
 ## 2.4.1
 

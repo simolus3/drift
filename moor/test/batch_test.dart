@@ -40,47 +40,36 @@ void main() {
 
       b.deleteWhere(db.categories, (_) => const Constant(true));
       b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
+
+      b.update(db.users, const UsersCompanion(name: Value('new name 2')));
     });
 
     final transaction = executor.transactions;
-    verify(transaction.runBatched([
-      BatchedStatement(
-        'INSERT INTO todos (content) VALUES (?)',
-        [
-          ['first'],
-          ['second'],
-        ],
+    verify(
+      transaction.runBatched(
+        BatchedStatements(
+          [
+            'INSERT INTO todos (content) VALUES (?)',
+            'UPDATE users SET name = ?;',
+            'UPDATE users SET name = ? WHERE name = ?;',
+            'UPDATE categories SET desc = ? WHERE id = ?;',
+            'DELETE FROM categories WHERE 1;',
+            'DELETE FROM todos WHERE id = ?;',
+          ],
+          [
+            ArgumentsForBatchedStatement(0, ['first']),
+            ArgumentsForBatchedStatement(0, ['second']),
+            ArgumentsForBatchedStatement(1, ['new name']),
+            ArgumentsForBatchedStatement(2, ['Another', 'old']),
+            ArgumentsForBatchedStatement(3, ['new1', 1]),
+            ArgumentsForBatchedStatement(3, ['new2', 2]),
+            ArgumentsForBatchedStatement(4, []),
+            ArgumentsForBatchedStatement(5, [3]),
+            ArgumentsForBatchedStatement(1, ['new name 2']),
+          ],
+        ),
       ),
-      BatchedStatement(
-        'UPDATE users SET name = ?;',
-        [
-          ['new name']
-        ],
-      ),
-      BatchedStatement(
-        'UPDATE users SET name = ? WHERE name = ?;',
-        [
-          ['Another', 'old']
-        ],
-      ),
-      BatchedStatement(
-        'UPDATE categories SET desc = ? WHERE id = ?;',
-        [
-          ['new1', 1],
-          ['new2', 2],
-        ],
-      ),
-      BatchedStatement(
-        'DELETE FROM categories WHERE 1;',
-        [[]],
-      ),
-      BatchedStatement(
-        'DELETE FROM todos WHERE id = ?;',
-        [
-          [3]
-        ],
-      ),
-    ]));
+    );
   });
 
   test('supports inserts with upsert clause', () async {
@@ -94,15 +83,15 @@ void main() {
       );
     });
 
-    verify(executor.transactions.runBatched([
-      BatchedStatement(
-        'INSERT INTO categories (`desc`) VALUES (?) '
-        'ON CONFLICT(id) DO UPDATE SET id = ?',
-        [
-          ['description', 42]
-        ],
-      ),
-    ]));
+    verify(executor.transactions.runBatched(BatchedStatements(
+      [
+        ('INSERT INTO categories (`desc`) VALUES (?) '
+            'ON CONFLICT(id) DO UPDATE SET id = ?')
+      ],
+      [
+        ArgumentsForBatchedStatement(0, ['description', 42])
+      ],
+    )));
   });
 
   test('insertAllOnConflictUpdate', () async {
@@ -115,16 +104,16 @@ void main() {
       batch.insertAllOnConflictUpdate(db.categories, entries);
     });
 
-    verify(executor.transactions.runBatched([
-      BatchedStatement(
-        'INSERT INTO categories (`desc`) VALUES (?) '
-        'ON CONFLICT(id) DO UPDATE SET `desc` = ?',
-        [
-          ['first', 'first'],
-          ['second', 'second'],
-        ],
-      ),
-    ]));
+    verify(executor.transactions.runBatched(BatchedStatements(
+      [
+        ('INSERT INTO categories (`desc`) VALUES (?) '
+            'ON CONFLICT(id) DO UPDATE SET `desc` = ?')
+      ],
+      [
+        ArgumentsForBatchedStatement(0, ['first', 'first']),
+        ArgumentsForBatchedStatement(0, ['second', 'second']),
+      ],
+    )));
   });
 
   test('can re-use an outer transaction', () async {
@@ -149,12 +138,13 @@ void main() {
           db.categories, CategoriesCompanion.insert(description: 'second'));
     });
 
-    verify(executor.transactions.runBatched([
-      BatchedStatement('INSERT INTO categories (`desc`) VALUES (?)', [
-        ['first'],
-        ['second']
-      ]),
-    ]));
+    verify(executor.transactions.runBatched(BatchedStatements(
+      ['INSERT INTO categories (`desc`) VALUES (?)'],
+      [
+        ArgumentsForBatchedStatement(0, ['first']),
+        ArgumentsForBatchedStatement(0, ['second']),
+      ],
+    )));
   });
 
   test('updates stream queries', () async {

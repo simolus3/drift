@@ -115,13 +115,12 @@ mixin _SqfliteExecutor on QueryDelegate {
   s.DatabaseExecutor get db;
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) async {
+  Future<void> runBatched(BatchedStatements statements) async {
     final batch = db.batch();
 
-    for (final statement in statements) {
-      for (final boundVariables in statement.variables) {
-        batch.execute(statement.sql, boundVariables);
-      }
+    for (final arg in statements.arguments) {
+      batch.execute(
+          statements.statements[arg.statementIndex], statements.arguments);
     }
 
     await batch.commit(noResult: true);

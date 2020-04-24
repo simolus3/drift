@@ -49,7 +49,7 @@ abstract class _BaseExecutor extends QueryExecutor {
   _BaseExecutor(this.client, [this._executorId]);
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
+  Future<void> runBatched(BatchedStatements statements) {
     return client._channel
         .request(_ExecuteBatchedStatement(statements, _executorId));
   }

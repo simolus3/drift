@@ -49,12 +49,12 @@ void main() {
     await multi.runUpdate('update', []);
     await multi.runInsert('insert', []);
     await multi.runDelete('delete', []);
-    await multi.runBatched([]);
+    await multi.runBatched(BatchedStatements([], []));
 
     verify(write.runUpdate('update', []));
     verify(write.runInsert('insert', []));
     verify(write.runDelete('delete', []));
-    verify(write.runBatched([]));
+    verify(write.runBatched(BatchedStatements([], [])));
   });
 
   test('runs transactions on the writing executor', () async {

@@ -44,7 +44,7 @@ class LazyDatabase extends QueryExecutor {
   }
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) =>
+  Future<void> runBatched(BatchedStatements statements) =>
       _delegate.runBatched(statements);
 
   @override

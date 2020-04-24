@@ -41,9 +41,13 @@ abstract class QueryExecutor {
   /// statement will be ignored.
   Future<void> runCustom(String statement, [List<dynamic> args]);
 
-  /// Prepares the [statements] and then executes each one with all of the
-  /// [BatchedStatement.variables].
-  Future<void> runBatched(List<BatchedStatement> statements);
+  /// Prepares and runs [statements].
+  ///
+  /// Running them doesn't need to happen in a transaction. When using moor's
+  /// batch api, moor will call this method from a transaction either way. This
+  /// method mainly exists to save duplicate parsing costs, allowing each
+  /// statement to be prepared only once.
+  Future<void> runBatched(BatchedStatements statements);
 
   /// Starts a [TransactionExecutor].
   TransactionExecutor beginTransaction();
@@ -73,36 +77,68 @@ abstract class QueryExecutorUser {
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details);
 }
 
-/// A statement that should be executed in a batch. Used internally by moor.
-class BatchedStatement {
-  static const _nestedListEquality = ListEquality(ListEquality());
+const _equality = ListEquality();
 
-  /// The raw sql that needs to be executed
-  final String sql;
+/// Stores information needed to run batched statements in the order they were
+/// issued without preparing statements multiple times.
+class BatchedStatements {
+  /// All sql statements that need to be prepared.
+  ///
+  /// A statement might run multiple times with different arguments.
+  final List<String> statements;
 
-  /// The variables to be used for the statement. Each entry holds a list of
-  /// variables that should be bound to the [sql] statement.
-  final List<List<dynamic>> variables;
+  /// Stores which sql statement should be run with what arguments.
+  final List<ArgumentsForBatchedStatement> arguments;
 
-  /// Constructs a batched statement from the [sql] and the set of [variables].
-  BatchedStatement(this.sql, this.variables);
+  /// Creates a collection of batched statements by splitting the sql and the
+  /// bound arguments.
+  BatchedStatements(this.statements, this.arguments);
 
   @override
   int get hashCode {
-    return $mrjf($mrjc(sql.hashCode, _nestedListEquality.hash(variables)));
+    return $mrjf($mrjc(_equality.hash(statements), _equality.hash(arguments)));
   }
 
   @override
   bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other is BatchedStatement &&
-            other.sql == sql &&
-            _nestedListEquality.equals(variables, other.variables));
+    return other is BatchedStatements &&
+        _equality.equals(other.statements, statements) &&
+        _equality.equals(other.arguments, arguments);
   }
 
   @override
   String toString() {
-    return 'BatchedStatement($sql, $variables)';
+    return 'BatchedStatements($statements, $arguments)';
+  }
+}
+
+/// Instruction to run a batched sql statement with the arguments provided.
+class ArgumentsForBatchedStatement {
+  /// Index of the sql statement in the [BatchedStatements.statements] of the
+  /// [BatchedStatements] containing this argument set.
+  final int statementIndex;
+
+  /// Bound arguments for the referenced statement.
+  final List<dynamic> arguments;
+
+  /// Used internally by moor.
+  ArgumentsForBatchedStatement(this.statementIndex, this.arguments);
+
+  @override
+  int get hashCode {
+    return $mrjf($mrjc(statementIndex, _equality.hash(arguments)));
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return other is ArgumentsForBatchedStatement &&
+        other.statementIndex == statementIndex &&
+        _equality.equals(other.arguments, arguments);
+  }
+
+  @override
+  String toString() {
+    return 'ArgumentsForBatchedStatement($statementIndex, $arguments)';
   }
 }
 

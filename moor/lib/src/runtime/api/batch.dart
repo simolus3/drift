@@ -4,7 +4,10 @@ part of 'runtime_api.dart';
 /// efficient when running a lot of similar queries at the same time, making
 /// this api suitable for bulk updates.
 class Batch {
-  final Map<String, List<List<dynamic>>> _createdStatements = {};
+  final List<String> _createdSql = [];
+  final Map<String, int> _sqlToIndex = {};
+  final List<ArgumentsForBatchedStatement> _createdArguments = [];
+
   final QueryEngine _engine;
 
   /// Whether we should start a transaction when completing.
@@ -138,8 +141,16 @@ class Batch {
 
   void _addContext(GenerationContext ctx) {
     final sql = ctx.sql;
-    final variableSet = _createdStatements.putIfAbsent(sql, () => []);
-    variableSet.add(ctx.boundVariables);
+    final arguments = ctx.boundVariables;
+
+    final stmtIndex = _sqlToIndex.putIfAbsent(sql, () {
+      final newIndex = _createdSql.length;
+      _createdSql.add(sql);
+
+      return newIndex;
+    });
+
+    _createdArguments.add(ArgumentsForBatchedStatement(stmtIndex, arguments));
   }
 
   Future<void> _commit() async {
@@ -166,11 +177,8 @@ class Batch {
     _engine.notifyUpdates(_createdUpdates);
   }
 
-  Future<void> _runWith(QueryExecutor executor) async {
-    final statements = _createdStatements.entries.map((entry) {
-      return BatchedStatement(entry.key, entry.value);
-    }).toList();
-
-    await executor.runBatched(statements);
+  Future<void> _runWith(QueryExecutor executor) {
+    return executor
+        .runBatched(BatchedStatements(_createdSql, _createdArguments));
   }
 }

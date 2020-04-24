@@ -80,15 +80,21 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runBatched(List<BatchedStatement> statements) {
-    for (final stmt in statements) {
-      final prepared = _db.prepare(stmt.sql);
+  Future<void> runBatched(BatchedStatements statements) {
+    final preparedStatements = [
+      for (final stmt in statements.statements) _db.prepare(stmt),
+    ];
 
-      for (final args in stmt.variables) {
-        prepared
-          ..executeWith(args)
-          ..step();
-      }
+    for (final application in statements.arguments) {
+      final stmt = preparedStatements[application.statementIndex];
+
+      stmt
+        ..executeWith(application.arguments)
+        ..step();
+    }
+
+    for (final prepared in preparedStatements) {
+      prepared.free();
     }
     return _handlePotentialUpdate();
   }
