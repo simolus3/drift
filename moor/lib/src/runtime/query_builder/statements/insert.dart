@@ -51,10 +51,11 @@ class InsertStatement<T extends Table, D extends DataClass> {
   /// Be aware that upsert clauses and [onConflict] are not available on older
   /// sqlite versions.
   ///
-  /// If the table contains an auto-increment column, the generated value will
-  /// be returned. If there is no auto-increment column, you can't rely on the
-  /// return value, but the future will complete with an error if the insert
-  /// fails.
+  /// Returns the `rowid` of the inserted row. For tables with an auto-increment
+  /// column, the `rowid` is the generated value of that column.
+  ///
+  /// If the table doesn't have a `rowid`, you can't rely on the return value.
+  /// Still, the future will always complete with an error if the insert fails.
   Future<int> insert(
     Insertable<D> entity, {
     InsertMode mode,

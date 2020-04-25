@@ -181,3 +181,69 @@ Future<void> insertMultipleEntries() async{
   });
 }
 ```
+
+### Upserts
+
+Upserts are a feature from newer sqlite3 versions that allows an insert to 
+behave like an update if a conflicting row already exists.
+
+This allows us to create or override an existing row when its primary key is
+part of its data:
+
+```dart
+class Users extends Table {
+  TextColumn get email => text()();
+  TextColumn get name => text()();
+
+  @override
+  Set<Column> get primaryKey => {email};
+}
+
+Future<void> createOrUpdateUser(User user) {
+  return into(users).insertOnConflictUpdate(user);
+}
+```
+
+When calling `createOrUpdateUser()` with an email address that already exists, 
+that user's name will be updated. Otherwise, a new user will be inserted into
+the database.
+
+Inserts can also be used with more advanced queries. For instance, let's say 
+we're building a dictionary and want to keep track of how many times we 
+encountered a word. A table for that might look like
+
+```dart
+class Words extends Table {
+  TextColumn get word => text()();
+  IntColumn get usages => integer().default(const Constant(1))();
+
+  @override
+  Set<Column> get primaryKey => {word};
+}
+```
+
+By using a custom upserts, we can insert a new word or increment its `usages`
+counter if it already exists:
+
+```dart
+Future<void> trackWord(String word) {
+  return into(words).insert(
+    WordsCompanion.insert(word: word),
+    onConflict: DoUpdate((old) => WordsCompanion.custom(usages: old.usages + Constant(1))),
+  );
+}
+```
+
+{{% alert title="Unique constraints and conflict targets" %}}
+> Both `insertOnConflictUpdate` and `onConflict: DoUpdate` use an `DO UPDATE`
+  upsert in sql. This requires us to provide a so-called "conflict target", a
+  set of columns to check for uniqueness violations. By default, moor will use
+  the table's primary key as conflict target. That works in most cases, but if
+  you have custom `UNIQUE` constraints on some columns, you'll need to use
+  the `target` parameter on `DoUpdate` in Dart to include those columns.
+{{% /alert %}}
+
+Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
+be available on older Android devices when using `moor_flutter`. `moor_ffi`
+includes the latest sqlite on Android, so consider using it if you want to
+support upserts.

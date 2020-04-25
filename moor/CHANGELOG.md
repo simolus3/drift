@@ -1,8 +1,9 @@
 ## 3.0.0-dev
 
-- __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`.
+- __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`. If you've relied
+  on this, you'll now need to import `package:moor/moor.dart` as well.
 - __Breaking__: Remove deprecated members:
-  - top-level `and`, `or` and `not` methods. Use the `&`, `|` and `.not()` instead.
+  - top-level `and`, `or` and `not` methods. Use `&`, `|` and `.not()` instead.
   - top-level `year`, `month`, `day`, `hour`, `minute`, `second` methods. 
     Use the extension member on `Expression<DateTime>` instead.
   - `InsertStatement.insertAll` (use batches instead)
@@ -14,7 +15,7 @@
 - __Breaking__: Remove the second type variable on `Expression` and subclasses.
 - __Breaking__: Remove `customSelectStream` from `QueryEngine`. The `customSelect`
   method now returns an `Selectable` (like `customSelectQuery`, which in turn has been deprecated).
-- __Breaking__: Columns that are aliases to sqlite's `rowid` column are now longer considered required
+- __Breaking__: Columns that are aliases to sqlite's `rowid` column are no longer considered required
   for inserts
 - __Breaking__: Changes the way data classes and companions are inserted:
   - Removed `Insertable.toCompanion`
@@ -32,7 +33,9 @@
 - New feature: Nested results for compiled queries ([#288](https://github.com/simolus3/moor/issues/288))
   See the [documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#nested-results) for
   details on how and when to use this feature.
-- New feature: Use sql expressions for inserts with `Companion.custom`.
+- New feature: Use sql expressions for inserts or updates with the new `custom` factory on companions
+- New feature: Upserts in the Dart api! Read everything you need to know 
+  [here](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#upserts).
 - Support using `MoorIsolates` in scenarios where only primitive messages can be passed between isolates.
  
 ## 2.4.1
