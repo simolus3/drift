@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:moor_ffi/moor_ffi.dart';
+import 'package:test/test.dart';
 import 'package:tests/tests.dart';
+import 'package:moor/isolate.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:path/path.dart';
@@ -33,4 +35,28 @@ Future<void> main() async {
   final dbPath = await getDatabasesPath();
   Directory(dbPath).createSync(recursive: true);
   runAllTests(FfiExecutor(dbPath));
+
+  test('isolates integration test', () async {
+    // This test exists to verify that our communication protocol works when we
+    // can only send primitive objects over isolates.
+    final isolate = await MoorIsolate.spawn(_openInBackground);
+    final connection = await isolate.connect();
+
+    final db = Database(connection);
+
+    await db.transaction(() async {
+      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+      await db.into(db.users).insert(
+          UsersCompanion.insert(name: 'Name', birthDate: DateTime.now()));
+    });
+
+    await db.mostPopularUsers(13);
+
+    await db.close();
+    await isolate.shutdownAll();
+  });
+}
+
+DatabaseConnection _openInBackground() {
+  return DatabaseConnection.fromExecutor(VmDatabase.memory());
 }
