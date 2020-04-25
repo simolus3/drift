@@ -137,6 +137,19 @@ void _runTests(
     await database.close();
   });
 
+  test('supports transactions in migrations', () async {
+    final database = TodoDb.connect(isolateConnection);
+    database.migration = MigrationStrategy(beforeOpen: (details) async {
+      await database.transaction(() async {
+        return await database.customSelect('SELECT 1').get();
+      });
+    });
+
+    await database.customSelect('SELECT 2').get();
+
+    await database.close();
+  });
+
   test('transactions have an isolated view on data', () async {
     // regression test for https://github.com/simolus3/moor/issues/324
     final db = TodoDb.connect(isolateConnection);

@@ -44,8 +44,6 @@ class _MoorServer {
       switch (payload) {
         case _NoArgsRequest.getTypeSystem:
           return connection.typeSystem;
-        case _NoArgsRequest.startTransaction:
-          return _spawnTransaction();
         case _NoArgsRequest.terminateAll:
           _backlogUpdated.close();
           connection.executor.close();
@@ -65,7 +63,7 @@ class _MoorServer {
         connected.request(payload);
       }
     } else if (payload is _RunTransactionAction) {
-      return _transactionControl(payload.control, payload.transactionId);
+      return _transactionControl(payload.control, payload.executorId);
     }
   }
 
@@ -106,27 +104,37 @@ class _MoorServer {
         : connection.executor;
   }
 
-  Future<int> _spawnTransaction() async {
-    final transaction = connection.executor.beginTransaction();
-    final id = _putExecutor(transaction);
+  Future<int> _spawnTransaction(int executor) async {
+    final transaction = (await _loadExecutor(executor)).beginTransaction();
+    final id = _putExecutor(transaction, beforeCurrent: true);
 
     await transaction.ensureOpen(_dbUser);
     return id;
   }
 
-  int _putExecutor(QueryExecutor executor) {
+  int _putExecutor(QueryExecutor executor, {bool beforeCurrent = false}) {
     final id = _currentExecutorId++;
     _managedExecutors[id] = executor;
-    _executorBacklog.add(id);
+
+    if (beforeCurrent && _executorBacklog.isNotEmpty) {
+      _executorBacklog.insert(0, id);
+    } else {
+      _executorBacklog.add(id);
+    }
+
     return id;
   }
 
-  Future<void> _transactionControl(
-      _TransactionControl action, int transactionId) async {
-    final executor = _managedExecutors[transactionId];
+  Future<dynamic> _transactionControl(
+      _TransactionControl action, int executorId) async {
+    if (action == _TransactionControl.begin) {
+      return await _spawnTransaction(executorId);
+    }
+
+    final executor = _managedExecutors[executorId];
     if (executor is! TransactionExecutor) {
       throw ArgumentError.value(
-          transactionId, 'transactionId', 'Does not reference a transaction');
+          executorId, 'transactionId', 'Does not reference a transaction');
     }
 
     final transaction = executor as TransactionExecutor;
@@ -139,9 +147,11 @@ class _MoorServer {
         case _TransactionControl.rollback:
           await transaction.rollback();
           break;
+        default:
+          assert(false, 'Unknown TransactionControl');
       }
     } finally {
-      _releaseExecutor(transactionId);
+      _releaseExecutor(executorId);
     }
   }
 

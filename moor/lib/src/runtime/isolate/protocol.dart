@@ -6,8 +6,7 @@ class _MoorCodec extends MessageCodec {
   const _MoorCodec();
 
   static const _tag_NoArgsRequest_getTypeSystem = 0;
-  static const _tag_NoArgsRequest_startTransaction = 1;
-  static const _tag_NoArgsRequest_terminateAll = 2;
+  static const _tag_NoArgsRequest_terminateAll = 1;
 
   static const _tag_ExecuteQuery = 3;
   static const _tag_ExecuteBatchedStatement = 4;
@@ -47,7 +46,7 @@ class _MoorCodec extends MessageCodec {
       return [
         _tag_RunTransactionAction,
         payload.control.index,
-        payload.transactionId,
+        payload.executorId,
       ];
     } else if (payload is _EnsureOpen) {
       return [_tag_EnsureOpen, payload.schemaVersion, payload.executorId];
@@ -95,8 +94,6 @@ class _MoorCodec extends MessageCodec {
     switch (tag) {
       case _tag_NoArgsRequest_getTypeSystem:
         return _NoArgsRequest.getTypeSystem;
-      case _tag_NoArgsRequest_startTransaction:
-        return _NoArgsRequest.startTransaction;
       case _tag_NoArgsRequest_terminateAll:
         return _NoArgsRequest.terminateAll;
       case _tag_ExecuteQuery:
@@ -171,11 +168,6 @@ enum _NoArgsRequest {
   /// [SqlTypeSystem] of the [_MoorServer.connection] it's managing.
   getTypeSystem,
 
-  /// Sent from the client to start a transaction. The server must reply with an
-  /// integer, which serves as an identifier for the transaction in
-  /// [_ExecuteQuery.executorId].
-  startTransaction,
-
   /// Close the background isolate, disconnect all clients, release all
   /// associated resources
   terminateAll,
@@ -186,11 +178,6 @@ enum _StatementMethod {
   deleteOrUpdate,
   insert,
   select,
-}
-
-enum _TransactionControl {
-  commit,
-  rollback,
 }
 
 /// Sent from the client to run a sql query. The server replies with the
@@ -220,12 +207,26 @@ class _ExecuteBatchedStatement {
   _ExecuteBatchedStatement(this.stmts, [this.executorId]);
 }
 
+enum _TransactionControl {
+  /// When using [begin], the [_RunTransactionAction.executorId] refers to the
+  /// executor starting the transaction. The server must reply with an int
+  /// representing the created transaction executor.
+  begin,
+  commit,
+  rollback,
+}
+
 /// Sent from the client to commit or rollback a transaction
 class _RunTransactionAction {
   final _TransactionControl control;
-  final int transactionId;
+  final int executorId;
 
-  _RunTransactionAction(this.control, this.transactionId);
+  _RunTransactionAction(this.control, this.executorId);
+
+  @override
+  String toString() {
+    return 'RunTransactionAction($control, $executorId)';
+  }
 }
 
 /// Sent from the client to the server. The server should open the underlying
@@ -235,6 +236,11 @@ class _EnsureOpen {
   final int executorId;
 
   _EnsureOpen(this.schemaVersion, this.executorId);
+
+  @override
+  String toString() {
+    return 'EnsureOpen($schemaVersion, $executorId)';
+  }
 }
 
 /// Sent from the server to the client when it should run the before open
@@ -244,6 +250,11 @@ class _RunBeforeOpen {
   final int createdExecutor;
 
   _RunBeforeOpen(this.details, this.createdExecutor);
+
+  @override
+  String toString() {
+    return 'RunBeforeOpen($details, $createdExecutor)';
+  }
 }
 
 /// Sent to notify that a previous query has updated some tables. When a server

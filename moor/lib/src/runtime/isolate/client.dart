@@ -97,7 +97,7 @@ class _IsolateQueryExecutor extends _BaseExecutor {
 
   @override
   TransactionExecutor beginTransaction() {
-    return _TransactionIsolateExecutor(client);
+    return _TransactionIsolateExecutor(client, _executorId);
   }
 
   @override
@@ -123,7 +123,10 @@ class _IsolateQueryExecutor extends _BaseExecutor {
 
 class _TransactionIsolateExecutor extends _BaseExecutor
     implements TransactionExecutor {
-  _TransactionIsolateExecutor(_MoorClient client) : super(client);
+  final int _outerExecutorId;
+
+  _TransactionIsolateExecutor(_MoorClient client, this._outerExecutorId)
+      : super(client);
 
   Completer<bool> _pendingOpen;
 
@@ -138,8 +141,8 @@ class _TransactionIsolateExecutor extends _BaseExecutor
   }
 
   Future<bool> _openAtServer() async {
-    _executorId =
-        await client._channel.request<int>(_NoArgsRequest.startTransaction);
+    _executorId = await client._channel.request<int>(
+        _RunTransactionAction(_TransactionControl.begin, _outerExecutorId));
     return true;
   }
 
