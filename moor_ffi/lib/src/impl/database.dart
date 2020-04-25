@@ -20,6 +20,7 @@ part 'moor_functions.dart';
 part 'prepared_statement.dart';
 
 const _openingFlags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE;
+const _readOnlyOpeningFlags = Flags.SQLITE_OPEN_READONLY;
 
 /// A opened sqlite database.
 class Database {
@@ -39,18 +40,25 @@ class Database {
   factory Database.memory() => Database.open(':memory:');
 
   /// Opens an sqlite3 database from a filename.
-  factory Database.open(String fileName) {
+  ///
+  /// Unless [readOnly] is set to true, database is opened in read/write mode.
+  factory Database.open(String fileName, {bool readOnly = false}) {
     final dbOut = allocate<Pointer<types.Database>>();
     final pathC = CBlob.allocateString(fileName);
+    final openingFlags =
+        (readOnly ?? false) ? _readOnlyOpeningFlags : _openingFlags;
 
     final resultCode =
-        bindings.sqlite3_open_v2(pathC, dbOut, _openingFlags, nullPtr());
+        bindings.sqlite3_open_v2(pathC, dbOut, openingFlags, nullPtr());
     final dbPointer = dbOut.value;
 
     dbOut.free();
     pathC.free();
 
     if (resultCode == Errors.SQLITE_OK) {
+      // Turn extended result code to on.
+      bindings.sqlite3_extended_result_codes(dbPointer, 1);
+
       return Database._(dbPointer);
     } else {
       bindings.sqlite3_close_v2(dbPointer);
@@ -110,7 +118,6 @@ class Database {
 
     final result =
         bindings.sqlite3_exec(_db, sqlPtr, nullPtr(), nullPtr(), errorOut);
-
     sqlPtr.free();
 
     final errorPtr = errorOut.value;
@@ -124,7 +131,7 @@ class Database {
     }
 
     if (result != Errors.SQLITE_OK) {
-      throw SqliteException(errorMsg);
+      throw SqliteException(result, errorMsg);
     }
   }
 

@@ -76,13 +76,13 @@ what we got:
 
 ## Variables
 Inside of named queries, you can use variables just like you would expect with
-sql. We support regular variables (`?`), explictly indexed variables (`?123`)
+sql. We support regular variables (`?`), explicitly indexed variables (`?123`)
 and colon-named variables (`:id`). We don't support variables declared
 with @ or $. The compiler will attempt to infer the variable's type by
 looking at its context. This lets moor generate typesafe apis for your
 queries, the variables will be written as parameters to your method.
 
-When it's ambigous, the analyzer might be unable to resolve the type of
+When it's ambiguous, the analyzer might be unable to resolve the type of
 a variable. For those scenarios, you can also denote the explicit type
 of a variable:
 ```sql

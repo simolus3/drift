@@ -74,6 +74,9 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
     if (orderByExpr != null) {
       statement.orderBy(orderByExpr.terms);
     }
+    if (limitExpr != null) {
+      statement.limitExpr = limitExpr;
+    }
 
     return statement;
   }

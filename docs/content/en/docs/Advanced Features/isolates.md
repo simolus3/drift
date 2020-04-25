@@ -92,7 +92,7 @@ Future<MoorIsolate> _createMoorIsolate() async {
 }
 
 void _startBackground(_IsolateStartRequest request) {
-  // this is the entrypoint from the background isolate! Let's create
+  // this is the entry point from the background isolate! Let's create
   // the database from the path we received
   final executor = VmDatabase(File(request.targetPath));
   // we're using MoorIsolate.inCurrent here as this method already runs on a
@@ -105,7 +105,7 @@ void _startBackground(_IsolateStartRequest request) {
   request.sendMoorIsolate.send(moorIsolate);
 }
 
-// used to bundle the SendPort and the target path, since isolate entrypoint
+// used to bundle the SendPort and the target path, since isolate entry point
 // functions can only take one parameter.
 class _IsolateStartRequest {
   final SendPort sendMoorIsolate;
@@ -139,7 +139,7 @@ a setup where you have three or more threads:
 - A foreground isolate, probably for Flutter
 - Another background isolate, which could be used for networking.
 
-You can the read data from the foreground isolate or start query streams, similar to the example
+You can then read data from the foreground isolate or start query streams, similar to the example
 above. The background isolate would _also_ call `MoorIsolate.connect` and create its own instance
 of the generated database class. Writes to one database will be visible to the other isolate and
 also update query streams.
@@ -153,7 +153,7 @@ All moor features are supported on background isolates and work out of the box. 
 - Batched updates and inserts
 - Custom statements or those generated from an sql api
 
-Please note that, will using a background isolate can reduce lag on the UI thread, the overall
+Please note that, while using a background isolate can reduce lag on the UI thread, the overall
 database is going to be slower! There's a overhead involved in sending data between
 isolates, and that's exactly what moor has to do internally. If you're not running into dropped
 frames because of moor, using a background isolate is probably not necessary for your app.

@@ -71,7 +71,7 @@ fields from that date:
 select(users)..where((u) => u.birthDate.year.isLessThan(1950))
 ```
 
-The individual fileds like `year`, `month` and so on are expressions themselves. This means
+The individual fields like `year`, `month` and so on are expressions themselves. This means
 that you can use operators and comparisons on them.
 To obtain the current date or the current time as an expression, use the `currentDate` 
 and `currentDateAndTime` constants provided by moor.

@@ -20,7 +20,7 @@ void main() {
   tearDown(() => db.close());
 
   test('plus and minus on DateTimes', () async {
-    final nowExpr = currentDateAndTime;
+    const nowExpr = currentDateAndTime;
     final tomorrow = nowExpr + const Duration(days: 1);
     final nowStamp = nowExpr.secondsSinceEpoch;
     final tomorrowStamp = tomorrow.secondsSinceEpoch;

@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/backends.dart';
-import 'package:sqflite/sqflite.dart' as s;
+import 'package:sqflite_sqlcipher/sqflite.dart' as s;
 
 /// Signature of a function that runs when a database doesn't exist on file.
 /// This can be useful to, for instance, load the database from an asset if it
@@ -128,7 +128,7 @@ mixin _SqfliteExecutor on QueryDelegate {
 
   @override
   Future<void> runCustom(String statement, List args) {
-    return db.execute(statement);
+    return db.execute(statement, args);
   }
 
   @override

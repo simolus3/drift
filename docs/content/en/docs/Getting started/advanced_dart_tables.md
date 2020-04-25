@@ -93,7 +93,7 @@ class Users extends Table {
 Don't know when to use which? Prefer to use `withDefault` when the default value is constant, or something
 simple like `currentDate`. For more complicated values, like a randomly generated id, you need to use
 `clientDefault`. Internally, `withDefault` writes the default value into the `CREATE TABLE` statement. This
-can be more efficient, but doesn't suppport dynamic values.
+can be more efficient, but doesn't support dynamic values.
 
 ## Primary keys
 

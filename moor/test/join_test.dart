@@ -116,6 +116,18 @@ void main() {
         argThat(contains('WHERE t.id < ? ORDER BY t.title ASC')), [3]));
   });
 
+  test('limit clause is kept', () async {
+    final todos = db.alias(db.todosTable, 't');
+    final categories = db.alias(db.categories, 'c');
+
+    final normalQuery = db.select(todos)..limit(10, offset: 5);
+
+    await normalQuery.join(
+        [innerJoin(categories, categories.id.equalsExp(todos.category))]).get();
+
+    verify(executor.runSelect(argThat(contains('LIMIT 10 OFFSET 5')), []));
+  });
+
   test('can be watched', () {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');

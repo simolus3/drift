@@ -37,8 +37,8 @@ class _MoorServer {
     return channels.isEmpty ? null : channels.first;
   }
 
-  dynamic _handleRequest(Request r) {
-    final payload = r.payload;
+  dynamic _handleRequest(Request request) {
+    final payload = request.payload;
 
     if (payload is _NoArgsRequest) {
       switch (payload) {

@@ -18,7 +18,7 @@ dev_dependencies:
 
 For this guide, we're going to test a very simple database that stores user names. The only important change from a regular moor
 database is the constructor: We make the `QueryExecutor` argument explicit instead of having a no-args constructor that passes
-a `FlutterQueryExector` to the superclass.
+a `FlutterQueryExecutor` to the superclass.
 ```dart
 import 'package:moor/moor.dart';
 

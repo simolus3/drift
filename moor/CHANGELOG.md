@@ -38,6 +38,13 @@
   [here](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#upserts).
 - Support using `MoorIsolates` in scenarios where only primitive messages can be passed between isolates.
  
+## 2.4.2
+
+- Fix `beforeOpen` callback deadlocking when using the isolate executor 
+  ([#431](https://github.com/simolus3/moor/issues/431))
+- Fix limit clause not being applied when using `.join` afterwards
+  ([#433](https://github.com/simolus3/moor/issues/433))
+ 
 ## 2.4.1
 
 - Don't generate double quoted string literals in date time functions
