@@ -5,7 +5,7 @@ import 'suite.dart';
 
 void customObjectTests(TestExecutor executor) {
   test('custom objects', () async {
-    final db = Database(executor.createExecutor());
+    final db = Database(executor.createConnection());
 
     var preferences = await db.settingsForQuery(1).getSingle();
     expect(preferences, isNull);

@@ -7,7 +7,7 @@ import 'custom_objects.dart';
 import 'migrations.dart';
 
 abstract class TestExecutor {
-  QueryExecutor createExecutor();
+  DatabaseConnection createConnection();
 
   /// Delete the data that would be written by the executor.
   Future deleteData();

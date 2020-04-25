@@ -18,29 +18,28 @@ class Foo extends DataClass implements Insertable<Foo> {
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
     );
   }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    return map;
+  }
+
   factory Foo.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Foo(
       id: serializer.fromJson<int>(json['id']),
     );
   }
-  factory Foo.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
-      Foo.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
     };
-  }
-
-  @override
-  FoosCompanion createCompanion(bool nullToAbsent) {
-    return FoosCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-    );
   }
 
   Foo copyWith({int id}) => Foo(
@@ -66,10 +65,27 @@ class FoosCompanion extends UpdateCompanion<Foo> {
   FoosCompanion.insert({
     this.id = const Value.absent(),
   });
+  static Insertable<Foo> custom({
+    Expression<int> id,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+    });
+  }
+
   FoosCompanion copyWith({Value<int> id}) {
     return FoosCompanion(
       id: id ?? this.id,
     );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    return map;
   }
 }
 
@@ -95,13 +111,12 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   @override
   final String actualTableName = 'foos';
   @override
-  VerificationContext validateIntegrity(FoosCompanion d,
+  VerificationContext validateIntegrity(Insertable<Foo> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.id.present) {
-      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
     }
     return context;
   }
@@ -112,15 +127,6 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   Foo map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Foo.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  Map<String, Variable> entityToSql(FoosCompanion d) {
-    final map = <String, Variable>{};
-    if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
-    }
-    return map;
   }
 
   @override
@@ -140,29 +146,28 @@ class Bar extends DataClass implements Insertable<Bar> {
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
     );
   }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    return map;
+  }
+
   factory Bar.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Bar(
       id: serializer.fromJson<int>(json['id']),
     );
   }
-  factory Bar.fromJsonString(String encodedJson,
-          {ValueSerializer serializer = const ValueSerializer.defaults()}) =>
-      Bar.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
   @override
-  Map<String, dynamic> toJson(
-      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
     };
-  }
-
-  @override
-  BarsCompanion createCompanion(bool nullToAbsent) {
-    return BarsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-    );
   }
 
   Bar copyWith({int id}) => Bar(
@@ -188,10 +193,27 @@ class BarsCompanion extends UpdateCompanion<Bar> {
   BarsCompanion.insert({
     this.id = const Value.absent(),
   });
+  static Insertable<Bar> custom({
+    Expression<int> id,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+    });
+  }
+
   BarsCompanion copyWith({Value<int> id}) {
     return BarsCompanion(
       id: id ?? this.id,
     );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    return map;
   }
 }
 
@@ -217,13 +239,12 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   @override
   final String actualTableName = 'bars';
   @override
-  VerificationContext validateIntegrity(BarsCompanion d,
+  VerificationContext validateIntegrity(Insertable<Bar> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.id.present) {
-      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
-    } else if (id.isRequired && isInserting) {
-      context.missing(_idMeta);
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
     }
     return context;
   }
@@ -237,15 +258,6 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   }
 
   @override
-  Map<String, Variable> entityToSql(BarsCompanion d) {
-    final map = <String, Variable>{};
-    if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
-    }
-    return map;
-  }
-
-  @override
   $BarsTable createAlias(String alias) {
     return $BarsTable(_db, alias);
   }
@@ -253,11 +265,12 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
 
 abstract class _$_FakeDb extends GeneratedDatabase {
   _$_FakeDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  _$_FakeDb.connect(DatabaseConnection c) : super.connect(c);
   $FoosTable _foos;
   $FoosTable get foos => _foos ??= $FoosTable(this);
   $BarsTable _bars;
   $BarsTable get bars => _bars ??= $BarsTable(this);
   @override
-  List<TableInfo> get allTables => [foos, bars];
+  Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [foos, bars];
 }

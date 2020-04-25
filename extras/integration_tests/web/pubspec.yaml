@@ -11,3 +11,12 @@ dev_dependencies:
   test: ^1.5.0
   build_runner:
   build_web_compilers:
+  moor_generator:
+
+dependency_overrides:
+  moor:
+    path: ../../../moor
+  moor_generator:
+    path: ../../../moor_generator
+  sqlparser:
+    path: ../../../sqlparser

@@ -6,7 +6,7 @@ import 'suite.dart';
 
 void transactionTests(TestExecutor executor) {
   test('transactions write data', () async {
-    final db = Database(executor.createExecutor());
+    final db = Database(executor.createConnection());
 
     // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
     await db.transaction(() async {
@@ -28,7 +28,7 @@ void transactionTests(TestExecutor executor) {
   });
 
   test('transaction is rolled back then an exception occurs', () async {
-    final db = Database(executor.createExecutor());
+    final db = Database(executor.createConnection());
 
     try {
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
@@ -54,7 +54,7 @@ void transactionTests(TestExecutor executor) {
   });
 
   test('can use no-op transactions', () async {
-    final db = Database(executor.createExecutor());
+    final db = Database(executor.createConnection());
     await db.transaction(() => Future.value(null));
     await db.close();
   });

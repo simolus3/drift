@@ -23,13 +23,13 @@ void main() {
     const nameInMain = 'main';
 
     // Prepare the file we're swapping in later
-    final dbForSetup = Database(VmDatabase(createdForSwap));
+    final dbForSetup = Database.executor(VmDatabase(createdForSwap));
     await dbForSetup.into(dbForSetup.users).insert(
         UsersCompanion.insert(name: nameInSwap, birthDate: DateTime.now()));
     await dbForSetup.close();
 
     // Open the main file
-    var db = Database(VmDatabase(mainFile));
+    var db = Database.executor(VmDatabase(mainFile));
     await db.into(db.users).insert(
         UsersCompanion.insert(name: nameInMain, birthDate: DateTime.now()));
     await db.close();
@@ -39,7 +39,7 @@ void main() {
         flush: true);
 
     // Re-open database
-    db = Database(VmDatabase(mainFile));
+    db = Database.executor(VmDatabase(mainFile));
     final users = await db.select(db.users).get();
 
     expect(

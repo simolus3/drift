@@ -161,6 +161,22 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.preferences = const Value.absent(),
   })  : name = Value(name),
         birthDate = Value(birthDate);
+  static Insertable<User> custom({
+    Expression<int> id,
+    Expression<String> name,
+    Expression<DateTime> birthDate,
+    Expression<Uint8List> profilePicture,
+    Expression<String> preferences,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (birthDate != null) 'birth_date': birthDate,
+      if (profilePicture != null) 'profile_picture': profilePicture,
+      if (preferences != null) 'preferences': preferences,
+    });
+  }
+
   UsersCompanion copyWith(
       {Value<int> id,
       Value<String> name,
@@ -421,6 +437,18 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
     this.reallyGoodFriends = const Value.absent(),
   })  : firstUser = Value(firstUser),
         secondUser = Value(secondUser);
+  static Insertable<Friendship> custom({
+    Expression<int> firstUser,
+    Expression<int> secondUser,
+    Expression<bool> reallyGoodFriends,
+  }) {
+    return RawValuesInsertable({
+      if (firstUser != null) 'first_user': firstUser,
+      if (secondUser != null) 'second_user': secondUser,
+      if (reallyGoodFriends != null) 'really_good_friends': reallyGoodFriends,
+    });
+  }
+
   FriendshipsCompanion copyWith(
       {Value<int> firstUser,
       Value<int> secondUser,
@@ -541,6 +569,7 @@ class $FriendshipsTable extends Friendships
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  _$Database.connect(DatabaseConnection c) : super.connect(c);
   $UsersTable _users;
   $UsersTable get users => _users ??= $UsersTable(this);
   $FriendshipsTable _friendships;

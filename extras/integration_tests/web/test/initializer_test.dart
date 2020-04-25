@@ -188,7 +188,8 @@ void main() {
   });
 
   test('can initialize database when absent - IndexedDB', () async {
-    await _testWith(MoorWebStorage.indexedDb('name'));
+    await _testWith(
+        MoorWebStorage.indexedDb('name', migrateFromLocalStorage: false));
   });
 }
 

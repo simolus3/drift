@@ -13,8 +13,9 @@ class FfiExecutor extends TestExecutor {
   FfiExecutor(this.dbPath);
 
   @override
-  QueryExecutor createExecutor() {
-    return VmDatabase(File(join(dbPath, 'app_ffi.db')));
+  DatabaseConnection createConnection() {
+    return DatabaseConnection.fromExecutor(
+        VmDatabase(File(join(dbPath, 'app_ffi.db'))));
   }
 
   @override

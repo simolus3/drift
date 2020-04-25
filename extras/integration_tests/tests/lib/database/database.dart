@@ -85,7 +85,10 @@ class Database extends _$Database {
   @override
   final int schemaVersion;
 
-  Database(QueryExecutor e, {this.schemaVersion = 2}) : super(e);
+  Database(DatabaseConnection e, {this.schemaVersion = 2}) : super.connect(e);
+
+  Database.executor(QueryExecutor db)
+      : this(DatabaseConnection.fromExecutor(db));
 
   /// It will be set in the onUpgrade callback. Null if no migration ocurred
   int schemaVersionChangedFrom;

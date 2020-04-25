@@ -10,8 +10,8 @@ class VmExecutor extends TestExecutor {
   final File file = File(join(Directory.systemTemp.path, fileName));
 
   @override
-  QueryExecutor createExecutor() {
-    return VmDatabase(file);
+  DatabaseConnection createConnection() {
+    return DatabaseConnection.fromExecutor(VmDatabase(file));
   }
 
   @override

@@ -10,10 +10,12 @@ import 'package:path/path.dart';
 
 class SqfliteExecutor extends TestExecutor {
   @override
-  QueryExecutor createExecutor() {
-    return FlutterQueryExecutor.inDatabaseFolder(
-      path: 'app.db',
-      singleInstance: false,
+  DatabaseConnection createConnection() {
+    return DatabaseConnection.fromExecutor(
+      FlutterQueryExecutor.inDatabaseFolder(
+        path: 'app.db',
+        singleInstance: false,
+      ),
     );
   }
 
@@ -51,7 +53,7 @@ Future<void> main() async {
         didCallCreator = true;
       },
     );
-    final database = Database(executor);
+    final database = Database.executor(executor);
     await database.executor.ensureOpen(database);
 
     expect(didCallCreator, isTrue);

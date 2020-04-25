@@ -9,8 +9,8 @@ class WebExecutor extends TestExecutor {
   final String name = 'db';
 
   @override
-  QueryExecutor createExecutor() {
-    return WebDatabase(name);
+  DatabaseConnection createConnection() {
+    return DatabaseConnection.fromExecutor(WebDatabase(name));
   }
 
   @override
@@ -22,8 +22,10 @@ class WebExecutor extends TestExecutor {
 
 class WebExecutorIndexedDb extends TestExecutor {
   @override
-  QueryExecutor createExecutor() {
-    return WebDatabase.withStorage(MoorWebStorage.indexedDb('foo'));
+  DatabaseConnection createConnection() {
+    return DatabaseConnection.fromExecutor(
+      WebDatabase.withStorage(MoorWebStorage.indexedDb('foo')),
+    );
   }
 
   @override
