@@ -21,6 +21,8 @@
   - Removed `Insertable.toCompanion`
   - Added `Insertable.toColumns` to obtain a map from column names to values that should be inserted
   - Removed `TableInfo.entityToSql` - use `Insertable.toColumns` instead
+- __Breaking__: Renamed the `db` field in daos to `attachedDatabase`. The old field is available through
+  an extension.
 - Batches now run statements in the order they were issued. This required a breaking change for engine
   implementers.
 - Experimentally support IndexedDB to store sqlite data on the web

@@ -19,3 +19,11 @@ abstract class DatabaseAccessor<T extends GeneratedDatabase>
   /// Used internally by moor
   DatabaseAccessor(this.attachedDatabase) : super.delegate(attachedDatabase);
 }
+
+/// Extension for generated dao classes to keep the old [db] field that was
+/// renamed to [DatabaseAccessor.attachedDatabase] in moor 3.0
+extension OldDbFieldInDatabaseAccessor<T extends GeneratedDatabase>
+    on DatabaseAccessor<T> {
+  /// The generated database that this dao is attached to.
+  T get db => attachedDatabase;
+}
