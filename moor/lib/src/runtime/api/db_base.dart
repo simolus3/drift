@@ -130,8 +130,11 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     await streamQueries.close();
     await executor.close();
 
-    if (_openedDbCount[runtimeType] != null) {
-      _openedDbCount[runtimeType]--;
-    }
+    assert(() {
+      if (_openedDbCount[runtimeType] != null) {
+        _openedDbCount[runtimeType]--;
+      }
+      return true;
+    }());
   }
 }
