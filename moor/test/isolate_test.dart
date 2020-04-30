@@ -98,7 +98,7 @@ void _runTests(
     });
 
     // run a select statement to verify that the database is open
-    await database.customSelectQuery('SELECT 1').get();
+    await database.customSelect('SELECT 1').get();
     await database.close();
     expect(beforeOpenCalled, isTrue);
   });
