@@ -19,6 +19,8 @@ extension StringExpressionOperators on Expression<String> {
 
   /// Whether this expression contains [substring].
   ///
+  /// Note that this is case-insensitive for the English alphabet only.
+  ///
   /// This is equivalent to calling [like] with `%<substring>%`.
   Expression<bool> contains(String substring) {
     return like('%$substring%');
