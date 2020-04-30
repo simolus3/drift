@@ -17,6 +17,13 @@ extension StringExpressionOperators on Expression<String> {
     return _LikeOperator(this, Variable.withString(regex), operator: 'REGEXP');
   }
 
+  /// Whether this expression contains [substring].
+  ///
+  /// This is equivalent to calling [like] with `%<substring>%`.
+  Expression<bool> contains(String substring) {
+    return like('%$substring%');
+  }
+
   /// Uses the given [collate] sequence when comparing this column to other
   /// values.
   Expression<String> collate(Collate collate) {

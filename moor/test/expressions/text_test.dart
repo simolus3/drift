@@ -31,6 +31,11 @@ void main() {
     expect(ctx.boundVariables, isEmpty);
   });
 
+  test('can use contains', () {
+    expect(
+        expression.contains('foo bar'), generates('col LIKE ?', ['%foo bar%']));
+  });
+
   test('can use string functions', () {
     expect(expression.upper(), generates('UPPER(col)'));
     expect(expression.lower(), generates('LOWER(col)'));

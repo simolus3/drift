@@ -32,4 +32,14 @@ void main() {
     expect(row.read(tomorrowStamp) - row.read(nowStamp),
         const Duration(days: 1).inSeconds);
   });
+
+  test('text contains', () async {
+    const stringLiteral = Constant('Some sql string literal');
+    final containsSql = stringLiteral.contains('sql');
+
+    final row =
+        await (db.selectOnly(db.users)..addColumns([containsSql])).getSingle();
+
+    expect(row.read(containsSql), isTrue);
+  });
 }
