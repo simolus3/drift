@@ -56,11 +56,12 @@ class MyDatabase extends _$MyDatabase {
 We can't distribute an sqlite installation as a pub package (at least
 not as something that works outside of a Flutter build), so you need
 to ensure that you have the sqlite3 shared library installed on your
-system. On macOS, it's installed by default. On Linux, you can use the
-`libsqlite3-dev` package on Ubuntu and the `sqlite3` package on Arch
-(other distros will have similar packages). I'm not sure how it works
-on Windows, but [downloading sqlite](https://www.sqlite.org/download.html)
-and extracting `sqlite3.dll` into your application folder might work.
+system. On macOS, it's installed by default.
+On Linux, you can use the `libsqlite3-dev` package on Ubuntu and the 
+`sqlite3` package on Arch (other distros will have similar packages).
+On Windows, you can [download sqlite](https://www.sqlite.org/download.html)
+and extract `sqlite3.dll` into a folder that's in your `PATH` environment
+variable.
 {{% /alert %}}
 
 ## Writing tests
