@@ -6,7 +6,9 @@ part of '../query_builder.dart';
 /// Returns the amount of rows in the current group matching the optional
 /// [filter].
 ///
-/// To only count instances of a particular
+/// To only count rows matching a predicate, you can set the optional [filter].
+/// Note that [filter] is only available from sqlite 3.30, released on
+/// 2019-10-04. Most devices will use an older sqlite version.
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
@@ -23,7 +25,8 @@ extension BaseAggregate<DT> on Expression<DT> {
   ///
   /// If [distinct] is set (defaults to false), duplicate values will not be
   /// counted twice. An optional [filter] can be used to only include values
-  /// matching the filter.
+  /// matching the filter. Note that [filter] is only available from sqlite
+  /// 3.30 and most devices will use an older sqlite version.
   Expression<int> count({bool distinct, Expression<bool> filter}) {
     return _AggregateExpression('COUNT', this,
         filter: filter, distinct: distinct);

@@ -13,7 +13,7 @@ In addition to the moor dependencies you already have, add `moor_ffi` as a dev d
 as a regular dependency, you can skip this.
 ```yaml
 dev_dependencies:
-  moor_ffi: ^0.1.0 # or latest version
+  moor_ffi: ^0.5.0 # or latest version
 ```
 
 For this guide, we're going to test a very simple database that stores user names. The only important change from a regular moor
