@@ -31,11 +31,11 @@ typedef DatabaseOpener = DatabaseConnection Function();
 /// - The [detailed documentation](https://moor.simonbinder.eu/docs/advanced-features/isolates),
 ///   which provides example codes on how to use this api.
 class MoorIsolate {
-  /// THe underlying port used to establish a connection with this
+  /// The underlying port used to establish a connection with this
   /// [MoorIsolate].
   ///
   /// This [SendPort] can safely be sent over isolates. The receiving isolate
-  /// can reconstruct a[MoorIsolate] by using [MoorIsolate.fromConnectPort].
+  /// can reconstruct a [MoorIsolate] by using [MoorIsolate.fromConnectPort].
   final SendPort connectPort;
 
   /// Creates a [MoorIsolate] talking to another isolate by using the
