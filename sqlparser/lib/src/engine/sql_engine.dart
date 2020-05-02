@@ -89,10 +89,6 @@ class SqlEngine {
     final scanner = Scanner(source, scanMoorTokens: options.useMoorExtensions);
     final tokens = scanner.scanTokens();
 
-    if (scanner.errors.isNotEmpty) {
-      throw CumulatedTokenizerException(scanner.errors);
-    }
-
     return tokens;
   }
 

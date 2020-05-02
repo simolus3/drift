@@ -8,4 +8,11 @@ void main() {
     expect(tokens.map((e) => e.type),
         containsAllInOrder([TokenType.star, TokenType.star]));
   });
+
+  test('throws when seeing an invalid token', () {
+    expect(
+      Scanner('!').scanTokens,
+      throwsA(isA<CumulatedTokenizerException>()),
+    );
+  });
 }

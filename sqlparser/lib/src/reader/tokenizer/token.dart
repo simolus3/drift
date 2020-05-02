@@ -448,6 +448,11 @@ class TokenizerError {
   final SourceLocation location;
 
   TokenizerError(this.message, this.location);
+
+  @override
+  String toString() {
+    return '$message at $location';
+  }
 }
 
 /// Thrown by the sql engine when a sql statement can't be tokenized.
