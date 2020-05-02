@@ -38,5 +38,5 @@ android {
 }
 
 dependencies {
-    implementation 'eu.simonbinder:sqlite3-native-library:3.30.1'
+    implementation 'eu.simonbinder:sqlite3-native-library:3.31.1'
 }

@@ -1,3 +1,7 @@
+## 3.0.0
+
+Support `moor` version 3.0. To learn what's new, head over to [its changelog](https://pub.dev/packages/moor).
+
 ## 2.1.1
 
 - Fix `runCustom` not using the provided variables ([#406](https://github.com/simolus3/moor/issues/406))

@@ -1,6 +1,8 @@
-## unreleased
+## 0.5.0
 
--Enable mathematical functions in sql (`pow`, `power`, `sin`, `cos`, `tan`, `asin`, `atan`, `acos`, `sqrt`)
+- Provide mathematical functions in sql (`pow`, `power`, `sin`, `cos`, `tan`, `asin`, `atan`, `acos`, `sqrt`)
+- On Android, use sqlite 3.31.1
+- added an `extendedResultCode` to `SqliteException`
 
 ## 0.4.0
 

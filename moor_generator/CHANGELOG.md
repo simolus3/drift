@@ -1,3 +1,8 @@
+## 3.0.0
+ 
+ Generate code for moor 3.0. This most notably includes custom companions and nested result sets.
+ See moor's changelog for all the new features.
+
 ## 2.4.0
 
 - Support type converters in moor files. You can import the necessary Dart file with a regular `import`

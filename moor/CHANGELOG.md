@@ -1,4 +1,4 @@
-## 3.0.0-dev
+## 3.0.0
 
 - __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`. If you've relied
   on this, you'll now need to import `package:moor/moor.dart` as well.
