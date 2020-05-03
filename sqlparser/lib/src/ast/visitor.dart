@@ -44,6 +44,7 @@ abstract class AstVisitor<A, R> {
   R visitCastExpression(CastExpression e, A arg);
   R visitBinaryExpression(BinaryExpression e, A arg);
   R visitStringComparison(StringComparisonExpression e, A arg);
+  R visitCollateExpression(CollateExpression e, A arg);
   R visitUnaryExpression(UnaryExpression e, A arg);
   R visitIsExpression(IsExpression e, A arg);
   R visitIsNullExpression(IsNullExpression e, A arg);
@@ -303,6 +304,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   @override
   R visitBinaryExpression(BinaryExpression e, A arg) {
     return visitExpression(e, arg);
+  }
+
+  @override
+  R visitCollateExpression(CollateExpression e, A arg) {
+    return visitUnaryExpression(e, arg);
   }
 
   @override

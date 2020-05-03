@@ -28,6 +28,7 @@
   by default (instead of two methods for `get` and `watch`). Columns defined in moor files will have their
   sql name as json key (moor used to transform their name to `camelCase`).
   You can still disable both options to keep the old behavior.
+- __Breaking__: The last statement in a moor file must now end with a semicolon as well
 - Batches now run statements in the order they were issued. This required a breaking change for engine
   implementers.
 - Experimentally support IndexedDB to store sqlite data on the web

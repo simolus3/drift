@@ -30,6 +30,11 @@ class CollateExpression extends UnaryExpression {
       : super(operator, inner);
 
   @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCollateExpression(this, arg);
+  }
+
+  @override
   bool contentEquals(CollateExpression other) {
     return super.contentEquals(other) &&
         other.collateFunction.type == collateFunction.type;

@@ -198,6 +198,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitCollateExpression(CollateExpression e, TypeExpectation arg) {
+    session._checkAndResolve(e, _textType, arg);
+    visit(e.inner, _expectString);
+  }
+
+  @override
   void visitUnaryExpression(UnaryExpression e, TypeExpectation arg) {
     final operatorType = e.operator.type;
 

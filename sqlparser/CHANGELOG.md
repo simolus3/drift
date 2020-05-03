@@ -1,3 +1,8 @@
+## 0.8.1
+
+- Support collate expressions in the new type inference ([#533](https://github.com/simolus3/moor/issues/533))
+- Added `visitCollateExpression` to the visitor classes
+
 ## 0.8.0
 
 - Remove `SqlEngine.withOptions` constructor - the default constructor now takes options
