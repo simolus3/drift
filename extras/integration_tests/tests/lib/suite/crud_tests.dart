@@ -42,6 +42,7 @@ void crudTests(TestExecutor executor) {
     final result = await db.friendshipsOf(a.id).getSingle();
 
     expect(result, FriendshipsOfResult(reallyGoodFriends: true, user: b));
+    await db.close();
   });
 
   test('runCustom with args', () async {
@@ -54,5 +55,6 @@ void crudTests(TestExecutor executor) {
         <int>[1, 2]);
 
     expect(await db.friendsOf(1).get(), isNotEmpty);
+    await db.close();
   });
 }
