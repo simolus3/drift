@@ -42,7 +42,7 @@ packages:
       name: collection
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.14.11"
+    version: "1.14.12"
   convert:
     dependency: transitive
     description:
@@ -173,21 +173,21 @@ packages:
       path: "../../../moor"
       relative: true
     source: path
-    version: "2.3.0"
+    version: "3.0.0"
   moor_ffi:
     dependency: "direct main"
     description:
       path: "../../../moor_ffi"
       relative: true
     source: path
-    version: "0.4.0"
+    version: "0.5.0-dev"
   moor_flutter:
     dependency: "direct main"
     description:
       path: "../../../moor_flutter"
       relative: true
     source: path
-    version: "2.1.0"
+    version: "3.0.0"
   multi_server_socket:
     dependency: transitive
     description:

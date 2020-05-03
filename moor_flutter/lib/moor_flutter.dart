@@ -119,8 +119,7 @@ mixin _SqfliteExecutor on QueryDelegate {
     final batch = db.batch();
 
     for (final arg in statements.arguments) {
-      batch.execute(
-          statements.statements[arg.statementIndex], statements.arguments);
+      batch.execute(statements.statements[arg.statementIndex], arg.arguments);
     }
 
     await batch.commit(noResult: true);
