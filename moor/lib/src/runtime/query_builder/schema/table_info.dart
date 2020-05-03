@@ -124,7 +124,7 @@ extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
   /// Like [mapFromRow], but returns null if a non-nullable column of this table
   /// is null in [row].
   D /*?*/ mapFromRowOrNull(QueryRow row, {String tablePrefix}) {
-    final resolvedPrefix = tablePrefix == null ? null : '$tablePrefix.';
+    final resolvedPrefix = tablePrefix == null ? '' : '$tablePrefix.';
 
     final notInRow = $columns
         .where((c) => !c.$nullable)
