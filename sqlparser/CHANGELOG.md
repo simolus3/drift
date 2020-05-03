@@ -1,4 +1,4 @@
-## unreleased
+## 0.8.0
 
 - Remove `SqlEngine.withOptions` constructor - the default constructor now takes options
 - Changed `SelectStatement.from` from `List<Queryable>` to `Queryable?`. Selecting from multiple

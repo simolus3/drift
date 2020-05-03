@@ -18,11 +18,12 @@ void transactionTests(TestExecutor executor) {
       await db.makeFriends(dash, florian, goodFriends: true);
     });
 
-    final countResult = await db.userCount();
+    final countResult = await db.userCount().get();
     expect(countResult.single, 4);
 
-    final friendsResult = await db.amountOfGoodFriends(people.dashId);
-    expect(friendsResult.single, 1);
+    final friendsResult =
+        await db.amountOfGoodFriends(people.dashId).getSingle();
+    expect(friendsResult, 1);
 
     await db.close();
   });
@@ -44,11 +45,12 @@ void transactionTests(TestExecutor executor) {
       fail('the transaction should have thrown!');
     } on Exception catch (_) {}
 
-    final countResult = await db.userCount();
-    expect(countResult.single, 3); // only the default folks
+    final countResult = await db.userCount().getSingle();
+    expect(countResult, 3); // only the default folks
 
-    final friendsResult = await db.amountOfGoodFriends(people.dashId);
-    expect(friendsResult.single, 0); // no friendship was inserted
+    final friendsResult =
+        await db.amountOfGoodFriends(people.dashId).getSingle();
+    expect(friendsResult, 0); // no friendship was inserted
 
     await db.close();
   });

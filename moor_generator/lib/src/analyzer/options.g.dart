@@ -29,7 +29,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
           false,
       compactQueryMethods:
           $checkedConvert(json, 'compact_query_methods', (v) => v as bool) ??
-              false,
+              true,
       skipVerificationCode:
           $checkedConvert(json, 'skip_verification_code', (v) => v as bool) ??
               false,
@@ -40,7 +40,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
               json,
               'use_column_name_as_json_key_when_defined_in_moor_file',
               (v) => v as bool) ??
-          false,
+          true,
       generateConnectConstructor: $checkedConvert(
               json, 'generate_connect_constructor', (v) => v as bool) ??
           false,

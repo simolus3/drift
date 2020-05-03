@@ -22,8 +22,8 @@ dependencies:
   cli_util: ^0.1.0
 
   # Moor-specific analysis
-  moor: ^3.0.0-dev
-  sqlparser: ^0.7.0
+  moor: ^3.0.0
+  sqlparser: ^0.8.0
 
   # Dart analysis
   analyzer: '^0.39.0'

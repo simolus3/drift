@@ -30,7 +30,7 @@ class MoorOptions {
   /// in a `UseMoor` annotation. Compact queries return a `Selectable` instead
   /// of generating two methods (with one returning a stream and another
   /// returning a future)
-  @JsonKey(name: 'compact_query_methods', defaultValue: false)
+  @JsonKey(name: 'compact_query_methods', defaultValue: true)
   final bool compactQueryMethods;
 
   /// Remove verification logic in the generated code.
@@ -46,7 +46,7 @@ class MoorOptions {
   /// the transformed `camelCaseDartGetter`.
   @JsonKey(
       name: 'use_column_name_as_json_key_when_defined_in_moor_file',
-      defaultValue: false)
+      defaultValue: true)
   final bool useColumnNameAsJsonKeyWhenDefinedInMoorFile;
 
   /// Generate a `connect` constructor in database superclasses. This is

@@ -72,14 +72,6 @@ resolvedColumns.map((c) => context.typeOf(c).type.type) // int, text, int, text,
 [Moor](https://pub.dev/packages/moor_flutter), a persistence library for Dart apps, uses this
 package to generate type-safe methods from sql.
 
-## Limitations
-Most on this list is just not supported yet because I didn't found a use case for 
-them yet. If you need them, just leave an issue and I'll try to implement them soon.
-
-- An `UPSERT` clause is not yet supported on insert statements
-
-If you run into parsing errors with what you think is valid sql, please create an issue.
-
 ## Thanks
 - To [Bob Nystrom](https://github.com/munificent) for his amazing ["Crafting Interpreters"](https://craftinginterpreters.com/)
   book, which was incredibly helpful when writing the parser.

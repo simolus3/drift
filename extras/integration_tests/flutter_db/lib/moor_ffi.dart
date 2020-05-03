@@ -50,7 +50,7 @@ Future<void> main() async {
           UsersCompanion.insert(name: 'Name', birthDate: DateTime.now()));
     });
 
-    await db.mostPopularUsers(13);
+    await db.mostPopularUsers(13).get();
 
     await db.close();
     await isolate.shutdownAll();

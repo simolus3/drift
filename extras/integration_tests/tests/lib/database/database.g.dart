@@ -585,22 +585,14 @@ abstract class _$Database extends GeneratedDatabase {
     );
   }
 
-  Selectable<User> mostPopularUsersQuery(int amount) {
+  Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
         'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
         variables: [Variable.withInt(amount)],
         readsFrom: {users, friendships}).map(_rowToUser);
   }
 
-  Future<List<User>> mostPopularUsers(int amount) {
-    return mostPopularUsersQuery(amount).get();
-  }
-
-  Stream<List<User>> watchMostPopularUsers(int amount) {
-    return mostPopularUsersQuery(amount).watch();
-  }
-
-  Selectable<int> amountOfGoodFriendsQuery(int user) {
+  Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
         variables: [
@@ -611,59 +603,34 @@ abstract class _$Database extends GeneratedDatabase {
         }).map((QueryRow row) => row.readInt('COUNT(*)'));
   }
 
-  Future<List<int>> amountOfGoodFriends(int user) {
-    return amountOfGoodFriendsQuery(user).get();
+  FriendshipsOfResult _rowToFriendshipsOfResult(QueryRow row) {
+    return FriendshipsOfResult(
+      reallyGoodFriends: row.readBool('really_good_friends'),
+      user: users.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+    );
   }
 
-  Stream<List<int>> watchAmountOfGoodFriends(int user) {
-    return amountOfGoodFriendsQuery(user).watch();
-  }
-
-  Selectable<User> friendsOfQuery(int user) {
+  Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
-        'SELECT u.* FROM friendships f\n         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND\n           u.id != :user\n         WHERE (f.first_user = :user OR f.second_user = :user)',
+        'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND\n             user.id != :user\n       WHERE (f.first_user = :user OR f.second_user = :user)',
         variables: [Variable.withInt(user)],
-        readsFrom: {friendships, users}).map(_rowToUser);
+        readsFrom: {friendships, users}).map(_rowToFriendshipsOfResult);
   }
 
-  Future<List<User>> friendsOf(int user) {
-    return friendsOfQuery(user).get();
-  }
-
-  Stream<List<User>> watchFriendsOf(int user) {
-    return friendsOfQuery(user).watch();
-  }
-
-  Selectable<int> userCountQuery() {
+  Selectable<int> userCount() {
     return customSelect('SELECT COUNT(id) FROM users',
         variables: [],
         readsFrom: {users}).map((QueryRow row) => row.readInt('COUNT(id)'));
   }
 
-  Future<List<int>> userCount() {
-    return userCountQuery().get();
-  }
-
-  Stream<List<int>> watchUserCount() {
-    return userCountQuery().watch();
-  }
-
-  Selectable<Preferences> settingsForQuery(int user) {
+  Selectable<Preferences> settingsFor(int user) {
     return customSelect('SELECT preferences FROM users WHERE id = :user',
             variables: [Variable.withInt(user)], readsFrom: {users})
         .map((QueryRow row) =>
             $UsersTable.$converter0.mapToDart(row.readString('preferences')));
   }
 
-  Future<List<Preferences>> settingsFor(int user) {
-    return settingsForQuery(user).get();
-  }
-
-  Stream<List<Preferences>> watchSettingsFor(int user) {
-    return settingsForQuery(user).watch();
-  }
-
-  Selectable<User> usersByIdQuery(List<int> var1) {
+  Selectable<User> usersById(List<int> var1) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
@@ -672,16 +639,25 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {users}).map(_rowToUser);
   }
 
-  Future<List<User>> usersById(List<int> var1) {
-    return usersByIdQuery(var1).get();
-  }
-
-  Stream<List<User>> watchUsersById(List<int> var1) {
-    return usersByIdQuery(var1).watch();
-  }
-
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, friendships];
+}
+
+class FriendshipsOfResult {
+  final bool reallyGoodFriends;
+  final User user;
+  FriendshipsOfResult({
+    this.reallyGoodFriends,
+    this.user,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(reallyGoodFriends.hashCode, user.hashCode));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is FriendshipsOfResult &&
+          other.reallyGoodFriends == this.reallyGoodFriends &&
+          other.user == this.user);
 }

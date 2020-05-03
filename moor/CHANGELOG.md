@@ -23,6 +23,11 @@
   - Removed `TableInfo.entityToSql` - use `Insertable.toColumns` instead
 - __Breaking__: Renamed the `db` field in daos to `attachedDatabase`. The old field is available through
   an extension.
+- __Breaking__: The `compact_query_methods` and `use_column_name_as_json_key_when_defined_in_moor_file` build
+  options are now enabled by default. This means that queries in moor files now generate a `Selectable` method
+  by default (instead of two methods for `get` and `watch`). Columns defined in moor files will have their
+  sql name as json key (moor used to transform their name to `camelCase`).
+  You can still disable both options to keep the old behavior.
 - Batches now run statements in the order they were issued. This required a breaking change for engine
   implementers.
 - Experimentally support IndexedDB to store sqlite data on the web

@@ -71,10 +71,12 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'amountOfGoodFriends':
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
             '(f.first_user = :user OR f.second_user = :user)',
-    'friendsOf': '''SELECT u.* FROM friendships f
-         INNER JOIN users u ON u.id IN (f.first_user, f.second_user) AND
-           u.id != :user
-         WHERE (f.first_user = :user OR f.second_user = :user)''',
+    'friendshipsOf': ''' SELECT 
+          f.really_good_friends, user.**
+       FROM friendships f
+         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND
+             user.id != :user
+       WHERE (f.first_user = :user OR f.second_user = :user)''',
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
     'usersById': 'SELECT * FROM users WHERE id IN ?',
@@ -90,10 +92,10 @@ class Database extends _$Database {
   Database.executor(QueryExecutor db)
       : this(DatabaseConnection.fromExecutor(db));
 
-  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  /// It will be set in the onUpgrade callback. Null if no migration occurred
   int schemaVersionChangedFrom;
 
-  /// It will be set in the onUpgrade callback. Null if no migration ocurred
+  /// It will be set in the onUpgrade callback. Null if no migration occurred
   int schemaVersionChangedTo;
 
   @override
@@ -155,6 +157,8 @@ class Database extends _$Database {
   Future<int> writeUser(Insertable<User> user) {
     return into(users).insert(user);
   }
+
+  Selectable<User> friendsOf(int id) => friendshipsOf(id).map((r) => r.user);
 
   Future<void> makeFriends(User a, User b, {bool goodFriends}) async {
     var friendsValue = const Value<bool>.absent();
