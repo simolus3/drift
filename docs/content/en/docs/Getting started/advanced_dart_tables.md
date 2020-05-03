@@ -47,7 +47,7 @@ class EnabledCategories extends Table {
 The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
 To update the name of a column when serializing data to json, annotate the getter with 
-[`@JsonKey`](https://pub.dev/documentation/moor/latest/moor_web/JsonKey-class.html).
+[`@JsonKey`](https://pub.dev/documentation/moor/latest/moor/JsonKey-class.html).
 
 ## Nullability
 

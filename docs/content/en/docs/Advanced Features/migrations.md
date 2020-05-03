@@ -38,7 +38,7 @@ We can now change the `database` class like this:
 
   // rest of class can stay the same
 ```
-You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/moor/latest/moor_web/Migrator-class.html)
+You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/moor/latest/moor/Migrator-class.html)
 for all the available options. You can't use the high-level query API in migrations - calling `select` or similar 
 methods will throw.
 
