@@ -6,7 +6,7 @@ homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: ">=2.0.0 <3.0.0"
 
 dependencies:
   moor: ^3.0.0
@@ -20,9 +20,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-dependency_overrides:
-  moor:
-    path: ../moor
+#dependency_overrides:
+#  moor:
+#    path: ../moor
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
