@@ -1,3 +1,7 @@
+## 3.0.1
+
+- Fix `mapFromRowOrNull` not working without a prefix ([#534](https://github.com/simolus3/moor/pull/534))
+
 ## 3.0.0
 
 - __Breaking__: `package:moor/moor_web.dart` no longer exports `package:moor/moor.dart`. If you've relied

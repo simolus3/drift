@@ -54,4 +54,25 @@ void main() {
       ),
     );
   });
+
+  test('can map from row without table prefix', () {
+    final rowData = {
+      'id': 1,
+      'title': 'some title',
+      'content': 'do this',
+      'target_date': null,
+      'category': null,
+    };
+    final todo = db.todosTable.mapFromRowOrNull(QueryRow(rowData, db));
+    expect(
+      todo,
+      TodoEntry(
+        id: 1,
+        title: 'some title',
+        content: 'do this',
+        targetDate: null,
+        category: null,
+      ),
+    );
+  });
 }
