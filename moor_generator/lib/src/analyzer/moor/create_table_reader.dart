@@ -16,12 +16,14 @@ class CreateTableReader {
   final TableInducingStatement stmt;
   final Step step;
 
+  static const _schemaReader = SchemaFromCreateTable(moorExtensions: true);
+
   CreateTableReader(this.stmt, this.step);
 
   Future<MoorTable> extractTable(TypeMapper mapper) async {
     Table table;
     try {
-      table = SchemaFromCreateTable(moorExtensions: true).read(stmt);
+      table = _schemaReader.read(stmt);
     } catch (e) {
       step.reportError(ErrorInMoorFile(
         span: stmt.tableNameToken.span,

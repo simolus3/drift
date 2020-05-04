@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('isAliasForRowId', () {
     final engine = SqlEngine();
-    final schemaParser = SchemaFromCreateTable();
+    const schemaParser = SchemaFromCreateTable();
 
     final isAlias = {
       'CREATE TABLE x (id INTEGER PRIMARY KEY)': true,

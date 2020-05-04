@@ -1,3 +1,8 @@
+## 0.9.0
+
+- New `package:sqlparser/utils/find_referenced_tables.dart` library. Use it to easily find all referenced tables
+in a query.
+
 ## 0.8.1
 
 - Support collate expressions in the new type inference ([#533](https://github.com/simolus3/moor/issues/533))

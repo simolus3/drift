@@ -2,10 +2,10 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/affected_tables_visitor.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 /// Handles `REFERENCES` clauses in tables by resolving their columns and
 /// reporting errors if they don't exist. Further, sets the

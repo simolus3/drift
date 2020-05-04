@@ -3,8 +3,8 @@ import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
+import 'package:sqlparser/utils/find_referenced_tables.dart';
 
-import 'affected_tables_visitor.dart';
 import 'lints/linter.dart';
 
 /// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this

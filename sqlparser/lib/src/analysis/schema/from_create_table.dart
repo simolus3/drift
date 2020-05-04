@@ -6,7 +6,7 @@ class SchemaFromCreateTable {
   /// and `DATETIME` columns.
   final bool moorExtensions;
 
-  SchemaFromCreateTable({this.moorExtensions = false});
+  const SchemaFromCreateTable({this.moorExtensions = false});
 
   Table read(TableInducingStatement stmt) {
     if (stmt is CreateTableStatement) {

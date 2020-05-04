@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('finds columns', () {
     final engine = SqlEngine();
-    final schemaParser = SchemaFromCreateTable();
+    const schemaParser = SchemaFromCreateTable();
 
     Column findWith(String createTbl, String columnName) {
       final stmt = engine.parse(createTbl).rootNode as CreateTableStatement;
