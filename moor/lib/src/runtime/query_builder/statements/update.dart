@@ -23,7 +23,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
         first = false;
       }
 
-      ctx.buffer..write(columnName)..write(' = ');
+      ctx.buffer..write(escapeIfNeeded(columnName))..write(' = ');
 
       variable.writeInto(ctx);
     });

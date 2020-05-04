@@ -54,6 +54,15 @@ void main() {
         [1, 3],
       ));
     });
+
+    test('with escaped column names', () async {
+      await db
+          .update(db.pureDefaults)
+          .write(const PureDefaultsCompanion(txt: Value('foo')));
+
+      verify(executor
+          .runUpdate('UPDATE pure_defaults SET `insert` = ?;', ['foo']));
+    });
   });
 
   group('generates replace statements', () {

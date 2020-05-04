@@ -1,3 +1,7 @@
+## 3.0.2
+
+- Fix update statements not escaping column names ([#539](https://github.com/simolus3/moor/issues/539))
+
 ## 3.0.1
 
 - Fix `mapFromRowOrNull` not working without a prefix ([#534](https://github.com/simolus3/moor/pull/534))
