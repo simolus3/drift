@@ -61,7 +61,7 @@ Future<void> writeShoppingCart(CartWithItems entry) {
     final cart = entry.cart;
 
     // first, we write the shopping cart
-    await into(shoppingCarts).insert(cart, orReplace: true);
+    await into(shoppingCarts).insert(cart, mode: InsertMode.replace);
 
     // we replace the entries of the cart, so first delete the old ones
     await (delete(shoppingCartEntries)
