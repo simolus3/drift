@@ -35,11 +35,15 @@ Future<List<Animal>> findAnimalsByLegs(int legCount) {
 ```
 
 ## Boolean algebra
-You can nest boolean expressions by using the `&`, `!` operators and the `not` method
+You can nest boolean expressions by using the `&`, `|` operators and the `not` method
 exposed by moor:
+
 ```dart
 // find all animals that aren't mammals and have 4 legs
-select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4))
+select(animals)..where((a) => a.isMammal.not() & a.amountOfLegs.equals(4));
+
+// find all animals that are mammals or have 2 legs
+select(animals)..where((a) => a.isMammal | a.amountOfLegs.equals(2));
 ```
 
 ## Arithmetic
