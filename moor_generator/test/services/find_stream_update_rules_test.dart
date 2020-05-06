@@ -48,4 +48,88 @@ class MyDatabase {}
               {const TableUpdate('users', kind: UpdateKind.insert)}),
     );
   });
+
+  test('finds update rules for foreign key constraint', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': '''
+CREATE TABLE a (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  bar TEXT
+);
+
+CREATE TABLE will_delete_on_delete (
+  col INTEGER NOT NULL REFERENCES a(id) ON DELETE CASCADE
+);
+
+CREATE TABLE will_update_on_delete (
+  col INTEGER REFERENCES a(id) ON DELETE SET NULL
+);
+
+CREATE TABLE unaffected_on_delete (
+  col INTEGER REFERENCES a(id) ON DELETE NO ACTION
+);
+
+CREATE TABLE will_update_on_update (
+  col INTEGER NOT NULL REFERENCES a(id) ON UPDATE CASCADE
+);
+
+CREATE TABLE unaffected_on_update (
+  col INTEGER NOT NULL REFERENCES a(id) ON UPDATE NO ACTION
+);
+      ''',
+      'foo|lib/main.dart': '''
+import 'package:moor/moor.dart';
+
+@UseMoor(include: {'a.moor'})
+class MyDatabase {}
+      '''
+    });
+
+    final file = await state.analyze('package:foo/main.dart');
+    final db = (file.currentResult as ParsedDartFile).declaredDatabases.single;
+
+    expect(state.file('package:foo/a.moor').errors.errors, isEmpty);
+
+    final rules = FindStreamUpdateRules(db).identifyRules();
+
+    const updateA =
+        TableUpdateQuery.onTableName('a', limitUpdateKind: UpdateKind.update);
+    const deleteA =
+        TableUpdateQuery.onTableName('a', limitUpdateKind: UpdateKind.delete);
+
+    TableUpdate update(String table) {
+      return TableUpdate(table, kind: UpdateKind.update);
+    }
+
+    TableUpdate delete(String table) {
+      return TableUpdate(table, kind: UpdateKind.delete);
+    }
+
+    Matcher writePropagation(TableUpdateQuery cause, TableUpdate effect) {
+      return isA<WritePropagation>()
+          .having((e) => e.on, 'on', cause)
+          .having((e) => e.result, 'result', equals([effect]));
+    }
+
+    expect(
+      rules.rules,
+      containsAll(
+        [
+          writePropagation(
+            deleteA,
+            delete('will_delete_on_delete'),
+          ),
+          writePropagation(
+            deleteA,
+            update('will_update_on_delete'),
+          ),
+          writePropagation(
+            updateA,
+            update('will_update_on_update'),
+          ),
+        ],
+      ),
+    );
+    expect(rules.rules, hasLength(3));
+  });
 }
