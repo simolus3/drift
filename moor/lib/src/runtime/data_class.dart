@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 
@@ -59,6 +60,25 @@ abstract class DataClass {
 abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
   /// Constant constructor so that generated companion classes can be constant.
   const UpdateCompanion();
+
+  static const _mapEquality = MapEquality<dynamic, dynamic>();
+
+  @override
+  int get hashCode {
+    return _mapEquality.hash(toColumns(false));
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (identical(this, other)) return true;
+    if (other is! UpdateCompanion<D>) return false;
+
+    return _mapEquality.equals(
+      // ignore: test_types_in_equals
+      (other as UpdateCompanion<D>).toColumns(false),
+      toColumns(false),
+    );
+  }
 }
 
 /// An [Insertable] implementation based on raw column expressions.

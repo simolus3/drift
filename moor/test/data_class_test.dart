@@ -71,6 +71,18 @@ void main() {
     expect(recovered.isAwesome, user.isAwesome);
     expect(recovered.profilePicture, user.profilePicture);
   });
+
+  test('companions support hash and equals', () {
+    const first = CategoriesCompanion(description: Value('foo'));
+    final equalToFirst = CategoriesCompanion.insert(description: 'foo');
+    const different = CategoriesCompanion(description: Value('bar'));
+
+    expect(first.hashCode, equalToFirst.hashCode);
+    expect(first, equals(equalToFirst));
+
+    expect(first, isNot(equals(different)));
+    expect(first, equals(first));
+  });
 }
 
 class _MySerializer extends ValueSerializer {
