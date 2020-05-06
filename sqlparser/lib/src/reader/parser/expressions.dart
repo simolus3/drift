@@ -301,6 +301,20 @@ mixin ExpressionParser on ParserBase {
         return SubQuery(select: selectStmt)..setSpan(left, _previous);
       } else {
         final expr = expression();
+
+        if (_matchOne(TokenType.comma)) {
+          // It's a row value!
+          final expressions = [expr];
+
+          do {
+            expressions.add(expression());
+          } while (_matchOne(TokenType.comma));
+
+          _consume(TokenType.rightParen, 'Expected a closing bracket');
+          return Tuple(expressions: expressions, usedAsRowValue: true)
+            ..setSpan(left, _previous);
+        }
+
         _consume(TokenType.rightParen, 'Expected a closing bracket');
         return Parentheses(left, expr, _previous)..setSpan(left, _previous);
       }

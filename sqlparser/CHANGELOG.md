@@ -2,6 +2,7 @@
 
 - New `package:sqlparser/utils/find_referenced_tables.dart` library. Use it to easily find all referenced tables
 in a query.
+- Support [row values](https://www.sqlite.org/rowvalue.html) including warnings about misuse
 
 ## 0.8.1
 

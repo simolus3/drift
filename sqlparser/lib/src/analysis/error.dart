@@ -62,5 +62,6 @@ enum AnalysisErrorType {
   compoundColumnCountMismatch,
   cteColumnCountMismatch,
   valuesSelectCountMismatch,
+  rowValueMisuse,
   other,
 }

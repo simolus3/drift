@@ -1,3 +1,7 @@
+## 3.1.0
+
+- Update companions now implement `==` and `hashCode`
+
 ## 3.0.2
 
 - Fix update statements not escaping column names ([#539](https://github.com/simolus3/moor/issues/539))
