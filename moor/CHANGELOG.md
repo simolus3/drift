@@ -1,6 +1,7 @@
 ## 3.1.0
 
 - Update companions now implement `==` and `hashCode`
+- New `containsCase` method for text in `package:moor/extensions/moor_ffi.dart`
 
 ## 3.0.2
 

@@ -93,6 +93,33 @@ void _regexpImpl(Pointer<FunctionContext> ctx, int argCount,
   ctx.resultBool(regex.hasMatch(secondParam as String));
 }
 
+void _containsImpl(Pointer<FunctionContext> ctx, int argCount,
+    Pointer<Pointer<SqliteValue>> args) {
+  if (argCount < 2 || argCount > 3) {
+    ctx.resultError('Expected 2 or 3 arguments to moor_contains');
+    return;
+  }
+
+  final first = args[0].value;
+  final second = args[1].value;
+
+  if (first is! String || second is! String) {
+    ctx.resultError('First two args must be strings');
+    return;
+  }
+
+  final caseSensitive = argCount == 3 && args[2].value == 1;
+
+  final firstAsString = first as String;
+  final secondAsString = second as String;
+
+  final result = caseSensitive
+      ? firstAsString.contains(secondAsString)
+      : firstAsString.toLowerCase().contains(secondAsString.toLowerCase());
+
+  ctx.resultInt(result ? 1 : 0);
+}
+
 void _registerOn(Database db) {
   final powImplPointer =
       Pointer.fromFunction<sqlite3_function_handler>(_powImpl);
@@ -116,5 +143,12 @@ void _registerOn(Database db) {
       isDeterministic: true);
 
   db.createFunction('regexp', 2, Pointer.fromFunction(_regexpImpl),
+      isDeterministic: true);
+
+  final containsImplPointer =
+      Pointer.fromFunction<sqlite3_function_handler>(_containsImpl);
+  db.createFunction('moor_contains', 2, containsImplPointer,
+      isDeterministic: true);
+  db.createFunction('moor_contains', 3, containsImplPointer,
       isDeterministic: true);
 }
