@@ -34,6 +34,15 @@ class Category extends DataClass implements Insertable<Category> {
     return map;
   }
 
+  CategoriesCompanion toCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+    );
+  }
+
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -228,6 +237,20 @@ class Recipe extends DataClass implements Insertable<Recipe> {
       map['category'] = Variable<int>(category);
     }
     return map;
+  }
+
+  RecipesCompanion toCompanion(bool nullToAbsent) {
+    return RecipesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      instructions: instructions == null && nullToAbsent
+          ? const Value.absent()
+          : Value(instructions),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
+    );
   }
 
   factory Recipe.fromJson(Map<String, dynamic> json,
@@ -481,6 +504,16 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
     return map;
   }
 
+  IngredientsCompanion toCompanion(bool nullToAbsent) {
+    return IngredientsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      caloriesPer100g: caloriesPer100g == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caloriesPer100g),
+    );
+  }
+
   factory Ingredient.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -706,6 +739,19 @@ class IngredientInRecipe extends DataClass
       map['amount'] = Variable<int>(amountInGrams);
     }
     return map;
+  }
+
+  IngredientInRecipesCompanion toCompanion(bool nullToAbsent) {
+    return IngredientInRecipesCompanion(
+      recipe:
+          recipe == null && nullToAbsent ? const Value.absent() : Value(recipe),
+      ingredient: ingredient == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ingredient),
+      amountInGrams: amountInGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amountInGrams),
+    );
   }
 
   factory IngredientInRecipe.fromJson(Map<String, dynamic> json,

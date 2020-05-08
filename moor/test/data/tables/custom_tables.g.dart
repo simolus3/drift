@@ -42,6 +42,20 @@ class Config extends DataClass implements Insertable<Config> {
     return map;
   }
 
+  ConfigCompanion toCompanion(bool nullToAbsent) {
+    return ConfigCompanion(
+      configKey: configKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configKey),
+      configValue: configValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configValue),
+      syncState: syncState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncState),
+    );
+  }
+
   factory Config.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -250,6 +264,13 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     return map;
   }
 
+  WithDefaultsCompanion toCompanion(bool nullToAbsent) {
+    return WithDefaultsCompanion(
+      a: a == null && nullToAbsent ? const Value.absent() : Value(a),
+      b: b == null && nullToAbsent ? const Value.absent() : Value(b),
+    );
+  }
+
   factory WithDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -415,6 +436,14 @@ class NoId extends DataClass implements Insertable<NoId> {
     return map;
   }
 
+  NoIdsCompanion toCompanion(bool nullToAbsent) {
+    return NoIdsCompanion(
+      payload: payload == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payload),
+    );
+  }
+
   factory NoId.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -567,6 +596,14 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       map['c'] = Variable<double>(c);
     }
     return map;
+  }
+
+  WithConstraintsCompanion toCompanion(bool nullToAbsent) {
+    return WithConstraintsCompanion(
+      a: a == null && nullToAbsent ? const Value.absent() : Value(a),
+      b: b == null && nullToAbsent ? const Value.absent() : Value(b),
+      c: c == null && nullToAbsent ? const Value.absent() : Value(c),
+    );
   }
 
   factory WithConstraint.fromJson(Map<String, dynamic> json,
@@ -784,6 +821,22 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       map['somedate'] = Variable<DateTime>(somedate);
     }
     return map;
+  }
+
+  MytableCompanion toCompanion(bool nullToAbsent) {
+    return MytableCompanion(
+      someid:
+          someid == null && nullToAbsent ? const Value.absent() : Value(someid),
+      sometext: sometext == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sometext),
+      somebool: somebool == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somebool),
+      somedate: somedate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somedate),
+    );
   }
 
   factory MytableData.fromJson(Map<String, dynamic> json,
@@ -1022,6 +1075,16 @@ class EMail extends DataClass implements Insertable<EMail> {
       map['body'] = Variable<String>(body);
     }
     return map;
+  }
+
+  EmailCompanion toCompanion(bool nullToAbsent) {
+    return EmailCompanion(
+      sender:
+          sender == null && nullToAbsent ? const Value.absent() : Value(sender),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+    );
   }
 
   factory EMail.fromJson(Map<String, dynamic> json,

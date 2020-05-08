@@ -58,6 +58,23 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     return map;
   }
 
+  TodosTableCompanion toCompanion(bool nullToAbsent) {
+    return TodosTableCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value(content),
+      targetDate: targetDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetDate),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
+    );
+  }
+
   factory TodoEntry.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -343,6 +360,15 @@ class Category extends DataClass implements Insertable<Category> {
     return map;
   }
 
+  CategoriesCompanion toCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+    );
+  }
+
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -543,6 +569,22 @@ class User extends DataClass implements Insertable<User> {
       map['creation_time'] = Variable<DateTime>(creationTime);
     }
     return map;
+  }
+
+  UsersCompanion toCompanion(bool nullToAbsent) {
+    return UsersCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      isAwesome: isAwesome == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isAwesome),
+      profilePicture: profilePicture == null && nullToAbsent
+          ? const Value.absent()
+          : Value(profilePicture),
+      creationTime: creationTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creationTime),
+    );
   }
 
   factory User.fromJson(Map<String, dynamic> json,
@@ -828,6 +870,13 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
     return map;
   }
 
+  SharedTodosCompanion toCompanion(bool nullToAbsent) {
+    return SharedTodosCompanion(
+      todo: todo == null && nullToAbsent ? const Value.absent() : Value(todo),
+      user: user == null && nullToAbsent ? const Value.absent() : Value(user),
+    );
+  }
+
   factory SharedTodo.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -1025,6 +1074,19 @@ class TableWithoutPKData extends DataClass
       map['custom'] = Variable<String>(converter.mapToSql(custom));
     }
     return map;
+  }
+
+  TableWithoutPKCompanion toCompanion(bool nullToAbsent) {
+    return TableWithoutPKCompanion(
+      notReallyAnId: notReallyAnId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notReallyAnId),
+      someFloat: someFloat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(someFloat),
+      custom:
+          custom == null && nullToAbsent ? const Value.absent() : Value(custom),
+    );
   }
 
   factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
@@ -1250,6 +1312,13 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       map['insert'] = Variable<String>(txt);
     }
     return map;
+  }
+
+  PureDefaultsCompanion toCompanion(bool nullToAbsent) {
+    return PureDefaultsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      txt: txt == null && nullToAbsent ? const Value.absent() : Value(txt),
+    );
   }
 
   factory PureDefault.fromJson(Map<String, dynamic> json,

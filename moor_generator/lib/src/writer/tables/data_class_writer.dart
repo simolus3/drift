@@ -40,6 +40,9 @@ class DataClassWriter {
     _writeMappingConstructor();
 
     _writeToColumnsOverride();
+    if (scope.options.dataClassToCompanions) {
+      _writeToCompanion();
+    }
 
     // And a serializer and deserializer method
     _writeFromJson();
@@ -212,6 +215,30 @@ class DataClassWriter {
     }
 
     _buffer.write('return map; \n}\n');
+  }
+
+  void _writeToCompanion() {
+    _buffer
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write(' toCompanion(bool nullToAbsent) {\n');
+
+    _buffer
+      ..write('return ')
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write('(');
+
+    for (final column in table.columns) {
+      final dartName = column.dartGetterName;
+      _buffer
+        ..write(dartName)
+        ..write(': ')
+        ..write(dartName)
+        ..write(' == null && nullToAbsent ? const Value.absent() : Value (')
+        ..write(dartName)
+        ..write('),');
+    }
+
+    _buffer.write(');\n}');
   }
 
   void _writeToString() {
