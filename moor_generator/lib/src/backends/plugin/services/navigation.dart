@@ -102,8 +102,10 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
 
       if (resolved is Table && resolved != null) {
         final declaration = resolved.meta<MoorTable>()?.declaration;
-        _reportForSpan(
-            e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
+        if (declaration != null) {
+          _reportForSpan(
+              e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
+        }
       }
     }
 
