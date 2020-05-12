@@ -7,6 +7,19 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+class _$GeneratedConverter$0 extends TypeConverter<CategoryPriority, int> {
+  const _$GeneratedConverter$0();
+  @override
+  CategoryPriority mapToDart(int fromDb) {
+    return fromDb == null ? null : CategoryPriority.values[fromDb];
+  }
+
+  @override
+  int mapToSql(CategoryPriority value) {
+    return value?.index;
+  }
+}
+
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String title;
@@ -336,7 +349,9 @@ class $TodosTableTable extends TodosTable
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
-  Category({@required this.id, @required this.description});
+  final CategoryPriority priority;
+  Category(
+      {@required this.id, @required this.description, @required this.priority});
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -346,6 +361,8 @@ class Category extends DataClass implements Insertable<Category> {
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       description:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
+      priority: $CategoriesTable.$converter0.mapToDart(
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}priority'])),
     );
   }
   @override
@@ -357,6 +374,10 @@ class Category extends DataClass implements Insertable<Category> {
     if (!nullToAbsent || description != null) {
       map['desc'] = Variable<String>(description);
     }
+    if (!nullToAbsent || priority != null) {
+      final converter = $CategoriesTable.$converter0;
+      map['priority'] = Variable<int>(converter.mapToSql(priority));
+    }
     return map;
   }
 
@@ -366,6 +387,9 @@ class Category extends DataClass implements Insertable<Category> {
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
+      priority: priority == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priority),
     );
   }
 
@@ -375,6 +399,7 @@ class Category extends DataClass implements Insertable<Category> {
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
+      priority: serializer.fromJson<CategoryPriority>(json['priority']),
     );
   }
   factory Category.fromJsonString(String encodedJson,
@@ -388,57 +413,72 @@ class Category extends DataClass implements Insertable<Category> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
+      'priority': serializer.toJson<CategoryPriority>(priority),
     };
   }
 
-  Category copyWith({int id, String description}) => Category(
+  Category copyWith({int id, String description, CategoryPriority priority}) =>
+      Category(
         id: id ?? this.id,
         description: description ?? this.description,
+        priority: priority ?? this.priority,
       );
   @override
   String toString() {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
-          ..write('description: $description')
+          ..write('description: $description, ')
+          ..write('priority: $priority')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(description.hashCode, priority.hashCode)));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
-          other.description == this.description);
+          other.description == this.description &&
+          other.priority == this.priority);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> description;
+  final Value<CategoryPriority> priority;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.description = const Value.absent(),
+    this.priority = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     @required String description,
+    this.priority = const Value.absent(),
   }) : description = Value(description);
   static Insertable<Category> custom({
     Expression<int> id,
     Expression<String> description,
+    Expression<int> priority,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (description != null) 'desc': description,
+      if (priority != null) 'priority': priority,
     });
   }
 
-  CategoriesCompanion copyWith({Value<int> id, Value<String> description}) {
+  CategoriesCompanion copyWith(
+      {Value<int> id,
+      Value<String> description,
+      Value<CategoryPriority> priority}) {
     return CategoriesCompanion(
       id: id ?? this.id,
       description: description ?? this.description,
+      priority: priority ?? this.priority,
     );
   }
 
@@ -450,6 +490,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (description.present) {
       map['desc'] = Variable<String>(description.value);
+    }
+    if (priority.present) {
+      final converter = $CategoriesTable.$converter0;
+      map['priority'] = Variable<int>(converter.mapToSql(priority.value));
     }
     return map;
   }
@@ -480,8 +524,17 @@ class $CategoriesTable extends Categories
         $customConstraints: 'NOT NULL UNIQUE');
   }
 
+  final VerificationMeta _priorityMeta = const VerificationMeta('priority');
+  GeneratedIntColumn _priority;
   @override
-  List<GeneratedColumn> get $columns => [id, description];
+  GeneratedIntColumn get priority => _priority ??= _constructPriority();
+  GeneratedIntColumn _constructPriority() {
+    return GeneratedIntColumn('priority', $tableName, false,
+        defaultValue: const Constant(0));
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, description, priority];
   @override
   $CategoriesTable get asDslTable => this;
   @override
@@ -502,6 +555,7 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
+    context.handle(_priorityMeta, const VerificationResult.success());
     return context;
   }
 
@@ -517,6 +571,9 @@ class $CategoriesTable extends Categories
   $CategoriesTable createAlias(String alias) {
     return $CategoriesTable(_db, alias);
   }
+
+  static TypeConverter<CategoryPriority, int> $converter0 =
+      const _$GeneratedConverter$0();
 }
 
 class User extends DataClass implements Insertable<User> {

@@ -28,7 +28,8 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '`desc` VARCHAR NOT NULL UNIQUE);',
+          '`desc` VARCHAR NOT NULL UNIQUE, '
+          'priority INTEGER NOT NULL DEFAULT 0);',
           []));
 
       verify(mockExecutor.runCustom(

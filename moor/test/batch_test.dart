@@ -52,7 +52,7 @@ void main() {
             'INSERT INTO todos (content) VALUES (?)',
             'UPDATE users SET name = ?;',
             'UPDATE users SET name = ? WHERE name = ?;',
-            'UPDATE categories SET `desc` = ? WHERE id = ?;',
+            'UPDATE categories SET `desc` = ?, priority = 0 WHERE id = ?;',
             'DELETE FROM categories WHERE 1;',
             'DELETE FROM todos WHERE id = ?;',
           ],

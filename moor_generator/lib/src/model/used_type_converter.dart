@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/table.dart';
@@ -11,10 +12,15 @@ class UsedTypeConverter {
   /// The table using this type converter.
   MoorTable table;
 
+  /// Whether this type converter is implicitly declared for enum mappings,
+  /// which means that the implementation of the converter needs to be
+  /// generated as well.
+  final bool isForEnum;
+
   /// The expression that will construct the type converter at runtime. The
   /// type converter constructed will map a [mappedType] to the [sqlType] and
   /// vice-versa.
-  final String expression;
+  String expression;
 
   /// The type that will be present at runtime.
   final DartType mappedType;
@@ -35,5 +41,37 @@ class UsedTypeConverter {
   UsedTypeConverter(
       {@required this.expression,
       @required this.mappedType,
-      @required this.sqlType});
+      @required this.sqlType,
+      this.isForEnum = false});
+
+  factory UsedTypeConverter.forEnumColumn(DartType enumType) {
+    if (enumType.element is! ClassElement) {
+      throw InvalidTypeForEnumConverterException('Not a class', enumType);
+    }
+
+    final creatingClass = enumType.element as ClassElement;
+    if (!creatingClass.isEnum) {
+      throw InvalidTypeForEnumConverterException('Not an enum', enumType);
+    }
+
+    return UsedTypeConverter(
+      expression: 'bogus expression for enum value',
+      mappedType: enumType,
+      sqlType: ColumnType.integer,
+      isForEnum: true,
+    );
+  }
+}
+
+class InvalidTypeForEnumConverterException implements Exception {
+  final String reason;
+  final DartType invalidType;
+
+  InvalidTypeForEnumConverterException(this.reason, this.invalidType);
+
+  @override
+  String toString() {
+    return 'Invalid type for enum converter: '
+        '${invalidType.getDisplayString()}. Reason: $reason';
+  }
 }

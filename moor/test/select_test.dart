@@ -156,4 +156,27 @@ void main() {
         ..markTablesUpdated({db.todosTable});
     });
   });
+
+  test('applies implicit type converter', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {
+          'id': 1,
+          'desc': 'description',
+          'priority': 2,
+        }
+      ]);
+    });
+
+    final category = await db.select(db.categories).getSingle();
+
+    expect(
+      category,
+      Category(
+        id: 1,
+        description: 'description',
+        priority: CategoryPriority.high,
+      ),
+    );
+  });
 }

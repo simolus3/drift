@@ -218,4 +218,16 @@ void main() {
     ));
     expect(id, 3);
   });
+
+  test('applies implicit type converter', () async {
+    await db.into(db.categories).insert(CategoriesCompanion.insert(
+          description: 'description',
+          priority: const Value(CategoryPriority.medium),
+        ));
+
+    verify(executor.runInsert(
+      'INSERT INTO categories (`desc`, priority) VALUES (?, ?)',
+      ['description', 1],
+    ));
+  });
 }

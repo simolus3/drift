@@ -73,7 +73,11 @@ void main() {
   });
 
   test('generated data classes can be converted to companions', () {
-    final entry = Category(id: 3, description: 'description');
+    final entry = Category(
+      id: 3,
+      description: 'description',
+      priority: CategoryPriority.low,
+    );
     final companion = entry.toCompanion(false);
 
     expect(companion.runtimeType, CategoriesCompanion);
@@ -82,6 +86,7 @@ void main() {
       equals(CategoriesCompanion.insert(
         description: 'description',
         id: const Value(3),
+        priority: const Value(CategoryPriority.low),
       )),
     );
   });

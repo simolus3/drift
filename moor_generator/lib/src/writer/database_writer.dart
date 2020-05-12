@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor/moor.dart';
 // ignore: implementation_imports
 import 'package:moor/src/runtime/executor/stream_queries.dart';
@@ -16,6 +17,44 @@ class DatabaseWriter {
   DatabaseWriter(this.db, this.scope);
 
   void write() {
+    // Write generated convertesr
+    final enumConverters =
+        db.tables.expand((t) => t.converters).where((c) => c.isForEnum);
+    final generatedConvertersForType = <DartType, String>{};
+    var amountOfGeneratedConverters = 0;
+
+    for (final converter in enumConverters) {
+      String classForConverter;
+
+      if (generatedConvertersForType.containsKey(converter.mappedType)) {
+        classForConverter = generatedConvertersForType[converter.mappedType];
+      } else {
+        final id = amountOfGeneratedConverters++;
+        classForConverter = '_\$GeneratedConverter\$$id';
+
+        final buffer = scope.leaf();
+        final dartType = converter.mappedType.getDisplayString();
+        final superClass = converter.displayNameOfConverter;
+
+        buffer
+          ..writeln('class $classForConverter extends $superClass {')
+          ..writeln('const $classForConverter();')
+          ..writeln('@override')
+          ..writeln('$dartType mapToDart(int fromDb) {')
+          ..writeln('return fromDb == null ? null : $dartType.values[fromDb];')
+          ..writeln('}')
+          ..writeln('@override')
+          ..writeln('int mapToSql($dartType value) {')
+          ..writeln('return value?.index;')
+          ..writeln('}')
+          ..writeln('}');
+
+        generatedConvertersForType[converter.mappedType] = classForConverter;
+      }
+
+      converter.expression = 'const $classForConverter()';
+    }
+
     // Write referenced tables
     for (final table in db.tables) {
       TableWriter(table, scope.child()).writeInto();

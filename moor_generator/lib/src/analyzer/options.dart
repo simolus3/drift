@@ -81,7 +81,7 @@ class MoorOptions {
     this.generateConnectConstructor = false,
     this.legacyTypeInference = false,
     this.eagerlyLoadDartAst = false,
-    this.dataClassToCompanions,
+    this.dataClassToCompanions = true,
     this.modules = const [],
   });
 

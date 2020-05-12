@@ -23,7 +23,8 @@ void main() {
     verify(executor.runSelect(
         'SELECT t.id AS "t.id", t.title AS "t.title", '
         't.content AS "t.content", t.target_date AS "t.target_date", '
-        't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc" '
+        't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc", '
+        'c.priority AS "c.priority" '
         'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
         argThat(isEmpty)));
   });
@@ -43,6 +44,7 @@ void main() {
           't.category': 3,
           'c.id': 3,
           'c.desc': 'description',
+          'c.priority': 2,
         }
       ]);
     });
@@ -65,7 +67,13 @@ void main() {
         ));
 
     expect(
-        row.readTable(categories), Category(id: 3, description: 'description'));
+      row.readTable(categories),
+      Category(
+        id: 3,
+        description: 'description',
+        priority: CategoryPriority.high,
+      ),
+    );
 
     verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
@@ -167,20 +175,29 @@ void main() {
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {'c.id': 3, 'c.desc': 'Description', 'c2': 11}
+        {'c.id': 3, 'c.desc': 'Description', 'c.priority': 1, 'c3': 11}
       ];
     });
 
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-      'SELECT c.id AS "c.id", c.`desc` AS "c.desc", LENGTH(c.`desc`) AS "c2" '
+      'SELECT c.id AS "c.id", c.`desc` AS "c.desc", c.priority AS "c.priority"'
+      ', LENGTH(c.`desc`) AS "c3" '
       'FROM categories c;',
       [],
     ));
 
-    expect(result.readTable(categories),
-        equals(Category(id: 3, description: 'Description')));
+    expect(
+      result.readTable(categories),
+      equals(
+        Category(
+          id: 3,
+          description: 'Description',
+          priority: CategoryPriority.medium,
+        ),
+      ),
+    );
     expect(result.read(descriptionLength), 11);
   });
 
@@ -205,20 +222,28 @@ void main() {
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {'c.id': 3, 'c.desc': 'desc', 'c2': 10}
+        {'c.id': 3, 'c.desc': 'desc', 'c.priority': 0, 'c3': 10}
       ];
     });
 
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT c.id AS "c.id", c.`desc` AS "c.desc", COUNT(t.id) AS "c2" '
+        'SELECT c.id AS "c.id", c.`desc` AS "c.desc", '
+        'c.priority AS "c.priority", COUNT(t.id) AS "c3" '
         'FROM categories c INNER JOIN todos t ON t.category = c.id '
         'GROUP BY c.id HAVING COUNT(t.id) >= ?;',
         [10]));
 
     expect(result.readTable(todos), isNull);
-    expect(result.readTable(categories), Category(id: 3, description: 'desc'));
+    expect(
+      result.readTable(categories),
+      Category(
+        id: 3,
+        description: 'desc',
+        priority: CategoryPriority.low,
+      ),
+    );
     expect(result.read(amountOfTodos), 10);
   });
 
