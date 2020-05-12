@@ -1,5 +1,6 @@
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:meta/meta.dart';
 
@@ -23,7 +24,23 @@ final OpenDynamicLibrary open = OpenDynamicLibrary._();
 
 DynamicLibrary _defaultOpen() {
   if (Platform.isLinux || Platform.isAndroid) {
-    return DynamicLibrary.open('libsqlite3.so');
+    try {
+      return DynamicLibrary.open('libsqlite3.so');
+    } catch (_) {
+      if (Platform.isAndroid) {
+        // On some (especially old) Android devices, we somehow can't dlopen
+        // libraries shipped with the apk. We need to find the full path of the
+        // library (/data/data/<id>/lib/libsqlite3.so) and open that one.
+        // For details, see https://github.com/simolus3/moor/issues/420
+        final appIdAsBytes = File('/proc/self/cmdline').readAsBytesSync();
+        final endOfAppId = max(appIdAsBytes.indexOf(0), 0);
+        final appId = String.fromCharCodes(appIdAsBytes.sublist(0, endOfAppId));
+
+        return DynamicLibrary.open('/data/data/$appId/lib/libsqlite3.so');
+      }
+
+      rethrow;
+    }
   }
   if (Platform.isMacOS || Platform.isIOS) {
     // todo: Consider including sqlite3 in the build and use DynamicLibrary.
