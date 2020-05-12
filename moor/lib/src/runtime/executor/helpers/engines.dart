@@ -317,4 +317,7 @@ class _BeforeOpeningExecutor extends QueryExecutor
 
   @override
   QueryDelegate get impl => _base.impl;
+
+  @override
+  bool get logStatements => _base.logStatements;
 }
