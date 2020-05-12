@@ -12,9 +12,11 @@ class MoorCompletingContributor implements CompletionContributor {
       final autoComplete = request.parsedMoor.parseResult.autoCompleteEngine;
       final results = autoComplete.suggestCompletions(request.offset);
 
+      // todo: Fix calculation in sqlparser. Then, set offset to results.anchor
+      // and length to results.lengthBefore
       collector
-        ..offset = results.anchor
-        ..length = results.lengthBefore;
+        ..offset = request.offset // should be results.anchor
+        ..length = 0; // should be results.lengthBefore
 
       for (final suggestion in results.suggestions) {
         collector.addSuggestion(CompletionSuggestion(
