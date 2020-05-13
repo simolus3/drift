@@ -17,6 +17,7 @@ part 'schema/column.dart';
 part 'schema/from_create_table.dart';
 part 'schema/references.dart';
 part 'schema/table.dart';
+part 'schema/view.dart';
 part 'steps/column_resolver.dart';
 part 'steps/linting_visitor.dart';
 part 'steps/prepare_ast.dart';

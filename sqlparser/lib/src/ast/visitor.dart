@@ -13,6 +13,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateVirtualTableStatement(CreateVirtualTableStatement e, A arg);
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg);
   R visitCreateIndexStatement(CreateIndexStatement e, A arg);
+  R visitCreateViewStatement(CreateViewStatement e, A arg);
 
   R visitWithClause(WithClause e, A arg);
   R visitUpsertClause(UpsertClause e, A arg);
@@ -120,6 +121,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   @override
   R visitCreateVirtualTableStatement(CreateVirtualTableStatement e, A arg) {
     return visitTableInducingStatement(e, arg);
+  }
+
+  @override
+  R visitCreateViewStatement(CreateViewStatement e, A arg) {
+    return visitStatement(e, arg);
   }
 
   @override
