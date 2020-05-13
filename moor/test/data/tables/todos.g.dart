@@ -7,19 +7,6 @@ part of 'todos.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
-class _$GeneratedConverter$0 extends TypeConverter<CategoryPriority, int> {
-  const _$GeneratedConverter$0();
-  @override
-  CategoryPriority mapToDart(int fromDb) {
-    return fromDb == null ? null : CategoryPriority.values[fromDb];
-  }
-
-  @override
-  int mapToSql(CategoryPriority value) {
-    return value?.index;
-  }
-}
-
 class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   final int id;
   final String title;
@@ -573,7 +560,7 @@ class $CategoriesTable extends Categories
   }
 
   static TypeConverter<CategoryPriority, int> $converter0 =
-      const _$GeneratedConverter$0();
+      const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
 }
 
 class User extends DataClass implements Insertable<User> {

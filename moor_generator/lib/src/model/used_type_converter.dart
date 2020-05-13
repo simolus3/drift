@@ -20,7 +20,7 @@ class UsedTypeConverter {
   /// The expression that will construct the type converter at runtime. The
   /// type converter constructed will map a [mappedType] to the [sqlType] and
   /// vice-versa.
-  String expression;
+  final String expression;
 
   /// The type that will be present at runtime.
   final DartType mappedType;
@@ -54,8 +54,10 @@ class UsedTypeConverter {
       throw InvalidTypeForEnumConverterException('Not an enum', enumType);
     }
 
+    final className = creatingClass.name;
+
     return UsedTypeConverter(
-      expression: 'bogus expression for enum value',
+      expression: 'const EnumIndexConverter<$className>($className.values)',
       mappedType: enumType,
       sqlType: ColumnType.integer,
       isForEnum: true,
