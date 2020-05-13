@@ -40,8 +40,10 @@ void main() {
 
     expect(
       table.converters,
-      contains(isA<UsedTypeConverter>()
-          .having((e) => e.isForEnum, 'isForEnum', isTrue)),
+      contains(
+        isA<UsedTypeConverter>().having(
+            (e) => e.expression, 'expression', contains('EnumIndexConverter')),
+      ),
     );
   });
 

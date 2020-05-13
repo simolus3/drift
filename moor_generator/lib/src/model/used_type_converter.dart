@@ -12,11 +12,6 @@ class UsedTypeConverter {
   /// The table using this type converter.
   MoorTable table;
 
-  /// Whether this type converter is implicitly declared for enum mappings,
-  /// which means that the implementation of the converter needs to be
-  /// generated as well.
-  final bool isForEnum;
-
   /// The expression that will construct the type converter at runtime. The
   /// type converter constructed will map a [mappedType] to the [sqlType] and
   /// vice-versa.
@@ -38,11 +33,11 @@ class UsedTypeConverter {
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
 
-  UsedTypeConverter(
-      {@required this.expression,
-      @required this.mappedType,
-      @required this.sqlType,
-      this.isForEnum = false});
+  UsedTypeConverter({
+    @required this.expression,
+    @required this.mappedType,
+    @required this.sqlType,
+  });
 
   factory UsedTypeConverter.forEnumColumn(DartType enumType) {
     if (enumType.element is! ClassElement) {
@@ -60,7 +55,6 @@ class UsedTypeConverter {
       expression: 'const EnumIndexConverter<$className>($className.values)',
       mappedType: enumType,
       sqlType: ColumnType.integer,
-      isForEnum: true,
     );
   }
 }
@@ -70,6 +64,11 @@ class InvalidTypeForEnumConverterException implements Exception {
   final DartType invalidType;
 
   InvalidTypeForEnumConverterException(this.reason, this.invalidType);
+
+  String get errorDescription {
+    return "Can't use the type ${invalidType.getDisplayString()} as an enum "
+        'type: $reason';
+  }
 
   @override
   String toString() {

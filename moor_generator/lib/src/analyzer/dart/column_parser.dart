@@ -202,8 +202,7 @@ class ColumnParser {
         converter = UsedTypeConverter.forEnumColumn(enumType);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
-          message: "Can't use $startEnum with "
-              '${e.invalidType.getDisplayString()}: ${e.reason}',
+          message: e.errorDescription,
           affectedElement: getter.declaredElement,
           severity: Severity.error,
         ));

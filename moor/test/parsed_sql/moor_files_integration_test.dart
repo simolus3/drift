@@ -19,7 +19,8 @@ const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS with_constraints ('
 const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
     'config_key VARCHAR not null primary key, '
     'config_value VARCHAR, '
-    'sync_state INTEGER);';
+    'sync_state INTEGER, '
+    'sync_state_implicit INTEGER);';
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL PRIMARY KEY, '

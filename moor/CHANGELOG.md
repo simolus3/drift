@@ -3,7 +3,7 @@
 - Update companions now implement `==` and `hashCode`
 - New `containsCase` method for text in `package:moor/extensions/moor_ffi.dart`
 - The `toCompanion` method is back for data classes, but its generation can be disabled with a build option
-- New `intEnum` column method to automatically map between an enum and an int
+- New feature: [Implicit enum converters](https://moor.simonbinder.eu/docs/advanced-features/type_converters/#implicit-enum-converters)
 
 ## 3.0.2
 

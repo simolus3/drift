@@ -76,6 +76,48 @@ The generated `User` class will then have a `preferences` column of type
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absolute_url }}).
 
+### Implicit enum converters
+
+A common scenario for type converters is to map between enums and integers by representing enums
+as their index. Since this is so common, moor has the integrated `intEnum` column type to make this
+easier.
+
+```dart
+enum Status { 
+   none, 
+   running, 
+   stopped, 
+   paused 
+}
+
+class Tasks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get status => intEnum<Status>()();
+}
+```
+
+{{% alert title="Caution with enums" color="warning"  %}}
+> It can be easy to accidentally invalidate your database by introducing another enum value.
+  For instance, let's say we inserted a `Task` into the database in the above example and set its
+  `Status` to `running` (index = 1).
+  Now we `Status` enum to include another entry:
+  ```dart
+  enum Status { 
+    none, 
+    starting, // new!
+    running, 
+    stopped, 
+    paused 
+  }
+  ```
+  When selecting the task, it will now report as `starting`, as that's the new value at index 1.
+  For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
+  with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
+  to fix this.
+{{% /alert %}}
+
+Also note that you can't apply another type converter on a column declared with an enum converter.
+
 ## Using converters in moor
 
 Since moor 2.4, type converters can also be used inside moor files.
@@ -92,3 +134,16 @@ CREATE TABLE users (
   preferences TEXT MAPPED BY `const PreferenceConverter()`
 );
 ```
+
+Moor files also have special support for implicit enum converters:
+
+```sql
+import 'status.dart';
+
+CREATE TABLE tasks (
+  id INTEGER NOT NULL PRIMARY KEY,
+  status ENUM(Status)
+);
+```
+
+Of course, the warning about automatic enum converters also applies to moor files.

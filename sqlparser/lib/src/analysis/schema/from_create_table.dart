@@ -75,6 +75,10 @@ class SchemaFromCreateTable {
       if (upper.contains('DATE')) {
         return const ResolvedType(type: BasicType.int, hint: IsDateTime());
       }
+
+      if (upper.contains('ENUM')) {
+        return const ResolvedType(type: BasicType.int);
+      }
     }
 
     return const ResolvedType(type: BasicType.real);

@@ -32,3 +32,19 @@ extension SyntacticLengthExtension on SyntacticEntity {
   /// The length of this entity, in characters.
   int get length => lastPosition - firstPosition;
 }
+
+/// Extension to obtain the span for a sequence of [SyntacticEntity].
+extension UnionEntityExtension on Iterable<SyntacticEntity> {
+  /// Creates the span covered by all of the entities in this iterable.
+  FileSpan get span {
+    if (isEmpty) {
+      throw ArgumentError.value(this, 'this', 'Was empty');
+    }
+
+    final firstSpan = first.span;
+    return skip(1).fold(
+      firstSpan,
+      (previousValue, entity) => previousValue.expand(entity.span),
+    );
+  }
+}

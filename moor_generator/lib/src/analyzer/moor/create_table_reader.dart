@@ -1,8 +1,11 @@
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
+import 'package:moor_generator/src/backends/backend.dart';
 import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
@@ -15,10 +18,13 @@ class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
   final TableInducingStatement stmt;
   final Step step;
+  final List<ImportStatement> imports;
 
   static const _schemaReader = SchemaFromCreateTable(moorExtensions: true);
+  static final RegExp _enumRegex =
+      RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
 
-  CreateTableReader(this.stmt, this.step);
+  CreateTableReader(this.stmt, this.step, [this.imports = const []]);
 
   Future<MoorTable> extractTable(TypeMapper mapper) async {
     Table table;
@@ -45,6 +51,33 @@ class CreateTableReader {
       String defaultValue;
       String overriddenJsonKey;
 
+      final enumMatch = column.definition != null
+          ? _enumRegex.firstMatch(column.definition.typeName)
+          : null;
+      if (enumMatch != null) {
+        final dartTypeName = enumMatch.group(1);
+        final dartType = await _readDartType(dartTypeName);
+
+        if (dartType == null) {
+          step.reportError(ErrorInMoorFile(
+            message: 'Type $dartTypeName could not be found. Are you missing '
+                'an import?',
+            severity: Severity.error,
+            span: column.definition.typeNames.span,
+          ));
+        } else {
+          try {
+            converter = UsedTypeConverter.forEnumColumn(dartType);
+          } on InvalidTypeForEnumConverterException catch (e) {
+            step.reportError(ErrorInMoorFile(
+              message: e.errorDescription,
+              severity: Severity.error,
+              span: column.definition.typeNames.span,
+            ));
+          }
+        }
+      }
+
       // columns from virtual tables don't necessarily have a definition, so we
       // can't read the constraints.
       final constraints = column.hasDefinition
@@ -66,6 +99,18 @@ class CreateTableReader {
         }
 
         if (constraint is MappedBy) {
+          if (converter != null) {
+            // Already has a converter from an ENUM type
+            step.reportError(ErrorInMoorFile(
+              message: 'This column has an ENUM type, which implicitly creates '
+                  "a type converter. You can't apply another converter to such "
+                  'column. ',
+              span: constraint.span,
+              severity: Severity.warning,
+            ));
+            continue;
+          }
+
           converter = await _readTypeConverter(moorType, constraint);
           // don't write MAPPED BY constraints when creating the table, they're
           // a convenience feature by the compiler
@@ -157,5 +202,31 @@ class CreateTableReader {
 
     return UsedTypeConverter(
         expression: code, mappedType: typeInDart, sqlType: sqlType);
+  }
+
+  Future<DartType> _readDartType(String typeIdentifier) async {
+    final dartImports = imports
+        .map((import) => import.importedFile)
+        .where((importUri) => importUri.endsWith('.dart'));
+
+    for (final import in dartImports) {
+      final resolved = step.task.session.resolve(step.file, import);
+      LibraryElement library;
+      try {
+        library = await step.task.backend.resolveDart(resolved.uri);
+      } on NotALibraryException {
+        continue;
+      }
+
+      final foundElement = library.exportNamespace.get(typeIdentifier);
+      if (foundElement is ClassElement) {
+        return foundElement.instantiate(
+          typeArguments: const [],
+          nullabilitySuffix: NullabilitySuffix.none,
+        );
+      }
+    }
+
+    return null;
   }
 }
