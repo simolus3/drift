@@ -30,7 +30,7 @@ class SelectStatement extends BaseSelectStatement
   SelectStatement(
       {WithClause withClause,
       this.distinct = false,
-      this.columns,
+      @required this.columns,
       this.from,
       this.where,
       this.groupBy,

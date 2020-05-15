@@ -125,7 +125,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitCreateViewStatement(CreateViewStatement e, A arg) {
-    return visitStatement(e, arg);
+    return visitSchemaStatement(e, arg);
   }
 
   @override

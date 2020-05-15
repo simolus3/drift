@@ -104,63 +104,20 @@ class TableColumn extends Column {
 }
 
 /// A column that is part of a table.
-class ViewColumn extends Column {
+class ViewColumn extends Column with DelegatedColumn {
+
+  final String _name;
+
   @override
-  final String name;
-
-  /// The type of this column, which is available before any resolution happens
-  /// (we know ii from the table).
-  ResolvedType get type => _type;
-  ResolvedType _type;
-
-  /// The column constraints set on this column.
-  ///
-  /// This only works columns where [hasDefinition] is true, otherwise this
-  /// getter will throw. The columns in a `CREATE TABLE` statement always have
-  /// a definition, but those from a `CREATE VIRTUAL TABLE` likely don't.
-  ///
-  /// See also:
-  /// - https://www.sqlite.org/syntax/column-constraint.html
-  List<ColumnConstraint> get constraints => definition.constraints;
-
-  /// The definition in the AST that was used to create this column model.
-  final ColumnDefinition definition;
-
-  /// Whether this column has a definition from the ast.
-  bool get hasDefinition => definition != null;
+  final Column innerColumn;
 
   /// The table this column belongs to.
   View view;
 
-  ViewColumn(this.name, this._type, {this.definition});
+  ViewColumn(this.innerColumn, [this._name]);
 
-  /// Applies a type hint to this column.
-  ///
-  /// The [hint] will then be reflected in the [type].
-  void applyTypeHint(TypeHint hint) {
-    _type = _type?.copyWith(hint: hint);
-  }
-
-  /// Whether this column is an alias for the rowid, as defined in
-  /// https://www.sqlite.org/lang_createtable.html#rowid
-  ///
-  /// To summarize, a column is an alias for the rowid if all of the following
-  /// conditions are met:
-  /// - the table has a primary key that consists of exactly one (this) column
-  /// - the column is declared to be an integer
-  /// - if this column has a [PrimaryKeyColumn], the [OrderingMode] of that
-  ///   constraint is not [OrderingMode.descending].
-  bool isAliasForRowId() {
-    //TODO is this applicable to views?
-    if (definition == null ||
-        view == null ||
-        type?.type != BasicType.int ||
-        view.withoutRowId) {
-      return false;
-    }
-
-    return false;
-  }
+  @override
+  String get name => _name ?? super.name;
 
   @override
   String humanReadableDescription() {

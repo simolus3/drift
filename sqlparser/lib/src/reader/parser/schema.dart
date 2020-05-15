@@ -258,9 +258,9 @@ mixin SchemaParser on ParserBase {
     if (!_matchOne(TokenType.view)) return null;
 
     final ifNotExists = _ifNotExists();
-    final name = _consumeIdentifier('Expected a name for this index');
+    final name = _consumeIdentifier('Expected a name for this view');
 
-    List<String> columnNames = null;
+    List<String> columnNames;
     if (_matchOne(TokenType.leftParen)) {
       columnNames = _columnNames();
       _consume(TokenType.rightParen, 'Expected closing bracket');
@@ -268,7 +268,7 @@ mixin SchemaParser on ParserBase {
 
     _consume(TokenType.as, 'Expected AS SELECT');
 
-    final query = select();
+    final query = _fullSelect();
 
     return CreateViewStatement(
       ifNotExists: ifNotExists,
@@ -321,7 +321,6 @@ mixin SchemaParser on ParserBase {
       ..setSpan(create, _previous);
   }
 
-  @override
   List<String> _columnNames() {
     final columns = <String>[];
     do {

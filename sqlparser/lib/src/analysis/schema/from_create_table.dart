@@ -19,6 +19,27 @@ class SchemaFromCreateTable {
     throw AssertionError('Unknown table statement');
   }
 
+  /// Creates a [View] from a [CreateViewStatement].
+  /// The `CreateViewStatement` must be fully resolved before converting it.
+  ///
+  /// Example:
+  /// ```dart
+  /// // this will run analysis on the inner select statement and resolve columns
+  /// final ctx = engine.analyze('CREATE VIEW ...');
+  /// final createViewStmt = ctx.root as CreateViewStatement;
+  ///
+  /// final view = const SchemaFromCreateTable().readView(createViewStmt);
+  /// ```
+  View readView(CreateViewStatement stmt) {
+    return View(
+      name: stmt.viewName,
+      selectColumns: stmt.query.resolvedColumns,
+      columnNames: stmt.columns,
+      definition: stmt,
+    );
+  }
+
+
   Table _readCreateTable(CreateTableStatement stmt) {
     return Table(
       name: stmt.tableName,
