@@ -103,7 +103,7 @@ class TableColumn extends Column {
   }
 }
 
-/// A column that is part of a table.
+/// A column that is part of a view.
 class ViewColumn extends Column with DelegatedColumn {
 
   final String _name;
@@ -111,9 +111,14 @@ class ViewColumn extends Column with DelegatedColumn {
   @override
   final Column innerColumn;
 
-  /// The table this column belongs to.
+  /// The view this column belongs to.
   View view;
 
+  /// Creates a view column wrapping a [Column] from the select statement used to
+  /// create the view.
+  ///
+  /// The optional name parameter can be used to override the name for this column.
+  /// By default, the name of the [innerColumn] will be used.
   ViewColumn(this.innerColumn, [this._name]);
 
   @override
