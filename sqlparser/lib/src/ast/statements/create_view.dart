@@ -32,6 +32,6 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   bool contentEquals(CreateViewStatement other) {
     return other.ifNotExists == ifNotExists &&
         other.viewName == viewName &&
-        const ListEquality().equals(other.columns,columns);
+        const ListEquality().equals(other.columns, columns);
   }
 }
