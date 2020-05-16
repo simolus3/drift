@@ -19,8 +19,8 @@ class SchemaFromCreateTable {
     throw AssertionError('Unknown table statement');
   }
 
-  /// Creates a [View] from a [CreateViewStatement].
-  /// The `CreateViewStatement` must be fully resolved before converting it.
+  /// Creates a [View] from a [CreateViewStatement]. The `CREATE VIEW` statement
+  /// must be fully resolved through [context] when calling this method.
   ///
   /// Example:
   /// ```dart
@@ -28,17 +28,30 @@ class SchemaFromCreateTable {
   /// final ctx = engine.analyze('CREATE VIEW ...');
   /// final createViewStmt = ctx.root as CreateViewStatement;
   ///
-  /// final view = const SchemaFromCreateTable().readView(createViewStmt);
+  /// final view = const SchemaFromCreateTable().readView(ctx, createViewStmt);
   /// ```
-  View readView(CreateViewStatement stmt) {
+  View readView(AnalysisContext context, CreateViewStatement stmt) {
+    final columnsFromSelect = stmt.query.resolvedColumns;
+    final overriddenNames = stmt.columns ?? const [];
+
+    final viewColumns = List<ViewColumn>(columnsFromSelect.length);
+
+    for (var i = 0; i < columnsFromSelect.length; i++) {
+      final column = columnsFromSelect[i];
+
+      // overriddenNames might be shorter than the columns. That's not a valid
+      // CREATE VIEW statement, but we try not to crash.
+      final name = i < overriddenNames.length ? overriddenNames[i] : null;
+
+      viewColumns[i] = ViewColumn(column, context.typeOf(column).type, name);
+    }
+
     return View(
       name: stmt.viewName,
-      selectColumns: stmt.query.resolvedColumns,
-      columnNames: stmt.columns,
+      resolvedColumns: viewColumns,
       definition: stmt,
     );
   }
-
 
   Table _readCreateTable(CreateTableStatement stmt) {
     return Table(

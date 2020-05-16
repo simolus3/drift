@@ -19,13 +19,19 @@ abstract class Column
   }
 }
 
+/// A column that has a statically known resolved type.
+abstract class ColumnWithType {
+  /// The type of this column, which is available before any resolution happens
+  /// (we know it from the schema structure).
+  ResolvedType get type;
+}
+
 /// A column that is part of a table.
-class TableColumn extends Column {
+class TableColumn extends Column implements ColumnWithType {
   @override
   final String name;
 
-  /// The type of this column, which is available before any resolution happens
-  /// (we know ii from the table).
+  @override
   ResolvedType get type => _type;
   ResolvedType _type;
 
@@ -104,9 +110,11 @@ class TableColumn extends Column {
 }
 
 /// A column that is part of a view.
-class ViewColumn extends Column with DelegatedColumn {
-
+class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
   final String _name;
+
+  @override
+  final ResolvedType type;
 
   @override
   final Column innerColumn;
@@ -117,9 +125,9 @@ class ViewColumn extends Column with DelegatedColumn {
   /// Creates a view column wrapping a [Column] from the select statement used
   /// to create the view.
   ///
-  /// The optional name parameter can be used to override the name for this column.
-  /// By default, the name of the [innerColumn] will be used.
-  ViewColumn(this.innerColumn, [this._name]);
+  /// The optional name parameter can be used to override the name for this
+  /// column. By default, the name of the [innerColumn] will be used.
+  ViewColumn(this.innerColumn, this.type, [this._name]);
 
   @override
   String get name => _name ?? super.name;
@@ -129,8 +137,6 @@ class ViewColumn extends Column with DelegatedColumn {
     return '$name in ${view.humanReadableDescription()}';
   }
 }
-
-
 
 /// Refers to the special "rowid", "oid" or "_rowid_" column defined for tables
 /// that weren't created with an `WITHOUT ROWID` clause.
