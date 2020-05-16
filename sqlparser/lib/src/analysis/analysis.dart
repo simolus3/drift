@@ -16,6 +16,7 @@ part 'error.dart';
 part 'schema/column.dart';
 part 'schema/from_create_table.dart';
 part 'schema/references.dart';
+part 'schema/resultset.dart';
 part 'schema/table.dart';
 part 'schema/view.dart';
 part 'steps/column_resolver.dart';

@@ -12,7 +12,7 @@ import 'builtin_tables.dart';
 
 class SqlEngine {
   /// All tables registered with [registerTable].
-  final List<Table> knownTables = [];
+  final List<NamedResultSet> knownResultSets = [];
   final List<Module> _knownModules = [];
 
   /// Internal options for this sql engine.
@@ -43,7 +43,19 @@ class SqlEngine {
   /// Registers the [table], which means that it can later be used in sql
   /// statements.
   void registerTable(Table table) {
-    knownTables.add(table);
+    registerResultSet(table);
+  }
+
+  /// Registers the [view], which means that it can later be used in sql
+  /// statements.
+  void registerView(View view) {
+    registerResultSet(view);
+  }
+
+  /// Registers an arbitrary [namedResultSet], which means that it can later
+  /// be used in sql statements.
+  void registerResultSet(NamedResultSet namedResultSet) {
+    knownResultSets.add(namedResultSet);
   }
 
   /// Registers the [module], which means that it can be used as a function in
@@ -67,8 +79,8 @@ class SqlEngine {
 
   ReferenceScope _constructRootScope({ReferenceScope parent}) {
     final scope = parent == null ? ReferenceScope(null) : parent.createChild();
-    for (final table in knownTables) {
-      scope.register(table.name, table);
+    for (final resultSet in knownResultSets) {
+      scope.register(resultSet.name, resultSet);
     }
 
     for (final module in _knownModules) {

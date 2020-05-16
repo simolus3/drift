@@ -4,51 +4,15 @@ part of '../analysis.dart';
 /// https://www.sqlite.org/lang_createtable.html#rowid
 const aliasesForRowId = ['rowid', 'oid', '_rowid_'];
 
-/// Something that will resolve to an [ResultSet] when referred to via
-/// the [ReferenceScope].
-abstract class ResolvesToResultSet with Referencable {
-  ResultSet get resultSet;
-}
-
-/// Something that returns a set of columns when evaluated.
-abstract class ResultSet implements ResolvesToResultSet {
-  /// The columns that will be returned when evaluating this query.
-  List<Column> get resolvedColumns;
-
-  @override
-  ResultSet get resultSet => this;
-
-  @override
-  bool get visibleToChildren => false;
-
-  Column findColumn(String name) {
-    return resolvedColumns.firstWhere((c) => c.name == name,
-        orElse: () => null);
-  }
-}
-
-/// A custom result set that has columns but isn't a table.
-class CustomResultSet with ResultSet {
-  @override
-  final List<Column> resolvedColumns;
-
-  CustomResultSet(this.resolvedColumns);
-}
-
 /// A database table. The information stored here will be used to resolve
 /// references and for type inference.
-class Table with ResultSet, HasMetaMixin implements HumanReadable {
+class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   /// The name of this table, as it appears in sql statements. This should be
   /// the raw name, not an escaped version.
   ///
   /// To obtain an escaped name, use [escapedName].
+  @override
   final String name;
-
-  /// If [name] is a reserved sql keyword, wraps it in double ticks. Otherwise
-  /// just returns the [name] directly.
-  String get escapedName {
-    return isKeywordLexeme(name) ? '"$name"' : name;
-  }
 
   @override
   final List<TableColumn> resolvedColumns;

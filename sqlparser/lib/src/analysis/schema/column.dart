@@ -114,8 +114,8 @@ class ViewColumn extends Column with DelegatedColumn {
   /// The view this column belongs to.
   View view;
 
-  /// Creates a view column wrapping a [Column] from the select statement used to
-  /// create the view.
+  /// Creates a view column wrapping a [Column] from the select statement used
+  /// to create the view.
   ///
   /// The optional name parameter can be used to override the name for this column.
   /// By default, the name of the [innerColumn] will be used.
