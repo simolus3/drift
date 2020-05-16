@@ -12,6 +12,9 @@ class View extends NamedResultSet with HasMetaMixin implements HumanReadable {
   /// The ast node that created this table
   final CreateViewStatement definition;
 
+  @override
+  bool get visibleToChildren => true;
+
   /// Constructs a view from the known [name] and [resolvedColumns].
   View({
     @required this.name,

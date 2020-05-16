@@ -596,7 +596,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
     _handledColumns.add(column);
 
-    if (column is TableColumn) {
+    if (column is ColumnWithType) {
       session._markTypeResolved(column, column.type);
     } else if (column is ExpressionColumn) {
       _lazyCopy(column, column.expression);

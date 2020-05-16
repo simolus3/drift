@@ -20,7 +20,7 @@ abstract class Column
 }
 
 /// A column that has a statically known resolved type.
-abstract class ColumnWithType {
+abstract class ColumnWithType implements Column {
   /// The type of this column, which is available before any resolution happens
   /// (we know it from the schema structure).
   ResolvedType get type;
