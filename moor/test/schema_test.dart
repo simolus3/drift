@@ -82,6 +82,18 @@ void main() {
       verify(mockExecutor.runCustom('DROP TABLE IF EXISTS users;'));
     });
 
+    test('drops indices', () async {
+      await db.createMigrator().drop(Index('desc', 'foo'));
+
+      verify(mockExecutor.runCustom('DROP INDEX IF EXISTS `desc`;'));
+    });
+
+    test('drops triggers', () async {
+      await db.createMigrator().drop(Trigger('foo', 'my_trigger'));
+
+      verify(mockExecutor.runCustom('DROP TRIGGER IF EXISTS my_trigger;'));
+    });
+
     test('adds columns', () async {
       await db.createMigrator().addColumn(db.users, db.users.isAwesome);
 

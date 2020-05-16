@@ -176,6 +176,26 @@ class Migrator {
     return issueCustomQuery(index.createIndexStmt, const []);
   }
 
+  /// Drops a table, trigger or index.
+  Future<void> drop(DatabaseSchemaEntity entity) async {
+    final escapedName = escapeIfNeeded(entity.entityName);
+
+    String kind;
+
+    if (entity is TableInfo) {
+      kind = 'TABLE';
+    } else if (entity is Trigger) {
+      kind = 'TRIGGER';
+    } else if (entity is Index) {
+      kind = 'INDEX';
+    } else {
+      // Entity that can't be dropped.
+      return;
+    }
+
+    await issueCustomQuery('DROP $kind IF EXISTS $escapedName;');
+  }
+
   /// Deletes the table with the given name. Note that this function does not
   /// escape the [name] parameter.
   Future<void> deleteTable(String name) async {
@@ -219,4 +239,37 @@ class OpeningDetails {
 
   /// Used internally by moor when opening a database.
   const OpeningDetails(this.versionBefore, this.versionNow);
+}
+
+/// Extension providing the [destructiveFallback] strategy.
+extension DestructiveMigrationExtension on GeneratedDatabase {
+  /// Provides a destructive [MigrationStrategy] that will delete and then
+  /// re-create all tables, triggers and indices.
+  ///
+  /// To use this behavior, override the `migration` getter in your database:
+  ///
+  /// ```dart
+  /// @UseMoor(...)
+  /// class MyDatabase extends _$MyDatabase {
+  ///   @override
+  ///   MigrationStrategy get migration => destructiveFallback;
+  /// }
+  /// ```
+  MigrationStrategy get destructiveFallback {
+    return MigrationStrategy(
+      onCreate: _defaultOnCreate,
+      onUpgrade: (m, from, to) async {
+        // allSchemaEntities are sorted topologically references between them.
+        // Reverse order for deletion in order to not break anything.
+        final reversedEntities = m._db.allSchemaEntities.toList().reversed;
+
+        for (final entity in reversedEntities) {
+          await m.drop(entity);
+        }
+
+        // Re-create them now
+        await m.createAll();
+      },
+    );
+  }
 }

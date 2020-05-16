@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:tests/data/sample_data.dart' as people;
 import 'package:tests/database/database.dart';
+import 'package:tests/tests.dart';
 
 import 'suite.dart';
 
@@ -29,6 +30,19 @@ void migrationTests(TestExecutor executor) {
     expect(database.schemaVersionChangedTo, 2);
 
     await database.close();
+  });
+
+  test('can use destructive migration', () async {
+    final old = Database(executor.createConnection(), schemaVersion: 1);
+    await old.executor.ensureOpen(old);
+    await old.close();
+
+    final database = Database(executor.createConnection(), schemaVersion: 2);
+    database.overrideMigration = database.destructiveFallback;
+
+    // No users now, we deleted everything
+    final count = await database.userCount().getSingle();
+    expect(count, 0);
   });
 
   test('runs the migrator when downgrading', () async {
