@@ -28,8 +28,8 @@ CREATE TABLE bar (
 Future<void> main() async {
   final mapper = TypeMapper();
   final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
-  final step = ParseMoorStep(
-      Task(null, null, null), FoundFile(Uri.parse('foo'), FileType.moor), '');
+  final step = ParseMoorStep(Task(null, null, null),
+      FoundFile(Uri.parse('file://foo'), FileType.moor), '');
 
   final parsedFoo = engine.parse(createFoo).rootNode as CreateTableStatement;
   final foo = await CreateTableReader(parsedFoo, step).extractTable(mapper);
