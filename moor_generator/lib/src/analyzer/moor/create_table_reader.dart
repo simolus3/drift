@@ -35,6 +35,8 @@ class CreateTableReader {
         span: stmt.tableNameToken.span,
         message: 'Could not extract schema information for this table: $e',
       ));
+
+      return null;
     }
 
     final foundColumns = <String, MoorColumn>{};

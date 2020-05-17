@@ -63,7 +63,10 @@ class MoorParser {
     }
 
     for (final reader in createdReaders) {
-      createdEntities.add(await reader.extractTable(step.mapper));
+      final moorTable = await reader.extractTable(step.mapper);
+      if (moorTable != null) {
+        createdEntities.add(moorTable);
+      }
     }
 
     final analyzedFile = ParsedMoorFile(
