@@ -11,7 +11,7 @@ void main() {
 
     final expectation = expectLater(
       logs.stream,
-      emits(
+      emitsThrough(
         allOf(
           contains('Dart 2.1'),
           contains('Please consider raising the minimum SDK version'),
