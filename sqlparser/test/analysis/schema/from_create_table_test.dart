@@ -80,4 +80,12 @@ void main() {
       ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: false),
     ]);
   });
+
+  test('can read columns without type name', () {
+    final engine = SqlEngine();
+    final stmt = engine.parse('CREATE TABLE foo (id);').rootNode;
+
+    final table = engine.schemaReader.read(stmt as CreateTableStatement);
+    expect(table.resolvedColumns.single.type.type, BasicType.blob);
+  });
 }

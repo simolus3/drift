@@ -3,7 +3,7 @@ part of '../ast.dart';
 /// https://www.sqlite.org/syntax/column-def.html
 class ColumnDefinition extends AstNode {
   final String columnName;
-  final String typeName;
+  final String /*?*/ typeName;
   final List<ColumnConstraint> constraints;
 
   /// The tokens there were involved in defining the type of this column.
