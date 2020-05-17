@@ -111,7 +111,7 @@ class FoundFile {
   FileState state = FileState.dirty;
   final ErrorSink errors = ErrorSink();
 
-  FoundFile(this.uri, this.type);
+  FoundFile(this.uri, this.type) : assert(uri.isAbsolute);
 
   String get shortName => uri.pathSegments.last;
 

@@ -108,7 +108,7 @@ class MoorDriver implements AnalysisDriverGeneric {
       session.notifyTaskFinished(task);
     } catch (e, s) {
       Logger.root.warning(
-          'Error while working on ${mostImportantFile.file.uri}', e, s);
+          'Error while working on ${mostImportantFile.file.uri}: ', e, s);
       _tracker.removePending(mostImportantFile);
     }
   }

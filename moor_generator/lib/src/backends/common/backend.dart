@@ -17,7 +17,7 @@ class CommonBackend extends Backend {
     final absolute = driver.absolutePath(Uri.parse(import), base: base);
     if (absolute == null) return null;
 
-    return Uri.parse(absolute);
+    return Uri.file(absolute);
   }
 }
 
