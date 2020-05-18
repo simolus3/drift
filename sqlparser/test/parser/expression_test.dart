@@ -148,6 +148,18 @@ final Map<String, Expression> _testCases = {
       TimeConstantKind.currentTimestamp, token(TokenType.currentTimestamp)),
   'CURRENT_DATE': TimeConstantLiteral(
       TimeConstantKind.currentDate, token(TokenType.currentDate)),
+  '(1, 2, 3) > (?, ?, ?)': BinaryExpression(
+    Tuple(expressions: [
+      for (var i = 1; i <= 3; i++)
+        NumericLiteral(i, token(TokenType.numberLiteral)),
+    ]),
+    token(TokenType.more),
+    Tuple(expressions: [
+      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+      NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
+    ]),
+  ),
 };
 
 void main() {

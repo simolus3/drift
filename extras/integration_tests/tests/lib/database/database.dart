@@ -98,37 +98,41 @@ class Database extends _$Database {
   /// It will be set in the onUpgrade callback. Null if no migration occurred
   int schemaVersionChangedTo;
 
+  MigrationStrategy overrideMigration;
+
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(
-      onCreate: (m) async {
-        await m.createTable(users);
-        if (schemaVersion >= 2) {
-          // ensure that transactions can be used in a migration callback.
-          await transaction(() async {
-            await m.createTable(friendships);
-          });
-        }
-      },
-      onUpgrade: (m, from, to) async {
-        schemaVersionChangedFrom = from;
-        schemaVersionChangedTo = to;
+    return overrideMigration ??
+        MigrationStrategy(
+          onCreate: (m) async {
+            await m.createTable(users);
+            if (schemaVersion >= 2) {
+              // ensure that transactions can be used in a migration callback.
+              await transaction(() async {
+                await m.createTable(friendships);
+              });
+            }
+          },
+          onUpgrade: (m, from, to) async {
+            schemaVersionChangedFrom = from;
+            schemaVersionChangedTo = to;
 
-        if (from == 1) {
-          await m.createTable(friendships);
-        }
-      },
-      beforeOpen: (details) async {
-        if (details.wasCreated) {
-          // make sure that transactions can be used in the beforeOpen callback.
-          await transaction(() async {
-            await batch((batch) {
-              batch.insertAll(users, [people.dash, people.duke, people.gopher]);
-            });
-          });
-        }
-      },
-    );
+            if (from == 1) {
+              await m.createTable(friendships);
+            }
+          },
+          beforeOpen: (details) async {
+            if (details.wasCreated) {
+              // make sure that transactions can be used in the beforeOpen callback.
+              await transaction(() async {
+                await batch((batch) {
+                  batch.insertAll(
+                      users, [people.dash, people.duke, people.gopher]);
+                });
+              });
+            }
+          },
+        );
   }
 
   Future<void> deleteUser(User user, {bool fail = false}) {

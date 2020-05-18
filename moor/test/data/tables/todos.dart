@@ -33,7 +33,11 @@ class Users extends Table with AutoIncrement {
 class Categories extends Table with AutoIncrement {
   TextColumn get description =>
       text().named('desc').customConstraint('NOT NULL UNIQUE')();
+  IntColumn get priority =>
+      intEnum<CategoryPriority>().withDefault(const Constant(0))();
 }
+
+enum CategoryPriority { low, medium, high }
 
 class SharedTodos extends Table {
   IntColumn get todo => integer()();

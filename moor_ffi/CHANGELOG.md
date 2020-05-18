@@ -1,3 +1,8 @@
+## 0.6.0
+
+- Added `moor_contains` sql function to support case-sensitive contains
+- Workaround for `dlopen` issues on some Android devices.
+
 ## 0.5.0
 
 - Provide mathematical functions in sql (`pow`, `power`, `sin`, `cos`, `tan`, `asin`, `atan`, `acos`, `sqrt`)

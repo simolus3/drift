@@ -19,6 +19,67 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitTuple(Tuple e, void arg) {
+    if (!e.usedAsRowValue) return;
+
+    bool isRowValue(Expression expr) => expr is Tuple || expr is SubQuery;
+
+    var parent = e.parent;
+    var isAllowed = false;
+
+    if (parent is WhenComponent && e == parent.when) {
+      // look at the surrounding case expression
+      parent = parent.parent;
+    }
+
+    if (parent is BinaryExpression) {
+      // Source: https://www.sqlite.org/rowvalue.html#syntax
+      const allowedTokens = [
+        TokenType.less,
+        TokenType.lessEqual,
+        TokenType.more,
+        TokenType.moreEqual,
+        TokenType.equal,
+        TokenType.doubleEqual,
+        TokenType.lessMore,
+        TokenType.$is,
+      ];
+
+      if (allowedTokens.contains(parent.operator.type)) {
+        isAllowed = true;
+      }
+    } else if (parent is BetweenExpression) {
+      // Allowed if all value are row values or subqueries
+      isAllowed = !parent.childNodes.any((e) => !isRowValue(e));
+    } else if (parent is CaseExpression) {
+      // Allowed if we have something to compare against and all comparisons
+      // are row values
+      if (parent.base == null) {
+        isAllowed = false;
+      } else {
+        final comparisons = <Expression>[
+          parent.base,
+          for (final branch in parent.whens) branch.when
+        ];
+
+        isAllowed = !comparisons.any((e) => !isRowValue(e));
+      }
+    } else if (parent is InExpression) {
+      // In expressions are tricky. The rhs can always be a row value, but the
+      // lhs can only be a row value if the rhs is a subquery
+      isAllowed = e == parent.inside || parent.inside is SubQuery;
+    }
+
+    if (!isAllowed) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.rowValueMisuse,
+        relevantNode: e,
+        message: 'Row values can only be used as expressions in comparisons',
+      ));
+    }
+  }
+
+  @override
   void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
     final expectedColumns = e.resolvedColumns.length;
 

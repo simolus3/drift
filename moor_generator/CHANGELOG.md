@@ -1,3 +1,7 @@
+## 3.1.0
+
+- Respect foreign key constraints when calculating the stream update graph
+
 ## 3.0.0
  
  Generate code for moor 3.0. This most notably includes custom companions and nested result sets.

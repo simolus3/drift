@@ -69,9 +69,9 @@ Future<void> writeShoppingCart(CartWithItems entry) {
         .go();
 
     // And write the new ones
-    await into(shoppingCartEntries).insertAll([
-      for (var item in entry.items) ShoppingCartEntry(shoppingCart: cart.id, item: item.id)
-    ]);
+    for (final item in entry.items) {
+      await into(shoppingCartEntries).insert(ShoppingCartEntry(shoppingCart: cart.id, item: item.id));
+    }
   });
 }
 ```

@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/table.dart';
@@ -32,8 +33,46 @@ class UsedTypeConverter {
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
 
-  UsedTypeConverter(
-      {@required this.expression,
-      @required this.mappedType,
-      @required this.sqlType});
+  UsedTypeConverter({
+    @required this.expression,
+    @required this.mappedType,
+    @required this.sqlType,
+  });
+
+  factory UsedTypeConverter.forEnumColumn(DartType enumType) {
+    if (enumType.element is! ClassElement) {
+      throw InvalidTypeForEnumConverterException('Not a class', enumType);
+    }
+
+    final creatingClass = enumType.element as ClassElement;
+    if (!creatingClass.isEnum) {
+      throw InvalidTypeForEnumConverterException('Not an enum', enumType);
+    }
+
+    final className = creatingClass.name;
+
+    return UsedTypeConverter(
+      expression: 'const EnumIndexConverter<$className>($className.values)',
+      mappedType: enumType,
+      sqlType: ColumnType.integer,
+    );
+  }
+}
+
+class InvalidTypeForEnumConverterException implements Exception {
+  final String reason;
+  final DartType invalidType;
+
+  InvalidTypeForEnumConverterException(this.reason, this.invalidType);
+
+  String get errorDescription {
+    return "Can't use the type ${invalidType.getDisplayString()} as an enum "
+        'type: $reason';
+  }
+
+  @override
+  String toString() {
+    return 'Invalid type for enum converter: '
+        '${invalidType.getDisplayString()}. Reason: $reason';
+  }
 }

@@ -291,7 +291,12 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   Future<void> close() {
-    return delegate.close();
+    if (_ensureOpenCalled) {
+      return delegate.close();
+    } else {
+      // User never attempted to open the database, so this is a no-op.
+      return Future.value();
+    }
   }
 }
 
@@ -317,4 +322,7 @@ class _BeforeOpeningExecutor extends QueryExecutor
 
   @override
   QueryDelegate get impl => _base.impl;
+
+  @override
+  bool get logStatements => _base.logStatements;
 }

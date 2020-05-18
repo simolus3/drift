@@ -11,7 +11,12 @@ class Config extends DataClass implements Insertable<Config> {
   final String configKey;
   final String configValue;
   final SyncType syncState;
-  Config({@required this.configKey, this.configValue, this.syncState});
+  final SyncType syncStateImplicit;
+  Config(
+      {@required this.configKey,
+      this.configValue,
+      this.syncState,
+      this.syncStateImplicit});
   factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -24,6 +29,9 @@ class Config extends DataClass implements Insertable<Config> {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
       syncState: ConfigTable.$converter0.mapToDart(intType
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
+      syncStateImplicit: ConfigTable.$converter1.mapToDart(
+          intType.mapFromDatabaseResponse(
+              data['${effectivePrefix}sync_state_implicit'])),
     );
   }
   @override
@@ -39,7 +47,29 @@ class Config extends DataClass implements Insertable<Config> {
       final converter = ConfigTable.$converter0;
       map['sync_state'] = Variable<int>(converter.mapToSql(syncState));
     }
+    if (!nullToAbsent || syncStateImplicit != null) {
+      final converter = ConfigTable.$converter1;
+      map['sync_state_implicit'] =
+          Variable<int>(converter.mapToSql(syncStateImplicit));
+    }
     return map;
+  }
+
+  ConfigCompanion toCompanion(bool nullToAbsent) {
+    return ConfigCompanion(
+      configKey: configKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configKey),
+      configValue: configValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configValue),
+      syncState: syncState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncState),
+      syncStateImplicit: syncStateImplicit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncStateImplicit),
+    );
   }
 
   factory Config.fromJson(Map<String, dynamic> json,
@@ -49,6 +79,8 @@ class Config extends DataClass implements Insertable<Config> {
       configKey: serializer.fromJson<String>(json['config_key']),
       configValue: serializer.fromJson<String>(json['config_value']),
       syncState: serializer.fromJson<SyncType>(json['sync_state']),
+      syncStateImplicit:
+          serializer.fromJson<SyncType>(json['sync_state_implicit']),
     );
   }
   factory Config.fromJsonString(String encodedJson,
@@ -62,71 +94,88 @@ class Config extends DataClass implements Insertable<Config> {
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String>(configValue),
       'sync_state': serializer.toJson<SyncType>(syncState),
+      'sync_state_implicit': serializer.toJson<SyncType>(syncStateImplicit),
     };
   }
 
-  Config copyWith({String configKey, String configValue, SyncType syncState}) =>
+  Config copyWith(
+          {String configKey,
+          String configValue,
+          SyncType syncState,
+          SyncType syncStateImplicit}) =>
       Config(
         configKey: configKey ?? this.configKey,
         configValue: configValue ?? this.configValue,
         syncState: syncState ?? this.syncState,
+        syncStateImplicit: syncStateImplicit ?? this.syncStateImplicit,
       );
   @override
   String toString() {
     return (StringBuffer('Config(')
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue, ')
-          ..write('syncState: $syncState')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => $mrjf($mrjc(
-      configKey.hashCode, $mrjc(configValue.hashCode, syncState.hashCode)));
+      configKey.hashCode,
+      $mrjc(configValue.hashCode,
+          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Config &&
           other.configKey == this.configKey &&
           other.configValue == this.configValue &&
-          other.syncState == this.syncState);
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
 }
 
 class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<String> configKey;
   final Value<String> configValue;
   final Value<SyncType> syncState;
+  final Value<SyncType> syncStateImplicit;
   const ConfigCompanion({
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.syncStateImplicit = const Value.absent(),
   });
   ConfigCompanion.insert({
     @required String configKey,
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.syncStateImplicit = const Value.absent(),
   }) : configKey = Value(configKey);
   static Insertable<Config> custom({
     Expression<String> configKey,
     Expression<String> configValue,
     Expression<int> syncState,
+    Expression<int> syncStateImplicit,
   }) {
     return RawValuesInsertable({
       if (configKey != null) 'config_key': configKey,
       if (configValue != null) 'config_value': configValue,
       if (syncState != null) 'sync_state': syncState,
+      if (syncStateImplicit != null) 'sync_state_implicit': syncStateImplicit,
     });
   }
 
   ConfigCompanion copyWith(
       {Value<String> configKey,
       Value<String> configValue,
-      Value<SyncType> syncState}) {
+      Value<SyncType> syncState,
+      Value<SyncType> syncStateImplicit}) {
     return ConfigCompanion(
       configKey: configKey ?? this.configKey,
       configValue: configValue ?? this.configValue,
       syncState: syncState ?? this.syncState,
+      syncStateImplicit: syncStateImplicit ?? this.syncStateImplicit,
     );
   }
 
@@ -142,6 +191,11 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     if (syncState.present) {
       final converter = ConfigTable.$converter0;
       map['sync_state'] = Variable<int>(converter.mapToSql(syncState.value));
+    }
+    if (syncStateImplicit.present) {
+      final converter = ConfigTable.$converter1;
+      map['sync_state_implicit'] =
+          Variable<int>(converter.mapToSql(syncStateImplicit.value));
     }
     return map;
   }
@@ -177,8 +231,19 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
         $customConstraints: '');
   }
 
+  final VerificationMeta _syncStateImplicitMeta =
+      const VerificationMeta('syncStateImplicit');
+  GeneratedIntColumn _syncStateImplicit;
+  GeneratedIntColumn get syncStateImplicit =>
+      _syncStateImplicit ??= _constructSyncStateImplicit();
+  GeneratedIntColumn _constructSyncStateImplicit() {
+    return GeneratedIntColumn('sync_state_implicit', $tableName, true,
+        $customConstraints: '');
+  }
+
   @override
-  List<GeneratedColumn> get $columns => [configKey, configValue, syncState];
+  List<GeneratedColumn> get $columns =>
+      [configKey, configValue, syncState, syncStateImplicit];
   @override
   ConfigTable get asDslTable => this;
   @override
@@ -203,6 +268,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
               data['config_value'], _configValueMeta));
     }
     context.handle(_syncStateMeta, const VerificationResult.success());
+    context.handle(_syncStateImplicitMeta, const VerificationResult.success());
     return context;
   }
 
@@ -220,6 +286,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   }
 
   static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
+  static TypeConverter<SyncType, int> $converter1 =
+      const EnumIndexConverter<SyncType>(SyncType.values);
   @override
   bool get dontWriteConstraints => true;
 }
@@ -248,6 +316,13 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
       map['b'] = Variable<int>(b);
     }
     return map;
+  }
+
+  WithDefaultsCompanion toCompanion(bool nullToAbsent) {
+    return WithDefaultsCompanion(
+      a: a == null && nullToAbsent ? const Value.absent() : Value(a),
+      b: b == null && nullToAbsent ? const Value.absent() : Value(b),
+    );
   }
 
   factory WithDefault.fromJson(Map<String, dynamic> json,
@@ -415,6 +490,14 @@ class NoId extends DataClass implements Insertable<NoId> {
     return map;
   }
 
+  NoIdsCompanion toCompanion(bool nullToAbsent) {
+    return NoIdsCompanion(
+      payload: payload == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payload),
+    );
+  }
+
   factory NoId.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -567,6 +650,14 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       map['c'] = Variable<double>(c);
     }
     return map;
+  }
+
+  WithConstraintsCompanion toCompanion(bool nullToAbsent) {
+    return WithConstraintsCompanion(
+      a: a == null && nullToAbsent ? const Value.absent() : Value(a),
+      b: b == null && nullToAbsent ? const Value.absent() : Value(b),
+      c: c == null && nullToAbsent ? const Value.absent() : Value(c),
+    );
   }
 
   factory WithConstraint.fromJson(Map<String, dynamic> json,
@@ -784,6 +875,22 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       map['somedate'] = Variable<DateTime>(somedate);
     }
     return map;
+  }
+
+  MytableCompanion toCompanion(bool nullToAbsent) {
+    return MytableCompanion(
+      someid:
+          someid == null && nullToAbsent ? const Value.absent() : Value(someid),
+      sometext: sometext == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sometext),
+      somebool: somebool == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somebool),
+      somedate: somedate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(somedate),
+    );
   }
 
   factory MytableData.fromJson(Map<String, dynamic> json,
@@ -1024,6 +1131,16 @@ class EMail extends DataClass implements Insertable<EMail> {
     return map;
   }
 
+  EmailCompanion toCompanion(bool nullToAbsent) {
+    return EmailCompanion(
+      sender:
+          sender == null && nullToAbsent ? const Value.absent() : Value(sender),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+    );
+  }
+
   factory EMail.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -1237,6 +1354,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       configKey: row.readString('config_key'),
       configValue: row.readString('config_value'),
       syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+      syncStateImplicit:
+          ConfigTable.$converter1.mapToDart(row.readInt('sync_state_implicit')),
     );
   }
 
@@ -1321,6 +1440,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       configKey: row.readString('config_key'),
       configValue: row.readString('config_value'),
       syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+      syncStateImplicit:
+          ConfigTable.$converter1.mapToDart(row.readInt('sync_state_implicit')),
     );
   }
 
@@ -1418,17 +1539,21 @@ class ReadRowIdResult {
   final String configKey;
   final String configValue;
   final SyncType syncState;
+  final SyncType syncStateImplicit;
   ReadRowIdResult({
     this.rowid,
     this.configKey,
     this.configValue,
     this.syncState,
+    this.syncStateImplicit,
   });
   @override
   int get hashCode => $mrjf($mrjc(
       rowid.hashCode,
-      $mrjc(configKey.hashCode,
-          $mrjc(configValue.hashCode, syncState.hashCode))));
+      $mrjc(
+          configKey.hashCode,
+          $mrjc(configValue.hashCode,
+              $mrjc(syncState.hashCode, syncStateImplicit.hashCode)))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1436,5 +1561,6 @@ class ReadRowIdResult {
           other.rowid == this.rowid &&
           other.configKey == this.configKey &&
           other.configValue == this.configValue &&
-          other.syncState == this.syncState);
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
 }

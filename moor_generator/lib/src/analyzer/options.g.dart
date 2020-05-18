@@ -18,7 +18,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'generate_connect_constructor',
       'legacy_type_inference',
       'sqlite_modules',
-      'eagerly_load_dart_ast'
+      'eagerly_load_dart_ast',
+      'data_class_to_companions'
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -50,6 +51,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       eagerlyLoadDartAst:
           $checkedConvert(json, 'eagerly_load_dart_ast', (v) => v as bool) ??
               false,
+      dataClassToCompanions:
+          $checkedConvert(json, 'data_class_to_companions', (v) => v as bool) ??
+              true,
       modules: $checkedConvert(
               json,
               'sqlite_modules',
@@ -69,8 +73,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'useColumnNameAsJsonKeyWhenDefinedInMoorFile':
         'use_column_name_as_json_key_when_defined_in_moor_file',
     'generateConnectConstructor': 'generate_connect_constructor',
-    'useExperimentalInference': 'use_experimental_inference',
+    'legacyTypeInference': 'legacy_type_inference',
     'eagerlyLoadDartAst': 'eagerly_load_dart_ast',
+    'dataClassToCompanions': 'data_class_to_companions',
     'modules': 'sqlite_modules'
   });
 }

@@ -13,6 +13,10 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
   }
 
   /// Deletes just this entity. May not be used together with [where].
+  ///
+  /// Returns the amount of rows that were deleted by this statement directly
+  /// (not including additional rows that might be affected through triggers or
+  /// foreign key constraints).
   Future<int> delete(Insertable<D> entity) {
     assert(
         whereExpr == null,
@@ -25,6 +29,10 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
 
   /// Deletes all rows matched by the set [where] clause and the optional
   /// limit.
+  ///
+  /// Returns the amount of rows that were deleted by this statement directly
+  /// (not including additional rows that might be affected through triggers or
+  /// foreign key constraints).
   Future<int> go() async {
     final ctx = constructQuery();
 

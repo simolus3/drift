@@ -62,6 +62,14 @@ abstract class Table {
   @protected
   IntColumnBuilder integer() => _isGenerated();
 
+  /// Creates a column to store an `enum` class [T].
+  ///
+  /// In the database, the column will be represented as an integer
+  /// corresponding to the enums index. Note that this can invalidate your data
+  /// if you add another value to the enum class.
+  @protected
+  IntColumnBuilder intEnum<T>() => _isGenerated();
+
   /// Use this as the body of a getter to declare a column that holds strings.
   /// Example (inside the body of a table class):
   /// ```

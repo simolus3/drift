@@ -1,6 +1,6 @@
 ---
 title: "Welcome to Moor"
-linkTitle: "Documentation"
+linkTitle: "Documentation & Guides"
 weight: 20
 menu:
   main:

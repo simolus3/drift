@@ -20,3 +20,23 @@ abstract class TypeConverter<D, S> {
   /// nullable.
   D mapToDart(S fromDb);
 }
+
+/// Implementation for an enum to int converter that uses the index of the enum
+/// as the value stored in the database.
+class EnumIndexConverter<T> extends TypeConverter<T, int> {
+  /// All values of the enum.
+  final List<T> values;
+
+  /// Constant default constructor.
+  const EnumIndexConverter(this.values);
+
+  @override
+  T mapToDart(int fromDb) {
+    return fromDb == null ? null : values[fromDb];
+  }
+
+  @override
+  int mapToSql(T value) {
+    return (value as dynamic)?.index as int;
+  }
+}

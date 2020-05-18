@@ -71,6 +71,45 @@ void main() {
     expect(recovered.isAwesome, user.isAwesome);
     expect(recovered.profilePicture, user.profilePicture);
   });
+
+  test('generated data classes can be converted to companions', () {
+    final entry = Category(
+      id: 3,
+      description: 'description',
+      priority: CategoryPriority.low,
+    );
+    final companion = entry.toCompanion(false);
+
+    expect(companion.runtimeType, CategoriesCompanion);
+    expect(
+      companion,
+      equals(CategoriesCompanion.insert(
+        description: 'description',
+        id: const Value(3),
+        priority: const Value(CategoryPriority.low),
+      )),
+    );
+  });
+
+  test('data classes can be converted to companions with null to absent', () {
+    final entry = PureDefault(id: null, txt: null);
+
+    expect(entry.toCompanion(false),
+        const PureDefaultsCompanion(id: Value(null), txt: Value(null)));
+    expect(entry.toCompanion(true), const PureDefaultsCompanion());
+  });
+
+  test('companions support hash and equals', () {
+    const first = CategoriesCompanion(description: Value('foo'));
+    final equalToFirst = CategoriesCompanion.insert(description: 'foo');
+    const different = CategoriesCompanion(description: Value('bar'));
+
+    expect(first.hashCode, equalToFirst.hashCode);
+    expect(first, equals(equalToFirst));
+
+    expect(first, isNot(equals(different)));
+    expect(first, equals(first));
+  });
 }
 
 class _MySerializer extends ValueSerializer {

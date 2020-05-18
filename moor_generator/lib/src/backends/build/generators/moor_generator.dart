@@ -15,6 +15,9 @@ const _ignoredLints = [
   'lines_longer_than_80_chars',*/
 ];
 
+const _targetMajorVersion = 2;
+const _targetMinorVersion = 6;
+
 class MoorGenerator extends Generator implements BaseGenerator {
   @override
   MoorBuilder builder;
@@ -31,6 +34,23 @@ class MoorGenerator extends Generator implements BaseGenerator {
 
     for (final db in parsed.declaredDatabases) {
       DatabaseWriter(db, writer.child()).write();
+    }
+
+    if (parsed.declaredDatabases.isNotEmpty) {
+      // Warn if the project uses an SDK version that is incompatible with what
+      // moor generates.
+      final major = library.element.languageVersionMajor;
+      final minor = library.element.languageVersionMinor;
+
+      const expected = '$_targetMajorVersion.$_targetMinorVersion';
+
+      if (major < _targetMajorVersion ||
+          (major == _targetMajorVersion && minor < _targetMinorVersion)) {
+        log.warning('The language version of this file is Dart $major.$minor. '
+            'Moor generates code for Dart $expected or later. Please consider '
+            'raising the minimum SDK version in your pubspec.yaml to at least '
+            '$expected.0.');
+      }
     }
 
     return writer.writeGenerated();

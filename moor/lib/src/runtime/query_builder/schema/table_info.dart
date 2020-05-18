@@ -68,9 +68,10 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
           'evaluated by a database engine.');
     }
 
+    final context = GenerationContext(SqlTypeSystem.defaultInstance, null);
     final rawValues = asColumnMap
         .cast<String, Variable>()
-        .map((key, value) => MapEntry(key, value.value));
+        .map((key, value) => MapEntry(key, value.mapToSimpleValue(context)));
 
     return map(rawValues);
   }

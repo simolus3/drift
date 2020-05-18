@@ -105,6 +105,10 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         // acts like a table for expressions in the same scope, so let's
         // register it.
         if (table.as != null) {
+          // todo should we register a TableAlias instead? Some parts of this
+          // package and moor_generator might depend on this being a table
+          // directly (e.g. nested result sets in moor).
+          // Same for nested selects, joins and table-valued functions below.
           scope.register(table.as, table);
         }
       },

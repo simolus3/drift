@@ -82,6 +82,10 @@ weight = 1
     name = "GitHub"
     weight = 110
     url = "https://github.com/simolus3/moor/"
+[[menu.main]]
+	name = "API docs"
+	weight = 120
+	url = "https://pub.dev/documentation/moor/latest/"
 
 # Everything below this are Site Params
 

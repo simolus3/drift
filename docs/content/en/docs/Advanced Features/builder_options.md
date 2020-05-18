@@ -60,6 +60,8 @@ At the moment, moor supports these options:
 * `legacy_type_inference`: Use the old type inference from moor 1 and 2. Note that `use_experimental_inference`
    is now the default and no longer exists.
    If you're using this flag, please open an issue and explain how the new inference isn't working for you, thanks!
+* `data_class_to_companions` (defaults to `true`): Controls whether moor will write the `toCompanion` method in generated
+   data classes.
 
 ## Available extensions
 
@@ -90,12 +92,14 @@ We currently support the following extensions:
 
 ## Recommended options
 
-In general, we recommend not enabling these options unless you need to. There are some exceptions though:
+In general, we recommend using the default options. 
 
-- `compact_query_methods` and `use_column_name_as_json_key_when_defined_in_moor_file`: We recommend enabling 
-  both flags for new projects because they'll be the only option in the next breaking release.
-- `skip_verification_code`: You can remove a significant portion of generated code with this option. The 
+You can disable some default moor features and reduce the amount of generated code with the following options:
+
+- `skip_verification_code: true`: You can remove a significant portion of generated code with this option. The 
   downside is that error messages when inserting invalid data will be less specific. 
+- `data_class_to_companions: false`: Don't generate the `toCompanion` method on data classes. If you don't need that
+  method, you can disable this option.
 
 ## Using moor classes in other builders
 

@@ -6,7 +6,7 @@ class SchemaFromCreateTable {
   /// and `DATETIME` columns.
   final bool moorExtensions;
 
-  SchemaFromCreateTable({this.moorExtensions = false});
+  const SchemaFromCreateTable({this.moorExtensions = false});
 
   Table read(TableInducingStatement stmt) {
     if (stmt is CreateTableStatement) {
@@ -30,9 +30,7 @@ class SchemaFromCreateTable {
   }
 
   TableColumn _readColumn(ColumnDefinition definition) {
-    final typeName = definition.typeName.toUpperCase();
-
-    final type = resolveColumnType(typeName);
+    final type = resolveColumnType(definition.typeName);
     final nullable = !definition.constraints.any((c) => c is NotNull);
 
     final resolvedType = type.withNullable(nullable);
@@ -49,7 +47,7 @@ class SchemaFromCreateTable {
   /// [IsDateTime] hints if the type name contains `BOOL` or `DATE`,
   /// respectively.
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
-  ResolvedType resolveColumnType(String typeName) {
+  ResolvedType resolveColumnType(String /*?*/ typeName) {
     if (typeName == null) {
       return const ResolvedType(type: BasicType.blob);
     }
@@ -74,6 +72,10 @@ class SchemaFromCreateTable {
       }
       if (upper.contains('DATE')) {
         return const ResolvedType(type: BasicType.int, hint: IsDateTime());
+      }
+
+      if (upper.contains('ENUM')) {
+        return const ResolvedType(type: BasicType.int);
       }
     }
 

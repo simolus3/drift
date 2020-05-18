@@ -9,13 +9,17 @@ void main() {
   setUp(() => db = Database.memory()..enableMoorFfiFunctions());
   tearDown(() => db.close());
 
+  dynamic selectSingle(String expression) {
+    final stmt = db.prepare('SELECT $expression AS r;');
+    final rows = stmt.select();
+    stmt.close();
+
+    return rows.single['r'];
+  }
+
   group('pow', () {
     dynamic _resultOfPow(String a, String b) {
-      final stmt = db.prepare('SELECT pow($a, $b) AS r;');
-      final rows = stmt.select();
-      stmt.close();
-
-      return rows.single['r'];
+      return selectSingle('pow($a, $b)');
     }
 
     test('returns null when any argument is null', () {
@@ -103,6 +107,26 @@ void main() {
       final stmt = db.prepare("SELECT 'bar' REGEXP 'fo+' AS r");
       final result = stmt.select();
       expect(result.single['r'], 0);
+    });
+  });
+
+  group('moor_contains', () {
+    test('checks for type errors', () {
+      expect(() => db.execute('SELECT moor_contains(12, 1);'),
+          throwsA(isA<SqliteException>()));
+    });
+
+    test('case insensitive without parameter', () {
+      expect(selectSingle("moor_contains('foo', 'O')"), 1);
+    });
+
+    test('case insensitive with parameter', () {
+      expect(selectSingle("moor_contains('foo', 'O', 0)"), 1);
+    });
+
+    test('case sensitive', () {
+      expect(selectSingle("moor_contains('Hello', 'hell', 1)"), 0);
+      expect(selectSingle("moor_contains('hi', 'i', 1)"), 1);
     });
   });
 }

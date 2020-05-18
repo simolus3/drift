@@ -36,7 +36,7 @@ const _affinityTests = {
 
 void main() {
   test('affinity from typename', () {
-    final resolver = SchemaFromCreateTable();
+    const resolver = SchemaFromCreateTable();
 
     _affinityTests.forEach((key, value) {
       expect(resolver.columnAffinity(key), equals(value),
@@ -48,7 +48,8 @@ void main() {
     final engine = SqlEngine();
     final stmt = engine.parse(createTableStmt).rootNode;
 
-    final table = SchemaFromCreateTable().read(stmt as CreateTableStatement);
+    final table =
+        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
 
     expect(table.resolvedColumns.map((c) => c.name),
         ['id', 'email', 'score', 'display_name']);
@@ -70,7 +71,7 @@ void main() {
     )
     ''').rootNode;
 
-    final table = SchemaFromCreateTable(moorExtensions: true)
+    final table = const SchemaFromCreateTable(moorExtensions: true)
         .read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.map((c) => c.type), const [
       ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: true),
@@ -78,5 +79,13 @@ void main() {
       ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
       ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: false),
     ]);
+  });
+
+  test('can read columns without type name', () {
+    final engine = SqlEngine();
+    final stmt = engine.parse('CREATE TABLE foo (id);').rootNode;
+
+    final table = engine.schemaReader.read(stmt as CreateTableStatement);
+    expect(table.resolvedColumns.single.type.type, BasicType.blob);
   });
 }

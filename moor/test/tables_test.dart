@@ -39,7 +39,8 @@ void main() {
       id: Value(3),
       name: Value('hi'),
       profilePicture: Value.absent(),
-      isAwesome: Value(true),
+      // false for https://github.com/simolus3/moor/issues/559
+      isAwesome: Value(false),
     );
 
     final user = db.users.mapFromCompanion(companion);
@@ -49,7 +50,7 @@ void main() {
         id: 3,
         name: 'hi',
         profilePicture: null,
-        isAwesome: true,
+        isAwesome: false,
         creationTime: null,
       ),
     );

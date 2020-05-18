@@ -1,8 +1,9 @@
+import 'package:moor/moor.dart' as m;
 import 'package:moor_generator/moor_generator.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/affected_tables_visitor.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
@@ -224,7 +225,13 @@ class TypeMapper {
     return _engineTablesToSpecified[table];
   }
 
-  WrittenMoorTable writtenToMoor(WrittenTable table) {
-    return WrittenMoorTable(tableToMoor(table.table), table.kind);
+  WrittenMoorTable writtenToMoor(s.TableWrite table) {
+    final moorKind = const {
+      s.UpdateKind.insert: m.UpdateKind.insert,
+      s.UpdateKind.update: m.UpdateKind.update,
+      s.UpdateKind.delete: m.UpdateKind.delete,
+    }[table.kind];
+
+    return WrittenMoorTable(tableToMoor(table.table), moorKind);
   }
 }

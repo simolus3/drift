@@ -64,8 +64,8 @@ final context =
 final select = context.root as SelectStatement;
 final resolvedColumns = select.resolvedColumns;
 
-resolvedColumns.map((c) => c.name)); // id, content, id, content, 3 + 4
-resolvedColumns.map((c) => context.typeOf(c).type.type) // int, text, int, text, int, int
+resolvedColumns.map((c) => c.name); // id, content, id, content, 3 + 4
+resolvedColumns.map((c) => context.typeOf(c).type.type); // int, text, int, text, int, int
 ```
 
 ## But why?

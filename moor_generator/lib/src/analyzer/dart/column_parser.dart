@@ -1,6 +1,7 @@
 part of 'parser.dart';
 
 const String startInt = 'integer';
+const String startEnum = 'intEnum';
 const String startString = 'text';
 const String startBool = 'boolean';
 const String startDateTime = 'dateTime';
@@ -9,6 +10,7 @@ const String startReal = 'real';
 
 const Set<String> starters = {
   startInt,
+  startEnum,
   startString,
   startBool,
   startDateTime,
@@ -185,6 +187,28 @@ class ColumnParser {
           sqlType: columnType);
     }
 
+    if (foundStartMethod == startEnum) {
+      if (converter != null) {
+        base.step.reportError(ErrorInDartCode(
+          message: 'Using $startEnum will apply a custom converter by default, '
+              "so you can't add an additional converter",
+          affectedElement: getter.declaredElement,
+          severity: Severity.warning,
+        ));
+      }
+
+      final enumType = remainingExpr.typeArgumentTypes[0];
+      try {
+        converter = UsedTypeConverter.forEnumColumn(enumType);
+      } on InvalidTypeForEnumConverterException catch (e) {
+        base.step.errors.report(ErrorInDartCode(
+          message: e.errorDescription,
+          affectedElement: getter.declaredElement,
+          severity: Severity.error,
+        ));
+      }
+    }
+
     if (foundDefaultExpression != null && clientDefaultExpression != null) {
       base.step.reportError(
         ErrorInDartCode(
@@ -217,6 +241,7 @@ class ColumnParser {
       startBool: ColumnType.boolean,
       startString: ColumnType.text,
       startInt: ColumnType.integer,
+      startEnum: ColumnType.integer,
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,
       startReal: ColumnType.real,

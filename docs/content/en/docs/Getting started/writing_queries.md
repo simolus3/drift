@@ -181,6 +181,8 @@ Future<void> insertMultipleEntries() async{
       TodosCompanion.insert(
         title: 'Another entry',
         content: 'More content',
+        // columns that aren't required for inserts are still wrapped in a Value:
+        category: Value(3),
       ),
       // ...
     ]);

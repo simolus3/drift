@@ -27,7 +27,8 @@ class MoorParser {
         final importStmt = parsedStmt;
         importStatements.add(importStmt);
       } else if (parsedStmt is TableInducingStatement) {
-        createdReaders.add(CreateTableReader(parsedStmt, step));
+        createdReaders
+            .add(CreateTableReader(parsedStmt, step, importStatements));
       } else if (parsedStmt is CreateTriggerStatement) {
         // the table will be resolved in the analysis step
         createdEntities.add(MoorTrigger.fromMoor(parsedStmt, step.file));
@@ -62,7 +63,10 @@ class MoorParser {
     }
 
     for (final reader in createdReaders) {
-      createdEntities.add(await reader.extractTable(step.mapper));
+      final moorTable = await reader.extractTable(step.mapper);
+      if (moorTable != null) {
+        createdEntities.add(moorTable);
+      }
     }
 
     final analyzedFile = ParsedMoorFile(

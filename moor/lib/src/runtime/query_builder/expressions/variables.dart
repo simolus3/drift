@@ -15,6 +15,9 @@ class Variable<T> extends Expression<T> {
   @override
   Precedence get precedence => Precedence.primary;
 
+  @override
+  int get hashCode => value.hashCode;
+
   /// Constructs a new variable from the [value].
   const Variable(this.value);
 
@@ -68,6 +71,11 @@ class Variable<T> extends Expression<T> {
 
   @override
   String toString() => 'Variable($value)';
+
+  @override
+  bool operator ==(dynamic other) {
+    return other is Variable && other.value == value;
+  }
 }
 
 /// An expression that represents the value of a dart object encoded to sql

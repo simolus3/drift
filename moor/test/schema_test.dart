@@ -28,7 +28,8 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '`desc` VARCHAR NOT NULL UNIQUE);',
+          '`desc` VARCHAR NOT NULL UNIQUE, '
+          'priority INTEGER NOT NULL DEFAULT 0);',
           []));
 
       verify(mockExecutor.runCustom(
@@ -79,6 +80,18 @@ void main() {
       await db.createMigrator().deleteTable('users');
 
       verify(mockExecutor.runCustom('DROP TABLE IF EXISTS users;'));
+    });
+
+    test('drops indices', () async {
+      await db.createMigrator().drop(Index('desc', 'foo'));
+
+      verify(mockExecutor.runCustom('DROP INDEX IF EXISTS `desc`;'));
+    });
+
+    test('drops triggers', () async {
+      await db.createMigrator().drop(Trigger('foo', 'my_trigger'));
+
+      verify(mockExecutor.runCustom('DROP TRIGGER IF EXISTS my_trigger;'));
     });
 
     test('adds columns', () async {

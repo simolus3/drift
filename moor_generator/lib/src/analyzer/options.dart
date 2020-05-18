@@ -65,20 +65,25 @@ class MoorOptions {
   @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
   final bool eagerlyLoadDartAst;
 
+  @JsonKey(name: 'data_class_to_companions', defaultValue: true)
+  final bool dataClassToCompanions;
+
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => modules.contains(module);
 
-  const MoorOptions(
-      {this.generateFromJsonStringConstructor = false,
-      this.overrideHashAndEqualsInResultSets = false,
-      this.compactQueryMethods = false,
-      this.skipVerificationCode = false,
-      this.useDataClassNameForCompanions = false,
-      this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
-      this.generateConnectConstructor = false,
-      this.legacyTypeInference = false,
-      this.eagerlyLoadDartAst = false,
-      this.modules = const []});
+  const MoorOptions({
+    this.generateFromJsonStringConstructor = false,
+    this.overrideHashAndEqualsInResultSets = false,
+    this.compactQueryMethods = false,
+    this.skipVerificationCode = false,
+    this.useDataClassNameForCompanions = false,
+    this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
+    this.generateConnectConstructor = false,
+    this.legacyTypeInference = false,
+    this.eagerlyLoadDartAst = false,
+    this.dataClassToCompanions = true,
+    this.modules = const [],
+  });
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>
       _$MoorOptionsFromJson(json);

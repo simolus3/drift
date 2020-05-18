@@ -1,3 +1,12 @@
+## 3.1.0
+
+- Update companions now implement `==` and `hashCode`
+- New `containsCase` method for text in `package:moor/extensions/moor_ffi.dart`
+- The `toCompanion` method is back for data classes, but its generation can be disabled with a build option
+- New feature: [Implicit enum converters](https://moor.simonbinder.eu/docs/advanced-features/type_converters/#implicit-enum-converters)
+- Added the `destructiveFallback` extension to databases. It can be used in `migrationStrategy` to delete
+  and then re-create all tables, indices and triggers.
+
 ## 3.0.2
 
 - Fix update statements not escaping column names ([#539](https://github.com/simolus3/moor/issues/539))
