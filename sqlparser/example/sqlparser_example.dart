@@ -4,10 +4,36 @@ import 'package:sqlparser/sqlparser.dart';
 // prints what columns would be returned by that statement.
 void main() {
   final engine = SqlEngine()
-    ..registerTable(frameworks)
-    ..registerTable(languages)
-    ..registerTable(frameworkToLanguage);
+    ..registerTableFromSql(
+      '''
+      CREATE TABLE frameworks (
+        id INTEGER NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        popularity REAL NOT NULL
+      );
+      ''',
+    )
+    ..registerTableFromSql(
+      '''
+      CREATE TABLE languages (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+      );
+      ''',
+    )
+    ..registerTableFromSql(
+      '''
+      CREATE TABLE uses_language (
+        framework INTEGER NOT NULL REFERENCES frameworks (id),
+        language INTEGER NOT NULL REFERENCES languages (id),
+        PRIMARY KEY (framework, language)
+      );
+      ''',
+    );
 
+  // Use SqlEngine.analyze to parse a single sql statement and analyze it.
+  // Analysis can be used to find semantic errors, lints and inferred types of
+  // expressions or result columns.
   final result = engine.analyze('''
 SELECT f.* FROM frameworks f
   INNER JOIN uses_language ul ON ul.framework = f.id
@@ -30,50 +56,11 @@ LIMIT 5 OFFSET 5 * 3
   }
 }
 
-// declare some tables. I know this is verbose and boring, but it's needed so
-// that the analyzer knows what's going on.
-final Table frameworks = Table(
-  name: 'frameworks',
-  resolvedColumns: [
-    TableColumn(
-      'id',
-      const ResolvedType(type: BasicType.int),
-    ),
-    TableColumn(
-      'name',
-      const ResolvedType(type: BasicType.text),
-    ),
-    TableColumn(
-      'popularity',
-      const ResolvedType(type: BasicType.real),
-    ),
-  ],
-);
-
-final Table languages = Table(
-  name: 'languages',
-  resolvedColumns: [
-    TableColumn(
-      'id',
-      const ResolvedType(type: BasicType.int),
-    ),
-    TableColumn(
-      'name',
-      const ResolvedType(type: BasicType.text),
-    ),
-  ],
-);
-
-final Table frameworkToLanguage = Table(
-  name: 'uses_language',
-  resolvedColumns: [
-    TableColumn(
-      'framework',
-      const ResolvedType(type: BasicType.int),
-    ),
-    TableColumn(
-      'language',
-      const ResolvedType(type: BasicType.int),
-    ),
-  ],
-);
+extension on SqlEngine {
+  /// Utility function that parses a `CREATE TABLE` statement and registers the
+  /// created table to the engine.
+  void registerTableFromSql(String createTable) {
+    final stmt = parse(createTable).rootNode as CreateTableStatement;
+    registerTable(schemaReader.read(stmt));
+  }
+}

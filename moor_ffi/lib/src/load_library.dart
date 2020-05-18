@@ -33,6 +33,8 @@ DynamicLibrary _defaultOpen() {
         // library (/data/data/<id>/lib/libsqlite3.so) and open that one.
         // For details, see https://github.com/simolus3/moor/issues/420
         final appIdAsBytes = File('/proc/self/cmdline').readAsBytesSync();
+
+        // app id ends with the first \0 character in here.
         final endOfAppId = max(appIdAsBytes.indexOf(0), 0);
         final appId = String.fromCharCodes(appIdAsBytes.sublist(0, endOfAppId));
 
