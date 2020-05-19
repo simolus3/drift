@@ -192,6 +192,11 @@ void main() {
     expect(type, const ResolvedType(type: BasicType.int));
   });
 
+  test('resolves subqueries', () {
+    final type = _resolveResultColumn('SELECT (SELECT COUNT(*) FROM demo);');
+    expect(type, const ResolvedType(type: BasicType.int));
+  });
+
   test('infers types for dart placeholders', () {
     final resolver = _obtainResolver(r'SELECT * FROM demo WHERE $pred');
     final type = resolver.session.typeOf(resolver

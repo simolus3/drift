@@ -55,6 +55,20 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitSubQuery(SubQuery e, TypeExpectation arg) {
+    final columnsOfQuery = e.select.resolvedColumns;
+    if (columnsOfQuery.isEmpty) {
+      return super.visitSubQuery(e, arg);
+    }
+
+    // The query should return one column only, but this is not the right place
+    // to lint that. Just pick any column and resolve to that.
+    final columnForExpr = columnsOfQuery.first;
+    session._addRelation(CopyTypeFrom(e, columnForExpr));
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInsertStatement(InsertStatement e, TypeExpectation arg) {
     if (e.withClause != null) visit(e.withClause, arg);
     visitList(e.targetColumns, const NoTypeExpectation());
