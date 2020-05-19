@@ -116,8 +116,10 @@ extension SqliteFunctionContextPointer on Pointer<FunctionContext> {
   void resultNum(num value) {
     if (value is int) {
       resultInt(value);
+      return;
     } else if (value is double) {
       resultDouble(value);
+      return;
     }
 
     throw AssertionError();
