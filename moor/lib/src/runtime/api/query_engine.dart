@@ -100,8 +100,6 @@ mixin QueryEngine on DatabaseConnectionUser {
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
-  @protected
-  @visibleForTesting
   InsertStatement<T, D> into<T extends Table, D extends DataClass>(
       TableInfo<T, D> table) {
     return InsertStatement<T, D>(_resolvedEngine, table);
@@ -110,8 +108,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where
   /// clause on that table and then use [UpdateStatement.write].
-  @protected
-  @visibleForTesting
   UpdateStatement<Tbl, R> update<Tbl extends Table, R extends DataClass>(
           TableInfo<Tbl, R> table) =>
       UpdateStatement(_resolvedEngine, table);
@@ -140,8 +136,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///
   /// For more information on queries, see the
   /// [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/).
-  @protected
-  @visibleForTesting
   SimpleSelectStatement<T, R> select<T extends Table, R extends DataClass>(
       TableInfo<T, R> table,
       {bool distinct = false}) {
@@ -179,8 +173,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// See also:
   ///  - the documentation on [aggregate expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://moor.simonbinder.eu/docs/advanced-features/joins/#group-by)
-  @protected
-  @visibleForTesting
   JoinedSelectStatement<T, R> selectOnly<T extends Table, R extends DataClass>(
     TableInfo<T, R> table, {
     bool distinct = false,
@@ -193,8 +185,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///
   /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   /// for more details and example on how delete statements work.
-  @protected
-  @visibleForTesting
   DeleteStatement<T, D> delete<T extends Table, D extends DataClass>(
       TableInfo<T, D> table) {
     return DeleteStatement<T, D>(_resolvedEngine, table);
@@ -208,8 +198,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// you can also set the [updateKind] parameter to [UpdateKind.delete] or
   /// [UpdateKind.update]. This is optional, but can improve the accuracy of
   /// query updates, especially when using triggers.
-  @protected
-  @visibleForTesting
   Future<int> customUpdate(
     String query, {
     List<Variable> variables = const [],
@@ -232,8 +220,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// You can tell moor which tables your query is going to affect by using the
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
-  @protected
-  @visibleForTesting
   Future<int> customInsert(String query,
       {List<Variable> variables = const [], Set<TableInfo> updates}) {
     return _customWrite(
@@ -284,8 +270,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
-  @protected
-  @visibleForTesting
   Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<TableInfo> readsFrom = const {}}) {
@@ -310,8 +294,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   }
 
   /// Executes the custom sql [statement] on the database.
-  @protected
-  @visibleForTesting
   Future<void> customStatement(String statement, [List<dynamic> args]) {
     final engine = _resolvedEngine;
 
@@ -401,8 +383,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   ///    );
   ///  });
   /// ```
-  @protected
-  @visibleForTesting
   Future<void> batch(Function(Batch) runInBatch) {
     final engine = _resolvedEngine;
 
