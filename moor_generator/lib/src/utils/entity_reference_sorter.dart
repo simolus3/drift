@@ -6,7 +6,8 @@ import 'package:moor_generator/moor_generator.dart';
 /// because of tables not existing.
 ///
 /// If there is a circular reference between [MoorTable]s, an error will
-/// be added that contains the name of the tables in question.
+/// be added that contains the name of the tables in question. Self-references
+/// in tables are allowed.
 List<MoorSchemaEntity> sortEntitiesTopologically(
     Iterable<MoorSchemaEntity> tables) {
   final run = _SortRun();
@@ -25,8 +26,9 @@ void _visit(MoorSchemaEntity entity, _SortRun run) {
   for (final reference in entity.references) {
     assert(reference != null, '$entity had a null reference');
 
-    if (run.result.contains(reference)) {
-      // already handled, nothing to do
+    if (run.result.contains(reference) || reference == entity) {
+      // When the target entity has already been added there's nothing to do.
+      // We also ignore self-references
     } else if (run.previous.containsKey(reference)) {
       // that's a circular reference, report
       run.throwCircularException(entity, reference);
@@ -41,7 +43,19 @@ void _visit(MoorSchemaEntity entity, _SortRun run) {
 }
 
 class _SortRun {
+  /// Keeps track of how entities were discovered.
+  ///
+  /// If a pair (a, b) exists in [previous], then b was the first entity to
+  /// reference a. We also insert (a, null) when iterating over nodes.
+  ///
+  /// This means that, when an entity references another entity that is present
+  /// in `previous.keys`, that's a circular reference.
   final Map<MoorSchemaEntity, MoorSchemaEntity> previous = {};
+
+  /// Entities that have already been fully handled, in topological order.
+  ///
+  /// If an entity is in [result], all of it's references are in [result] as
+  /// well and it's safe to reference it.
   final List<MoorSchemaEntity> result = [];
 
   /// Throws a [CircularReferenceException] because the [last] table depends on
@@ -63,7 +77,7 @@ class _SortRun {
 }
 
 /// Thrown by [sortEntitiesTopologically] when the graph formed by
-/// [MoorSchemaEntity.references] is not acyclic.
+/// [MoorSchemaEntity.references] is not acyclic except for self-references.
 class CircularReferenceException implements Exception {
   /// The list of entities forming a circular reference, so that the first
   /// entity in this list references the second one and so on. The last entity

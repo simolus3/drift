@@ -42,6 +42,17 @@ void main() {
     final sorted = sortEntitiesTopologically([a, b, c, d]);
     expect(sorted, [c, b, a, d]);
   });
+
+  test('accepts self-references', () {
+    // https://github.com/simolus3/moor/issues/586
+    final a = MoorTable(sqlName: 'a');
+    final b = MoorTable(sqlName: 'b');
+
+    a.references..add(a)..add(b);
+
+    final sorted = sortEntitiesTopologically([a, b]);
+    expect(sorted, [b, a]);
+  });
 }
 
 CircularReferenceException _expectFails(Iterable<MoorTable> table) {
