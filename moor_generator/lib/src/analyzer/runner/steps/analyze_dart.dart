@@ -58,7 +58,7 @@ class AnalyzeDartStep extends AnalyzingStep {
         ..queries = availableQueries.followedBy(parser.foundQueries).toList();
 
       // Support custom result class names.
-      CustomResultClassTransformer(accessor).transform(this);
+      CustomResultClassTransformer(accessor).transform(errors);
     }
   }
 }

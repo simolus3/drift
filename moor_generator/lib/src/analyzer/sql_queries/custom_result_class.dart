@@ -1,6 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
-import 'package:moor_generator/src/analyzer/runner/steps.dart';
 
 /// Transforms queries accessible to the [accessor] so that they use custom
 /// result names.
@@ -23,7 +22,7 @@ class CustomResultClassTransformer {
 
   CustomResultClassTransformer(this.accessor);
 
-  void transform(Step step) {
+  void transform(ErrorSink errors) {
     // For efficient replacing later on
     final indexOfOldQueries = <SqlSelectQuery, int>{};
     final queryGroups = <String, List<SqlSelectQuery>>{};
@@ -42,7 +41,7 @@ class CustomResultClassTransformer {
       // Alright, the query wants a custom result class, but is it allowed to
       // have one?
       if (selectQuery.resultSet.singleColumn) {
-        step.reportError(ErrorInDartCode(
+        errors.report(ErrorInDartCode(
           message: "The query ${selectQuery.name} can't have a custom name as "
               'it only returns one column.',
           affectedElement: accessor.declaration.element,
@@ -50,7 +49,7 @@ class CustomResultClassTransformer {
         continue;
       }
       if (selectQuery.resultSet.matchingTable != null) {
-        step.reportError(ErrorInDartCode(
+        errors.report(ErrorInDartCode(
           message: "The query ${selectQuery.name} can't have a custom name as "
               'it returns a single table data class.',
           affectedElement: accessor.declaration.element,
@@ -70,7 +69,7 @@ class CustomResultClassTransformer {
       final queries = group.value;
 
       if (!_resultSetsCompatible(queries.map((e) => e.resultSet))) {
-        step.reportError(ErrorInDartCode(
+        errors.report(ErrorInDartCode(
           message: 'Could not merge result sets to $resultSetName: The queries '
               'have different columns and types.',
           affectedElement: accessor.declaration.element,

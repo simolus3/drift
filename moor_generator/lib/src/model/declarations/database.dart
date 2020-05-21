@@ -12,7 +12,9 @@ class DatabaseOrDaoDeclaration implements DartDeclaration {
   factory DatabaseOrDaoDeclaration(ClassElement fromClass, FoundFile file) {
     return DatabaseOrDaoDeclaration._(
       fromClass,
-      SourceRange.fromElementAndFile(fromClass, file),
+      fromClass != null
+          ? SourceRange.fromElementAndFile(fromClass, file)
+          : null,
     );
   }
 
