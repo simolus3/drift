@@ -113,7 +113,7 @@ class SqlSelectQuery extends SqlQuery {
 
   String get resultClassName {
     if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable.dartTypeName;
+      return resultSet.matchingTable.table.dartTypeName;
     }
 
     if (resultSet.singleColumn) {
@@ -170,7 +170,7 @@ class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  final MoorTable /*?*/ matchingTable;
+  final MatchingMoorTable /*?*/ matchingTable;
 
   /// Tables in the result set that should appear as a class.
   ///
@@ -246,6 +246,26 @@ class InferredResultSet {
       counter++;
     }
     return name;
+  }
+}
+
+/// Information about a matching table. A table matches a query if a query
+/// selects all columns from that table, and nothing more.
+///
+/// We still need to handle column aliases.
+class MatchingMoorTable {
+  final MoorTable table;
+  final Map<String, MoorColumn> aliasToColumn;
+
+  MatchingMoorTable(this.table, this.aliasToColumn);
+
+  /// Whether the column alias can be ignored.
+  ///
+  /// This is the case if each result column name maps to a moor column with the
+  /// same name.
+  bool get effectivelyNoAlias {
+    return !aliasToColumn.entries
+        .any((entry) => entry.key != entry.value.name.name);
   }
 }
 

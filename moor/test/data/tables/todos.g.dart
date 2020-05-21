@@ -1570,30 +1570,14 @@ abstract class _$TodoDb extends GeneratedDatabase {
         ],
         readsFrom: {
           todosTable
-        }).map((QueryRow row) {
-      return TodoEntry(
-        id: row.readInt('id'),
-        title: row.readString('title'),
-        content: row.readString('content'),
-        targetDate: row.readDateTime('target_date'),
-        category: row.readInt('category'),
-      );
-    });
+        }).map(todosTable.mapFromRow);
   }
 
   Selectable<TodoEntry> search(int id) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [Variable.withInt(id)],
-        readsFrom: {todosTable}).map((QueryRow row) {
-      return TodoEntry(
-        id: row.readInt('id'),
-        title: row.readString('title'),
-        content: row.readString('content'),
-        targetDate: row.readDateTime('target_date'),
-        category: row.readInt('category'),
-      );
-    });
+        readsFrom: {todosTable}).map(todosTable.mapFromRow);
   }
 
   Selectable<MyCustomObject> findCustom() {
@@ -1671,14 +1655,6 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
     return customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [Variable.withInt(user)],
-        readsFrom: {todosTable, sharedTodos, users}).map((QueryRow row) {
-      return TodoEntry(
-        id: row.readInt('id'),
-        title: row.readString('title'),
-        content: row.readString('content'),
-        targetDate: row.readDateTime('target_date'),
-        category: row.readInt('category'),
-      );
-    });
+        readsFrom: {todosTable, sharedTodos, users}).map(todosTable.mapFromRow);
   }
 }

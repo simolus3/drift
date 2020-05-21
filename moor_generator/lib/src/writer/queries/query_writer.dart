@@ -97,6 +97,29 @@ class QueryWriter {
       final column = _select.resultSet.columns.single;
       _buffer.write('(QueryRow row) => ${_readingCode(column)}');
       return;
+    } else if (_select.resultSet.matchingTable != null) {
+      final match = _select.resultSet.matchingTable;
+      final table = match.table;
+
+      if (match.effectivelyNoAlias) {
+        _buffer.write('${table.dbGetterName}.mapFromRow');
+      } else {
+        _buffer
+          ..write('(QueryRow row) => ')
+          ..write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
+
+        for (final alias in match.aliasToColumn.entries) {
+          _buffer
+            ..write(asDartLiteral(alias.key))
+            ..write(': ')
+            ..write(asDartLiteral(alias.value.name.name))
+            ..write(', ');
+        }
+
+        _buffer.write('})');
+      }
+
+      return;
     }
 
     _buffer.write('(QueryRow row) {\n');

@@ -1350,17 +1350,19 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Email _email;
   Email get email => _email ??= Email(this);
   Selectable<Config> readConfig(String var1) {
-    return customSelect('SELECT * FROM config WHERE config_key = ?',
-        variables: [Variable.withString(var1)],
-        readsFrom: {config}).map((QueryRow row) {
-      return Config(
-        configKey: row.readString('config_key'),
-        configValue: row.readString('config_value'),
-        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
-        syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.readInt('sync_state_implicit')),
-      );
-    });
+    return customSelect(
+        'SELECT\n  config_key AS ck,\n  config_value as cf,\n  sync_state AS cs1,\n  sync_state_implicit AS cs2\nFROM config WHERE config_key = ?',
+        variables: [
+          Variable.withString(var1)
+        ],
+        readsFrom: {
+          config
+        }).map((QueryRow row) => config.mapFromRowWithAlias(row, const {
+          'ck': 'config_key',
+          'cf': 'config_value',
+          'cs1': 'sync_state',
+          'cs2': 'sync_state_implicit',
+        }));
   }
 
   Selectable<Config> readMultiple(List<String> var1, OrderBy clause) {
@@ -1377,30 +1379,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config
-        }).map((QueryRow row) {
-      return Config(
-        configKey: row.readString('config_key'),
-        configValue: row.readString('config_value'),
-        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
-        syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.readInt('sync_state_implicit')),
-      );
-    });
+        }).map(config.mapFromRow);
   }
 
   Selectable<Config> readDynamic(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate);
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {config}).map((QueryRow row) {
-      return Config(
-        configKey: row.readString('config_key'),
-        configValue: row.readString('config_value'),
-        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
-        syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.readInt('sync_state_implicit')),
-      );
-    });
+        readsFrom: {config}).map(config.mapFromRow);
   }
 
   Selectable<TableValuedResult> tableValued() {
@@ -1433,13 +1419,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable.withString(term)],
-        readsFrom: {email}).map((QueryRow row) {
-      return EMail(
-        sender: row.readString('sender'),
-        title: row.readString('title'),
-        body: row.readString('body'),
-      );
-    });
+        readsFrom: {email}).map(email.mapFromRow);
   }
 
   Selectable<ReadRowIdResult> readRowId(Expression<int> expr) {

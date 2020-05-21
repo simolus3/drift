@@ -1,3 +1,4 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
@@ -134,6 +135,7 @@ class QueryHandler {
       }
 
       final resultEntryToColumn = <ResultColumn, String>{};
+      final resultColumnNameToMoor = <String, MoorColumn>{};
       var matches = true;
 
       // go trough all columns of the table in question
@@ -147,7 +149,10 @@ class QueryHandler {
           // it is! Remember the correct getter name from the data class for
           // later when we write the mapping code.
           final columnIndex = rawColumns.indexOf(inResultSet.single);
-          resultEntryToColumn[columns[columnIndex]] = column.dartGetterName;
+          final resultColumn = columns[columnIndex];
+
+          resultEntryToColumn[resultColumn] = column.dartGetterName;
+          resultColumnNameToMoor[resultColumn.name] = column;
         } else {
           // it's not, so no match
           matches = false;
@@ -162,7 +167,8 @@ class QueryHandler {
       }
 
       if (matches) {
-        return InferredResultSet(moorTable, columns)
+        final match = MatchingMoorTable(moorTable, resultColumnNameToMoor);
+        return InferredResultSet(match, columns)
           ..forceDartNames(resultEntryToColumn);
       }
     }

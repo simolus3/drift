@@ -1,6 +1,7 @@
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
+import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
 import '../data/utils/mocks.dart';
 
@@ -185,6 +186,33 @@ void main() {
         b: 42,
         // Since a non-nullable column in c was null, table should be null
         c: null,
+      ),
+    );
+  });
+
+  test('applies column name mapping when needed', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    when(mock.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {
+          'ck': 'key',
+          'cf': 'value',
+          'cs1': 1,
+          'cs2': 1,
+        }
+      ];
+    });
+
+    final entry = await db.readConfig('key').getSingle();
+    expect(
+      entry,
+      Config(
+        configKey: 'key',
+        configValue: 'value',
+        syncState: SyncType.locallyUpdated,
+        syncStateImplicit: SyncType.locallyUpdated,
       ),
     );
   });

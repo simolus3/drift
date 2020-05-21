@@ -135,4 +135,23 @@ extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
 
     return mapFromRow(row, tablePrefix: tablePrefix);
   }
+
+  /// Like [mapFromRow], but maps columns from the result through [alias].
+  ///
+  /// This is used internally by moor to support mapping to a table from a
+  /// select statement with different column names. For instance, for:
+  ///
+  /// ```sql
+  /// CREATE TABLE tbl (foo, bar);
+  ///
+  /// query: SELECT foo AS c1, bar AS c2 FROM tbl;
+  /// ```
+  ///
+  /// Moor would generate code to call this method with `'c1': 'foo'` and
+  /// `'c2': 'bar'` in [alias].
+  D mapFromRowWithAlias(QueryRow row, Map<String, String> alias) {
+    return map({
+      for (final entry in row.data.entries) alias[entry.key]: entry.value,
+    });
+  }
 }

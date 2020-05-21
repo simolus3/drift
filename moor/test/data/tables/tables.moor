@@ -39,7 +39,12 @@ CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
   INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
 END;
 
-readConfig: SELECT * FROM config WHERE config_key = ?;
+readConfig: SELECT
+  config_key AS ck,
+  config_value as cf,
+  sync_state AS cs1,
+  sync_state_implicit AS cs2
+FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 
