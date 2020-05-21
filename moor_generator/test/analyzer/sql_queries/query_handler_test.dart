@@ -41,7 +41,8 @@ Future<void> main() async {
 
   SqlQuery parse(String sql) {
     final parsed = engine.analyze(sql);
-    return QueryHandler('test', parsed, mapper).handle();
+    final fakeQuery = DeclaredDartQuery('query', sql);
+    return QueryHandler(fakeQuery, parsed, mapper).handle();
   }
 
   group('detects whether multiple tables are referenced', () {

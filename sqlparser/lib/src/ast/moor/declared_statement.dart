@@ -7,6 +7,9 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   final CrudStatement statement;
   final List<StatementParameter> parameters;
 
+  /// The desired result class name, if set.
+  final String /*?*/ as;
+
   Token colon;
 
   /// Whether this is a regular query, meaning that Dart methods are generated
@@ -14,7 +17,8 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   /// meaning.
   bool get isRegularQuery => identifier is SimpleName;
 
-  DeclaredStatement(this.identifier, this.statement, {this.parameters});
+  DeclaredStatement(this.identifier, this.statement,
+      {this.parameters, this.as});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -27,7 +31,7 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
 
   @override
   bool contentEquals(DeclaredStatement other) {
-    return other.identifier == identifier;
+    return other.identifier == identifier && other.as == as;
   }
 }
 

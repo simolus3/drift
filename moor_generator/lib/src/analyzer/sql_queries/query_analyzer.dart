@@ -94,9 +94,9 @@ class SqlAnalyzer extends BaseAnalyzer {
       }
 
       try {
-        final query = QueryHandler(name, context, mapper).handle()
+        final handled = QueryHandler(query, context, mapper).handle()
           ..declaredInMoorFile = declaredInMoor;
-        foundQueries.add(query);
+        foundQueries.add(handled);
       } catch (e, s) {
         // todo remove dependency on build package here
         log.warning('Error while generating APIs for $name', e, s);

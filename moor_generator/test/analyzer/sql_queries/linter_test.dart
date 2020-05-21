@@ -1,3 +1,4 @@
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
@@ -10,9 +11,11 @@ void main() {
   final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
   final mapper = TypeMapper();
 
+  final fakeQuery = DeclaredDartQuery('query', 'sql');
+
   test('warns when a result column is unresolved', () {
     final result = engine.analyze('SELECT ?;');
-    final moorQuery = QueryHandler('query', result, mapper).handle();
+    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('unknown type')));
@@ -20,7 +23,7 @@ void main() {
 
   test('warns when the result depends on a Dart template', () {
     final result = engine.analyze(r"SELECT 'string' = $expr;");
-    final moorQuery = QueryHandler('query', result, mapper).handle();
+    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('Dart template')));
@@ -28,7 +31,7 @@ void main() {
 
   test('warns when nested results refer to table-valued functions', () {
     final result = engine.analyze("SELECT json_each.** FROM json_each('')");
-    final moorQuery = QueryHandler('query', result, mapper).handle();
+    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
 
     expect(
       moorQuery.lints,

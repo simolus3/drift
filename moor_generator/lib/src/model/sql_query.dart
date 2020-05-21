@@ -1,4 +1,5 @@
-import 'package:moor/moor.dart' show UpdateKind;
+import 'package:collection/collection.dart';
+import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/utils/hash.dart';
 import 'package:recase/recase.dart';
@@ -107,6 +108,9 @@ class SqlSelectQuery extends SqlQuery {
   final List<MoorTable> readsFrom;
   final InferredResultSet resultSet;
 
+  /// The name of the result class, as requested by the user.
+  final String /*?*/ requestedResultClass;
+
   String get resultClassName {
     if (resultSet.matchingTable != null) {
       return resultSet.matchingTable.dartTypeName;
@@ -114,6 +118,10 @@ class SqlSelectQuery extends SqlQuery {
 
     if (resultSet.singleColumn) {
       return resultSet.columns.single.dartType;
+    }
+
+    if (resultSet.resultClassName != null) {
+      return resultSet.resultClassName;
     }
 
     return '${ReCase(name).pascalCase}Result';
@@ -125,8 +133,23 @@ class SqlSelectQuery extends SqlQuery {
     List<FoundElement> elements,
     this.readsFrom,
     this.resultSet,
+    this.requestedResultClass,
   ) : super(name, fromContext, elements,
             hasMultipleTables: readsFrom.length > 1);
+
+  /// Creates a copy of this [SqlSelectQuery] with a new [resultSet].
+  ///
+  /// The copy won't have a [requestedResultClass].
+  SqlSelectQuery replaceResultSet(InferredResultSet resultSet) {
+    return SqlSelectQuery(
+      name,
+      fromContext,
+      elements,
+      readsFrom,
+      resultSet,
+      null,
+    );
+  }
 }
 
 class UpdatingQuery extends SqlQuery {
@@ -157,8 +180,12 @@ class InferredResultSet {
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 
+  /// The name of the Dart class generated to store this result set, or null if
+  /// it hasn't explicitly been set.
+  final String resultClassName;
+
   InferredResultSet(this.matchingTable, this.columns,
-      {this.nestedResults = const []});
+      {this.nestedResults = const [], this.resultClassName});
 
   /// Whether a new class needs to be written to store the result of this query.
   ///
@@ -200,6 +227,17 @@ class InferredResultSet {
     });
   }
 
+  /// Checks whether this and the [other] result set have the same columns and
+  /// nested result sets.
+  bool isCompatibleTo(InferredResultSet other) {
+    const columnsEquality = UnorderedIterableEquality(_ResultColumnEquality());
+    const nestedEquality =
+        UnorderedIterableEquality(_NestedResultTableEquality());
+
+    return columnsEquality.equals(columns, other.columns) &&
+        nestedEquality.equals(nestedResults, other.nestedResults);
+  }
+
   String _appendNumbersIfExists(String name) {
     final originalName = name;
     var counter = 1;
@@ -227,6 +265,22 @@ class ResultColumn {
     } else {
       return dartTypeNames[type];
     }
+  }
+
+  /// Hash-code that matching [compatibleTo], so that two compatible columns
+  /// will have the same [compatibilityHashCode].
+  int get compatibilityHashCode {
+    return $mrjf($mrjc(name.hashCode,
+        $mrjc(type.hashCode, $mrjc(nullable.hashCode, converter.hashCode))));
+  }
+
+  /// Checks whether this column is compatible to the [other], meaning that they
+  /// have the same name and type.
+  bool compatibleTo(ResultColumn other) {
+    return other.name == name &&
+        other.type == type &&
+        other.nullable == nullable &&
+        other.converter == converter;
   }
 }
 
@@ -264,6 +318,17 @@ class NestedResultTable {
   NestedResultTable(this.from, this.name, this.table);
 
   String get dartFieldName => ReCase(name).camelCase;
+
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode {
+    return $mrjf($mrjc(name.hashCode, table.hashCode));
+  }
+
+  /// Checks whether this is compatible to the [other] nested result, which is
+  /// the case iff they have the same and read from the same table.
+  bool isCompatibleTo(NestedResultTable other) {
+    return other.name == name && other.table == table;
+  }
 }
 
 /// Something in the query that needs special attention when generating code,
@@ -377,4 +442,32 @@ class FoundDartPlaceholder extends FoundElement {
             other.columnType == columnType &&
             other.name == name;
   }
+}
+
+class _ResultColumnEquality implements Equality<ResultColumn> {
+  const _ResultColumnEquality();
+
+  @override
+  bool equals(ResultColumn e1, ResultColumn e2) => e1.compatibleTo(e2);
+
+  @override
+  int hash(ResultColumn e) => e.compatibilityHashCode;
+
+  @override
+  bool isValidKey(Object e) => e is ResultColumn;
+}
+
+class _NestedResultTableEquality implements Equality<NestedResultTable> {
+  const _NestedResultTableEquality();
+
+  @override
+  bool equals(NestedResultTable e1, NestedResultTable e2) {
+    return e1.isCompatibleTo(e2);
+  }
+
+  @override
+  int hash(NestedResultTable e) => e.compatibilityHashCode;
+
+  @override
+  bool isValidKey(Object e) => e is NestedResultTable;
 }

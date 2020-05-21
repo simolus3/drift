@@ -345,6 +345,11 @@ class Parser extends ParserBase
       _consume(TokenType.rightParen, 'Expected closing parenthesis');
     }
 
+    String as;
+    if (_matchOne(TokenType.as)) {
+      as = _consumeIdentifier('Expected a name of the result class').identifier;
+    }
+
     final colon =
         _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
     final stmt = _crud();
@@ -358,6 +363,7 @@ class Parser extends ParserBase
       identifier,
       stmt,
       parameters: parameters,
+      as: as,
     )..colon = colon;
   }
 

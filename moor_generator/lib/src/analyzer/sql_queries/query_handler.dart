@@ -11,7 +11,7 @@ import 'lints/linter.dart';
 /// generator package by determining its type, return columns, variables and so
 /// on.
 class QueryHandler {
-  final String name;
+  final DeclaredQuery source;
   final AnalysisContext context;
   final TypeMapper mapper;
 
@@ -22,7 +22,9 @@ class QueryHandler {
 
   BaseSelectStatement get _select => context.root as BaseSelectStatement;
 
-  QueryHandler(this.name, this.context, this.mapper);
+  QueryHandler(this.source, this.context, this.mapper);
+
+  String get name => source.name;
 
   SqlQuery handle() {
     _foundElements = mapper.extractElements(context);
@@ -75,8 +77,19 @@ class QueryHandler {
     final moorTables =
         _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
 
+    String requestedName;
+    if (source is DeclaredMoorQuery) {
+      requestedName = (source as DeclaredMoorQuery).astNode.as;
+    }
+
     return SqlSelectQuery(
-        name, context, _foundElements, moorTables, _inferResultSet());
+      name,
+      context,
+      _foundElements,
+      moorTables,
+      _inferResultSet(),
+      requestedName,
+    );
   }
 
   InferredResultSet _inferResultSet() {

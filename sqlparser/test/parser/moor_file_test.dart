@@ -16,7 +16,7 @@ CREATE TABLE tbl (
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
 typeHints(:foo AS TEXT): SELECT :foo;
-nested: SELECT foo.** FROM tbl foo;
+nested AS MyResultSet: SELECT foo.** FROM tbl foo;
 ''';
 
 void main() {
@@ -94,6 +94,7 @@ void main() {
             columns: [NestedStarResultColumn('foo')],
             from: TableReference('tbl', 'foo'),
           ),
+          as: 'MyResultSet',
         ),
       ]),
     );
