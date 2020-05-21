@@ -48,10 +48,13 @@ FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic: SELECT * FROM config WHERE $predicate;
 
-tableValued:
+tableValued AS JsonResult:
   SELECT "key", "value"
   FROM config, json_each(config.config_value)
   WHERE json_valid(config_value);
+
+-- using NULLIF to make the second parameter nullable and allow compatibility
+another AS JsonResult: SELECT 'one' AS "key", NULLIF('two', 'another') AS "value";
 
 @create: INSERT INTO config (config_key, config_value) VALUES ('key', 'values');
 

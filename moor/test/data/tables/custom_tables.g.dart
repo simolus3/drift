@@ -1389,12 +1389,24 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<TableValuedResult> tableValued() {
+  Selectable<JsonResult> tableValued() {
     return customSelect(
         'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {config}).map((QueryRow row) {
-      return TableValuedResult(
+      return JsonResult(
+        key: row.readString('key'),
+        value: row.readString('value'),
+      );
+    });
+  }
+
+  Selectable<JsonResult> another() {
+    return customSelect(
+        'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS "value"',
+        variables: [],
+        readsFrom: {}).map((QueryRow row) {
+      return JsonResult(
         key: row.readString('key'),
         value: row.readString('value'),
       );
@@ -1483,10 +1495,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       );
 }
 
-class TableValuedResult {
+class JsonResult {
   final String key;
   final String value;
-  TableValuedResult({
+  JsonResult({
     this.key,
     this.value,
   });
@@ -1495,7 +1507,24 @@ class TableValuedResult {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is TableValuedResult &&
+      (other is JsonResult &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class JsonResult {
+  final String key;
+  final String value;
+  JsonResult({
+    this.key,
+    this.value,
+  });
+  @override
+  int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is JsonResult &&
           other.key == this.key &&
           other.value == this.value);
 }
