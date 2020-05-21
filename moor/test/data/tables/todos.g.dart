@@ -1531,26 +1531,21 @@ abstract class _$TodoDb extends GeneratedDatabase {
       _pureDefaults ??= $PureDefaultsTable(this);
   SomeDao _someDao;
   SomeDao get someDao => _someDao ??= SomeDao(this as TodoDb);
-  AllTodosWithCategoryResult _rowToAllTodosWithCategoryResult(QueryRow row) {
-    return AllTodosWithCategoryResult(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-      catId: row.readInt('catId'),
-      catDesc: row.readString('catDesc'),
-    );
-  }
-
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
         'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
         variables: [],
-        readsFrom: {
-          categories,
-          todosTable
-        }).map(_rowToAllTodosWithCategoryResult);
+        readsFrom: {categories, todosTable}).map((QueryRow row) {
+      return AllTodosWithCategoryResult(
+        id: row.readInt('id'),
+        title: row.readString('title'),
+        content: row.readString('content'),
+        targetDate: row.readDateTime('target_date'),
+        category: row.readInt('category'),
+        catId: row.readInt('catId'),
+        catDesc: row.readString('catDesc'),
+      );
+    });
   }
 
   Future<int> deleteTodoById(int var1) {
@@ -1559,16 +1554,6 @@ abstract class _$TodoDb extends GeneratedDatabase {
       variables: [Variable.withInt(var1)],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
-    );
-  }
-
-  TodoEntry _rowToTodoEntry(QueryRow row) {
-    return TodoEntry(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
     );
   }
 
@@ -1585,14 +1570,30 @@ abstract class _$TodoDb extends GeneratedDatabase {
         ],
         readsFrom: {
           todosTable
-        }).map(_rowToTodoEntry);
+        }).map((QueryRow row) {
+      return TodoEntry(
+        id: row.readInt('id'),
+        title: row.readString('title'),
+        content: row.readString('content'),
+        targetDate: row.readDateTime('target_date'),
+        category: row.readInt('category'),
+      );
+    });
   }
 
   Selectable<TodoEntry> search(int id) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [Variable.withInt(id)],
-        readsFrom: {todosTable}).map(_rowToTodoEntry);
+        readsFrom: {todosTable}).map((QueryRow row) {
+      return TodoEntry(
+        id: row.readInt('id'),
+        title: row.readString('title'),
+        content: row.readString('content'),
+        targetDate: row.readDateTime('target_date'),
+        category: row.readInt('category'),
+      );
+    });
   }
 
   Selectable<MyCustomObject> findCustom() {
@@ -1666,20 +1667,18 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $UsersTable get users => attachedDatabase.users;
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
-  TodoEntry _rowToTodoEntry(QueryRow row) {
-    return TodoEntry(
-      id: row.readInt('id'),
-      title: row.readString('title'),
-      content: row.readString('content'),
-      targetDate: row.readDateTime('target_date'),
-      category: row.readInt('category'),
-    );
-  }
-
   Selectable<TodoEntry> todosForUser(int user) {
     return customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [Variable.withInt(user)],
-        readsFrom: {todosTable, sharedTodos, users}).map(_rowToTodoEntry);
+        readsFrom: {todosTable, sharedTodos, users}).map((QueryRow row) {
+      return TodoEntry(
+        id: row.readInt('id'),
+        title: row.readString('title'),
+        content: row.readString('content'),
+        targetDate: row.readDateTime('target_date'),
+        category: row.readInt('category'),
+      );
+    });
   }
 }

@@ -86,9 +86,8 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-    final writtenMappingMethods = <String>{};
     for (final query in db.queries) {
-      QueryWriter(query, dbScope.child(), writtenMappingMethods).write();
+      QueryWriter(query, dbScope.child()).write();
     }
 
     // Write List of tables

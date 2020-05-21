@@ -28,9 +28,8 @@ class DaoGenerator extends Generator implements BaseGenerator {
             '$infoType get $getterName => attachedDatabase.$getterName;\n');
       }
 
-      final writtenMappingMethods = <String>{};
       for (final query in dao.queries) {
-        QueryWriter(query, classScope.child(), writtenMappingMethods).write();
+        QueryWriter(query, classScope.child()).write();
       }
 
       classScope.leaf().write('}');

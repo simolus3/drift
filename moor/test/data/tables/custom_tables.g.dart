@@ -1349,20 +1349,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Mytable get mytable => _mytable ??= Mytable(this);
   Email _email;
   Email get email => _email ??= Email(this);
-  Config _rowToConfig(QueryRow row) {
-    return Config(
-      configKey: row.readString('config_key'),
-      configValue: row.readString('config_value'),
-      syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
-      syncStateImplicit:
-          ConfigTable.$converter1.mapToDart(row.readInt('sync_state_implicit')),
-    );
-  }
-
   Selectable<Config> readConfig(String var1) {
     return customSelect('SELECT * FROM config WHERE config_key = ?',
         variables: [Variable.withString(var1)],
-        readsFrom: {config}).map(_rowToConfig);
+        readsFrom: {config}).map((QueryRow row) {
+      return Config(
+        configKey: row.readString('config_key'),
+        configValue: row.readString('config_value'),
+        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        syncStateImplicit: ConfigTable.$converter1
+            .mapToDart(row.readInt('sync_state_implicit')),
+      );
+    });
   }
 
   Selectable<Config> readMultiple(List<String> var1, OrderBy clause) {
@@ -1379,36 +1377,42 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config
-        }).map(_rowToConfig);
+        }).map((QueryRow row) {
+      return Config(
+        configKey: row.readString('config_key'),
+        configValue: row.readString('config_value'),
+        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        syncStateImplicit: ConfigTable.$converter1
+            .mapToDart(row.readInt('sync_state_implicit')),
+      );
+    });
   }
 
   Selectable<Config> readDynamic(Expression<bool> predicate) {
     final generatedpredicate = $write(predicate);
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {config}).map(_rowToConfig);
-  }
-
-  TableValuedResult _rowToTableValuedResult(QueryRow row) {
-    return TableValuedResult(
-      key: row.readString('key'),
-      value: row.readString('value'),
-    );
+        readsFrom: {config}).map((QueryRow row) {
+      return Config(
+        configKey: row.readString('config_key'),
+        configValue: row.readString('config_value'),
+        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        syncStateImplicit: ConfigTable.$converter1
+            .mapToDart(row.readInt('sync_state_implicit')),
+      );
+    });
   }
 
   Selectable<TableValuedResult> tableValued() {
     return customSelect(
         'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
         variables: [],
-        readsFrom: {config}).map(_rowToTableValuedResult);
-  }
-
-  MultipleResult _rowToMultipleResult(QueryRow row) {
-    return MultipleResult(
-      a: row.readString('a'),
-      b: row.readInt('b'),
-      c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
-    );
+        readsFrom: {config}).map((QueryRow row) {
+      return TableValuedResult(
+        key: row.readString('key'),
+        value: row.readString('value'),
+      );
+    });
   }
 
   Selectable<MultipleResult> multiple(Expression<bool> predicate) {
@@ -1416,33 +1420,26 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT d.*, "c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {withConstraints, withDefaults}).map(_rowToMultipleResult);
-  }
-
-  EMail _rowToEMail(QueryRow row) {
-    return EMail(
-      sender: row.readString('sender'),
-      title: row.readString('title'),
-      body: row.readString('body'),
-    );
+        readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
+      return MultipleResult(
+        a: row.readString('a'),
+        b: row.readInt('b'),
+        c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+      );
+    });
   }
 
   Selectable<EMail> searchEmails(String term) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable.withString(term)],
-        readsFrom: {email}).map(_rowToEMail);
-  }
-
-  ReadRowIdResult _rowToReadRowIdResult(QueryRow row) {
-    return ReadRowIdResult(
-      rowid: row.readInt('rowid'),
-      configKey: row.readString('config_key'),
-      configValue: row.readString('config_value'),
-      syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
-      syncStateImplicit:
-          ConfigTable.$converter1.mapToDart(row.readInt('sync_state_implicit')),
-    );
+        readsFrom: {email}).map((QueryRow row) {
+      return EMail(
+        sender: row.readString('sender'),
+        title: row.readString('title'),
+        body: row.readString('body'),
+      );
+    });
   }
 
   Selectable<ReadRowIdResult> readRowId(Expression<int> expr) {
@@ -1450,7 +1447,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [...generatedexpr.introducedVariables],
-        readsFrom: {config}).map(_rowToReadRowIdResult);
+        readsFrom: {config}).map((QueryRow row) {
+      return ReadRowIdResult(
+        rowid: row.readInt('rowid'),
+        configKey: row.readString('config_key'),
+        configValue: row.readString('config_value'),
+        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        syncStateImplicit: ConfigTable.$converter1
+            .mapToDart(row.readInt('sync_state_implicit')),
+      );
+    });
   }
 
   Selectable<int> cfeTest() {

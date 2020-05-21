@@ -30,9 +30,7 @@ class QueryWriter {
   bool get _newSelectableMode =>
       query.declaredInMoorFile || options.compactQueryMethods;
 
-  final Set<String> _writtenMappingMethods;
-
-  QueryWriter(this.query, this.scope, this._writtenMappingMethods) {
+  QueryWriter(this.query, this.scope) {
     _buffer = scope.leaf();
   }
 
@@ -67,9 +65,6 @@ class QueryWriter {
 
   void _writeSelect() {
     _createNamesForNestedResults();
-    if (!_select.resultSet.singleColumn) {
-      _writeMapping();
-    }
 
     _writeSelectStatementCreator();
 
@@ -77,10 +72,6 @@ class QueryWriter {
       _writeOneTimeReader();
       _writeStreamReader();
     }
-  }
-
-  String _nameOfMappingMethod() {
-    return '_rowTo${_select.resultClassName}';
   }
 
   String _nameOfCreationMethod() {
@@ -99,38 +90,36 @@ class QueryWriter {
     }
   }
 
-  /// Writes a mapping method that turns a "QueryRow" into the desired custom
-  /// return type.
-  void _writeMapping() {
-    // avoid writing mapping methods twice if the same result class is written
-    // more than once.
-    if (!_writtenMappingMethods.contains(_nameOfMappingMethod())) {
-      _buffer
-        ..write('${_select.resultClassName} ${_nameOfMappingMethod()}')
-        ..write('(QueryRow row) {\n');
-
-      // note that, even if the result set has a matching table, we can't just
-      // use the mapFromRow() function of that table - the column names might
-      // be different!
-      _buffer.write('return ${_select.resultClassName}(');
-      for (final column in _select.resultSet.columns) {
-        final fieldName = _select.resultSet.dartNameFor(column);
-        _buffer.write('$fieldName: ${_readingCode(column)},');
-      }
-      for (final nested in _select.resultSet.nestedResults) {
-        final prefix = _expandedNestedPrefixes[nested];
-        if (prefix == null) continue;
-
-        final fieldName = nested.dartFieldName;
-        final tableGetter = nested.table.dbGetterName;
-
-        _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
-            'tablePrefix: ${asDartLiteral(prefix)}),');
-      }
-      _buffer.write(');\n}\n');
-
-      _writtenMappingMethods.add(_nameOfMappingMethod());
+  /// Writes the function literal that turns a "QueryRow" into the desired
+  /// custom return type of a select statement.
+  void _writeMappingLambda() {
+    if (_select.resultSet.singleColumn) {
+      final column = _select.resultSet.columns.single;
+      _buffer.write('(QueryRow row) => ${_readingCode(column)}');
+      return;
     }
+
+    _buffer.write('(QueryRow row) {\n');
+
+    // note that, even if the result set has a matching table, we can't just
+    // use the mapFromRow() function of that table - the column names might
+    // be different!
+    _buffer.write('return ${_select.resultClassName}(');
+    for (final column in _select.resultSet.columns) {
+      final fieldName = _select.resultSet.dartNameFor(column);
+      _buffer.write('$fieldName: ${_readingCode(column)},');
+    }
+    for (final nested in _select.resultSet.nestedResults) {
+      final prefix = _expandedNestedPrefixes[nested];
+      if (prefix == null) continue;
+
+      final fieldName = nested.dartFieldName;
+      final tableGetter = nested.table.dbGetterName;
+
+      _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
+          'tablePrefix: ${asDartLiteral(prefix)}),');
+    }
+    _buffer.write(');\n}');
   }
 
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
@@ -169,14 +158,7 @@ class QueryWriter {
     _writeReadsFrom();
 
     _buffer.write(').map(');
-    // for queries that only return one row, it makes more sense to inline the
-    // mapping code with a lambda
-    if (_select.resultSet.singleColumn) {
-      final column = _select.resultSet.columns.single;
-      _buffer.write('(QueryRow row) => ${_readingCode(column)}');
-    } else {
-      _buffer.write(_nameOfMappingMethod());
-    }
+    _writeMappingLambda();
     _buffer.write(');\n}\n');
   }
 
