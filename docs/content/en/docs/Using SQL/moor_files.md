@@ -260,6 +260,27 @@ CREATE TABLE users (
 More details on type converts in moor files are available
 [here]({{< relref "../Advanced Features/type_converters.md#using-converters-in-moor" >}}).
 
+## Result class names
+
+For most queries, moor generates a new class to hold the result. This class is named after the query
+with a `Result` suffix, e.g. a `myQuery` query would get a `MyQueryResult` class.
+
+You can change the name of a result class like this:
+
+```sql
+routesWithNestedPoints AS FullRoute: SELECT r.id, -- ...
+```
+
+This way, multiple queries can also share a single result class. As long as they have an identical result set,
+you can assign the same custom name to them and moor will only generate one class.
+
+For queries that select all columns from a table and nothing more, moor won't generate a new class
+and instead re-use the dataclass that it generates either way.
+Similarly, for queries with only one column, moor will just return that column directly instead of
+wrapping it in a result class.
+It's not possible to override this behavior at the moment, so you can't customize the result class
+name of a query if it has a matching table or only has one column.
+
 ## Supported statements
 At the moment, the following statements can appear in a `.moor` file.
 
