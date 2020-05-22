@@ -81,7 +81,7 @@ class TypeResolver {
 
   ResolveResult resolveColumn(Column column) {
     return _cache((column) {
-      if (column is TableColumn) {
+      if (column is ColumnWithType) {
         // todo probably needs to be nullable when coming from a join?
         return ResolveResult(column.type);
       } else if (column is ExpressionColumn) {

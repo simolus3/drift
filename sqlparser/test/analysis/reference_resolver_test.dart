@@ -41,6 +41,25 @@ void main() {
     expect((where.left as Reference).resolved, id);
   });
 
+  test('resolves columns from views', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final viewCtx = engine.analyze('CREATE VIEW my_view (foo, bar) AS '
+        'SELECT * FROM demo;');
+    engine.registerView(engine.schemaReader
+        .readView(viewCtx, viewCtx.root as CreateViewStatement));
+
+    final context = engine.analyze('SELECT * FROM my_view');
+    expect(context.errors, isEmpty);
+
+    final resolvedColumns = (context.root as SelectStatement).resolvedColumns;
+    expect(resolvedColumns.map((e) => e.name), ['foo', 'bar']);
+    expect(
+      resolvedColumns.map((e) => context.typeOf(e).type.type),
+      [BasicType.int, BasicType.text],
+    );
+  });
+
   test("resolved columns don't include moor nested results", () {
     final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
       ..registerTable(demoTable);

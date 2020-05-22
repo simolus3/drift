@@ -31,9 +31,9 @@ class Reference extends Expression with ReferenceOwner {
   @override
   String toString() {
     if (tableName != null) {
-      return '$tableName.$columnName';
+      return 'Reference to the column $tableName.$columnName';
     } else {
-      return columnName;
+      return 'Reference to the column $columnName';
     }
   }
 }

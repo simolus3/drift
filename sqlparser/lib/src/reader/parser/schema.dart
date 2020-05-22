@@ -10,6 +10,8 @@ mixin SchemaParser on ParserBase {
       return _createTrigger();
     } else if (_check(TokenType.unique) || _check(TokenType.$index)) {
       return _createIndex();
+    } else if (_check(TokenType.view)) {
+      return _createView();
     }
 
     return null;
@@ -247,6 +249,37 @@ mixin SchemaParser on ParserBase {
       ..triggerNameToken = trigger;
   }
 
+  /// Parses a [CreateViewStatement]. The `CREATE` token must have already been
+  /// accepted.
+  CreateViewStatement _createView() {
+    final create = _previous;
+    assert(create.type == TokenType.create);
+
+    if (!_matchOne(TokenType.view)) return null;
+
+    final ifNotExists = _ifNotExists();
+    final name = _consumeIdentifier('Expected a name for this view');
+
+    List<String> columnNames;
+    if (_matchOne(TokenType.leftParen)) {
+      columnNames = _columnNames();
+      _consume(TokenType.rightParen, 'Expected closing bracket');
+    }
+
+    _consume(TokenType.as, 'Expected AS SELECT');
+
+    final query = _fullSelect();
+
+    return CreateViewStatement(
+      ifNotExists: ifNotExists,
+      viewName: name.identifier,
+      columns: columnNames,
+      query: query,
+    )
+      ..viewNameToken = name
+      ..setSpan(create, _previous);
+  }
+
   /// Parses a [CreateIndexStatement]. The `CREATE` token must have already been
   /// accepted.
   CreateIndexStatement _createIndex() {
@@ -286,6 +319,17 @@ mixin SchemaParser on ParserBase {
     )
       ..nameToken = name
       ..setSpan(create, _previous);
+  }
+
+  List<String> _columnNames() {
+    final columns = <String>[];
+    do {
+      final colName = _consumeIdentifier('Expected a name for this column');
+
+      columns.add(colName.identifier);
+    } while (_matchOne(TokenType.comma));
+
+    return columns;
   }
 
   @override

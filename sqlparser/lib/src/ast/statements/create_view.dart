@@ -1,0 +1,37 @@
+part of '../ast.dart';
+
+/// A "CREATE VIEW" statement, see https://sqlite.org/lang_createview.html
+class CreateViewStatement extends Statement implements CreatingStatement {
+  final bool ifNotExists;
+
+  final String viewName;
+  IdentifierToken viewNameToken;
+
+  final BaseSelectStatement query;
+
+  final List<String> columns;
+
+  CreateViewStatement(
+      {this.ifNotExists = false,
+      @required this.viewName,
+      this.columns,
+      @required this.query});
+
+  @override
+  String get createdName => viewName;
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitCreateViewStatement(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [query];
+
+  @override
+  bool contentEquals(CreateViewStatement other) {
+    return other.ifNotExists == ifNotExists &&
+        other.viewName == viewName &&
+        const ListEquality().equals(other.columns, columns);
+  }
+}

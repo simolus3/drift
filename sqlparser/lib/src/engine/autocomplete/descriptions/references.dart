@@ -6,7 +6,7 @@ class TableNameDescription extends HintDescription {
 
   @override
   Iterable<Suggestion> suggest(CalculationRequest request) {
-    final tableNames = request.engine.knownTables.map((t) => t.escapedName);
+    final tableNames = request.engine.knownResultSets.map((t) => t.escapedName);
 
     return tableNames.map((t) {
       return Suggestion(t, 1);
