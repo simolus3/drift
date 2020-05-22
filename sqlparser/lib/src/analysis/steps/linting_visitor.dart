@@ -9,6 +9,28 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   LintingVisitor(this.options, this.context);
 
   @override
+  void visitCreateViewStatement(CreateViewStatement e, void arg) {
+    final resolvedColumns = e.query.resolvedColumns;
+    if (e.columns == null || resolvedColumns == null) {
+      return super.visitCreateViewStatement(e, arg);
+    }
+
+    final amountOfNames = e.columns.length;
+    final amountOfColumns = resolvedColumns.length;
+
+    if (amountOfNames != amountOfColumns) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.viewColumnNamesMismatch,
+        relevantNode: e,
+        message: 'This view declares $amountOfNames column names, but the '
+            'inner select statement returns $amountOfColumns',
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInvocation(SqlInvocation e, void arg) {
     final lowercaseCall = e.name.toLowerCase();
     if (options.addedFunctions.containsKey(lowercaseCall)) {

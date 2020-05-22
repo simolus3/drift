@@ -19,13 +19,19 @@ abstract class Column
   }
 }
 
+/// A column that has a statically known resolved type.
+abstract class ColumnWithType implements Column {
+  /// The type of this column, which is available before any resolution happens
+  /// (we know it from the schema structure).
+  ResolvedType get type;
+}
+
 /// A column that is part of a table.
-class TableColumn extends Column {
+class TableColumn extends Column implements ColumnWithType {
   @override
   final String name;
 
-  /// The type of this column, which is available before any resolution happens
-  /// (we know ii from the table).
+  @override
   ResolvedType get type => _type;
   ResolvedType _type;
 
@@ -100,6 +106,35 @@ class TableColumn extends Column {
   @override
   String humanReadableDescription() {
     return '$name in ${table.humanReadableDescription()}';
+  }
+}
+
+/// A column that is part of a view.
+class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
+  final String _name;
+
+  @override
+  final ResolvedType type;
+
+  @override
+  final Column innerColumn;
+
+  /// The view this column belongs to.
+  View view;
+
+  /// Creates a view column wrapping a [Column] from the select statement used
+  /// to create the view.
+  ///
+  /// The optional name parameter can be used to override the name for this
+  /// column. By default, the name of the [innerColumn] will be used.
+  ViewColumn(this.innerColumn, this.type, [this._name]);
+
+  @override
+  String get name => _name ?? super.name;
+
+  @override
+  String humanReadableDescription() {
+    return '$name in ${view.humanReadableDescription()}';
   }
 }
 

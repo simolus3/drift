@@ -34,6 +34,7 @@ part 'statements/block.dart';
 part 'statements/create_table.dart';
 part 'statements/create_index.dart';
 part 'statements/create_trigger.dart';
+part 'statements/create_view.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
 part 'statements/select.dart';

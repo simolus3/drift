@@ -10,6 +10,11 @@ abstract class Literal<T> extends Expression {
 
   @override
   final Iterable<AstNode> childNodes = const <AstNode>[];
+
+  @override
+  String toString() {
+    return 'Literal with value $value';
+  }
 }
 
 class NullLiteral<T> extends Literal {

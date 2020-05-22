@@ -2,6 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../../common_data.dart';
+import '../data.dart';
 
 const _affinityTests = {
   'INT': BasicType.int,
@@ -79,6 +80,35 @@ void main() {
       ResolvedType(type: BasicType.int, hint: IsDateTime(), nullable: true),
       ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: false),
     ]);
+  });
+
+  group('can read views', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    View readView(String sql) {
+      final context = engine.analyze(sql);
+      final stmt = context.root as CreateViewStatement;
+      return const SchemaFromCreateTable().readView(context, stmt);
+    }
+
+    test('without column names', () {
+      final view = readView('CREATE VIEW my_view AS SELECT * FROM demo;');
+
+      expect(view.name, 'my_view');
+      expect(view.resolvedColumns.map((e) => e.name), ['id', 'content']);
+      expect(
+        view.resolvedColumns.map((e) => e.type.type),
+        [BasicType.int, BasicType.text],
+      );
+    });
+
+    test('with custom column names', () {
+      final view = readView(
+          'CREATE VIEW another_view (foo, bar) AS SELECT * FROM demo;');
+
+      expect(view.name, 'another_view');
+      expect(view.resolvedColumns.map((e) => e.name), ['foo', 'bar']);
+    });
   });
 
   test('can read columns without type name', () {
