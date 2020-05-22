@@ -9,11 +9,12 @@ void main() {
     testStatement(
       'CREATE VIEW my_view AS SELECT * FROM my_tbl',
       CreateViewStatement(
-          viewName: 'my_view',
-          query: SelectStatement(
-            columns: <ResultColumn>[StarResultColumn()],
-            from: TableReference('my_tbl'),
-          )),
+        viewName: 'my_view',
+        query: SelectStatement(
+          columns: <ResultColumn>[StarResultColumn()],
+          from: TableReference('my_tbl'),
+        ),
+      ),
     );
   });
 
@@ -24,63 +25,73 @@ void main() {
       ' UNION '
       'SELECT group_concat(id), name, count(*),\'cat\' FROM cats GROUP BY name',
       CreateViewStatement(
-          viewName: 'my_complex_view',
-          columns: ['ids', 'name', 'count', 'type'],
-          ifNotExists: true,
-          query: CompoundSelectStatement(
-              base: SelectStatement(
-                  columns: [
-                    ExpressionResultColumn(
-                      expression: FunctionExpression(
-                        name: 'group_concat',
-                        parameters: ExprFunctionParameters(
-                            parameters: [Reference(columnName: 'id')]),
+        viewName: 'my_complex_view',
+        columns: ['ids', 'name', 'count', 'type'],
+        ifNotExists: true,
+        query: CompoundSelectStatement(
+          base: SelectStatement(
+            columns: [
+              ExpressionResultColumn(
+                expression: FunctionExpression(
+                  name: 'group_concat',
+                  parameters: ExprFunctionParameters(
+                    parameters: [Reference(columnName: 'id')],
+                  ),
+                ),
+              ),
+              ExpressionResultColumn(
+                expression: Reference(columnName: 'name'),
+              ),
+              ExpressionResultColumn(
+                expression: FunctionExpression(
+                  name: 'count',
+                  parameters: StarFunctionParameter(),
+                ),
+              ),
+              ExpressionResultColumn(
+                expression: StringLiteral(stringLiteral('dog')),
+              ),
+            ],
+            from: TableReference('dogs'),
+            groupBy: GroupBy(
+              by: [Reference(columnName: 'name')],
+            ),
+          ),
+          additional: [
+            CompoundSelectPart(
+              mode: CompoundSelectMode.union,
+              select: SelectStatement(
+                columns: [
+                  ExpressionResultColumn(
+                    expression: FunctionExpression(
+                      name: 'group_concat',
+                      parameters: ExprFunctionParameters(
+                        parameters: [Reference(columnName: 'id')],
                       ),
                     ),
-                    ExpressionResultColumn(
-                      expression: Reference(columnName: 'name'),
+                  ),
+                  ExpressionResultColumn(
+                    expression: Reference(columnName: 'name'),
+                  ),
+                  ExpressionResultColumn(
+                    expression: FunctionExpression(
+                      name: 'count',
+                      parameters: StarFunctionParameter(),
                     ),
-                    ExpressionResultColumn(
-                      expression: FunctionExpression(
-                          name: 'count', parameters: StarFunctionParameter()),
-                    ),
-                    ExpressionResultColumn(
-                      expression: StringLiteral(stringLiteral('dog')),
-                    ),
-                  ],
-                  from: TableReference('dogs'),
-                  groupBy: GroupBy(
-                    by: [Reference(columnName: 'name')],
-                  )),
-              additional: [
-                CompoundSelectPart(
-                    mode: CompoundSelectMode.union,
-                    select: SelectStatement(
-                        columns: [
-                          ExpressionResultColumn(
-                            expression: FunctionExpression(
-                              name: 'group_concat',
-                              parameters: ExprFunctionParameters(
-                                  parameters: [Reference(columnName: 'id')]),
-                            ),
-                          ),
-                          ExpressionResultColumn(
-                            expression: Reference(columnName: 'name'),
-                          ),
-                          ExpressionResultColumn(
-                            expression: FunctionExpression(
-                                name: 'count',
-                                parameters: StarFunctionParameter()),
-                          ),
-                          ExpressionResultColumn(
-                            expression: StringLiteral(stringLiteral('cat')),
-                          )
-                        ],
-                        from: TableReference('cats'),
-                        groupBy: GroupBy(
-                          by: [Reference(columnName: 'name')],
-                        )))
-              ])),
+                  ),
+                  ExpressionResultColumn(
+                    expression: StringLiteral(stringLiteral('cat')),
+                  )
+                ],
+                from: TableReference('cats'),
+                groupBy: GroupBy(
+                  by: [Reference(columnName: 'name')],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   });
 }

@@ -33,7 +33,7 @@ class CustomResultSet with ResultSet {
 
 /// Something that returns a set of Columns and can be referenced by a name,
 /// such as a table or a view.
-abstract class NamedResultSet extends ResultSet{
+abstract class NamedResultSet extends ResultSet {
   /// The name of this result set, as it appears in sql statements. This should
   /// be the raw name, not an escaped version.
   ///
@@ -45,5 +45,4 @@ abstract class NamedResultSet extends ResultSet{
   String get escapedName {
     return isKeywordLexeme(name) ? '"$name"' : name;
   }
-
 }
