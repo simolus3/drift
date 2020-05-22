@@ -1,3 +1,8 @@
+## 3.2.0
+
+- It's now possible to change the name of a class generated for moor-file queries. See
+  [the documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#result-class-names) for details.
+
 ## 3.1.0
 
 - Update companions now implement `==` and `hashCode`

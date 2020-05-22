@@ -1,3 +1,7 @@
+## 3.2.0
+
+- Support custom result class names for queries.
+
 ## 3.1.0
 
 - Respect foreign key constraints when calculating the stream update graph
