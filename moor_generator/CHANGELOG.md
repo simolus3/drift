@@ -1,6 +1,7 @@
 ## 3.2.0
 
 - Support custom result class names for queries.
+- Fix minimum `analyzer: ^0.39.5` version requirement
 
 ## 3.1.0
 

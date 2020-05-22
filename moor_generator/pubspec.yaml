@@ -26,7 +26,7 @@ dependencies:
   sqlparser: ^0.9.0
 
   # Dart analysis
-  analyzer: '^0.39.0'
+  analyzer: '^0.39.5'
   analyzer_plugin_fork: ^0.2.2 # todo switch back to analyzer_plugin when it supports analyzer 0.39.0
   source_span: ^1.5.5
 
