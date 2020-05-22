@@ -1,3 +1,8 @@
+## 0.10.0
+
+- Support parsing and analyzing `CREATE VIEW` statements (see `SchemaFromCreateTable.readView`).
+  Thanks to [@mqus](https://github.com/mqus) for their contribution!
+
 ## 0.9.0
 
 - New `package:sqlparser/utils/find_referenced_tables.dart` library. Use it to easily find all referenced tables
