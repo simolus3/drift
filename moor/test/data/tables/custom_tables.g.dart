@@ -1512,23 +1512,6 @@ class JsonResult {
           other.value == this.value);
 }
 
-class JsonResult {
-  final String key;
-  final String value;
-  JsonResult({
-    this.key,
-    this.value,
-  });
-  @override
-  int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is JsonResult &&
-          other.key == this.key &&
-          other.value == this.value);
-}
-
 class MultipleResult {
   final String a;
   final int b;

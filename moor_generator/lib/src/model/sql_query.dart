@@ -184,8 +184,20 @@ class InferredResultSet {
   /// it hasn't explicitly been set.
   final String resultClassName;
 
-  InferredResultSet(this.matchingTable, this.columns,
-      {this.nestedResults = const [], this.resultClassName});
+  /// Explicitly controls that no result class should be generated for this
+  /// result set.
+  ///
+  /// This is enabled on duplicate result sets caused by custom result class
+  /// names.
+  final bool dontGenerateResultClass;
+
+  InferredResultSet(
+    this.matchingTable,
+    this.columns, {
+    this.nestedResults = const [],
+    this.resultClassName,
+    this.dontGenerateResultClass = false,
+  });
 
   /// Whether a new class needs to be written to store the result of this query.
   ///
@@ -194,8 +206,11 @@ class InferredResultSet {
   /// - return exactly one column
   ///
   /// We always need to generate a class if the query contains nested results.
-  bool get needsOwnClass =>
-      matchingTable == null && columns.length > 1 || nestedResults.isNotEmpty;
+  bool get needsOwnClass {
+    return matchingTable == null &&
+        (columns.length > 1 || nestedResults.isNotEmpty) &&
+        !dontGenerateResultClass;
+  }
 
   /// Whether this query returns a single column that should be returned
   /// directly.

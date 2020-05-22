@@ -83,12 +83,15 @@ class CustomResultClassTransformer {
           column: referenceResult.dartNameFor(column),
       };
 
+      var isFirst = true;
       for (final query in queries) {
         final newResultSet = InferredResultSet(
           null,
           query.resultSet.columns,
           resultClassName: resultSetName,
           nestedResults: query.resultSet.nestedResults,
+          // Only generate a result class for the first query in the group
+          dontGenerateResultClass: !isFirst,
         );
 
         // Make sure compatible columns in the two result sets have the same
@@ -101,6 +104,8 @@ class CustomResultClassTransformer {
 
         final newQuery = query.replaceResultSet(newResultSet);
         accessor.queries[indexOfOldQueries[query]] = newQuery;
+
+        isFirst = false;
       }
     }
   }
