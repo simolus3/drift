@@ -7,33 +7,44 @@ import 'package:sqlparser/sqlparser.dart';
 class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   /// All tables that have been referenced anywhere in this query.
   final Set<Table> foundTables = {};
+  final Set<View> foundViews = {};
+
+  void _add(NamedResultSet resultSet) {
+    if (resultSet is Table) {
+      foundTables.add(resultSet);
+    } else if (resultSet is View) {
+      foundViews.add(resultSet);
+    }
+  }
 
   @override
   void visitReference(Reference e, void arg) {
     final column = e.resolved;
     if (column is TableColumn) {
-      foundTables.add(column.table);
+      _add(column.table);
+    } else if (column is ViewColumn) {
+      _add(column.view);
     }
 
     visitChildren(e, arg);
   }
 
-  Table /*?*/ _toTableOrNull(ResolvesToResultSet resultSet) {
+  NamedResultSet /*?*/ _toResultSetOrNull(ResolvesToResultSet resultSet) {
     var resolved = resultSet.resultSet;
 
     while (resolved != null && resolved is TableAlias) {
       resolved = (resolved as TableAlias).delegate;
     }
 
-    return resolved is Table ? resolved : null;
+    return resolved is NamedResultSet ? resolved : null;
   }
 
   @override
   void visitQueryable(Queryable e, void arg) {
     if (e is TableReference) {
-      final resolved = _toTableOrNull(e.resultSet);
+      final resolved = _toResultSetOrNull(e.resultSet);
       if (resolved != null) {
-        foundTables.add(resolved);
+        _add(resolved);
       }
     }
 
@@ -74,8 +85,8 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
   final Set<TableWrite> writtenTables = {};
 
   void _addIfResolved(ResolvesToResultSet r, UpdateKind kind) {
-    final resolved = _toTableOrNull(r);
-    if (resolved != null) {
+    final resolved = _toResultSetOrNull(r);
+    if (resolved != null && resolved is Table) {
       writtenTables.add(TableWrite(resolved, kind));
     }
   }
