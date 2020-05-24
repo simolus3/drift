@@ -44,6 +44,12 @@ class CreateTableStatement extends TableInducingStatement {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(columns, this, arg);
+    transformer.transformChildren(tableConstraints, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => [...columns, ...tableConstraints];
 
   @override
@@ -82,6 +88,9 @@ class CreateVirtualTableStatement extends TableInducingStatement {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCreateVirtualTableStatement(this, arg);
   }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
 
   @override
   Iterable<AstNode> get childNodes => const [];

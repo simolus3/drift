@@ -22,13 +22,18 @@ class FunctionExpression extends Expression
   @override
   final String name;
   @override
-  final FunctionParameters parameters;
+  FunctionParameters parameters;
 
   FunctionExpression({@required this.name, @required this.parameters});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitFunction(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    parameters = transformer.transformChild(parameters, this, arg);
   }
 
   @override
@@ -58,6 +63,9 @@ class StarFunctionParameter extends FunctionParameters {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
 
   @override
@@ -75,6 +83,11 @@ class ExprFunctionParameters extends FunctionParameters {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitExpressionFunctionParameters(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(parameters, this, arg);
   }
 
   @override

@@ -1,6 +1,8 @@
 ## 0.10.0
 
 - Breaking: Made `RecursiveVisitor.visit`, `visitList` and `visitExcept` an extension on `AstVisitor`.
+- Support the transformer pattern to modify ast nodes
+- Breaking: `FrameBoundary` is no longer constant
 - Support parsing and analyzing `CREATE VIEW` statements (see `SchemaFromCreateTable.readView`).
   Thanks to [@mqus](https://github.com/mqus) for their contribution!
 

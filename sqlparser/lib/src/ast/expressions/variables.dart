@@ -19,6 +19,9 @@ class NumberedVariable extends Expression with Variable {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   Iterable<AstNode> get childNodes => const [];
 
   @override
@@ -37,6 +40,9 @@ class ColonNamedVariable extends Expression with Variable {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitNamedVariable(this, arg);
   }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
 
   @override
   Iterable<AstNode> get childNodes => [];

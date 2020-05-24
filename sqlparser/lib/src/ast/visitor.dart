@@ -467,6 +467,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 }
 
+class Transformer<A> extends RecursiveVisitor<A, AstNode /*?*/ > {
+  @override
+  AstNode defaultNode(AstNode e, A arg) => e..transformChildren(this, arg);
+}
+
 extension VisitChildrenExtension<A, R> on AstVisitor<A, R> {
   /// Visits the node [e] by calling [AstNode.accept].
   R visit(AstNode e, A arg) => e.accept(this, arg);
@@ -494,5 +499,41 @@ extension VisitChildrenExtension<A, R> on AstVisitor<A, R> {
         visit(child, arg);
       }
     }
+  }
+}
+
+extension TransformerUtils<A> on Transformer<A> {
+  AstNode transform(AstNode e, A arg) => visit(e, arg);
+
+  T transformChild<T extends AstNode>(T child, AstNode parent, A arg) {
+    final transformed = transform(child, arg)..parent = parent;
+    return transformed as T;
+  }
+
+  T /*?*/ transformNullableChild<T extends AstNode>(
+    T /*?*/ child,
+    AstNode parent,
+    A arg,
+  ) {
+    if (child == null) return null;
+
+    final transformed = transform(child, arg);
+    transformed?.parent = parent;
+    return transformed as T;
+  }
+
+  void transformChildren(List<AstNode> children, AstNode parent, A arg) {
+    final newChildren = <AstNode>[];
+
+    for (final child in children) {
+      final transformed = transform(child, arg);
+      if (transformed != null) {
+        newChildren.add(transformed..parent = parent);
+      }
+    }
+
+    children
+      ..clear()
+      ..addAll(newChildren);
   }
 }

@@ -4,7 +4,7 @@ part of '../ast.dart';
 /// followed by a colon and the query to run.
 class DeclaredStatement extends Statement implements PartOfMoorFile {
   final DeclaredStatementIdentifier identifier;
-  final CrudStatement statement;
+  CrudStatement statement;
   final List<StatementParameter> parameters;
 
   /// The desired result class name, if set.
@@ -23,6 +23,14 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitMoorDeclaredStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    statement = transformer.transformChild(statement, this, arg);
+    if (parameters != null) {
+      transformer.transformChildren(parameters, this, arg);
+    }
   }
 
   @override
@@ -101,7 +109,7 @@ abstract class StatementParameter extends AstNode {
 /// in the query will then be resolved to the type set here. This is useful for
 /// cases in which the resolver doesn't yield acceptable results.
 class VariableTypeHint extends StatementParameter {
-  final Variable variable;
+  Variable variable;
   final String typeName;
 
   Token as;
@@ -110,6 +118,11 @@ class VariableTypeHint extends StatementParameter {
 
   @override
   Iterable<AstNode> get childNodes => [variable];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    variable = transformer.transformChild(variable, this, arg);
+  }
 
   @override
   bool contentEquals(VariableTypeHint other) {

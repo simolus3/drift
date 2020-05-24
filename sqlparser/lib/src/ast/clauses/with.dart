@@ -16,6 +16,11 @@ class WithClause extends AstNode {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(ctes, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => ctes;
 
   @override
@@ -29,7 +34,7 @@ class CommonTableExpression extends AstNode with ResultSet {
   /// `cnt(x) AS (...)`, contains the column names (`['x']`, in that case).
   /// Otherwise null.
   final List<String> columnNames;
-  final BaseSelectStatement as;
+  BaseSelectStatement as;
 
   Token asToken;
   IdentifierToken tableNameToken;
@@ -42,6 +47,11 @@ class CommonTableExpression extends AstNode with ResultSet {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCommonTableExpression(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    as = transformer.transformChild(as, this, arg);
   }
 
   @override

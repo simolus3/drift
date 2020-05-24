@@ -17,15 +17,15 @@ class SelectStatement extends BaseSelectStatement
     implements StatementWithWhere, SelectStatementNoCompound {
   final bool distinct;
   final List<ResultColumn> columns;
-  final Queryable /*?*/ from;
+  Queryable /*?*/ from;
 
   @override
-  final Expression where;
-  final GroupBy groupBy;
+  Expression where;
+  GroupBy groupBy;
   final List<NamedWindowDeclaration> windowDeclarations;
 
-  final OrderByBase orderBy;
-  final LimitBase limit;
+  OrderByBase orderBy;
+  LimitBase limit;
 
   SelectStatement(
       {WithClause withClause,
@@ -42,6 +42,18 @@ class SelectStatement extends BaseSelectStatement
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitSelectStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    withClause = transformer.transformNullableChild(withClause, this, arg);
+    transformer.transformChildren(columns, this, arg);
+    from = transformer.transformNullableChild(from, this, arg);
+    where = transformer.transformNullableChild(where, this, arg);
+    groupBy = transformer.transformNullableChild(groupBy, this, arg);
+//    transformer.transformChildren(windowDeclarations, this, arg);
+    limit = transformer.transformNullableChild(limit, this, arg);
+    orderBy = transformer.transformNullableChild(orderBy, this, arg);
   }
 
   @override
@@ -65,7 +77,7 @@ class SelectStatement extends BaseSelectStatement
 }
 
 class CompoundSelectStatement extends BaseSelectStatement {
-  final SelectStatementNoCompound base;
+  SelectStatementNoCompound base;
   final List<CompoundSelectPart> additional;
 
   // the grammar under https://www.sqlite.org/syntax/compound-select-stmt.html
@@ -89,6 +101,13 @@ class CompoundSelectStatement extends BaseSelectStatement {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    withClause = transformer.transformNullableChild(withClause, this, arg);
+    base = transformer.transformChild(base, this, arg);
+    transformer.transformChildren(additional, this, arg);
+  }
+
+  @override
   bool contentEquals(CompoundSelectStatement other) {
     // this class doesn't contain anything but child nodes
     return true;
@@ -106,6 +125,11 @@ class ValuesSelectStatement extends BaseSelectStatement
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitValuesSelectStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(values, this, arg);
   }
 
   @override
@@ -133,6 +157,9 @@ class StarResultColumn extends ResultColumn {
   Iterable<AstNode> get childNodes => const [];
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   bool contentEquals(StarResultColumn other) {
     return other.tableName == tableName;
   }
@@ -140,7 +167,7 @@ class StarResultColumn extends ResultColumn {
 
 class ExpressionResultColumn extends ResultColumn
     implements Renamable, Referencable {
-  final Expression expression;
+  Expression expression;
   @override
   final String as;
 
@@ -153,6 +180,11 @@ class ExpressionResultColumn extends ResultColumn
   Iterable<AstNode> get childNodes => [expression];
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    expression = transformer.transformChild(expression, this, arg);
+  }
+
+  @override
   bool contentEquals(ExpressionResultColumn other) {
     return other.as == as;
   }
@@ -161,13 +193,19 @@ class ExpressionResultColumn extends ResultColumn
 class GroupBy extends AstNode {
   /// The list of expressions that form the partition
   final List<Expression> by;
-  final Expression having;
+  Expression having;
 
   GroupBy({@required this.by, this.having});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitGroupBy(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(by, this, arg);
+    transformer.transformChild(having, this, arg);
   }
 
   @override
@@ -188,7 +226,7 @@ enum CompoundSelectMode {
 
 class CompoundSelectPart extends AstNode {
   final CompoundSelectMode mode;
-  final SelectStatementNoCompound select;
+  SelectStatementNoCompound select;
 
   /// The first token of this statement, so either union, intersect or except.
   Token firstModeToken;
@@ -204,6 +242,11 @@ class CompoundSelectPart extends AstNode {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCompoundSelectPart(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    select = transformer.transformChild(select, this, arg);
   }
 
   @override

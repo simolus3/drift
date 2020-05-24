@@ -8,8 +8,8 @@ class AggregateExpression extends Expression
   String get name => function.identifier;
 
   @override
-  final FunctionParameters parameters;
-  final Expression filter;
+  FunctionParameters parameters;
+  Expression filter;
 
   @override
   Referencable resolved;
@@ -24,7 +24,7 @@ class AggregateExpression extends Expression
   /// this field will be null. Either [windowDefinition] or [windowName] are
   /// null. The resolved [WindowDefinition] is available in [over] in either
   /// case.
-  final WindowDefinition windowDefinition;
+  WindowDefinition windowDefinition;
 
   /// An aggregate expression can be written as `OVER <window-name>` instead of
   /// declaring its own [windowDefinition]. Either [windowDefinition] or
@@ -47,6 +47,14 @@ class AggregateExpression extends Expression
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    parameters = transformer.transformChild(parameters, this, arg);
+    filter = transformer.transformNullableChild(filter, this, arg);
+    windowDefinition =
+        transformer.transformNullableChild(windowDefinition, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes {
     return [
       parameters,
@@ -65,6 +73,7 @@ class AggregateExpression extends Expression
 /// `WINDOW <name> AS <window-defn>`. It can be referenced from an
 /// [AggregateExpression] if it uses the same name.
 class NamedWindowDeclaration with Referencable {
+  // todo: Should be an ast node
   final String name;
   final WindowDefinition definition;
 
@@ -74,8 +83,8 @@ class NamedWindowDeclaration with Referencable {
 class WindowDefinition extends AstNode {
   final String baseWindowName;
   final List<Expression> partitionBy;
-  final OrderByBase orderBy;
-  final FrameSpec frameSpec;
+  OrderByBase orderBy;
+  FrameSpec frameSpec;
 
   WindowDefinition(
       {this.baseWindowName,
@@ -86,6 +95,13 @@ class WindowDefinition extends AstNode {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitWindowDefinition(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(partitionBy, this, arg);
+    orderBy = transformer.transformNullableChild(orderBy, this, arg);
+    frameSpec = transformer.transformChild(frameSpec, this, arg);
   }
 
   @override
@@ -101,19 +117,30 @@ class WindowDefinition extends AstNode {
 class FrameSpec extends AstNode {
   final FrameType type;
   final ExcludeMode excludeMode;
-  final FrameBoundary start;
-  final FrameBoundary end;
+  FrameBoundary start;
+  FrameBoundary end;
 
   FrameSpec({
     this.type = FrameType.range,
-    this.start = const FrameBoundary.unboundedPreceding(),
-    this.end = const FrameBoundary.currentRow(),
+    FrameBoundary start,
+    FrameBoundary end,
     this.excludeMode = ExcludeMode.noOthers,
-  });
+  })  : start = start ?? FrameBoundary.unboundedPreceding(),
+        end = end ?? FrameBoundary.currentRow();
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitFrameSpec(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    if (start.isExpressionOffset) {
+      start.offset = transformer.transformChild(start.offset, this, arg);
+    }
+    if (end.isExpressionOffset) {
+      end.offset = transformer.transformChild(end.offset, this, arg);
+    }
   }
 
   @override
@@ -164,7 +191,7 @@ class FrameBoundary {
 
   /// The (integer) expression that specifies the amount of rows to include
   /// before or after the row being processed.
-  final Expression offset;
+  Expression offset;
 
   /// Whether this boundary refers to a row before the current row.
   final bool preceding;
@@ -180,18 +207,18 @@ class FrameBoundary {
   /// Whether this boundary only refers to the current row.
   bool get isCurrentRow => _type == _BoundaryType.currentRow;
 
-  const FrameBoundary._(this._type, this.preceding, {this.offset});
+  FrameBoundary._(this._type, this.preceding, {this.offset});
 
-  const FrameBoundary.unboundedPreceding()
+  FrameBoundary.unboundedPreceding()
       : this._(_BoundaryType.unboundedOffset, true);
-  const FrameBoundary.unboundedFollowing()
+  FrameBoundary.unboundedFollowing()
       : this._(_BoundaryType.unboundedOffset, false);
 
-  const FrameBoundary.currentRow() : this._(_BoundaryType.currentRow, false);
+  FrameBoundary.currentRow() : this._(_BoundaryType.currentRow, false);
 
-  const FrameBoundary.preceding(Expression amount)
+  FrameBoundary.preceding(Expression amount)
       : this._(_BoundaryType.exprOffset, true, offset: amount);
-  const FrameBoundary.following(Expression amount)
+  FrameBoundary.following(Expression amount)
       : this._(_BoundaryType.exprOffset, false, offset: amount);
 
   @override
@@ -207,7 +234,8 @@ class FrameBoundary {
     // lint bug: https://github.com/dart-lang/linter/issues/1397
     final typedOther = other as FrameBoundary; // ignore: test_types_in_equals
     return typedOther._type == _type &&
-        typedOther.offset.contentEquals(offset) &&
+        (typedOther.offset == null && offset == null ||
+            typedOther.offset.contentEquals(offset)) &&
         typedOther.preceding == preceding;
   }
 }

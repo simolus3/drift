@@ -3,15 +3,22 @@ part of '../ast.dart';
 class UpsertClause extends AstNode implements HasWhereClause {
   final List<IndexedColumn> /*?*/ onColumns;
   @override
-  final Expression where;
+  Expression where;
 
-  final UpsertAction action;
+  UpsertAction action;
 
   UpsertClause({this.onColumns, this.where, @required this.action});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitUpsertClause(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(onColumns, this, arg);
+    where = transformer.transformNullableChild(where, this, arg);
+    action = transformer.transformChild(action, this, arg);
   }
 
   @override
@@ -36,6 +43,9 @@ class DoNothing extends UpsertAction {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   Iterable<AstNode> get childNodes => const [];
 
   @override
@@ -45,13 +55,19 @@ class DoNothing extends UpsertAction {
 class DoUpdate extends UpsertAction implements HasWhereClause {
   final List<SetComponent> set;
   @override
-  final Expression where;
+  Expression where;
 
   DoUpdate(this.set, {this.where});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitDoUpdate(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(set, this, arg);
+    where = transformer.transformNullableChild(where, this, arg);
   }
 
   @override

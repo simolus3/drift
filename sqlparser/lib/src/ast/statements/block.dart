@@ -14,6 +14,11 @@ class Block extends AstNode {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(statements, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => statements;
 
   @override

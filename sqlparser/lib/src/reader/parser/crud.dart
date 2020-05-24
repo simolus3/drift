@@ -790,7 +790,7 @@ mixin CrudParser on ParserBase {
     } else {
       // <expr> FOLLOWING is not supported in the short-hand syntax
       start = _frameBoundary(isStartBounds: true, parseExprFollowing: false);
-      end = const FrameBoundary.currentRow();
+      end = FrameBoundary.currentRow();
     }
 
     var exclude = ExcludeMode.noOthers;
@@ -821,17 +821,17 @@ mixin CrudParser on ParserBase {
     // the CURRENT ROW boundary is supported for all modes
     if (_matchOne(TokenType.current)) {
       _consume(TokenType.row, 'Expected ROW to finish CURRENT ROW boundary');
-      return const FrameBoundary.currentRow();
+      return FrameBoundary.currentRow();
     }
     if (_matchOne(TokenType.unbounded)) {
       // if this is a start boundary, only UNBOUNDED PRECEDING makes sense.
       // Otherwise, only UNBOUNDED FOLLOWING makes sense
       if (isStartBounds) {
         _consume(TokenType.preceding, 'Expected UNBOUNDED PRECEDING');
-        return const FrameBoundary.unboundedPreceding();
+        return FrameBoundary.unboundedPreceding();
       } else {
         _consume(TokenType.following, 'Expected UNBOUNDED FOLLOWING');
-        return const FrameBoundary.unboundedFollowing();
+        return FrameBoundary.unboundedFollowing();
       }
     }
 

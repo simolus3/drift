@@ -32,7 +32,7 @@ final Map<String, Expression> _testCases = {
       ],
       frameSpec: FrameSpec(
         type: FrameType.groups,
-        start: const FrameBoundary.unboundedPreceding(),
+        start: FrameBoundary.unboundedPreceding(),
         end: FrameBoundary.following(
           NumericLiteral(3, token(TokenType.numberLiteral)),
         ),
@@ -47,8 +47,8 @@ final Map<String, Expression> _testCases = {
     windowDefinition: WindowDefinition(
       frameSpec: FrameSpec(
         type: FrameType.range,
-        start: const FrameBoundary.currentRow(),
-        end: const FrameBoundary.currentRow(),
+        start: FrameBoundary.currentRow(),
+        end: FrameBoundary.currentRow(),
         excludeMode: ExcludeMode.noOthers,
       ),
     ),

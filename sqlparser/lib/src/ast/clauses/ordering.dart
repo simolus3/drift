@@ -20,6 +20,11 @@ class OrderBy extends AstNode implements OrderByBase {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(terms, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => terms;
 
   @override
@@ -31,8 +36,8 @@ class OrderBy extends AstNode implements OrderByBase {
 enum OrderingMode { ascending, descending }
 
 class OrderingTerm extends AstNode implements OrderingTermBase {
-  final Expression expression;
-  final OrderingMode orderingMode;
+  Expression expression;
+  OrderingMode orderingMode;
 
   OrderingMode get resolvedOrderingMode =>
       orderingMode ?? OrderingMode.ascending;
@@ -42,6 +47,11 @@ class OrderingTerm extends AstNode implements OrderingTermBase {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitOrderingTerm(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    expression = transformer.transformChild(expression, this, arg);
   }
 
   @override

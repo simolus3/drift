@@ -18,10 +18,10 @@ const Map<TokenType, FailureMode> _tokensToMode = {
 
 class UpdateStatement extends CrudStatement implements StatementWithWhere {
   final FailureMode or;
-  final TableReference table;
+  TableReference table;
   final List<SetComponent> set;
   @override
-  final Expression where;
+  Expression where;
 
   UpdateStatement(
       {WithClause withClause,
@@ -34,6 +34,14 @@ class UpdateStatement extends CrudStatement implements StatementWithWhere {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitUpdateStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    withClause = transformer.transformNullableChild(withClause, this, arg);
+    table = transformer.transformChild(table, this, arg);
+    transformer.transformChildren(set, this, arg);
+    where = transformer.transformChild(where, this, arg);
   }
 
   @override
@@ -55,14 +63,20 @@ class UpdateStatement extends CrudStatement implements StatementWithWhere {
 }
 
 class SetComponent extends AstNode {
-  final Reference column;
-  final Expression expression;
+  Reference column;
+  Expression expression;
 
   SetComponent({@required this.column, @required this.expression});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitSetComponent(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    column = transformer.transformChild(column, this, arg);
+    expression = transformer.transformChild(expression, this, arg);
   }
 
   @override

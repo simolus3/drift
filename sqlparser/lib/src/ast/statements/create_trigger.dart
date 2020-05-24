@@ -9,10 +9,10 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
   final TriggerMode mode;
   final TriggerTarget target;
 
-  final TableReference onTable;
+  TableReference onTable;
 
-  final Expression when;
-  final Block action;
+  Expression when;
+  Block action;
 
   CreateTriggerStatement(
       {this.ifNotExists = false,
@@ -29,6 +29,13 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCreateTriggerStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    onTable = transformer.transformChild(onTable, this, arg);
+    when = transformer.transformNullableChild(when, this, arg);
+    action = transformer.transformChild(action, this, arg);
   }
 
   @override
@@ -50,6 +57,7 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
 
 enum TriggerMode { before, after, insteadOf }
 
+// todo: Should be an AstNode
 abstract class TriggerTarget {
   const TriggerTarget._();
   @override

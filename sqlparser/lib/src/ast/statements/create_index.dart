@@ -7,10 +7,10 @@ class CreateIndexStatement extends Statement
   final bool ifNotExists;
   IdentifierToken nameToken;
 
-  final TableReference on;
+  TableReference on;
   final List<IndexedColumn> columns;
   @override
-  final Expression where;
+  Expression where;
 
   CreateIndexStatement(
       {@required this.indexName,
@@ -26,6 +26,13 @@ class CreateIndexStatement extends Statement
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCreateIndexStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    on = transformer.transformChild(on, this, arg);
+    transformer.transformChildren(columns, this, arg);
+    where = transformer.transformNullableChild(where, this, arg);
   }
 
   @override
@@ -45,7 +52,7 @@ class CreateIndexStatement extends Statement
 class IndexedColumn extends AstNode {
   /// The expression on which the index should be created. Most commonly a
   /// [Reference], for simple column names.
-  final Expression expression;
+  Expression expression;
   // nullable
   final OrderingMode ordering;
 
@@ -58,6 +65,11 @@ class IndexedColumn extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [expression];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    expression = transformer.transformChild(expression, this, arg);
+  }
 
   @override
   bool contentEquals(IndexedColumn other) => other.ordering == ordering;

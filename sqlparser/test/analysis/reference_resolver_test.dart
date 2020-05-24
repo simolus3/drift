@@ -172,7 +172,7 @@ SELECT row_number() OVER wnd FROM demo
         partitionBy: [Reference(columnName: 'content')],
         frameSpec: FrameSpec(
           type: FrameType.groups,
-          start: const FrameBoundary.currentRow(),
+          start: FrameBoundary.currentRow(),
           excludeMode: ExcludeMode.ties,
         ),
       ),

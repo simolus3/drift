@@ -22,6 +22,11 @@ class Tuple extends Expression {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(expressions, this, arg);
+  }
+
+  @override
   List<Expression> get childNodes => expressions;
 
   @override

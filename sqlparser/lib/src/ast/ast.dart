@@ -146,6 +146,10 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
     return accept(visitor, null);
   }
 
+  /// Transforms children of this node by invoking [transformer] with the
+  /// argument [arg].
+  void transformChildren<A>(Transformer<A> transformer, A arg);
+
   /// Whether the content of this node is equal to the [other] node of the same
   /// type. The "content" refers to anything stored only in this node, children
   /// are ignored.

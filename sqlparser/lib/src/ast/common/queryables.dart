@@ -61,6 +61,9 @@ class TableReference extends TableOrSubquery
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   ResultSet get resultSet {
     return resolved as ResultSet;
   }
@@ -74,12 +77,17 @@ class TableReference extends TableOrSubquery
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
   final String as;
-  final BaseSelectStatement statement;
+  BaseSelectStatement statement;
 
   SelectStatementAsSource({@required this.statement, this.as});
 
   @override
   Iterable<AstNode> get childNodes => [statement];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    statement = transformer.transformChild(statement, this, arg);
+  }
 
   @override
   bool contentEquals(SelectStatementAsSource other) {
@@ -89,10 +97,16 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
 
 /// https://www.sqlite.org/syntax/join-clause.html
 class JoinClause extends Queryable {
-  final TableOrSubquery primary;
+  TableOrSubquery primary;
   final List<Join> joins;
 
   JoinClause({@required this.primary, @required this.joins});
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    primary = transformer.transformChild(primary, this, arg);
+    transformer.transformChildren(joins, this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [primary, ...joins];
@@ -115,7 +129,7 @@ enum JoinOperator {
 class Join extends AstNode {
   final bool natural;
   final JoinOperator operator;
-  final TableOrSubquery query;
+  TableOrSubquery query;
   final JoinConstraint /*?*/ constraint;
 
   Join(
@@ -157,13 +171,23 @@ class Join extends AstNode {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitJoin(this, arg);
   }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    query = transformer.transformChild(query, this, arg);
+    if (constraint is OnConstraint) {
+      final onConstraint = constraint as OnConstraint;
+      onConstraint.expression =
+          transformer.transformChild(onConstraint.expression, this, arg);
+    }
+  }
 }
 
 /// https://www.sqlite.org/syntax/join-constraint.html
 abstract class JoinConstraint {}
 
 class OnConstraint extends JoinConstraint {
-  final Expression expression;
+  Expression expression;
   OnConstraint({@required this.expression});
 }
 
@@ -182,7 +206,7 @@ class TableValuedFunction extends Queryable
   final String as;
 
   @override
-  final FunctionParameters parameters;
+  FunctionParameters parameters;
 
   @override
   ResultSet resultSet;
@@ -191,6 +215,11 @@ class TableValuedFunction extends Queryable
 
   @override
   Iterable<AstNode> get childNodes => [parameters];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    parameters = transformer.transformChild(parameters, this, arg);
+  }
 
   @override
   bool get visibleToChildren => false;

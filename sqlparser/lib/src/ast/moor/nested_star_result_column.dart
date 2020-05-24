@@ -15,6 +15,9 @@ class NestedStarResultColumn extends ResultColumn {
   Iterable<AstNode> get childNodes => const [];
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   bool contentEquals(NestedStarResultColumn other) {
     return other.tableName == tableName;
   }

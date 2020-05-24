@@ -7,7 +7,7 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   final String viewName;
   IdentifierToken viewNameToken;
 
-  final BaseSelectStatement query;
+  BaseSelectStatement query;
 
   final List<String> columns;
 
@@ -23,6 +23,11 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCreateViewStatement(this, arg);
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    query = transformer.transformChild(query, this, arg);
   }
 
   @override

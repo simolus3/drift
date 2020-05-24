@@ -18,6 +18,12 @@ class Limit extends AstNode implements LimitBase {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    count = transformer.transformChild(count, this, arg);
+    offset = transformer.transformNullableChild(offset, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => [count, if (offset != null) offset];
 
   @override

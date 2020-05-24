@@ -12,6 +12,9 @@ abstract class Literal<T> extends Expression {
   final Iterable<AstNode> childNodes = const <AstNode>[];
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   String toString() {
     return 'Literal with value $value';
   }

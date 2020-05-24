@@ -21,6 +21,9 @@ class Reference extends Expression with ReferenceOwner {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   Iterable<AstNode> get childNodes => const [];
 
   @override

@@ -14,6 +14,9 @@ class ImportStatement extends Statement implements PartOfMoorFile {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+
+  @override
   final Iterable<AstNode> childNodes = const [];
 
   @override

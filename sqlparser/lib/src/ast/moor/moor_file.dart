@@ -18,6 +18,11 @@ class MoorFile extends AstNode {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(statements, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => statements;
 
   /// Returns the imports defined in this file.

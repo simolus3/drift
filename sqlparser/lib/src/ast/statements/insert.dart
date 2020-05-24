@@ -12,10 +12,10 @@ enum InsertMode {
 
 class InsertStatement extends CrudStatement {
   final InsertMode mode;
-  final TableReference table;
+  TableReference table;
   final List<Reference> targetColumns;
-  final InsertSource source;
-  final UpsertClause upsert;
+  InsertSource source;
+  UpsertClause upsert;
 
   List<Column> get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
@@ -41,6 +41,13 @@ class InsertStatement extends CrudStatement {
   }
 
   @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    withClause = transformer.transformNullableChild(withClause, this, arg);
+    table = transformer.transformChild(table, this, arg);
+    transformer.transformChildren(targetColumns, this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes sync* {
     if (withClause != null) yield withClause;
     yield table;
@@ -55,6 +62,7 @@ class InsertStatement extends CrudStatement {
   }
 }
 
+// todo: Should be an AstNode
 abstract class InsertSource {
   Iterable<AstNode> get childNodes;
 
