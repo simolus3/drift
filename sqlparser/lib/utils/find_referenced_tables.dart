@@ -120,7 +120,7 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
 /// If you want to find all referenced tables, use [findReferencedTables]. If
 /// you want to find writes (including their [UpdateKind]) and referenced
 /// tables, constrct a [UpdatedTablesVisitor] manually.
-/// Then, let it [RecursiveVisitor.visit] the [root] node. You can now use
+/// Then, let it visit the [root] node. You can now use
 /// [UpdatedTablesVisitor.writtenTables] and
 /// [ReferencedTablesVisitor.foundTables]. This will only walk the ast once,
 /// whereas calling this and [findReferencedTables] will require two walks.

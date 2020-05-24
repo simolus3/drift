@@ -190,13 +190,13 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitChildren(AstNode e, void arg) {
+  void defaultNode(AstNode e, void arg) {
     // hack to fork scopes on statements (selects are handled above)
     if (e is Statement && e is! SelectStatement) {
       _forkScope(e);
     }
 
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
   }
 
   @override

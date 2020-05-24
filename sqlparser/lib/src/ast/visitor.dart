@@ -155,29 +155,29 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   R visitStatement(Statement statement, A arg) {
-    return visitChildren(statement, arg);
+    return defaultNode(statement, arg);
   }
 
   @override
   R visitCompoundSelectPart(CompoundSelectPart e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   // General clauses
 
   @override
   R visitResultColumn(ResultColumn e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitWithClause(WithClause e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitUpsertClause(UpsertClause e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
@@ -191,93 +191,93 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   R defaultUpsertAction(UpsertAction e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitCommonTableExpression(CommonTableExpression e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitOrderBy(OrderBy e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitOrderingTerm(OrderingTerm e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitLimit(Limit e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitQueryable(Queryable e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitJoin(Join e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitGroupBy(GroupBy e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitSetComponent(SetComponent e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitColumnDefinition(ColumnDefinition e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitColumnConstraint(ColumnConstraint e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitTableConstraint(TableConstraint e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitForeignKeyClause(ForeignKeyClause e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitWindowDefinition(WindowDefinition e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitFrameSpec(FrameSpec e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitIndexedColumn(IndexedColumn e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitBlock(Block e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   // Moor-specific additions
   @override
   R visitMoorFile(MoorFile e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
@@ -292,12 +292,12 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitDartPlaceholder(DartPlaceholder e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
   R visitMoorStatementParameter(StatementParameter e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   // Expressions
@@ -383,7 +383,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   R visitFunctionParameters(FunctionParameters e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
@@ -418,7 +418,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitWhen(WhenComponent e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   @override
@@ -455,21 +455,31 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   R visitInvocation(SqlInvocation e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
   R visitExpression(Expression e, A arg) {
-    return visitChildren(e, arg);
+    return defaultNode(e, arg);
   }
 
+  R defaultNode(AstNode e, A arg) {
+    return visitChildren(e, arg);
+  }
+}
+
+extension VisitChildrenExtension<A, R> on AstVisitor<A, R> {
+  /// Visits the node [e] by calling [AstNode.accept].
   R visit(AstNode e, A arg) => e.accept(this, arg);
 
+  /// Visits the node [e] if it's not null. Otherwise, do nothing.
   R visitNullable(AstNode e, A arg) => e?.accept(this, arg);
 
-  @protected
-  R visitChildren(AstNode e, A arg) => visitList(e.childNodes, arg);
+  /// Visits all children of the node [e], in the order of [AstNode.childNodes].
+  R visitChildren(AstNode e, A arg) {
+    return visitList(e.childNodes, arg);
+  }
 
-  @protected
+  /// Visits all [nodes] in sequence.
   R visitList(Iterable<AstNode> nodes, A arg) {
     for (final node in nodes) {
       node.accept(this, arg);
@@ -477,6 +487,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
     return null;
   }
 
+  /// Visits all children of [node], except for [skip].
   void visitExcept(AstNode node, AstNode skip, A arg) {
     for (final child in node.childNodes) {
       if (child != skip) {

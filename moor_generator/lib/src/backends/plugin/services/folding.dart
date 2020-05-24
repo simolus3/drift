@@ -34,7 +34,7 @@ class _FoldingVisitor extends RecursiveVisitor<void, void> {
       collector.addRegion(first, last - first, FoldingKind.DIRECTIVES);
     }
 
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
   }
 
   @override

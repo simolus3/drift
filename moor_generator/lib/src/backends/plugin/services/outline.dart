@@ -42,7 +42,7 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     _startElement(ElementKind.CLASS, e.tableName, e);
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
     collector.endElement();
   }
 
@@ -71,21 +71,21 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
     // the return type but we'd really like it to be shown
     _startElement(ElementKind.FIELD, e.columnName, e).parameters = e.typeName;
 
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
     collector.endElement();
   }
 
   @override
   void visitMoorFile(MoorFile e, void arg) {
     _startElement(ElementKind.LIBRARY, request.file.shortName, e);
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
     collector.endElement();
   }
 
   @override
   void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     if (!e.isRegularQuery) {
-      super.visitChildren(e, arg);
+      visitChildren(e, arg);
       return;
     }
 
@@ -105,7 +105,7 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
       element.parameters = parameterBuilder.toString();
     }
 
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
     collector.endElement();
   }
 }

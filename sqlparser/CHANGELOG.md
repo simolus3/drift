@@ -1,5 +1,6 @@
 ## 0.10.0
 
+- Breaking: Made `RecursiveVisitor.visit`, `visitList` and `visitExcept` an extension on `AstVisitor`.
 - Support parsing and analyzing `CREATE VIEW` statements (see `SchemaFromCreateTable.readView`).
   Thanks to [@mqus](https://github.com/mqus) for their contribution!
 
@@ -11,7 +12,8 @@ in a query.
 
 ## 0.8.1
 
-- Support collate expressions in the new type inference ([#533](https://github.com/simolus3/moor/issues/533))
+- Support collate expressions in the new type inference ([#533](htt
+ps://github.com/simolus3/moor/issues/533))
 - Added `visitCollateExpression` to the visitor classes
 
 ## 0.8.0

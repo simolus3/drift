@@ -10,7 +10,7 @@ class TypeResolvingVisitor extends RecursiveVisitor<void, void> {
   TypeResolvingVisitor(this.context);
 
   @override
-  void visitChildren(AstNode e, void arg) {
+  void defaultNode(AstNode e, void arg) {
     // called for every ast node, so we implement this here
     if (e is Expression && !types.needsToBeInferred(e)) {
       types.resolveExpression(e);
@@ -18,7 +18,7 @@ class TypeResolvingVisitor extends RecursiveVisitor<void, void> {
       e.resolvedColumns.forEach(types.resolveColumn);
     }
 
-    super.visitChildren(e, arg);
+    visitChildren(e, arg);
   }
 
   @override
