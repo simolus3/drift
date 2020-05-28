@@ -127,6 +127,15 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $CategoriesTable extends Categories
@@ -370,6 +379,17 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
       map['category'] = Variable<int>(category.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecipesCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('instructions: $instructions, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -615,6 +635,16 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('IngredientsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('caloriesPer100g: $caloriesPer100g')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $IngredientsTable extends Ingredients
@@ -857,6 +887,16 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
       map['amount'] = Variable<int>(amountInGrams.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IngredientInRecipesCompanion(')
+          ..write('recipe: $recipe, ')
+          ..write('ingredient: $ingredient, ')
+          ..write('amountInGrams: $amountInGrams')
+          ..write(')'))
+        .toString();
   }
 }
 

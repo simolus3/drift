@@ -122,6 +122,9 @@ class Value<T> {
   const Value.absent()
       : value = null,
         present = false;
+
+  @override
+  String toString() => present ? 'Value($value)' : 'Value.absent()';
 }
 
 /// Serializer responsible for mapping atomic types from and to json.
