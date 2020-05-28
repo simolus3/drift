@@ -1,3 +1,7 @@
+## 3.1.0
+
+Don't write the schema version to the database if the migration throws an exception.
+
 ## 3.0.0
 
 Support `moor` version 3.0. To learn what's new, head over to [its changelog](https://pub.dev/packages/moor).

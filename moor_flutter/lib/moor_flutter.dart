@@ -20,7 +20,6 @@ export 'package:moor/moor.dart';
 typedef DatabaseCreator = FutureOr<void> Function(File file);
 
 class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
-  int _loadedSchemaVersion;
   @override
   s.Database db;
 
@@ -35,9 +34,10 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
     singleInstance ??= true;
   }
 
+  DbVersionDelegate _delegate;
   @override
   DbVersionDelegate get versionDelegate {
-    return OnOpenVersionDelegate(() => Future.value(_loadedSchemaVersion));
+    return _delegate ??= _SqfliteVersionDelegate(db);
   }
 
   @override
@@ -62,20 +62,8 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
     }
 
     // default value when no migration happened
-    _loadedSchemaVersion = user.schemaVersion;
-
     db = await s.openDatabase(
       resolvedPath,
-      version: user.schemaVersion,
-      onCreate: (db, version) {
-        _loadedSchemaVersion = 0;
-      },
-      onUpgrade: (db, from, to) {
-        _loadedSchemaVersion = from;
-      },
-      onDowngrade: (db, from, to) {
-        _loadedSchemaVersion = from;
-      },
       singleInstance: singleInstance,
     );
   }
@@ -83,6 +71,23 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   @override
   Future<void> close() {
     return db.close();
+  }
+}
+
+class _SqfliteVersionDelegate extends DynamicVersionDelegate {
+  final s.Database _db;
+
+  _SqfliteVersionDelegate(this._db);
+
+  @override
+  Future<int> get schemaVersion async {
+    final result = await _db.rawQuery('PRAGMA user_version;');
+    return result.single.values.first as int;
+  }
+
+  @override
+  Future<void> setSchemaVersion(int version) async {
+    await _db.rawUpdate('PRAGMA user_version = $version;');
   }
 }
 

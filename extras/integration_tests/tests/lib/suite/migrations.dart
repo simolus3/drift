@@ -58,4 +58,30 @@ void migrationTests(TestExecutor executor) {
 
     await database.close();
   });
+
+  test('does not apply schema version when migration throws', () async {
+    var database = Database(executor.createConnection(), schemaVersion: 1);
+    await database.executor.ensureOpen(database); // Create the database
+    await database.close();
+
+    database = Database(executor.createConnection(), schemaVersion: 2);
+    database.overrideMigration = MigrationStrategy(
+      onUpgrade: (m, from, to) => Future.error('oops'),
+    );
+
+    try {
+      await database.executor.ensureOpen(database);
+      fail('Should have thrown');
+    } catch (e) {
+      //ignore
+      await database.close();
+    }
+
+    // Open it one last time, the schema version should still be at 1
+    database = Database(executor.createConnection(), schemaVersion: 1);
+    final result =
+        await database.customSelect('PRAGMA user_version').getSingle();
+    expect(result.data.values.single, 1);
+    await database.close();
+  });
 }
