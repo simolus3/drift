@@ -38,9 +38,10 @@ class UseMoorParser {
 
   List<DartType> _readDaoTypes(ConstantReader annotation) {
     return annotation
-        .peek('daos')
-        .listValue
-        .map((obj) => obj.toTypeValue())
-        .toList();
+            .peek('daos')
+            ?.listValue
+            ?.map((obj) => obj.toTypeValue())
+            ?.toList() ??
+        [];
   }
 }
