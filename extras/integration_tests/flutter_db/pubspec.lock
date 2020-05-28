@@ -64,6 +64,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.16.1"
+  encrypted_moor:
+    dependency: "direct main"
+    description:
+      path: "../../encryption"
+      relative: true
+    source: path
+    version: "1.0.0"
   ffi:
     dependency: transitive
     description:
@@ -187,7 +194,7 @@ packages:
       path: "../../../moor_flutter"
       relative: true
     source: path
-    version: "3.0.0"
+    version: "3.1.0"
   multi_server_socket:
     dependency: transitive
     description:
@@ -305,6 +312,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.6+5"
+  sqflite_common:
+    dependency: transitive
+    description:
+      name: sqflite_common
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
+  sqflite_sqlcipher:
+    dependency: transitive
+    description:
+      name: sqflite_sqlcipher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0+1"
   stack_trace:
     dependency: transitive
     description:
@@ -411,5 +432,5 @@ packages:
     source: hosted
     version: "2.2.0"
 sdks:
-  dart: ">=2.6.0 <3.0.0"
-  flutter: ">=1.2.1 <2.0.0"
+  dart: ">=2.7.0 <3.0.0"
+  flutter: ">=1.10.1 <2.0.0"

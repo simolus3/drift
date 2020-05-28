@@ -13,6 +13,8 @@ dependencies:
     path: ../tests
   moor_ffi:
     path: ../../../moor_ffi
+  encrypted_moor:
+    path: ../../encryption
 
 dev_dependencies:
   test:
