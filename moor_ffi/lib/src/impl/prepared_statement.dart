@@ -139,6 +139,13 @@ class PreparedStatement {
             bindings.sqlite3_bind_blob(_stmt, i, ptr, param.length, nullPtr());
             _allocatedWhileBinding.add(ptr);
           }
+        } else {
+          throw ArgumentError.value(
+            param,
+            'params[$i]',
+            'Allowed parameters must either be null or an int, num, String or '
+                'Uint8List.',
+          );
         }
       }
     }

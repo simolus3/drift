@@ -110,6 +110,14 @@ void main() {
           .having((e) => e.message, 'message', contains('was two'))),
     );
   });
+
+  test('throws an exception when passing an invalid type as argument', () {
+    final db = Database.memory();
+    final stmt = db.prepare('SELECT ?');
+
+    expect(() => stmt.execute([false]), throwsArgumentError);
+    db.close();
+  });
 }
 
 void _raiseIfTwo(Pointer<FunctionContext> ctx, int argCount,

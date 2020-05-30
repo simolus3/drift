@@ -1,3 +1,7 @@
+## 0.7.0
+
+- Throw an error when using an unsupported datatype as argument
+
 ## 0.6.0
 
 - Added `moor_contains` sql function to support case-sensitive contains
