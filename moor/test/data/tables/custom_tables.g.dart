@@ -199,6 +199,17 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('ConfigCompanion(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
@@ -407,6 +418,15 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('WithDefaultsCompanion(')
+          ..write('a: $a, ')
+          ..write('b: $b')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
@@ -563,6 +583,14 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
       map['payload'] = Variable<Uint8List>(payload.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NoIdsCompanion(')
+          ..write('payload: $payload')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -758,6 +786,16 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
       map['c'] = Variable<double>(c.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WithConstraintsCompanion(')
+          ..write('a: $a, ')
+          ..write('b: $b, ')
+          ..write('c: $c')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -1012,6 +1050,17 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('MytableCompanion(')
+          ..write('someid: $someid, ')
+          ..write('sometext: $sometext, ')
+          ..write('somebool: $somebool, ')
+          ..write('somedate: $somedate')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class Mytable extends Table with TableInfo<Mytable, MytableData> {
@@ -1241,6 +1290,16 @@ class EmailCompanion extends UpdateCompanion<EMail> {
       map['body'] = Variable<String>(body.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EmailCompanion(')
+          ..write('sender: $sender, ')
+          ..write('title: $title, ')
+          ..write('body: $body')
+          ..write(')'))
+        .toString();
   }
 }
 

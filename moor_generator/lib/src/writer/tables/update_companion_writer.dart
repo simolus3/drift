@@ -23,6 +23,7 @@ class UpdateCompanionWriter {
 
     _writeCopyWith();
     _writeToColumnsOverride();
+    _writeToString();
 
     _buffer.write('}\n');
   }
@@ -178,5 +179,34 @@ class UpdateCompanionWriter {
     }
 
     _buffer.write('return map; \n}\n');
+  }
+
+  void _writeToString() {
+    /*
+      @override
+      String toString() {
+        return (StringBuffer('Category(')
+              ..write('id: $id, ')
+              ..write('description: $description')
+              ..write(')'))
+            .toString();
+     */
+
+    _buffer
+      ..write('@override\nString toString() {\n')
+      ..write('return (StringBuffer('
+          "'${table.getNameForCompanionClass(scope.options)}(')");
+
+    for (var i = 0; i < table.columns.length; i++) {
+      final column = table.columns[i];
+      final dartGetterName = column.dartGetterName;
+
+      _buffer.write("..write('$dartGetterName: \$$dartGetterName");
+      if (i != table.columns.length - 1) _buffer.write(', ');
+
+      _buffer.write("')");
+    }
+
+    _buffer..write("..write(')')).toString();")..write('\}\n');
   }
 }

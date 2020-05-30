@@ -217,6 +217,18 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodosTableCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $TodosTableTable extends TodosTable
@@ -483,6 +495,16 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['priority'] = Variable<int>(converter.mapToSql(priority.value));
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('description: $description, ')
+          ..write('priority: $priority')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -773,6 +795,18 @@ class UsersCompanion extends UpdateCompanion<User> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isAwesome: $isAwesome, ')
+          ..write('profilePicture: $profilePicture, ')
+          ..write('creationTime: $creationTime')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
@@ -1005,6 +1039,15 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
       map['user'] = Variable<int>(user.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SharedTodosCompanion(')
+          ..write('todo: $todo, ')
+          ..write('user: $user')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -1239,6 +1282,16 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('TableWithoutPKCompanion(')
+          ..write('notReallyAnId: $notReallyAnId, ')
+          ..write('someFloat: $someFloat, ')
+          ..write('custom: $custom')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
@@ -1446,6 +1499,15 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
       map['insert'] = Variable<String>(txt.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PureDefaultsCompanion(')
+          ..write('id: $id, ')
+          ..write('txt: $txt')
+          ..write(')'))
+        .toString();
   }
 }
 
