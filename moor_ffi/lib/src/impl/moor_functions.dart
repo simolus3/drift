@@ -77,6 +77,11 @@ void _regexpImpl(Pointer<FunctionContext> ctx, int argCount,
   final firstParam = args[0].value;
   final secondParam = args[1].value;
 
+  if (firstParam == null || secondParam == null) {
+    ctx.resultNull();
+    return;
+  }
+
   if (firstParam is! String || secondParam is! String) {
     ctx.resultError('Expected two strings as parameters to regexp');
     return;

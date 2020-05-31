@@ -1,6 +1,7 @@
 ## 0.7.0
 
 - Throw an error when using an unsupported datatype as argument
+- Return null from `REGEXP` when either argument is null (used to report an error)
 
 ## 0.6.0
 

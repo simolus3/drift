@@ -108,6 +108,15 @@ void main() {
       final result = stmt.select();
       expect(result.single['r'], 0);
     });
+
+    test('returns null when either argument is null', () {
+      final stmt = db.prepare('SELECT ? REGEXP ?');
+
+      expect(stmt.select(['foo', null]).single.columnAt(0), isNull);
+      expect(stmt.select([null, 'foo']).single.columnAt(0), isNull);
+
+      stmt.close();
+    });
   });
 
   group('moor_contains', () {
