@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
@@ -32,6 +33,10 @@ class BuildBackendTask extends BackendTask {
 
   final Map<AssetId, ResolvedLibraryResult> _cachedResults = {};
 
+  /// The analysis session might be invalidated every time we resolve a new
+  /// library, so we grab a new one instead of using `LibraryElement.session`.
+  AnalysisSession _currentAnalysisSession;
+
   BuildBackendTask(this.step, this.backend)
       : typeDeserializer = TypeDeserializer(step);
 
@@ -52,6 +57,7 @@ class BuildBackendTask extends BackendTask {
     try {
       final asset = _resolve(uri);
       final library = await step.resolver.libraryFor(asset);
+      _currentAnalysisSession = library.session;
 
       if (backend.options.eagerlyLoadDartAst) {
         _cachedResults[asset] =
@@ -75,7 +81,20 @@ class BuildBackendTask extends BackendTask {
     if (result != null) {
       return result.getElementDeclaration(element);
     } else {
-      return super.loadElementDeclaration(element);
+      final session = _currentAnalysisSession ?? element.session;
+
+      // Transform element to new session if necessary
+      var library = element.library;
+      if (library.session != session) {
+        library = await session.getLibraryByUri(assetId.uri.toString());
+      }
+
+      final result = await session.getResolvedLibraryByElement(library);
+      _cachedResults[assetId] = result;
+
+      // Note: getElementDeclaration works by comparing source offsets, so
+      // element.session != session is not a problem in this case.
+      return result.getElementDeclaration(element);
     }
   }
 
