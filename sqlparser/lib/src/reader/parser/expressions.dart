@@ -31,13 +31,13 @@ mixin ExpressionParser on ParserBase {
 
         final whenExpr = _or();
         _consume(TokenType.then, 'Expected THEN');
-        final then = _or();
+        final then = expression();
         whens.add(WhenComponent(when: whenExpr, then: then)
           ..setSpan(whenToken, _previous));
       }
 
       if (_matchOne(TokenType.$else)) {
-        $else = _or();
+        $else = expression();
       }
 
       _consume(TokenType.end, 'Expected END to finish the case operator');

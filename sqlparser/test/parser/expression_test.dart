@@ -65,6 +65,35 @@ final Map<String, Expression> _testCases = {
     ],
     elseExpr: Reference(columnName: 'e'),
   ),
+  'CASE WHEN a THEN '
+      'CASE WHEN b THEN c ELSE d END '
+      'ELSE '
+      'CASE WHEN e THEN f ELSE g END '
+      'END': CaseExpression(
+    whens: [
+      WhenComponent(
+        when: Reference(columnName: 'a'),
+        then: CaseExpression(
+          whens: [
+            WhenComponent(
+              when: Reference(columnName: 'b'),
+              then: Reference(columnName: 'c'),
+            ),
+          ],
+          elseExpr: Reference(columnName: 'd'),
+        ),
+      ),
+    ],
+    elseExpr: CaseExpression(
+      whens: [
+        WhenComponent(
+          when: Reference(columnName: 'e'),
+          then: Reference(columnName: 'f'),
+        ),
+      ],
+      elseExpr: Reference(columnName: 'g'),
+    ),
+  ),
   "x NOT LIKE '%A%\$' ESCAPE '\$'": StringComparisonExpression(
     not: true,
     left: Reference(columnName: 'x'),
