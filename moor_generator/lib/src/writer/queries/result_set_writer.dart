@@ -14,11 +14,14 @@ class ResultSetWriter {
     final into = scope.leaf();
 
     into.write('class $className {\n');
+    final modifier = scope.options.fieldModifier;
+
     // write fields
     for (final column in query.resultSet.columns) {
       final name = query.resultSet.dartNameFor(column);
       final runtimeType = column.dartType;
-      into.write('final $runtimeType $name\n;');
+
+      into.write('$modifier $runtimeType $name\n;');
 
       fieldNames.add(name);
     }
@@ -27,7 +30,7 @@ class ResultSetWriter {
       final typeName = nested.table.dartTypeName;
       final fieldName = nested.dartFieldName;
 
-      into.write('final $typeName $fieldName;\n');
+      into.write('$modifier $typeName $fieldName;\n');
 
       fieldNames.add(fieldName);
     }

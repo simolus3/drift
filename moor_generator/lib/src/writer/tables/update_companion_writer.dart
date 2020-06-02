@@ -30,7 +30,8 @@ class UpdateCompanionWriter {
 
   void _writeFields() {
     for (final column in table.columns) {
-      _buffer.write('final Value<${column.dartTypeName}>'
+      final modifier = scope.options.fieldModifier;
+      _buffer.write('$modifier Value<${column.dartTypeName}>'
           ' ${column.dartGetterName};\n');
     }
   }

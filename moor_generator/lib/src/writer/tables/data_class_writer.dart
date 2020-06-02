@@ -19,8 +19,9 @@ class DataClassWriter {
 
     // write individual fields
     for (final column in table.columns) {
-      _buffer
-          .write('final ${column.dartTypeName} ${column.dartGetterName}; \n');
+      final modifier = scope.options.fieldModifier;
+      _buffer.write(
+          '$modifier ${column.dartTypeName} ${column.dartGetterName}; \n');
     }
 
     // write constructor with named optional fields

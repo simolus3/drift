@@ -62,6 +62,8 @@ At the moment, moor supports these options:
    If you're using this flag, please open an issue and explain how the new inference isn't working for you, thanks!
 * `data_class_to_companions` (defaults to `true`): Controls whether moor will write the `toCompanion` method in generated
    data classes.
+* `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
+  by default. You can make them mutable by setting `mutable_classes: true`.
 
 ## Available extensions
 

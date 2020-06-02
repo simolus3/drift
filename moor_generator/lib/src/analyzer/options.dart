@@ -68,6 +68,9 @@ class MoorOptions {
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
   final bool dataClassToCompanions;
 
+  @JsonKey(name: 'mutable_classes', defaultValue: false)
+  final bool generateMutableClasses;
+
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => modules.contains(module);
 
@@ -82,6 +85,7 @@ class MoorOptions {
     this.legacyTypeInference = false,
     this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
+    this.generateMutableClasses = false,
     this.modules = const [],
   });
 

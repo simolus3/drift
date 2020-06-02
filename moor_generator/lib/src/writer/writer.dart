@@ -121,3 +121,7 @@ class DartScope {
     return other._id >= _id;
   }
 }
+
+extension WriterUtilsForOptions on MoorOptions {
+  String get fieldModifier => generateMutableClasses ? '' : 'final';
+}
