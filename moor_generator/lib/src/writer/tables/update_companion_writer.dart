@@ -154,8 +154,12 @@ class UpdateCompanionWriter {
           '(bool nullToAbsent) {\n')
       ..write('final map = <String, Expression> {};');
 
+    const locals = {'map', 'nullToAbsent'};
+
     for (final column in table.columns) {
-      _buffer.write('if (${column.dartGetterName}.present) {');
+      final getterName = column.thisIfNeeded(locals);
+
+      _buffer.write('if ($getterName.present) {');
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<${column.variableTypeName}>';
 
@@ -166,13 +170,13 @@ class UpdateCompanionWriter {
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql(${column.dartGetterName}.value));');
+          ..write('(converter.mapToSql($getterName.value));');
       } else {
         // no type converter. Write variable directly
         _buffer
           ..write(mapSetter)
           ..write('(')
-          ..write('${column.dartGetterName}.value')
+          ..write('$getterName.value')
           ..write(');');
       }
 

@@ -182,8 +182,10 @@ class TableWriter {
       ..write('final context = VerificationContext();\n')
       ..write('final data = instance.toColumns(true);\n');
 
+    const locals = {'instance', 'isInserting', 'context', 'data'};
+
     for (final column in table.columns) {
-      final getterName = column.dartGetterName;
+      final getterName = column.thisIfNeeded(locals);
       final metaName = _fieldNameForColumnMeta(column);
 
       if (column.typeConverter != null) {

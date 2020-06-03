@@ -876,10 +876,10 @@ class WithConstraints extends Table
 class MytableData extends DataClass implements Insertable<MytableData> {
   final int someid;
   final String sometext;
-  final bool somebool;
+  final bool isInserting;
   final DateTime somedate;
   MytableData(
-      {@required this.someid, this.sometext, this.somebool, this.somedate});
+      {@required this.someid, this.sometext, this.isInserting, this.somedate});
   factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -891,8 +891,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       someid: intType.mapFromDatabaseResponse(data['${effectivePrefix}someid']),
       sometext: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
-      somebool:
-          boolType.mapFromDatabaseResponse(data['${effectivePrefix}somebool']),
+      isInserting: boolType
+          .mapFromDatabaseResponse(data['${effectivePrefix}is_inserting']),
       somedate: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}somedate']),
     );
@@ -906,8 +906,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     if (!nullToAbsent || sometext != null) {
       map['sometext'] = Variable<String>(sometext);
     }
-    if (!nullToAbsent || somebool != null) {
-      map['somebool'] = Variable<bool>(somebool);
+    if (!nullToAbsent || isInserting != null) {
+      map['is_inserting'] = Variable<bool>(isInserting);
     }
     if (!nullToAbsent || somedate != null) {
       map['somedate'] = Variable<DateTime>(somedate);
@@ -922,9 +922,9 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       sometext: sometext == null && nullToAbsent
           ? const Value.absent()
           : Value(sometext),
-      somebool: somebool == null && nullToAbsent
+      isInserting: isInserting == null && nullToAbsent
           ? const Value.absent()
-          : Value(somebool),
+          : Value(isInserting),
       somedate: somedate == null && nullToAbsent
           ? const Value.absent()
           : Value(somedate),
@@ -937,7 +937,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     return MytableData(
       someid: serializer.fromJson<int>(json['someid']),
       sometext: serializer.fromJson<String>(json['sometext']),
-      somebool: serializer.fromJson<bool>(json['somebool']),
+      isInserting: serializer.fromJson<bool>(json['is_inserting']),
       somedate: serializer.fromJson<DateTime>(json['somedate']),
     );
   }
@@ -952,17 +952,17 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     return <String, dynamic>{
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String>(sometext),
-      'somebool': serializer.toJson<bool>(somebool),
+      'is_inserting': serializer.toJson<bool>(isInserting),
       'somedate': serializer.toJson<DateTime>(somedate),
     };
   }
 
   MytableData copyWith(
-          {int someid, String sometext, bool somebool, DateTime somedate}) =>
+          {int someid, String sometext, bool isInserting, DateTime somedate}) =>
       MytableData(
         someid: someid ?? this.someid,
         sometext: sometext ?? this.sometext,
-        somebool: somebool ?? this.somebool,
+        isInserting: isInserting ?? this.isInserting,
         somedate: somedate ?? this.somedate,
       );
   @override
@@ -970,52 +970,54 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     return (StringBuffer('MytableData(')
           ..write('someid: $someid, ')
           ..write('sometext: $sometext, ')
-          ..write('somebool: $somebool, ')
+          ..write('isInserting: $isInserting, ')
           ..write('somedate: $somedate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(someid.hashCode,
-      $mrjc(sometext.hashCode, $mrjc(somebool.hashCode, somedate.hashCode))));
+  int get hashCode => $mrjf($mrjc(
+      someid.hashCode,
+      $mrjc(
+          sometext.hashCode, $mrjc(isInserting.hashCode, somedate.hashCode))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is MytableData &&
           other.someid == this.someid &&
           other.sometext == this.sometext &&
-          other.somebool == this.somebool &&
+          other.isInserting == this.isInserting &&
           other.somedate == this.somedate);
 }
 
 class MytableCompanion extends UpdateCompanion<MytableData> {
   final Value<int> someid;
   final Value<String> sometext;
-  final Value<bool> somebool;
+  final Value<bool> isInserting;
   final Value<DateTime> somedate;
   const MytableCompanion({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
-    this.somebool = const Value.absent(),
+    this.isInserting = const Value.absent(),
     this.somedate = const Value.absent(),
   });
   MytableCompanion.insert({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
-    this.somebool = const Value.absent(),
+    this.isInserting = const Value.absent(),
     this.somedate = const Value.absent(),
   });
   static Insertable<MytableData> custom({
     Expression<int> someid,
     Expression<String> sometext,
-    Expression<bool> somebool,
+    Expression<bool> isInserting,
     Expression<DateTime> somedate,
   }) {
     return RawValuesInsertable({
       if (someid != null) 'someid': someid,
       if (sometext != null) 'sometext': sometext,
-      if (somebool != null) 'somebool': somebool,
+      if (isInserting != null) 'is_inserting': isInserting,
       if (somedate != null) 'somedate': somedate,
     });
   }
@@ -1023,12 +1025,12 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   MytableCompanion copyWith(
       {Value<int> someid,
       Value<String> sometext,
-      Value<bool> somebool,
+      Value<bool> isInserting,
       Value<DateTime> somedate}) {
     return MytableCompanion(
       someid: someid ?? this.someid,
       sometext: sometext ?? this.sometext,
-      somebool: somebool ?? this.somebool,
+      isInserting: isInserting ?? this.isInserting,
       somedate: somedate ?? this.somedate,
     );
   }
@@ -1042,8 +1044,8 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     if (sometext.present) {
       map['sometext'] = Variable<String>(sometext.value);
     }
-    if (somebool.present) {
-      map['somebool'] = Variable<bool>(somebool.value);
+    if (isInserting.present) {
+      map['is_inserting'] = Variable<bool>(isInserting.value);
     }
     if (somedate.present) {
       map['somedate'] = Variable<DateTime>(somedate.value);
@@ -1056,7 +1058,7 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
     return (StringBuffer('MytableCompanion(')
           ..write('someid: $someid, ')
           ..write('sometext: $sometext, ')
-          ..write('somebool: $somebool, ')
+          ..write('isInserting: $isInserting, ')
           ..write('somedate: $somedate')
           ..write(')'))
         .toString();
@@ -1083,11 +1085,13 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
         $customConstraints: '');
   }
 
-  final VerificationMeta _someboolMeta = const VerificationMeta('somebool');
-  GeneratedBoolColumn _somebool;
-  GeneratedBoolColumn get somebool => _somebool ??= _constructSomebool();
-  GeneratedBoolColumn _constructSomebool() {
-    return GeneratedBoolColumn('somebool', $tableName, true,
+  final VerificationMeta _isInsertingMeta =
+      const VerificationMeta('isInserting');
+  GeneratedBoolColumn _isInserting;
+  GeneratedBoolColumn get isInserting =>
+      _isInserting ??= _constructIsInserting();
+  GeneratedBoolColumn _constructIsInserting() {
+    return GeneratedBoolColumn('is_inserting', $tableName, true,
         $customConstraints: '');
   }
 
@@ -1100,7 +1104,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   }
 
   @override
-  List<GeneratedColumn> get $columns => [someid, sometext, somebool, somedate];
+  List<GeneratedColumn> get $columns =>
+      [someid, sometext, isInserting, somedate];
   @override
   Mytable get asDslTable => this;
   @override
@@ -1120,9 +1125,12 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
       context.handle(_sometextMeta,
           sometext.isAcceptableOrUnknown(data['sometext'], _sometextMeta));
     }
-    if (data.containsKey('somebool')) {
-      context.handle(_someboolMeta,
-          somebool.isAcceptableOrUnknown(data['somebool'], _someboolMeta));
+    if (data.containsKey('is_inserting')) {
+      context.handle(
+          _isInsertingMeta,
+          this
+              .isInserting
+              .isAcceptableOrUnknown(data['is_inserting'], _isInsertingMeta));
     }
     if (data.containsKey('somedate')) {
       context.handle(_somedateMeta,

@@ -26,7 +26,7 @@ const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL PRIMARY KEY, '
     'sometext VARCHAR, '
-    'somebool INTEGER, '
+    'is_inserting INTEGER, '
     'somedate INTEGER);';
 
 const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '

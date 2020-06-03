@@ -29,7 +29,7 @@ CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);
 CREATE TABLE mytable (
     someid INTEGER NOT NULL PRIMARY KEY,
     sometext TEXT,
-    somebool BOOLEAN,
+    is_inserting BOOLEAN,
     somedate DATETIME
 );
 
