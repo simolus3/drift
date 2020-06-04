@@ -198,7 +198,7 @@ class PrimaryKey extends ColumnFeature {
   const PrimaryKey();
 }
 
-class AutoIncrement extends ColumnFeature {
+class AutoIncrement extends PrimaryKey {
   static const AutoIncrement _instance = AutoIncrement._();
 
   const AutoIncrement._();

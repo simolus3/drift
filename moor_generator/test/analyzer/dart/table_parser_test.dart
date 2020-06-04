@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
+import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:test/test.dart';
@@ -14,6 +15,7 @@ void main() {
   TestBackend backend;
   ParseDartStep dartStep;
   MoorDartParser parser;
+
   setUpAll(() {
     backend = TestBackend({
       AssetId.parse('test_lib|lib/main.dart'): r'''
@@ -75,6 +77,14 @@ void main() {
         
         @override
         Set<Column> get primaryKey => {id};
+      }
+      
+      class PrimaryKeyAndAutoIncrement extends Table {
+        IntColumn get id => integer().autoIncrement()();
+        TextColumn get other => text()();
+        
+        @override
+        Set<Column> get primaryKey => {other};
       }
       '''
     });
@@ -214,5 +224,29 @@ void main() {
           ['name', 'id', 'archived_by', 'archived_on']);
       expect(archivedSocks.primaryKey.map((e) => e.name.name), ['id']);
     });
+  });
+
+  test('reports error when using autoIncrement and primaryKey', () async {
+    final session = MoorSession(backend);
+    final uri = Uri.parse('package:test_lib/main.dart');
+    final backendTask = backend.startTask(uri);
+    final task = session.startTask(backendTask);
+    await task.runTask();
+
+    final file = session.registerFile(uri);
+
+    expect(
+      file.errors.errors,
+      contains(
+        isA<ErrorInDartCode>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('use autoIncrement()'),
+            contains('and also override primaryKey'),
+          ),
+        ),
+      ),
+    );
   });
 }

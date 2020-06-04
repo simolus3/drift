@@ -56,9 +56,33 @@ class ParseDartStep extends Step {
 
   Future<MoorTable> _parseTable(ClassElement element) async {
     if (!_tables.containsKey(element)) {
-      _tables[element] = await parser.parseTable(element);
+      final table = await parser.parseTable(element);
+      _tables[element] = table;
+
+      if (table != null) {
+        _lintDartTable(table, element);
+      }
     }
     return _tables[element];
+  }
+
+  void _lintDartTable(MoorTable table, ClassElement from) {
+    if (table.primaryKey != null) {
+      final hasAdditional = table.columns.any((c) {
+        final isPk = c.features.any((f) => f is PrimaryKey);
+        return isPk && !table.primaryKey.contains(c);
+      });
+
+      if (hasAdditional) {
+        reportError(
+          ErrorInDartCode(
+            message: "You can't use autoIncrement() on a column and also "
+                'override primaryKey',
+            affectedElement: from,
+          ),
+        );
+      }
+    }
   }
 
   /// Parses a [Database] from the [ClassElement] which was annotated
