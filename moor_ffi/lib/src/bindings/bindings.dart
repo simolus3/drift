@@ -90,6 +90,7 @@ class _SQLiteBindings {
       int length,
       Pointer<Void> disposeCb) sqlite3_bind_blob;
   int Function(Pointer<Statement> statement, int columnIndex) sqlite3_bind_null;
+  sqlite3_bind_parameter_count_dart sqlite3_bind_parameter_count;
 
   int Function(
     Pointer<Database> db,
@@ -136,6 +137,9 @@ class _SQLiteBindings {
     sqlite3_bind_null = sqlite
         .lookup<NativeFunction<sqlite3_bind_null_native>>('sqlite3_bind_null')
         .asFunction();
+    sqlite3_bind_parameter_count = sqlite.lookupFunction<
+        sqlite3_bind_parameter_count_native,
+        sqlite3_bind_parameter_count_dart>('sqlite3_bind_parameter_count');
     sqlite3_open_v2 = sqlite
         .lookup<NativeFunction<sqlite3_open_v2_native_t>>('sqlite3_open_v2')
         .asFunction();

@@ -118,6 +118,22 @@ void main() {
     expect(() => stmt.execute([false]), throwsArgumentError);
     db.close();
   });
+
+  group('asserts that the amount of parameters are correct', () {
+    final db = Database.memory();
+
+    test('when no parameters are set', () {
+      final stmt = db.prepare('SELECT ?');
+      expect(stmt.select, throwsA(isA<AssertionError>()));
+    });
+
+    test('when the wrong amount of parameters are set', () {
+      final stmt = db.prepare('SELECT ?, ?');
+      expect(() => stmt.select([1]), throwsA(isA<AssertionError>()));
+    });
+
+    tearDownAll(db.close);
+  });
 }
 
 void _raiseIfTwo(Pointer<FunctionContext> ctx, int argCount,

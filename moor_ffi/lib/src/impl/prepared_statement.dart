@@ -21,6 +21,12 @@ class PreparedStatement {
     _closed = true;
   }
 
+  /// Returns the amount of parameters in this prepared statement.
+  ///
+  /// See also:
+  /// - `sqlite3_bind_parameter_count`: https://www.sqlite.org/c3ref/bind_parameter_count.html
+  int get parameterCount => bindings.sqlite3_bind_parameter_count(_stmt);
+
   void _ensureNotFinalized() {
     if (_closed) {
       throw StateError('Tried to operate on a released prepared statement');
@@ -30,6 +36,11 @@ class PreparedStatement {
   /// Executes this prepared statement as a select statement. The returned rows
   /// will be returned.
   Result select([List<dynamic> params]) {
+    assert(
+      (params?.length ?? 0) == parameterCount,
+      'Expected $parameterCount params, but got ${params?.length ?? 0}.',
+    );
+
     _ensureNotFinalized();
     _reset();
     _bindParams(params);

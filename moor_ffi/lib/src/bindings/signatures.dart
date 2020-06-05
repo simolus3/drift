@@ -93,6 +93,10 @@ typedef sqlite3_bind_blob_native = Int32 Function(
     Pointer<Void> callback);
 typedef sqlite3_bind_null_native = Int32 Function(
     Pointer<Statement> statement, Int32 columnIndex);
+typedef sqlite3_bind_parameter_count_dart = int Function(
+    Pointer<Statement> stmt);
+typedef sqlite3_bind_parameter_count_native = Int32 Function(
+    Pointer<Statement> statement);
 
 typedef sqlite3_function_handler = Void Function(
     Pointer<FunctionContext> context,
