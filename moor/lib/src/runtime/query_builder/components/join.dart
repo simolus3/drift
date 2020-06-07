@@ -62,7 +62,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 ///
 /// {@template moor_join_include_results}
 /// The optional [useColumns] parameter (defaults to true) can be used to
-/// exclude the [other] table from the result set. When set,
+/// exclude the [other] table from the result set. When set to false,
 /// [TypedResult.readTable] will return `null` for that table.
 /// {@endtemplate}
 ///
