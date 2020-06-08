@@ -129,10 +129,7 @@ class Value<T> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Value &&
-          runtimeType == other.runtimeType &&
-          present == other.present &&
-          value == other.value;
+      other is Value && present == other.present && value == other.value;
 
   @override
   int get hashCode => present.hashCode ^ value.hashCode;

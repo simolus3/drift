@@ -107,8 +107,38 @@ void main() {
     expect(first.hashCode, equalToFirst.hashCode);
     expect(first, equals(equalToFirst));
 
+    expect(first.hashCode, isNot(equals(different.hashCode)));
     expect(first, isNot(equals(different)));
-    expect(first, equals(first));
+  });
+
+  group('value: hash and ==:', () {
+    test('equal when values are same', () {
+      const first = Value(0);
+      const equalToFirst = Value(0);
+      const different = Value(1);
+
+      expect(first.hashCode, equalToFirst.hashCode);
+      expect(first, equals(equalToFirst));
+
+      expect(first.hashCode, isNot(equals(different.hashCode)));
+      expect(first, isNot(equals(different)));
+    });
+
+    test('equal when value is absent and generic is different', () {
+      const first = Value<int>.absent();
+      const equalToFirst = Value<String>.absent();
+
+      expect(first.hashCode, equalToFirst.hashCode);
+      expect(first, equals(equalToFirst));
+    });
+
+    test('equal when value is null and generic is different', () {
+      const first = Value<int>(null);
+      const equalToFirst = Value<String>(null);
+
+      expect(first.hashCode, equals(equalToFirst.hashCode));
+      expect(first, equals(equalToFirst));
+    });
   });
 }
 
