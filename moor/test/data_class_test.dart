@@ -139,6 +139,14 @@ void main() {
       expect(first.hashCode, equals(equalToFirst.hashCode));
       expect(first, equals(equalToFirst));
     });
+
+    test("don't equal when one value is absent and the other one is null", () {
+      const first = Value.absent();
+      const different = Value(null);
+
+      expect(first.hashCode, isNot(equals(different.hashCode)));
+      expect(first, isNot(equals(different)));
+    });
   });
 }
 
