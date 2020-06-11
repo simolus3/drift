@@ -4,8 +4,8 @@ import 'package:analyzer/src/context/context_root.dart'; // ignore: implementati
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/analysis/driver.dart'
     show AnalysisDriverScheduler;
-import 'package:analyzer_plugin_fork/plugin/plugin.dart';
-import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart' as proto;
+import 'package:analyzer_plugin/plugin/plugin.dart';
+import 'package:analyzer_plugin/protocol/protocol_generated.dart' as proto;
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer_plugin_fork/channel/channel.dart';
-import 'package:analyzer_plugin_fork/protocol/protocol.dart';
+import 'package:analyzer_plugin/channel/channel.dart';
+import 'package:analyzer_plugin/protocol/protocol.dart';
 import 'package:moor_generator/src/backends/plugin/plugin.dart';
 
 import '../cli.dart';

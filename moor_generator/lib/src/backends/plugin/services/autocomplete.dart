@@ -1,5 +1,5 @@
-import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
-import 'package:analyzer_plugin_fork/utilities/completion/completion_core.dart';
+import 'package:analyzer_plugin/protocol/protocol_common.dart';
+import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
 class MoorCompletingContributor implements CompletionContributor {

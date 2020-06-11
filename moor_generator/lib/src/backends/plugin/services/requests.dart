@@ -1,10 +1,10 @@
 import 'package:analyzer/file_system/file_system.dart';
-import 'package:analyzer_plugin_fork/utilities/assist/assist.dart';
-import 'package:analyzer_plugin_fork/utilities/completion/completion_core.dart';
-import 'package:analyzer_plugin_fork/utilities/folding/folding.dart';
-import 'package:analyzer_plugin_fork/utilities/highlights/highlights.dart';
-import 'package:analyzer_plugin_fork/utilities/navigation/navigation.dart';
-import 'package:analyzer_plugin_fork/utilities/outline/outline.dart';
+import 'package:analyzer_plugin/utilities/assist/assist.dart';
+import 'package:analyzer_plugin/utilities/completion/completion_core.dart';
+import 'package:analyzer_plugin/utilities/folding/folding.dart';
+import 'package:analyzer_plugin/utilities/highlights/highlights.dart';
+import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
+import 'package:analyzer_plugin/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:source_span/source_span.dart';
