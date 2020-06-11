@@ -115,3 +115,17 @@ Note that the primary key must essentially be constant so that the generator can
 
 - it must be defined with the `=>` syntax, function bodies aren't supported
 - it must return a set literal without collection elements like `if`, `for` or spread operators
+
+## Supported column types
+
+Moor supports a variety of column types out of the box. You can store custom classes in columns by using
+[type converters]({{<relref "../Advanced Features/type_converters.md">}}).
+
+| Dart type    | Colum         | Corresponding SQLite type                           |
+|--------------|---------------|-----------------------------------------------------|
+| `int`        | `integer()`   | `INTEGER`                                           |
+| `double`     | `real()`      | `REAL`                                              |
+| `boolean`    | `boolean()`   | `INTEGER`, which a `CHECK` to only allow `0` or `1` |
+| `String`     | `text()`      | `TEXT`                                              |
+| `DateTime`   | `dateTime()`  | `INTEGER` (Unix timestamp in seconds)               |
+| `Uint8List`  | `blob()`      | `BLOB`                                              |
