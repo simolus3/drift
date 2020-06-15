@@ -34,7 +34,7 @@ void main() {
         ifNotExists: true,
         triggerName: 'my_trigger',
         mode: TriggerMode.after,
-        target: const DeleteTarget(),
+        target: DeleteTarget(),
         onTable: TableReference('tbl'),
         action: _block,
       ),
@@ -82,7 +82,7 @@ void main() {
       CreateTriggerStatement(
         triggerName: 'my_trigger',
         mode: TriggerMode.before,
-        target: const InsertTarget(),
+        target: InsertTarget(),
         onTable: TableReference('tbl'),
         when: IsExpression(
           false,

@@ -25,6 +25,10 @@ abstract class AstVisitor<A, R> {
   R visitJoin(Join e, A arg);
   R visitGroupBy(GroupBy e, A arg);
 
+  R visitDeleteTriggerTarget(DeleteTarget e, A arg);
+  R visitInsertTriggerTarget(InsertTarget e, A arg);
+  R visitUpdateTriggerTarget(UpdateTarget e, A arg);
+
   R visitDoNothing(DoNothing e, A arg);
   R visitDoUpdate(DoUpdate e, A arg);
 
@@ -177,6 +181,25 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitUpsertClause(UpsertClause e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R visitDeleteTriggerTarget(DeleteTarget e, A arg) {
+    return defaultTriggerTarget(e, arg);
+  }
+
+  @override
+  R visitInsertTriggerTarget(InsertTarget e, A arg) {
+    return defaultTriggerTarget(e, arg);
+  }
+
+  @override
+  R visitUpdateTriggerTarget(UpdateTarget e, A arg) {
+    return defaultTriggerTarget(e, arg);
+  }
+
+  R defaultTriggerTarget(TriggerTarget e, A arg) {
     return defaultNode(e, arg);
   }
 

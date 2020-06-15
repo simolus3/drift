@@ -197,11 +197,15 @@ mixin SchemaParser on ParserBase {
 
     TriggerTarget target;
     if (_matchOne(TokenType.delete)) {
-      target = const DeleteTarget();
+      target = DeleteTarget()
+        ..deleteToken = _previous
+        ..setSpan(_previous, _previous);
     } else if (_matchOne(TokenType.insert)) {
-      target = const InsertTarget();
+      target = InsertTarget()
+        ..insertToken = _previous
+        ..setSpan(_previous, _previous);
     } else {
-      _consume(
+      final updateToken = _consume(
           TokenType.update, 'Expected DELETE, INSERT or UPDATE as a trigger');
       final names = <Reference>[];
 
@@ -214,7 +218,9 @@ mixin SchemaParser on ParserBase {
         } while (_matchOne(TokenType.comma));
       }
 
-      target = UpdateTarget(names);
+      target = UpdateTarget(names)
+        ..updateToken = updateToken
+        ..setSpan(updateToken, _previous);
     }
 
     _consume(TokenType.on, 'Expected ON');
