@@ -667,18 +667,23 @@ mixin CrudParser on ParserBase {
 
   InsertSource _insertSource() {
     if (_matchOne(TokenType.$values)) {
+      final first = _previous;
       final values = <Tuple>[];
       do {
         // it will be a tuple, we don't turn on "orSubQuery"
         values.add(_consumeTuple() as Tuple);
       } while (_matchOne(TokenType.comma));
-      return ValuesSource(values);
+
+      return ValuesSource(values)..setSpan(first, _previous);
     } else if (_matchOne(TokenType.$default)) {
+      final first = _previous;
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
-      return const DefaultValues();
+      return DefaultValues()..setSpan(first, _previous);
     } else {
+      final first = _previous;
       return SelectInsertSource(
-          _fullSelect() ?? _error('Expeced a select statement'));
+        _fullSelect() ?? _error('Expeced a select statement'),
+      )..setSpan(first, _previous);
     }
   }
 

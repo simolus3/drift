@@ -34,6 +34,10 @@ abstract class AstVisitor<A, R> {
 
   R visitSetComponent(SetComponent e, A arg);
 
+  R visitValuesSource(ValuesSource e, A arg);
+  R visitSelectInsertSource(SelectInsertSource e, A arg);
+  R visitDefaultValues(DefaultValues e, A arg);
+
   R visitColumnDefinition(ColumnDefinition e, A arg);
   R visitColumnConstraint(ColumnConstraint e, A arg);
   R visitTableConstraint(TableConstraint e, A arg);
@@ -254,6 +258,25 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitSetComponent(SetComponent e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R visitValuesSource(ValuesSource e, A arg) {
+    return defaultInsertSource(e, arg);
+  }
+
+  @override
+  R visitSelectInsertSource(SelectInsertSource e, A arg) {
+    return defaultInsertSource(e, arg);
+  }
+
+  @override
+  R visitDefaultValues(DefaultValues e, A arg) {
+    return defaultInsertSource(e, arg);
+  }
+
+  R defaultInsertSource(InsertSource e, A arg) {
     return defaultNode(e, arg);
   }
 

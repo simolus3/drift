@@ -33,7 +33,7 @@ void main() {
         mode: InsertMode.insert,
         table: TableReference('tbl', null),
         targetColumns: const [],
-        source: const DefaultValues(),
+        source: DefaultValues(),
       ),
     );
   });
@@ -63,7 +63,7 @@ void main() {
         InsertStatement(
           table: TableReference('tbl'),
           targetColumns: const [],
-          source: const DefaultValues(),
+          source: DefaultValues(),
           upsert: UpsertClause(action: DoNothing()),
         ),
       );
@@ -75,7 +75,7 @@ void main() {
         InsertStatement(
           table: TableReference('tbl'),
           targetColumns: const [],
-          source: const DefaultValues(),
+          source: DefaultValues(),
           upsert: UpsertClause(
             onColumns: [
               IndexedColumn(Reference(columnName: 'foo')),
@@ -96,7 +96,7 @@ void main() {
         InsertStatement(
           table: TableReference('tbl'),
           targetColumns: const [],
-          source: const DefaultValues(),
+          source: DefaultValues(),
           upsert: UpsertClause(
             onColumns: [
               IndexedColumn(Reference(columnName: 'foo')),
@@ -119,7 +119,7 @@ void main() {
         InsertStatement(
           table: TableReference('tbl'),
           targetColumns: const [],
-          source: const DefaultValues(),
+          source: DefaultValues(),
           upsert: UpsertClause(
             action: DoUpdate(
               [
@@ -140,7 +140,7 @@ void main() {
         InsertStatement(
           table: TableReference('tbl'),
           targetColumns: const [],
-          source: const DefaultValues(),
+          source: DefaultValues(),
           upsert: UpsertClause(
             action: DoUpdate(
               [
