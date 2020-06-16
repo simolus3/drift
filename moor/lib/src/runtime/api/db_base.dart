@@ -110,6 +110,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   }
 
   @override
+  @nonVirtual
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
     return _runEngineZoned(BeforeOpenRunner(this, executor), () async {
       if (details.wasCreated) {

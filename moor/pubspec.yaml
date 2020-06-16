@@ -9,7 +9,7 @@ environment:
   sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
-  meta: ^1.0.0
+  meta: ^1.1.8
   convert: ^2.1.1
   collection: ^1.0.0
   synchronized: ^2.1.0
