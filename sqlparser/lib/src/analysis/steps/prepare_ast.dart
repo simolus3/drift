@@ -97,7 +97,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitQueryable(Queryable e, void arg) {
+  void defaultQueryable(Queryable e, void arg) {
     final scope = e.scope;
     e.when(
       isTable: (table) {

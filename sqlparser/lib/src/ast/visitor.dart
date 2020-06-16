@@ -21,7 +21,12 @@ abstract class AstVisitor<A, R> {
   R visitOrderBy(OrderBy e, A arg);
   R visitOrderingTerm(OrderingTerm e, A arg);
   R visitLimit(Limit e, A arg);
-  R visitQueryable(Queryable e, A arg);
+
+  R visitTableReference(TableReference e, A arg);
+  R visitSelectStatementAsSource(SelectStatementAsSource e, A arg);
+  R visitJoinClause(JoinClause e, A arg);
+  R visitTableValuedFunction(TableValuedFunction e, A arg);
+
   R visitJoin(Join e, A arg);
   R visitGroupBy(GroupBy e, A arg);
 
@@ -242,7 +247,26 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   }
 
   @override
-  R visitQueryable(Queryable e, A arg) {
+  R visitTableReference(TableReference e, A arg) {
+    return defaultQueryable(e, arg);
+  }
+
+  @override
+  R visitSelectStatementAsSource(SelectStatementAsSource e, A arg) {
+    return defaultQueryable(e, arg);
+  }
+
+  @override
+  R visitJoinClause(JoinClause e, A arg) {
+    return defaultQueryable(e, arg);
+  }
+
+  @override
+  R visitTableValuedFunction(TableValuedFunction e, A arg) {
+    return defaultQueryable(e, arg);
+  }
+
+  R defaultQueryable(Queryable e, A arg) {
     return defaultNode(e, arg);
   }
 

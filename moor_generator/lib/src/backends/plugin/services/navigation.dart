@@ -96,16 +96,14 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitQueryable(Queryable e, void arg) {
-    if (e is TableReference) {
-      final resolved = e.resolved;
+  void visitTableReference(TableReference e, void arg) {
+    final resolved = e.resolved;
 
-      if (resolved is Table && resolved != null) {
-        final declaration = resolved.meta<MoorTable>()?.declaration;
-        if (declaration != null) {
-          _reportForSpan(
-              e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
-        }
+    if (resolved is Table && resolved != null) {
+      final declaration = resolved.meta<MoorTable>()?.declaration;
+      if (declaration != null) {
+        _reportForSpan(
+            e.span, ElementKind.CLASS, locationOfDeclaration(declaration));
       }
     }
 

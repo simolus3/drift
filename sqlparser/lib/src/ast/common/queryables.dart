@@ -3,11 +3,6 @@ part of '../ast.dart';
 /// Marker interface for something that can appear after a "FROM" in a select
 /// statement.
 abstract class Queryable extends AstNode {
-  @override
-  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitQueryable(this, arg);
-  }
-
   // todo remove this, introduce more visit methods for subclasses
   T when<T>({
     @required T Function(TableReference) isTable,
@@ -56,6 +51,11 @@ class TableReference extends TableOrSubquery
   Iterable<AstNode> get childNodes => const [];
 
   @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitTableReference(this, arg);
+  }
+
+  @override
   bool contentEquals(TableReference other) {
     return other.tableName == tableName && other.as == as;
   }
@@ -82,6 +82,11 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   SelectStatementAsSource({@required this.statement, this.as});
 
   @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitSelectStatementAsSource(this, arg);
+  }
+
+  @override
   Iterable<AstNode> get childNodes => [statement];
 
   @override
@@ -101,6 +106,11 @@ class JoinClause extends Queryable {
   final List<Join> joins;
 
   JoinClause({@required this.primary, @required this.joins});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitJoinClause(this, arg);
+  }
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
@@ -212,6 +222,11 @@ class TableValuedFunction extends Queryable
   ResultSet resultSet;
 
   TableValuedFunction(this.name, this.parameters, {this.as});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitTableValuedFunction(this, arg);
+  }
 
   @override
   Iterable<AstNode> get childNodes => [parameters];

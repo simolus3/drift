@@ -40,12 +40,10 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitQueryable(Queryable e, void arg) {
-    if (e is TableReference) {
-      final resolved = _toResultSetOrNull(e.resultSet);
-      if (resolved != null) {
-        _add(resolved);
-      }
+  void visitTableReference(TableReference e, void arg) {
+    final resolved = _toResultSetOrNull(e.resultSet);
+    if (resolved != null) {
+      _add(resolved);
     }
 
     visitChildren(e, arg);

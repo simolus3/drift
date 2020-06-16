@@ -73,12 +73,10 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitQueryable(Queryable e, void arg) {
-    if (e is TableReference) {
-      final tableToken = e.tableNameToken;
-      if (tableToken != null) {
-        _contribute(e, HighlightRegionType.TYPE_PARAMETER);
-      }
+  void visitTableReference(TableReference e, void arg) {
+    final tableToken = e.tableNameToken;
+    if (tableToken != null) {
+      _contribute(e, HighlightRegionType.TYPE_PARAMETER);
     }
     visitChildren(e, arg);
   }
