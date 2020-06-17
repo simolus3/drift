@@ -183,13 +183,13 @@ class Scanner {
         _string();
         break;
       case $double_quote:
-        _identifier(escapedInQuotes: true);
+        _identifier(escapeChar: $double_quote);
         break;
       case $backquote:
         if (scanMoorTokens) {
           _inlineDart();
         } else {
-          _unexpectedToken();
+          _identifier(escapeChar: $backquote);
         }
         break;
       case $space:
@@ -366,10 +366,10 @@ class Scanner {
     }
   }
 
-  void _identifier({bool escapedInQuotes = false}) {
-    if (escapedInQuotes) {
+  void _identifier({int escapeChar}) {
+    if (escapeChar != null) {
       // find the closing quote
-      while (!_isAtEnd && _peek() != $double_quote) {
+      while (!_isAtEnd && _peek() != escapeChar) {
         _nextChar();
       }
       // Issue an error if the column name is unterminated
@@ -377,7 +377,7 @@ class Scanner {
         errors
             .add(TokenizerError('Unterminated column name', _currentLocation));
       } else {
-        // consume the closing double quote
+        // consume the closing char
         _nextChar();
         tokens.add(IdentifierToken(true, _currentSpan));
       }
