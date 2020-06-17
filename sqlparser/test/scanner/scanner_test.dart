@@ -15,4 +15,20 @@ void main() {
       throwsA(isA<CumulatedTokenizerException>()),
     );
   });
+
+  test('scans identifiers with backticks', () {
+    expect(
+      Scanner('`SELECT`').scanTokens(),
+      contains(isA<IdentifierToken>()
+          .having((e) => e.identifier, 'identifier', 'SELECT')),
+    );
+  });
+
+  test('scans identifiers with double quotes', () {
+    expect(
+      Scanner('"SELECT"').scanTokens(),
+      contains(isA<IdentifierToken>()
+          .having((e) => e.identifier, 'identifier', 'SELECT')),
+    );
+  });
 }
