@@ -98,6 +98,7 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
   @override
   void startTransaction(Future<void> Function(QueryDelegate) run) {
     delegate.db.transaction((transaction) async {
+      assert(transaction != null);
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
     }).catchError((_) {
