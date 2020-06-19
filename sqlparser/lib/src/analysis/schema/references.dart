@@ -44,7 +44,7 @@ class ReferenceScope {
     if (_availableColumns != null) return _availableColumns;
     if (inheritAvailableColumns) return parent.availableColumns;
 
-    return null;
+    return const [];
   }
 
   set availableColumns(List<Column> value) {

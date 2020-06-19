@@ -57,4 +57,11 @@ void main() {
     expect(
         findWrittenTables(ctx.root), {TableWrite(logins, UpdateKind.insert)});
   });
+
+  test('ignores unresolved references', () {
+    final ctx = engine.analyze('UPDATE xzy SET foo = bar');
+
+    expect(findWrittenTables(ctx.root), isEmpty);
+    expect(ctx.errors, hasLength(3)); // unknown table, two unknown references
+  });
 }

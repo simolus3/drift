@@ -63,25 +63,28 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
+  void _addIfResolved(AstNode node, TableReference ref) {
+    final table = _resolveTableReference(ref);
+    if (table != null) {
+      node.scope.availableColumns = table.resolvedColumns;
+    }
+  }
+
   @override
   void visitUpdateStatement(UpdateStatement e, void arg) {
-    final table = _resolveTableReference(e.table);
-    e.scope.availableColumns = table.resolvedColumns;
+    _addIfResolved(e, e.table);
     visitChildren(e, arg);
   }
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
-    final table = _resolveTableReference(e.table);
-    visitChildren(e, arg);
-    e.scope.availableColumns = table.resolvedColumns;
+    _addIfResolved(e, e.table);
     visitChildren(e, arg);
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
-    final table = _resolveTableReference(e.from);
-    e.scope.availableColumns = table.resolvedColumns;
+    _addIfResolved(e, e.from);
     visitChildren(e, arg);
   }
 
