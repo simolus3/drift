@@ -32,7 +32,7 @@ Moor web is built on top of the [sql.js](https://github.com/sql-js/sql.js/) libr
 <body></body>
 </html>
 ```
-You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](https://github.com/sql-js/sql.js/tree/master/dist)
+You can grab the latest version of `sql-wasm.js` and `sql-wasm.wasm` [here](https://github.com/sql-js/sql.js/releases)
 and copy them into your `web` folder.
 
 A full example that works on the web (and all other platforms) is available
