@@ -35,7 +35,7 @@ class _Bin2String extends Converter<Uint8List, String> {
   const _Bin2String();
 
   // There is a browser limit on the amount of chars one can give to
-  // String.fromCharCodes https://github.com/kripken/sql.js/wiki/Persisting-a-Modified-Database#save-a-database-to-a-string
+  // String.fromCharCodes https://github.com/sql-js/sql.js/wiki/Persisting-a-Modified-Database#save-a-database-to-a-string
   static const int _chunkSize = 0xffff;
 
   @override
