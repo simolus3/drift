@@ -54,7 +54,7 @@ class UseMoor {
   /// Use this class as an annotation to inform moor_generator that a database
   /// class should be generated using the specified [UseMoor.tables].
   const UseMoor({
-    @required this.tables,
+    this.tables = const [],
     this.daos = const [],
     this.queries = const {},
     this.include = const {},
@@ -95,7 +95,7 @@ class UseDao {
   /// Annotation for a class to declare it as an dao. See [UseDao] and the
   /// referenced documentation on how to use daos with moor.
   const UseDao(
-      {@required this.tables,
+      {this.tables = const [],
       this.queries = const {},
       this.include = const {}});
 }
