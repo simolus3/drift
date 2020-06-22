@@ -109,6 +109,13 @@ void main() {
       expect(result.single['r'], 0);
     });
 
+    test('supports flags', () {
+      final stmt =
+          db.prepare(r"SELECT regexp_moor_ffi('^bar', 'foo\nbar', 8) AS r;");
+      final result = stmt.select();
+      expect(result.single['r'], 0);
+    });
+
     test('returns null when either argument is null', () {
       final stmt = db.prepare('SELECT ? REGEXP ?');
 

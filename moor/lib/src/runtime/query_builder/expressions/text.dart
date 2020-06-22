@@ -11,9 +11,49 @@ extension StringExpressionOperators on Expression<String> {
 
   /// Matches this string against the regular expression in [regex].
   ///
-  /// Note that this function is only available when using `moor_ffi`. If
-  /// possible, consider using [like] instead.
-  Expression<bool> regexp(String regex) {
+  /// The [multiLine], [caseSensitive], [unicode] and [dotAll] parameters
+  /// correspond to the parameters on [RegExp].
+  ///
+  /// Note that this function is only available when using `moor_ffi`. If you
+  /// need to support the web or `moor_flutter`, consider using [like] instead.
+  Expression<bool> regexp(
+    String regex, {
+    bool multiLine = false,
+    bool caseSensitive = true,
+    bool unicode = false,
+    bool dotAll = false,
+  }) {
+    // moor_ffi has a special regexp sql function that takes a third parameter
+    // to encode flags. If the least significant bit is set, multiLine is
+    // enabled. The next three bits enable case INSENSITIVITY (it's sensitive
+    // by default), unicode and dotAll.
+    var flags = 0;
+
+    if (multiLine) {
+      flags |= 1;
+    }
+    if (!caseSensitive) {
+      flags |= 2;
+    }
+    if (unicode) {
+      flags |= 4;
+    }
+    if (dotAll) {
+      flags |= 8;
+    }
+
+    if (flags != 0) {
+      return FunctionCallExpression<bool>(
+        'regexp_moor_ffi',
+        [
+          Variable.withString(regex),
+          this,
+          Variable.withInt(flags),
+        ],
+      );
+    }
+
+    // No special flags enabled, use the regular REGEXP operator
     return _LikeOperator(this, Variable.withString(regex), operator: 'REGEXP');
   }
 

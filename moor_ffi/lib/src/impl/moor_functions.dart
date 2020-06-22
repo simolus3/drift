@@ -69,8 +69,13 @@ void _atanImpl(Pointer<FunctionContext> ctx, int argCount,
 
 void _regexpImpl(Pointer<FunctionContext> ctx, int argCount,
     Pointer<Pointer<SqliteValue>> args) {
-  if (argCount != 2) {
-    ctx.resultError('Expected two arguments to regexp');
+  var multiLine = false;
+  var caseSensitive = true;
+  var unicode = false;
+  var dotAll = false;
+
+  if (argCount < 2 || argCount > 3) {
+    ctx.resultError('Expected two or three arguments to regexp');
     return;
   }
 
@@ -81,15 +86,32 @@ void _regexpImpl(Pointer<FunctionContext> ctx, int argCount,
     ctx.resultNull();
     return;
   }
-
   if (firstParam is! String || secondParam is! String) {
     ctx.resultError('Expected two strings as parameters to regexp');
     return;
   }
 
+  if (argCount == 3) {
+    // In the variant with three arguments, the last (int) arg can be used to
+    // enable regex flags. See the regexp() extension in moor for details.
+    final value = args[2].value;
+    if (value is int) {
+      multiLine = (value & 1) == 1;
+      caseSensitive = (value & 2) != 2;
+      unicode = (value & 4) == 4;
+      dotAll = (value & 8) == 8;
+    }
+  }
+
   RegExp regex;
   try {
-    regex = RegExp(firstParam as String);
+    regex = RegExp(
+      firstParam as String,
+      multiLine: multiLine,
+      caseSensitive: caseSensitive,
+      unicode: unicode,
+      dotAll: dotAll,
+    );
   } on FormatException catch (e) {
     ctx.resultError('Invalid regex: $e');
     return;
@@ -149,6 +171,9 @@ void _registerOn(Database db) {
 
   db.createFunction('regexp', 2, Pointer.fromFunction(_regexpImpl),
       isDeterministic: true);
+  // Third argument can be used to set flags (like multiline, case sensitivity,
+  // etc.)
+  db.createFunction('regexp_moor_ffi', 3, Pointer.fromFunction(_regexpImpl));
 
   final containsImplPointer =
       Pointer.fromFunction<sqlite3_function_handler>(_containsImpl);

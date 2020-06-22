@@ -71,7 +71,7 @@ extension SqliteValuePointer on Pointer<SqliteValue> {
   ///  - a [double]
   ///  - `null`
   ///
-  /// For texts and bytes, the value be copied.
+  /// For texts and bytes, the value will be copied.
   dynamic get value {
     final api = bindings;
 

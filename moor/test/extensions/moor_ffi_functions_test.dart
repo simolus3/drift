@@ -1,6 +1,6 @@
 @TestOn('vm')
+import 'package:moor/moor.dart';
 import 'package:moor/extensions/moor_ffi.dart';
-import 'package:moor/src/runtime/query_builder/query_builder.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:test/test.dart';
 
@@ -55,5 +55,116 @@ void main() {
           .containsCase('dart', caseSensitive: false)),
       completion(isTrue),
     );
+  });
+
+  group('regexp flags', () {
+    TodoDb db;
+
+    setUp(() async {
+      db = TodoDb(VmDatabase.memory());
+      // insert exactly one row so that we can evaluate expressions from Dart
+      await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
+    });
+
+    tearDown(() => db.close());
+
+    Future<bool> evaluate(Expression<bool> expr) async {
+      final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
+          .getSingle();
+
+      return result.read(expr);
+    }
+
+    test('multiLine', () {
+      expect(
+        evaluate(
+          Variable.withString('foo\nbar').regexp(
+            '^bar',
+            multiLine: true,
+          ),
+        ),
+        completion(isTrue),
+      );
+
+      expect(
+        evaluate(
+          Variable.withString('foo\nbar').regexp(
+            '^bar',
+            // multiLine is disabled by default
+          ),
+        ),
+        completion(isFalse),
+      );
+    });
+
+    test('caseSensitive', () {
+      expect(
+        evaluate(
+          Variable.withString('FOO').regexp(
+            'foo',
+            caseSensitive: false,
+          ),
+        ),
+        completion(isTrue),
+      );
+
+      expect(
+        evaluate(
+          Variable.withString('FOO').regexp(
+            'foo',
+            // caseSensitive should be true by default
+          ),
+        ),
+        completion(isFalse),
+      );
+    });
+
+    test('unicode', () {
+      // Note: `𝌆` is U+1D306 TETRAGRAM FOR CENTRE, an astral symbol.
+      // https://mathiasbynens.be/notes/es6-unicode-regex
+      const input = 'a𝌆b';
+
+      expect(
+        evaluate(
+          Variable.withString(input).regexp(
+            'a.b',
+            unicode: true,
+          ),
+        ),
+        completion(isTrue),
+      );
+
+      expect(
+        evaluate(
+          Variable.withString(input).regexp(
+            'a.b',
+            // Unicode is off by default
+          ),
+        ),
+        completion(isFalse),
+      );
+    });
+
+    test('dotAll', () {
+      expect(
+        evaluate(
+          Variable.withString('fo\n').regexp(
+            'fo.',
+            dotAll: true,
+          ),
+        ),
+        completion(isTrue),
+      );
+
+      expect(
+        evaluate(
+          Variable.withString('fo\n').regexp(
+            'fo.',
+            dotAll: false,
+          ),
+        ),
+        completion(isFalse),
+      );
+    });
   });
 }
