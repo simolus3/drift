@@ -147,7 +147,7 @@ class IsolateCommunication {
 
   /// Sends an erroneous response for a [Request].
   void respondError(Request request, dynamic error, [StackTrace trace]) {
-    // sending a message while closed with throw, so don't even try.
+    // sending a message while closed will throw, so don't even try.
     if (isClosed) return;
 
     _send(_ErrorResponse(request.id, error.toString(), trace.toString()));

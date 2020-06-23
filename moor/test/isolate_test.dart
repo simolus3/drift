@@ -59,6 +59,25 @@ void main() {
     await expectation;
     await moorIsolate.shutdownAll();
   });
+
+  test('errors propagate across isolates', () async {
+    final isolate = await MoorIsolate.spawn(_backgroundConnection);
+    final db = TodoDb.connect(await isolate.connect());
+
+    await expectLater(
+      () => db.customStatement('UPDATE non_existing_table SET foo = bar'),
+      throwsA(anything),
+    );
+
+    // Check that isolate is still usable
+    await expectLater(
+      db.customSelect('SELECT 1').get(),
+      completion(isNotEmpty),
+    );
+
+    await db.close();
+    await isolate.shutdownAll();
+  });
 }
 
 void _runTests(
