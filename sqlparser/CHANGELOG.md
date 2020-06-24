@@ -6,6 +6,7 @@
 - Breaking: Removed `visitQueryable`. Use `defaultQueryable` instead.
 - Support parsing and analyzing `CREATE VIEW` statements (see `SchemaFromCreateTable.readView`).
   Thanks to [@mqus](https://github.com/mqus) for their contribution!
+- `SqlEngine.parse` will no longer throw when there's a parsing error (use `ParseResult.errors` instead).
 
 ## 0.9.0
 

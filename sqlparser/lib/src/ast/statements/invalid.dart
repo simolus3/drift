@@ -1,0 +1,18 @@
+part of '../ast.dart';
+
+/// Used as a top-level parsing
+class InvalidStatement extends Statement {
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitInvalidStatement(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  bool contentEquals(InvalidStatement other) => true;
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}

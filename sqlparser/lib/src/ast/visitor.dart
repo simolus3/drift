@@ -14,6 +14,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateTriggerStatement(CreateTriggerStatement e, A arg);
   R visitCreateIndexStatement(CreateIndexStatement e, A arg);
   R visitCreateViewStatement(CreateViewStatement e, A arg);
+  R visitInvalidStatement(InvalidStatement e, A arg);
 
   R visitWithClause(WithClause e, A arg);
   R visitUpsertClause(UpsertClause e, A arg);
@@ -95,6 +96,11 @@ abstract class AstVisitor<A, R> {
 /// Visitor that walks down the entire tree, visiting all children in order.
 class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
   // Statements
+
+  @override
+  R visitInvalidStatement(InvalidStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
 
   @override
   R visitSelectStatement(SelectStatement e, A arg) {

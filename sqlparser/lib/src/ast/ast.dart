@@ -37,6 +37,7 @@ part 'statements/create_trigger.dart';
 part 'statements/create_view.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
+part 'statements/invalid.dart';
 part 'statements/select.dart';
 part 'statements/statement.dart';
 part 'statements/update.dart';

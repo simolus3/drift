@@ -1,23 +1,31 @@
 part of 'analysis.dart';
 
 class AnalysisError {
-  final AstNode relevantNode;
+  final SyntacticEntity source;
+
   final String message;
   final AnalysisErrorType type;
 
-  AnalysisError({@required this.type, this.message, this.relevantNode});
+  AnalysisError._internal(this.type, this.message, this.source);
+
+  AnalysisError({@required this.type, this.message, AstNode relevantNode})
+      : source = relevantNode;
+
+  @Deprecated('Use source instead')
+  AstNode get relevantNode => source as AstNode;
+
+  factory AnalysisError.fromParser(ParsingError error) {
+    return AnalysisError._internal(
+      AnalysisErrorType.synctactic,
+      error.message,
+      error.token,
+    );
+  }
 
   /// The relevant portion of the source code that caused this error. Some AST
-  /// nodes don't have a span, in that case this error is going to be null.
-  FileSpan get span {
-    final first = relevantNode?.first?.span;
-    final last = relevantNode?.last?.span;
-
-    if (first != null && last != null) {
-      return first.expand(last);
-    }
-    return null;
-  }
+  /// nodes don't have a span, in that case this error is going to have a null
+  /// span as well.
+  FileSpan get span => source.span;
 
   @override
   String toString() {
@@ -54,8 +62,6 @@ enum AnalysisErrorType {
   referencedUnknownTable,
   referencedUnknownColumn,
   ambiguousReference,
-
-  /// Note that most syntax errors are reported as [ParsingError]
   synctactic,
 
   unknownFunction,

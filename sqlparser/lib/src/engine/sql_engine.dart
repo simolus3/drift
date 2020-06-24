@@ -110,7 +110,7 @@ class SqlEngine {
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
     final parser = Parser(tokensForParser, useMoor: options.useMoorExtensions);
 
-    final stmt = parser.statement();
+    final stmt = parser.safeStatement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
   }
 
@@ -143,7 +143,14 @@ class SqlEngine {
   /// this statement only.
   AnalysisContext analyze(String sql, {AnalyzeStatementOptions stmtOptions}) {
     final result = parse(sql);
-    return analyzeParsed(result, stmtOptions: stmtOptions);
+    final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
+
+    // Add parsing errors that occured to the beginning since they are the most
+    // prominent problems.
+    analyzed.errors
+        .insertAll(0, result.errors.map((e) => AnalysisError.fromParser(e)));
+
+    return analyzed;
   }
 
   /// Analyzes a parsed [result] statement. The [AnalysisContext] returned

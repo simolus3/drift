@@ -225,6 +225,12 @@ class Parser extends ParserBase
   // todo remove this and don't be that lazy in moorFile()
   var _lastStmtHadParsingError = false;
 
+  /// Parses a statement without throwing when there's a parsing error.
+  Statement /*?*/ safeStatement() {
+    return _parseAsStatement(statement, requireSemicolon: false) ??
+        InvalidStatement();
+  }
+
   Statement statement() {
     final first = _peek;
     Statement stmt = _crud();
@@ -369,14 +375,15 @@ class Parser extends ParserBase
 
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
-  T _parseAsStatement<T extends Statement>(T Function() parser) {
+  T _parseAsStatement<T extends Statement>(T Function() parser,
+      {bool requireSemicolon = true}) {
     _lastStmtHadParsingError = false;
     final first = _peek;
     T result;
     try {
       result = parser();
 
-      if (result != null) {
+      if (result != null && requireSemicolon) {
         result.semicolon = _consume(TokenType.semicolon,
             'Expected a semicolon after the statement ended');
         result.setSpan(first, _previous);

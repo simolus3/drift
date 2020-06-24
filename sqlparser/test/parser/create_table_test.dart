@@ -188,16 +188,16 @@ void main() {
   test("can't have empty arguments in CREATE VIRTUAL TABLE", () {
     final engine = SqlEngine();
     expect(
-      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,)'),
-      throwsA(
+      engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,)').errors,
+      contains(
         const TypeMatcher<ParsingError>()
             .having((e) => e.token.lexeme, 'fails at closing bracket', ')'),
       ),
     );
 
     expect(
-      () => engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,,b)'),
-      throwsA(
+      engine.parse('CREATE VIRTUAL TABLE foo USING bar(a,,b)').errors,
+      contains(
         const TypeMatcher<ParsingError>()
             .having((e) => e.token.lexeme, 'fails at next comma', ','),
       ),
