@@ -1,6 +1,6 @@
 part of '../ast.dart';
 
-/// Used as a top-level parsing
+/// Used as a top-level substitute when no statement could be parsed otherwise.
 class InvalidStatement extends Statement {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

@@ -226,7 +226,7 @@ class Parser extends ParserBase
   var _lastStmtHadParsingError = false;
 
   /// Parses a statement without throwing when there's a parsing error.
-  Statement /*?*/ safeStatement() {
+  Statement safeStatement() {
     return _parseAsStatement(statement, requireSemicolon: false) ??
         InvalidStatement();
   }
