@@ -63,9 +63,12 @@ class TableWithoutPK extends Table {
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
 }
 
-class PureDefaults extends Table with AutoIncrement {
+class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
   TextColumn get txt => text().named('insert').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {txt};
 }
 
 // example object used for custom mapping

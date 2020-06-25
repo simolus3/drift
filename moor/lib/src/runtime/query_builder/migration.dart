@@ -134,7 +134,7 @@ class Migrator {
       for (var i = 0; i < pkList.length; i++) {
         final column = pkList[i];
 
-        context.buffer.write(column.$name);
+        context.buffer.write(escapeIfNeeded(column.$name));
 
         if (i != pkList.length - 1) context.buffer.write(', ');
       }

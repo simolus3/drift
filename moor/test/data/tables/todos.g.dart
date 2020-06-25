@@ -1386,25 +1386,19 @@ class $TableWithoutPKTable extends TableWithoutPK
 }
 
 class PureDefault extends DataClass implements Insertable<PureDefault> {
-  final int id;
   final String txt;
-  PureDefault({@required this.id, this.txt});
+  PureDefault({this.txt});
   factory PureDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return PureDefault(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}insert']),
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
     if (!nullToAbsent || txt != null) {
       map['insert'] = Variable<String>(txt);
     }
@@ -1413,7 +1407,6 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
 
   PureDefaultsCompanion toCompanion(bool nullToAbsent) {
     return PureDefaultsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       txt: txt == null && nullToAbsent ? const Value.absent() : Value(txt),
     );
   }
@@ -1422,7 +1415,6 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return PureDefault(
-      id: serializer.fromJson<int>(json['id']),
       txt: serializer.fromJson<String>(json['txt']),
     );
   }
@@ -1435,56 +1427,44 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'txt': serializer.toJson<String>(txt),
     };
   }
 
-  PureDefault copyWith({int id, String txt}) => PureDefault(
-        id: id ?? this.id,
+  PureDefault copyWith({String txt}) => PureDefault(
         txt: txt ?? this.txt,
       );
   @override
   String toString() {
-    return (StringBuffer('PureDefault(')
-          ..write('id: $id, ')
-          ..write('txt: $txt')
-          ..write(')'))
+    return (StringBuffer('PureDefault(')..write('txt: $txt')..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, txt.hashCode));
+  int get hashCode => $mrjf(txt.hashCode);
   @override
   bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is PureDefault && other.id == this.id && other.txt == this.txt);
+      identical(this, other) || (other is PureDefault && other.txt == this.txt);
 }
 
 class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
-  final Value<int> id;
   final Value<String> txt;
   const PureDefaultsCompanion({
-    this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
   PureDefaultsCompanion.insert({
-    this.id = const Value.absent(),
     this.txt = const Value.absent(),
   });
   static Insertable<PureDefault> custom({
-    Expression<int> id,
     Expression<String> txt,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (txt != null) 'insert': txt,
     });
   }
 
-  PureDefaultsCompanion copyWith({Value<int> id, Value<String> txt}) {
+  PureDefaultsCompanion copyWith({Value<String> txt}) {
     return PureDefaultsCompanion(
-      id: id ?? this.id,
       txt: txt ?? this.txt,
     );
   }
@@ -1492,9 +1472,6 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (txt.present) {
       map['insert'] = Variable<String>(txt.value);
     }
@@ -1504,7 +1481,6 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   @override
   String toString() {
     return (StringBuffer('PureDefaultsCompanion(')
-          ..write('id: $id, ')
           ..write('txt: $txt')
           ..write(')'))
         .toString();
@@ -1516,15 +1492,6 @@ class $PureDefaultsTable extends PureDefaults
   final GeneratedDatabase _db;
   final String _alias;
   $PureDefaultsTable(this._db, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
-  @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
   GeneratedTextColumn _txt;
   @override
@@ -1538,7 +1505,7 @@ class $PureDefaultsTable extends PureDefaults
   }
 
   @override
-  List<GeneratedColumn> get $columns => [id, txt];
+  List<GeneratedColumn> get $columns => [txt];
   @override
   $PureDefaultsTable get asDslTable => this;
   @override
@@ -1550,9 +1517,6 @@ class $PureDefaultsTable extends PureDefaults
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
-    }
     if (data.containsKey('insert')) {
       context.handle(
           _txtMeta, txt.isAcceptableOrUnknown(data['insert'], _txtMeta));
@@ -1561,7 +1525,7 @@ class $PureDefaultsTable extends PureDefaults
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {txt};
   @override
   PureDefault map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;

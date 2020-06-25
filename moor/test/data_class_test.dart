@@ -92,10 +92,10 @@ void main() {
   });
 
   test('data classes can be converted to companions with null to absent', () {
-    final entry = PureDefault(id: null, txt: null);
+    final entry = PureDefault(txt: null);
 
     expect(entry.toCompanion(false),
-        const PureDefaultsCompanion(id: Value(null), txt: Value(null)));
+        const PureDefaultsCompanion(txt: Value(null)));
     expect(entry.toCompanion(true), const PureDefaultsCompanion());
   });
 
