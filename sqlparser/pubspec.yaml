@@ -17,3 +17,4 @@ dependencies:
 dev_dependencies:
   test: ^1.9.4
   path: ^1.6.0
+  moor_ffi: ^0.6.0
