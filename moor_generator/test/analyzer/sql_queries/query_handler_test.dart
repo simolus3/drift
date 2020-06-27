@@ -83,13 +83,13 @@ CREATE TABLE points (
 CREATE TABLE routes (
   id INTEGER NOT NULL PRIMARY KEY,
   "from" INTEGER NOT NULL REFERENCES points (id),
-  to INTEGER NOT NULL REFERENCES points (id)
+  "to" INTEGER NOT NULL REFERENCES points (id)
 );
 
-allRoutes: SELECT routes.*, "from".**, to.**
+allRoutes: SELECT routes.*, "from".**, "to".**
 FROM routes r
   INNER JOIN points "from" ON "from".id = routes.from
-  INNER JOIN points to ON to.id = routes.to;
+  INNER JOIN points "to" ON "to".id = routes."to";
       ''',
     });
 

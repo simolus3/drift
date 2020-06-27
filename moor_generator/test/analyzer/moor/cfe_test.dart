@@ -34,7 +34,7 @@ WITH RECURSIVE
   SELECT x FROM cnt;
   
 test2:
-WITH alias(first, second) AS (SELECT * FROM foo) SELECT * FROM alias;
+WITH alias("first", second) AS (SELECT * FROM foo) SELECT * FROM alias;
          ''',
       },
     );
