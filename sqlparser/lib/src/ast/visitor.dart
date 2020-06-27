@@ -48,6 +48,7 @@ abstract class AstVisitor<A, R> {
   R visitColumnConstraint(ColumnConstraint e, A arg);
   R visitTableConstraint(TableConstraint e, A arg);
   R visitForeignKeyClause(ForeignKeyClause e, A arg);
+  R visitDeferrableClause(DeferrableClause e, A arg);
 
   R visitLiteral(Literal e, A arg);
   R visitNumericLiteral(Literal e, A arg);
@@ -327,6 +328,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   @override
   R visitForeignKeyClause(ForeignKeyClause e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R visitDeferrableClause(DeferrableClause e, A arg) {
     return defaultNode(e, arg);
   }
 

@@ -618,11 +618,33 @@ mixin SchemaParser on ParserBase {
       }
     }
 
+    DeferrableClause deferrable;
+    if (_checkWithNot(TokenType.deferrable)) {
+      final first = _peekNext;
+
+      final not = _matchOne(TokenType.not);
+      _consume(TokenType.deferrable);
+
+      InitialDeferrableMode mode;
+      if (_matchOne(TokenType.initially)) {
+        if (_matchOne(TokenType.deferred)) {
+          mode = InitialDeferrableMode.deferred;
+        } else if (_matchOne(TokenType.immediate)) {
+          mode = InitialDeferrableMode.immediate;
+        } else {
+          _error('Expected DEFERRED or IMMEDIATE here');
+        }
+      }
+
+      deferrable = DeferrableClause(not, mode)..setSpan(first, _previous);
+    }
+
     return ForeignKeyClause(
       foreignTable: foreignTableName,
       columnNames: columnNames,
       onUpdate: onUpdate,
       onDelete: onDelete,
+      deferrable: deferrable,
     )..setSpan(firstToken, _previous);
   }
 

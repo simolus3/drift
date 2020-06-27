@@ -7,12 +7,15 @@ class ForeignKeyClause extends AstNode {
   final List<Reference> columnNames;
   final ReferenceAction onDelete;
   final ReferenceAction onUpdate;
+  DeferrableClause deferrable;
 
-  ForeignKeyClause(
-      {@required this.foreignTable,
-      @required this.columnNames,
-      this.onDelete,
-      this.onUpdate});
+  ForeignKeyClause({
+    @required this.foreignTable,
+    @required this.columnNames,
+    this.onDelete,
+    this.onUpdate,
+    this.deferrable,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -23,15 +26,56 @@ class ForeignKeyClause extends AstNode {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     foreignTable = transformer.transformChild(foreignTable, this, arg);
     transformer.transformChildren(columnNames, this, arg);
+    deferrable = transformer.transformChild(deferrable, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes => [foreignTable, ...columnNames];
+  Iterable<AstNode> get childNodes => [
+        foreignTable,
+        ...columnNames,
+        if (deferrable != null) deferrable,
+      ];
 
   @override
   bool contentEquals(ForeignKeyClause other) {
     return other.onDelete == onDelete && other.onUpdate == onUpdate;
   }
+}
+
+enum InitialDeferrableMode {
+  deferred,
+  immediate,
+}
+
+class DeferrableClause extends AstNode {
+  final bool not;
+  final InitialDeferrableMode /*?*/ declaredInitially;
+
+  DeferrableClause(this.not, this.declaredInitially);
+
+  InitialDeferrableMode get effectiveInitialMode {
+    if (not || declaredInitially == null) {
+      return InitialDeferrableMode.immediate;
+    }
+
+    return declaredInitially;
+  }
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitDeferrableClause(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  bool contentEquals(DeferrableClause other) {
+    return other.not == not && other.declaredInitially == declaredInitially;
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
 abstract class TableConstraint extends AstNode {

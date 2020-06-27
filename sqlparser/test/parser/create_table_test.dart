@@ -80,6 +80,10 @@ void main() {
                   columnNames: [Reference(columnName: 'thing')],
                   onUpdate: ReferenceAction.cascade,
                   onDelete: ReferenceAction.setNull,
+                  deferrable: DeferrableClause(
+                    false,
+                    InitialDeferrableMode.deferred,
+                  ),
                 ),
               ),
             ],
@@ -109,6 +113,10 @@ void main() {
               ],
               onDelete: ReferenceAction.noAction,
               onUpdate: ReferenceAction.restrict,
+              deferrable: DeferrableClause(
+                true,
+                InitialDeferrableMode.immediate,
+              ),
             ),
           )
         ],

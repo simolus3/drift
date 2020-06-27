@@ -136,10 +136,10 @@ abstract class ParserBase {
     throw error;
   }
 
-  Token _consume(TokenType type, String message) {
+  Token _consume(TokenType type, [String message]) {
     if (_check(type)) return _advance();
 
-    _error(message);
+    _error(message ?? 'Expected $type');
   }
 
   /// Consumes an identifier.
