@@ -35,14 +35,17 @@ class OrderBy extends AstNode implements OrderByBase {
 
 enum OrderingMode { ascending, descending }
 
+enum OrderingBehaviorForNulls { first, last }
+
 class OrderingTerm extends AstNode implements OrderingTermBase {
   Expression expression;
   OrderingMode orderingMode;
+  OrderingBehaviorForNulls nulls;
 
   OrderingMode get resolvedOrderingMode =>
       orderingMode ?? OrderingMode.ascending;
 
-  OrderingTerm({this.expression, this.orderingMode});
+  OrderingTerm({this.expression, this.orderingMode, this.nulls});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -59,6 +62,6 @@ class OrderingTerm extends AstNode implements OrderingTermBase {
 
   @override
   bool contentEquals(OrderingTerm other) {
-    return other.orderingMode == orderingMode;
+    return other.orderingMode == orderingMode && other.nulls == nulls;
   }
 }

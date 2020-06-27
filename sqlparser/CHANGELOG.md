@@ -7,6 +7,8 @@
 - Support parsing and analyzing `CREATE VIEW` statements (see `SchemaFromCreateTable.readView`).
   Thanks to [@mqus](https://github.com/mqus) for their contribution!
 - `SqlEngine.parse` will no longer throw when there's a parsing error (use `ParseResult.errors` instead).
+- Parse `DEFERRABLE` clauses on foreign key constraints
+- Parse `NULLS FIRST` and `NULLS LAST` on `ORDER BY` terms
 
 ## 0.9.0
 

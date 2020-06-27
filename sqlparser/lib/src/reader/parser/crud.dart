@@ -486,15 +486,27 @@ mixin CrudParser on ParserBase {
     final expr = expression();
     final mode = _orderingModeOrNull();
 
-    // if there is no ASC or DESC after a Dart placeholder, we can upgrade the
-    // expression to an ordering term placeholder and let users define the mode
-    // at runtime.
-    if (mode == null && expr is DartExpressionPlaceholder) {
+    OrderingBehaviorForNulls nulls;
+
+    if (_matchOne(TokenType.nulls)) {
+      if (_matchOne(TokenType.first)) {
+        nulls = OrderingBehaviorForNulls.first;
+      } else if (_matchOne(TokenType.last)) {
+        nulls = OrderingBehaviorForNulls.last;
+      } else {
+        _error('Expected FIRST or LAST here');
+      }
+    }
+
+    // if there is nothing (asc/desc, nulls first/last) after a Dart
+    // placeholder, we can upgrade the expression to an ordering term
+    // placeholder and let users define the mode at runtime.
+    if (mode == null && nulls == null && expr is DartExpressionPlaceholder) {
       return DartOrderingTermPlaceholder(name: expr.name)
         ..setSpan(expr.first, expr.last);
     }
 
-    return OrderingTerm(expression: expr, orderingMode: mode)
+    return OrderingTerm(expression: expr, orderingMode: mode, nulls: nulls)
       ..setSpan(expr.first, _previous);
   }
 

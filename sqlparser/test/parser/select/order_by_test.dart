@@ -30,4 +30,27 @@ void main() {
       ),
     );
   });
+
+  test('parses clauses with NULLS FIRST or NULLS LAST', () {
+    final parsed = SqlEngine(EngineOptions(useMoorExtensions: true))
+        .parse(r'SELECT * FROM tbl ORDER BY $a NULLS LAST, b NULLS FIRST')
+        .rootNode as SelectStatement;
+
+    enforceHasSpan(parsed);
+    enforceEqual(
+      parsed.orderBy,
+      OrderBy(
+        terms: [
+          OrderingTerm(
+            expression: DartExpressionPlaceholder(name: 'a'),
+            nulls: OrderingBehaviorForNulls.last,
+          ),
+          OrderingTerm(
+            expression: Reference(columnName: 'b'),
+            nulls: OrderingBehaviorForNulls.first,
+          ),
+        ],
+      ),
+    );
+  });
 }
