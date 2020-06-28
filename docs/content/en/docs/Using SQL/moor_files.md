@@ -21,7 +21,7 @@ part 'database.g.dart';
   include: {'tables.moor'},
 )
 class MoorDb extends _$MoorDb {
-  MoorDb() : super(FlutterQueryExecutor.inDatabaseFolder('app.db'));
+  MoorDb() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'app.db'));
 
   @override
   int get schemaVersion => 1;
