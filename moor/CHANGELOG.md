@@ -4,7 +4,7 @@
   [the documentation](https://moor.simonbinder.eu/docs/using-sql/moor_files/#result-class-names) for details.
 - Added the `multiLine`, `caseSensitive`, `unicode` and `doAll` flags to the `regex` sql extension
   method.
-  They require the `moor_ffi` version `0.7.0` or later.
+  They require `moor_ffi` version `0.7.0` or later.
 
 ## 3.1.0
 
