@@ -16,7 +16,7 @@ dependencies:
   pedantic: ^1.0.0
 
 dev_dependencies:
-  moor_generator: ^2.1.0
+  moor_generator: ^3.2.0
   uuid: ^2.0.0
   moor_ffi: # Used to run integration tests
     path: ../moor_ffi
