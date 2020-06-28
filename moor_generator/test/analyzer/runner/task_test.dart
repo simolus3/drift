@@ -13,6 +13,7 @@ import 'b.moor';
       });
 
       final result = await state.analyze('package:foo/a.moor');
+      state.close();
 
       expect(
         result.errors.errors,
@@ -37,6 +38,7 @@ class Database {
       });
 
       final result = await state.analyze('package:foo/a.dart');
+      state.close();
 
       expect(
         result.errors.errors,

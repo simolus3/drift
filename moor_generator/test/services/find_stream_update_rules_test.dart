@@ -31,6 +31,7 @@ class MyDatabase {}
     });
 
     final file = await state.analyze('package:foo/main.dart');
+    state.close();
     final db = (file.currentResult as ParsedDartFile).declaredDatabases.single;
 
     final rules = FindStreamUpdateRules(db).identifyRules();
@@ -86,6 +87,8 @@ class MyDatabase {}
     });
 
     final file = await state.analyze('package:foo/main.dart');
+    state.close();
+
     final db = (file.currentResult as ParsedDartFile).declaredDatabases.single;
 
     expect(state.file('package:foo/a.moor').errors.errors, isEmpty);

@@ -30,6 +30,7 @@ class Users extends Table {
     final db =
         (dbFile.currentResult as ParsedDartFile).declaredDatabases.single;
 
+    state.close();
     expect(db.entities, hasLength(1));
   }, skip: 'https://github.com/simolus3/moor/issues/447');
 }

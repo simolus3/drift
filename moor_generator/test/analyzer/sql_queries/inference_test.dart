@@ -42,6 +42,7 @@ totalDurationByArtist:
     final queries = result.resolvedQueries;
 
     expect(state.session.errorsInFileAndImports(file), isEmpty);
+    state.close();
 
     final totalDurationByArtist =
         queries.singleWhere((q) => q.name == 'totalDurationByArtist');

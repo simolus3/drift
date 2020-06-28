@@ -14,6 +14,7 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
 
     await state.runTask('package:foo/main.moor');
     final file = state.file('package:foo/main.moor');
+    state.close();
 
     expect(file.errors.errors, isEmpty);
     final content = file.currentResult as ParsedMoorFile;

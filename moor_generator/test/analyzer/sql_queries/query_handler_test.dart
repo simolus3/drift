@@ -95,6 +95,7 @@ FROM routes r
 
     final file = await state.analyze('package:foo/main.moor');
     final result = file.currentResult as ParsedMoorFile;
+    state.close();
 
     expect(file.errors.errors, isEmpty);
 

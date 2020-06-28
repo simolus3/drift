@@ -14,8 +14,12 @@ CREATE TABLE users (
 '''
     };
 
+    TestState state;
+
+    tearDown(() => state?.close());
+
     test('in a foreign key clause', () async {
-      final state = TestState.withContent(const {
+      state = TestState.withContent(const {
         'foo|lib/a.moor': '''
 import 'b.moor';
 
@@ -44,7 +48,7 @@ CREATE TABLE friendships (
     });
 
     test('in a trigger', () async {
-      final state = TestState.withContent(const {
+      state = TestState.withContent(const {
         'foo|lib/a.moor': '''
 import 'b.moor';
 
@@ -84,7 +88,7 @@ END;
     });
 
     test('in an index', () async {
-      final state = TestState.withContent(const {
+      state = TestState.withContent(const {
         'foo|lib/a.moor': '''
 import 'b.moor';
 
@@ -105,8 +109,12 @@ CREATE INDEX idx ON users (name);
   });
 
   group('issues error when referencing an unknown table', () {
+    TestState state;
+
+    tearDown(() => state?.close());
+
     test('in a foreign key clause', () async {
-      final state = TestState.withContent(const {
+      state = TestState.withContent(const {
         'foo|lib/a.moor': '''
 CREATE TABLE foo (
   id INTEGER NOT NULL REFERENCES bar (baz) PRIMARY KEY
@@ -123,7 +131,7 @@ CREATE TABLE foo (
     });
 
     test('in a trigger', () async {
-      final state = TestState.withContent(const {
+      state = TestState.withContent(const {
         'foo|lib/a.moor': '''
 CREATE TRIGGER IF NOT EXISTS foo BEFORE DELETE ON bar BEGIN
 END;

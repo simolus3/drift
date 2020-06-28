@@ -65,7 +65,7 @@ class ProgrammingLanguages extends Table {
   });
 
   tearDownAll(() {
-    state.backend.finish();
+    state.close();
   });
 
   setUp(() async {

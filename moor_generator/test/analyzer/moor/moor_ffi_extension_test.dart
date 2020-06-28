@@ -93,6 +93,8 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
     );
 
     final fileA = await state.analyze('package:foo/a.moor');
+    state.close();
+
     expect(fileA.errors.errors, isEmpty);
     final resultA = fileA.currentResult as ParsedMoorFile;
 

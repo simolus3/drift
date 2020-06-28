@@ -50,6 +50,6 @@ class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
     final dao = (file.currentResult as ParsedDartFile).declaredDaos.single;
     expect(dao.dbClass.getDisplayString(), 'MyDatabase');
 
-    state.backend.finish();
+    state.close();
   });
 }

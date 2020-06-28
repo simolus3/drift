@@ -33,6 +33,8 @@ void main() {
     await state.analyze('package:foo/main.dart');
   });
 
+  tearDownAll(() => state.close());
+
   test('parses enum columns', () {
     final file =
         state.file('package:foo/main.dart').currentResult as ParsedDartFile;

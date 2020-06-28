@@ -42,6 +42,10 @@ class TestState {
     await runTask(uri);
     return file(uri);
   }
+
+  void close() {
+    backend.finish();
+  }
 }
 
 // Matchers

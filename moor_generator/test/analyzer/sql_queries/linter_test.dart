@@ -53,6 +53,7 @@ all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
     });
 
     final result = await state.analyze('package:foo/a.moor');
+    state.close();
 
     expect(
       result.errors.errors,
@@ -66,6 +67,8 @@ all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
 
   group('warns about insert column count mismatch', () {
     TestState state;
+
+    tearDown(() => state?.close());
 
     Future<void> expectError() async {
       final file = await state.analyze('package:foo/a.moor');

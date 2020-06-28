@@ -26,6 +26,8 @@ void main() {
     final table = file.currentResult.declaredTables.single;
     final column = table.columns.singleWhere((c) => c.name.name == 'fruit');
 
+    state.close();
+
     expect(column.type, ColumnType.integer);
     expect(
       column.typeConverter,
@@ -75,6 +77,8 @@ void main() {
     });
 
     final file = await state.analyze('package:foo/a.moor');
+    state.close();
+
     expect(
       file.errors.errors,
       contains(
@@ -102,6 +106,8 @@ void main() {
     });
 
     final file = await state.analyze('package:foo/a.moor');
+    state.close();
+
     expect(
       file.errors.errors,
       contains(

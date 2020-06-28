@@ -11,6 +11,7 @@ void main() {
     final state = TestState.withContent({'foo|lib/a.moor': moorFile});
 
     final result = await state.analyze('package:foo/a.moor');
+    state.close();
     final queries = (result.currentResult as ParsedMoorFile).resolvedQueries;
 
     return Database(declaration: DatabaseOrDaoDeclaration(null, result))

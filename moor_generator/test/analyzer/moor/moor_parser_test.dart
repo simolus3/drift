@@ -66,6 +66,7 @@ usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25;
     });
 
     final result = await state.analyze('package:foo/a.moor');
+    state.close();
     final file = result.currentResult as ParsedMoorFile;
 
     final users1 = file.declaredTables.singleWhere((t) => t.sqlName == 'users');
