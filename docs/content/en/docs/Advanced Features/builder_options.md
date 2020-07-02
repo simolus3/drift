@@ -30,7 +30,8 @@ At the moment, moor supports these options:
    constructor that takes a `Map<String, dynamic>`.
 * `override_hash_and_equals_in_result_sets`: boolean. When moor generates another class
    to hold the result of generated select queries, this flag controls whether moor should
-   override `operator ==` and `hashCode` in those classes.
+   override `operator ==` and `hashCode` in those classes. In recent versions, it will also
+   override `toString` if this option is enabled.
 * `compact_query_methods` (defaults to `true`):
    For queries declared on a `@UseMoor` or `@UseDao` annotation, moor used to generate three methods:
    A base method returning a `Selectable` and then two helper methods returning a `Stream` or a `Future`.

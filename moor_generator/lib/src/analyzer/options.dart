@@ -21,8 +21,11 @@ class MoorOptions {
   @JsonKey(name: 'write_from_json_string_constructor', defaultValue: false)
   final bool generateFromJsonStringConstructor;
 
-  /// Overrides [Object.hashCode] and [Object.==] in classes generated for
-  /// custom queries.
+  /// Overrides [Object.hashCode], [Object.==] and [Object.toString] in classes
+  /// generated for custom queries.
+  ///
+  /// The `toString` override was added in a later version, we kept the original
+  /// name for backwards compatibility.
   @JsonKey(name: 'override_hash_and_equals_in_result_sets', defaultValue: false)
   final bool overrideHashAndEqualsInResultSets;
 

@@ -1041,4 +1041,12 @@ class TotalWeightResult {
       (other is TotalWeightResult &&
           other.title == this.title &&
           other.totalWeight == this.totalWeight);
+  @override
+  String toString() {
+    return (StringBuffer('TotalWeightResult(')
+          ..write('title: $title, ')
+          ..write('totalWeight: $totalWeight')
+          ..write(')'))
+        .toString();
+  }
 }

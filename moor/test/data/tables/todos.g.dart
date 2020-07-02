@@ -1667,6 +1667,19 @@ class AllTodosWithCategoryResult {
           other.category == this.category &&
           other.catId == this.catId &&
           other.catDesc == this.catDesc);
+  @override
+  String toString() {
+    return (StringBuffer('AllTodosWithCategoryResult(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('content: $content, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('category: $category, ')
+          ..write('catId: $catId, ')
+          ..write('catDesc: $catDesc')
+          ..write(')'))
+        .toString();
+  }
 }
 
 // **************************************************************************

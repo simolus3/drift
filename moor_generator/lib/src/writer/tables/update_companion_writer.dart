@@ -1,5 +1,6 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
+import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
 
 class UpdateCompanionWriter {
@@ -187,31 +188,10 @@ class UpdateCompanionWriter {
   }
 
   void _writeToString() {
-    /*
-      @override
-      String toString() {
-        return (StringBuffer('Category(')
-              ..write('id: $id, ')
-              ..write('description: $description')
-              ..write(')'))
-            .toString();
-     */
-
-    _buffer
-      ..write('@override\nString toString() {\n')
-      ..write('return (StringBuffer('
-          "'${table.getNameForCompanionClass(scope.options)}(')");
-
-    for (var i = 0; i < table.columns.length; i++) {
-      final column = table.columns[i];
-      final dartGetterName = column.dartGetterName;
-
-      _buffer.write("..write('$dartGetterName: \$$dartGetterName");
-      if (i != table.columns.length - 1) _buffer.write(', ');
-
-      _buffer.write("')");
-    }
-
-    _buffer..write("..write(')')).toString();")..write('\}\n');
+    overrideToString(
+      table.getNameForCompanionClass(scope.options),
+      [for (final column in table.columns) column.dartGetterName],
+      _buffer,
+    );
   }
 }

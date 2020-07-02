@@ -1577,6 +1577,14 @@ class JsonResult {
       (other is JsonResult &&
           other.key == this.key &&
           other.value == this.value);
+  @override
+  String toString() {
+    return (StringBuffer('JsonResult(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class MultipleResult {
@@ -1597,6 +1605,15 @@ class MultipleResult {
           other.a == this.a &&
           other.b == this.b &&
           other.c == this.c);
+  @override
+  String toString() {
+    return (StringBuffer('MultipleResult(')
+          ..write('a: $a, ')
+          ..write('b: $b, ')
+          ..write('c: $c')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class ReadRowIdResult {
@@ -1628,4 +1645,15 @@ class ReadRowIdResult {
           other.configValue == this.configValue &&
           other.syncState == this.syncState &&
           other.syncStateImplicit == this.syncStateImplicit);
+  @override
+  String toString() {
+    return (StringBuffer('ReadRowIdResult(')
+          ..write('rowid: $rowid, ')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
 }

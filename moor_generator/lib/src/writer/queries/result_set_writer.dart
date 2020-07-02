@@ -1,4 +1,5 @@
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
@@ -49,6 +50,7 @@ class ResultSetWriter {
       into.write(';\n');
 
       overrideEquals(fieldNames, className, into);
+      overrideToString(className, fieldNames, into);
     }
 
     into.write('}\n');

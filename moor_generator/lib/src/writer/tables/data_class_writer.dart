@@ -1,5 +1,6 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
+import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -243,32 +244,11 @@ class DataClassWriter {
   }
 
   void _writeToString() {
-    /*
-      @override
-      String toString() {
-        return (StringBuffer('User(')
-            ..write('id: $id,')
-            ..write('name: $name,')
-            ..write('isAwesome: $isAwesome')
-            ..write(')')).toString();
-      }
-     */
-
-    _buffer
-      ..write('@override\nString toString() {')
-      ..write("return (StringBuffer('${table.dartTypeName}(')");
-
-    for (var i = 0; i < table.columns.length; i++) {
-      final column = table.columns[i];
-      final getterName = column.dartGetterName;
-
-      _buffer.write("..write('$getterName: \$$getterName");
-      if (i != table.columns.length - 1) _buffer.write(', ');
-
-      _buffer.write("')");
-    }
-
-    _buffer..write("..write(')')).toString();")..write('\}\n');
+    overrideToString(
+      table.dartTypeName,
+      [for (final column in table.columns) column.dartGetterName],
+      _buffer,
+    );
   }
 
   void _writeHashCode() {
