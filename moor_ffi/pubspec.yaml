@@ -23,6 +23,10 @@ dev_dependencies:
 
 flutter:
   plugin:
-    # the flutter.plugin key needs to exists so that this project gets recognized as a plugin when imported. We need to
-    # get recognized as a plugin so that our build scripts are executed.
-    foo: bar
+    platforms:
+      # At the moment, we only have a custom build script for Android. For that to be included, we have to provide a
+      # plugin class (even though moor_ffi contains no platform-specific code). The plugin class is just an empty stub
+      # here.
+      android:
+        pluginClass: MoorFfiPlugin
+        package: eu.simonbinder.moor_ffi
