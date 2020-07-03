@@ -59,7 +59,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   /// Converts a [companion] to the real model class, [D].
   ///
   /// Values that are [Value.absent] in the companion will be set to `null`.
-  D mapFromCompanion(UpdateCompanion<D> companion) {
+  D mapFromCompanion(Insertable<D> companion) {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
