@@ -44,9 +44,11 @@ should map the given table to an `Expression` of boolean. A common way to create
 is by using `equals` on expressions. Integer columns can also be compared with `isBiggerThan`
 and `isSmallerThan`. You can compose expressions using `a & b, a | b` and `a.not()`. For more
 details on expressions, see [this guide]({{< relref "expressions.md" >}}).
+
 ### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
 the amount of rows to return and an optional offset.
+
 ```dart
 Future<List<Todo>> limitTodos(int limit, {int offset}) {
   return (select(todos)..limit(limit, offset: offset)).get();
@@ -55,7 +57,9 @@ Future<List<Todo>> limitTodos(int limit, {int offset}) {
 
 ### Ordering
 You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
-ordering terms from the table.
+ordering terms from the table. You can use any expression as an ordering term - for more details, see
+[this guide]({{< relref "expressions.md" >}}).
+
 ```dart
 Future<List<Todo>> sortEntriesAlphabetically() {
   return (select(todos)..orderBy([(t) => OrderingTerm(expression: t.title)])).get();
