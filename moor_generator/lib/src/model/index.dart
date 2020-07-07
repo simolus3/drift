@@ -36,5 +36,10 @@ class MoorIndex extends MoorSchemaEntity {
   String get displayName => name;
 
   @override
-  Iterable<MoorSchemaEntity> get references => [table];
+  Iterable<MoorSchemaEntity> get references {
+    if (table == null) {
+      return const Iterable.empty();
+    }
+    return [table];
+  }
 }

@@ -34,7 +34,7 @@ class AnalyzeDartStep extends AnalyzingStep {
           affectedElement: accessor.fromClass,
           message: msg.toString(),
         ));
-      } catch (e) {
+      } on Exception catch (e) {
         // unknown error while sorting
         reportError(ErrorInDartCode(
           severity: Severity.warning,
@@ -42,6 +42,9 @@ class AnalyzeDartStep extends AnalyzingStep {
           message: 'Unknown error while sorting database entities: $e',
         ));
       }
+
+      // Just to have something in case the above breaks.
+      availableEntities ??= const [];
 
       final availableQueries = transitiveImports
           .map((f) => f.currentResult)

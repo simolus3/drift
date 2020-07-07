@@ -1,3 +1,4 @@
+import 'package:moor_generator/moor_generator.dart' show MoorColumn;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../query_handler.dart';
@@ -119,10 +120,17 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     );
 
     // second, check that no required columns are left out
-    final specifiedTable = linter.mapper.tableToMoor(e.table.resolved as Table);
-    final required = specifiedTable.columns
-        .where(specifiedTable.isColumnRequiredForInsert)
-        .toList();
+    final resolved = e.table.resolved;
+    List<MoorColumn> required;
+    if (resolved is Table) {
+      final specifiedTable =
+          linter.mapper.tableToMoor(e.table.resolved as Table);
+      required = specifiedTable.columns
+          .where(specifiedTable.isColumnRequiredForInsert)
+          .toList();
+    } else {
+      required = const [];
+    }
 
     if (required.isNotEmpty && e.source is DefaultValues) {
       linter.lints.add(AnalysisError(

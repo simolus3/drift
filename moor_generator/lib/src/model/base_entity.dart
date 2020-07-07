@@ -9,6 +9,9 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   /// For tables, this can be contents of a `REFERENCES` clause. For triggers,
   /// it would be the tables watched.
   ///
+  /// If an entity contains an (invalid) null reference, that should not be
+  /// included in [references].
+  ///
   /// The generator will verify that the graph of entities and [references]
   /// is acyclic and sort them topologically.
   Iterable<MoorSchemaEntity> get references;

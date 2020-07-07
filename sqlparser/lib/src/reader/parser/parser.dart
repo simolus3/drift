@@ -356,8 +356,10 @@ class Parser extends ParserBase
       as = _consumeIdentifier('Expected a name of the result class').identifier;
     }
 
-    final colon =
-        _consume(TokenType.colon, 'Expected a colon (:) followed by a query');
+    final colon = _consume(
+        TokenType.colon,
+        'Expected a colon (:) followed by a query. Imports and CREATE '
+        'statements must appear before the first query.');
     final stmt = _crud();
 
     if (stmt == null) {

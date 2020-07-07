@@ -499,7 +499,7 @@ class KeywordToken extends Token {
   IdentifierToken convertToIdentifier() {
     isIdentifier = true;
 
-    return IdentifierToken(false, span, synthetic: false);
+    return IdentifierToken(false, span, synthetic: true);
   }
 }
 
