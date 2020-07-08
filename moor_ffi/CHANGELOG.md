@@ -1,3 +1,7 @@
+## 0.7.1
+
+- Fix `libsqlite3.so` not being included in new Flutter builds for Android
+
 ## 0.7.0
 
 - Throw an error when using an unsupported datatype as argument
