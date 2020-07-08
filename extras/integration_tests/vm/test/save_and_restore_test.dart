@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:moor/ffi.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:tests/database/database.dart';

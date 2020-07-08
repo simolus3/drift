@@ -1,3 +1,4 @@
+@Deprecated('Use package:moor/ffi.dart instead')
 import 'dart:io';
 
 import 'package:moor/backends.dart';
