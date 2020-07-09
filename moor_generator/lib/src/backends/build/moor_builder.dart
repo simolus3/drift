@@ -10,6 +10,12 @@ import 'package:moor_generator/src/backends/build/generators/moor_generator.dart
 import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
+class _BuilderFlags {
+  bool didWarnAboutDeprecatedOptions = false;
+}
+
+final _flags = Resource(() => _BuilderFlags());
+
 mixin MoorBuilder on Builder {
   MoorOptions get options;
 
@@ -65,6 +71,19 @@ class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
     return _createBuilder(options, (generators, parsedOptions) {
       return MoorSharedPartBuilder._(generators, 'moor', parsedOptions);
     });
+  }
+
+  @override
+  Future build(BuildStep buildStep) async {
+    final flags = await buildStep.fetchResource(_flags);
+    if (!flags.didWarnAboutDeprecatedOptions) {
+      print('You have the eagerly_load_dart_ast option enabled. The option is '
+          'no longer necessary and will be removed in a future moor version. '
+          'Consider removing the option from your build.yaml.');
+      flags.didWarnAboutDeprecatedOptions = true;
+    }
+
+    return super.build(buildStep);
   }
 }
 

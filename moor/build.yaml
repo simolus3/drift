@@ -9,7 +9,6 @@ targets:
           compact_query_methods: true
           write_from_json_string_constructor: true
           raw_result_set_data: true
-#          eagerly_load_dart_ast: true
           sqlite_modules:
             - json1
             - fts5
