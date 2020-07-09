@@ -65,6 +65,7 @@ At the moment, moor supports these options:
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
+* `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
 
 ## Available extensions
 

@@ -1013,6 +1013,7 @@ abstract class _$Database extends GeneratedDatabase {
         variables: [],
         readsFrom: {recipes, ingredientInRecipes}).map((QueryRow row) {
       return TotalWeightResult(
+        row: row,
         title: row.readString('title'),
         totalWeight: row.readInt('total_weight'),
       );
@@ -1026,13 +1027,14 @@ abstract class _$Database extends GeneratedDatabase {
       [categories, recipes, ingredients, ingredientInRecipes];
 }
 
-class TotalWeightResult {
+class TotalWeightResult extends CustomResultSet {
   final String title;
   final int totalWeight;
   TotalWeightResult({
+    @required QueryRow row,
     this.title,
     this.totalWeight,
-  });
+  }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
   @override

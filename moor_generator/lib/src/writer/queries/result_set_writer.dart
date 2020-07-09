@@ -14,12 +14,20 @@ class ResultSetWriter {
     final fieldNames = <String>[];
     final into = scope.leaf();
 
-    into.write('class $className {\n');
+    final resultSet = query.resultSet;
+
+    into.write('class $className ');
+    if (scope.options.rawResultSetData) {
+      into.write('extends CustomResultSet {\n');
+    } else {
+      into.write('{\n');
+    }
+
     final modifier = scope.options.fieldModifier;
 
     // write fields
-    for (final column in query.resultSet.columns) {
-      final name = query.resultSet.dartNameFor(column);
+    for (final column in resultSet.columns) {
+      final name = resultSet.dartNameFor(column);
       final runtimeType = column.dartType;
 
       into.write('$modifier $runtimeType $name\n;');
@@ -27,7 +35,7 @@ class ResultSetWriter {
       fieldNames.add(name);
     }
 
-    for (final nested in query.resultSet.nestedResults) {
+    for (final nested in resultSet.nestedResults) {
       final typeName = nested.table.dartTypeName;
       final fieldName = nested.dartFieldName;
 
@@ -37,11 +45,21 @@ class ResultSetWriter {
     }
 
     // write the constructor
-    into.write('$className({');
+    if (scope.options.rawResultSetData) {
+      into.write('$className({@required QueryRow row,');
+    } else {
+      into.write('$className({');
+    }
+
     for (final column in fieldNames) {
       into.write('this.$column,');
     }
-    into.write('});\n');
+
+    if (scope.options.rawResultSetData) {
+      into.write('}): super(row);\n');
+    } else {
+      into.write('});\n');
+    }
 
     // if requested, override hashCode and equals
     if (scope.writer.options.overrideHashAndEqualsInResultSets) {

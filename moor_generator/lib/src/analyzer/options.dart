@@ -74,6 +74,11 @@ class MoorOptions {
   @JsonKey(name: 'mutable_classes', defaultValue: false)
   final bool generateMutableClasses;
 
+  /// Whether generated query classes should inherit from the `CustomResultSet`
+  /// and expose their underlying raw `row`.
+  @JsonKey(name: 'raw_result_set_data', defaultValue: false)
+  final bool rawResultSetData;
+
   /// Whether the [module] has been enabled in this configuration.
   bool hasModule(SqlModule module) => modules.contains(module);
 
@@ -89,6 +94,7 @@ class MoorOptions {
     this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
+    this.rawResultSetData = false,
     this.modules = const [],
   });
 

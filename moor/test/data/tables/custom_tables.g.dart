@@ -1462,6 +1462,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {config}).map((QueryRow row) {
       return JsonResult(
+        row: row,
         key: row.readString('key'),
         value: row.readString('value'),
       );
@@ -1474,6 +1475,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {}).map((QueryRow row) {
       return JsonResult(
+        row: row,
         key: row.readString('key'),
         value: row.readString('value'),
       );
@@ -1487,6 +1489,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
       return MultipleResult(
+        row: row,
         a: row.readString('a'),
         b: row.readInt('b'),
         c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
@@ -1508,6 +1511,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [...generatedexpr.introducedVariables],
         readsFrom: {config}).map((QueryRow row) {
       return ReadRowIdResult(
+        row: row,
         rowid: row.readInt('rowid'),
         configKey: row.readString('config_key'),
         configValue: row.readString('config_value'),
@@ -1562,13 +1566,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       );
 }
 
-class JsonResult {
+class JsonResult extends CustomResultSet {
   final String key;
   final String value;
   JsonResult({
+    @required QueryRow row,
     this.key,
     this.value,
-  });
+  }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
   @override
@@ -1587,15 +1592,16 @@ class JsonResult {
   }
 }
 
-class MultipleResult {
+class MultipleResult extends CustomResultSet {
   final String a;
   final int b;
   final WithConstraint c;
   MultipleResult({
+    @required QueryRow row,
     this.a,
     this.b,
     this.c,
-  });
+  }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
@@ -1616,19 +1622,20 @@ class MultipleResult {
   }
 }
 
-class ReadRowIdResult {
+class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
   final String configValue;
   final SyncType syncState;
   final SyncType syncStateImplicit;
   ReadRowIdResult({
+    @required QueryRow row,
     this.rowid,
     this.configKey,
     this.configValue,
     this.syncState,
     this.syncStateImplicit,
-  });
+  }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(
       rowid.hashCode,

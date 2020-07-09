@@ -20,7 +20,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'sqlite_modules',
       'eagerly_load_dart_ast',
       'data_class_to_companions',
-      'mutable_classes'
+      'mutable_classes',
+      'raw_result_set_data'
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -57,6 +58,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
               true,
       generateMutableClasses:
           $checkedConvert(json, 'mutable_classes', (v) => v as bool) ?? false,
+      rawResultSetData:
+          $checkedConvert(json, 'raw_result_set_data', (v) => v as bool) ??
+              false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',
@@ -80,7 +84,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'eagerlyLoadDartAst': 'eagerly_load_dart_ast',
     'dataClassToCompanions': 'data_class_to_companions',
     'generateMutableClasses': 'mutable_classes',
-    'modules': 'sqlite_modules'
+    'modules': 'sqlite_modules',
+    'rawResultSetData': 'raw_result_set_data',
   });
 }
 

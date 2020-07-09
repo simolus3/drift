@@ -1563,6 +1563,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         variables: [],
         readsFrom: {categories, todosTable}).map((QueryRow row) {
       return AllTodosWithCategoryResult(
+        row: row,
         id: row.readInt('id'),
         title: row.readString('title'),
         content: row.readString('content'),
@@ -1628,7 +1629,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
       ];
 }
 
-class AllTodosWithCategoryResult {
+class AllTodosWithCategoryResult extends CustomResultSet {
   final int id;
   final String title;
   final String content;
@@ -1637,6 +1638,7 @@ class AllTodosWithCategoryResult {
   final int catId;
   final String catDesc;
   AllTodosWithCategoryResult({
+    @required QueryRow row,
     this.id,
     this.title,
     this.content,
@@ -1644,7 +1646,7 @@ class AllTodosWithCategoryResult {
     this.category,
     this.catId,
     this.catDesc,
-  });
+  }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(
       id.hashCode,

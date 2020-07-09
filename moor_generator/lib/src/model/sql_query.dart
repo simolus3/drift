@@ -176,6 +176,7 @@ class InferredResultSet {
   ///
   /// See [NestedResultTable] for further discussion and examples.
   final List<NestedResultTable> nestedResults;
+  Map<NestedResultTable, String> _expandedNestedPrefixes;
 
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
@@ -216,6 +217,17 @@ class InferredResultSet {
   /// directly.
   bool get singleColumn =>
       matchingTable == null && nestedResults.isEmpty && columns.length == 1;
+
+  String nestedPrefixFor(NestedResultTable table) {
+    if (_expandedNestedPrefixes == null) {
+      var index = 0;
+      _expandedNestedPrefixes = {
+        for (final nested in nestedResults) nested: 'nested_${index++}',
+      };
+    }
+
+    return _expandedNestedPrefixes[table];
+  }
 
   void forceDartNames(Map<ResultColumn, String> names) {
     _dartNames

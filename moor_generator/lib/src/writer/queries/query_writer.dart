@@ -19,8 +19,6 @@ class QueryWriter {
   final SqlQuery query;
   final Scope scope;
 
-  final Map<NestedResultTable, String> _expandedNestedPrefixes = {};
-
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
@@ -64,8 +62,6 @@ class QueryWriter {
   }
 
   void _writeSelect() {
-    _createNamesForNestedResults();
-
     _writeSelectStatementCreator();
 
     if (!_newSelectableMode) {
@@ -82,22 +78,16 @@ class QueryWriter {
     }
   }
 
-  void _createNamesForNestedResults() {
-    var index = 0;
-
-    for (final nested in _select.resultSet.nestedResults) {
-      _expandedNestedPrefixes[nested] = 'nested_${index++}';
-    }
-  }
-
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a select statement.
   void _writeMappingLambda() {
     if (_select.resultSet.singleColumn) {
       final column = _select.resultSet.columns.single;
-      _buffer.write('(QueryRow row) => ${_readingCode(column)}');
-      return;
+      _buffer.write('(QueryRow row) => ${readingCode(column)}');
     } else if (_select.resultSet.matchingTable != null) {
+      // note that, even if the result set has a matching table, we can't just
+      // use the mapFromRow() function of that table - the column names might
+      // be different!
       final match = _select.resultSet.matchingTable;
       final table = match.table;
 
@@ -118,37 +108,35 @@ class QueryWriter {
 
         _buffer.write('})');
       }
+    } else {
+      _buffer.write('(QueryRow row) { return ${_select.resultClassName}(');
 
-      return;
+      if (options.rawResultSetData) {
+        _buffer.write('row: row,\n');
+      }
+
+      for (final column in _select.resultSet.columns) {
+        final fieldName = _select.resultSet.dartNameFor(column);
+        _buffer.write('$fieldName: ${readingCode(column)},');
+      }
+      for (final nested in _select.resultSet.nestedResults) {
+        final prefix = _select.resultSet.nestedPrefixFor(nested);
+        if (prefix == null) continue;
+
+        final fieldName = nested.dartFieldName;
+        final tableGetter = nested.table.dbGetterName;
+
+        _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
+            'tablePrefix: ${asDartLiteral(prefix)}),');
+      }
+      _buffer.write(');\n}');
     }
-
-    _buffer.write('(QueryRow row) {\n');
-
-    // note that, even if the result set has a matching table, we can't just
-    // use the mapFromRow() function of that table - the column names might
-    // be different!
-    _buffer.write('return ${_select.resultClassName}(');
-    for (final column in _select.resultSet.columns) {
-      final fieldName = _select.resultSet.dartNameFor(column);
-      _buffer.write('$fieldName: ${_readingCode(column)},');
-    }
-    for (final nested in _select.resultSet.nestedResults) {
-      final prefix = _expandedNestedPrefixes[nested];
-      if (prefix == null) continue;
-
-      final fieldName = nested.dartFieldName;
-      final tableGetter = nested.table.dbGetterName;
-
-      _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
-          'tablePrefix: ${asDartLiteral(prefix)}),');
-    }
-    _buffer.write(');\n}');
   }
 
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  String _readingCode(ResultColumn column) {
+  static String readingCode(ResultColumn column) {
     final readMethod = readFromMethods[column.type];
 
     final dartLiteral = asDartLiteral(column.name);
@@ -430,7 +418,7 @@ class QueryWriter {
         final result = doubleStarColumnToResolvedTable[rewriteTarget];
         if (result == null) continue;
 
-        final prefix = _expandedNestedPrefixes[result];
+        final prefix = _select.resultSet.nestedPrefixFor(result);
         final table = rewriteTarget.tableName;
 
         // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo

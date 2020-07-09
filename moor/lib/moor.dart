@@ -13,6 +13,7 @@ export 'package:moor/src/runtime/query_builder/query_builder.dart';
 export 'package:moor/src/runtime/executor/connection_pool.dart';
 export 'package:moor/src/runtime/executor/executor.dart';
 export 'package:moor/src/runtime/executor/transactions.dart';
+export 'package:moor/src/runtime/custom_result_set.dart';
 export 'package:moor/src/runtime/data_verification.dart';
 export 'package:moor/src/runtime/data_class.dart';
 export 'package:moor/src/runtime/api/runtime_api.dart';

@@ -137,15 +137,15 @@ void main() {
     final mock = MockExecutor();
     final db = CustomTablesDb(mock);
 
-    when(mock.runSelect(any, any)).thenAnswer((_) {
-      final row = {
-        'a': 'text for a',
-        'b': 42,
-        'nested_0.a': 'text',
-        'nested_0.b': 1337,
-        'nested_0.c': 18.7,
-      };
+    const row = {
+      'a': 'text for a',
+      'b': 42,
+      'nested_0.a': 'text',
+      'nested_0.b': 1337,
+      'nested_0.c': 18.7,
+    };
 
+    when(mock.runSelect(any, any)).thenAnswer((_) {
       return Future.value([row]);
     });
 
@@ -154,6 +154,7 @@ void main() {
     expect(
       result,
       MultipleResult(
+        row: QueryRow(row, db),
         a: 'text for a',
         b: 42,
         c: WithConstraint(a: 'text', b: 1337, c: 18.7),
@@ -165,16 +166,16 @@ void main() {
     final mock = MockExecutor();
     final db = CustomTablesDb(mock);
 
+    const row = {
+      'a': 'text for a',
+      'b': 42,
+      'nested_0.a': 'text',
+      'nested_0.b': null, // note: with_constraints.b is NOT NULL in the db
+      'nested_0.c': 18.7,
+    };
+
     when(mock.runSelect(any, any)).thenAnswer((_) {
-      return Future.value([
-        {
-          'a': 'text for a',
-          'b': 42,
-          'nested_0.a': 'text',
-          'nested_0.b': null, // note: with_constraints.b is NOT NULL in the db
-          'nested_0.c': 18.7,
-        }
-      ]);
+      return Future.value([row]);
     });
 
     final result = await db.multiple(const Constant(true)).getSingle();
@@ -182,6 +183,7 @@ void main() {
     expect(
       result,
       MultipleResult(
+        row: QueryRow(row, db),
         a: 'text for a',
         b: 42,
         // Since a non-nullable column in c was null, table should be null
