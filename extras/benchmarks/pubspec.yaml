@@ -3,7 +3,7 @@ description: Runs simple and complex benchmarks to measure performance of moor a
 
 dependencies:
   moor:
-  moor_ffi:
+  sqlite3: ^0.1.3
   benchmark_harness: ^1.0.5
   intl: ^0.16.0
   uuid: ^2.0.0
@@ -16,8 +16,6 @@ dev_dependencies:
 dependency_overrides:
   moor:
     path: ../../moor
-  moor_ffi:
-    path: ../../moor_ffi
   moor_generator:
     path: ../../moor_generator
   sqlparser:

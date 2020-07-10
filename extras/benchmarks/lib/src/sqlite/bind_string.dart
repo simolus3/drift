@@ -1,5 +1,5 @@
 import 'package:benchmarks/benchmarks.dart';
-import 'package:moor_ffi/database.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 class SelectStringBenchmark extends BenchmarkBase {
   SelectStringBenchmark(ScoreEmitter emitter)
@@ -10,7 +10,7 @@ class SelectStringBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
-    database = Database.memory();
+    database = sqlite3.openInMemory();
     statement = database.prepare('SELECT ?;');
   }
 
@@ -29,7 +29,7 @@ class SelectStringBenchmark extends BenchmarkBase {
 
   @override
   void teardown() {
-    statement.close();
-    database.close();
+    statement.dispose();
+    database.dispose();
   }
 }
