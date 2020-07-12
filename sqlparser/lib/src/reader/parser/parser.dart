@@ -30,7 +30,7 @@ class ParsingError implements Exception {
 
   @override
   String toString() {
-    return token.span.message('Error: $message}');
+    return token.span.message('Error: $message');
   }
 }
 
