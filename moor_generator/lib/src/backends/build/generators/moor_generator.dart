@@ -39,8 +39,9 @@ class MoorGenerator extends Generator implements BaseGenerator {
     if (parsed.declaredDatabases.isNotEmpty) {
       // Warn if the project uses an SDK version that is incompatible with what
       // moor generates.
-      final major = library.element.languageVersionMajor;
-      final minor = library.element.languageVersionMinor;
+      final version = library.element.languageVersion.effective;
+      final major = version.major;
+      final minor = version.minor;
 
       const expected = '$_targetMajorVersion.$_targetMinorVersion';
 
