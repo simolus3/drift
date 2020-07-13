@@ -69,13 +69,17 @@ be used when inserting a new row. To set a constant default value, use `withDefa
 
 ```dart
 class Preferences extends Table {
-  TextColumn get name => integer().autoIncrement()();
+  TextColumn get name => text()();
   BoolColumn get enabled => boolean().withDefault(const Constant(false))();
 }
 ```
 
 When you later use `into(preferences).insert(PreferencesCompanion.forInsert(name: 'foo'));`, the new
 row will have its `enabled` column set to false (and not to null, as it normally would).
+Note that columns with a default value (either through `autoIncrement` or by using a default), are
+still marked as `@required` in generated data classes. This is because they are meant to represent a
+full row, and every row will have those values. Use companions when representing partial rows, like
+for inserts or updates.
 
 Of course, constants can only be used for static values. But what if you want to generate a dynamic
 default value for each column? For that, you can use `clientDefault`. It takes a function returning
