@@ -79,9 +79,6 @@ class MoorOptions {
   @JsonKey(name: 'raw_result_set_data', defaultValue: false)
   final bool rawResultSetData;
 
-  /// Whether the [module] has been enabled in this configuration.
-  bool hasModule(SqlModule module) => modules.contains(module);
-
   const MoorOptions({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
@@ -100,6 +97,12 @@ class MoorOptions {
 
   factory MoorOptions.fromJson(Map<String, dynamic> json) =>
       _$MoorOptionsFromJson(json);
+
+  /// Whether the [module] has been enabled in this configuration.
+  bool hasModule(SqlModule module) => modules.contains(module);
+
+  /// Checks whether a deprecated option is enabled.
+  bool get enabledDeprecatedOption => eagerlyLoadDartAst;
 }
 
 /// Set of sqlite modules that require special knowledge from the generator.

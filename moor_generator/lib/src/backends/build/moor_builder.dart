@@ -76,7 +76,8 @@ class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
   @override
   Future build(BuildStep buildStep) async {
     final flags = await buildStep.fetchResource(_flags);
-    if (!flags.didWarnAboutDeprecatedOptions) {
+    if (!flags.didWarnAboutDeprecatedOptions &&
+        options.enabledDeprecatedOption) {
       print('You have the eagerly_load_dart_ast option enabled. The option is '
           'no longer necessary and will be removed in a future moor version. '
           'Consider removing the option from your build.yaml.');

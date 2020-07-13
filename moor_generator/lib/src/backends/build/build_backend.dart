@@ -59,11 +59,6 @@ class BuildBackendTask extends BackendTask {
       final library = await step.resolver.libraryFor(asset);
       _currentAnalysisSession = library.session;
 
-      if (backend.options.eagerlyLoadDartAst) {
-        _cachedResults[asset] =
-            await library.session.getResolvedLibraryByElement(library);
-      }
-
       return library;
     } on NonLibraryAssetException catch (_) {
       throw NotALibraryException(uri);
@@ -81,15 +76,23 @@ class BuildBackendTask extends BackendTask {
     if (result != null) {
       return result.getElementDeclaration(element);
     } else {
-      final session = _currentAnalysisSession ?? element.session;
+      _currentAnalysisSession ??= element.session;
 
-      // Transform element to new session if necessary
+      // Transform element to new session if necessary, also updating the
+      // session if it was invalidated by another builder
       var library = element.library;
-      if (library.session != session) {
-        library = await session.getLibraryByUri(assetId.uri.toString());
+      if (library.session != _currentAnalysisSession) {
+        try {
+          library = await _currentAnalysisSession
+              .getLibraryByUri(assetId.uri.toString());
+        } on InconsistentAnalysisException {
+          library = await step.resolver.libraryFor(assetId);
+          _currentAnalysisSession = library.session;
+        }
       }
 
-      final result = await session.getResolvedLibraryByElement(library);
+      final result =
+          await _currentAnalysisSession.getResolvedLibraryByElement(library);
       _cachedResults[assetId] = result;
 
       // Note: getElementDeclaration works by comparing source offsets, so
