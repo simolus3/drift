@@ -163,12 +163,12 @@ class _DefaultValueSerializer extends ValueSerializer {
 
   @override
   T fromJson<T>(dynamic json) {
+    if (json == null) {
+      return null;
+    }
+
     if (T == DateTime) {
-      if (json == null) {
-        return null;
-      } else {
-        return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
-      }
+      return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
     }
 
     if (T == double && json is int) {
