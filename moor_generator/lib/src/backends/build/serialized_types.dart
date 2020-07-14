@@ -109,8 +109,26 @@ class TypeDeserializer {
 
   Future<LibraryElement> _libraryFromUri(Uri uri) async {
     if (uri.scheme == 'dart') {
-      final session = await _obtainSession();
-      return session.getLibraryByUri(uri.toString());
+      var session = await _obtainSession();
+
+      // The session could be invalidated by other builders outside of our
+      // control. There's no better way than to continue fetching a new session
+      // in that case.
+      var attempts = 0;
+      const maxAttempts = 5;
+
+      // ignore: literal_only_boolean_expressions
+      while (true) {
+        try {
+          return session.getLibraryByUri(uri.toString());
+        } on InconsistentAnalysisException {
+          _lastSession = null; // Invalidate session, then try again
+          session = await _obtainSession();
+          attempts++;
+
+          if (attempts == maxAttempts) rethrow;
+        }
+      }
     } else {
       final library =
           await buildStep.resolver.libraryFor(AssetId.resolve(uri.toString()));
@@ -125,7 +143,7 @@ class TypeDeserializer {
     } else {
       // resolve bogus library that's not going to change often. We can use the
       // session from that library. Technically, this is non-hermetic, but the
-      // build runner will throw everything away after an SDK udpate so it
+      // build runner will throw everything away after an SDK update so it
       // should be safe
       return _libraryFromUri(Uri.parse('package:moor/sqlite_keywords.dart'))
           .then((_) => _lastSession);
