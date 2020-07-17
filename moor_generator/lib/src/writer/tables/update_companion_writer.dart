@@ -38,7 +38,10 @@ class UpdateCompanionWriter {
   }
 
   void _writeConstructor() {
-    _buffer.write('const ${table.getNameForCompanionClass(scope.options)}({');
+    if (!scope.options.generateMutableClasses) {
+      _buffer.write('const ');
+    }
+    _buffer.write('${table.getNameForCompanionClass(scope.options)}({');
 
     for (final column in table.columns) {
       _buffer.write('this.${column.dartGetterName} = const Value.absent(),');

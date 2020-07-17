@@ -69,6 +69,7 @@ class _GeneratesWithoutFinalFields extends Matcher {
       path: '/foo.dart',
       featureSet: FeatureSet.forTesting(),
       resourceProvider: resourceProvider,
+      throwIfDiagnostics: true,
     ).unit;
 
     final remaining = expectedWithoutFinals.toSet();
@@ -76,14 +77,20 @@ class _GeneratesWithoutFinalFields extends Matcher {
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
       if (expectedWithoutFinals.contains(definedClass.name.name)) {
-        final fields = definedClass.members.whereType<FieldDeclaration>();
-
-        for (final field in fields) {
-          if (field.fields.isFinal) {
-            matchState['desc'] =
-                'Field ${field.fields.variables.first.name.name} in '
-                '${definedClass.name.name} is final.';
-            return false;
+        for (final member in definedClass.members) {
+          if (member is FieldDeclaration) {
+            if (member.fields.isFinal) {
+              matchState['desc'] =
+                  'Field ${member.fields.variables.first.name.name} in '
+                  '${definedClass.name.name} is final.';
+              return false;
+            }
+          } else if (member is ConstructorDeclaration) {
+            if (member.constKeyword != null) {
+              matchState['desc'] = 'Constructor ${member.name?.name ?? ''} in '
+                  '${definedClass.name.name} is constant.';
+              return false;
+            }
           }
         }
 
