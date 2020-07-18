@@ -152,7 +152,9 @@ class TypeGraph {
       final previousType = previous.type;
       final elementType = element.type;
 
-      if (previousType == elementType) return previous;
+      if (previousType == elementType || elementType == BasicType.nullType) {
+        return previous;
+      }
       if (previousType == BasicType.nullType) return element;
 
       bool isIntOrNumeric(BasicType type) {
