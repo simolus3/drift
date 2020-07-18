@@ -1,5 +1,5 @@
 import 'package:moor/moor.dart';
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:moor/ffi.dart';
 @TestOn('vm')
 import 'package:test/test.dart';
 

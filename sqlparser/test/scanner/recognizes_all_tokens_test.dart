@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:test/test.dart';
-import 'package:moor_ffi/open_helper.dart';
+import 'package:sqlite3/open.dart';
 import 'package:ffi/ffi.dart';
 
 import 'package:sqlparser/src/reader/tokenizer/token.dart';

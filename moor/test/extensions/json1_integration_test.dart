@@ -2,9 +2,9 @@
 @TestOn('vm')
 import 'dart:convert';
 
+import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/extensions/json1.dart';
-import 'package:moor_ffi/moor_ffi.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
