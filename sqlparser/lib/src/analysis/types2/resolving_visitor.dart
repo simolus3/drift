@@ -299,7 +299,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case TokenType.minus:
       case TokenType.star:
       case TokenType.slash:
-        session._addRelation(CopyEncapsulating(e, [e.left, e.right]));
+        session._addRelation(
+            CopyEncapsulating(e, [e.left, e.right], CastMode.numericPreferInt));
         visitChildren(e, const RoughTypeExpectation.numeric());
         break;
       // all of those only really make sense for integers

@@ -114,8 +114,12 @@ class TypeGraph {
     if (edge is CopyEncapsulating) {
       if (!knowsType(edge.target)) {
         final fromTypes = edge.from.map((t) => this[t]).where((e) => e != null);
-        final encapsulated = _encapsulate(fromTypes);
+        var encapsulated = _encapsulate(fromTypes);
+
         if (encapsulated != null) {
+          if (edge.cast != null) {
+            encapsulated = encapsulated.cast(edge.cast);
+          }
           this[edge.target] = encapsulated;
           resolved.add(edge.target);
         }
@@ -235,9 +239,12 @@ extension ResolvedTypeUtils on ResolvedType {
   ResolvedType cast(CastMode mode) {
     switch (mode) {
       case CastMode.numeric:
+      case CastMode.numericPreferInt:
         if (type == BasicType.int || type == BasicType.real) return this;
 
-        return const ResolvedType(type: BasicType.real);
+        return mode == CastMode.numeric
+            ? const ResolvedType(type: BasicType.real)
+            : const ResolvedType(type: BasicType.int);
       case CastMode.boolean:
         return const ResolvedType.bool();
     }

@@ -33,7 +33,9 @@ class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
   @override
   final List<Typeable> from;
 
-  CopyEncapsulating(this.target, this.from);
+  final CastMode /*?*/ cast;
+
+  CopyEncapsulating(this.target, this.from, [this.cast]);
 }
 
 /// Dependency declaring that [first] and [second] have the same type. This is
@@ -62,7 +64,14 @@ class DefaultType extends TypeRelation implements DirectedRelation {
   DefaultType(this.target, {this.defaultType, this.isNullable});
 }
 
-enum CastMode { numeric, boolean }
+enum CastMode {
+  numeric,
+
+  /// Like [numeric], but assume [BasicType.int] if the resulting type doesn't
+  /// match.
+  numericPreferInt,
+  boolean,
+}
 
 /// Dependency declaring that [target] has the same type as [other] after
 /// casting it with [cast].
