@@ -4,6 +4,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
+  flutter: ">=1.12.0"
 
 dependencies:
   flutter:
@@ -11,10 +12,9 @@ dependencies:
   moor_flutter:
   tests:
     path: ../tests
-  moor_ffi:
-    path: ../../../moor_ffi
   encrypted_moor:
     path: ../../encryption
+  sqlite3_flutter_libs:
 
 dev_dependencies:
   test:

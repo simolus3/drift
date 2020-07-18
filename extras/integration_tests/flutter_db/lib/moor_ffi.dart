@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
-import 'package:moor_ffi/database.dart' as raw;
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:sqlite3/sqlite3.dart' as raw;
+import 'package:moor/ffi.dart';
 import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 import 'package:moor/isolate.dart';
@@ -38,7 +38,7 @@ Future<void> main() async {
   runAllTests(FfiExecutor(dbPath));
 
   test('supports the rtree module', () {
-    final db = raw.Database.memory();
+    final db = raw.sqlite3.openInMemory();
 
     db.execute('''
       CREATE VIRTUAL TABLE demo_index USING rtree(
@@ -68,7 +68,7 @@ Future<void> main() async {
 
     expect(stmt.select().single['id'], 1);
 
-    db.close();
+    db.dispose();
   });
 
   test('isolates integration test', () async {
