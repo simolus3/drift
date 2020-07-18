@@ -279,19 +279,24 @@ class Scanner {
     if (firstChar == $0) {
       if (!_isAtEnd && (_peek() == $x || _peek() == $X)) {
         _nextChar(); // consume the x
+        final hexDigitsBuffer = StringBuffer();
         // advance hexadecimal digits
         while (!_isAtEnd && isHexDigit(_peek())) {
-          _nextChar();
+          hexDigitsBuffer.writeCharCode(_nextChar());
         }
-        _addToken(TokenType.numberLiteral);
+        tokens.add(
+            NumericToken(_currentSpan, hexDigits: hexDigitsBuffer.toString()));
         return;
       }
     }
 
-    void consumeDigits() {
+    String consumeDigits() {
+      final buffer = StringBuffer();
       while (!_isAtEnd && isDigit(_peek())) {
-        _nextChar();
+        buffer.writeCharCode(_nextChar());
       }
+
+      return buffer.toString();
     }
 
     /// Returns true without advancing if the next char is a digit. Returns
@@ -304,11 +309,16 @@ class Scanner {
       return !noDigit;
     }
 
+    String beforeDecimal;
+    String afterDecimal;
+    var hasDecimal = false;
+
     // ok, we're not dealing with a hexadecimal number.
     if (firstChar == $dot) {
       // started with a decimal point. the next char has to be numeric
+      hasDecimal = true;
       if (_requireDigit('Expected a digit after the decimal dot')) {
-        consumeDigits();
+        afterDecimal = consumeDigits();
       }
     } else {
       // ok, not starting with a decimal dot. In that case, the first char must
@@ -317,20 +327,21 @@ class Scanner {
         errors.add(TokenizerError('Expected a digit', _currentLocation));
         return;
       }
-      consumeDigits();
+      beforeDecimal = String.fromCharCode(firstChar) + consumeDigits();
 
       // optional decimal part
       if (!_isAtEnd && _peek() == $dot) {
         _nextChar();
-        // if there is a decimal separator, there must be at least one digit
-        // after it
-        if (_requireDigit('Expected a digit after the decimal dot')) {
-          consumeDigits();
-        } else {
-          return;
+        hasDecimal = true;
+
+        final digits = consumeDigits();
+        if (digits.isNotEmpty) {
+          afterDecimal = digits;
         }
       }
     }
+
+    int parsedExponent;
 
     // ok, we've read the first part of the number. But there's more! If it's
     // not a hexadecimal number, it could be in scientific notation.
@@ -347,23 +358,27 @@ class Scanner {
 
       final char = _nextChar();
       if (isDigit(char)) {
-        consumeDigits();
-        _addToken(TokenType.numberLiteral);
-        return;
+        final exponent = String.fromCharCode(char) + consumeDigits();
+        parsedExponent = int.parse(exponent);
       } else {
         if (char == $plus || char == $minus) {
           _requireDigit('Expected digits for the exponent');
-          consumeDigits();
-          _addToken(TokenType.numberLiteral);
+          final exponent = consumeDigits();
+
+          parsedExponent =
+              char == $plus ? int.parse(exponent) : -int.parse(exponent);
         } else {
           errors
               .add(TokenizerError('Expected plus or minus', _currentLocation));
         }
       }
-    } else {
-      // ok, no scientific notation
-      _addToken(TokenType.numberLiteral);
     }
+
+    tokens.add(NumericToken(_currentSpan,
+        digitsBeforeDecimal: beforeDecimal,
+        digitsAfterDecimal: afterDecimal,
+        hasDecimalPoint: hasDecimal,
+        exponent: parsedExponent));
   }
 
   void _identifier({int escapeChar}) {

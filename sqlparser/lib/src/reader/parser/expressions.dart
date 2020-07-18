@@ -251,7 +251,8 @@ mixin ExpressionParser on ParserBase {
 
     Literal _parseInner() {
       if (_matchOne(TokenType.numberLiteral)) {
-        return NumericLiteral(_parseNumber(token.lexeme), token);
+        final number = token as NumericToken;
+        return NumericLiteral(number.parsedNumber, token);
       }
       if (_matchOne(TokenType.stringLiteral)) {
         return StringLiteral(token as StringLiteralToken);

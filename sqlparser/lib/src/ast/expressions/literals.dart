@@ -39,7 +39,7 @@ class NumericLiteral extends Literal<num> {
   @override
   final num value;
 
-  bool get isInt => value.toInt() == value;
+  bool get isInt => value is int;
 
   NumericLiteral(this.value, Token token) : super(token);
 

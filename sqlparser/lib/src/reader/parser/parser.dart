@@ -5,7 +5,6 @@ import 'package:sqlparser/src/engine/autocomplete/engine.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'crud.dart';
-part 'num_parser.dart';
 part 'expressions.dart';
 part 'schema.dart';
 

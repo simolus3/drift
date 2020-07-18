@@ -30,6 +30,7 @@ const Map<String, ResolvedType> _types = {
   'SELECT CAST(3 AS TEXT) = ?': ResolvedType(type: BasicType.text),
   'SELECT (3 * 4) = ?': ResolvedType(type: BasicType.int),
   'SELECT (3 / 4) = ?': ResolvedType(type: BasicType.int),
+  'SELECT (3 / 4.) = ?': ResolvedType(type: BasicType.real),
   'SELECT CURRENT_TIMESTAMP = ?': ResolvedType(type: BasicType.text),
   "SELECT COALESCE(NULL, 'foo') = ?": ResolvedType(type: BasicType.text),
   'SELECT NULLIF(3, 4) = ?': ResolvedType(type: BasicType.int, nullable: true),

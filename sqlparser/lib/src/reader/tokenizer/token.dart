@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -500,6 +503,99 @@ class KeywordToken extends Token {
     isIdentifier = true;
 
     return IdentifierToken(false, span, synthetic: true);
+  }
+}
+
+/// Used to represent additional information of [TokenType.numberLiteral].
+///
+/// For more details, see the docs on https://www.sqlite.org/syntax/numeric-literal.html
+class NumericToken extends Token {
+  /// The digits before the decimal point, or null if this numeric token was
+  /// written in hexadecimal notation or started with a decimal point.
+  String /*?*/ digitsBeforeDecimal;
+
+  /// Whether this token has a decimal point in it.
+  bool hasDecimalPoint;
+
+  /// The digits after the decimal point, or null if this numeric token doesn't
+  /// have anything after its decimal point.
+  String /*?*/ digitsAfterDecimal;
+
+  /// The hexadecimal digits of this token, or null if this token was not in
+  /// hex notation.
+  String /*?*/ hexDigits;
+
+  /// An exponent to the base of ten.
+  ///
+  /// For instance, `2E-2` has an [exponent] of `-2`.
+  final int /*?*/ exponent;
+
+  NumericToken(
+    FileSpan span, {
+    this.digitsBeforeDecimal,
+    this.hasDecimalPoint = false,
+    this.digitsAfterDecimal,
+    this.hexDigits,
+    this.exponent,
+  }) : super(TokenType.numberLiteral, span);
+
+  /// The numeric literal represented by this token.
+  num get parsedNumber {
+    if (hexDigits != null) {
+      return int.parse(hexDigits, radix: 16);
+    }
+
+    final beforeDecimal =
+        digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal) : 0;
+
+    num number;
+
+    if (!hasDecimalPoint) {
+      number = beforeDecimal;
+    } else if (digitsAfterDecimal != null) {
+      number = beforeDecimal + double.parse('.$digitsAfterDecimal');
+    } else {
+      // Is of the form 3., so just infer as double
+      number = beforeDecimal.toDouble();
+    }
+
+    if (exponent != null) {
+      number *= pow(10, exponent);
+    }
+    return number;
+  }
+
+  @visibleForTesting
+  bool hasSameStructureAs(NumericToken other) {
+    return other.digitsBeforeDecimal == digitsBeforeDecimal &&
+        other.hasDecimalPoint == hasDecimalPoint &&
+        other.digitsAfterDecimal == digitsAfterDecimal &&
+        other.hexDigits == hexDigits &&
+        other.exponent == exponent;
+  }
+
+  @override
+  String toString() {
+    final buffer = StringBuffer();
+    if (hexDigits != null) {
+      buffer..write('0x')..write(hexDigits);
+    } else {
+      if (digitsBeforeDecimal != null) {
+        buffer.write(digitsBeforeDecimal);
+      }
+      if (hasDecimalPoint) {
+        buffer.write('.');
+      }
+      if (digitsAfterDecimal != null) {
+        buffer.write(digitsAfterDecimal);
+      }
+
+      if (exponent != null) {
+        buffer..write('E')..write(exponent);
+      }
+    }
+
+    return buffer.toString();
   }
 }
 
