@@ -9,14 +9,13 @@ declaring both tables and queries in Dart. This version will focus on how to use
 
 ## Adding the dependency
 First, lets add moor to your project's `pubspec.yaml`.
-At the moment, the current version of `moor` is [![Moor version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor),
-`moor_ffi` is at [![Moor version](https://img.shields.io/pub/v/moor_ffi.svg)](https://pub.dartlang.org/packages/moor_ffi)
+At the moment, the current version of `moor` is [![Moor version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor)
 and the latest version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
 
 ```yaml
 dependencies:
   moor: # use the latest version
-  moor_ffi: # use the latest version
+  sqlite3_flutter_libs: # Also use the latest version.
   path_provider:
   path:
 
@@ -28,7 +27,7 @@ dev_dependencies:
 If you're wondering why so many packages are necessary, here's a quick overview over what each package does:
 
 - `moor`: This is the core package defining most apis
-- `moor_ffi`: Contains code that will run the actual queries
+- `sqlite3_flutter_libs`: Ships the latest `sqlite3` version with your Android or iOS app.
 - `path_provider` and `path`: Used to find a suitable location to store the database. Maintained by the Flutter and Dart team
 - `moor_generator`: Generates Dart apis for the sql queries and tables you wrote
 - `build_runner`: Common tool for code-generation, maintained by the Dart team
@@ -95,7 +94,7 @@ import 'dart:io';
 
 import 'package:moor/moor.dart';
 // These imports are only needed to open the database
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:moor/ffi.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 

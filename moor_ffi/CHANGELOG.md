@@ -1,3 +1,15 @@
+## 0.8.0
+
+This package is now deprecated.
+
+Moor users should use the new `package:moor/ffi.dart` library.
+To migrate,
+- replace imports of `moor_ffi` with `package:moor/ffi.dart`
+- when using Flutter, add a dependency on `sqlite3_flutter_libs`
+
+Users of this package that don't use moor should use the new [sqlite3](https://pub.dev/packages/sqlite3)
+package.
+
 ## 0.7.0
 
 - Throw an error when using an unsupported datatype as argument

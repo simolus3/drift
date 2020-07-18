@@ -1,11 +1,12 @@
 ---
-title: moor_ffi (Desktop support)
+title: moor ffi (Desktop support)
 description: Run moor on both mobile and desktop
 ---
 
 ## Supported versions
 
-At the moment, `moor_ffi` supports iOS, macOS and Android out of the box. Most Linux
+The `moor/ffi.dart` library uses the `sqlite3` package to send queries.
+At the moment, that package supports iOS, macOS and Android out of the box. Most Linux
 Distros have sqlite available as a shared library, those are supported as well. 
 
 If you're shipping apps for Windows and Linux, it is recommended that you bundle a
@@ -15,14 +16,14 @@ support your setup by running this code before opening the database:
 ```dart
 import 'dart:ffi';
 import 'dart:io';
-import 'package:moor_ffi/database.dart';
-import 'package:moor_ffi/open_helper.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/open.dart';
 
 void main() {
   open.overrideFor(OperatingSystem.linux, _openOnLinux);
 
-  final db = Database.memory();
-  db.close();
+  final db = sqlite3.openInMemory();
+  db.dispose();
 }
 
 DynamicLibrary _openOnLinux() {
@@ -34,24 +35,24 @@ DynamicLibrary _openOnLinux() {
 
 ```
 
-## Migrating from moor_flutter to moor_ffi
+## Migrating from moor_flutter to moor ffi
 
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
-add both the `moor` and `moor_ffi` dependencies:
+add both the `moor` and `sqlite3_flutter_libs` dependencies:
 ```yaml
 dependencies:
- moor: ^2.0.0
- moor_ffi: ^0.2.0
+ moor: ^3.0.0
+ sqlite3_flutter_libs:
  sqflite: ^1.1.7 # Still used to obtain the database location
 dev_dependencies:
- moor_generator: ^2.0.0
+ moor_generator: ^3.0.0
 ```
 
 Adapt your imports:
 
   - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
-    with `package:moor_ffi/moor_ffi.dart`.
-  - In all other files where you might have import `moor_flutter`, just import `package:moor/moor.dart`.
+    with `package:moor/ffi.dart`.
+  - In all other files where you might have imported `moor_flutter`, just import `package:moor/moor.dart`.
   
 Replace the executor. This code:
 ```dart
@@ -75,7 +76,7 @@ Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a diffe
 `path_provider` on Android. This can cause data loss if you've already shipped a version using
 `moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
 
-## Using moor_ffi with an existing database
+## Using moor ffi with an existing database
 
 If your existing sqlite database is stored as a file, you can just use `VmDatabase(thatFile)` - no further
 changes are required.
