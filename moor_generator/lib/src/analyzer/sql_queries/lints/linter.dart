@@ -30,6 +30,53 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   _LintingVisitor(this.linter);
 
   @override
+  void visitBinaryExpression(BinaryExpression e, void arg) {
+    const numericOps = {
+      TokenType.plus,
+      TokenType.minus,
+      TokenType.star,
+      TokenType.slash,
+    };
+    const binaryOps = {
+      TokenType.shiftLeft,
+      TokenType.shiftRight,
+      TokenType.pipe,
+      TokenType.ampersand,
+      TokenType.percent,
+    };
+
+    final operator = e.operator.type;
+
+    void checkTypesFor(List<BasicType> allowed, String message) {
+      for (final child in e.childNodes) {
+        final type = linter.context.typeOf(child as Expression);
+        if (type.unknown) continue;
+
+        if (!allowed.contains(type.type.type)) {
+          linter.lints.add(AnalysisError(
+            type: AnalysisErrorType.other,
+            message: message,
+            relevantNode: child,
+          ));
+        }
+      }
+    }
+
+    if (numericOps.contains(operator)) {
+      checkTypesFor(
+        [BasicType.int, BasicType.real],
+        'Expression should be numeric, the resulting value might be unexpected',
+      );
+    }
+    if (binaryOps.contains(operator)) {
+      checkTypesFor(
+        [BasicType.int],
+        'Expression should be an int, the resulting value might be unexpected',
+      );
+    }
+  }
+
+  @override
   void visitResultColumn(ResultColumn e, void arg) {
     super.visitResultColumn(e, arg);
 
