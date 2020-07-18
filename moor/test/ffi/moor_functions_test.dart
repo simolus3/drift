@@ -1,3 +1,4 @@
+@TestOn('vm')
 import 'dart:math';
 
 import 'package:moor/src/ffi/moor_ffi_functions.dart';
