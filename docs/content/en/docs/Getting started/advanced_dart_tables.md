@@ -133,3 +133,9 @@ Moor supports a variety of column types out of the box. You can store custom cla
 | `String`     | `text()`      | `TEXT`                                              |
 | `DateTime`   | `dateTime()`  | `INTEGER` (Unix timestamp in seconds)               |
 | `Uint8List`  | `blob()`      | `BLOB`                                              |
+
+Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
+the database.
+They don't affect JSON serialization at all. For instance, `boolean` values are expected as `true` or `false`
+in the `fromJson` factory, even though they would be saved as `0` or `1` in the database.
+If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/moor/latest/moor/ValueSerializer-class.html).
