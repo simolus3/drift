@@ -196,6 +196,18 @@ void main() {
     expect(table.columns.any((column) => column.hasAI), isFalse);
   });
 
+  test('warns when using primaryKey and autoIncrement()', () async {
+    await parse('PrimaryKeyAndAutoIncrement');
+
+    expect(
+      dartStep.errors.errors,
+      contains(
+        isA<ErrorInDartCode>().having((e) => e.message, 'message',
+            contains('override primaryKey and use autoIncrement()')),
+      ),
+    );
+  });
+
   test('recognizes aliases for rowid', () async {
     final table = await parse('WithAliasForRowId');
     final idColumn = table.columns.singleWhere((c) => c.name.name == 'id');

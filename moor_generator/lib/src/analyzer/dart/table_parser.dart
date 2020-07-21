@@ -12,14 +12,23 @@ class TableParser {
 
     final columns = (await _parseColumns(element)).toList();
 
+    final primaryKey = await _readPrimaryKey(element, columns);
+
     final table = MoorTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
-      primaryKey: await _readPrimaryKey(element, columns),
+      primaryKey: primaryKey,
       declaration: DartTableDeclaration(element, base.step.file),
     );
+
+    if (primaryKey != null && columns.any((element) => element.hasAI)) {
+      base.step.errors.report(ErrorInDartCode(
+        message: "Tables can't override primaryKey and use autoIncrement()",
+        affectedElement: element,
+      ));
+    }
 
     var index = 0;
     for (final converter in table.converters) {
