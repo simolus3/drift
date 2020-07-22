@@ -38,7 +38,14 @@ class PreprocessBuilder extends Builder {
     final moorFileContent = await buildStep.readAsString(input);
     final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
 
-    final parsedInput = engine.parseMoorFile(moorFileContent);
+    ParseResult parsedInput;
+    try {
+      parsedInput = engine.parseMoorFile(moorFileContent);
+    } on Exception {
+      // Moor file couldn't be parsed, ignore... If it's imported, the main
+      // builder will provide a better error message.
+      return;
+    }
 
     final dartLexemes = parsedInput.tokens
         .whereType<InlineDartToken>()

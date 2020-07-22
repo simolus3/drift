@@ -4,6 +4,11 @@ class AnalyzeMoorStep extends AnalyzingStep {
   AnalyzeMoorStep(Task task, FoundFile file) : super(task, file);
 
   void analyze() {
+    if (file.currentResult == null) {
+      // Error during parsing, ignore.
+      return;
+    }
+
     final parseResult = file.currentResult as ParsedMoorFile;
 
     final transitiveImports =
