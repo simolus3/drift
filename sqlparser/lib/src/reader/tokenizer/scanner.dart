@@ -192,6 +192,9 @@ class Scanner {
           _identifier(escapeChar: $backquote);
         }
         break;
+      case $lbracket:
+        _identifier(escapeChar: $rbracket);
+        break;
       case $space:
       case $cr:
       case $tab:

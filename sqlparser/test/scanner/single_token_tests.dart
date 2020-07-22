@@ -48,6 +48,7 @@ Map<String, TokenType> testCases = {
   '@foo': TokenType.atSignVariable,
   ':named': TokenType.colonVariable,
   '"spo\uD83C\uDF83ky"': TokenType.identifier,
+  '[account name]': TokenType.identifier,
 };
 
 void main() {
