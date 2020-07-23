@@ -9,12 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  moor_flutter:
   tests:
     path: ../tests
-  encrypted_moor:
-    path: ../../encryption
-  sqlite3_flutter_libs:
+  sqlite3_flutter_libs: ^0.2.0
 
 dev_dependencies:
   test:

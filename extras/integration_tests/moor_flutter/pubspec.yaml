@@ -1,0 +1,29 @@
+name: moor_flutter_integration_test
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  moor_flutter:
+  tests:
+    path: ../tests
+  encrypted_moor:
+    path: ../../encryption
+
+dev_dependencies:
+  test:
+
+dependency_overrides:
+  moor_flutter:
+    path: ../../../moor_flutter
+  moor:
+    path: ../../../moor
+
+flutter:
+  assets:
+    - test_asset.db
