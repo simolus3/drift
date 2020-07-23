@@ -105,9 +105,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// [migration] should suffice.
   @protected
   @visibleForTesting
-  Migrator createMigrator() {
-    return Migrator(this, () => _resolvedEngine);
-  }
+  Migrator createMigrator() => Migrator(this);
 
   @override
   @nonVirtual

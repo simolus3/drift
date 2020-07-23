@@ -44,8 +44,7 @@ methods will throw.
 
 `sqlite` can feel a bit limiting when it comes to migrations - there only are methods to create tables and columns.
 Existing columns can't be altered or removed. A workaround is described [here](https://stackoverflow.com/a/805508), it
-can be used together with [`issueCustomQuery`](https://pub.dev/documentation/moor/latest/moor/Migrator/issueCustomQuery.html)
-to run the statements.
+can be used together with `customStatement` to run the statements.
 
 ## Post-migration callbacks
 

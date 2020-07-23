@@ -50,16 +50,8 @@ class MigrationStrategy {
 class Migrator {
   final GeneratedDatabase _db;
 
-  /// Function to obtain a [QueryEngine] to run the generated sql statements for
-  /// migrations.
-  /// If a `transaction` callback is used inside a migration, then we'd have to
-  /// run a subset of migration steps on a different query executor. This
-  /// function is used to find the correct implementation, usually by looking at
-  /// the current zone.
-  final QueryEngine Function() _resolveEngineForMigrations;
-
   /// Used internally by moor when opening the database.
-  Migrator(this._db, this._resolveEngineForMigrations);
+  Migrator(this._db);
 
   /// Creates all tables specified for the database, if they don't exist
   @Deprecated('Use createAll() instead')
@@ -80,7 +72,7 @@ class Migrator {
       } else if (entity is Index) {
         await createIndex(entity);
       } else if (entity is OnCreateQuery) {
-        await issueCustomQuery(entity.sql, const []);
+        await _issueCustomQuery(entity.sql, const []);
       } else {
         throw AssertionError('Unknown entity: $entity');
       }
@@ -101,7 +93,7 @@ class Migrator {
       _writeCreateTable(table, context);
     }
 
-    return issueCustomQuery(context.sql, context.boundVariables);
+    return _issueCustomQuery(context.sql, context.boundVariables);
   }
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
@@ -168,12 +160,12 @@ class Migrator {
 
   /// Executes the `CREATE TRIGGER` statement that created the [trigger].
   Future<void> createTrigger(Trigger trigger) {
-    return issueCustomQuery(trigger.createTriggerStmt, const []);
+    return _issueCustomQuery(trigger.createTriggerStmt, const []);
   }
 
   /// Executes a `CREATE INDEX` statement to create the [index].
   Future<void> createIndex(Index index) {
-    return issueCustomQuery(index.createIndexStmt, const []);
+    return _issueCustomQuery(index.createIndexStmt, const []);
   }
 
   /// Drops a table, trigger or index.
@@ -193,13 +185,13 @@ class Migrator {
       return;
     }
 
-    await issueCustomQuery('DROP $kind IF EXISTS $escapedName;');
+    await _issueCustomQuery('DROP $kind IF EXISTS $escapedName;');
   }
 
   /// Deletes the table with the given name. Note that this function does not
   /// escape the [name] parameter.
   Future<void> deleteTable(String name) async {
-    return issueCustomQuery('DROP TABLE IF EXISTS $name;');
+    return _issueCustomQuery('DROP TABLE IF EXISTS $name;');
   }
 
   /// Adds the given column to the specified table.
@@ -210,14 +202,17 @@ class Migrator {
     column.writeColumnDefinition(context);
     context.buffer.write(';');
 
-    return issueCustomQuery(context.sql);
+    return _issueCustomQuery(context.sql);
   }
 
   /// Executes the custom query.
-  Future<void> issueCustomQuery(String sql, [List<dynamic> args]) async {
-    await _resolveEngineForMigrations().doWhenOpened(
-      (executor) => executor.runCustom(sql, args),
-    );
+  @Deprecated('Use customStatement in the database class')
+  Future<void> issueCustomQuery(String sql, [List<dynamic> args]) {
+    return _issueCustomQuery(sql, args);
+  }
+
+  Future<void> _issueCustomQuery(String sql, [List<dynamic> args]) {
+    return _db.customStatement(sql, args);
   }
 }
 
