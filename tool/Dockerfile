@@ -13,4 +13,4 @@ RUN echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' |
 RUN apt-get update && apt-get install -y --no-install-recommends -q libsqlite3-dev google-chrome-stable firefox dart
 
 # We ocassionally have to change this file to manually trigger rebuilds in the CI. Particularly, after a new Dart SDK
-# version is out.
+# version is out. Prefer to use Dart 2.8 or above.
