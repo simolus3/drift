@@ -1,3 +1,12 @@
+## 3.3.0
+
+- New `package:moor/ffi.dart` library to replace the `moor_ffi` package. When migrating, Flutter
+  users need to depend on the `sqlite3_flutter_libs` package as well.
+  The changelog of `moor_ffi` contains further information about this
+- New (in generator): `apply_converters_on_variables` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/).
+  When enabled, type converter will be enabled on variables for analyzed queries.
+  This will be the default option in the future.
+
 ## 3.2.0
 
 - It's now possible to change the name of a class generated for moor-file queries. See

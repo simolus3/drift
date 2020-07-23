@@ -9,6 +9,9 @@ import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 /// library.
 class TypeMapper {
   final Map<Table, MoorTable> _engineTablesToSpecified = {};
+  final bool applyTypeConvertersToVariables;
+
+  TypeMapper({this.applyTypeConvertersToVariables = false});
 
   /// Convert a [MoorTable] from moor into something that can be understood
   /// by the sqlparser library.
@@ -136,8 +139,23 @@ class TypeMapper {
               'array appearing after an array!');
         }
 
-        foundElements
-            .add(FoundVariable(currentIndex, name, type, used, isArray));
+        UsedTypeConverter converter;
+
+        // Recognizing type converters on variables is opt-in since it would
+        // break existing code.
+        if (applyTypeConvertersToVariables &&
+            internalType.type?.hint is TypeConverterHint) {
+          converter = (internalType.type.hint as TypeConverterHint).converter;
+        }
+
+        foundElements.add(FoundVariable(
+          index: currentIndex,
+          name: name,
+          type: type,
+          variable: used,
+          isArray: isArray,
+          converter: converter,
+        ));
 
         // arrays cannot be indexed explicitly because they're expanded into
         // multiple variables when executed

@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/utils/hash.dart';
@@ -402,6 +403,9 @@ class FoundVariable extends FoundElement {
   /// The (inferred) type for this variable.
   final ColumnType type;
 
+  /// The type converter to apply before writing this value.
+  final UsedTypeConverter converter;
+
   /// The first [Variable] in the sql statement that has this [index].
   // todo: Do we really need to expose this? We only use [resolvedIndex], which
   // should always be equal to [index].
@@ -413,8 +417,14 @@ class FoundVariable extends FoundElement {
   /// without having to look at other variables.
   final bool isArray;
 
-  FoundVariable(this.index, this.name, this.type, this.variable, this.isArray)
-      : assert(variable.resolvedIndex == index);
+  FoundVariable({
+    @required this.index,
+    @required this.name,
+    @required this.type,
+    @required this.variable,
+    this.isArray = false,
+    this.converter,
+  }) : assert(variable.resolvedIndex == index);
 
   @override
   String get dartParameterName {
@@ -427,7 +437,13 @@ class FoundVariable extends FoundElement {
 
   @override
   String get parameterType {
-    final innerType = dartTypeNames[type] ?? 'dynamic';
+    String innerType;
+    if (converter != null) {
+      innerType = converter.mappedType.getDisplayString();
+    } else {
+      innerType = dartTypeNames[type] ?? 'dynamic';
+    }
+
     if (isArray) {
       return 'List<$innerType>';
     }

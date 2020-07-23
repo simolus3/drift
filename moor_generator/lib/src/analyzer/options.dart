@@ -79,6 +79,9 @@ class MoorOptions {
   @JsonKey(name: 'raw_result_set_data', defaultValue: false)
   final bool rawResultSetData;
 
+  @JsonKey(name: 'apply_converters_on_variables', defaultValue: false)
+  final bool applyConvertersOnVariables;
+
   const MoorOptions({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
@@ -92,6 +95,7 @@ class MoorOptions {
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
+    this.applyConvertersOnVariables = false,
     this.modules = const [],
   });
 

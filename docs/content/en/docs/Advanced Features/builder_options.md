@@ -66,6 +66,7 @@ At the moment, moor supports these options:
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
 * `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
+* `apply_converters_on_variables`: Applies type converters to variables in compiled statements.
 
 ## Available extensions
 
@@ -96,7 +97,12 @@ We currently support the following extensions:
 
 ## Recommended options
 
-In general, we recommend using the default options. 
+In general, we recommend using the default options. However, some options will be enabled by default in a future moor release.
+At the moment, they're opt-in to not break existing users. These options are:
+
+- `apply_converters_on_variables`
+
+We recommend enabling these options.
 
 You can disable some default moor features and reduce the amount of generated code with the following options:
 

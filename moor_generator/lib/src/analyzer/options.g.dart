@@ -21,7 +21,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'eagerly_load_dart_ast',
       'data_class_to_companions',
       'mutable_classes',
-      'raw_result_set_data'
+      'raw_result_set_data',
+      'apply_converters_on_variables'
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -61,6 +62,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       rawResultSetData:
           $checkedConvert(json, 'raw_result_set_data', (v) => v as bool) ??
               false,
+      applyConvertersOnVariables: $checkedConvert(
+              json, 'apply_converters_on_variables', (v) => v as bool) ??
+          false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',

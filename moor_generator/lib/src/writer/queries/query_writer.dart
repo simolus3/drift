@@ -144,12 +144,17 @@ class QueryWriter {
 
     if (column.converter != null) {
       final converter = column.converter;
-      final infoName = converter.table.tableInfoName;
-      final field = '$infoName.${converter.fieldName}';
-
-      code = '$field.mapToDart($code)';
+      code = '${_converter(converter)}.mapToDart($code)';
     }
     return code;
+  }
+
+  /// Returns code to load an instance of the [converter] at runtime.
+  static String _converter(UsedTypeConverter converter) {
+    final infoName = converter.table.tableInfoName;
+    final field = '$infoName.${converter.fieldName}';
+
+    return field;
   }
 
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
@@ -343,15 +348,33 @@ class QueryWriter {
       first = false;
 
       if (element is FoundVariable) {
-        // for a regular variable: Variable.withInt(x),
-        // for a list of vars: for (var $ in vars) Variable.withInt($),
-        final constructor = createVariable[element.type];
+        // Variables without type converters are written as:
+        // `Variable.withInt(x)`. When there's a type converter, we instead use
+        // `Variable.withInt(typeConverter.mapToSql(x))`.
+        // Finally, if we're dealing with a list, we use a collection for to
+        // write all the variables sequentially.
+        String constructVar(String dartExpr) {
+          final buffer = StringBuffer(createVariable[element.type])..write('(');
+
+          if (element.converter != null) {
+            // Apply the converter
+            buffer
+                .write('${_converter(element.converter)}.mapToSql($dartExpr)');
+          } else {
+            buffer.write(dartExpr);
+          }
+
+          buffer.write(')');
+          return buffer.toString();
+        }
+
         final name = element.dartParameterName;
 
         if (element.isArray) {
-          _buffer.write('for (var \$ in $name) $constructor(\$)');
+          final constructor = constructVar(r'$');
+          _buffer.write('for (var \$ in $name) $constructor');
         } else {
-          _buffer.write('$constructor($name)');
+          _buffer.write('${constructVar(name)}');
         }
       } else if (element is FoundDartPlaceholder) {
         _buffer.write(

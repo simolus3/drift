@@ -218,4 +218,15 @@ void main() {
       ),
     );
   });
+
+  test('applies type converters to variables', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    when(mock.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+    await db.typeConverterVar(SyncType.locallyCreated,
+        [SyncType.locallyUpdated, SyncType.synchronized]).get();
+
+    verify(mock.runSelect(any, [0, 1, 2]));
+  });
 }

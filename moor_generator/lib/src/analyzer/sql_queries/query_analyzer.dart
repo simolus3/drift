@@ -14,10 +14,14 @@ abstract class BaseAnalyzer {
   final Step step;
 
   @protected
-  final TypeMapper mapper = TypeMapper();
+  final TypeMapper mapper;
   SqlEngine _engine;
 
-  BaseAnalyzer(this.tables, this.step);
+  BaseAnalyzer(this.tables, this.step)
+      : mapper = TypeMapper(
+          applyTypeConvertersToVariables:
+              step.task.session.options.applyConvertersOnVariables,
+        );
 
   @protected
   SqlEngine get engine {

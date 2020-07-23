@@ -183,6 +183,8 @@ abstract class ParserBase {
   /// [s-d]: https://sqlite.org/syntax/select-stmt.html
   BaseSelectStatement _fullSelect();
 
+  // False positive in the analyzer? It's definitely used.
+  // ignore: unused_element
   Variable _variableOrNull();
   Literal _literalOrNull();
   OrderingMode _orderingModeOrNull();

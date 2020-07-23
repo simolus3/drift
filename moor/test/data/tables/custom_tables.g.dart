@@ -1456,6 +1456,22 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
+  Selectable<String> typeConverterVar(SyncType var1, List<SyncType> var2) {
+    var $arrayStartIndex = 2;
+    final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
+    $arrayStartIndex += var2.length;
+    return customSelect(
+        'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
+        variables: [
+          Variable.withInt(ConfigTable.$converter0.mapToSql(var1)),
+          for (var $ in var2)
+            Variable.withInt(ConfigTable.$converter1.mapToSql($))
+        ],
+        readsFrom: {
+          config
+        }).map((QueryRow row) => row.readString('config_key'));
+  }
+
   Selectable<JsonResult> tableValued() {
     return customSelect(
         'SELECT "key", "value"\n  FROM config, json_each(config.config_value)\n  WHERE json_valid(config_value)',
