@@ -5,7 +5,7 @@ description: Guide on writing unit tests for moor databases
 
 Flutter apps using moor can always be tested with [integration tests](https://flutter.dev/docs/cookbook/testing/integration/introduction)
 running on a real device. This guide focusses on writing unit tests for a database written in moor.
-Those tests can be run and debugged on your computer without additional setup, you don't a
+Those tests can be run and debugged on your computer without additional setup, you don't need a
 physical device to run them.
 
 ## Setup
