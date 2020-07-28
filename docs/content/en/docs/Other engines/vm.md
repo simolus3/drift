@@ -3,7 +3,7 @@ title: moor ffi (Desktop support)
 description: Run moor on both mobile and desktop
 ---
 
-## Supported versions
+## Supported platforms
 
 The `moor/ffi.dart` library uses the `sqlite3` package to send queries.
 At the moment, that package supports iOS, macOS and Android out of the box. Most Linux

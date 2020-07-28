@@ -1,3 +1,7 @@
+## 3.3.0
+
+- New `apply_converters_on_variables` build option
+
 ## 3.2.0
 
 - Support custom result class names for queries.
