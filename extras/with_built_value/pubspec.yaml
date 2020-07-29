@@ -6,8 +6,7 @@ environment:
   sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
-  moor: ^2.3.0
-  moor_ffi: ^0.4.0
+  moor: ^3.2.0
   built_value: ^7.0.0
 
 dev_dependencies:
@@ -18,8 +17,6 @@ dev_dependencies:
 dependency_overrides:
   moor:
     path: ../../moor
-  moor_ffi:
-    path: ../../moor_ffi
   moor_generator:
     path: ../../moor_generator
   sqlparser:

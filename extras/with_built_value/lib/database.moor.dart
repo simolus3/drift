@@ -33,6 +33,13 @@ class User extends DataClass implements Insertable<User> {
     return map;
   }
 
+  UsersCompanion toCompanion(bool nullToAbsent) {
+    return UsersCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -82,6 +89,16 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.id = const Value.absent(),
     @required String name,
   }) : name = Value(name);
+  static Insertable<User> custom({
+    Expression<int> id,
+    Expression<String> name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
   UsersCompanion copyWith({Value<int> id, Value<String> name}) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -99,6 +116,15 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['name'] = Variable<String>(name.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
   }
 }
 

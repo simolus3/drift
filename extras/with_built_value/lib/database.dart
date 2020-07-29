@@ -1,6 +1,6 @@
 import 'package:built_value/built_value.dart';
 import 'package:moor/moor.dart';
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:moor/ffi.dart';
 
 part 'database.moor.dart';
 part 'database.g.dart';
