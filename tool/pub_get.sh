@@ -22,5 +22,5 @@ cd ..
 
 cd moor_ffi
 echo $(pwd)
-pub upgrade
+flutter packages upgrade
 cd ..

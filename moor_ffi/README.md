@@ -1,3 +1,17 @@
+This package has been deprecated! Consider migrating to new sqlite packages depending on your setup:
+
+- You use moor to build Flutter apps: Remove `moor_ffi` from your dependencies and add `sqlite3_flutter_libs`
+  instead. Also, replace the following imports:
+   - change `package:moor_ffi/moor_ffi.dart` to `package:moor/ffi.dart`
+   - change `package:moor_ffi/open_helper.dart` to `package:sqlite3/open.dart` 
+- You use moor, but without Flutter: Just drop the `moor_ffi` dependency and use the new
+  `package:moor/ffi.dart` library. You need to make sure that a dynamic sqlite3 library is
+   available at runtime.
+- You don't use moor, but you do use Flutter: Depend on `sqlite3` and `sqlite3_flutter_libs`. The
+  `sqlite3` package contains the new Dart apis to use sqlite3.
+- You don't use the main moor package or Flutter: Just depend on the `sqlite3` package and make sure that a
+  dynamic sqlite3 library is available at runtime
+
 # moor_ffi
 
 Dart bindings to sqlite by using `dart:ffi`. This library contains utils to make

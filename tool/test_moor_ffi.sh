@@ -2,4 +2,4 @@
 
 cd moor_ffi
 
-pub run test --coverage=coverage
+flutter packages run test --coverage=coverage
