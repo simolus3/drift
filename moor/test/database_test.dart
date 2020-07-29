@@ -11,10 +11,10 @@ class _FakeDb extends GeneratedDatabase {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (m) async {
-        await m.issueCustomQuery('created');
+        await customStatement('created');
       },
       onUpgrade: (m, from, to) async {
-        await m.issueCustomQuery('updated from $from to $to');
+        await customStatement('updated from $from to $to');
       },
       beforeOpen: (details) async {
         // this fake select query is verified via mocks

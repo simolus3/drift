@@ -15,11 +15,11 @@ cd ..
 #dartanalyzer --options analysis_options.yaml --fatal-infos --fatal-warnings lib/ || EXIT_CODE=$?
 #cd ..
 
-cd moor_ffi
-echo $(pwd)
-dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
-dartanalyzer --options analysis_options.yaml --fatal-infos --fatal-warnings lib/ test/ || EXIT_CODE=$?
-cd ..
+#cd moor_ffi
+#echo $(pwd)
+#dartfmt -n --set-exit-if-changed . || EXIT_CODE=$?
+#dartanalyzer --options analysis_options.yaml --fatal-infos --fatal-warnings lib/ test/ || EXIT_CODE=$?
+#cd ..
 
 cd moor_generator
 echo $(pwd)

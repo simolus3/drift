@@ -5,10 +5,10 @@ echo $(pwd)
 pub upgrade
 cd ..
 
-cd moor_flutter
-echo $(pwd)
-flutter packages upgrade
-cd ..
+#cd moor_flutter
+#echo $(pwd)
+#flutter packages upgrade
+#cd ..
 
 cd moor_generator
 echo $(pwd)
@@ -20,7 +20,7 @@ echo $(pwd)
 pub upgrade
 cd ..
 
-cd moor_ffi
-echo $(pwd)
-flutter packages upgrade
-cd ..
+#cd moor_ffi
+#echo $(pwd)
+#flutter packages upgrade
+#cd ..

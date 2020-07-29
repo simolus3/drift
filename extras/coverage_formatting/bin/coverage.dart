@@ -21,7 +21,6 @@ Future<void> main() async {
   }
 
   await runForProject('moor');
-  await runForProject('moor_ffi');
   await runForProject('sqlparser');
 }
 
