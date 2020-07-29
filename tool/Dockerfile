@@ -11,7 +11,7 @@ ENV PATH="/usr/lib/dart/bin:${PATH}"
 RUN echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | tee /etc/apt/sources.list.d/google-chrome.list
 
 #RUN apt-get update && apt-get install -y --no-install-recommends -q libsqlite3-dev google-chrome-stable firefox dart
-RUN apt-get update && apt-get install -y --no-install-recommends -q dart
+RUN apt-get update && apt-get install -y --no-install-recommends -q libsqlite3-dev dart
 
 # We ocassionally have to change this file to manually trigger rebuilds in the CI. Particularly, after a new Dart SDK
 # version is out. Prefer to use Dart 2.8 or above.
