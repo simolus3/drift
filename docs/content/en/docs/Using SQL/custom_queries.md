@@ -1,12 +1,12 @@
 ---
-title: "(Legacy) Custom queries"
+title: "Custom queries"
 weight: 10
 description: Let moor generate Dart from your SQL statements
 aliases:
   - /queries/custom
 ---
 
-{{% alert title="Outdated feature" color="warning" %}}
+{{% alert title="Moor files!" color="warning" %}}
 With moor 2.0, we moved the new `.moor` files out of preview and added some powerful features to them.
 They are easier to use than the approaches described here. While these features will continue to
 be supported, moor files will get better tooling support in the future and we recommend to
@@ -14,7 +14,7 @@ migrate. See [their api]({{%relref "moor_files.md"%}}) for details.
 {{% /alert %}}
 
 Although moor includes a fluent api that can be used to model most statements, advanced
-features like `GROUP BY` statements or window functions are not yet supported. You can
+features like `WITH` clauses or subqueries aren't supported yet. You can
 use these features with custom statements. You don't have to miss out on other benefits
 moor brings, though: Moor helps you parse the result rows and custom queries also
 support auto-updating streams.
@@ -79,10 +79,10 @@ class CategoryWithCount {
 Stream<List<CategoryWithCount>> categoriesWithCount() {
     // select all categories and load how many associated entries there are for
     // each category
-    return customSelectStream(
+    return customSelect(
       'SELECT *, (SELECT COUNT(*) FROM todos WHERE category = c.id) AS "amount" FROM categories c;',
       readsFrom: {todos, categories}, // used for the stream: the stream will update when either table changes
-      ).map((rows) {
+      ).watch().map((rows) {
         // we get list of rows here. We just have to turn the raw data from the row into a
         // CategoryWithCount. As we defined the Category table earlier, moor knows how to parse
         // a category. The only thing left to do manually is extracting the amount
