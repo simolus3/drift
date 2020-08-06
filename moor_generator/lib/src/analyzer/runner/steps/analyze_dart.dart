@@ -10,12 +10,34 @@ class AnalyzeDartStep extends AnalyzingStep {
     for (final accessor in parseResult.dbAccessors) {
       final transitiveImports = _transitiveImports(accessor.imports);
 
-      final unsortedEntities = _availableEntities(transitiveImports)
-          .followedBy(accessor.declaredTables);
+      final unsortedEntities = _availableEntities(transitiveImports).toSet();
+
+      final tableDartClasses = unsortedEntities.map((e) {
+        final declaration = e.declaration;
+        if (declaration is DartTableDeclaration) {
+          return declaration.element;
+        }
+        return null;
+      }).where((element) => element != null);
+
+      for (final declaredHere in accessor.declaredTables) {
+        // See issue #447: The table added to an accessor might already be
+        // included through a transitive moor file. In that case, we just ignore
+        // it to avoid duplicates.
+        final declaration = declaredHere.declaration;
+        if (declaration is DartTableDeclaration &&
+            tableDartClasses.contains(declaration.element)) {
+          continue;
+        }
+
+        // Not a Dart table that we already included - add it now
+        unsortedEntities.add(declaredHere);
+      }
+
       List<MoorSchemaEntity> availableEntities;
 
       try {
-        availableEntities = sortEntitiesTopologically(unsortedEntities.toSet());
+        availableEntities = sortEntitiesTopologically(unsortedEntities);
       } on CircularReferenceException catch (e) {
         // Just keep them unsorted so that we can generate some code
         availableEntities = unsortedEntities.toList();
