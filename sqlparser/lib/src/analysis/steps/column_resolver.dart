@@ -98,6 +98,10 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     }
 
     final scope = e.scope;
+
+    // Add columns of the target table for when and update of clauses
+    scope.availableColumns = table.resolvedColumns;
+
     if (e.target.introducesNew) {
       scope.register('new', TableAlias(table, 'new'));
     }
@@ -260,7 +264,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     // merge all columns at each position into a CompoundSelectColumn
     for (var i = 0; i < amount; i++) {
       final columnsAtThisIndex = [
-        for (var set in columnSets) if (set.length > i) set[i]
+        for (var set in columnSets)
+          if (set.length > i) set[i]
       ];
 
       resolved.add(CompoundSelectColumn(columnsAtThisIndex));

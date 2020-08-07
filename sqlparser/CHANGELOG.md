@@ -1,3 +1,11 @@
+## 0.10.1
+
+- Scan identifiers with `[bracket syntax]`
+- `NumericToken` now contains individual lexemes making up the number
+- Improve error messages in some scenarios
+- Fix type inference for binary expressions where the operands have incompatible types
+- Improve type inference around `NULL` 
+
 ## 0.10.0
 
 - Breaking: Made `RecursiveVisitor.visit`, `visitList` and `visitExcept` an extension on `AstVisitor`.

@@ -73,6 +73,26 @@ END;
       ''');
       expect(context.errors, isEmpty);
     });
+
+    test('can refer to column in UPDATE OF', () {
+      final context = engine.analyze('''
+CREATE TRIGGER my_trigger BEFORE UPDATE OF content ON DEMO BEGIN
+  SELECT * FROM demo;
+END;
+      ''');
+
+      expect(context.errors, isEmpty);
+    });
+
+    test('can refer to column in UPDATE OF', () {
+      final context = engine.analyze('''
+CREATE TRIGGER my_trigger BEFORE DELETE ON DEMO WHEN id < 10 BEGIN
+  SELECT * FROM demo;
+END;
+      ''');
+
+      expect(context.errors, isEmpty);
+    });
   });
 
   test("DO UPDATE action in upsert can refer to 'exluded'", () {
