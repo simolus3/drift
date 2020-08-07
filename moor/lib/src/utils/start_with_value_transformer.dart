@@ -73,7 +73,6 @@ class _StartWithValueSubscription<T> extends StreamSubscription<T> {
 
   @override
   void onData(void Function(T data) handleData) {
-    print('onData called');
     _onData = handleData;
 
     void wrappedCallback(T event) {
