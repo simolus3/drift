@@ -1,3 +1,8 @@
+## 3.3.1
+
+- Support changing `onData` handlers for query streams.
+  This fixes a bug ocurring when using `queryStream.first` multiple times.
+
 ## 3.3.0
 
 - New `package:moor/ffi.dart` library to replace the `moor_ffi` package. When migrating, Flutter
