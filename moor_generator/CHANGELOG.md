@@ -1,3 +1,7 @@
+## 3.3.1
+
+- Fix bug when importing a Dart table both through `tables` and `includes`
+
 ## 3.3.0
 
 - New `apply_converters_on_variables` build option

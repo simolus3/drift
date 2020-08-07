@@ -1,3 +1,4 @@
+@Tags(['analyzer'])
 import 'dart:convert';
 
 import 'package:build/build.dart';
