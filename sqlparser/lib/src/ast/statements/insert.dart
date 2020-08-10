@@ -10,8 +10,9 @@ enum InsertMode {
   insertOrIgnore
 }
 
-class InsertStatement extends CrudStatement {
+class InsertStatement extends CrudStatement implements HasPrimarySource {
   final InsertMode mode;
+  @override
   TableReference table;
   final List<Reference> targetColumns;
   InsertSource source;

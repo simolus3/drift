@@ -14,7 +14,7 @@ abstract class BaseSelectStatement extends CrudStatement with ResultSet {
 abstract class SelectStatementNoCompound implements BaseSelectStatement {}
 
 class SelectStatement extends BaseSelectStatement
-    implements StatementWithWhere, SelectStatementNoCompound {
+    implements StatementWithWhere, SelectStatementNoCompound, HasPrimarySource {
   final bool distinct;
   final List<ResultColumn> columns;
   Queryable /*?*/ from;
@@ -26,6 +26,9 @@ class SelectStatement extends BaseSelectStatement
 
   OrderByBase orderBy;
   LimitBase limit;
+
+  @override
+  Queryable get table => from;
 
   SelectStatement(
       {WithClause withClause,

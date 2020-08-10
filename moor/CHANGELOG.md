@@ -1,7 +1,7 @@
 ## 3.3.1
 
 - Support changing `onData` handlers for query streams.
-  This fixes a bug ocurring when using `queryStream.first` multiple times.
+  This fixes a bug occurring when using `queryStream.first` multiple times.
 
 ## 3.3.0
 

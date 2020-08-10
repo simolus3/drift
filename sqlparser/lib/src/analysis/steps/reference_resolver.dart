@@ -84,16 +84,17 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
 
   Column _resolveRowIdAlias(Reference e) {
     // to resolve those aliases when they're not bound to a table, the
-    // surrounding select statement may only read from one table
-    final select = e.parents.firstWhere((node) => node is SelectStatement,
-        orElse: () => null) as SelectStatement;
+    // surrounding statement may only read from one table
+    final stmt = e.enclosingOfType<HasPrimarySource>();
 
-    if (select == null) return null;
-    if (select.from is! TableReference) {
+    if (stmt == null) return null;
+
+    final from = stmt.table;
+    if (from is! TableReference) {
       return null;
     }
 
-    final table = (select.from as TableReference).resolved as Table;
+    final table = (from as TableReference).resolved as Table;
     if (table == null) return null;
 
     // table.findColumn contains logic to resolve row id aliases

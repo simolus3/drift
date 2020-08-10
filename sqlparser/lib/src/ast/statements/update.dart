@@ -16,8 +16,10 @@ const Map<TokenType, FailureMode> _tokensToMode = {
   TokenType.ignore: FailureMode.ignore,
 };
 
-class UpdateStatement extends CrudStatement implements StatementWithWhere {
+class UpdateStatement extends CrudStatement
+    implements StatementWithWhere, HasPrimarySource {
   final FailureMode or;
+  @override
   TableReference table;
   final List<SetComponent> set;
   @override

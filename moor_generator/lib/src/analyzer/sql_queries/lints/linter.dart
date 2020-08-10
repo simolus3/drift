@@ -187,8 +187,10 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
         relevantNode: e.table,
       ));
     } else {
-      final notPresent = required.where((c) => !targeted
-          .any((t) => t.name.toUpperCase() == c.name.name.toUpperCase()));
+      final notPresent = required.where((c) {
+        return !targeted
+            .any((t) => t?.name?.toUpperCase() == c.name.name.toUpperCase());
+      });
 
       if (notPresent.isNotEmpty) {
         final msg = notPresent.map((c) => c.name.name).join(', ');

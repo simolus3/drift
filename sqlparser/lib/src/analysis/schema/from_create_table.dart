@@ -8,11 +8,21 @@ class SchemaFromCreateTable {
 
   const SchemaFromCreateTable({this.moorExtensions = false});
 
+  /// Reads a [Table] schema from the [stmt] inducing a table (either a
+  /// [CreateTableStatement] or a [CreateVirtualTableStatement]).
+  ///
+  /// This method might throw an exception if the table could not be read.
   Table read(TableInducingStatement stmt) {
     if (stmt is CreateTableStatement) {
       return _readCreateTable(stmt);
     } else if (stmt is CreateVirtualTableStatement) {
       final module = stmt.scope.resolve<Module>(stmt.moduleName);
+
+      if (module == null) {
+        throw CantReadSchemaException('Unknown module "${stmt.moduleName}", '
+            'did you register it?');
+      }
+
       return module.parseTable(stmt);
     }
 
@@ -121,4 +131,16 @@ class SchemaFromCreateTable {
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
   @visibleForTesting
   BasicType columnAffinity(String typeName) => resolveColumnType(typeName).type;
+}
+
+/// Thrown when a table schema could not be read.
+class CantReadSchemaException implements Exception {
+  final String message;
+
+  CantReadSchemaException(this.message);
+
+  @override
+  String toString() {
+    return 'Could not read table schema: $message';
+  }
 }

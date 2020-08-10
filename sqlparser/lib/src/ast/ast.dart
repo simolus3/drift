@@ -113,6 +113,19 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
     yield* allDescendants;
   }
 
+  /// Finds the first element in [selfAndParents] of the type [T].
+  ///
+  /// Returns `null` if there's no node of type [T] surrounding this ast node.
+  T /*?*/ enclosingOfType<T extends AstNode>() {
+    for (final element in selfAndParents) {
+      if (element is T) {
+        return element;
+      }
+    }
+
+    return null;
+  }
+
   /// The [ReferenceScope], which contains available tables, column references
   /// and functions for this node.
   ReferenceScope get scope {
