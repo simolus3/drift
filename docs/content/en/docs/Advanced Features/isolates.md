@@ -63,6 +63,24 @@ void main() async {
 }
 ```
 
+If you need to construct the database outside of an `async` context, you can use the new 
+`DatabaseConnection.delayed` constructor introduced in moor 3.4. In the example above, you
+could synchronously obtain a `TodoDb` by using:
+
+```dart
+Future<DatabaseConnection> _connectAsync() async {
+  MoorIsolate isolate = await MoorIsolate.spawn(_backgroundConnection);
+  return isolate.connect();
+}
+
+void main() {
+  final db = TodoDb.connect(DatabaseConnection.delayed(_connectAsync()));
+}
+```
+
+This can be helpful when using moor in DI frameworks, since you have the database available
+immediately. Internally, moor will connect when the first query is sent to the database.
+
 ### Initialization on the main thread
 
 Platform channels are not available on background isolates, but sometimes you might want to use

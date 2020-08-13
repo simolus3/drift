@@ -66,4 +66,13 @@ class LazyDatabase extends QueryExecutor {
   @override
   Future<int> runUpdate(String statement, List args) =>
       _delegate.runUpdate(statement, args);
+
+  @override
+  Future<void> close() {
+    if (_delegate != null) {
+      return _delegate.close();
+    } else {
+      return Future.value();
+    }
+  }
 }

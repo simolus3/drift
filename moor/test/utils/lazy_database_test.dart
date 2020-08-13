@@ -79,4 +79,17 @@ void main() {
 
     verify(inner.ensureOpen(user));
   });
+
+  test('can close inner executor', () async {
+    final inner = MockExecutor();
+    final lazy = LazyDatabase(() => inner);
+    final user = _LazyQueryUserForTest();
+
+    await lazy.close(); // Close before opening, expect no effect
+
+    await lazy.ensureOpen(user);
+    await lazy.close();
+
+    verify(inner.close());
+  });
 }

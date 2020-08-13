@@ -26,6 +26,41 @@ class DatabaseConnection {
       : typeSystem = SqlTypeSystem.defaultInstance,
         streamQueries = StreamQueryStore();
 
+  /// Database connection that is instantly available, but delegates work to a
+  /// connection only available through a `Future`.
+  ///
+  /// This can be useful in scenarios where you need to obtain a database
+  /// instance synchronously, but need an async setup. A prime example here is
+  /// `MoorIsolate`:
+  ///
+  /// ```dart
+  /// @UseMoor(...)
+  /// class MyDatabase extends _$MyDatabase {
+  ///   MyDatabase._connect(DatabaseConnection c): super.connect(c);
+  ///
+  ///   factory MyDatabase.fromIsolate(MoorIsolate isolate) {
+  ///     return MyDatabase._connect(
+  ///       // isolate.connect() returns a future, but we can still return a
+  ///       // database synchronously thanks to DatabaseConnection.delayed!
+  ///       DatabaseConnection.delayed(isolate.connect()),
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  factory DatabaseConnection.delayed(FutureOr<DatabaseConnection> connection) {
+    if (connection is DatabaseConnection) {
+      return connection;
+    }
+
+    final future = connection as Future<DatabaseConnection>;
+
+    return DatabaseConnection(
+      SqlTypeSystem.defaultInstance,
+      LazyDatabase(() async => (await future).executor),
+      DelayedStreamQueryStore(future.then((conn) => conn.streamQueries)),
+    );
+  }
+
   /// Returns a database connection that is identical to this one, except that
   /// it uses the provided [executor].
   DatabaseConnection withExecutor(QueryExecutor executor) {

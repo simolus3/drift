@@ -83,26 +83,25 @@ void main() {
 void _runTests(
     FutureOr<MoorIsolate> Function() spawner, bool terminateIsolate) {
   MoorIsolate isolate;
-  DatabaseConnection isolateConnection;
+  TodoDb database;
 
   setUp(() async {
     isolate = await spawner();
-    isolateConnection = await isolate.connect(isolateDebugLog: false);
+
+    database = TodoDb.connect(
+      DatabaseConnection.delayed(isolate.connect(isolateDebugLog: false)),
+    );
   });
 
-  tearDown(() {
-    isolateConnection.executor.close();
+  tearDown(() async {
+    await database.close();
 
     if (terminateIsolate) {
-      return isolate.shutdownAll();
-    } else {
-      return Future.value();
+      await isolate.shutdownAll();
     }
   });
 
   test('can open database and send requests', () async {
-    final database = TodoDb.connect(isolateConnection);
-
     final result = await database.select(database.todosTable).get();
     expect(result, isEmpty);
   });
@@ -110,7 +109,6 @@ void _runTests(
   test('can run beforeOpen', () async {
     var beforeOpenCalled = false;
 
-    final database = TodoDb.connect(isolateConnection);
     database.migration = MigrationStrategy(beforeOpen: (details) async {
       await database.customStatement('PRAGMA foreign_keys = ON');
       beforeOpenCalled = true;
@@ -118,26 +116,20 @@ void _runTests(
 
     // run a select statement to verify that the database is open
     await database.customSelect('SELECT 1').get();
-    await database.close();
     expect(beforeOpenCalled, isTrue);
   });
 
   test('stream queries work as expected', () async {
-    final database = TodoDb.connect(isolateConnection);
     final initialCompanion = TodosTableCompanion.insert(content: 'my content');
 
     final stream = database.select(database.todosTable).watchSingle();
-    final expectation = expectLater(
-      stream,
-      emitsInOrder([null, TodoEntry(id: 1, content: 'my content')]),
-    );
 
+    await expectLater(stream, emits(null));
     await database.into(database.todosTable).insert(initialCompanion);
-    await expectation;
+    await expectLater(stream, emits(TodoEntry(id: 1, content: 'my content')));
   });
 
   test('can start transactions', () async {
-    final database = TodoDb.connect(isolateConnection);
     final initialCompanion = TodosTableCompanion.insert(content: 'my content');
 
     await database.transaction(() async {
@@ -149,15 +141,12 @@ void _runTests(
   });
 
   test('supports no-op transactions', () async {
-    final database = TodoDb.connect(isolateConnection);
     await database.transaction(() {
       return Future.value(null);
     });
-    await database.close();
   });
 
   test('supports transactions in migrations', () async {
-    final database = TodoDb.connect(isolateConnection);
     database.migration = MigrationStrategy(beforeOpen: (details) async {
       await database.transaction(() async {
         return await database.customSelect('SELECT 1').get();
@@ -165,15 +154,11 @@ void _runTests(
     });
 
     await database.customSelect('SELECT 2').get();
-
-    await database.close();
   });
 
   test('transactions have an isolated view on data', () async {
     // regression test for https://github.com/simolus3/moor/issues/324
-    final db = TodoDb.connect(isolateConnection);
-
-    await db
+    await database
         .customStatement('create table tbl (id integer primary key not null)');
 
     Future<void> expectRowCount(TodoDb db, int count) async {
@@ -182,74 +167,65 @@ void _runTests(
     }
 
     final rowInserted = Completer<void>();
-    final runTransaction = db.transaction(() async {
-      await db.customInsert('insert into tbl default values');
-      await expectRowCount(db, 1);
+    final runTransaction = database.transaction(() async {
+      await database.customInsert('insert into tbl default values');
+      await expectRowCount(database, 1);
       rowInserted.complete();
       // Hold transaction open for expectRowCount() outside the transaction to
       // finish
       await Future.delayed(const Duration(seconds: 1));
-      await db.customStatement('delete from tbl');
-      await expectRowCount(db, 0);
+      await database.customStatement('delete from tbl');
+      await expectRowCount(database, 0);
     });
 
     await rowInserted.future;
-    await expectRowCount(db, 0);
+    await expectRowCount(database, 0);
     await runTransaction; // wait for the transaction to complete
-
-    await db.close();
   });
 
   test("can't run queries on a closed database", () async {
-    final db = TodoDb.connect(isolateConnection);
-    await db.customSelect('SELECT 1;').getSingle();
+    await database.customSelect('SELECT 1;').getSingle();
 
-    await db.close();
+    await database.close();
 
     await expectLater(
-        () => db.customSelect('SELECT 1;').getSingle(), throwsStateError);
+        () => database.customSelect('SELECT 1;').getSingle(), throwsStateError);
   });
 
   test('can run deletes, updates and batches', () async {
-    final db = TodoDb.connect(isolateConnection);
-
-    await db.into(db.users).insert(
+    await database.into(database.users).insert(
         UsersCompanion.insert(name: 'simon.', profilePicture: Uint8List(0)));
 
-    await db
-        .update(db.users)
+    await database
+        .update(database.users)
         .write(const UsersCompanion(name: Value('changed name')));
-    var result = await db.select(db.users).getSingle();
+    var result = await database.select(database.users).getSingle();
     expect(result.name, 'changed name');
 
-    await db.delete(db.users).go();
+    await database.delete(database.users).go();
 
-    await db.batch((batch) {
+    await database.batch((batch) {
       batch.insert(
-        db.users,
+        database.users,
         UsersCompanion.insert(name: 'not simon', profilePicture: Uint8List(0)),
       );
     });
 
-    result = await db.select(db.users).getSingle();
+    result = await database.select(database.users).getSingle();
     expect(result.name, 'not simon');
-
-    await db.close();
   });
 
   test('transactions can be rolled back', () async {
-    final db = TodoDb.connect(isolateConnection);
-
-    await expectLater(db.transaction(() async {
-      await db.into(db.categories).insert(
+    await expectLater(database.transaction(() async {
+      await database.into(database.categories).insert(
           CategoriesCompanion.insert(description: 'my fancy description'));
       throw Exception('expected');
     }), throwsException);
 
-    final result = await db.select(db.categories).get();
+    final result = await database.select(database.categories).get();
     expect(result, isEmpty);
 
-    await db.close();
+    await database.close();
   });
 }
 

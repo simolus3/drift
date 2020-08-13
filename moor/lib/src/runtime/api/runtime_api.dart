@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
+import 'package:moor/src/runtime/executor/delayed_stream_queries.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
 part 'batch.dart';

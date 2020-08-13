@@ -1,3 +1,8 @@
+## 3.4.0 (unreleased)
+
+- New `DatabaseConnection.delayed` constructor to synchronously obtain a database connection
+  that requires async setup. This can be useful when connecting to a `MoorIsolate`.
+
 ## 3.3.1
 
 - Support changing `onData` handlers for query streams.
