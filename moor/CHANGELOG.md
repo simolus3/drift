@@ -2,6 +2,7 @@
 
 - New `DatabaseConnection.delayed` constructor to synchronously obtain a database connection
   that requires async setup. This can be useful when connecting to a `MoorIsolate`.
+- `VmDatabase`: Create directory of database file to avoid misuse errors from sqlite3.
 
 ## 3.3.1
 

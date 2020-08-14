@@ -64,6 +64,13 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<void> open(QueryExecutorUser user) async {
     if (file != null) {
+      // Create the parent directory if it doesn't exist. sqlite will emit
+      // confusing misuse warnings otherwise
+      final dir = file.parent;
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+
       _db = sqlite3.open(file.path);
     } else {
       _db = sqlite3.openInMemory();
