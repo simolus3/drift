@@ -31,42 +31,53 @@ class _StartWithValueStream<T> extends Stream<T> {
   @override
   StreamSubscription<T> listen(void Function(T event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
-    // We do cancel this subscription when the wrapper is cancelled.
-    // ignore: cancel_subscriptions
-    final subscription = _inner.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
-
     final data = _value();
-    return _StartWithValueSubscription(subscription, data, onData);
+    return _StartWithValueSubscription(_inner, data, onData,
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 }
 
 class _StartWithValueSubscription<T> extends StreamSubscription<T> {
-  final StreamSubscription<T> _inner;
+  StreamSubscription<T> _inner;
   final T initialData;
 
-  bool receivedDataFromInner = false;
+  bool needsInitialData = true;
   void Function(T data) _onData;
 
-  _StartWithValueSubscription(this._inner, this.initialData, this._onData) {
+  _StartWithValueSubscription(
+      Stream<T> innerStream, this.initialData, this._onData,
+      {Function onError, void Function() onDone, bool cancelOnError}) {
+    _inner = innerStream.listen(_wrappedDataCallback(_onData),
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+
     // Dart's stream contract specifies that listeners are only notified
     // after the .listen() code completes. So, we add the initial data in
     // a later microtask.
     if (initialData != null) {
       scheduleMicrotask(() {
-        if (!receivedDataFromInner) {
+        if (needsInitialData) {
           _onData?.call(initialData);
-          receivedDataFromInner = true;
+          needsInitialData = false;
         }
       });
     }
+  }
+
+  void Function(T data) _wrappedDataCallback(void Function(T data) onData) {
+    return (event) {
+      needsInitialData = false;
+      onData?.call(event);
+    };
   }
 
   @override
   Future<E> asFuture<E>([E futureValue]) => _inner.asFuture();
 
   @override
-  Future<void> cancel() => _inner.cancel();
+  Future<void> cancel() {
+    needsInitialData = false;
+    return _inner.cancel();
+  }
 
   @override
   bool get isPaused => _inner.isPaused;
@@ -75,12 +86,7 @@ class _StartWithValueSubscription<T> extends StreamSubscription<T> {
   void onData(void Function(T data) handleData) {
     _onData = handleData;
 
-    void wrappedCallback(T event) {
-      receivedDataFromInner = true;
-      handleData?.call(event);
-    }
-
-    _inner.onData(wrappedCallback);
+    _inner.onData(_wrappedDataCallback(handleData));
   }
 
   @override
@@ -90,7 +96,10 @@ class _StartWithValueSubscription<T> extends StreamSubscription<T> {
   void onError(Function handleError) => _inner.onError(handleError);
 
   @override
-  void pause([Future<void> resumeSignal]) => _inner.pause(resumeSignal);
+  void pause([Future<void> resumeSignal]) {
+    needsInitialData = false;
+    _inner.pause(resumeSignal);
+  }
 
   @override
   void resume() => _inner.resume();
