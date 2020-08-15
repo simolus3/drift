@@ -159,9 +159,25 @@ function.
 More information on how to write aggregate queries with moor's Dart api is available
 [here]({{< relref "joins.md#group-by" >}})
 
+### group_concat
+
+The `groupConcat` function can be used to join multiple values into a single string:
+
+```dart
+Stream<String> allTodoContent() {
+  final allContent = todos.content.groupConcat();
+  final query = selectOnly(todos)..addColumns(allContent);
+
+  return query.map((row) => row.read(query)).watchSingle();
+}
+```
+
+The separator defaults to a comma without surrounding whitespace, but it can be changed
+with the `separator` argument on `groupConcat`.
+
 ## Mathematical functions and regexp
 
-When using `moor_ffi`, a basic set of trigonometric functions will be available. 
+When using a `VmDatabase`, a basic set of trigonometric functions will be available. 
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in sql queries.
 For more information, see the [list of functions]({{< relref "../Other engines/vm.md#moor-only-functions" >}}) here.
 

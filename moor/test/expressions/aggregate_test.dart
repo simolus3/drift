@@ -60,4 +60,13 @@ void main() {
   test('total', () {
     expect(foo.total(), generates('TOTAL(foo)'));
   });
+
+  test('group_concat, default separator', () {
+    expect(foo.groupConcat(), generates('GROUP_CONCAT(foo)'));
+  });
+
+  test('group_concat, custom separator', () {
+    expect(foo.groupConcat(separator: ' and '),
+        generates('GROUP_CONCAT(foo, ?)', [' and ']));
+  });
 }

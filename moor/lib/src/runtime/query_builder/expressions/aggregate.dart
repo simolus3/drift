@@ -31,6 +31,24 @@ extension BaseAggregate<DT> on Expression<DT> {
     return _AggregateExpression('COUNT', this,
         filter: filter, distinct: distinct);
   }
+
+  /// Returns the concatenation of all non-null values in the current group,
+  /// joined by the [separator].
+  ///
+  /// The order of the concatenated elements is arbitrary.
+  ///
+  /// See also:
+  ///  - the sqlite documentation: https://www.sqlite.org/lang_aggfunc.html#groupconcat
+  ///  - the conceptually similar [Iterable.join]
+  Expression<String> groupConcat({String separator = ','}) {
+    const sqliteDefaultSeparator = ',';
+    if (separator == sqliteDefaultSeparator) {
+      return _AggregateExpression('GROUP_CONCAT', this);
+    } else {
+      return FunctionCallExpression(
+          'GROUP_CONCAT', [this, Variable.withString(separator)]);
+    }
+  }
 }
 
 /// Provides aggregate functions that are available for numeric expressions.
