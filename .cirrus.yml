@@ -15,5 +15,6 @@ task:
   test_moor_script: tool/test_moor.sh
   test_sqlparser_script: tool/test_sqlparser.sh
   misc_integration_test_script: tool/misc_integration_test.sh
-  test_moor_generator_script: tool/test_generator.sh
+  # We just get too many timeouts for moor_generator in the CI runner
+#  test_moor_generator_script: tool/test_generator.sh
   format_coverage_script: tool/upload_coverage.sh
