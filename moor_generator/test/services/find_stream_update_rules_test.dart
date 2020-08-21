@@ -1,7 +1,7 @@
+@Tags(['analyzer'])
 import 'package:moor/moor.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/services/find_stream_update_rules.dart';
-@Tags(['analyzer'])
 import 'package:test/test.dart';
 
 import '../analyzer/utils.dart';
