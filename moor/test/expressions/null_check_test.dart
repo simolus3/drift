@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 import '../data/utils/expect_equality.dart';
+import '../data/utils/expect_generated.dart';
 
 void main() {
   final innerExpression = GeneratedTextColumn('name', null, true);
@@ -26,5 +27,11 @@ void main() {
     expect(context.sql, 'name IS NOT NULL');
 
     expectEquals(expr, moor.isNotNull(innerExpression));
+  });
+
+  test('generates COALESCE expressions', () {
+    final expr = moor.coalesce([const Constant<int>(null), const Constant(3)]);
+
+    expect(expr, generates('COALESCE(NULL, 3)'));
   });
 }

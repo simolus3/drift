@@ -42,4 +42,12 @@ void main() {
 
     expect(row.read(containsSql), isTrue);
   });
+
+  test('coalesce', () async {
+    final expr = coalesce<int>([const Constant(null), const Constant(3)]);
+
+    final row = await (db.selectOnly(db.users)..addColumns([expr])).getSingle();
+
+    expect(row.read(expr), equals(3));
+  });
 }

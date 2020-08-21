@@ -10,6 +10,15 @@ Expression<bool> isNull(Expression inner) => _NullCheck(inner, true);
 /// value.
 Expression<bool> isNotNull(Expression inner) => _NullCheck(inner, false);
 
+/// Evaluates to the first expression in [expressions] that's not null, or
+/// null if all [expressions] evaluate to null.
+Expression<T> coalesce<T>(List<Expression<T>> expressions) {
+  assert(expressions.length >= 2,
+      'coalesce must have at least 2 arguments, got ${expressions.length}');
+
+  return FunctionCallExpression<T>('COALESCE', expressions);
+}
+
 class _NullCheck extends Expression<bool> {
   final Expression _inner;
   final bool _isNull;

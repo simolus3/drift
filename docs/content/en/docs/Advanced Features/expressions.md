@@ -67,6 +67,15 @@ which takes any expression and returns a boolean expression. The expression retu
 resolve to `true` if the inner expression resolves to null and `false` otherwise.
 As you would expect, `isNotNull` works the other way around.
 
+To use a fallback value when an expression evaluates to `null`, you can use the `coalesce`
+function. It takes a list of expressions and evaluates to the first one that isn't `null`:
+
+```dart
+final category = coalesce([todos.category, const Constant(1)]);
+```
+
+This corresponds to the `??` operator in Dart.
+
 ## Date and Time
 For columns and expressions that return a `DateTime`, you can use the
 `year`, `month`, `day`, `hour`, `minute` and `second` getters to extract individual
