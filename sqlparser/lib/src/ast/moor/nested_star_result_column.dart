@@ -21,4 +21,9 @@ class NestedStarResultColumn extends ResultColumn {
   bool contentEquals(NestedStarResultColumn other) {
     return other.tableName == tableName;
   }
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorNestedStarResultColumn(this, arg);
+  }
 }

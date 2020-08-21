@@ -28,6 +28,8 @@ class UnaryExpression extends Expression {
 class CollateExpression extends UnaryExpression {
   final Token collateFunction;
 
+  String get collation => collateFunction.lexeme;
+
   CollateExpression(
       {@required Token operator,
       @required Expression inner,

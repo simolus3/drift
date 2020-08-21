@@ -166,7 +166,7 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitLiteral(Literal e, void arg) {
+  void defaultLiteral(Literal e, void arg) {
     if (e is NullLiteral) {
       _contribute(e, HighlightRegionType.BUILT_IN);
     } else if (e is NumericLiteral) {

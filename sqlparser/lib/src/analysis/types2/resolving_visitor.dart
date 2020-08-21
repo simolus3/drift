@@ -160,7 +160,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitLiteral(Literal e, TypeExpectation arg) {
+  void defaultLiteral(Literal e, TypeExpectation arg) {
     ResolvedType type;
     var nullable = false;
 

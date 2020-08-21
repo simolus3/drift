@@ -142,12 +142,7 @@ class ValuesSelectStatement extends BaseSelectStatement
   bool contentEquals(ValuesSelectStatement other) => true;
 }
 
-abstract class ResultColumn extends AstNode {
-  @override
-  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitResultColumn(this, arg);
-  }
-}
+abstract class ResultColumn extends AstNode {}
 
 /// A result column that either yields all columns or all columns from a table
 /// by using "*" or "table.*".
@@ -165,6 +160,11 @@ class StarResultColumn extends ResultColumn {
   @override
   bool contentEquals(StarResultColumn other) {
     return other.tableName == tableName;
+  }
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitStarResultColumn(this, arg);
   }
 }
 
@@ -185,6 +185,11 @@ class ExpressionResultColumn extends ResultColumn
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     expression = transformer.transformChild(expression, this, arg);
+  }
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitExpressionResultColumn(this, arg);
   }
 
   @override

@@ -5,7 +5,6 @@ abstract class AstVisitor<A, R> {
   R visitCompoundSelectStatement(CompoundSelectStatement e, A arg);
   R visitCompoundSelectPart(CompoundSelectPart e, A arg);
   R visitValuesSelectStatement(ValuesSelectStatement e, A arg);
-  R visitResultColumn(ResultColumn e, A arg);
   R visitInsertStatement(InsertStatement e, A arg);
   R visitDeleteStatement(DeleteStatement e, A arg);
   R visitUpdateStatement(UpdateStatement e, A arg);
@@ -22,6 +21,9 @@ abstract class AstVisitor<A, R> {
   R visitOrderBy(OrderBy e, A arg);
   R visitOrderingTerm(OrderingTerm e, A arg);
   R visitLimit(Limit e, A arg);
+
+  R visitStarResultColumn(StarResultColumn e, A arg);
+  R visitExpressionResultColumn(ExpressionResultColumn e, A arg);
 
   R visitTableReference(TableReference e, A arg);
   R visitSelectStatementAsSource(SelectStatementAsSource e, A arg);
@@ -50,8 +52,7 @@ abstract class AstVisitor<A, R> {
   R visitForeignKeyClause(ForeignKeyClause e, A arg);
   R visitDeferrableClause(DeferrableClause e, A arg);
 
-  R visitLiteral(Literal e, A arg);
-  R visitNumericLiteral(Literal e, A arg);
+  R visitNumericLiteral(NumericLiteral e, A arg);
   R visitNullLiteral(NullLiteral e, A arg);
   R visitBooleanLiteral(BooleanLiteral e, A arg);
   R visitStringLiteral(StringLiteral e, A arg);
@@ -91,6 +92,7 @@ abstract class AstVisitor<A, R> {
   R visitMoorImportStatement(ImportStatement e, A arg);
   R visitMoorDeclaredStatement(DeclaredStatement e, A arg);
   R visitMoorStatementParameter(StatementParameter e, A arg);
+  R visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg);
   R visitDartPlaceholder(DartPlaceholder e, A arg);
 }
 
@@ -185,9 +187,23 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
 
   // General clauses
 
-  @override
   R visitResultColumn(ResultColumn e, A arg) {
     return defaultNode(e, arg);
+  }
+
+  @override
+  R visitStarResultColumn(StarResultColumn e, A arg) {
+    return visitResultColumn(e, arg);
+  }
+
+  @override
+  R visitExpressionResultColumn(ExpressionResultColumn e, A arg) {
+    return visitResultColumn(e, arg);
+  }
+
+  @override
+  R visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg) {
+    return visitResultColumn(e, arg);
   }
 
   @override
@@ -424,34 +440,33 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R> {
     return visitExpression(e, arg);
   }
 
-  @override
-  R visitLiteral(Literal e, A arg) {
+  R defaultLiteral(Literal e, A arg) {
     return visitExpression(e, arg);
   }
 
   @override
   R visitNullLiteral(NullLiteral e, A arg) {
-    return visitLiteral(e, arg);
+    return defaultLiteral(e, arg);
   }
 
   @override
   R visitNumericLiteral(Literal e, A arg) {
-    return visitLiteral(e, arg);
+    return defaultLiteral(e, arg);
   }
 
   @override
   R visitBooleanLiteral(BooleanLiteral e, A arg) {
-    return visitLiteral(e, arg);
+    return defaultLiteral(e, arg);
   }
 
   @override
   R visitStringLiteral(StringLiteral e, A arg) {
-    return visitLiteral(e, arg);
+    return defaultLiteral(e, arg);
   }
 
   @override
   R visitTimeConstantLiteral(TimeConstantLiteral e, A arg) {
-    return visitLiteral(e, arg);
+    return defaultLiteral(e, arg);
   }
 
   @override

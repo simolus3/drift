@@ -1,3 +1,8 @@
+## 0.11.0
+
+- New `package:sqlparser/utils/node_to_text.dart` library that turns an AST node back into a
+  textual representation.
+
 ## 0.10.1
 
 - Scan identifiers with `[bracket syntax]`
