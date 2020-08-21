@@ -3,5 +3,5 @@ publish_to: none
 description: Tool used for the CI to format VM coverage jsons to LCOV files
 
 dependencies:
-  coverage: '>=0.13.3'
+  coverage: '^0.14.0'
   path: ^1.6.4

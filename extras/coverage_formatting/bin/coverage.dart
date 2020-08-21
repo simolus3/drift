@@ -30,11 +30,12 @@ Future runForProject(String projectName) async {
 
   final hitmap = await parseCoverage(files, 1);
 
-  final resolver = Resolver(packagesPath: p.join(projectName, '.packages'));
+  final resolver = MoorResolver(
+      projectRoot: projectName, packagesPath: p.join(projectName, '.packages'));
 
-  final output =
-      await LcovFormatter(resolver, reportOn: [p.join(projectName, 'lib')])
-          .format(hitmap);
+  final output = await LcovFormatter(resolver,
+          reportOn: [p.join(projectName, 'lib'), p.join(projectName, 'test')])
+      .format(hitmap);
 
   await outputFile.writeAsString(output, mode: FileMode.append);
 }
@@ -51,4 +52,20 @@ List<File> filesToProcess(String moorSubproject) {
         .toList();
   }
   throw AssertionError('Moor subproject at $moorSubproject does not exist');
+}
+
+class MoorResolver extends Resolver {
+  final String projectRoot;
+
+  MoorResolver({this.projectRoot, String packagesPath})
+      : super(packagesPath: packagesPath);
+
+  @override
+  String resolveSymbolicLinks(String path) {
+    if (p.isAbsolute(path)) {
+      return super.resolveSymbolicLinks(path);
+    } else {
+      return super.resolveSymbolicLinks(p.join(projectRoot, path));
+    }
+  }
 }
