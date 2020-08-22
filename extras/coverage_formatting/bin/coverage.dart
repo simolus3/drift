@@ -33,9 +33,9 @@ Future runForProject(String projectName) async {
   final resolver = MoorResolver(
       projectRoot: projectName, packagesPath: p.join(projectName, '.packages'));
 
-  final output = await LcovFormatter(resolver,
-          reportOn: [p.join(projectName, 'lib'), p.join(projectName, 'test')])
-      .format(hitmap);
+  final output =
+      await LcovFormatter(resolver, reportOn: [p.join(projectName, 'lib')])
+          .format(hitmap);
 
   await outputFile.writeAsString(output, mode: FileMode.append);
 }
