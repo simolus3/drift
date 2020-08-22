@@ -70,8 +70,18 @@ class MoorPlugin extends BaseMoorPlugin
     return file;
   }
 
+  void _checkIsMoorFile(FoundFile file) {
+    if (file.type != FileType.moor) {
+      throw RequestFailure(
+        plugin.RequestError(plugin.RequestErrorCode.INVALID_PARAMETER,
+            'Not a moor file: ${file.uri}'),
+      );
+    }
+  }
+
   Future<MoorRequest> _createMoorRequest(String path) async {
     final file = await _waitParsed(path);
+    _checkIsMoorFile(file);
     return MoorRequest(file, resourceProvider);
   }
 
@@ -114,6 +124,7 @@ class MoorPlugin extends BaseMoorPlugin
       plugin.CompletionGetSuggestionsParams parameters) async {
     final path = parameters.file;
     final file = await _waitParsed(path);
+    _checkIsMoorFile(file);
 
     return MoorCompletionRequest(parameters.offset, resourceProvider, file);
   }
@@ -138,6 +149,7 @@ class MoorPlugin extends BaseMoorPlugin
       plugin.AnalysisGetNavigationParams parameters) async {
     final path = parameters.file;
     final file = await _waitParsed(path);
+    _checkIsMoorFile(file);
 
     return MoorRequestAtPosition(
         file, parameters.length, parameters.offset, resourceProvider);
