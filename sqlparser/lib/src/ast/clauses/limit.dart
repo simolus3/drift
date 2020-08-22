@@ -24,10 +24,16 @@ class Limit extends AstNode implements LimitBase {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [count, if (offset != null) offset];
+  Iterable<AstNode> get childNodes {
+    if (offsetSeparator?.type == TokenType.offset) {
+      // Amount first, then offset
+      return [count, offset];
+    }
+
+    // If using a comma, the count is followed by an optional offset
+    return [count, if (offset != null) offset];
+  }
 
   @override
-  bool contentEquals(Limit other) {
-    return other.offsetSeparator?.type == offsetSeparator?.type;
-  }
+  bool contentEquals(Limit other) => true;
 }

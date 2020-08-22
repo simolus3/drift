@@ -45,7 +45,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
   void _identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (isKeywordLexeme(identifier)) {
+    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
       identifier = '"$identifier"';
     }
 
@@ -139,7 +139,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       TokenType.minus: '-',
       TokenType.shiftLeft: '<<',
       TokenType.shiftRight: '>>',
-      TokenType.and: '&',
+      TokenType.ampersand: '&',
       TokenType.pipe: '|',
       TokenType.less: '<',
       TokenType.lessEqual: '<=',
@@ -186,6 +186,8 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.$else);
       visit(elseExpr, arg);
     }
+
+    _keyword(TokenType.end);
   }
 
   @override
@@ -194,7 +196,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _symbol('(');
     visit(e.operand, arg);
     _keyword(TokenType.as);
-    _symbol(e.typeName);
+    _symbol(e.typeName, spaceBefore: true);
     _symbol(')', spaceAfter: true);
   }
 
@@ -561,7 +563,10 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       void precedingOrFollowing(bool preceding) {
         if (boundary.isUnbounded) {
           _keyword(TokenType.unbounded);
+        } else {
+          visit(boundary.offset, arg);
         }
+
         _keyword(preceding ? TokenType.preceding : TokenType.following);
       }
 
@@ -660,7 +665,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.replace);
     } else {
       _keyword(TokenType.insert);
-      _keyword(TokenType.replace);
+      _keyword(TokenType.or);
 
       _keyword(const {
         InsertMode.insertOrReplace: TokenType.replace,
@@ -710,12 +715,11 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitIsNullExpression(IsNullExpression e, void arg) {
     visit(e.operand, arg);
 
-    _keyword(TokenType.$is);
     if (e.negated) {
-      _keyword(TokenType.not);
+      _keyword(TokenType.notNull);
+    } else {
+      _keyword(TokenType.isNull);
     }
-
-    _keyword(TokenType.$null);
   }
 
   @override
@@ -749,6 +753,8 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.join);
     }
 
+    visit(e.query, null);
+
     final constraint = e.constraint;
     if (constraint is OnConstraint) {
       _keyword(TokenType.on);
@@ -780,7 +786,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     _identifier(e.identifier.name);
 
-    if (e.parameters != null) {
+    if (e.parameters.isNotEmpty) {
       _symbol('(');
       _join(e.parameters, ',');
       _symbol(')');
@@ -791,8 +797,9 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _identifier(e.as);
     }
 
-    _symbol(':');
+    _symbol(':', spaceAfter: true);
     visit(e.statement, arg);
+    _symbol(';');
   }
 
   @override
@@ -824,8 +831,8 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
-    _symbol(':', spaceBefore: true);
-    _symbol(e.name, spaceAfter: true);
+    // Note: The name already starts with the colon
+    _symbol(e.name, spaceBefore: true, spaceAfter: true);
   }
 
   @override
@@ -908,7 +915,8 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
-    _symbol('**', spaceBefore: true, spaceAfter: true);
+    _identifier(e.tableName);
+    _symbol('.**', spaceAfter: true);
   }
 
   @override
@@ -950,9 +958,10 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
           _symbol(',', spaceAfter: true);
         }
 
-        visit(declaration.definition, arg);
-        _keyword(TokenType.as);
         _identifier(declaration.name);
+        _keyword(TokenType.as);
+
+        visit(declaration.definition, arg);
         isFirst = false;
       }
     }
@@ -1100,7 +1109,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
         _symbol('+', spaceBefore: true);
         break;
       case TokenType.tilde:
-        _symbol('+', spaceBefore: true);
+        _symbol('~', spaceBefore: true);
         break;
       case TokenType.not:
         _keyword(TokenType.not);
