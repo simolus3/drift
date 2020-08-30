@@ -40,6 +40,31 @@ void main() {
     );
   });
 
+  test('warns about default values outside of expressions', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': r'''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY,
+  content VARCHAR
+);
+
+all ($limit = 3): SELECT * FROM foo LIMIT $limit;
+      ''',
+    });
+
+    final result = await state.analyze('package:foo/a.moor');
+    state.close();
+
+    expect(
+      result.errors.errors,
+      contains(isA<MoorError>().having(
+        (e) => e.message,
+        'message',
+        contains('only supported for expressions'),
+      )),
+    );
+  });
+
   group('warns about wrong types in subexpressions', () {
     test('strings in arithmetic', () {
       final result = engine.analyze("SELECT 'foo' + 3;");

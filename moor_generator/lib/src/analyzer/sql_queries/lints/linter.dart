@@ -77,6 +77,22 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitDartPlaceholder(DartPlaceholder e, void arg) {
+    if (e is! DartExpressionPlaceholder) {
+      // Default values are supported for expressions only
+      if (linter.context.stmtOptions.defaultValuesForPlaceholder
+          .containsKey(e.name)) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'This placeholder has a default value, which is only '
+              'supported for expressions.',
+          relevantNode: e,
+        ));
+      }
+    }
+  }
+
+  @override
   void visitResultColumn(ResultColumn e, void arg) {
     super.visitResultColumn(e, arg);
 
