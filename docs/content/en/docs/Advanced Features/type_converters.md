@@ -135,6 +135,10 @@ CREATE TABLE users (
 );
 ```
 
+When using type converters in moor files, we recommend the [`apply_converters_on_variables`]({{< relref "builder_options.md" >}})
+build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
+With that option, the variable will be inferred to `Preferences` instead of `String`.
+
 Moor files also have special support for implicit enum converters:
 
 ```sql

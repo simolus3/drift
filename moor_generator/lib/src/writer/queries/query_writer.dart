@@ -7,6 +7,7 @@ import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
+import 'package:sqlparser/utils/node_to_text.dart';
 
 const highestAssignedIndexVar = '\$arrayStartIndex';
 
@@ -234,10 +235,41 @@ class QueryWriter {
   }
 
   void _writeParameters() {
-    final paramList = query.elements.map((e) {
-      return '${e.parameterType} ${e.dartParameterName}';
-    }).join(', ');
-    _buffer.write(paramList);
+    final optionalPlaceholders = <FoundDartPlaceholder>[];
+
+    var needsComma = false;
+    for (final element in query.elements) {
+      if (element is FoundDartPlaceholder && element.defaultValue != null) {
+        optionalPlaceholders.add(element);
+      } else {
+        if (needsComma) _buffer.write(', ');
+
+        _buffer.write('${element.parameterType} ${element.dartParameterName}');
+        needsComma = true;
+      }
+    }
+
+    // Write optional placeholder as named arguments
+    if (optionalPlaceholders.isNotEmpty) {
+      if (needsComma) _buffer.write(', ');
+      _buffer.write('{');
+      needsComma = false;
+
+      for (final optional in optionalPlaceholders) {
+        if (needsComma) _buffer.write(', ');
+        needsComma = true;
+
+        // Wrap the expression in parentheses to avoid issues with the
+        // surrounding precedence in SQL.
+        final defaultSql =
+            "'(${escapeForDart(optional.defaultValue.toSql())})'";
+        _buffer
+            .write('${optional.parameterType} ${optional.dartParameterName} = '
+                'const CustomExpression($defaultSql)');
+      }
+
+      _buffer.write('}');
+    }
   }
 
   /// Writes code that uses the parameters as declared by [_writeParameters],

@@ -1449,7 +1449,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }).map(config.mapFromRow);
   }
 
-  Selectable<Config> readDynamic(Expression<bool> predicate) {
+  Selectable<Config> readDynamic(
+      {Expression<bool> predicate = const CustomExpression('(TRUE)')}) {
     final generatedpredicate = $write(predicate);
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],

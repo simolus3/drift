@@ -46,7 +46,7 @@ readConfig: SELECT
   sync_state_implicit AS cs2
 FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
-readDynamic: SELECT * FROM config WHERE $predicate;
+readDynamic ($predicate = TRUE): SELECT * FROM config WHERE $predicate;
 
 typeConverterVar: SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ?;
 

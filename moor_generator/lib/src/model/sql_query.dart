@@ -466,10 +466,13 @@ class FoundDartPlaceholder extends FoundElement {
   /// resolved, this is the type of that expression.
   final ColumnType columnType;
 
+  final Expression /*?*/ defaultValue;
+
   final String name;
   DartPlaceholder astNode;
 
-  FoundDartPlaceholder(this.type, this.columnType, this.name);
+  FoundDartPlaceholder(this.type, this.columnType, this.name,
+      {this.defaultValue});
 
   @override
   String get parameterType {

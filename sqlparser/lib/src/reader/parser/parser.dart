@@ -331,22 +331,7 @@ class Parser extends ParserBase
     final parameters = <StatementParameter>[];
     if (_matchOne(TokenType.leftParen)) {
       do {
-        final first = _peek;
-        final variable = _variableOrNull();
-        if (variable == null) {
-          _error('Expected a variable here');
-        }
-        final as = _consume(TokenType.as, 'Expected AS followed by a type');
-
-        final typeNameTokens = _typeName();
-        if (typeNameTokens == null) {
-          _error('Expected a type name here');
-        }
-
-        final typeName = typeNameTokens.lexeme;
-        parameters.add(VariableTypeHint(variable, typeName)
-          ..as = as
-          ..setSpan(first, _previous));
+        parameters.add(_statementParameter());
       } while (_matchOne(TokenType.comma));
 
       _consume(TokenType.rightParen, 'Expected closing parenthesis');
@@ -374,6 +359,36 @@ class Parser extends ParserBase
       parameters: parameters,
       as: as,
     )..colon = colon;
+  }
+
+  StatementParameter _statementParameter() {
+    final first = _peek;
+    final variable = _variableOrNull();
+
+    if (variable != null) {
+      // Type hint for a variable
+      final as = _consume(TokenType.as, 'Expected AS followed by a type');
+
+      final typeNameTokens = _typeName();
+      if (typeNameTokens == null) {
+        _error('Expected a type name here');
+      }
+
+      final typeName = typeNameTokens.lexeme;
+      return VariableTypeHint(variable, typeName)
+        ..as = as
+        ..setSpan(first, _previous);
+    } else if (_matchOne(TokenType.dollarSignVariable)) {
+      final placeholder = _previous as DollarSignVariableToken;
+      _consume(TokenType.equal, 'Expected an equals sign here');
+      final defaultValue = expression();
+
+      return DartPlaceholderDefaultValue(placeholder.name, defaultValue)
+        ..setSpan(placeholder, _previous)
+        ..variableToken = placeholder;
+    } else {
+      _error('Expected a variable or a Dart placeholder here');
+    }
   }
 
   /// Invokes [parser], sets the appropriate source span and attaches a

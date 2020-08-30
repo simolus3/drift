@@ -116,12 +116,22 @@ void main() {
     when(mock.runSelect(any, any))
         .thenAnswer((_) => Future.value([mockResponse]));
 
-    final parsed =
-        await db.readDynamic(db.config.configKey.equals('key')).getSingle();
+    final parsed = await db
+        .readDynamic(predicate: db.config.configKey.equals('key'))
+        .getSingle();
 
     verify(
         mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
+  });
+
+  test('applies default parameter expressions when not set', () async {
+    final mock = MockExecutor();
+    final db = CustomTablesDb(mock);
+
+    await db.readDynamic().getSingle();
+
+    verify(mock.runSelect('SELECT * FROM config WHERE (TRUE)', []));
   });
 
   test('columns use table names in queries with multiple tables', () async {

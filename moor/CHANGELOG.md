@@ -3,6 +3,9 @@
 - New `DatabaseConnection.delayed` constructor to synchronously obtain a database connection
   that requires async setup. This can be useful when connecting to a `MoorIsolate`.
 - `VmDatabase`: Create directory of database file to avoid misuse errors from sqlite3.
+- New feature in moor files: You can now set the default value for Dart templates:
+  `filter ($predicate = TRUE): SELECT * FROM my_table WHERE $predicate`.
+  This generates an optional named parameter in Dart.
 - Add `groupConcat` and `coalesce` functions to the Dart query builder.
 
 ## 3.3.1

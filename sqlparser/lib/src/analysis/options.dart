@@ -6,9 +6,14 @@ class AnalyzeStatementOptions {
   final Map<int, ResolvedType> indexedVariableTypes;
   final Map<String, ResolvedType> namedVariableTypes;
 
+  /// Moor specific. Maps from a Dart placeholder in a query to its default
+  /// expression, if set.
+  final Map<String, Expression> defaultValuesForPlaceholder;
+
   const AnalyzeStatementOptions({
     this.indexedVariableTypes = const {},
     this.namedVariableTypes = const {},
+    this.defaultValuesForPlaceholder = const {},
   });
 
   /// Looks up the defined type for that variable.

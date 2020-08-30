@@ -824,6 +824,10 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       visit(e.variable, arg);
       _keyword(TokenType.as);
       _symbol(e.typeName, spaceBefore: true, spaceAfter: true);
+    } else if (e is DartPlaceholderDefaultValue) {
+      _symbol('\$${e.variableName}', spaceAfter: true);
+      _symbol('=', spaceBefore: true, spaceAfter: true);
+      visit(e.defaultValue, arg);
     } else {
       throw AssertionError('Unknown StatementParameter: $e');
     }

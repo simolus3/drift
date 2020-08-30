@@ -244,6 +244,15 @@ This feature works for
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
 
+When used as expression, you can also supply a default value in your query:
+
+```sql
+_filterTodos ($predicate = TRUE): SELECT * FROM todos WHERE $predicate;
+```
+
+This will make the `predicate` parameter optional in Dart. It will use the
+default SQL value (here, `TRUE`) when not explicitly set.
+
 ### Type converters
 
 You can import and use [type converters]({{< relref "../Advanced Features/type_converters.md" >}})
@@ -259,6 +268,10 @@ CREATE TABLE users (
 
 More details on type converts in moor files are available
 [here]({{< relref "../Advanced Features/type_converters.md#using-converters-in-moor" >}}).
+
+When using type converters, we recommend the [`apply_converters_on_variables`]({{< relref "../Advanced Features/builder_options.md" >}})
+build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
+With that option, the variable will be inferred to `Preferences` instead of `String`.
 
 ## Result class names
 

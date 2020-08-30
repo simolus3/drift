@@ -221,6 +221,7 @@ class TypeMapper {
   FoundDartPlaceholder _extractPlaceholder(
       AnalysisContext context, DartPlaceholder placeholder) {
     ColumnType columnType;
+    Expression defaultValue;
     final name = placeholder.name;
 
     final type = placeholder.when(
@@ -229,6 +230,8 @@ class TypeMapper {
         if (foundType.type != null) {
           columnType = resolvedToMoor(foundType.type);
         }
+
+        defaultValue = context.stmtOptions.defaultValuesForPlaceholder[name];
         return DartPlaceholderType.expression;
       },
       isLimit: (_) => DartPlaceholderType.limit,
@@ -236,7 +239,9 @@ class TypeMapper {
       isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
     );
 
-    return FoundDartPlaceholder(type, columnType, name)..astNode = placeholder;
+    return FoundDartPlaceholder(type, columnType, name,
+        defaultValue: defaultValue)
+      ..astNode = placeholder;
   }
 
   MoorTable tableToMoor(Table table) {

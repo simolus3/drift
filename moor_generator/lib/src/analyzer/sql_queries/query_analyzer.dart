@@ -117,21 +117,27 @@ class SqlAnalyzer extends BaseAnalyzer {
     final reader = engine.schemaReader;
     final indexedHints = <int, ResolvedType>{};
     final namedHints = <String, ResolvedType>{};
+    final defaultValues = <String, Expression>{};
 
-    for (final hint in stmt.parameters.whereType<VariableTypeHint>()) {
-      final variable = hint.variable;
-      final type = reader.resolveColumnType(hint.typeName);
+    for (final parameter in stmt.parameters) {
+      if (parameter is VariableTypeHint) {
+        final variable = parameter.variable;
+        final type = reader.resolveColumnType(parameter.typeName);
 
-      if (variable is ColonNamedVariable) {
-        namedHints[variable.name] = type;
-      } else if (variable is NumberedVariable) {
-        indexedHints[variable.resolvedIndex] = type;
+        if (variable is ColonNamedVariable) {
+          namedHints[variable.name] = type;
+        } else if (variable is NumberedVariable) {
+          indexedHints[variable.resolvedIndex] = type;
+        }
+      } else if (parameter is DartPlaceholderDefaultValue) {
+        defaultValues[parameter.variableName] = parameter.defaultValue;
       }
     }
 
     return AnalyzeStatementOptions(
       indexedVariableTypes: indexedHints,
       namedVariableTypes: namedHints,
+      defaultValuesForPlaceholder: defaultValues,
     );
   }
 }

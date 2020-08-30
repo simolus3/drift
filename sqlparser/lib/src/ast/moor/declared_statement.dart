@@ -129,3 +129,34 @@ class VariableTypeHint extends StatementParameter {
     return other.typeName == typeName;
   }
 }
+
+/// Set a default value for a dart placeholder.
+///
+/// For instance,
+/// ```
+/// query($predicate = TRUE): SELECT * FROM tbl WHERE $predicate;
+/// ```
+///
+/// Would generate an optional `predicate` parameter in Dart, having a default
+/// value of `CustomExpression('TRUE')`.
+class DartPlaceholderDefaultValue extends StatementParameter {
+  final String variableName;
+  Expression defaultValue;
+
+  DollarSignVariableToken variableToken;
+
+  DartPlaceholderDefaultValue(this.variableName, this.defaultValue);
+
+  @override
+  Iterable<AstNode> get childNodes => [defaultValue];
+
+  @override
+  bool contentEquals(DartPlaceholderDefaultValue other) {
+    return other.variableName == variableName;
+  }
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    defaultValue = transformer.transformChild(defaultValue, this, arg);
+  }
+}
