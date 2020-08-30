@@ -45,41 +45,41 @@ const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
 
 void main() {
   // see ../data/tables/tables.moor
+  MockExecutor mock;
+  CustomTablesDb db;
+
+  setUp(() {
+    mock = MockExecutor();
+    db = CustomTablesDb(mock);
+  });
+
+  tearDown(() => db?.close());
+
   test('creates everything as specified in .moor files', () async {
-    final mockExecutor = MockExecutor();
-    final db = CustomTablesDb(mockExecutor);
     await db.createMigrator().createAll();
 
-    verify(mockExecutor.runCustom(_createNoIds, []));
-    verify(mockExecutor.runCustom(_createWithDefaults, []));
-    verify(mockExecutor.runCustom(_createWithConstraints, []));
-    verify(mockExecutor.runCustom(_createConfig, []));
-    verify(mockExecutor.runCustom(_createMyTable, []));
-    verify(mockExecutor.runCustom(_createEmail, []));
-    verify(mockExecutor.runCustom(_createMyTrigger, []));
-    verify(mockExecutor.runCustom(_createValueIndex, []));
-    verify(mockExecutor.runCustom(_defaultInsert, []));
+    verify(mock.runCustom(_createNoIds, []));
+    verify(mock.runCustom(_createWithDefaults, []));
+    verify(mock.runCustom(_createWithConstraints, []));
+    verify(mock.runCustom(_createConfig, []));
+    verify(mock.runCustom(_createMyTable, []));
+    verify(mock.runCustom(_createEmail, []));
+    verify(mock.runCustom(_createMyTrigger, []));
+    verify(mock.runCustom(_createValueIndex, []));
+    verify(mock.runCustom(_defaultInsert, []));
   });
 
   test('can create trigger manually', () async {
-    final mockExecutor = MockExecutor();
-    final db = CustomTablesDb(mockExecutor);
-
     await db.createMigrator().createTrigger(db.myTrigger);
-    verify(mockExecutor.runCustom(_createMyTrigger, []));
+    verify(mock.runCustom(_createMyTrigger, []));
   });
 
   test('can create index manually', () async {
-    final mockExecutor = MockExecutor();
-    final db = CustomTablesDb(mockExecutor);
-
     await db.createMigrator().createIndex(db.valueIdx);
-    verify(mockExecutor.runCustom(_createValueIndex, []));
+    verify(mock.runCustom(_createValueIndex, []));
   });
 
   test('infers primary keys correctly', () async {
-    final db = CustomTablesDb(null);
-
     expect(db.noIds.primaryKey, [db.noIds.payload]);
     expect(db.withDefaults.primaryKey, isEmpty);
     expect(db.config.primaryKey, [db.config.configKey]);
@@ -87,17 +87,12 @@ void main() {
 
   test('supports absent values for primary key integers', () async {
     // regression test for #112: https://github.com/simolus3/moor/issues/112
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
 
     await db.into(db.mytable).insert(const MytableCompanion());
     verify(mock.runInsert('INSERT INTO mytable DEFAULT VALUES', []));
   });
 
   test('runs queries with arrays and Dart templates', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     await db.readMultiple(['a', 'b'],
         OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
 
@@ -109,9 +104,6 @@ void main() {
   });
 
   test('runs query with variables from template', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     final mockResponse = {'config_key': 'key', 'config_value': 'value'};
     when(mock.runSelect(any, any))
         .thenAnswer((_) => Future.value([mockResponse]));
@@ -126,27 +118,18 @@ void main() {
   });
 
   test('applies default parameter expressions when not set', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     await db.readDynamic().getSingle();
 
     verify(mock.runSelect('SELECT * FROM config WHERE (TRUE)', []));
   });
 
   test('columns use table names in queries with multiple tables', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     await db.multiple(db.withDefaults.a.equals('foo')).get();
 
     verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
   });
 
   test('runs queries with nested results', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     const row = {
       'a': 'text for a',
       'b': 42,
@@ -173,9 +156,6 @@ void main() {
   });
 
   test('runs queries with nested results that are null', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     const row = {
       'a': 'text for a',
       'b': 42,
@@ -203,9 +183,6 @@ void main() {
   });
 
   test('applies column name mapping when needed', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     when(mock.runSelect(any, any)).thenAnswer((_) async {
       return [
         {
@@ -230,9 +207,6 @@ void main() {
   });
 
   test('applies type converters to variables', () async {
-    final mock = MockExecutor();
-    final db = CustomTablesDb(mock);
-
     when(mock.runSelect(any, any)).thenAnswer((_) => Future.value([]));
     await db.typeConverterVar(SyncType.locallyCreated,
         [SyncType.locallyUpdated, SyncType.synchronized]).get();
