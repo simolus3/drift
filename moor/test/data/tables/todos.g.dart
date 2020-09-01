@@ -105,16 +105,16 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
 
   TodoEntry copyWith(
           {int id,
-          String title,
+          Value<String> title = const Value.absent(),
           String content,
-          DateTime targetDate,
-          int category}) =>
+          Value<DateTime> targetDate = const Value.absent(),
+          Value<int> category = const Value.absent()}) =>
       TodoEntry(
         id: id ?? this.id,
-        title: title ?? this.title,
+        title: title.present ? title.value : this.title,
         content: content ?? this.content,
-        targetDate: targetDate ?? this.targetDate,
-        category: category ?? this.category,
+        targetDate: targetDate.present ? targetDate.value : this.targetDate,
+        category: category.present ? category.value : this.category,
       );
   @override
   String toString() {
@@ -1431,8 +1431,9 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
     };
   }
 
-  PureDefault copyWith({String txt}) => PureDefault(
-        txt: txt ?? this.txt,
+  PureDefault copyWith({Value<String> txt = const Value.absent()}) =>
+      PureDefault(
+        txt: txt.present ? txt.value : this.txt,
       );
   @override
   String toString() {

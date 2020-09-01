@@ -100,14 +100,16 @@ class Config extends DataClass implements Insertable<Config> {
 
   Config copyWith(
           {String configKey,
-          String configValue,
-          SyncType syncState,
-          SyncType syncStateImplicit}) =>
+          Value<String> configValue = const Value.absent(),
+          Value<SyncType> syncState = const Value.absent(),
+          Value<SyncType> syncStateImplicit = const Value.absent()}) =>
       Config(
         configKey: configKey ?? this.configKey,
-        configValue: configValue ?? this.configValue,
-        syncState: syncState ?? this.syncState,
-        syncStateImplicit: syncStateImplicit ?? this.syncStateImplicit,
+        configValue: configValue.present ? configValue.value : this.configValue,
+        syncState: syncState.present ? syncState.value : this.syncState,
+        syncStateImplicit: syncStateImplicit.present
+            ? syncStateImplicit.value
+            : this.syncStateImplicit,
       );
   @override
   String toString() {
@@ -358,9 +360,12 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
     };
   }
 
-  WithDefault copyWith({String a, int b}) => WithDefault(
-        a: a ?? this.a,
-        b: b ?? this.b,
+  WithDefault copyWith(
+          {Value<String> a = const Value.absent(),
+          Value<int> b = const Value.absent()}) =>
+      WithDefault(
+        a: a.present ? a.value : this.a,
+        b: b.present ? b.value : this.b,
       );
   @override
   String toString() {
@@ -712,10 +717,14 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     };
   }
 
-  WithConstraint copyWith({String a, int b, double c}) => WithConstraint(
-        a: a ?? this.a,
+  WithConstraint copyWith(
+          {Value<String> a = const Value.absent(),
+          int b,
+          Value<double> c = const Value.absent()}) =>
+      WithConstraint(
+        a: a.present ? a.value : this.a,
         b: b ?? this.b,
-        c: c ?? this.c,
+        c: c.present ? c.value : this.c,
       );
   @override
   String toString() {
@@ -958,12 +967,15 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   }
 
   MytableData copyWith(
-          {int someid, String sometext, bool isInserting, DateTime somedate}) =>
+          {int someid,
+          Value<String> sometext = const Value.absent(),
+          Value<bool> isInserting = const Value.absent(),
+          Value<DateTime> somedate = const Value.absent()}) =>
       MytableData(
         someid: someid ?? this.someid,
-        sometext: sometext ?? this.sometext,
-        isInserting: isInserting ?? this.isInserting,
-        somedate: somedate ?? this.somedate,
+        sometext: sometext.present ? sometext.value : this.sometext,
+        isInserting: isInserting.present ? isInserting.value : this.isInserting,
+        somedate: somedate.present ? somedate.value : this.somedate,
       );
   @override
   String toString() {

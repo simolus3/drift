@@ -65,9 +65,11 @@ class Category extends DataClass implements Insertable<Category> {
     };
   }
 
-  Category copyWith({int id, String description}) => Category(
+  Category copyWith(
+          {int id, Value<String> description = const Value.absent()}) =>
+      Category(
         id: id ?? this.id,
-        description: description ?? this.description,
+        description: description.present ? description.value : this.description,
       );
   @override
   String toString() {
@@ -287,12 +289,16 @@ class Recipe extends DataClass implements Insertable<Recipe> {
     };
   }
 
-  Recipe copyWith({int id, String title, String instructions, int category}) =>
+  Recipe copyWith(
+          {int id,
+          String title,
+          String instructions,
+          Value<int> category = const Value.absent()}) =>
       Recipe(
         id: id ?? this.id,
         title: title ?? this.title,
         instructions: instructions ?? this.instructions,
-        category: category ?? this.category,
+        category: category.present ? category.value : this.category,
       );
   @override
   String toString() {

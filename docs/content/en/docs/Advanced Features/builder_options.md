@@ -67,6 +67,9 @@ At the moment, moor supports these options:
   by default. You can make them mutable by setting `mutable_classes: true`.
 * `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
 * `apply_converters_on_variables`: Applies type converters to variables in compiled statements.
+* `generate_values_in_copy_with`: Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
+  columns back to null (by using `Value(null)`). Passing `null` was ignored before, making it impossible to set columns
+  to `null`.
 
 ## Available extensions
 
@@ -101,6 +104,7 @@ In general, we recommend using the default options. However, some options will b
 At the moment, they're opt-in to not break existing users. These options are:
 
 - `apply_converters_on_variables`
+- `generate_values_in_copy_with`
 
 We recommend enabling these options.
 

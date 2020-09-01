@@ -161,13 +161,21 @@ class DataClassWriter {
 
   void _writeCopyWith() {
     final dataClassName = table.dartTypeName;
+    final wrapNullableInValue = scope.options.generateValuesInCopyWith;
 
     _buffer.write('$dataClassName copyWith({');
     for (var i = 0; i < table.columns.length; i++) {
       final column = table.columns[i];
       final last = i == table.columns.length - 1;
 
-      _buffer.write('${column.dartTypeName} ${column.dartGetterName}');
+      if (wrapNullableInValue && column.nullable) {
+        _buffer
+          ..write('Value<${column.dartTypeName}> ${column.dartGetterName} ')
+          ..write('= const Value.absent()');
+      } else {
+        _buffer.write('${column.dartTypeName} ${column.dartGetterName}');
+      }
+
       if (!last) {
         _buffer.write(',');
       }
@@ -176,10 +184,17 @@ class DataClassWriter {
     _buffer.write('}) => $dataClassName(');
 
     for (final column in table.columns) {
-      // we also have a method parameter called like the getter, so we can use
-      // field: field ?? this.field
+      // We also have a method parameter called like the getter, so we can use
+      // field: field ?? this.field. If we wrapped the parameter in a `Value`,
+      // we can use field.present ? field.value : this.field
       final getter = column.dartGetterName;
-      _buffer.write('$getter: $getter ?? this.$getter,');
+
+      if (wrapNullableInValue && column.nullable) {
+        _buffer
+            .write('$getter: $getter.present ? $getter.value : this.$getter,');
+      } else {
+        _buffer.write('$getter: $getter ?? this.$getter,');
+      }
     }
 
     _buffer.write(');');

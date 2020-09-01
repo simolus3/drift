@@ -10,6 +10,7 @@ targets:
           write_from_json_string_constructor: true
           raw_result_set_data: true
           apply_converters_on_variables: true
+          generate_values_in_copy_with: true
           sqlite_modules:
             - json1
             - fts5
