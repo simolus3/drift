@@ -1,7 +1,10 @@
 ## 3.4.0 (unreleased)
 
+- New `TableMigration` api to make complex table migrations easier. See the
+  [updated documentation](https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations) for
+  details on how to use this feature.
 - New `DatabaseConnection.delayed` constructor to synchronously obtain a database connection
-  that requires async setup. This can be useful when connecting to a `MoorIsolate`.
+  that requires an async setup. This can be useful when connecting to a `MoorIsolate`.
 - `VmDatabase`: Create directory of database file to avoid misuse errors from sqlite3.
 - New feature in moor files: You can now set the default value for Dart templates:
   `filter ($predicate = TRUE): SELECT * FROM my_table WHERE $predicate`.

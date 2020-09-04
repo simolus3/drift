@@ -26,7 +26,7 @@ We can now change the `database` class like this:
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) {
-      return m.createAllTables();
+      return m.createAll();
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from == 1) {
@@ -45,6 +45,17 @@ methods will throw.
 `sqlite` can feel a bit limiting when it comes to migrations - there only are methods to create tables and columns.
 Existing columns can't be altered or removed. A workaround is described [here](https://stackoverflow.com/a/805508), it
 can be used together with `customStatement` to run the statements.
+
+## Complex migrations
+
+Sqlite has builtin statements for simple changes, like adding columns or dropping entire tables.
+
+Complex migrations require a [12-step procedure](https://www.sqlite.org/lang_altertable.html#otheralter) that involes creating a copy
+of the table and copying over data from the old table.
+Moor 3.4 introduced the `TableMigration` api to automate most of this procedure.
+
+When you're using complex migrations in your app, we strongly recommend to write integration tests for them to avoid
+data loss.
 
 ## Post-migration callbacks
 

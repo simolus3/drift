@@ -96,6 +96,118 @@ class Migrator {
     return _issueCustomQuery(context.sql, context.boundVariables);
   }
 
+  /// Utility method to alter columns of an existing table.
+  ///
+  /// Since sqlite does not provide a way to alter the type or constraint of an
+  /// individual column, one needs to write a fairly complex migration procedure
+  /// for this.
+  /// [alterTable] will run the [12 step procedure][other alter] recommended by
+  /// sqlite.
+  ///
+  /// The [migration] to run describes the transformation to apply to the table.
+  /// The individual fields of the [TableMigration] class contain more
+  /// information on the transformations supported at the moment. Moor's
+  /// [documentation][moor docs] also contains more details and examples for
+  /// common migrations that can be run with [alterTable].
+  ///
+  /// When deleting columns from a table, make sure to migrate tables that have
+  /// a foreign key constraint on that column first.
+  ///
+  /// [other alter]: https://www.sqlite.org/lang_altertable.html#otheralter
+  /// [moor docs]: https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations
+  @experimental
+  Future<void> alterTable(TableMigration migration) async {
+    final foreignKeysEnabled =
+        (await _db.customSelect('PRAGMA foreign_keys').getSingle())
+            .readBool('foreign_keys');
+
+    if (foreignKeysEnabled) {
+      await _db.customStatement('PRAGMA foreign_keys = OFF;');
+    }
+
+    final table = migration.affectedTable;
+    final tableName = table.actualTableName;
+
+    await _db.transaction(() async {
+      // We will drop the original table later, which will also delete
+      // associated triggers, indices and and views. We query sqlite_schema to
+      // re-create those later.
+      final schemaQuery = await _db.customSelect(
+        'SELECT type, sql FROM sqlite_schema WHERE tbl_name = ?;',
+        variables: [Variable<String>(tableName)],
+      ).get();
+
+      final createAffected = <String>[];
+
+      for (final row in schemaQuery) {
+        final type = row.readString('type');
+        final sql = row.readString('sql');
+
+        if (const {'trigger', 'view', 'index'}.contains(type)) {
+          createAffected.add(sql);
+        }
+      }
+
+      // Step 4: Create the new table in the desired format
+      final temporaryName = 'tmp_for_copy_$tableName';
+      final temporaryTable = table.createAlias(temporaryName);
+      await createTable(temporaryTable);
+
+      // Step 5: Transfer old content into the new table
+      final context = _createContext();
+      final expressionsForSelect = <Expression>[];
+
+      context.buffer.write('INSERT INTO $temporaryName (');
+      var first = true;
+      for (final column in table.$columns) {
+        final transformer = migration.columnTransformer[column];
+
+        if (transformer != null || !migration.newColumns.contains(column)) {
+          // New columns without a transformer have a default value, so we don't
+          // include them in the column list of the insert.
+          // Otherwise, we prefer to use the column transformer if set. If there
+          // isn't a transformer, just copy the column from the old table,
+          // without any transformation.
+          final expression = migration.columnTransformer[column] ?? column;
+          expressionsForSelect.add(expression);
+
+          if (!first) context.buffer.write(', ');
+          context.buffer.write(column.escapedName);
+          first = false;
+        }
+      }
+
+      context.buffer.write(') SELECT ');
+      first = true;
+      for (final expr in expressionsForSelect) {
+        if (!first) context.buffer.write(', ');
+        expr.writeInto(context);
+        first = false;
+      }
+      context.buffer.write(' FROM ${escapeIfNeeded(tableName)};');
+      await _issueCustomQuery(context.sql, context.introducedVariables);
+
+      // Step 6: Drop the old table
+      await _issueCustomQuery('DROP TABLE ${escapeIfNeeded(tableName)}');
+
+      // Step 7: Rename the new table to the old name
+      await _issueCustomQuery('ALTER TABLE ${escapeIfNeeded(temporaryName)} '
+          'RENAME TO ${escapeIfNeeded(tableName)}');
+
+      // Step 8: Re-create associated indexes, triggers and views
+      for (final stmt in createAffected) {
+        await _issueCustomQuery(stmt);
+      }
+
+      // We don't currently check step 9 and 10, step 11 happens implicitly.
+    });
+
+    // Finally, re-enable foreign keys if they were enabled originally.
+    if (foreignKeysEnabled) {
+      await _db.customStatement('PRAGMA foreign_keys = ON;');
+    }
+  }
+
   void _writeCreateTable(TableInfo table, GenerationContext context) {
     context.buffer.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
 
@@ -266,5 +378,61 @@ extension DestructiveMigrationExtension on GeneratedDatabase {
         await m.createAll();
       },
     );
+  }
+}
+
+/// Contains instructions needed to run a complex migration on a table, using
+/// the steps described in [Making other kinds of table schema changes][https://www.sqlite.org/lang_altertable.html#otheralter].
+///
+/// For examples and more details, see [the documentation](https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations).
+@experimental
+class TableMigration {
+  /// The table to migrate. It is assumed that this table already exists at the
+  /// time the migration is running. If you need to create a new table, use
+  /// [Migrator.createTable] instead of the more complex [TableMigration].
+  final TableInfo affectedTable;
+
+  /// A list of new columns that are known to _not_ exist in the database yet.
+  ///
+  /// If these columns aren't set through the [columnTransformer], they must
+  /// have a default value.
+  final List<GeneratedColumn> newColumns;
+
+  /// A map describing how to transform columns of the [affectedTable].
+  ///
+  /// A key in the map refers to the new column in the table. If you're running
+  /// a [TableMigration] to add new columns, those columns doesn't have to exist
+  /// in the database yet.
+  /// The value associated with a column is the expression to use when
+  /// transforming the new table.
+  final Map<GeneratedColumn, Expression> columnTransformer;
+
+  /// Creates migration description on the [affectedTable].
+  TableMigration(
+    this.affectedTable, {
+    this.columnTransformer = const {},
+    this.newColumns = const [],
+  }) {
+    // All new columns must either have a transformation or a default value of
+    // some kind
+    final problematicNewColumns = <String>[];
+    for (final column in newColumns) {
+      // isRequired returns false if the column has a client default value that
+      // would be used for inserts. We can't apply the client default here
+      // though, so it doesn't count as a default value.
+      final isRequired = column.isRequired || column.clientDefault != null;
+      if (isRequired && !columnTransformer.containsKey(column)) {
+        problematicNewColumns.add(column.$name);
+      }
+    }
+
+    if (problematicNewColumns.isNotEmpty) {
+      throw ArgumentError(
+        "Some of the newColumns don't have a default value and aren't included "
+        'in columnTransformer: ${problematicNewColumns.join(', ')}. \n'
+        'To add columns, make sure that they have a default value or write an '
+        'expression to use in the columnTransformer map.',
+      );
+    }
   }
 }
