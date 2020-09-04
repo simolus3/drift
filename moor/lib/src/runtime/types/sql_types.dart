@@ -12,6 +12,9 @@ abstract class SqlType<T> {
   /// Constant constructor so that subclasses can be constant
   const SqlType();
 
+  /// The name of this type in sql, such as `TEXT`.
+  String get sqlName;
+
   /// Maps the [content] to a value that we can send together with a prepared
   /// statement to represent the given value.
   dynamic mapToSqlVariable(T content);
@@ -29,6 +32,9 @@ abstract class SqlType<T> {
 class BoolType extends SqlType<bool> {
   /// Constant constructor used by the type system
   const BoolType();
+
+  @override
+  String get sqlName => 'INTEGER';
 
   @override
   bool mapFromDatabaseResponse(dynamic response) {
@@ -61,6 +67,9 @@ class StringType extends SqlType<String> {
   const StringType();
 
   @override
+  String get sqlName => 'TEXT';
+
+  @override
   String mapFromDatabaseResponse(dynamic response) => response?.toString();
 
   @override
@@ -84,6 +93,9 @@ class IntType extends SqlType<int> {
   const IntType();
 
   @override
+  String get sqlName => 'INTEGER';
+
+  @override
   int mapFromDatabaseResponse(dynamic response) {
     if (response == null || response is int /*?*/) return response as int /*?*/;
     return int.parse(response.toString());
@@ -102,6 +114,9 @@ class IntType extends SqlType<int> {
 class DateTimeType extends SqlType<DateTime> {
   /// Constant constructor used by the type system
   const DateTimeType();
+
+  @override
+  String get sqlName => 'INTEGER';
 
   @override
   DateTime mapFromDatabaseResponse(dynamic response) {
@@ -134,6 +149,9 @@ class BlobType extends SqlType<Uint8List> {
   const BlobType();
 
   @override
+  String get sqlName => 'BLOB';
+
+  @override
   Uint8List mapFromDatabaseResponse(dynamic response) => response as Uint8List;
 
   @override
@@ -151,6 +169,9 @@ class BlobType extends SqlType<Uint8List> {
 class RealType extends SqlType<double> {
   /// Constant constructor used by the type system
   const RealType();
+
+  @override
+  String get sqlName => 'REAL';
 
   @override
   double mapFromDatabaseResponse(dynamic response) {

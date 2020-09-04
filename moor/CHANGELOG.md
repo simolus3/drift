@@ -11,7 +11,7 @@
   This generates an optional named parameter in Dart.
 - New `generate_values_in_copy_with` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/).
   It wraps nullable columns in a `Value` in `copyWith` methods so that they can be set to `null`.
-- Add `groupConcat` and `coalesce` functions to the Dart query builder.
+- Add `groupConcat`, `cast` and `coalesce` functions to the Dart query builder.
 
 ## 3.3.1
 

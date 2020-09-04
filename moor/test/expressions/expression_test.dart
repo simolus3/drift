@@ -22,4 +22,15 @@ void main() {
     final expr = _UnknownExpr().equalsExp(_UnknownExpr());
     expect(expr, generates('(???) = (???)'));
   });
+
+  test('generates cast expressions', () {
+    final expr = GeneratedIntColumn('c', 'tbl', false);
+
+    expect(expr.cast<String>(), generates('CAST(c AS TEXT)'));
+    expect(expr.cast<int>(), generates('CAST(c AS INTEGER)'));
+    expect(expr.cast<bool>(), generates('CAST(c AS INTEGER)'));
+    expect(expr.cast<DateTime>(), generates('CAST(c AS INTEGER)'));
+    expect(expr.cast<double>(), generates('CAST(c AS REAL)'));
+    expect(expr.cast<Uint8List>(), generates('CAST(c AS BLOB)'));
+  });
 }

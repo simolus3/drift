@@ -41,12 +41,20 @@ abstract class Expression<D> implements FunctionParameter {
   /// Casts this expression to an expression of [D].
   ///
   /// Calling [dartCast] will not affect the generated sql. In particular, it
-  /// will __NOT__ generate a `CAST` expression in sql.
+  /// will __NOT__ generate a `CAST` expression in sql. To generate a `CAST`
+  /// in sql, use [cast].
   ///
   /// This method is used internally by moor.
   Expression<D2> dartCast<D2>() {
-    return _CastExpression<D, D2>(this);
+    return _DartCastExpression<D, D2>(this);
   }
+
+  /// Generates a `CAST(expression AS TYPE)` expression.
+  ///
+  /// Note that this does not do a meaningful conversion for moor-only types
+  /// like `bool` or `DateTime`. Both would simply generate a `CAST AS INT`
+  /// expression.
+  Expression<D2> cast<D2>() => _CastInSqlExpression<D, D2>(this);
 
   /// An expression that is true if `this` resolves to any of the values in
   /// [values].
@@ -298,10 +306,10 @@ class _UnaryMinus<DT> extends Expression<DT> {
   }
 }
 
-class _CastExpression<D1, D2> extends Expression<D2> {
+class _DartCastExpression<D1, D2> extends Expression<D2> {
   final Expression<D1> inner;
 
-  _CastExpression(this.inner);
+  _DartCastExpression(this.inner);
 
   @override
   Precedence get precedence => inner.precedence;
@@ -319,7 +327,25 @@ class _CastExpression<D1, D2> extends Expression<D2> {
 
   @override
   bool operator ==(dynamic other) {
-    return other is _CastExpression && other.inner == inner;
+    return other is _DartCastExpression && other.inner == inner;
+  }
+}
+
+class _CastInSqlExpression<D1, D2> extends Expression<D2> {
+  final Expression<D1> inner;
+
+  @override
+  final Precedence precedence = Precedence.primary;
+
+  _CastInSqlExpression(this.inner);
+
+  @override
+  void writeInto(GenerationContext context) {
+    final type = context.typeSystem.forDartType<D2>();
+
+    context.buffer.write('CAST(');
+    inner.writeInto(context);
+    context.buffer.write(' AS ${type.sqlName})');
   }
 }
 
