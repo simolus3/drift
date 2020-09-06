@@ -114,6 +114,8 @@ class _TransactionExecutor extends TransactionExecutor
   Future get completed => _sendCalled.future;
   bool _sendFakeErrorOnRollback = false;
 
+  bool _done = false;
+
   _TransactionExecutor(this._db);
 
   @override
@@ -123,6 +125,12 @@ class _TransactionExecutor extends TransactionExecutor
 
   @override
   Future<bool> ensureOpen(_) async {
+    assert(
+      !_done,
+      'Transaction was used after it completed. Are you missing an await '
+      'somewhere?',
+    );
+
     _ensureOpenCalled = true;
     if (_openingCompleter != null) {
       return await _openingCompleter.future;
@@ -185,6 +193,7 @@ class _TransactionExecutor extends TransactionExecutor
     }
 
     _sendCalled.complete();
+    _done = true;
   }
 
   @override
@@ -203,6 +212,8 @@ class _TransactionExecutor extends TransactionExecutor
     } else {
       _sendCalled.complete();
     }
+
+    _done = true;
   }
 }
 

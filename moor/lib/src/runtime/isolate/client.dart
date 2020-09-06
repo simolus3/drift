@@ -129,6 +129,7 @@ class _TransactionIsolateExecutor extends _BaseExecutor
       : super(client);
 
   Completer<bool> _pendingOpen;
+  bool _done = false;
 
   // nested transactions aren't supported
   @override
@@ -136,6 +137,12 @@ class _TransactionIsolateExecutor extends _BaseExecutor
 
   @override
   Future<bool> ensureOpen(_) {
+    assert(
+      !_done,
+      'Transaction used after it was closed. Are you missing an await '
+      'somewhere?',
+    );
+
     _pendingOpen ??= Completer()..complete(_openAtServer());
     return _pendingOpen.future;
   }
@@ -155,7 +162,8 @@ class _TransactionIsolateExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    return await _sendAction(_TransactionControl.rollback);
+    await _sendAction(_TransactionControl.rollback);
+    _done = true;
   }
 
   @override
@@ -163,7 +171,8 @@ class _TransactionIsolateExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    return await _sendAction(_TransactionControl.commit);
+    await _sendAction(_TransactionControl.commit);
+    _done = true;
   }
 }
 

@@ -4,6 +4,10 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 /// Runs multiple statements transactionally.
 ///
 /// Moor users should use [QueryEngine.transaction] to use this api.
+@Deprecated(
+  "This class will be private in moor 4. If you're using this class directly, "
+  'please describe your usage in https://github.com/simolus3/moor/issues/810.',
+)
 class Transaction extends DatabaseConnectionUser with QueryEngine {
   final QueryEngine _parent;
 
@@ -21,7 +25,7 @@ class Transaction extends DatabaseConnectionUser with QueryEngine {
 
   /// Instructs the underlying executor to execute this instructions. Batched
   /// table updates will also be send to the stream query store.
-  Future complete() async {
+  Future<void> complete() async {
     await (executor as TransactionExecutor).send();
   }
 
@@ -87,6 +91,10 @@ class _TransactionStreamStore extends StreamQueryStore {
 ///
 /// To use this api, moor users should use the [MigrationStrategy.beforeOpen]
 /// parameter inside the [GeneratedDatabase.migration] getter.
+@Deprecated(
+  "This class will be private in moor 4. If you're using this class directly, "
+  'please describe your usage in https://github.com/simolus3/moor/issues/810.',
+)
 class BeforeOpenRunner extends DatabaseConnectionUser with QueryEngine {
   final QueryEngine _parent;
 

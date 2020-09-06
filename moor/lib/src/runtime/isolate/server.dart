@@ -188,14 +188,14 @@ class _IsolateDelegatedUser implements QueryExecutorUser {
   final _MoorServer server;
 
   @override
-  int schemaVersion = 0;
+  int schemaVersion = 0; // will be overridden by client requests
 
-  _IsolateDelegatedUser(this.server); // will be overridden by client requests
+  _IsolateDelegatedUser(this.server);
 
   @override
   Future<void> beforeOpen(
       QueryExecutor executor, OpeningDetails details) async {
-    final id = server._putExecutor(executor);
+    final id = server._putExecutor(executor, beforeCurrent: true);
     try {
       await server.firstClient.request(_RunBeforeOpen(details, id));
     } finally {
