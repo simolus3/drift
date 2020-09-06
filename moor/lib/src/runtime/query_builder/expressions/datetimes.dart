@@ -38,6 +38,14 @@ extension DateTimeExpressions on Expression<DateTime> {
   /// Extracts the (UTC) second from `this` datetime expression.
   Expression<int> get second => _StrftimeSingleFieldExpression('%S', this);
 
+  /// Formats this datetime in the format `year-month-day`.
+  Expression<String> get date {
+    return FunctionCallExpression(
+      'DATE',
+      [this, const Constant<String>('unixepoch')],
+    );
+  }
+
   /// Returns an expression containing the amount of seconds from the unix
   /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
   /// assumed to be in utc.

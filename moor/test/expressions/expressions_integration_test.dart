@@ -33,6 +33,16 @@ void main() {
         const Duration(days: 1).inSeconds);
   });
 
+  test('datetime.date format', () async {
+    final expr = Variable.withDateTime(DateTime(2020, 09, 04, 8, 55));
+    final asDate = expr.date;
+
+    final row =
+        await (db.selectOnly(db.users)..addColumns([asDate])).getSingle();
+
+    expect(row.read(asDate), '2020-09-04');
+  });
+
   test('text contains', () async {
     const stringLiteral = Constant('Some sql string literal');
     final containsSql = stringLiteral.contains('sql');
