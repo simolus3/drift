@@ -233,6 +233,27 @@ WITH RECURSIVE
     expect(type, const ResolvedType(type: BasicType.int));
   });
 
+  test('resolves type hints from between expressions', () {
+    const dateTime = ResolvedType(type: BasicType.int, hint: IsDateTime());
+    final session = _obtainResolver(
+      'SELECT 1 WHERE :date BETWEEN :start AND :end',
+      options: const AnalyzeStatementOptions(
+        namedVariableTypes: {':date': dateTime},
+      ),
+    ).session;
+
+    Variable start, end;
+    for (final variable in session.context.root.allDescendants
+        .whereType<ColonNamedVariable>()) {
+      if (variable.name == ':start') start = variable;
+      if (variable.name == ':end') end = variable;
+    }
+    assert(start != null && end != null);
+
+    expect(session.typeOf(start), dateTime);
+    expect(session.typeOf(end), dateTime);
+  });
+
   group('IS IN expressions', () {
     test('infer the variable as an array type', () {
       final type = _resolveFirstVariable('SELECT 3 IN ?');

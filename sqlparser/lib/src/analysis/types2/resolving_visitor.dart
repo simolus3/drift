@@ -263,6 +263,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitChildren(e, _expectNum);
 
     session
+      .._checkAndResolve(e, const ResolvedType.bool(), arg)
       .._addRelation(NullableIfSomeOtherIs(e, e.childNodes))
       .._addRelation(HaveSameType(e.lower, e.upper))
       .._addRelation(HaveSameType(e.check, e.lower));
