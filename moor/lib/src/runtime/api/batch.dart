@@ -139,10 +139,24 @@ class Batch {
     _addContext(stmt.constructQuery());
   }
 
-  void _addContext(GenerationContext ctx) {
-    final sql = ctx.sql;
-    final arguments = ctx.boundVariables;
+  /// Executes the custom [sql] statement with variables instantiated to [args].
+  ///
+  /// The statement will be added to this batch and executed when the batch
+  /// completes. So, this method returns synchronously and it's not possible to
+  /// inspect the return value of individual statements.
+  ///
+  /// See also:
+  ///  - [QueryEngine.customStatement], the equivalent method outside of
+  ///    batches.
+  void customStatement(String sql, [List<dynamic> args]) {
+    _addSqlAndArguments(sql, args);
+  }
 
+  void _addContext(GenerationContext ctx) {
+    _addSqlAndArguments(ctx.sql, ctx.boundVariables);
+  }
+
+  void _addSqlAndArguments(String sql, List<dynamic> arguments) {
     final stmtIndex = _sqlToIndex.putIfAbsent(sql, () {
       final newIndex = _createdSql.length;
       _createdSql.add(sql);

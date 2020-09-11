@@ -42,6 +42,8 @@ void main() {
       b.delete(db.todosTable, const TodosTableCompanion(id: Value(3)));
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
+
+      b.customStatement('some custom statement', [4]);
     });
 
     final transaction = executor.transactions;
@@ -55,6 +57,7 @@ void main() {
             'UPDATE categories SET `desc` = ?, priority = 0 WHERE id = ?;',
             'DELETE FROM categories WHERE 1;',
             'DELETE FROM todos WHERE id = ?;',
+            'some custom statement',
           ],
           [
             ArgumentsForBatchedStatement(0, ['first']),
@@ -66,6 +69,7 @@ void main() {
             ArgumentsForBatchedStatement(4, []),
             ArgumentsForBatchedStatement(5, [3]),
             ArgumentsForBatchedStatement(1, ['new name 2']),
+            ArgumentsForBatchedStatement(6, [4]),
           ],
         ),
       ),
