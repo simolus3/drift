@@ -5,7 +5,7 @@ weight: 150
 ---
 
 {{% pageinfo %}}
-__Prefer sql?__: If you prefer, you can also declare tables via `CREATE TABLE` statements.
+__Prefer sql?__ If you prefer, you can also declare tables via `CREATE TABLE` statements.
 Moor's sql analyzer will generate matching Dart code. [Details]({{< ref "starting_with_sql.md" >}}).
 {{% /pageinfo %}}
 
@@ -48,6 +48,12 @@ The updated class would be generated as `CREATE TABLE categories (parent INTEGER
 
 To update the name of a column when serializing data to json, annotate the getter with 
 [`@JsonKey`](https://pub.dev/documentation/moor/latest/moor/JsonKey-class.html).
+
+You can change the name of the generated data class too. By default, moor will stip a trailing
+`s` from the table name (so a `Users` table would have a `User` data class).
+That doesn't work in all cases though. With the `EnabledCategories` class from above, we'd get
+a `EnabledCategorie` data class. In those cases, you can use the [`@DataClassName`](https://pub.dev/documentation/moor/latest/moor/DataClassName-class.html)
+annotation to set the desired name.
 
 ## Nullability
 
@@ -139,3 +145,23 @@ the database.
 They don't affect JSON serialization at all. For instance, `boolean` values are expected as `true` or `false`
 in the `fromJson` factory, even though they would be saved as `0` or `1` in the database.
 If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/moor/latest/moor/ValueSerializer-class.html).
+
+## Custom constraints
+
+Some column and table constraints aren't supported through moor's Dart api. This includes `REFERENCES` clauses on columns, which you can set
+through `customConstraint`:
+
+```dart
+class GroupMemberships extends Table {
+  IntColumn get group => integer().customConstraint('NOT NULL REFERENCES groups (id)')();
+  IntColumn get user => integer().customConstraint('NOT NULL REFERENCES users (id)')();
+
+  @override
+  Set<Column> get primaryKey => {group, user};
+}
+```
+
+Applying a `customConstraint` will override all other constraints that would be included by default. In
+particular, that means that we need to also include the `NOT NULL` constraint again.
+
+You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.

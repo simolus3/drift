@@ -49,13 +49,106 @@ can be used together with `customStatement` to run the statements.
 ## Complex migrations
 
 Sqlite has builtin statements for simple changes, like adding columns or dropping entire tables.
+More complex migrations require a [12-step procedure](https://www.sqlite.org/lang_altertable.html#otheralter) that
+involes creating a copy of the table and copying over data from the old table.
+Moor 3.4 introduced the `TableMigration` api to automate most of this procedure, making it easier and safer to use.
 
-Complex migrations require a [12-step procedure](https://www.sqlite.org/lang_altertable.html#otheralter) that involes creating a copy
-of the table and copying over data from the old table.
-Moor 3.4 introduced the `TableMigration` api to automate most of this procedure.
+To start the migration, moor will create a new instance of the table with the current schema. Next, it will copy over
+rows from the old table.
+In most cases, for instance when changing column types, we can't just copy over each row without changing its content.
+Here, you can use a `columnTransformer` to apply a per-row transformation.
+The `columnTransformer` is a map from columns to the sql expression that will be used to copy the column from the
+old table.
+For instance, if we wanted to cast a column before copying it, we could use:
 
-When you're using complex migrations in your app, we strongly recommend to write integration tests for them to avoid
-data loss.
+```dart
+columnTransformer: {
+  todos.category: todos.category.cast<int>(),
+}
+```
+
+Internally, moor will use a `INSERT INTO SELECT` statement to copy old data. In this case, it would look like
+`INSERT INTO temporary_todos_copy SELECT id, title, content, CAST(category AS INT) FROM todos`.
+As you can see, moor will use the expression from the `columnTransformer` map and fall back to just copying the column
+otherwise.   
+If you're introducing new columns in a table migration, be sure to include them in the `newColumns` parameter of
+`TableMigration`. Moor will ensure that those columns have a default value or a transformation in `columnTransformer`.
+Of course, moor won't attempt to copy `newColumns` from the old table either.
+
+Regardless of whether you're implementing complex migrations with `TableMigration` or by running a custom sequence
+of statements, we strongly recommend to write integration tests covering your migrations. This helps to avoid data
+loss caused by errors in a migration.
+
+Here are some examples demonstrating common usages of the table migration api:
+
+### Changing the type of a column
+
+Let's say the `category` column in `Todos` used to be a non-nullable `text()` column that we're now changing to a
+nullable int. For simplicity, we assume that `category` always contained integers, they were just stored in a text
+column that we now want to adapt.
+
+```patch
+class Todos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text().withLength(min: 6, max: 10)();
+  TextColumn get content => text().named('body')();
+-  IntColumn get category => text()();
++  IntColumn get category => integer().nullable()();
+}
+```
+
+After re-running your build and incrementing the schema version, you can write a migration:
+
+```dart
+onUpgrade: (m, old, to) async {
+  if (old <= yourOldVersion) {
+    await m.alterTable(
+      TableMigration(
+        todos,
+        columnTransformer: {
+          todos.category: todos.category.cast<int>(),
+        }
+      ),
+    );
+  }
+}
+```
+
+The important part here is the `columnTransformer` - a map from columns to expressions that will
+be used to copy the old data. The values in that map refer to the old table, so we can use
+`todos.category.cast<int>()` to copy old rows and transform their `category`.
+All columns that aren't present in `columnTransformer` will be copied from the old table without
+any transformation.
+
+### Changing column constraints
+
+When you're changing columns constraints in a way that's compatible to existing data (e.g. changing
+non-nullable columns to nullable columns), you can just copy over data without applying any
+transformation:
+
+```dart
+await m.alterTable(TableMigration(todos));
+```
+
+### Renaming columns
+
+If you're renaming a column in Dart, note that the easiest way is to just rename the getter and use
+`named`: `TextColumn newName => text().named('old_name')()`. That is fully backwards compatible and
+doesn't require a migration.
+
+If you do want to change the actual column name in a table, you can write a `columnTransformer` to
+use an old column with a different name:
+
+```dart
+await m.alterTable(
+  TableMigration(
+    yourTable, 
+    columnTransformer: {
+      yourTable.newColumn: const CustomExpression('old_column_name')
+    },
+  )
+)
+```
 
 ## Post-migration callbacks
 
