@@ -3,6 +3,7 @@ include: ../analysis_options.yaml
 analyzer:
   errors:
     public_member_api_docs: warning
+    deprecated_member_use_from_same_package: ignore
   exclude:
     - "example_web/**"
     - "example/**"
