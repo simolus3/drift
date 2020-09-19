@@ -132,8 +132,10 @@ class Migrator {
       // We will drop the original table later, which will also delete
       // associated triggers, indices and and views. We query sqlite_schema to
       // re-create those later.
+      // We use the legacy sqlite_master table since the _schema rename happened
+      // in a very recent version (3.33.0)
       final schemaQuery = await _db.customSelect(
-        'SELECT type, sql FROM sqlite_schema WHERE tbl_name = ?;',
+        'SELECT type, sql FROM sqlite_master WHERE tbl_name = ?;',
         variables: [Variable<String>(tableName)],
       ).get();
 
