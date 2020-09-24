@@ -3,7 +3,7 @@
 [build]
   base = "docs"
   publish = "docs/public"
-  command = 'git submodule update --init --recursive && npm -i && hugo'
+  command = 'git submodule update --init --recursive && npm i && hugo'
 
 [[redirects]]
   from = "https://moor.netlify.com/*"
