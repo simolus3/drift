@@ -3,7 +3,7 @@
 [build]
   base = "docs"
   publish = "docs/public"
-  command = 'git submodule update --init --recursive && hugo'
+  command = 'git submodule update --init --recursive && npm -i && hugo'
 
 [[redirects]]
   from = "https://moor.netlify.com/*"
@@ -13,3 +13,6 @@
 
 [context.production]
   environment = { HUGO_ENV="production", HUGO_VERSION="0.74.3" }
+
+[context.deploy-preview]
+  environment = { HUGO_VERSION="0.74.3" }
