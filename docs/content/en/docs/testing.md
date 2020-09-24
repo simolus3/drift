@@ -9,12 +9,9 @@ Those tests can be run and debugged on your computer without additional setup, y
 physical device to run them.
 
 ## Setup
-In addition to the moor dependencies you already have, add `moor_ffi` as a dev dependency. If you're already using `moor_ffi`
-as a regular dependency, you can skip this.
-```yaml
-dev_dependencies:
-  moor_ffi: ^0.5.0 # or latest version
-```
+
+For tests, you need to use a `VmDatabase` included in `moor` version `3.3.0` and above. You can also test your database on older moor
+versions by using the `moor_ffi` package.
 
 For this guide, we're going to test a very simple database that stores user names. The only important change from a regular moor
 database is the constructor: We make the `QueryExecutor` argument explicit instead of having a no-args constructor that passes

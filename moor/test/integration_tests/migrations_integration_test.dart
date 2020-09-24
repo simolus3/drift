@@ -38,7 +38,7 @@ void main() {
     );
 
     final createStmt = await db
-        .customSelect("SELECT sql FROM sqlite_schema WHERE name = 'todos'")
+        .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
         .map((row) => row.readString('sql'))
         .getSingle();
 
@@ -80,7 +80,7 @@ void main() {
     );
 
     final createStmt = await db
-        .customSelect("SELECT sql FROM sqlite_schema WHERE name = 'todos'")
+        .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
         .map((row) => row.readString('sql'))
         .getSingle();
 
