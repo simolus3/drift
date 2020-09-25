@@ -3,9 +3,12 @@ title: "Supported platforms"
 description: All platforms supported by moor, and how to use them
 ---
 
-Being built ontop of the sqlite3 database, moor can run on almost all Dart platforms.
-Since the initial release of moor, the Dart and Flutter ecosystems have changed a lot
-(`dart:ffi` wasn't a even thing when moor first came out).
+Being built ontop of the sqlite3 database, moor can run on almost every Dart platform.
+Since the initial release of moor, the Dart and Flutter ecosystems have changed a lot.
+For instance, `dart:ffi` wasn't a thing when moor first came out, and now it's the basis
+for moor's most popular implemention.
+To clear confusion about different moor packages and when to use them, this document
+lists all supported platforms and how to use moor when building apps for them.
 
 To achive platform independence, moor separates its core apis from a platform-specific
 database implementation. The core apis are pure-Dart and run on all Dart platforms, even
@@ -59,7 +62,7 @@ details.
 
 On most distributions, `libsqlite3.so` is installed already. If you only need to use moor for
 development, you can just install the sqlite3 libraries. On Ubuntu and other Debian-based
-distros, you can install `libsqlite3-dev` package for this. Virtually every other distribution
+distros, you can install the `libsqlite3-dev` package for this. Virtually every other distribution
 will also have a prebuilt package for sqlite.
 
 You can also ship a custom `libsqlite3.so` along with your app. See the section below for
@@ -68,13 +71,17 @@ details.
 ### macOS
 
 This one is easy! Just use the `VmDatabase` from `package:moor/ffi.dart`. No further setup is
-necessary. If you need the latest sqlite3 version, further setup is necessary. In that case,
-keep on reading.
+necessary. 
+
+If you need a custom sqlite3 library, or want to make sure that your app will always use a
+specific sqlite3 version, you can also ship that version with your app.
 
 ### Bundling sqlite with your app
 
 If you don't want to use the `sqlite3` version from the operating system (or if it's not
 available), you can also ship `sqlite3` with your app.
+The best way to do that depends on how you ship your app. Here, we assume that you can
+install the dynamic library for `sqlite` next to your application executable.
 
 This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
 lives next to your application:
@@ -88,8 +95,7 @@ import 'package:sqlite3/open.dart';
 void main() {
   open.overrideFor(OperatingSystem.linux, _openOnLinux);
 
-  final db = sqlite3.openInMemory();
-  db.dispose();
+  // After setting all the overrides, you can use moor!
 }
 
 DynamicLibrary _openOnLinux() {
@@ -99,3 +105,5 @@ DynamicLibrary _openOnLinux() {
 }
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`
 ```
+
+Be sure to use moor _after_ you set the platform-specific overrides.

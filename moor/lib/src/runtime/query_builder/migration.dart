@@ -96,7 +96,7 @@ class Migrator {
     return _issueCustomQuery(context.sql, context.boundVariables);
   }
 
-  /// Utility method to alter columns of an existing table.
+  /// Experimental utility method to alter columns of an existing table.
   ///
   /// Since sqlite does not provide a way to alter the type or constraint of an
   /// individual column, one needs to write a fairly complex migration procedure
@@ -111,7 +111,10 @@ class Migrator {
   /// common migrations that can be run with [alterTable].
   ///
   /// When deleting columns from a table, make sure to migrate tables that have
-  /// a foreign key constraint on that column first.
+  /// a foreign key constraint on those columns first.
+  ///
+  /// While this function will re-create affected indexes and triggers, it does
+  /// not reliably handle views at the moment.
   ///
   /// [other alter]: https://www.sqlite.org/lang_altertable.html#otheralter
   /// [moor docs]: https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations

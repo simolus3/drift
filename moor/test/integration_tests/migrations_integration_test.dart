@@ -19,8 +19,12 @@ void main() {
         );
       ''');
 
+      db.execute('CREATE INDEX my_index ON todos (content);');
+
       db.execute('INSERT INTO todos (title, content, target_date, category) '
           "VALUES ('title', 'content', 0, '12')");
+
+      db.execute('PRAGMA foreign_keys = ON');
     });
 
     final db = TodoDb(executor);
@@ -46,6 +50,11 @@ void main() {
 
     final item = await db.select(db.todosTable).getSingle();
     expect(item.category, 12);
+
+    // We enabled foreign keys, so they should still be enabled now.
+    final foreignKeysResult =
+        await db.customSelect('PRAGMA foreign_keys').getSingle();
+    expect(foreignKeysResult.readBool('foreign_keys'), isTrue);
   });
 
   test('rename columns', () async {
