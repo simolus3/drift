@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:moor/backends.dart';
+import 'package:moor/moor.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import 'database_tracker.dart';
 import 'moor_ffi_functions.dart';
 
 /// Signature of a function that can perform setup work on a [database] before
@@ -42,6 +45,48 @@ class VmDatabase extends DelegatedDatabase {
   factory VmDatabase.memory({bool logStatements = false, DatabaseSetup setup}) {
     return VmDatabase._(_VmDelegate(null, setup), logStatements);
   }
+
+  /// Disposes resources allocated by all `VmDatabase` instances of this
+  /// process.
+  ///
+  /// This method will call `sqlite3_close_v2` for every `VmDatabase` that this
+  /// process has opened without closing later.
+  /// Ideally, all databases should be closed properly in Dart. In that case,
+  /// it's not necessary to call [closeExistingInstances]. However, features
+  /// like hot (stateless) restart can make it impossible to reliably close
+  /// every database. In that case, we leak native sqlite3 database connections
+  /// that aren't referenced by any Dart object. Moor can track those
+  /// connections across Dart VM restarts by storing them in an in-memory sqlite
+  /// database.
+  /// Calling this method can cleanup resources and database locks after a
+  /// restart.
+  ///
+  /// Note that calling [closeExistingInstances] when you're still actively
+  /// using a [VmDatabase] can lead to crashes, since the database would then
+  /// attempt to use an invalid connection.
+  /// This, this method should only be called when you're certain that there
+  /// aren't any active [VmDatabase]s, not even on another isolate.
+  ///
+  /// A suitable place to call [closeExistingInstances] is at an early stage
+  /// of your `main` method, before you're using moor.
+  ///
+  /// ```dart
+  /// void main() {
+  ///   // Guard against zombie database connections caused by hot restarts
+  ///   assert(() {
+  ///     VmDatabase.closeExistingInstances();
+  ///     return true;
+  ///   }());
+  ///
+  ///   runApp(MyApp());
+  /// }
+  /// ```
+  ///
+  /// For more information, see [issue 835](https://github.com/simolus3/moor/issues/835).
+  @experimental
+  static void closeExistingInstances() {
+    tracker.closeExisting();
+  }
 }
 
 class _VmDelegate extends DatabaseDelegate {
@@ -72,6 +117,7 @@ class _VmDelegate extends DatabaseDelegate {
       }
 
       _db = sqlite3.open(file.path);
+      tracker.markOpened(file.path, _db);
     } else {
       _db = sqlite3.openInMemory();
     }
@@ -141,6 +187,7 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<void> close() async {
     _db.dispose();
+    tracker.markClosed(_db);
   }
 }
 
