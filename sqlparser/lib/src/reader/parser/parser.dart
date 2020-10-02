@@ -164,6 +164,7 @@ abstract class ParserBase {
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well.
+  // ignore: unused_element
   Expression _consumeTuple({bool orSubQuery = false});
 
   /// Parses a [BaseSelectStatement], which is either a [SelectStatement] or a

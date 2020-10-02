@@ -151,6 +151,7 @@ class _MappedSelectable<S, T> extends Selectable<T> {
   List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
 }
 
+/// Mixin for a [Query] that operates on a single primary table only.
 mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
     on Query<T, D> {
   /// Makes this statement only include rows that match the [filter].

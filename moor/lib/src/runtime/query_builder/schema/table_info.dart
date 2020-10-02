@@ -76,6 +76,8 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
     return map(rawValues);
   }
 
+  /// Creates an alias of this table that will write the name [alias] when used
+  /// in a query.
   TableInfo<TableDsl, D> createAlias(String alias);
 
   @override
