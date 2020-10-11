@@ -133,6 +133,7 @@ For more details on sqlite compile options, see [their documentation](https://ww
   returns null. Otherwise, returns the result of applying the matching function in `dart:math`.
 - `regexp`: Wraps the Dart `RegExp` apis, so that `foo REGEXP bar` is equivalent to `RegExp(bar).hasMatch(foo)`. Note that we have to create a new
   `RegExp` instance for each `regexp` sql call, which can impact performance on large queries.
+- `current_time_millis`: Returns the current unix timestamp as milliseconds. Equivalent to `DateTime.now().millisecondsSinceEpoch` in Dart.
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 

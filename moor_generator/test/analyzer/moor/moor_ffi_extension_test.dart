@@ -64,6 +64,15 @@ void main() {
     ]);
   });
 
+  test('infers return type for current_time_millis', () {
+    final result = engine.analyze('SELECT current_time_millis();');
+    final stmt = result.root as SelectStatement;
+
+    expect(stmt.resolvedColumns.map(result.typeOf), [
+      const ResolveResult(ResolvedType(type: BasicType.int, nullable: false))
+    ]);
+  });
+
   test('infers argument type', () {
     final result = engine.analyze('SELECT pow(2.5, ?);');
     final variable = result.root.allDescendants.whereType<Variable>().first;

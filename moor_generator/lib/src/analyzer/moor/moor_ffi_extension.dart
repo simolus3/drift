@@ -23,7 +23,9 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
   };
 
   @override
-  Set<String> get functionNames => const {'pow', ..._unaryFunctions};
+  Set<String> get functionNames {
+    return const {'pow', 'current_time_millis', ..._unaryFunctions};
+  }
 
   @override
   int argumentCountFor(String function) {
@@ -31,6 +33,8 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
       return 1;
     } else if (function == 'pow') {
       return 2;
+    } else if (function == 'current_time_millis') {
+      return 0;
     }
     // ignore: avoid_returning_null
     return null;
@@ -46,6 +50,11 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
   @override
   ResolveResult inferReturnType(AnalysisContext context, SqlInvocation call,
       List<Typeable> expandedArgs) {
+    if (call.name == 'current_time_millis') {
+      return const ResolveResult(
+          ResolvedType(type: BasicType.int, nullable: false));
+    }
+
     return const ResolveResult(
         ResolvedType(type: BasicType.real, nullable: true));
   }

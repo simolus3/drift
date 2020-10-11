@@ -91,6 +91,13 @@ extension EnableMoorFunctions on Database {
       argumentCount: const AllowedArgumentCount(3),
       function: _containsImpl,
     );
+    createFunction(
+      functionName: 'current_time_millis',
+      deterministic: true,
+      directOnly: false,
+      argumentCount: const AllowedArgumentCount(0),
+      function: (List<dynamic> args) => DateTime.now().millisecondsSinceEpoch,
+    );
   }
 }
 

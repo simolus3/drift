@@ -147,6 +147,11 @@ void main() {
       expect(selectSingle("moor_contains('hi', 'i', 1)"), 1);
     });
   });
+
+  test('current_time_millis', () {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    expect(selectSingle('current_time_millis()'), closeTo(now, 100));
+  });
 }
 
 // utils to verify the sql functions behave exactly like the ones from the VM
