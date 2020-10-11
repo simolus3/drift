@@ -147,8 +147,10 @@ const sqliteKeywords = {
 /// [sqliteKeywords].
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 
+final _whitespace = RegExp(r'\s');
+
 /// Escapes [s] by wrapping it in backticks if it's an sqlite keyword.
 String escapeIfNeeded(String s) {
-  if (isSqliteKeyword(s)) return '`$s`';
+  if (isSqliteKeyword(s) || s.contains(_whitespace)) return '`$s`';
   return s;
 }

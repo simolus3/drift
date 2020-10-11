@@ -101,6 +101,15 @@ void main() {
           'is_awesome INTEGER NOT NULL DEFAULT 1 '
           'CHECK (is_awesome in (0, 1));'));
     });
+
+    test('renames columns', () async {
+      await db
+          .createMigrator()
+          .renameColumn(db.users, 'my name', db.users.name);
+
+      verify(mockExecutor
+          .runCustom('ALTER TABLE users RENAME COLUMN `my name` TO name;'));
+    });
   });
 
   test('custom statements', () async {

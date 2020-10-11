@@ -322,6 +322,34 @@ class Migrator {
     return _issueCustomQuery(context.sql);
   }
 
+  /// Changes the name of a column in a [table].
+  ///
+  /// After renaming a column in a Dart table or a moor file and re-running the
+  /// generator, you can use [renameColumn] in a migration step to rename the
+  /// column for existing databases.
+  ///
+  /// The [table] argument must be set to the table enclosing the changed
+  /// column. The [oldName] must be set to the old name of the [column] in SQL.
+  /// For Dart tables, note that moor will transform `camelCase` column names in
+  /// Dart to `snake_case` column names in SQL.
+  ///
+  /// __Important compatibility information__: [renameColumn] uses an
+  /// `ALTER TABLE RENAME COLUMN` internally. Support for that syntax was added
+  /// in sqlite version 3.25.0, released on 2018-09-15. When you're using
+  /// Flutter and depend on `sqlite3_flutter_libs`, you're guaranteed to have
+  /// that version. Otherwise, please ensure that you only use [renameColumn] if
+  /// you know you'll run on sqlite 3.20.0 or later.
+  Future<void> renameColumn(
+      TableInfo table, String oldName, GeneratedColumn column) async {
+    final context = _createContext();
+    context.buffer
+      ..write('ALTER TABLE ${escapeIfNeeded(table.$tableName)} ')
+      ..write('RENAME COLUMN ${escapeIfNeeded(oldName)} ')
+      ..write('TO ${column.escapedName};');
+
+    return _issueCustomQuery(context.sql);
+  }
+
   /// Executes the custom query.
   @Deprecated('Use customStatement in the database class')
   Future<void> issueCustomQuery(String sql, [List<dynamic> args]) {
