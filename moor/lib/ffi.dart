@@ -9,4 +9,5 @@ library moor.ffi;
 
 import 'package:moor/src/ffi/vm_database.dart';
 
+export 'package:sqlite3/sqlite3.dart' show SqliteException;
 export 'src/ffi/vm_database.dart';
