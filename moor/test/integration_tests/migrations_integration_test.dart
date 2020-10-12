@@ -101,4 +101,44 @@ void main() {
     final item = await db.select(db.todosTable).getSingle();
     expect(item.category, isNull);
   });
+
+  test('add columns with default value', () async {
+    final executor = VmDatabase.memory(setup: (db) {
+      // Create todos table without content column
+      db.execute('''
+        CREATE TABLE todos (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          target_date INTEGER NOT NULL,
+          category INT
+        );
+      ''');
+
+      db.execute('INSERT INTO todos (title, target_date, category) VALUES '
+          "('Title', 0, 0)");
+    });
+
+    final db = TodoDb(executor);
+    db.migration = MigrationStrategy(
+      onCreate: (m) async {
+        await db.transaction(() async {
+          await m.alterTable(
+            TableMigration(
+              db.todosTable,
+              newColumns: [db.todosTable.content],
+              columnTransformer: {
+                db.todosTable.content: const Constant<String>('content'),
+              },
+            ),
+          );
+
+          await db
+              .customStatement("DELETE FROM todos WHERE content != 'content';");
+        });
+      },
+    );
+
+    final entry = await db.select(db.todosTable).getSingle();
+    expect(entry.content, 'content');
+  });
 }
