@@ -15,7 +15,8 @@ void main() {
           title TEXT NOT NULL,
           content TEXT NOT NULL,
           target_date INTEGER NOT NULL,
-          category TEXT NOT NULL
+          category TEXT NOT NULL,
+          UNIQUE(title, category)
         );
       ''');
 
