@@ -138,7 +138,7 @@ class Migrator {
       // We use the legacy sqlite_master table since the _schema rename happened
       // in a very recent version (3.33.0)
       final schemaQuery = await _db.customSelect(
-        'SELECT type, sql FROM sqlite_master WHERE tbl_name = ?;',
+        'SELECT type, name, sql FROM sqlite_master WHERE tbl_name = ?;',
         variables: [Variable<String>(tableName)],
       ).get();
 
@@ -147,9 +147,24 @@ class Migrator {
       for (final row in schemaQuery) {
         final type = row.readString('type');
         final sql = row.readString('sql');
+        final name = row.readString('name');
 
-        if (const {'trigger', 'view', 'index'}.contains(type)) {
-          createAffected.add(sql);
+        switch (type) {
+          case 'trigger':
+          case 'view':
+            createAffected.add(sql);
+            break;
+          case 'index':
+            if (name.startsWith('sqlite_autoindex')) {
+              // These indexes are created by sqlite to enforce
+              // different kinds of special constraints.
+              // They do not have any SQL create statement as they are
+              // created automatically by the constraints on the table.
+              // They can not be re-created and need to be skipped.
+              break;
+            }
+            createAffected.add(sql);
+            break;
         }
       }
 
