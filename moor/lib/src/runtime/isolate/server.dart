@@ -134,7 +134,12 @@ class _MoorServer {
     final executor = _managedExecutors[executorId];
     if (executor is! TransactionExecutor) {
       throw ArgumentError.value(
-          executorId, 'transactionId', 'Does not reference a transaction');
+        executorId,
+        'transactionId',
+        "Does not reference a transaction. This might happen if you don't "
+            'await all operations made inside a transaction, in which case the '
+            'transaction might complete with pending operations.',
+      );
     }
 
     final transaction = executor as TransactionExecutor;
