@@ -12,8 +12,12 @@ class TableWriter {
 
   TableWriter(this.table, this.scope);
 
+  bool get _skipVerification =>
+      scope.writer.options.skipVerificationCode ||
+      scope.generationOptions.isGeneratingForSchema;
+
   void writeInto() {
-    writeDataClass();
+    if (!scope.generationOptions.isGeneratingForSchema) writeDataClass();
     writeTableInfoClass();
   }
 
@@ -25,15 +29,26 @@ class TableWriter {
   void writeTableInfoClass() {
     _buffer = scope.leaf();
 
-    final dataClass = table.dartTypeName;
-    final tableDslName = table.fromClass?.name ?? 'Table';
+    if (scope.generationOptions.isGeneratingForSchema) {
+      // Write a small table header without data class
+      _buffer.write('class ${table.tableInfoName} extends Table with '
+          'TableInfo');
+      if (table.isVirtualTable) {
+        _buffer.write(', VirtualTableInfo');
+      }
+    } else {
+      // Regular generation, write full table class
+      final dataClass = table.dartTypeName;
+      final tableDslName = table.fromClass?.name ?? 'Table';
 
-    // class UsersTable extends Users implements TableInfo<Users, User> {
-    final typeArgs = '<${table.tableInfoName}, $dataClass>';
-    _buffer.write('class ${table.tableInfoName} extends $tableDslName with '
-        'TableInfo$typeArgs ');
-    if (table.isVirtualTable) {
-      _buffer.write(', VirtualTableInfo$typeArgs ');
+      // class UsersTable extends Users implements TableInfo<Users, User> {
+      final typeArgs = '<${table.tableInfoName}, $dataClass>';
+      _buffer.write('class ${table.tableInfoName} extends $tableDslName with '
+          'TableInfo$typeArgs ');
+
+      if (table.isVirtualTable) {
+        _buffer.write(', VirtualTableInfo$typeArgs ');
+      }
     }
 
     _buffer
@@ -86,6 +101,16 @@ class TableWriter {
   }
 
   void _writeMappingMethod() {
+    if (scope.generationOptions.isGeneratingForSchema) {
+      _buffer
+        ..writeln('@override')
+        ..writeln('Null map(Map<String, dynamic> data, '
+            '{String tablePrefix}) {')
+        ..writeln('return null;')
+        ..writeln('}');
+      return;
+    }
+
     final dataClassName = table.dartTypeName;
 
     _buffer
@@ -165,7 +190,7 @@ class TableWriter {
   }
 
   void _writeColumnVerificationMeta(MoorColumn column) {
-    if (!scope.writer.options.skipVerificationCode) {
+    if (!_skipVerification) {
       _buffer
         ..write('final VerificationMeta ${_fieldNameForColumnMeta(column)} = ')
         ..write("const VerificationMeta('${column.dartGetterName}');\n");
@@ -173,7 +198,7 @@ class TableWriter {
   }
 
   void _writeValidityCheckMethod() {
-    if (scope.writer.options.skipVerificationCode) return;
+    if (_skipVerification) return;
 
     _buffer
       ..write('@override\nVerificationContext validateIntegrity'

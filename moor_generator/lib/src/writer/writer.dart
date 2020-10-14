@@ -13,8 +13,9 @@ import 'package:moor_generator/src/analyzer/options.dart';
 class Writer {
   /* late final */ Scope _root;
   final MoorOptions options;
+  final GenerationOptions generationOptions;
 
-  Writer(this.options) {
+  Writer(this.options, {this.generationOptions = const GenerationOptions()}) {
     _root = Scope(parent: null, writer: this);
   }
 
@@ -52,12 +53,14 @@ class Scope extends _Node {
   final DartScope scope;
   final Writer writer;
 
-  MoorOptions get options => writer.options;
-
   Scope({@required Scope parent, Writer writer})
       : scope = parent?.scope?.nextLevel ?? DartScope.library,
         writer = writer ?? parent?.writer,
         super(parent);
+
+  MoorOptions get options => writer.options;
+
+  GenerationOptions get generationOptions => writer.generationOptions;
 
   Scope get root {
     var found = this;
@@ -91,6 +94,17 @@ class Scope extends _Node {
     _children.add(child);
     return child.buffer;
   }
+}
+
+/// Options that are specific to code-generation.
+class GenerationOptions {
+  final int forSchema;
+
+  const GenerationOptions({this.forSchema});
+
+  /// Whether, instead of generating the full database code, we're only
+  /// generating a subset needed for schema verification.
+  bool get isGeneratingForSchema => forSchema != null;
 }
 
 class _LeafNode extends _Node {

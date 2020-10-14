@@ -1,0 +1,6 @@
+targets:
+  $default:
+    builders:
+      moor_generator:
+        options:
+          generate_connect_constructor: true

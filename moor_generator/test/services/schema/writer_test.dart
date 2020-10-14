@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/services/schema/writer.dart';
+import 'package:moor_generator/src/services/schema/schema_files.dart';
 import 'package:test/test.dart';
 
 import '../../analyzer/utils.dart';

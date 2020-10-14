@@ -14,9 +14,13 @@ import 'commands/identify_databases.dart';
 import 'commands/schema.dart';
 import 'logging.dart';
 
-Future run(List<String> args) {
+Future run(List<String> args) async {
   final cli = MoorCli();
-  return cli.run(args);
+  try {
+    return await cli.run(args);
+  } on UsageException catch (e) {
+    print(e);
+  }
 }
 
 class MoorCli {

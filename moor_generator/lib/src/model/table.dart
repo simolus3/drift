@@ -27,7 +27,7 @@ class MoorTable implements MoorSchemaEntity {
   /// of this table in generated Dart code.
   final String _overriddenName;
 
-  /// Whether this table was created from an `ALTER TABLE` statement instead of
+  /// Whether this table was created from an `CREATE TABLE` statement instead of
   /// a Dart class.
   bool get isFromSql => _overriddenName != null;
 
@@ -104,13 +104,9 @@ class MoorTable implements MoorSchemaEntity {
     if (declaration == null) {
       throw StateError("Couldn't determine whether $displayName is a virtual "
           'table since its declaration is unknown.');
-    } else if (declaration is! MoorTableDeclaration) {
-      // tables declared in Dart can't be virtual
-      return false;
     }
 
-    final node = (declaration as MoorTableDeclaration).node;
-    return node is CreateVirtualTableStatement;
+    return declaration.isVirtual;
   }
 
   /// If this table [isVirtualTable], returns the `CREATE VIRTUAL TABLE`

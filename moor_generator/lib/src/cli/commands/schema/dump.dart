@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/services/schema/writer.dart';
+import 'package:moor_generator/src/services/schema/schema_files.dart';
 
 import '../../cli.dart';
 

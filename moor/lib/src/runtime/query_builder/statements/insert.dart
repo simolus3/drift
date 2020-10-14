@@ -52,7 +52,9 @@ class InsertStatement<T extends Table, D extends DataClass> {
   /// sqlite versions.
   ///
   /// Returns the `rowid` of the inserted row. For tables with an auto-increment
-  /// column, the `rowid` is the generated value of that column.
+  /// column, the `rowid` is the generated value of that column. The returned
+  /// value can be inaccurate when [onConflict] is set and the insert behaved
+  /// like an update.
   ///
   /// If the table doesn't have a `rowid`, you can't rely on the return value.
   /// Still, the future will always complete with an error if the insert fails.

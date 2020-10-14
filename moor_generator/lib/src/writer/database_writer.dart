@@ -15,6 +15,14 @@ class DatabaseWriter {
 
   DatabaseWriter(this.db, this.scope);
 
+  String get _dbClassName {
+    if (scope.generationOptions.isGeneratingForSchema) {
+      return 'DatabaseAtV${scope.generationOptions.forSchema}';
+    }
+
+    return '_\$${db.fromClass.name}';
+  }
+
   void write() {
     // Write referenced tables
     for (final table in db.tables) {
@@ -24,9 +32,14 @@ class DatabaseWriter {
     // Write the database class
     final dbScope = scope.child();
 
-    final className = '_\$${db.fromClass.name}';
+    final className = _dbClassName;
     final firstLeaf = dbScope.leaf();
-    firstLeaf.write('abstract class $className extends GeneratedDatabase {\n'
+    final isAbstract = !scope.generationOptions.isGeneratingForSchema;
+    if (isAbstract) {
+      firstLeaf.write('abstract ');
+    }
+
+    firstLeaf.write('class $className extends GeneratedDatabase {\n'
         '$className(QueryExecutor e) : '
         'super(SqlTypeSystem.defaultInstance, e); \n');
 
@@ -121,6 +134,14 @@ class DatabaseWriter {
       }
 
       schemaScope.write('],);\n');
+    }
+
+    if (scope.generationOptions.isGeneratingForSchema) {
+      final version = scope.generationOptions.forSchema;
+
+      schemaScope
+        ..writeln('@override')
+        ..writeln('int get schemaVersion => $version;');
     }
 
     // close the class

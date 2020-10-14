@@ -1,5 +1,6 @@
 import 'package:args/command_runner.dart';
 import 'package:moor_generator/src/cli/commands/schema/dump.dart';
+import 'package:moor_generator/src/cli/commands/schema/generate_utils.dart';
 
 import '../cli.dart';
 
@@ -12,5 +13,6 @@ class SchemaCommand extends Command {
 
   SchemaCommand(MoorCli cli) {
     addSubcommand(DumpSchemaCommand(cli));
+    addSubcommand(GenerateUtilsCommand(cli));
   }
 }
