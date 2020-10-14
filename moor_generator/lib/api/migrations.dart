@@ -23,6 +23,10 @@ abstract class SchemaVerifier {
   /// Finally, the method will read from `sqlite_schema` to verify that the
   /// schema at runtime matches the expected schema version.
   ///
+  /// The future completes normally if the schema migration succeeds and brings
+  /// the database into the expected schema. If the comparison fails, a
+  /// [SchemaMismatch] exception will be thrown.
+  ///
   /// If [validateDropped] is enabled (defaults to `false`), the method also
   /// validates that no further tables, triggers or views apart from those
   /// expected exist.
