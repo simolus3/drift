@@ -157,7 +157,7 @@ CREATE TABLE saved_routes (
 
 routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
   INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON f.id = r.to;
+  INNER JOIN coordinates t ON t.id = r.to;
 ```
 
 To match the returned column names while avoiding name clashes in Dart, moor 
@@ -169,7 +169,7 @@ again? Let's rewrite the query, this time using nested results:
 ```sql
 routesWithNestedPoints: SELECT r.id, r.name, f.**, t.** FROM routes r
   INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON f.id = r.to;
+  INNER JOIN coordinates t ON t.id = r.to;
 ```
 
 As you can see, we can nest a result simply by using the moor-specific 
