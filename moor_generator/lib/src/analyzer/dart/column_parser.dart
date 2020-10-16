@@ -252,12 +252,11 @@ class ColumnParser {
     final annotations = getter.metadata;
     final object = annotations.singleWhere((e) {
       final value = e.computeConstantValue();
-      return isFromMoor(value.type) &&
-          value.type.getDisplayString() == 'JsonKey';
+      return isFromMoor(value.type) && value.type.element.name == 'JsonKey';
     }, orElse: () => null);
 
     if (object == null) return null;
 
-    return object.constantValue.getField('key').toStringValue();
+    return object.computeConstantValue().getField('key').toStringValue();
   }
 }

@@ -21,8 +21,8 @@ class DataClassWriter {
     // write individual fields
     for (final column in table.columns) {
       final modifier = scope.options.fieldModifier;
-      _buffer.write(
-          '$modifier ${column.dartTypeName} ${column.dartGetterName}; \n');
+      _buffer.write('$modifier ${column.dartTypeCode(scope.generationOptions)} '
+          '${column.dartGetterName}; \n');
     }
 
     // write constructor with named optional fields
@@ -123,7 +123,7 @@ class DataClassWriter {
     for (final column in table.columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
-      final type = column.dartTypeName;
+      final type = column.dartTypeCode(scope.generationOptions);
 
       _buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
     }
@@ -151,9 +151,9 @@ class DataClassWriter {
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
       final value = needsThis ? 'this.$getter' : getter;
+      final dartType = column.dartTypeCode(scope.generationOptions);
 
-      _buffer
-          .write("'$name': serializer.toJson<${column.dartTypeName}>($value),");
+      _buffer.write("'$name': serializer.toJson<$dartType>($value),");
     }
 
     _buffer.write('};}');
@@ -168,12 +168,13 @@ class DataClassWriter {
       final column = table.columns[i];
       final last = i == table.columns.length - 1;
 
+      final typeName = column.dartTypeCode(scope.generationOptions);
       if (wrapNullableInValue && column.nullable) {
         _buffer
-          ..write('Value<${column.dartTypeName}> ${column.dartGetterName} ')
+          ..write('Value<$typeName> ${column.dartGetterName} ')
           ..write('= const Value.absent()');
       } else {
-        _buffer.write('${column.dartTypeName} ${column.dartGetterName}');
+        _buffer.write('$typeName ${column.dartGetterName}');
       }
 
       if (!last) {

@@ -1,6 +1,7 @@
 import 'package:moor_generator/src/analyzer/options.dart';
 
 import 'declarations/declaration.dart';
+import 'types.dart';
 import 'used_type_converter.dart';
 
 /// The column types in sql.
@@ -37,48 +38,8 @@ class ColumnName {
   }
 }
 
-const Map<ColumnType, String> dartTypeNames = {
-  ColumnType.boolean: 'bool',
-  ColumnType.text: 'String',
-  ColumnType.integer: 'int',
-  ColumnType.datetime: 'DateTime',
-  ColumnType.blob: 'Uint8List',
-  ColumnType.real: 'double',
-};
-
-/// Maps to the method name of a "QueryRow" from moor to extract a column type
-/// of a result row.
-const Map<ColumnType, String> readFromMethods = {
-  ColumnType.boolean: 'readBool',
-  ColumnType.text: 'readString',
-  ColumnType.integer: 'readInt',
-  ColumnType.datetime: 'readDateTime',
-  ColumnType.blob: 'readBlob',
-  ColumnType.real: 'readDouble',
-};
-
-/// Maps from a column type to code that can be used to create a variable of the
-/// respective type.
-const Map<ColumnType, String> createVariable = {
-  ColumnType.boolean: 'Variable.withBool',
-  ColumnType.text: 'Variable.withString',
-  ColumnType.integer: 'Variable.withInt',
-  ColumnType.datetime: 'Variable.withDateTime',
-  ColumnType.blob: 'Variable.withBlob',
-  ColumnType.real: 'Variable.withReal',
-};
-
-const Map<ColumnType, String> sqlTypes = {
-  ColumnType.boolean: 'BoolType',
-  ColumnType.text: 'StringType',
-  ColumnType.integer: 'IntType',
-  ColumnType.datetime: 'DateTimeType',
-  ColumnType.blob: 'BlobType',
-  ColumnType.real: 'RealType',
-};
-
 /// A column, as specified by a getter in a table.
-class MoorColumn implements HasDeclaration {
+class MoorColumn implements HasDeclaration, HasType {
   /// The getter name of this column in the table class. It will also be used
   /// as getter name in the TableInfo class (as it needs to override the field)
   /// and in the generated data class that will be generated for each table.
@@ -93,6 +54,7 @@ class MoorColumn implements HasDeclaration {
   bool get declaredInMoorFile => declaration?.isDefinedInMoorFile ?? false;
 
   /// The sql type of this column
+  @override
   final ColumnType type;
 
   /// The name of this column, as chosen by the user
@@ -110,6 +72,7 @@ class MoorColumn implements HasDeclaration {
 
   /// Whether the user has explicitly declared this column to be nullable, the
   /// default is false
+  @override
   final bool nullable;
 
   /// Whether this column has auto increment.
@@ -130,21 +93,8 @@ class MoorColumn implements HasDeclaration {
   final String clientDefaultCode;
 
   /// The [UsedTypeConverter], if one has been set on this column.
+  @override
   final UsedTypeConverter typeConverter;
-
-  /// The dart type that matches the values of this column. For instance, if a
-  /// table has declared an `IntColumn`, the matching dart type name would be
-  /// [int].
-  String get dartTypeName {
-    if (typeConverter != null) {
-      return typeConverter.mappedType?.getDisplayString();
-    }
-    return variableTypeName;
-  }
-
-  /// the Dart type of this column that can be handled by moors type mapping.
-  /// Basically the same as [dartTypeName], minus custom types.
-  String get variableTypeName => dartTypeNames[type];
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
@@ -169,10 +119,6 @@ class MoorColumn implements HasDeclaration {
         ColumnType.blob: 'GeneratedBlobColumn',
         ColumnType.real: 'GeneratedRealColumn',
       }[type];
-
-  /// The class inside the moor library that represents the same sql type as
-  /// this column.
-  String get sqlTypeName => sqlTypes[type];
 
   MoorColumn({
     this.type,

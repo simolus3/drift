@@ -94,7 +94,7 @@ class TableWriter {
 
   void _writeConvertersAsStaticFields() {
     for (final converter in table.converters) {
-      final typeName = converter.displayNameOfConverter;
+      final typeName = converter.converterNameInCode(scope.generationOptions);
       final code = converter.expression;
       _buffer.write('static $typeName ${converter.fieldName} = $code;');
     }

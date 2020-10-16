@@ -1,4 +1,4 @@
-import 'package:analyzer_plugin/protocol/protocol_common.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';

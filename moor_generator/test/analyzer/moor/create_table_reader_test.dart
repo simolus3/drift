@@ -39,7 +39,7 @@ void main() {
             contains('EnumIndexConverter<Fruits>'),
           )
           .having(
-            (e) => e.mappedType.getDisplayString(),
+            (e) => e.mappedType.getDisplayString(withNullability: false),
             'mappedType',
             'Fruits',
           ),

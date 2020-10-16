@@ -1,4 +1,5 @@
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
 
@@ -28,7 +29,7 @@ class ResultSetWriter {
     // write fields
     for (final column in resultSet.columns) {
       final name = resultSet.dartNameFor(column);
-      final runtimeType = column.dartType;
+      final runtimeType = column.dartTypeCode(scope.generationOptions);
 
       into.write('$modifier $runtimeType $name\n;');
 

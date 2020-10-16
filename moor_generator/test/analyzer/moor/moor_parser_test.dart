@@ -1,4 +1,5 @@
 import 'package:build/build.dart';
+import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -41,7 +42,7 @@ usersWithLongName: SELECT * FROM users WHERE LENGTH(name) > 25;
         ['id', 'name', 'field', 'another', 'different_json']);
     expect(table.columns.map((c) => c.dartGetterName),
         ['id', 'name', 'field', 'another', 'differentJson']);
-    expect(table.columns.map((c) => c.dartTypeName),
+    expect(table.columns.map((c) => c.dartTypeCode()),
         ['int', 'String', 'bool', 'DateTime', 'int']);
     expect(table.columns.map((c) => c.getJsonKey()),
         ['id', 'name', 'field', 'another', 'myJsonKey']);

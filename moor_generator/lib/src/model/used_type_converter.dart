@@ -2,8 +2,11 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/table.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 
 import 'column.dart';
+import 'types.dart';
 
 class UsedTypeConverter {
   /// Index of this converter in the table in which it has been created.
@@ -22,12 +25,6 @@ class UsedTypeConverter {
 
   /// The type that will be written to the database.
   final ColumnType sqlType;
-
-  /// A suitable typename to store an instance of the type converter used here.
-  String get displayNameOfConverter {
-    final sqlDartType = dartTypeNames[sqlType];
-    return 'TypeConverter<${mappedType.getDisplayString()}, $sqlDartType>';
-  }
 
   /// Type converters are stored as static fields in the table that created
   /// them. This will be the field name for this converter.
@@ -57,6 +54,12 @@ class UsedTypeConverter {
       sqlType: ColumnType.integer,
     );
   }
+
+  /// A suitable typename to store an instance of the type converter used here.
+  String converterNameInCode(GenerationOptions options) {
+    final sqlDartType = dartTypeNames[sqlType];
+    return 'TypeConverter<${mappedType.codeString(options)}, $sqlDartType>';
+  }
 }
 
 class InvalidTypeForEnumConverterException implements Exception {
@@ -66,13 +69,13 @@ class InvalidTypeForEnumConverterException implements Exception {
   InvalidTypeForEnumConverterException(this.reason, this.invalidType);
 
   String get errorDescription {
-    return "Can't use the type ${invalidType.getDisplayString()} as an enum "
+    return "Can't use the type ${invalidType.userVisibleName} as an enum "
         'type: $reason';
   }
 
   @override
   String toString() {
     return 'Invalid type for enum converter: '
-        '${invalidType.getDisplayString()}. Reason: $reason';
+        '${invalidType.userVisibleName}. Reason: $reason';
   }
 }

@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -18,8 +19,9 @@ class DaoGenerator extends Generator implements BaseGenerator {
 
       final daoName = element.displayName;
 
+      final dbTypeName = dao.dbClass.codeString(writer.generationOptions);
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
-          'DatabaseAccessor<${dao.dbClass.getDisplayString()}> {\n');
+          'DatabaseAccessor<$dbTypeName> {\n');
 
       for (final table in dao.tables) {
         final infoType = table.tableInfoName;

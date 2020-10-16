@@ -4,6 +4,7 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/services/find_stream_update_rules.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -86,7 +87,7 @@ class DatabaseWriter {
 
     // Write fields to access an dao. We use a lazy getter for that.
     for (final dao in db.daos) {
-      final typeName = dao.getDisplayString();
+      final typeName = dao.codeString(scope.generationOptions);
       final getterName = ReCase(typeName).camelCase;
       final databaseImplName = db.fromClass.name;
 

@@ -42,14 +42,16 @@ class TableParser {
 
   String _readDartTypeName(ClassElement element) {
     final nameAnnotation = element.metadata.singleWhere(
-        (e) =>
-            e.computeConstantValue().type.getDisplayString() == 'DataClassName',
+        (e) => e.computeConstantValue().type.element.name == 'DataClassName',
         orElse: () => null);
 
     if (nameAnnotation == null) {
       return dataClassNameForClassName(element.name);
     } else {
-      return nameAnnotation.constantValue.getField('name').toStringValue();
+      return nameAnnotation
+          .computeConstantValue()
+          .getField('name')
+          .toStringValue();
     }
   }
 

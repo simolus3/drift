@@ -1,5 +1,5 @@
-import 'package:analyzer_plugin/protocol/protocol_common.dart';
-import 'package:analyzer_plugin/protocol/protocol_generated.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
 import 'package:moor_generator/src/services/ide/assists/assist_service.dart';
 

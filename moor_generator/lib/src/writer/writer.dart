@@ -98,9 +98,16 @@ class Scope extends _Node {
 
 /// Options that are specific to code-generation.
 class GenerationOptions {
+  /// Whether we're generating code to verify schema migrations.
+  ///
+  /// When non-null, we're generating from a schema snapshot instead of from
+  /// source.
   final int forSchema;
 
-  const GenerationOptions({this.forSchema});
+  /// Whether to generate Dart code that supports non-nullable types.
+  final bool nnbd;
+
+  const GenerationOptions({this.forSchema, this.nnbd = false});
 
   /// Whether, instead of generating the full database code, we're only
   /// generating a subset needed for schema verification.

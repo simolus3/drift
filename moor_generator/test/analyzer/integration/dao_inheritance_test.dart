@@ -48,7 +48,7 @@ class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
     expect(file.errors.errors, isEmpty);
 
     final dao = (file.currentResult as ParsedDartFile).declaredDaos.single;
-    expect(dao.dbClass.getDisplayString(), 'MyDatabase');
+    expect(dao.dbClass.element.name, 'MyDatabase');
 
     state.close();
   });

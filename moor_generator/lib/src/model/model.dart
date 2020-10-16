@@ -8,4 +8,5 @@ export 'special_queries.dart';
 export 'sql_query.dart';
 export 'table.dart';
 export 'trigger.dart';
+export 'types.dart';
 export 'used_type_converter.dart';

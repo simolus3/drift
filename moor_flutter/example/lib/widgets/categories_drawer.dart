@@ -18,7 +18,7 @@ class CategoriesDrawer extends StatelessWidget {
                   .subtitle1
                   .copyWith(color: Colors.white),
             ),
-            decoration: BoxDecoration(color: Colors.orange),
+            decoration: const BoxDecoration(color: Colors.orange),
           ),
           Flexible(
             child: StreamBuilder<List<CategoryWithActiveInfo>>(

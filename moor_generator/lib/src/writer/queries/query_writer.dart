@@ -143,8 +143,8 @@ class QueryWriter {
     final dartLiteral = asDartLiteral(column.name);
     var code = 'row.$readMethod($dartLiteral)';
 
-    if (column.converter != null) {
-      final converter = column.converter;
+    if (column.typeConverter != null) {
+      final converter = column.typeConverter;
       code = '${_converter(converter)}.mapToDart($code)';
     }
     return code;
@@ -161,7 +161,8 @@ class QueryWriter {
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
   /// of the custom query.
   void _writeSelectStatementCreator() {
-    final returnType = 'Selectable<${_select.resultClassName}>';
+    final returnType =
+        'Selectable<${_select.resultTypeCode(scope.generationOptions)}>';
     final methodName = _nameOfCreationMethod();
 
     _buffer.write('$returnType $methodName(');
@@ -180,7 +181,9 @@ class QueryWriter {
   }
 
   void _writeOneTimeReader() {
-    _buffer.write('Future<List<${_select.resultClassName}>> ${query.name}(');
+    final returnType =
+        'Future<List<${_select.resultTypeCode(scope.generationOptions)}>>';
+    _buffer.write('$returnType ${query.name}(');
     _writeParameters();
     _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
     _writeUseParameters();
@@ -199,7 +202,9 @@ class QueryWriter {
       methodName = 'watch$upperQueryName';
     }
 
-    _buffer.write('Stream<List<${_select.resultClassName}>> $methodName(');
+    final returnType =
+        'Stream<List<${_select.resultTypeCode(scope.generationOptions)}>>';
+    _buffer.write('$returnType $methodName(');
     _writeParameters();
     _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
     _writeUseParameters();

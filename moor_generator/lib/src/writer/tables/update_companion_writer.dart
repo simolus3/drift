@@ -32,8 +32,8 @@ class UpdateCompanionWriter {
   void _writeFields() {
     for (final column in table.columns) {
       final modifier = scope.options.fieldModifier;
-      _buffer.write('$modifier Value<${column.dartTypeName}>'
-          ' ${column.dartGetterName};\n');
+      final type = column.dartTypeCode(scope.generationOptions);
+      _buffer.write('$modifier Value<$type> ${column.dartGetterName};\n');
     }
   }
 
@@ -72,8 +72,9 @@ class UpdateCompanionWriter {
 
       if (table.isColumnRequiredForInsert(column)) {
         requiredColumns.add(column);
+        final typeName = column.dartTypeCode(scope.generationOptions);
 
-        _buffer.write('@required ${column.dartTypeName} $param,');
+        _buffer.write('@required $typeName $param,');
       } else {
         _buffer.write('this.$param = const Value.absent(),');
       }
@@ -138,7 +139,9 @@ class UpdateCompanionWriter {
         _buffer.write(', ');
       }
       first = false;
-      _buffer.write('Value<${column.dartTypeName}> ${column.dartGetterName}');
+
+      final typeName = column.dartTypeCode(scope.generationOptions);
+      _buffer.write('Value<$typeName> ${column.dartGetterName}');
     }
 
     _buffer

@@ -3,11 +3,13 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/utils/hash.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import 'column.dart';
 import 'table.dart';
+import 'types.dart';
 import 'used_type_converter.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
@@ -112,22 +114,6 @@ class SqlSelectQuery extends SqlQuery {
   /// The name of the result class, as requested by the user.
   final String /*?*/ requestedResultClass;
 
-  String get resultClassName {
-    if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable.table.dartTypeName;
-    }
-
-    if (resultSet.singleColumn) {
-      return resultSet.columns.single.dartType;
-    }
-
-    if (resultSet.resultClassName != null) {
-      return resultSet.resultClassName;
-    }
-
-    return '${ReCase(name).pascalCase}Result';
-  }
-
   SqlSelectQuery(
     String name,
     AnalysisContext fromContext,
@@ -150,6 +136,30 @@ class SqlSelectQuery extends SqlQuery {
       resultSet,
       null,
     );
+  }
+
+  String get resultClassName {
+    if (resultSet.matchingTable != null || resultSet.singleColumn) {
+      throw UnsupportedError('This result set does not introduce a class, '
+          'either because it has a matching table or because it only returns '
+          'one column.');
+    }
+
+    return resultSet.resultClassName ?? '${ReCase(name).pascalCase}Result';
+  }
+
+  /// The Dart type representing a row of this result set.
+  String resultTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    if (resultSet.matchingTable != null) {
+      return resultSet.matchingTable.table.dartTypeName;
+    }
+
+    if (resultSet.singleColumn) {
+      return resultSet.columns.single.dartTypeCode(options);
+    }
+
+    return resultClassName;
   }
 }
 
@@ -297,29 +307,25 @@ class MatchingMoorTable {
   }
 }
 
-class ResultColumn {
+class ResultColumn implements HasType {
   final String name;
+  @override
   final ColumnType type;
+  @override
   final bool nullable;
 
-  final UsedTypeConverter converter;
+  @override
+  final UsedTypeConverter typeConverter;
 
-  ResultColumn(this.name, this.type, this.nullable, {this.converter});
-
-  /// The dart type that can store a result of this column.
-  String get dartType {
-    if (converter != null) {
-      return converter.mappedType.getDisplayString();
-    } else {
-      return dartTypeNames[type];
-    }
-  }
+  ResultColumn(this.name, this.type, this.nullable, {this.typeConverter});
 
   /// Hash-code that matching [compatibleTo], so that two compatible columns
   /// will have the same [compatibilityHashCode].
   int get compatibilityHashCode {
-    return $mrjf($mrjc(name.hashCode,
-        $mrjc(type.hashCode, $mrjc(nullable.hashCode, converter.hashCode))));
+    return $mrjf($mrjc(
+        name.hashCode,
+        $mrjc(
+            type.hashCode, $mrjc(nullable.hashCode, typeConverter.hashCode))));
   }
 
   /// Checks whether this column is compatible to the [other], meaning that they
@@ -328,7 +334,7 @@ class ResultColumn {
     return other.name == name &&
         other.type == type &&
         other.nullable == nullable &&
-        other.converter == converter;
+        other.typeConverter == typeConverter;
   }
 }
 
@@ -439,7 +445,8 @@ class FoundVariable extends FoundElement {
   String get parameterType {
     String innerType;
     if (converter != null) {
-      innerType = converter.mappedType.getDisplayString();
+      // todo: Respect nullability here
+      innerType = converter.mappedType.getDisplayString(withNullability: false);
     } else {
       innerType = dartTypeNames[type] ?? 'dynamic';
     }
