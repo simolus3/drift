@@ -246,7 +246,7 @@ class TableWriter {
 
   void _writePrimaryKeyOverride() {
     _buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
-    var primaryKey = table.primaryKey;
+    var primaryKey = table.fullPrimaryKey;
 
     // If there is an auto increment column, that forms the primary key. The
     // PK returned by table.primaryKey only contains column that have been
@@ -306,8 +306,8 @@ class TableWriter {
     }
 
     if (table.isVirtualTable) {
-      final declaration = table.declaration as MoorTableDeclaration;
-      final stmt = declaration.node as CreateVirtualTableStatement;
+      final declaration = table.declaration as TableDeclarationWithSql;
+      final stmt = declaration.creatingStatement as CreateVirtualTableStatement;
       final moduleAndArgs = asDartLiteral(
           '${stmt.moduleName}(${stmt.argumentContent.join(', ')})');
       _buffer

@@ -29,7 +29,7 @@ class VerifierImplementation implements SchemaVerifier {
             .compare();
 
     if (!result.noChanges) {
-      throw SchemaMismatch(result.describe(0));
+      throw SchemaMismatch(result.describe());
     }
   }
 

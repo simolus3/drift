@@ -8,6 +8,9 @@ abstract class TableDeclaration extends Declaration {
 abstract class TableDeclarationWithSql implements TableDeclaration {
   /// The `CREATE TABLE` statement used to create this table.
   String get createSql;
+
+  /// The parsed statement creating this table.
+  TableInducingStatement get creatingStatement;
 }
 
 class DartTableDeclaration implements TableDeclaration, DartDeclaration {
@@ -38,12 +41,6 @@ class MoorTableDeclaration
   @override
   final TableInducingStatement node;
 
-  @override
-  bool get isVirtual => node is CreateVirtualTableStatement;
-
-  @override
-  String get createSql => node.span.text;
-
   MoorTableDeclaration._(this.declaration, this.node);
 
   factory MoorTableDeclaration(TableInducingStatement node, FoundFile file) {
@@ -52,13 +49,22 @@ class MoorTableDeclaration
       node,
     );
   }
+
+  @override
+  bool get isVirtual => node is CreateVirtualTableStatement;
+
+  @override
+  String get createSql => node.span.text;
+
+  @override
+  TableInducingStatement get creatingStatement => node;
 }
 
 class CustomVirtualTableDeclaration implements TableDeclarationWithSql {
   @override
-  final String createSql;
+  final CreateVirtualTableStatement creatingStatement;
 
-  CustomVirtualTableDeclaration(this.createSql);
+  CustomVirtualTableDeclaration(this.creatingStatement);
 
   @override
   SourceRange get declaration {
@@ -67,6 +73,9 @@ class CustomVirtualTableDeclaration implements TableDeclarationWithSql {
 
   @override
   bool get isVirtual => true;
+
+  @override
+  String get createSql => creatingStatement.span.text;
 }
 
 class CustomTableDeclaration implements TableDeclaration {

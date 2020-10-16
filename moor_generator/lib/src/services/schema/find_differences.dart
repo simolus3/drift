@@ -111,6 +111,22 @@ class FindSchemaDifferences {
       CreateTableStatement ref, CreateTableStatement act) {
     final results = <String, CompareResult>{};
 
+    results['columns'] = _compareColumns(ref.columns, act.columns);
+
+    // We're currently comparing table constraints by their exact order.
+    if (ref.tableConstraints.length != act.tableConstraints.length) {
+      results['constraints'] = FoundDifference(
+          'Expected the table to have ${ref.tableConstraints.length} table '
+          'constraints, it actually has ${act.tableConstraints.length}.');
+    } else {
+      for (var i = 0; i < ref.tableConstraints.length; i++) {
+        final refConstraint = ref.tableConstraints[i];
+        final actConstraint = act.tableConstraints[i];
+
+        results['constraints_$i'] = _compareByAst(refConstraint, actConstraint);
+      }
+    }
+
     if (ref.withoutRowId != act.withoutRowId) {
       final expectedWithout = ref.withoutRowId;
       results['rowid'] = FoundDifference(expectedWithout
@@ -118,7 +134,35 @@ class FindSchemaDifferences {
           : 'Did not expect the table to have a WITHOUT ROWID clause.');
     }
 
-    return const Success();
+    return MultiResult(results);
+  }
+
+  CompareResult _compareColumns(
+      List<ColumnDefinition> ref, List<ColumnDefinition> act) {
+    final results = <String, CompareResult>{};
+
+    final actByName = {for (final column in act) column.columnName: column};
+    // Additional columns in act that ref doesn't have. Built by iterating over
+    // ref.
+    final additionalColumns = actByName.keys.toSet();
+
+    for (final refColumn in ref) {
+      final name = refColumn.columnName;
+      final actColumn = actByName[name];
+
+      if (actColumn == null) {
+        results[name] = FoundDifference('Missing in schema');
+      } else {
+        results[name] = _compareByAst(refColumn, actColumn);
+        additionalColumns.remove(name);
+      }
+    }
+
+    for (final additional in additionalColumns) {
+      results[additional] = FoundDifference('Additional unexpected column');
+    }
+
+    return MultiResult(results);
   }
 
   CompareResult _compareByAst(AstNode a, AstNode b) {
@@ -153,7 +197,8 @@ abstract class CompareResult {
 
   bool get noChanges;
 
-  String describe(int indent);
+  String describe() => _describe(0);
+  String _describe(int indent);
 }
 
 class Success extends CompareResult {
@@ -163,7 +208,7 @@ class Success extends CompareResult {
   bool get noChanges => true;
 
   @override
-  String describe(int indent) => '${' ' * indent}matches schema ✓';
+  String _describe(int indent) => '${' ' * indent}matches schema ✓';
 }
 
 class FoundDifference extends CompareResult {
@@ -175,7 +220,7 @@ class FoundDifference extends CompareResult {
   bool get noChanges => false;
 
   @override
-  String describe(int indent) => ' ' * indent + description;
+  String _describe(int indent) => ' ' * indent + description;
 }
 
 class MultiResult extends CompareResult {
@@ -187,14 +232,16 @@ class MultiResult extends CompareResult {
   bool get noChanges => nestedResults.values.every((e) => e.noChanges);
 
   @override
-  String describe(int indent) {
+  String _describe(int indent) {
     final buffer = StringBuffer();
     final indentStr = ' ' * indent;
 
     for (final result in nestedResults.entries) {
+      if (result.value.noChanges) continue;
+
       buffer
         ..writeln('$indentStr${result.key}:')
-        ..writeln(result.value.describe(indent + 1));
+        ..writeln(result.value._describe(indent + 1));
     }
 
     return buffer.toString();

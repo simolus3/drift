@@ -114,8 +114,7 @@ class MoorTable implements MoorSchemaEntity {
   String get createVirtual {
     if (!isVirtualTable) return null;
 
-    final node = (declaration as MoorTableDeclaration).node;
-    return (node as CreateVirtualTableStatement).span.text;
+    return (declaration as TableDeclarationWithSql).createSql;
   }
 
   MoorTable({

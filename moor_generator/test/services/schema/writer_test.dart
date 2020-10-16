@@ -1,8 +1,12 @@
 @Tags(['analyzer'])
 import 'dart:convert';
 
+import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/services/schema/schema_files.dart';
+import 'package:moor_generator/src/writer/database_writer.dart';
+import 'package:moor_generator/src/writer/writer.dart';
 import 'package:test/test.dart';
 
 import '../../analyzer/utils.dart';
@@ -19,6 +23,8 @@ CREATE TABLE "groups" (
   
   UNIQUE(name)
 );
+
+CREATE VIRTUAL TABLE email USING fts5(sender, title, body);
 
 CREATE TABLE group_members (
   "group" INT NOT NULL REFERENCES "groups"(id),
@@ -56,7 +62,7 @@ class SettingsConverter extends TypeConverter<Settings, String> {
 @UseMoor(include: {'a.moor'}, tables: [Users])
 class Database {}
       ''',
-    });
+    }, options: const MoorOptions(modules: [SqlModule.fts5]));
 
     final file = await state.analyze('package:foo/main.dart');
     expect(state.session.errorsInFileAndImports(file), isEmpty);
@@ -66,6 +72,18 @@ class Database {}
 
     final schemaJson = SchemaWriter(db).createSchemaJson();
     expect(schemaJson, json.decode(expected));
+  });
+
+  test('can generate code from schema json', () {
+    final reader =
+        SchemaReader.readJson(json.decode(expected) as Map<String, dynamic>);
+    final fakeDb = Database()..entities = [...reader.entities];
+
+    // Write the database. Not crashing is good enough for us here, we have
+    // separate tests for verification
+    final writer = Writer(const MoorOptions(),
+        generationOptions: const GenerationOptions(forSchema: 1));
+    DatabaseWriter(fakeDb, writer.child()).write();
   });
 }
 
@@ -78,9 +96,7 @@ const expected = r'''
    "entities":[
       {
          "id":0,
-         "references":[
-
-         ],
+         "references":[],
          "type":"table",
          "data":{
             "name":"groups",
@@ -113,17 +129,12 @@ const expected = r'''
             "is_virtual":false,
             "constraints":[
                "UNIQUE(name)"
-            ],
-            "explicit_pk":[
-               "id"
             ]
          }
       },
       {
          "id":1,
-         "references":[
-
-         ],
+         "references":[],
          "type":"table",
          "data":{
             "name":"users",
@@ -254,6 +265,46 @@ const expected = r'''
             "name":"groups_name",
             "sql":"CREATE INDEX groups_name ON \"groups\"(name);"
          }
+      },
+      {
+        "id": 5,
+        "references": [],
+        "type": "table",
+        "data": {
+          "name": "email",
+          "was_declared_in_moor": true,
+          "columns": [
+            {
+              "name": "sender",
+              "moor_type": "ColumnType.text",
+              "nullable": false,
+              "customConstraints": "",
+              "default_dart": null,
+              "default_client_dart": null,
+              "dsl_features": []
+            },
+            {
+              "name": "title",
+              "moor_type": "ColumnType.text",
+              "nullable": false,
+              "customConstraints": "",
+              "default_dart": null,
+              "default_client_dart": null,
+              "dsl_features": []
+            },
+            {
+              "name": "body",
+              "moor_type": "ColumnType.text",
+              "nullable": false,
+              "customConstraints": "",
+              "default_dart": null,
+              "default_client_dart": null,
+              "dsl_features": []
+            }
+          ],
+          "is_virtual": true,
+          "create_virtual_stmt": "CREATE VIRTUAL TABLE email USING fts5(sender, title, body);"
+        }
       }
    ]
 }

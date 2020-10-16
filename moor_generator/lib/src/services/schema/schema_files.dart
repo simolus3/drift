@@ -1,5 +1,6 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:recase/recase.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 const _infoVersion = '0.1.0-dev-preview';
 
@@ -129,6 +130,8 @@ class SchemaReader {
 
   final Set<int> _currentlyProcessing = {};
 
+  final SqlEngine _engine = SqlEngine();
+
   SchemaReader._();
 
   factory SchemaReader.readJson(Map<String, dynamic> json) {
@@ -221,11 +224,13 @@ class SchemaReader {
 
     if (isVirtual) {
       final create = content['create_virtual_stmt'] as String;
+      final parsed =
+          _engine.parse(create).rootNode as CreateVirtualTableStatement;
 
       return MoorTable(
         sqlName: sqlName,
         overriddenName: sqlName,
-        declaration: CustomVirtualTableDeclaration(create),
+        declaration: CustomVirtualTableDeclaration(parsed),
         overrideWithoutRowId: withoutRowId,
       );
     }
@@ -244,7 +249,7 @@ class SchemaReader {
     if (content.containsKey('explicit_pk')) {
       explicitPk = {
         for (final columnName in content['explicit_pk'] as List<dynamic>)
-          columns.singleWhere((c) => c.name == columnName)
+          columns.singleWhere((c) => c.name.name == columnName)
       };
     }
 
