@@ -192,6 +192,11 @@ void main() {
     expect(type, const ResolvedType(type: BasicType.int));
   });
 
+  test('infers type of EXISTS expressions', () {
+    final type = _resolveResultColumn('SELECT EXISTS(SELECT * FROM demo);');
+    expect(type, const ResolvedType.bool());
+  });
+
   test('resolves subqueries', () {
     final type = _resolveResultColumn('SELECT (SELECT COUNT(*) FROM demo);');
     expect(type, const ResolvedType(type: BasicType.int));

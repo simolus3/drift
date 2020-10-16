@@ -218,6 +218,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
+  void visitExists(ExistsExpression e, TypeExpectation arg) {
+    session._checkAndResolve(e, const ResolvedType.bool(), arg);
+    visit(e.select, const NoTypeExpectation());
+  }
+
+  @override
   void visitUnaryExpression(UnaryExpression e, TypeExpectation arg) {
     final operatorType = e.operator.type;
 
