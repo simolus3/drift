@@ -1,0 +1,21 @@
+name: migrations_example
+version: 1.0.0
+
+environment:
+  sdk: '>=2.6.0 <3.0.0'
+
+dependencies:
+  moor:
+
+dev_dependencies:
+  moor_generator:
+  build_runner: ^1.10.1
+  test: ^1.15.4
+
+dependency_overrides:
+  moor:
+    path: ../../moor
+  moor_generator:
+    path: ../../moor_generator
+  sqlparser:
+    path: ../../sqlparser

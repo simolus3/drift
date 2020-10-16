@@ -73,7 +73,11 @@ class FindStreamUpdateRules {
   }
 
   void _writeRulesForTrigger(MoorTrigger trigger, List<UpdateRule> rules) {
-    final target = trigger.declaration.node.target;
+    final declaration = trigger.declaration;
+
+    if (declaration is! MoorTriggerDeclaration) return;
+
+    final target = (declaration as MoorTriggerDeclaration).node.target;
     UpdateKind targetKind;
     if (target is DeleteTarget) {
       targetKind = UpdateKind.delete;

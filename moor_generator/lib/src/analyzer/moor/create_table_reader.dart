@@ -40,10 +40,9 @@ class CreateTableReader {
     }
 
     final foundColumns = <String, MoorColumn>{};
-    final primaryKey = <MoorColumn>{};
+    Set<MoorColumn> primaryKeyFromTableConstraint;
 
     for (final column in table.resultColumns) {
-      var isPrimaryKey = false;
       final features = <ColumnFeature>[];
       final sqlName = column.name;
       final dartName = ReCase(sqlName).camelCase;
@@ -87,7 +86,6 @@ class CreateTableReader {
           : const Iterable<ColumnConstraint>.empty();
       for (final constraint in constraints) {
         if (constraint is PrimaryKeyColumn) {
-          isPrimaryKey = true;
           features.add(const PrimaryKey());
           if (constraint.autoIncrement) {
             features.add(AutoIncrement());
@@ -153,9 +151,6 @@ class CreateTableReader {
       );
 
       foundColumns[column.name] = parsed;
-      if (isPrimaryKey) {
-        primaryKey.add(parsed);
-      }
     }
 
     final tableName = table.name;
@@ -167,9 +162,11 @@ class CreateTableReader {
 
     for (final keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
       if (keyConstraint.isPrimaryKey) {
-        primaryKey.addAll(keyConstraint.indexedColumns
-            .map((r) => foundColumns[r.columnName])
-            .where((c) => c != null));
+        primaryKeyFromTableConstraint = {
+          for (final column in keyConstraint.indexedColumns)
+            if (foundColumns.containsKey(column.columnName))
+              foundColumns[column.columnName]
+        };
       }
     }
 
@@ -179,7 +176,7 @@ class CreateTableReader {
       sqlName: table.name,
       dartTypeName: dataClassName,
       overriddenName: dartTableName,
-      primaryKey: primaryKey,
+      primaryKey: primaryKeyFromTableConstraint,
       overrideWithoutRowId: table.withoutRowId ? true : null,
       overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
       // we take care of writing the primary key ourselves
