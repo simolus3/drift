@@ -51,6 +51,13 @@ class VmDatabase extends DelegatedDatabase {
   ///
   /// This method will call `sqlite3_close_v2` for every `VmDatabase` that this
   /// process has opened without closing later.
+  ///
+  /// __Warning__: This functionality appears to cause crashes on iOS, and it
+  /// does nothing on Android. It's mainly intended for Desktop operating
+  /// systems, so try to avoid calling it where it's not necessary.
+  /// For safety measures, avoid calling [closeExistingInstances] in release
+  /// builds.
+  ///
   /// Ideally, all databases should be closed properly in Dart. In that case,
   /// it's not necessary to call [closeExistingInstances]. However, features
   /// like hot (stateless) restart can make it impossible to reliably close
