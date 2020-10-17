@@ -249,7 +249,8 @@ class QueryWriter {
       } else {
         if (needsComma) _buffer.write(', ');
 
-        _buffer.write('${element.parameterType} ${element.dartParameterName}');
+        final type = element.dartTypeCode(scope.generationOptions);
+        _buffer.write('$type ${element.dartParameterName}');
         needsComma = true;
       }
     }
@@ -268,9 +269,9 @@ class QueryWriter {
         // surrounding precedence in SQL.
         final defaultSql =
             "'(${escapeForDart(optional.defaultValue.toSql())})'";
-        _buffer
-            .write('${optional.parameterType} ${optional.dartParameterName} = '
-                'const CustomExpression($defaultSql)');
+        final type = optional.dartTypeCode(scope.generationOptions);
+        _buffer.write('$type ${optional.dartParameterName} = '
+            'const CustomExpression($defaultSql)');
       }
 
       _buffer.write('}');
@@ -393,10 +394,10 @@ class QueryWriter {
         String constructVar(String dartExpr) {
           final buffer = StringBuffer(createVariable[element.type])..write('(');
 
-          if (element.converter != null) {
+          if (element.typeConverter != null) {
             // Apply the converter
-            buffer
-                .write('${_converter(element.converter)}.mapToSql($dartExpr)');
+            buffer.write(
+                '${_converter(element.typeConverter)}.mapToSql($dartExpr)');
           } else {
             buffer.write(dartExpr);
           }

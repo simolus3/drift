@@ -390,12 +390,12 @@ class NestedResultTable {
 abstract class FoundElement {
   String get dartParameterName;
 
-  /// The type of this element on the generated method.
-  String get parameterType;
+  /// Dart code for a type representing tis element.
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
 }
 
 /// A semantic interpretation of a [Variable] in a sql statement.
-class FoundVariable extends FoundElement {
+class FoundVariable extends FoundElement implements HasType {
   /// The (unique) index of this variable in the sql query. For instance, the
   /// query `SELECT * FROM tbl WHERE a = ? AND b = :xyz OR c = :xyz` contains
   /// three [Variable]s in its AST, but only two [FoundVariable]s, where the
@@ -407,10 +407,15 @@ class FoundVariable extends FoundElement {
   String name;
 
   /// The (inferred) type for this variable.
+  @override
   final ColumnType type;
 
   /// The type converter to apply before writing this value.
-  final UsedTypeConverter converter;
+  @override
+  final UsedTypeConverter typeConverter;
+
+  @override
+  final bool nullable;
 
   /// The first [Variable] in the sql statement that has this [index].
   // todo: Do we really need to expose this? We only use [resolvedIndex], which
@@ -428,8 +433,9 @@ class FoundVariable extends FoundElement {
     @required this.name,
     @required this.type,
     @required this.variable,
+    this.nullable = false,
     this.isArray = false,
-    this.converter,
+    this.typeConverter,
   }) : assert(variable.resolvedIndex == index);
 
   @override
@@ -442,19 +448,9 @@ class FoundVariable extends FoundElement {
   }
 
   @override
-  String get parameterType {
-    String innerType;
-    if (converter != null) {
-      // todo: Respect nullability here
-      innerType = converter.mappedType.getDisplayString(withNullability: false);
-    } else {
-      innerType = dartTypeNames[type] ?? 'dynamic';
-    }
-
-    if (isArray) {
-      return 'List<$innerType>';
-    }
-    return innerType;
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
+    final withoutArray = OperationOnTypes(this).dartTypeCode(options);
+    return isArray ? 'List<$withoutArray>' : withoutArray;
   }
 }
 
@@ -482,7 +478,22 @@ class FoundDartPlaceholder extends FoundElement {
       {this.defaultValue});
 
   @override
-  String get parameterType {
+  String get dartParameterName => name;
+
+  @override
+  int get hashCode => hashAll([type, columnType, name]);
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        other is FoundDartPlaceholder &&
+            other.type == type &&
+            other.columnType == columnType &&
+            other.name == name;
+  }
+
+  @override
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     switch (type) {
       case DartPlaceholderType.expression:
         if (columnType == null) return 'Expression';
@@ -499,21 +510,6 @@ class FoundDartPlaceholder extends FoundElement {
     }
 
     throw AssertionError('cant happen, all branches covered');
-  }
-
-  @override
-  String get dartParameterName => name;
-
-  @override
-  int get hashCode => hashAll([type, columnType, name]);
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        other is FoundDartPlaceholder &&
-            other.type == type &&
-            other.columnType == columnType &&
-            other.name == name;
   }
 }
 

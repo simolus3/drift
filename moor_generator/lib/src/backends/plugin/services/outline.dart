@@ -99,7 +99,7 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
 
     if (resolved != null) {
       final parameterBuilder = StringBuffer('(');
-      final vars = resolved.elements.map((e) => e.parameterType).join(', ');
+      final vars = resolved.elements.map((e) => e.dartTypeCode()).join(', ');
       parameterBuilder..write(vars)..write(')');
 
       element.parameters = parameterBuilder.toString();

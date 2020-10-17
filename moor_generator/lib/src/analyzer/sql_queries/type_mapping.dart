@@ -154,7 +154,7 @@ class TypeMapper {
           type: type,
           variable: used,
           isArray: isArray,
-          converter: converter,
+          typeConverter: converter,
         ));
 
         // arrays cannot be indexed explicitly because they're expanded into
