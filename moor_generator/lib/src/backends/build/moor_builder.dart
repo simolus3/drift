@@ -19,7 +19,9 @@ final _flags = Resource(() => _BuilderFlags());
 mixin MoorBuilder on Builder {
   MoorOptions get options;
 
-  Writer createWriter() => Writer(options);
+  Writer createWriter({bool nnbd = false}) {
+    return Writer(options, generationOptions: GenerationOptions(nnbd: nnbd));
+  }
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
     Task task;

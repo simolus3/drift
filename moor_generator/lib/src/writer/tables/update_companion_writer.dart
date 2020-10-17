@@ -74,7 +74,7 @@ class UpdateCompanionWriter {
         requiredColumns.add(column);
         final typeName = column.dartTypeCode(scope.generationOptions);
 
-        _buffer.write('@required $typeName $param,');
+        _buffer.write('${scope.required} $typeName $param,');
       } else {
         _buffer.write('this.$param = const Value.absent(),');
       }
@@ -111,10 +111,8 @@ class UpdateCompanionWriter {
       ..write('({');
 
     for (final column in table.columns) {
-      _buffer
-        ..write('Expression<${column.variableTypeName}> ')
-        ..write(column.dartGetterName)
-        ..write(',\n');
+      final type = scope.nullableType('Expression<${column.variableTypeName}>');
+      _buffer.write('$type ${column.dartGetterName}, \n');
     }
 
     _buffer..write('}) {\n')..write('return RawValuesInsertable({');
@@ -141,7 +139,8 @@ class UpdateCompanionWriter {
       first = false;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
-      _buffer.write('Value<$typeName> ${column.dartGetterName}');
+      final valueType = scope.nullableType('Value<$typeName>');
+      _buffer.write('$valueType ${column.dartGetterName}');
     }
 
     _buffer

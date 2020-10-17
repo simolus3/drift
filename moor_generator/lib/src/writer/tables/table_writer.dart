@@ -55,7 +55,7 @@ class TableWriter {
       ..write('{\n')
       // write a GeneratedDatabase reference that is set in the constructor
       ..write('final GeneratedDatabase _db;\n')
-      ..write('final String _alias;\n')
+      ..write('final ${scope.nullableType('String')} _alias;\n')
       ..write('${table.tableInfoName}(this._db, [this._alias]);\n');
 
     // Generate the columns
@@ -105,7 +105,7 @@ class TableWriter {
       _buffer
         ..writeln('@override')
         ..writeln('Null map(Map<String, dynamic> data, '
-            '{String tablePrefix}) {')
+            '{${scope.nullableType('String')} tablePrefix}) {')
         ..writeln('return null;')
         ..writeln('}');
       return;
@@ -115,7 +115,7 @@ class TableWriter {
 
     _buffer
       ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
-          '{String tablePrefix}) {\n')
+          '{${scope.nullableType('String')} tablePrefix}) {\n')
       ..write('final effectivePrefix = '
           "tablePrefix != null ? '\$tablePrefix.' : null;")
       ..write('return $dataClassName.fromData'
@@ -186,6 +186,7 @@ class TableWriter {
       // don't override on custom tables because we only override the column
       // when the base class is user defined
       hasOverride: !table.isFromSql,
+      options: scope.generationOptions,
     );
   }
 

@@ -14,6 +14,8 @@ class DataClassWriter {
     _buffer = scope.leaf();
   }
 
+  String get serializerType => scope.nullableType('ValueSerializer');
+
   void write() {
     _buffer.write('class ${table.dartTypeName} extends DataClass '
         'implements Insertable<${table.dartTypeName}> {\n');
@@ -33,7 +35,7 @@ class DataClassWriter {
         if (column.nullable) {
           return 'this.${column.dartGetterName}';
         } else {
-          return '@required this.${column.dartGetterName}';
+          return '${scope.required} this.${column.dartGetterName}';
         }
       }).join(', '))
       ..write('});');
@@ -69,7 +71,7 @@ class DataClassWriter {
     _buffer
       ..write('factory $dataClassName.fromData')
       ..write('(Map<String, dynamic> data, GeneratedDatabase db, ')
-      ..write('{String prefix}) {\n')
+      ..write('{${scope.nullableType('String')} prefix}) { \n')
       ..write("final effectivePrefix = prefix ?? '';");
 
     final dartTypeToResolver = <String, String>{};
@@ -115,7 +117,7 @@ class DataClassWriter {
 
     _buffer
       ..write('factory $dataClassName.fromJson('
-          'Map<String, dynamic> json, {ValueSerializer serializer}'
+          'Map<String, dynamic> json, {$serializerType serializer}'
           ') {\n')
       ..write('serializer ??= moorRuntimeOptions.defaultSerializer;\n')
       ..write('return $dataClassName(');
@@ -133,7 +135,7 @@ class DataClassWriter {
     if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
       _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
-          '{ValueSerializer serializer}) => '
+          '{$serializerType serializer}) => '
           '$dataClassName.fromJson('
           'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
           'serializer: serializer);');
@@ -142,7 +144,7 @@ class DataClassWriter {
 
   void _writeToJson() {
     _buffer.write('@override Map<String, dynamic> toJson('
-        '{ValueSerializer serializer}) {\n'
+        '{$serializerType serializer}) {\n'
         'serializer ??= moorRuntimeOptions.defaultSerializer;\n'
         'return <String, dynamic>{\n');
 
@@ -173,6 +175,10 @@ class DataClassWriter {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')
           ..write('= const Value.absent()');
+      } else if (!column.nullable && scope.generationOptions.nnbd) {
+        // We always write nullable types in the copyWith constructor, since all
+        // parameters are optional.
+        _buffer.write('$typeName? ${column.dartGetterName}');
       } else {
         _buffer.write('$typeName ${column.dartGetterName}');
       }
@@ -256,7 +262,7 @@ class DataClassWriter {
         ..write('),');
     }
 
-    _buffer.write(');\n}');
+    _buffer.writeln(');\n}');
   }
 
   void _writeToString() {

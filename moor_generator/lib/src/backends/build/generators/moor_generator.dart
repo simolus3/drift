@@ -25,7 +25,8 @@ class MoorGenerator extends Generator implements BaseGenerator {
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
     final parsed = await builder.analyzeDartFile(buildStep);
-    final writer = builder.createWriter();
+    final writer =
+        builder.createWriter(nnbd: library.element.isNonNullableByDefault);
 
     if (parsed.declaredDatabases.isNotEmpty) {
       final ignore = '// ignore_for_file: ${_ignoredLints.join(', ')}\n';

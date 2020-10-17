@@ -65,6 +65,7 @@ class DatabaseWriter {
           getterName: entity.dbGetterName,
           returnType: tableClassName,
           code: '$tableClassName(this)',
+          options: scope.generationOptions,
         );
       } else if (entity is MoorTrigger) {
         writeMemoizedGetter(
@@ -73,6 +74,7 @@ class DatabaseWriter {
           returnType: 'Trigger',
           code: 'Trigger(${asDartLiteral(entity.create)}, '
               '${asDartLiteral(entity.displayName)})',
+          options: scope.generationOptions,
         );
       } else if (entity is MoorIndex) {
         writeMemoizedGetter(
@@ -81,6 +83,7 @@ class DatabaseWriter {
           returnType: 'Index',
           code: 'Index(${asDartLiteral(entity.displayName)}, '
               '${asDartLiteral(entity.createStmt)})',
+          options: scope.generationOptions,
         );
       }
     }
@@ -96,6 +99,7 @@ class DatabaseWriter {
         getterName: getterName,
         returnType: typeName,
         code: '$typeName(this as $databaseImplName)',
+        options: scope.generationOptions,
       );
     }
 

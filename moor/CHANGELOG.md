@@ -13,7 +13,7 @@
   It wraps nullable columns in a `Value` in `copyWith` methods so that they can be set to `null`.
 - Added `groupConcat`, `cast` and `coalesce` functions to the Dart query builder.
 - Added `renameColumn` to `Migrator` to generate `ALTER TABLE RENAME COLUMN` statement.
-- Added `VmDatabase.closeExistingInstances()` to close zombie database connections after hot restarts.
+- Added `VmDatabase.closeExistingInstances()` to close zombie database connections after hot restarts on some OSes.
 
 ## 3.3.1
 

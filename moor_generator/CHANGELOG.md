@@ -2,10 +2,11 @@
 
 - Add experimental apis for schema verification
 - Support version `0.40.x` of the `analyzer` package
+- Experimental: Generate NNBD code for input libraries that have opted-in.
 
 ## 3.3.1
 
-- Fix bug when importing a Dart table both through `tables` and `includes`
+- Fixes a bug when importing a Dart table both through `tables` and `includes`
 
 ## 3.3.0
 

@@ -158,3 +158,13 @@ extension WriterUtilsForColumns on MoorColumn {
     return dartGetterName;
   }
 }
+
+extension ScopeUtils on Scope {
+  String get required {
+    return generationOptions.nnbd ? 'required' : '@required';
+  }
+
+  String nullableType(String withoutSuffix) {
+    return generationOptions.nnbd ? '$withoutSuffix?' : withoutSuffix;
+  }
+}
