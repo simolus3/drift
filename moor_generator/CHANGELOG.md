@@ -1,3 +1,8 @@
+## 3.4.0
+
+- Add experimental apis for schema verification
+- Support version `0.40.x` of the `analyzer` package
+
 ## 3.3.1
 
 - Fix bug when importing a Dart table both through `tables` and `includes`
