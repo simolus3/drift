@@ -20,6 +20,9 @@ class DataClassWriter {
 
     // write individual fields
     for (final column in table.columns) {
+      if (column.documentationComment != null) {
+        _buffer.write('${column.documentationComment}\n');
+      }
       final modifier = scope.options.fieldModifier;
       _buffer.write(
           '$modifier ${column.dartTypeName} ${column.dartGetterName}; \n');

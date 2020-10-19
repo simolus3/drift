@@ -221,6 +221,9 @@ class ColumnParser {
       );
     }
 
+    final docString = getter.documentationComment?.tokens
+        ?.map((t) => t.toString())
+        ?.join('\n');
     return MoorColumn(
       type: columnType,
       dartGetterName: getter.name.name,
@@ -233,6 +236,7 @@ class ColumnParser {
       clientDefaultCode: clientDefaultExpression?.toSource(),
       typeConverter: converter,
       declaration: DartColumnDeclaration(element, base.step.file),
+      documentationComment: docString,
     );
   }
 

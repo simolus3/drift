@@ -23,8 +23,13 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
+  /// The user id
   final int id;
   final String name;
+
+  /// The users birth date
+  ///
+  /// Mapped from json `born_on`
   final DateTime birthDate;
   final Uint8List profilePicture;
   final Preferences preferences;

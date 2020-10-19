@@ -174,6 +174,8 @@ class MoorColumn implements HasDeclaration {
   /// this column.
   String get sqlTypeName => sqlTypes[type];
 
+  final String documentationComment;
+
   MoorColumn({
     this.type,
     this.dartGetterName,
@@ -186,6 +188,7 @@ class MoorColumn implements HasDeclaration {
     this.clientDefaultCode,
     this.typeConverter,
     this.declaration,
+    this.documentationComment,
   });
 }
 
