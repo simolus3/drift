@@ -96,6 +96,11 @@ class MoorColumn implements HasDeclaration, HasType {
   @override
   final UsedTypeConverter typeConverter;
 
+  /// The documentation comment associated with this column
+  ///
+  /// Stored as a multi line string with leading triple-slashes `///` for every line
+  final String documentationComment;
+
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
@@ -132,6 +137,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.clientDefaultCode,
     this.typeConverter,
     this.declaration,
+    this.documentationComment,
   });
 }
 

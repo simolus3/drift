@@ -8,8 +8,15 @@ import 'package:tests/data/sample_data.dart' as people;
 part 'database.g.dart';
 
 class Users extends Table {
+  /// The user id
   IntColumn get id => integer().autoIncrement()();
+
+  // The user name
   TextColumn get name => text()();
+
+  /// The users birth date
+  ///
+  /// Mapped from json `born_on`
   @JsonKey('born_on')
   DateTimeColumn get birthDate => dateTime()();
 
