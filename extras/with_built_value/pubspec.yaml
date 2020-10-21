@@ -7,11 +7,11 @@ environment:
 
 dependencies:
   moor: ^3.2.0
-  built_value: ^7.0.0
+  built_value: ^7.1.0
 
 dev_dependencies:
   moor_generator: ^2.1.0
-  built_value_generator: ^7.0.0
+  built_value_generator: ^7.1.0
   build_runner: '^1.10.1'
 
 dependency_overrides:
@@ -21,3 +21,6 @@ dependency_overrides:
     path: ../../moor_generator
   sqlparser:
     path: ../../sqlparser
+
+  # todo: Remove after built_value supports analyzer ^0.40
+  analyzer: 0.40.4
