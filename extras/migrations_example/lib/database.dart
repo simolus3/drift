@@ -20,7 +20,12 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (m, before, now) async {
-        await m.addColumn(users, users.name);
+        for (var target = before + 1; target <= now; target++) {
+          if (target == 2) {
+            // Migration from 1 to 2: Add name column in users
+            await m.addColumn(users, users.name);
+          }
+        }
       },
     );
   }

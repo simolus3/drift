@@ -2,6 +2,7 @@ import 'package:migrations_example/database.dart';
 import 'package:test/test.dart';
 import 'package:moor_generator/api/migrations.dart';
 
+// Import the generated schema helper to instantiate databases at old versions.
 import 'generated/schema.dart';
 
 void main() {
