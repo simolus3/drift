@@ -90,7 +90,8 @@ class ProgrammingLanguages extends Table {
 
     final importQuery = database.queries
         .singleWhere((q) => q.name == 'transitiveImportTest') as SqlSelectQuery;
-    expect(importQuery.resultClassName, 'ProgrammingLanguage');
+    expect(importQuery.resultSet.matchingTable.table.dartTypeName,
+        'ProgrammingLanguage');
     expect(importQuery.declaredInMoorFile, isFalse);
     expect(importQuery.hasMultipleTables, isFalse);
     expect(

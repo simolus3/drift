@@ -1,4 +1,4 @@
-## 3.4.0 (unreleased)
+## 3.4.0
 
 - New `TableMigration` api to make complex table migrations easier. See the
   [updated documentation](https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations) for
@@ -12,7 +12,7 @@
 - New `generate_values_in_copy_with` [build option](https://moor.simonbinder.eu/docs/advanced-features/builder_options/).
   It wraps nullable columns in a `Value` in `copyWith` methods so that they can be set to `null`.
 - Added `groupConcat`, `cast` and `coalesce` functions to the Dart query builder.
-- Added `renameColumn` to `Migrator` to generate `ALTER TABLE RENAME COLUMN` statement.
+- Added `renameColumn` to `Migrator` to generate `ALTER TABLE RENAME COLUMN` statements.
 - Added `VmDatabase.closeExistingInstances()` to close zombie database connections after hot restarts on some OSes.
 
 ## 3.3.1

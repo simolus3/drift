@@ -2,6 +2,7 @@
 
 - New `package:sqlparser/utils/node_to_text.dart` library that turns an AST node back into a
   textual representation.
+- Fix precedence of `CASE` expressions
 
 ## 0.10.1
 
