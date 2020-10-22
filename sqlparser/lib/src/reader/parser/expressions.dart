@@ -1,6 +1,10 @@
 part of 'parser.dart';
 
-/// Parses expressions. Expressions have the following precedence:
+/// Parses expressions. Expressions have the following precedence, in descending
+/// order
+/// - primary expressions: Parenthesis, etc.
+/// - Case expressions
+/// - postfix expressions: NOT NULL, etc.
 /// - `-`, `+`, `~`, unary not
 /// - `||` (concatenation)
 /// - `*`, '/', '%'
@@ -11,40 +15,9 @@ part of 'parser.dart';
 ///   `REGEXP`
 /// - `AND`
 /// - `OR`
-/// - Case expressions
 mixin ExpressionParser on ParserBase {
   @override
   Expression expression() {
-    return _case();
-  }
-
-  Expression _case() {
-    if (_matchOne(TokenType.$case)) {
-      final caseToken = _previous;
-
-      final base = _check(TokenType.when) ? null : _or();
-      final whens = <WhenComponent>[];
-      Expression $else;
-
-      while (_matchOne(TokenType.when)) {
-        final whenToken = _previous;
-
-        final whenExpr = _or();
-        _consume(TokenType.then, 'Expected THEN');
-        final then = expression();
-        whens.add(WhenComponent(when: whenExpr, then: then)
-          ..setSpan(whenToken, _previous));
-      }
-
-      if (_matchOne(TokenType.$else)) {
-        $else = expression();
-      }
-
-      _consume(TokenType.end, 'Expected END to finish the case operator');
-      return CaseExpression(whens: whens, base: base, elseExpr: $else)
-        ..setSpan(caseToken, _previous);
-    }
-
     return _or();
   }
 
@@ -205,7 +178,7 @@ mixin ExpressionParser on ParserBase {
   }
 
   Expression _postfix() {
-    var expression = _primary();
+    var expression = _case();
 
     // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
     // with NOT BETWEEN / NOT IN / ... expressions
@@ -243,6 +216,36 @@ mixin ExpressionParser on ParserBase {
     }
 
     return expression;
+  }
+
+  Expression _case() {
+    if (_matchOne(TokenType.$case)) {
+      final caseToken = _previous;
+
+      final base = _check(TokenType.when) ? null : _primary();
+      final whens = <WhenComponent>[];
+      Expression $else;
+
+      while (_matchOne(TokenType.when)) {
+        final whenToken = _previous;
+
+        final whenExpr = _or();
+        _consume(TokenType.then, 'Expected THEN');
+        final then = expression();
+        whens.add(WhenComponent(when: whenExpr, then: then)
+          ..setSpan(whenToken, _previous));
+      }
+
+      if (_matchOne(TokenType.$else)) {
+        $else = expression();
+      }
+
+      _consume(TokenType.end, 'Expected END to finish the case operator');
+      return CaseExpression(whens: whens, base: base, elseExpr: $else)
+        ..setSpan(caseToken, _previous);
+    }
+
+    return _primary();
   }
 
   @override
