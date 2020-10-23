@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:moor_generator/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
@@ -36,49 +37,62 @@ class FindSchemaDifferences {
       this.referenceSchema, this.actualSchema, this.validateDropped);
 
   CompareResult compare() {
-    final results = <String, CompareResult>{};
+    return _compareNamed<Input>(
+      reference: referenceSchema,
+      actual: actualSchema,
+      name: (e) => e.name,
+      compare: _compareInput,
+      validateActualInReference: validateDropped,
+    );
+  }
 
+  CompareResult _compareNamed<T>({
+    @required List<T> reference,
+    @required List<T> actual,
+    @required String Function(T) name,
+    @required CompareResult Function(T, T) compare,
+    bool validateActualInReference = true,
+  }) {
+    final results = <String, CompareResult>{};
     final referenceByName = {
-      for (final ref in referenceSchema) ref.name: ref,
+      for (final ref in reference) name(ref): ref,
     };
     final actualByName = {
-      for (final ref in actualSchema) ref.name: ref,
+      for (final ref in actual) name(ref): ref,
     };
 
-    final referenceToActual = <Input, Input>{};
+    final referenceToActual = <T, T>{};
 
-    // Handle the easy cases first: Is the actual schema missing anything?
     for (final inReference in referenceByName.keys) {
       if (!actualByName.containsKey(inReference)) {
-        results['comparing $inReference'] = FoundDifference('Expected entity, '
-            'but the actual schema does not contain anything with this name.');
+        results['comparing $inReference'] = FoundDifference(
+            'The actual schema does not contain anything with this name.');
       } else {
         referenceToActual[referenceByName[inReference]] =
             actualByName[inReference];
       }
     }
 
-    if (validateDropped) {
+    if (validateActualInReference) {
       // Also check the other way: Does the actual schema contain more than the
       // reference?
       final additional = actualByName.keys.toSet()
         ..removeAll(referenceByName.keys);
 
       if (additional.isNotEmpty) {
-        results['additional entries'] = FoundDifference('The schema contains '
-            'the following unexpected entries: ${additional.join(', ')}');
+        results['additional'] = FoundDifference('Contains the following '
+            'unexpected entries: ${additional.join(', ')}');
       }
     }
 
     for (final match in referenceToActual.entries) {
-      final name = match.key.name;
-      results[name] = _compare(match.key, match.value);
+      results[name(match.key)] = compare(match.key, match.value);
     }
 
     return MultiResult(results);
   }
 
-  CompareResult _compare(Input reference, Input actual) {
+  CompareResult _compareInput(Input reference, Input actual) {
     final parsedReference = _engine.parse(reference.create);
     final parsedActual = _engine.parse(actual.create);
 
@@ -139,30 +153,32 @@ class FindSchemaDifferences {
 
   CompareResult _compareColumns(
       List<ColumnDefinition> ref, List<ColumnDefinition> act) {
-    final results = <String, CompareResult>{};
+    return _compareNamed<ColumnDefinition>(
+      reference: ref,
+      actual: act,
+      name: (def) => def.columnName,
+      compare: _compareColumn,
+    );
+  }
 
-    final actByName = {for (final column in act) column.columnName: column};
-    // Additional columns in act that ref doesn't have. Built by iterating over
-    // ref.
-    final additionalColumns = actByName.keys.toSet();
+  CompareResult _compareColumn(ColumnDefinition ref, ColumnDefinition act) {
+    final refType = _engine.schemaReader.resolveColumnType(ref.typeName);
+    final actType = _engine.schemaReader.resolveColumnType(act.typeName);
 
-    for (final refColumn in ref) {
-      final name = refColumn.columnName;
-      final actColumn = actByName[name];
-
-      if (actColumn == null) {
-        results[name] = FoundDifference('Missing in schema');
-      } else {
-        results[name] = _compareByAst(refColumn, actColumn);
-        additionalColumns.remove(name);
-      }
+    if (refType != actType) {
+      return FoundDifference(
+          'Different types: ${ref.typeName} and ${act.typeName}');
     }
 
-    for (final additional in additionalColumns) {
-      results[additional] = FoundDifference('Additional unexpected column');
+    try {
+      enforceEqualIterable(ref.constraints, act.constraints);
+    } catch (e) {
+      final firstSpan = ref.constraints.spanOrNull?.text ?? '';
+      final secondSpan = act.constraints.spanOrNull?.text ?? '';
+      return FoundDifference('Not equal: `$firstSpan` and `$secondSpan`');
     }
 
-    return MultiResult(results);
+    return const Success();
   }
 
   CompareResult _compareByAst(AstNode a, AstNode b) {

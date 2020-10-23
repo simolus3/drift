@@ -26,7 +26,7 @@ void main() {
         expect(result, hasChanges);
         expect(
           result.describe(),
-          contains('Missing in schema'),
+          contains('The actual schema does not contain'),
         );
       });
 
@@ -39,7 +39,7 @@ void main() {
         expect(result, hasChanges);
         expect(
           result.describe(),
-          contains('Additional unexpected column'),
+          contains('Contains the following unexpected entries: b'),
         );
       });
 
@@ -50,6 +50,41 @@ void main() {
         );
 
         expect(result, hasNoChanges);
+      });
+
+      test('with different lexemes for the same column type', () {
+        final result = compare(
+          Input('a', 'CREATE TABLE a (id TEXT);'),
+          Input('a', 'CREATE TABLE a (id VARCHAR(42));'),
+        );
+
+        expect(result, hasNoChanges);
+      });
+
+      test('with mismatching column types', () {
+        final result = compare(
+          Input('a', 'CREATE TABLE a (id TEXT);'),
+          Input('a', 'CREATE TABLE a (id INTEGER);'),
+        );
+
+        expect(result, hasChanges);
+        expect(
+          result.describe(),
+          contains('Different types: TEXT and INTEGER'),
+        );
+      });
+
+      test('with different column constraints', () {
+        final result = compare(
+          Input('a', 'CREATE TABLE a (id INTEGER PRIMARY KEY NOT NULL);'),
+          Input('a', 'CREATE TABLE a (id INTEGER);'),
+        );
+
+        expect(result, hasChanges);
+        expect(
+          result.describe(),
+          contains('Not equal: `PRIMARY KEY NOT NULL` and ``'),
+        );
       });
     });
 

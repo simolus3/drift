@@ -47,4 +47,10 @@ extension UnionEntityExtension on Iterable<SyntacticEntity> {
       (previousValue, entity) => previousValue.expand(entity.span),
     );
   }
+
+  /// Returns the common [span] of these syntactic entities, or `null` if the
+  /// iterable is empty.
+  FileSpan /*?*/ get spanOrNull {
+    return isEmpty ? null : span;
+  }
 }

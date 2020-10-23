@@ -10,8 +10,12 @@ void enforceEqual(AstNode a, AstNode b) {
     throw ArgumentError('Content not equal: $a and $b');
   }
 
-  final childrenA = a.childNodes.iterator;
-  final childrenB = b.childNodes.iterator;
+  return enforceEqualIterable(a.childNodes, b.childNodes);
+}
+
+void enforceEqualIterable(Iterable<AstNode> a, Iterable<AstNode> b) {
+  final childrenA = a.iterator;
+  final childrenB = b.iterator;
 
   // always move both iterators
   while (childrenA.moveNext() & childrenB.moveNext()) {
