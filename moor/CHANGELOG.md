@@ -1,3 +1,7 @@
+## unreleased
+
+- Changed the sql representation of text types from `VARCHAR` to `TEXT`
+
 ## 3.4.0
 
 - New `TableMigration` api to make complex table migrations easier. See the

@@ -10,22 +10,22 @@ const _createNoIds =
     'WITHOUT ROWID;';
 
 const _createWithDefaults = 'CREATE TABLE IF NOT EXISTS with_defaults ('
-    "a VARCHAR DEFAULT 'something', b INTEGER UNIQUE);";
+    "a TEXT DEFAULT 'something', b INTEGER UNIQUE);";
 
 const _createWithConstraints = 'CREATE TABLE IF NOT EXISTS with_constraints ('
-    'a VARCHAR, b INTEGER NOT NULL, c REAL, '
+    'a TEXT, b INTEGER NOT NULL, c REAL, '
     'FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'
     ');';
 
 const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
-    'config_key VARCHAR not null primary key, '
-    'config_value VARCHAR, '
+    'config_key TEXT not null primary key, '
+    'config_value TEXT, '
     'sync_state INTEGER, '
     'sync_state_implicit INTEGER);';
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL PRIMARY KEY, '
-    'sometext VARCHAR, '
+    'sometext TEXT, '
     'is_inserting INTEGER, '
     'somedate INTEGER);';
 

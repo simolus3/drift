@@ -73,7 +73,7 @@ abstract class GeneratedColumn<T> extends Column<T> {
   @visibleForOverriding
   void writeCustomConstraints(StringBuffer into) {}
 
-  /// The sql type name, such as VARCHAR for texts.
+  /// The sql type name, such as TEXT for texts.
   @visibleForOverriding
   String get typeName;
 
@@ -163,7 +163,7 @@ class GeneratedTextColumn extends GeneratedColumn<String>
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
   @override
-  final String typeName = 'VARCHAR';
+  final String typeName = 'TEXT';
 
   @override
   VerificationResult isAcceptableValue(String value, VerificationMeta meta) {

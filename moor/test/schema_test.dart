@@ -20,22 +20,22 @@ void main() {
       // should create todos, categories, users and shared_todos table
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS todos '
-          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title VARCHAR NULL, '
-          'content VARCHAR NOT NULL, target_date INTEGER NULL, '
+          '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NULL, '
+          'content TEXT NOT NULL, target_date INTEGER NULL, '
           'category INTEGER NULL);',
           []));
 
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '`desc` VARCHAR NOT NULL UNIQUE, '
+          '`desc` TEXT NOT NULL UNIQUE, '
           'priority INTEGER NOT NULL DEFAULT 0);',
           []));
 
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name VARCHAR NOT NULL, '
+          'name TEXT NOT NULL, '
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
@@ -57,7 +57,7 @@ void main() {
           'table_without_p_k ('
           'not_really_an_id INTEGER NOT NULL, '
           'some_float REAL NOT NULL, '
-          'custom VARCHAR NOT NULL'
+          'custom TEXT NOT NULL'
           ');',
           []));
     });
@@ -68,7 +68,7 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          'name VARCHAR NOT NULL, '
+          'name TEXT NOT NULL, '
           'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
