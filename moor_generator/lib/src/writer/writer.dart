@@ -112,6 +112,10 @@ class GenerationOptions {
   /// Whether, instead of generating the full database code, we're only
   /// generating a subset needed for schema verification.
   bool get isGeneratingForSchema => forSchema != null;
+
+  String nullableType(String withoutSuffix) {
+    return nnbd ? '$withoutSuffix?' : withoutSuffix;
+  }
 }
 
 class _LeafNode extends _Node {
@@ -165,6 +169,6 @@ extension ScopeUtils on Scope {
   }
 
   String nullableType(String withoutSuffix) {
-    return generationOptions.nnbd ? '$withoutSuffix?' : withoutSuffix;
+    return generationOptions.nullableType(withoutSuffix);
   }
 }

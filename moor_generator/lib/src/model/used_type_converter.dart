@@ -57,7 +57,7 @@ class UsedTypeConverter {
 
   /// A suitable typename to store an instance of the type converter used here.
   String converterNameInCode(GenerationOptions options) {
-    final sqlDartType = dartTypeNames[sqlType];
+    final sqlDartType = options.nullableType(dartTypeNames[sqlType]);
     return 'TypeConverter<${mappedType.codeString(options)}, $sqlDartType>';
   }
 }
