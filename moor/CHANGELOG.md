@@ -1,6 +1,7 @@
 ## unreleased
 
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`
+- Added extensions for `isNull` and `isNotNull`
 
 ## 3.4.0
 

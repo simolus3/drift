@@ -118,7 +118,7 @@ class Database extends _$Database {
     if (category != null) {
       query.where(categories.id.equals(category.id));
     } else {
-      query.where(isNull(categories.id));
+      query.where(categories.id.isNull());
     }
 
     return query.watch().map((rows) {

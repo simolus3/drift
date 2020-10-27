@@ -2,7 +2,6 @@ import 'package:moor/moor.dart';
 import 'package:moor/moor.dart' as moor;
 import 'package:test/test.dart';
 
-import '../data/tables/todos.dart';
 import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
@@ -10,23 +9,23 @@ void main() {
   final innerExpression = GeneratedTextColumn('name', null, true);
 
   test('IS NULL expressions are generated', () {
-    final expr = moor.isNull(innerExpression);
+    final oldFunction = moor.isNull(innerExpression);
+    final extension = innerExpression.isNull();
 
-    final context = GenerationContext.fromDb(TodoDb(null));
-    expr.writeInto(context);
+    expect(oldFunction, generates('name IS NULL'));
+    expect(extension, generates('name IS NULL'));
 
-    expect(context.sql, 'name IS NULL');
+    expectEquals(oldFunction, extension);
   });
 
   test('IS NOT NULL expressions are generated', () {
-    final expr = moor.isNotNull(innerExpression);
+    final oldFunction = moor.isNotNull(innerExpression);
+    final extension = innerExpression.isNotNull();
 
-    final context = GenerationContext.fromDb(TodoDb(null));
-    expr.writeInto(context);
+    expect(oldFunction, generates('name IS NOT NULL'));
+    expect(extension, generates('name IS NOT NULL'));
 
-    expect(context.sql, 'name IS NOT NULL');
-
-    expectEquals(expr, moor.isNotNull(innerExpression));
+    expectEquals(oldFunction, extension);
   });
 
   test('generates COALESCE expressions', () {
