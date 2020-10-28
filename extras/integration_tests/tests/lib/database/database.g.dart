@@ -23,8 +23,13 @@ Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
+  /// The user id
   final int id;
   final String name;
+
+  /// The users birth date
+  ///
+  /// Mapped from json `born_on`
   final DateTime birthDate;
   final Uint8List profilePicture;
   final Preferences preferences;
@@ -72,6 +77,22 @@ class User extends DataClass implements Insertable<User> {
       map['preferences'] = Variable<String>(converter.mapToSql(preferences));
     }
     return map;
+  }
+
+  UsersCompanion toCompanion(bool nullToAbsent) {
+    return UsersCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      birthDate: birthDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthDate),
+      profilePicture: profilePicture == null && nullToAbsent
+          ? const Value.absent()
+          : Value(profilePicture),
+      preferences: preferences == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preferences),
+    );
   }
 
   factory User.fromJson(Map<String, dynamic> json,
@@ -213,6 +234,18 @@ class UsersCompanion extends UpdateCompanion<User> {
           Variable<String>(converter.mapToSql(preferences.value));
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UsersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('birthDate: $birthDate, ')
+          ..write('profilePicture: $profilePicture, ')
+          ..write('preferences: $preferences')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -374,6 +407,20 @@ class Friendship extends DataClass implements Insertable<Friendship> {
     return map;
   }
 
+  FriendshipsCompanion toCompanion(bool nullToAbsent) {
+    return FriendshipsCompanion(
+      firstUser: firstUser == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstUser),
+      secondUser: secondUser == null && nullToAbsent
+          ? const Value.absent()
+          : Value(secondUser),
+      reallyGoodFriends: reallyGoodFriends == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reallyGoodFriends),
+    );
+  }
+
   factory Friendship.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -473,6 +520,16 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
       map['really_good_friends'] = Variable<bool>(reallyGoodFriends.value);
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FriendshipsCompanion(')
+          ..write('firstUser: $firstUser, ')
+          ..write('secondUser: $secondUser, ')
+          ..write('reallyGoodFriends: $reallyGoodFriends')
+          ..write(')'))
+        .toString();
   }
 }
 
@@ -574,22 +631,11 @@ abstract class _$Database extends GeneratedDatabase {
   $UsersTable get users => _users ??= $UsersTable(this);
   $FriendshipsTable _friendships;
   $FriendshipsTable get friendships => _friendships ??= $FriendshipsTable(this);
-  User _rowToUser(QueryRow row) {
-    return User(
-      id: row.readInt('id'),
-      name: row.readString('name'),
-      birthDate: row.readDateTime('birth_date'),
-      profilePicture: row.readBlob('profile_picture'),
-      preferences:
-          $UsersTable.$converter0.mapToDart(row.readString('preferences')),
-    );
-  }
-
   Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
         'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
         variables: [Variable.withInt(amount)],
-        readsFrom: {users, friendships}).map(_rowToUser);
+        readsFrom: {users, friendships}).map(users.mapFromRow);
   }
 
   Selectable<int> amountOfGoodFriends(int user) {
@@ -603,18 +649,16 @@ abstract class _$Database extends GeneratedDatabase {
         }).map((QueryRow row) => row.readInt('COUNT(*)'));
   }
 
-  FriendshipsOfResult _rowToFriendshipsOfResult(QueryRow row) {
-    return FriendshipsOfResult(
-      reallyGoodFriends: row.readBool('really_good_friends'),
-      user: users.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
-    );
-  }
-
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
         'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND\n             user.id != :user\n       WHERE (f.first_user = :user OR f.second_user = :user)',
         variables: [Variable.withInt(user)],
-        readsFrom: {friendships, users}).map(_rowToFriendshipsOfResult);
+        readsFrom: {friendships, users}).map((QueryRow row) {
+      return FriendshipsOfResult(
+        reallyGoodFriends: row.readBool('really_good_friends'),
+        user: users.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+      );
+    });
   }
 
   Selectable<int> userCount() {
@@ -636,7 +680,7 @@ abstract class _$Database extends GeneratedDatabase {
     $arrayStartIndex += var1.length;
     return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
         variables: [for (var $ in var1) Variable.withInt($)],
-        readsFrom: {users}).map(_rowToUser);
+        readsFrom: {users}).map(users.mapFromRow);
   }
 
   @override
@@ -660,4 +704,12 @@ class FriendshipsOfResult {
       (other is FriendshipsOfResult &&
           other.reallyGoodFriends == this.reallyGoodFriends &&
           other.user == this.user);
+  @override
+  String toString() {
+    return (StringBuffer('FriendshipsOfResult(')
+          ..write('reallyGoodFriends: $reallyGoodFriends, ')
+          ..write('user: $user')
+          ..write(')'))
+        .toString();
+  }
 }

@@ -26,7 +26,11 @@ void main() {
       }
       
       class Users extends Table {
+        /// The user id
         IntColumn get id => integer().autoIncrement()();
+        /// The username
+        ///
+        /// The username must be between 6-32 characters
         TextColumn get name => text().named("user_name").withLength(min: 6, max: 32)();
         TextColumn get onlyMax => text().withLength(max: 100)();
         
@@ -186,6 +190,21 @@ void main() {
           table.columns.singleWhere((c) => c.name.name == 'defaults');
 
       expect(defaultsColumn.defaultArgument.toString(), 'currentDate');
+    });
+
+    test('parses documentation comments', () async {
+      final table = await parse('Users');
+      final idColumn =
+          table.columns.singleWhere((col) => col.name.name == 'id');
+
+      final usernameColumn =
+          table.columns.singleWhere((col) => col.name.name == 'user_name');
+
+      expect(idColumn.documentationComment, '/// The user id');
+      expect(
+        usernameColumn.documentationComment,
+        '/// The username\n///\n/// The username must be between 6-32 characters',
+      );
     });
   });
 
