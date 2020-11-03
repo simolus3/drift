@@ -35,6 +35,19 @@ This is the recommended approach for newer projects as described in the [getting
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
 package when using `package:moor/ffi.dart`!
 
+{{% alert title="A note on ffi and Android"  %}}
+> `package:moor/ffi.dart` is the recommended moor implementation for new Android apps.
+  However, there are some smaller issues on some devices that you should be aware of:
+
+  - Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
+    `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
+    Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/moor/issues/895#issuecomment-720195005)
+    for details.
+  - Out of memory errors for very complex queries: Since the regular tmp directory isn't available on Android, you need to inform
+    sqlite3 about the right directory to store temporary data. See [this comment](https://github.com/simolus3/moor/issues/876#issuecomment-710013503)
+    for an example on how to do that.
+{{% /alert %}}
+
 ## Web
 
 _Main article: [Web]({{<relref "Other engines/web.md">}})_
