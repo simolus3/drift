@@ -65,7 +65,7 @@ import 'package:path/path.dart' as p;
 
 LazyDatabase(() async {
   final dbFolder = await getDatabasesPath();
-  final file = File(j.join(dbFolder, 'db.sqlite'));
+  final file = File(p.join(dbFolder, 'db.sqlite'));
   return VmDatabase(file);
 })
 ```
