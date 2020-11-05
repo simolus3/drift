@@ -38,7 +38,10 @@ package when using `package:moor/ffi.dart`!
 {{% alert title="A note on ffi and Android"  %}}
 > `package:moor/ffi.dart` is the recommended moor implementation for new Android apps.
   However, there are some smaller issues on some devices that you should be aware of:
-
+  
+  - Using `sqlite3_flutter_libs` will include prebuilt binaries for 32-bit `x86` devices which you
+    probably won't need. You can apply a [filter](https://github.com/simolus3/sqlite3.dart/tree/master/sqlite3_flutter_libs#included-platforms)
+    in your `build.gradle` to remove those binaries.
   - Opening `libsqlite3.so` fails on some Android 6.0.1 devices. This can be fixed by setting
     `android.bundle.enableUncompressedNativeLibs=false` in your `gradle.properties` file.
     Note that this will increase the disk usage of your app. See [this issue](https://github.com/simolus3/moor/issues/895#issuecomment-720195005)
@@ -112,8 +115,8 @@ void main() {
 }
 
 DynamicLibrary _openOnLinux() {
-  final script = File(Platform.script.toFilePath());
-  final libraryNextToScript = File('${script.path}/sqlite3.so');
+  final scriptDir = File(Platform.script.toFilePath()).parent;
+  final libraryNextToScript = File('${scriptDir.path}/sqlite3.so');
   return DynamicLibrary.open(libraryNextToScript.path);
 }
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`
