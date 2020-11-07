@@ -436,6 +436,11 @@ mixin SchemaParser on ParserBase {
           autoIncrement: hasAutoInc, mode: mode, onConflict: conflict)
         ..setSpan(first, _previous);
     }
+    if (_matchOne(TokenType.$null)) {
+      final nullToken = _previous;
+      return NullColumnConstraint(resolvedName, $null: nullToken)
+        ..setSpan(nullToken, nullToken);
+    }
     if (_matchOne(TokenType.not)) {
       _suggestHint(HintDescription.token(TokenType.$null));
 

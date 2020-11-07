@@ -56,6 +56,7 @@ abstract class ColumnConstraint extends AstNode {
 
   T when<T>({
     T Function(NotNull) notNull,
+    T Function(NullColumnConstraint) nullable,
     T Function(PrimaryKeyColumn) primaryKey,
     T Function(UniqueColumn) unique,
     T Function(CheckColumn) check,
@@ -66,6 +67,8 @@ abstract class ColumnConstraint extends AstNode {
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
+    } else if (this is NullColumnConstraint) {
+      return nullable?.call(this as NullColumnConstraint);
     } else if (this is PrimaryKeyColumn) {
       return primaryKey?.call(this as PrimaryKeyColumn);
     } else if (this is UniqueColumn) {
@@ -95,6 +98,22 @@ abstract class ColumnConstraint extends AstNode {
 }
 
 enum ConflictClause { rollback, abort, fail, ignore, replace }
+
+class NullColumnConstraint extends ColumnConstraint {
+  /// The `NULL` token forming this constraint.
+  Token $null;
+
+  NullColumnConstraint(String name, {this.$null}) : super(name);
+
+  @override
+  bool _equalToConstraint(NullColumnConstraint other) => true;
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}
 
 class NotNull extends ColumnConstraint {
   final ConflictClause onConflict;

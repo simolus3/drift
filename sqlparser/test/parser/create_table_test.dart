@@ -69,6 +69,7 @@ void main() {
             columnName: 'display_name',
             typeName: 'VARCHAR',
             constraints: [
+              NullColumnConstraint(null),
               CollateConstraint(
                 null,
                 'BINARY',
