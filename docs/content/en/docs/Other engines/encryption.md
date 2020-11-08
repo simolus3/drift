@@ -27,3 +27,27 @@ Finally, you can replace `FlutterQueryExecutor` with an `EncryptedExecutor`.
 Some extra steps may have to be taken in your project so that SQLCipher works correctly. For example, the ProGuard configuration on Android for apps built for release.
 
 [Read instructions](https://pub.dev/packages/sqflite_sqlcipher) (Usage and installation instructions of the package can be ignored, as that is handled internally by `moor`)
+
+## Encrypted version of `moor/ffi`
+
+You can also use the new `moor/ffi` library with an encrypted executor. To do so, replace your dependency on `sqlite3_flutter_libs`
+with `sqlcipher_flutter_libs`:
+
+```yaml
+dependencies:
+  sqlcipher_flutter_libs:
+    git:
+      url: https://github.com/simolus3/sqlite3.dart.git
+      path: sqlcipher_flutter_libs
+```
+
+You can continue to use a `VmDatabase`, but you need to use the `setup` parameter to decrypt the database:
+
+```dart
+VmDatabase(
+  File(...),
+  setup: (rawDb) {
+    rawDb.execute("PRAGMA key = 'passphrase';");
+  }
+);
+```
