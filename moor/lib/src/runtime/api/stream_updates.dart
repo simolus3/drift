@@ -147,8 +147,6 @@ abstract class TableUpdateQuery {
 
   /// A query that listens for any change on any table in [tables].
   factory TableUpdateQuery.onAllTables(Iterable<TableInfo> tables) {
-    // analyzer bug, remove when Dart 2.8 is stable
-    // ignore: prefer_const_constructors
     return TableUpdateQuery.allOf(
       [for (final table in tables) TableUpdateQuery.onTable(table)],
     );

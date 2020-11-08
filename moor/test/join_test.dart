@@ -151,6 +151,25 @@ void main() {
     db.markTablesUpdated({categories});
   });
 
+  test('updates when any queried table changes', () {
+    // Nonsense query, repro for https://github.com/simolus3/moor/issues/910
+    final a = db.users;
+    final b = db.categories;
+    final c = db.sharedTodos;
+
+    final query = (db.selectOnly(a)..where(c.todo.isNull())).join([
+      leftOuterJoin(b, b.id.equalsExp(a.id)),
+      leftOuterJoin(c, c.todo.equalsExp(b.id))
+    ])
+      ..addColumns([b.description])
+      ..groupBy([b.description]);
+
+    final stream = query.watch();
+    expectLater(stream, emitsInOrder([[], []]));
+
+    db.markTablesUpdated({b});
+  });
+
   test('setting where multiple times forms conjunction', () async {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
