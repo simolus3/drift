@@ -227,7 +227,7 @@ encountered a word. A table for that might look like
 ```dart
 class Words extends Table {
   TextColumn get word => text()();
-  IntColumn get usages => integer().default(const Constant(1))();
+  IntColumn get usages => integer().withDefault(const Constant(1))();
 
   @override
   Set<Column> get primaryKey => {word};
