@@ -233,6 +233,7 @@ class SchemaReader {
         overriddenName: sqlName,
         declaration: CustomVirtualTableDeclaration(parsed),
         overrideWithoutRowId: withoutRowId,
+        overrideDontWriteConstraints: true,
       );
     }
 
@@ -260,6 +261,7 @@ class SchemaReader {
       columns: columns,
       primaryKey: explicitPk,
       overrideTableConstraints: tableConstraints,
+      overrideDontWriteConstraints: content['was_declared_in_moor'] as bool,
       overrideWithoutRowId: withoutRowId,
       declaration: const CustomTableDeclaration(),
     );
