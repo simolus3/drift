@@ -151,7 +151,7 @@ void main() {
     db.markTablesUpdated({categories});
   });
 
-  test('updates when any queried table changes', () {
+  test('updates when any queried table changes in transaction', () {
     // Nonsense query, repro for https://github.com/simolus3/moor/issues/910
     final a = db.users;
     final b = db.categories;
@@ -167,7 +167,9 @@ void main() {
     final stream = query.watch();
     expectLater(stream, emitsInOrder([[], []]));
 
-    db.markTablesUpdated({b});
+    return db.transaction(() async {
+      db.markTablesUpdated({b});
+    });
   });
 
   test('setting where multiple times forms conjunction', () async {
