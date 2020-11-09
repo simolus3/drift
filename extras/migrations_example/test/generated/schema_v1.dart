@@ -31,6 +31,9 @@ class _Users extends Table with TableInfo {
   _Users createAlias(String alias) {
     return _Users(_db, alias);
   }
+
+  @override
+  bool get dontWriteConstraints => false;
 }
 
 class DatabaseAtV1 extends GeneratedDatabase {

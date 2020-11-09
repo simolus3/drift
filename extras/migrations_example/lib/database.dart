@@ -2,19 +2,12 @@ import 'package:moor/moor.dart';
 
 part 'database.g.dart';
 
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get name => text()(); // added in schema version 2
-}
-
-@UseMoor(tables: [Users])
+@UseMoor(include: {'tables.moor'})
 class Database extends _$Database {
   @override
-  final int schemaVersion;
+  int get schemaVersion => 3;
 
-  Database(this.schemaVersion, DatabaseConnection connection)
-      : super.connect(connection);
+  Database(DatabaseConnection connection) : super.connect(connection);
 
   @override
   MigrationStrategy get migration {
@@ -24,6 +17,9 @@ class Database extends _$Database {
           if (target == 2) {
             // Migration from 1 to 2: Add name column in users
             await m.addColumn(users, users.name);
+          } else if (target == 3) {
+            // Migration from 2 to 3: We added the groups table
+            await m.createTable(groups);
           }
         }
       },

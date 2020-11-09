@@ -14,8 +14,15 @@ void main() {
 
   test('upgrade from v1 to v2', () async {
     final connection = await verifier.startAt(1);
-    final db = Database(2, connection);
+    final db = Database(connection);
 
     await verifier.migrateAndValidate(db, 2);
+  });
+
+  test('upgrade from v2 to v3', () async {
+    final connection = await verifier.startAt(2);
+    final db = Database(connection);
+
+    await verifier.migrateAndValidate(db, 3);
   });
 }
