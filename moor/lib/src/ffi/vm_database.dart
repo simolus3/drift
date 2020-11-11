@@ -23,12 +23,14 @@ class VmDatabase extends DelegatedDatabase {
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
   ///
+  /// {@template moor_vm_database_factory}
   /// If [logStatements] is true (defaults to `false`), generated sql statements
   /// will be printed before executing. This can be useful for debugging.
   /// The optional [setup] function can be used to perform a setup just after
   /// the database is opened, before moor is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
+  /// {@endtemplate}
   factory VmDatabase(File file,
       {bool logStatements = false, DatabaseSetup setup}) {
     return VmDatabase._(_VmDelegate(file, setup), logStatements);
@@ -36,14 +38,21 @@ class VmDatabase extends DelegatedDatabase {
 
   /// Creates an in-memory database won't persist its changes on disk.
   ///
-  /// If [logStatements] is true (defaults to `false`), generated sql statements
-  /// will be printed before executing. This can be useful for debugging.
-  /// The optional [setup] function can be used to perform a setup just after
-  /// the database is opened, before moor is fully ready. This can be used to
-  /// add custom user-defined sql functions or to provide encryption keys in
-  /// SQLCipher implementations.
+  /// {@macro moor_vm_database_factory}
   factory VmDatabase.memory({bool logStatements = false, DatabaseSetup setup}) {
     return VmDatabase._(_VmDelegate(null, setup), logStatements);
+  }
+
+  /// Creates a moor executor for an opened [database] from the `sqlite3`
+  /// package.
+  ///
+  /// Closing the returned [VmDatabase] will also dispose the database passed to
+  /// this factory.
+  ///
+  /// {@macro moor_vm_database_factory}
+  factory VmDatabase.opened(Database database,
+      {bool logStatements = false, DatabaseSetup setup}) {
+    return VmDatabase._(_VmDelegate._opened(database, setup), logStatements);
   }
 
   /// Disposes resources allocated by all `VmDatabase` instances of this
@@ -104,6 +113,10 @@ class _VmDelegate extends DatabaseDelegate {
 
   _VmDelegate(this.file, this.setup);
 
+  _VmDelegate._opened(this._db, this.setup) : file = null {
+    _initializeDatabase();
+  }
+
   @override
   TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
@@ -128,12 +141,16 @@ class _VmDelegate extends DatabaseDelegate {
     } else {
       _db = sqlite3.openInMemory();
     }
+    _initializeDatabase();
+    return Future.value();
+  }
+
+  void _initializeDatabase() {
     _db.useMoorVersions();
     if (setup != null) {
       setup(_db);
     }
     versionDelegate = _VmVersionDelegate(_db);
-    return Future.value();
   }
 
   @override
