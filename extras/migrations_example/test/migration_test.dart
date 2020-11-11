@@ -17,6 +17,7 @@ void main() {
     final db = Database(connection);
 
     await verifier.migrateAndValidate(db, 2);
+    await db.close();
   });
 
   test('upgrade from v2 to v3', () async {
@@ -24,5 +25,6 @@ void main() {
     final db = Database(connection);
 
     await verifier.migrateAndValidate(db, 3);
+    await db.close();
   });
 }

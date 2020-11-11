@@ -1,5 +1,7 @@
 import 'package:moor/moor.dart';
 
+import 'tables.dart';
+
 part 'database.g.dart';
 
 @UseMoor(include: {'tables.moor'})
