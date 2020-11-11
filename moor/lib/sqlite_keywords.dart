@@ -5,12 +5,13 @@ library moor.sqlite_keywords;
 /// https://www.sqlite.org/lang_keywords.html. Moor will use this list to
 /// escape keywords.
 const sqliteKeywords = {
+  'ADD',
   'ABORT',
   'ACTION',
-  'ADD',
   'AFTER',
   'ALL',
   'ALTER',
+  'ALWAYS',
   'ANALYZE',
   'AND',
   'AS',
@@ -51,18 +52,23 @@ const sqliteKeywords = {
   'END',
   'ESCAPE',
   'EXCEPT',
+  'EXCLUDE',
   'EXCLUSIVE',
   'EXISTS',
   'EXPLAIN',
   'FAIL',
+  'FALSE',
   'FILTER',
+  'FIRST',
   'FOLLOWING',
   'FOR',
   'FOREIGN',
   'FROM',
   'FULL',
+  'GENERATED',
   'GLOB',
   'GROUP',
+  'GROUPS',
   'HAVING',
   'IF',
   'IGNORE',
@@ -80,6 +86,7 @@ const sqliteKeywords = {
   'ISNULL',
   'JOIN',
   'KEY',
+  'LAST',
   'LEFT',
   'LIKE',
   'LIMIT',
@@ -90,11 +97,13 @@ const sqliteKeywords = {
   'NOTHING',
   'NOTNULL',
   'NULL',
+  'NULLS',
   'OF',
   'OFFSET',
   'ON',
   'OR',
   'ORDER',
+  'OTHERS',
   'OUTER',
   'OVER',
   'PARTITION',
@@ -112,10 +121,11 @@ const sqliteKeywords = {
   'RELEASE',
   'RENAME',
   'REPLACE',
-  'RESTRICT',
   'RIGHT',
+  'RESTRICT',
   'ROLLBACK',
   'ROW',
+  'ROWID',
   'ROWS',
   'SAVEPOINT',
   'SELECT',
@@ -124,9 +134,11 @@ const sqliteKeywords = {
   'TEMP',
   'TEMPORARY',
   'THEN',
+  'TIES',
   'TO',
   'TRANSACTION',
   'TRIGGER',
+  'TRUE',
   'UNBOUNDED',
   'UNION',
   'UNIQUE',
@@ -140,7 +152,7 @@ const sqliteKeywords = {
   'WHERE',
   'WINDOW',
   'WITH',
-  'WITHOUT'
+  'WITHOUT',
 };
 
 /// Returns whether [s] is an sql keyword by comparing it to the
@@ -151,6 +163,6 @@ final _whitespace = RegExp(r'\s');
 
 /// Escapes [s] by wrapping it in backticks if it's an sqlite keyword.
 String escapeIfNeeded(String s) {
-  if (isSqliteKeyword(s) || s.contains(_whitespace)) return '`$s`';
+  if (isSqliteKeyword(s) || s.contains(_whitespace)) return '"$s"';
   return s;
 }

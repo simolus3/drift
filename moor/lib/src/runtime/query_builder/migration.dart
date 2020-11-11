@@ -229,7 +229,8 @@ class Migrator {
   }
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
-    context.buffer.write('CREATE TABLE IF NOT EXISTS ${table.$tableName} (');
+    context.buffer.write('CREATE TABLE IF NOT EXISTS '
+        '${escapeIfNeeded(table.$tableName)} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
@@ -284,7 +285,7 @@ class Migrator {
   void _writeCreateVirtual(VirtualTableInfo table, GenerationContext context) {
     context.buffer
       ..write('CREATE VIRTUAL TABLE IF NOT EXISTS ')
-      ..write(table.$tableName)
+      ..write(escapeIfNeeded(table.$tableName))
       ..write(' USING ')
       ..write(table.moduleAndArgs)
       ..write(';');
@@ -330,7 +331,8 @@ class Migrator {
   Future<void> addColumn(TableInfo table, GeneratedColumn column) async {
     final context = _createContext();
 
-    context.buffer.write('ALTER TABLE ${table.$tableName} ADD COLUMN ');
+    context.buffer
+        .write('ALTER TABLE ${escapeIfNeeded(table.$tableName)} ADD COLUMN ');
     column.writeColumnDefinition(context);
     context.buffer.write(';');
 

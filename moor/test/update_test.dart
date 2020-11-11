@@ -61,7 +61,7 @@ void main() {
           .write(const PureDefaultsCompanion(txt: Value('foo')));
 
       verify(executor
-          .runUpdate('UPDATE pure_defaults SET `insert` = ?;', ['foo']));
+          .runUpdate('UPDATE pure_defaults SET "insert" = ?;', ['foo']));
     });
   });
 

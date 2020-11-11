@@ -154,7 +154,7 @@ void main() {
         .insert(PureDefaultsCompanion.insert(txt: const Value('foo')));
 
     verify(executor
-        .runInsert('INSERT INTO pure_defaults (`insert`) VALUES (?)', ['foo']));
+        .runInsert('INSERT INTO pure_defaults ("insert") VALUES (?)', ['foo']));
   });
 
   test('can insert custom companions', () async {
@@ -226,7 +226,7 @@ void main() {
         ));
 
     verify(executor.runInsert(
-      'INSERT INTO categories (`desc`, priority) VALUES (?, ?)',
+      'INSERT INTO categories ("desc", priority) VALUES (?, ?)',
       ['description', 1],
     ));
   });

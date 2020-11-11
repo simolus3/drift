@@ -23,7 +23,7 @@ void main() {
     verify(executor.runSelect(
         'SELECT t.id AS "t.id", t.title AS "t.title", '
         't.content AS "t.content", t.target_date AS "t.target_date", '
-        't.category AS "t.category", c.id AS "c.id", c.`desc` AS "c.desc", '
+        't.category AS "t.category", c.id AS "c.id", c."desc" AS "c.desc", '
         'c.priority AS "c.priority" '
         'FROM todos t LEFT OUTER JOIN categories c ON c.id = t.category;',
         argThat(isEmpty)));
@@ -203,8 +203,8 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-      'SELECT c.id AS "c.id", c.`desc` AS "c.desc", c.priority AS "c.priority"'
-      ', LENGTH(c.`desc`) AS "c3" '
+      'SELECT c.id AS "c.id", c."desc" AS "c.desc", c.priority AS "c.priority"'
+      ', LENGTH(c."desc") AS "c3" '
       'FROM categories c;',
       [],
     ));
@@ -250,7 +250,7 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT c.id AS "c.id", c.`desc` AS "c.desc", '
+        'SELECT c.id AS "c.id", c."desc" AS "c.desc", '
         'c.priority AS "c.priority", COUNT(t.id) AS "c3" '
         'FROM categories c INNER JOIN todos t ON t.category = c.id '
         'GROUP BY c.id HAVING COUNT(t.id) >= ?;',
