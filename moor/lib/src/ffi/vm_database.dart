@@ -107,6 +107,7 @@ class VmDatabase extends DelegatedDatabase {
 
 class _VmDelegate extends DatabaseDelegate {
   Database _db;
+  bool _isOpen = false;
 
   final File file;
   final DatabaseSetup setup;
@@ -124,10 +125,20 @@ class _VmDelegate extends DatabaseDelegate {
   DbVersionDelegate versionDelegate;
 
   @override
-  Future<bool> get isOpen => Future.value(_db != null);
+  Future<bool> get isOpen => Future.value(_isOpen);
 
   @override
   Future<void> open(QueryExecutorUser user) async {
+    if (_db == null) {
+      _createDatabase();
+    }
+    _initializeDatabase();
+    _isOpen = true;
+    return Future.value();
+  }
+
+  void _createDatabase() {
+    assert(_db == null);
     if (file != null) {
       // Create the parent directory if it doesn't exist. sqlite will emit
       // confusing misuse warnings otherwise
@@ -141,8 +152,6 @@ class _VmDelegate extends DatabaseDelegate {
     } else {
       _db = sqlite3.openInMemory();
     }
-    _initializeDatabase();
-    return Future.value();
   }
 
   void _initializeDatabase() {
