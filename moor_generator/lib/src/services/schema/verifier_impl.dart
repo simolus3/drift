@@ -16,13 +16,14 @@ class VerifierImplementation implements SchemaVerifier {
   @override
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
       {bool validateDropped = false}) async {
-    // Open the database to collect its schema.
-    await db.executor.ensureOpen(db);
+    // Open the database to collect its schema. Put a delegate in between
+    // claiming that the actual version is what we expect.
+    await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
     final actualSchema = await db.executor.collectSchemaInput();
 
     // Open another connection to instantiate and extract the reference schema.
     final otherConnection = await startAt(expectedVersion);
-    await otherConnection.executor.ensureOpen(_SimpleUser(expectedVersion));
+    await otherConnection.executor.ensureOpen(_DelegatingUser(expectedVersion));
     final referenceSchema = await otherConnection.executor.collectSchemaInput();
     await otherConnection.executor.close();
 
@@ -86,14 +87,15 @@ extension on QueryExecutor {
   }
 }
 
-class _SimpleUser extends QueryExecutorUser {
+class _DelegatingUser extends QueryExecutorUser {
   @override
   final int schemaVersion;
+  final QueryExecutorUser inner;
 
-  _SimpleUser(this.schemaVersion);
+  _DelegatingUser(this.schemaVersion, [this.inner]);
 
   @override
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
-    return Future.value();
+    return inner?.beforeOpen(executor, details) ?? Future.value();
   }
 }
