@@ -238,7 +238,7 @@ Stream<List<Todo>> watchInCategory(int category) {
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
 This feature works for
 
-- expressions, as you've seen in the example above
+- [expressions]({{< relref "../Advanced Features/expressions.md" >}}), as you've seen in the example above
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
@@ -252,6 +252,28 @@ _filterTodos ($predicate = TRUE): SELECT * FROM todos WHERE $predicate;
 
 This will make the `predicate` parameter optional in Dart. It will use the
 default SQL value (here, `TRUE`) when not explicitly set.
+
+{{% alert title="Using column names in Dart" color="warning" %}}
+If your query uses table aliases, you'll need to account for that when embedding Dart
+expressions in your SQL query. Consider this for instance:
+
+```sql
+findRoutes: SELECT r.* FROM routes r
+  INNER JOIN points "start" ON "start".id = r."start"
+  INNER JOIN points "end" ON "end".id = r."end"
+WHERE $predicate
+```
+
+If you want to filter for the `start` point in Dart, you have to use
+an explicit [`alias`](https://pub.dev/documentation/moor/latest/moor/DatabaseConnectionUser/alias.html):
+
+```dart
+Future<List<Route>> routesByStart(int startPointId) {
+  final start = alias(points, 'start');
+  return findRoutes(start.id.equals(startPointId));
+}
+```
+{{% /alert %}}
 
 ### Type converters
 
