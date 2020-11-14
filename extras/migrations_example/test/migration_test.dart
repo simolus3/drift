@@ -13,10 +13,20 @@ void main() {
   });
 
   test('upgrade from v1 to v2', () async {
-    final connection = await verifier.startAt(1);
-    final db = Database(connection);
+    final schema = await verifier.schemaAt(1);
 
+    // Add some data to the users table, which only has an id column at v1
+    schema.rawDatabase.execute('INSERT INTO users (id) VALUES (1);');
+
+    // Run the migration and verify that it adds the name column.
+    final db = Database(schema.connection);
     await verifier.migrateAndValidate(db, 2);
+
+    // Make sure the user is still here
+    final user = await db.select(db.users).getSingle();
+    expect(user.id, 1);
+    expect(user.name, 'no name'); // default from the migration
+
     await db.close();
   });
 

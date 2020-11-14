@@ -51,7 +51,7 @@ class VerifierImplementation implements SchemaVerifier {
   }
 
   @override
-  Future<DatabaseConnection> startAt(int version) async {
+  Future<InitializedSchema> schemaAt(int version) async {
     // Use distinct executors for setup and use, allowing us to close the helper
     // db here and avoid creating it twice.
     // https://www.sqlite.org/inmemorydb.html#sharedmemdb
@@ -67,7 +67,14 @@ class VerifierImplementation implements SchemaVerifier {
     await executor.runCustom('PRAGMA schema_version = $version;');
     await db.close();
 
-    return DatabaseConnection.fromExecutor(VmDatabase.opened(dbForUse));
+    final connection =
+        DatabaseConnection.fromExecutor(VmDatabase.opened(dbForUse));
+    return InitializedSchema(dbForUse, connection);
+  }
+
+  @override
+  Future<DatabaseConnection> startAt(int version) {
+    return schemaAt(version).then((schema) => schema.connection);
   }
 }
 

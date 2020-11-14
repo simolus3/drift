@@ -340,3 +340,30 @@ To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if yo
 you're `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
 For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
 {{% /alert %}}
+
+#### Verifying data integrity
+
+In addition to the changes made in your table structure, its useful to ensure that data that was present before a migration
+is still there after it ran.
+You can use `schemaAt` to obtain a raw `Database` from the `sqlite3` package in addition to a connection.
+This can be used to insert data before a migration. Note that you can't use your database class for this, since the generated
+code always expects the latest schema. In general, you shouldn't use your database at all before calling `migrateAndValidate`.
+After a migration, you're free to use that database to ensure the data you inserted earlier is still there:
+
+```dart
+test('upgrade from v1 to v2', () async {
+  final schema = await verifier.schemaAt(1);
+
+  // Insert some custom data
+  final rawDb = schema.rawDatabase;
+  rawDb.execute("INSERT INTO users (name) VALUES ('Test user');");
+
+  final db = MyDatabase.connect(schema.connection);
+
+  // Verify that the migration correctly updates the schema
+  await verifier.migrateAndValidate(db, 2);
+  
+  // Use your own logic to verify that the data is still there. For example:
+  expect(db.select(db.users).get(), completion(isNotEmpty));
+});
+```
