@@ -1444,7 +1444,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         }));
   }
 
-  Selectable<Config> readMultiple(List<String> var1, OrderBy clause) {
+  Selectable<Config> readMultiple(List<String> var1,
+      {@required OrderBy clause}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
@@ -1511,7 +1512,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<MultipleResult> multiple(Expression<bool> predicate) {
+  Selectable<MultipleResult> multiple({@required Expression<bool> predicate}) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
         'SELECT d.*, "c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints c\n INNER JOIN with_defaults d\n   ON d.a = c.a AND d.b = c.b\n WHERE ${generatedpredicate.sql}',
@@ -1526,14 +1527,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<EMail> searchEmails(String term) {
+  Selectable<EMail> searchEmails({@required String term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable.withString(term)],
         readsFrom: {email}).map(email.mapFromRow);
   }
 
-  Selectable<ReadRowIdResult> readRowId(Expression<int> expr) {
+  Selectable<ReadRowIdResult> readRowId({@required Expression<int> expr}) {
     final generatedexpr = $write(expr);
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
@@ -1558,7 +1559,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {}).map((QueryRow row) => row.readInt('x'));
   }
 
-  Future<int> writeConfig(String key, String value) {
+  Future<int> writeConfig({@required String key, @required String value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (:key, :value)',
       variables: [Variable.withString(key), Variable.withString(value)],

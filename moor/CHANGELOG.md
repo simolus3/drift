@@ -3,6 +3,7 @@
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`
 - Added extensions for `isNull` and `isNotNull`
 - Support creating a `VmDatabase` from a raw sqlite3 `Database` via `VmDatabase.opened`
+- New `named_parameters` build option to generate named parameters for named variables in moor files
 
 ## 3.4.0
 

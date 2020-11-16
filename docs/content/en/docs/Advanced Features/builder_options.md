@@ -70,6 +70,7 @@ At the moment, moor supports these options:
 * `generate_values_in_copy_with`: Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set
   columns back to null (by using `Value(null)`). Passing `null` was ignored before, making it impossible to set columns
   to `null`.
+* `named_parameters`: Generates named parameters for named variables in SQL queries.
 
 ## Available extensions
 

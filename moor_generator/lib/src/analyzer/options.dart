@@ -85,6 +85,9 @@ class MoorOptions {
   @JsonKey(name: 'generate_values_in_copy_with', defaultValue: false)
   final bool generateValuesInCopyWith;
 
+  @JsonKey(name: 'named_parameters', defaultValue: false)
+  final bool generateNamedParameters;
+
   const MoorOptions({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
@@ -100,6 +103,7 @@ class MoorOptions {
     this.rawResultSetData = false,
     this.applyConvertersOnVariables = false,
     this.generateValuesInCopyWith = false,
+    this.generateNamedParameters = false,
     this.modules = const [],
   });
 

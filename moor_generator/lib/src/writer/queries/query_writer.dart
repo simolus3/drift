@@ -240,12 +240,19 @@ class QueryWriter {
   }
 
   void _writeParameters() {
-    final optionalPlaceholders = <FoundDartPlaceholder>[];
+    final namedElements = <FoundElement>[];
 
     var needsComma = false;
     for (final element in query.elements) {
-      if (element is FoundDartPlaceholder && element.defaultValue != null) {
-        optionalPlaceholders.add(element);
+      // Placeholders with a default value generate optional (and thus, named)
+      // parameters. Since moor 3.5, we have an option to also generate named
+      // parameters for named variables.
+      final isNamed =
+          (element is FoundDartPlaceholder && element.defaultValue != null) ||
+              (element.hasSqlName && options.generateNamedParameters);
+
+      if (isNamed) {
+        namedElements.add(element);
       } else {
         if (needsComma) _buffer.write(', ');
 
@@ -256,22 +263,28 @@ class QueryWriter {
     }
 
     // Write optional placeholder as named arguments
-    if (optionalPlaceholders.isNotEmpty) {
+    if (namedElements.isNotEmpty) {
       if (needsComma) _buffer.write(', ');
       _buffer.write('{');
       needsComma = false;
 
-      for (final optional in optionalPlaceholders) {
+      for (final optional in namedElements) {
         if (needsComma) _buffer.write(', ');
         needsComma = true;
 
-        // Wrap the expression in parentheses to avoid issues with the
-        // surrounding precedence in SQL.
-        final defaultSql =
-            "'(${escapeForDart(optional.defaultValue.toSql())})'";
         final type = optional.dartTypeCode(scope.generationOptions);
-        _buffer.write('$type ${optional.dartParameterName} = '
-            'const CustomExpression($defaultSql)');
+        if (optional is FoundDartPlaceholder && optional.defaultValue != null) {
+          // Wrap the default expression in parentheses to avoid issues with the
+          // surrounding precedence in SQL.
+          final defaultSql =
+              "'(${escapeForDart(optional.defaultValue.toSql())})'";
+          _buffer.write('$type ${optional.dartParameterName} = '
+              'const CustomExpression($defaultSql)');
+        } else {
+          // No default value, this element is required
+          _buffer.write(scope.required);
+          _buffer.write(' $type ${optional.dartParameterName}');
+        }
       }
 
       _buffer.write('}');

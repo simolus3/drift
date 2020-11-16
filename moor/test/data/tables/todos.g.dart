@@ -1601,7 +1601,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         }).map(todosTable.mapFromRow);
   }
 
-  Selectable<TodoEntry> search(int id) {
+  Selectable<TodoEntry> search({@required int id}) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
         variables: [Variable.withInt(id)],
@@ -1693,7 +1693,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $UsersTable get users => attachedDatabase.users;
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
-  Selectable<TodoEntry> todosForUser(int user) {
+  Selectable<TodoEntry> todosForUser({@required int user}) {
     return customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
         variables: [Variable.withInt(user)],

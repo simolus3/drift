@@ -24,6 +24,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'raw_result_set_data',
       'apply_converters_on_variables',
       'generate_values_in_copy_with',
+      'named_parameters',
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -69,6 +70,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       generateValuesInCopyWith: $checkedConvert(
               json, 'generate_values_in_copy_with', (v) => v as bool) ??
           false,
+      generateNamedParameters:
+          $checkedConvert(json, 'named_parameters', (v) => v as bool) ?? false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',

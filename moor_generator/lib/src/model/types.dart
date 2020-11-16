@@ -19,7 +19,6 @@ abstract class HasType {
 extension OperationOnTypes on HasType {
   /// the Dart type of this column that can be handled by moors type mapping.
   /// Basically the same as [dartTypeCode], minus custom types.
-  // todo: Respect nullability
   String get variableTypeName => dartTypeNames[type];
 
   /// The class inside the moor library that represents the same sql type as

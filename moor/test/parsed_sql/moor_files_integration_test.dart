@@ -94,7 +94,7 @@ void main() {
 
   test('runs queries with arrays and Dart templates', () async {
     await db.readMultiple(['a', 'b'],
-        OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
+        clause: OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
@@ -124,7 +124,7 @@ void main() {
   });
 
   test('columns use table names in queries with multiple tables', () async {
-    await db.multiple(db.withDefaults.a.equals('foo')).get();
+    await db.multiple(predicate: db.withDefaults.a.equals('foo')).get();
 
     verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
   });
@@ -142,7 +142,8 @@ void main() {
       return Future.value([row]);
     });
 
-    final result = await db.multiple(const Constant(true)).getSingle();
+    final result =
+        await db.multiple(predicate: const Constant(true)).getSingle();
 
     expect(
       result,
@@ -168,7 +169,8 @@ void main() {
       return Future.value([row]);
     });
 
-    final result = await db.multiple(const Constant(true)).getSingle();
+    final result =
+        await db.multiple(predicate: const Constant(true)).getSingle();
 
     expect(
       result,

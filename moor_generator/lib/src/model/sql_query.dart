@@ -390,6 +390,11 @@ class NestedResultTable {
 abstract class FoundElement {
   String get dartParameterName;
 
+  /// The name of this element as declared in the query
+  String /*?*/ get name;
+
+  bool get hasSqlName => name != null;
+
   /// Dart code for a type representing tis element.
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
 }
@@ -404,6 +409,7 @@ class FoundVariable extends FoundElement implements HasType {
   int index;
 
   /// The name of this variable, or null if it's not a named variable.
+  @override
   String name;
 
   /// The (inferred) type for this variable.
@@ -471,6 +477,7 @@ class FoundDartPlaceholder extends FoundElement {
 
   final Expression /*?*/ defaultValue;
 
+  @override
   final String name;
   DartPlaceholder astNode;
 

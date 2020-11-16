@@ -15,7 +15,7 @@ void main() {
     await db.into(db.email).insert(EmailCompanion.insert(
         sender: 'another@example.org', title: 'Good morning', body: 'hello'));
 
-    final results = await db.searchEmails('hello').get();
+    final results = await db.searchEmails(term: 'hello').get();
 
     expect(results, hasLength(2));
   });
