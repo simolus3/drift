@@ -61,6 +61,11 @@ analyzer:
 
 You might have to restart your IDE for the changes to apply.
 
+## How can I inspect generated SQL?
+
+All database implementations (`VmDatabase`, `FlutterQueryExecutor`, ...) have a `logStatements` parameter that 
+you can set to `true`. When enabled, moor will print the statements it runs.
+
 ## How does moor compare to X?
 There are a variety of good persistence libraries for Dart and Flutter.
 
