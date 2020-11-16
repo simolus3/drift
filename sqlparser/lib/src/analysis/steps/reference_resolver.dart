@@ -73,6 +73,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     columns ??= e.scope.availableColumns;
     final columnNames = e.scope.availableColumns
         .map((c) => c.humanReadableDescription())
+        .where((desc) => desc != null)
         .join(', ');
 
     context.reportError(AnalysisError(

@@ -168,7 +168,14 @@ class ReferenceExpressionColumn extends ExpressionColumn {
   Reference get reference => expression as Reference;
 
   @override
-  String get name => overriddenName ?? reference.resolvedColumn?.name;
+  String get name {
+    return overriddenName ??
+        reference.resolvedColumn?.name ??
+        // The resolved column might not have been resolved yet. Use the
+        // syntactic name from the reference as a fallback: It's only different
+        // for rowid references, and those are easier to resolve.
+        reference.columnName;
+  }
 
   final String overriddenName;
 
