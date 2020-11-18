@@ -176,6 +176,9 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
 class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, int> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
+  ///
+  /// For this reason, you can't use an [autoIncrement] column and also set a
+  /// custom [Table.primaryKey] on the same table.
   IntColumnBuilder autoIncrement() => _isGenerated();
 }
 
