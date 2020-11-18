@@ -1,5 +1,7 @@
 //@dart=2.9
 import 'dart:async';
+
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';

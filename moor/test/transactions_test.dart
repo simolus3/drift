@@ -20,6 +20,7 @@ package:mockito/src/mock.dart 128:22                                          Mo
  */
 
 import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 
 import 'data/tables/todos.dart';

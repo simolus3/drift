@@ -1,6 +1,7 @@
 //@dart=2.9
-import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
+import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';

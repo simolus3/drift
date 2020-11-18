@@ -17,12 +17,13 @@ dependencies:
   sqlite3: ^0.1.6
 
 dev_dependencies:
+  analyzer: ^0.40.6
   moor_generator: ^3.2.0
   uuid: ^2.0.0
   path: ^1.6.4
-  build_runner: '^1.10.1'
+  build_runner: '^1.10.4'
   test: ^1.16.0-nullsafety
-  mockito: ^4.1.0
+  mockito: ^4.1.3
   rxdart: ^0.24.0 # used to test compatibility with stream queries
 
 dependency_overrides:
@@ -38,8 +39,15 @@ dependency_overrides:
       ref: nnbd
       path: sqlite3
 
+  # Switch back to regular project after https://github.com/tekartik/synchronized.dart/pull/14
   synchronized:
     git:
-      url: https://github.com/tekartik/synchronized.dart.git
+      url: https://github.com/simolus3/synchronized.dart.git
       ref: null_safety
       path: synchronized
+
+  # Remove after https://github.com/dart-lang/mockito/issues/297 is fixed
+  mockito:
+    git:
+      url: https://github.com/simolus3/mockito.git
+      ref: generate-inheritance

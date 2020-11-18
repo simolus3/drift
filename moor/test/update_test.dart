@@ -1,6 +1,7 @@
 //@dart=2.9
 import 'dart:async';
 
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
