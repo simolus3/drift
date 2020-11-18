@@ -1,6 +1,7 @@
 # Run tasks with the dart SDK installed by default
 container:
-  dockerfile: tool/Dockerfile
+  # todo: Remove before merging
+  dockerfile: tool/nnbd.Dockerfile
   memory: 12G
   cpu: 4
 

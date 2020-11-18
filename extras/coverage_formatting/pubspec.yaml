@@ -2,6 +2,9 @@ name: coverage_formatting
 publish_to: none
 description: Tool used for the CI to format VM coverage jsons to LCOV files
 
+environment:
+  sdk: '>=2.6.0 <3.0.0'
+
 dependencies:
   coverage: '^0.14.0'
   path: ^1.6.4
