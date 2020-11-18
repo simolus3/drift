@@ -19,7 +19,7 @@ void main() {
     final db = TodoDb(executor);
     final row = await db.customSelect('SELECT my_function() AS r;').getSingle();
 
-    expect(row.readString('r'), 'hello from Dart');
+    expect(row!.readString('r'), 'hello from Dart');
     await db.close();
   });
 
@@ -31,7 +31,7 @@ void main() {
 
     final db = TodoDb(executor);
     final row = await db.customSelect('SELECT my_function() AS r;').getSingle();
-    expect(row.readString('r'), 'hello from Dart');
+    expect(row!.readString('r'), 'hello from Dart');
 
     await db.close();
   });

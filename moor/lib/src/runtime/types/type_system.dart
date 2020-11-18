@@ -20,7 +20,7 @@ class SqlTypeSystem {
           RealType(),
         ]);
 
-  /// Constant field of [SqlTypeSystem.withDefaults()]. This field exists as a
+  /// Constant field of [SqlTypeSystem.withDefaults]. This field exists as a
   /// workaround for an analyzer bug: https://dartbug.com/38658
   ///
   /// Used internally by generated code.

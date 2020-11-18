@@ -16,17 +16,17 @@ abstract class Query<T extends Table, D extends DataClass> {
 
   /// The `WHERE` clause for this statement
   @protected
-  Where whereExpr;
+  Where? whereExpr;
 
   /// The `ORDER BY` clause for this statement
   @protected
-  OrderBy orderByExpr;
+  OrderBy? orderByExpr;
 
   /// The `LIMIT` clause for this statement.
   @protected
-  Limit limitExpr;
+  Limit? limitExpr;
 
-  GroupBy _groupBy;
+  GroupBy? _groupBy;
 
   /// Subclasses must override this and write the part of the statement that
   /// comes before the where and limit expression..
@@ -44,7 +44,7 @@ abstract class Query<T extends Table, D extends DataClass> {
     // whether we need to insert a space before writing the next component
     var needsWhitespace = false;
 
-    void writeWithSpace(Component /*?*/ component) {
+    void writeWithSpace(Component? component) {
       if (component == null) return;
 
       if (needsWhitespace) ctx.writeWhitespace();
@@ -96,7 +96,7 @@ abstract class Selectable<T> {
   /// one row, for instance because you used `limit(1)` or you know the `where`
   /// clause will only allow one row.
   /// {@endtemplate}
-  Future<T> getSingle() async {
+  Future<T?> getSingle() async {
     final list = await get();
     final iterator = list.iterator;
 
@@ -119,7 +119,7 @@ abstract class Selectable<T> {
   /// will be added to the stream instead.
   ///
   /// {@macro moor_single_query_expl}
-  Stream<T> watchSingle() {
+  Stream<T?> watchSingle() {
     return watch().transform(singleElements());
   }
 
@@ -182,7 +182,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
     if (whereExpr == null) {
       whereExpr = Where(predicate);
     } else {
-      whereExpr = Where(whereExpr.predicate & predicate);
+      whereExpr = Where(whereExpr!.predicate & predicate);
     }
   }
 
@@ -190,7 +190,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
   /// [d] will be matched.
   void whereSamePrimaryKey(Insertable<D> d) {
     assert(
-        table.$primaryKey != null && table.$primaryKey.isNotEmpty,
+        table.$primaryKey != null && table.$primaryKey!.isNotEmpty,
         'When using Query.whereSamePrimaryKey, which is also called from '
         'DeleteStatement.delete and UpdateStatement.replace, the affected table'
         'must have a primary key. You can either specify a primary implicitly '
@@ -202,7 +202,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
         'UpdateStatement.write respectively. In that case, you need to use a '
         'custom where statement.');
 
-    final primaryKeyColumns = Map.fromEntries(table.$primaryKey.map((column) {
+    final primaryKeyColumns = Map.fromEntries(table.$primaryKey!.map((column) {
       return MapEntry(column.$name, column);
     }));
 
@@ -212,10 +212,10 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
     final primaryKeyValues = Map.fromEntries(updatedFields.entries
             .where((entry) => primaryKeyColumns.containsKey(entry.key)))
         .map((columnName, value) {
-      return MapEntry(primaryKeyColumns[columnName], value);
+      return MapEntry(primaryKeyColumns[columnName]!, value);
     });
 
-    Expression<bool> predicate;
+    Expression<bool?>? predicate;
     for (final entry in primaryKeyValues.entries) {
       final comparison =
           _Comparison(entry.key, _ComparisonOperator.equal, entry.value);
@@ -227,7 +227,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
       }
     }
 
-    whereExpr = Where(predicate);
+    whereExpr = Where(predicate!);
   }
 }
 
@@ -236,7 +236,7 @@ mixin LimitContainerMixin<T extends Table, D extends DataClass> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.
-  void limit(int limit, {int offset}) {
+  void limit(int limit, {int? offset}) {
     limitExpr = Limit(limit, offset);
   }
 }

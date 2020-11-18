@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:async';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/api/runtime_api.dart';

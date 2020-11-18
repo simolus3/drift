@@ -23,14 +23,14 @@ class MoorWrappedException implements Exception {
   final String message;
 
   /// The underlying exception caught by moor
-  final dynamic cause;
+  final Object? cause;
 
   /// The original stacktrace when caught by moor
-  final StackTrace trace;
+  final StackTrace? trace;
 
   /// Creates a new [MoorWrappedException] to provide additional details about
   /// an underlying error from the database.
-  MoorWrappedException({this.message, this.cause, this.trace});
+  MoorWrappedException({required this.message, this.cause, this.trace});
 
   @override
   String toString() {

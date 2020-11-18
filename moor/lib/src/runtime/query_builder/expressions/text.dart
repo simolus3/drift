@@ -1,11 +1,11 @@
 part of '../query_builder.dart';
 
 /// Defines methods that operate on a column storing [String] values.
-extension StringExpressionOperators on Expression<String> {
+extension StringExpressionOperators on Expression<String?> {
   /// Whether this column matches the given pattern. For details on what patters
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool> like(String regex) {
+  Expression<bool?> like(String regex) {
     return _LikeOperator(this, Variable.withString(regex));
   }
 
@@ -16,7 +16,7 @@ extension StringExpressionOperators on Expression<String> {
   ///
   /// Note that this function is only available when using `moor_ffi`. If you
   /// need to support the web or `moor_flutter`, consider using [like] instead.
-  Expression<bool> regexp(
+  Expression<bool?> regexp(
     String regex, {
     bool multiLine = false,
     bool caseSensitive = true,
@@ -62,7 +62,7 @@ extension StringExpressionOperators on Expression<String> {
   /// Note that this is case-insensitive for the English alphabet only.
   ///
   /// This is equivalent to calling [like] with `%<substring>%`.
-  Expression<bool> contains(String substring) {
+  Expression<bool?> contains(String substring) {
     return like('%$substring%');
   }
 
@@ -73,7 +73,7 @@ extension StringExpressionOperators on Expression<String> {
   }
 
   /// Performs a string concatenation in sql by appending [other] to `this`.
-  Expression<String> operator +(Expression<String> other) {
+  Expression<String> operator +(Expression<String?> other) {
     return _BaseInfixOperator(this, '||', other,
         precedence: Precedence.stringConcatenation);
   }
@@ -102,19 +102,19 @@ extension StringExpressionOperators on Expression<String> {
   ///
   /// See also:
   ///  - https://www.w3resource.com/sqlite/core-functions-length.php
-  Expression<int> get length {
+  Expression<int?> get length {
     return FunctionCallExpression('LENGTH', [this]);
   }
 }
 
 /// A `text LIKE pattern` expression that will be true if the first expression
 /// matches the pattern given by the second expression.
-class _LikeOperator extends Expression<bool> {
+class _LikeOperator extends Expression<bool?> {
   /// The target expression that will be tested
-  final Expression<String> target;
+  final Expression<String?> target;
 
   /// The regex-like expression to test the [target] against.
-  final Expression<String> regex;
+  final Expression<String?> regex;
 
   /// The operator to use when matching. Defaults to `LIKE`.
   final String operator;

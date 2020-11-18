@@ -6,7 +6,7 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 void main() {
-  Database db;
+  late Database db;
 
   setUp(() => db = sqlite3.openInMemory()..useMoorVersions());
   tearDown(() => db.dispose());

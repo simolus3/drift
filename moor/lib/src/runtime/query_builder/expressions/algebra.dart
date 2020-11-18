@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Defines the `-`, `*` and `/` operators on sql expressions that support it.
-extension ArithmeticExpr<DT extends num> on Expression<DT> {
+extension ArithmeticExpr<DT extends num?> on Expression<DT> {
   /// Performs an addition (`this` + [other]) in sql.
   Expression<DT> operator +(Expression<DT> other) {
     return _BaseInfixOperator(this, '+', other,

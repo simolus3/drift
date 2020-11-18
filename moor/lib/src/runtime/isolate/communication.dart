@@ -19,7 +19,7 @@ class IsolateCommunication {
   /// primitive objects.
   final MessageCodec messageCodec;
 
-  StreamSubscription _inputSubscription;
+  StreamSubscription? _inputSubscription;
 
   // note that there are two IsolateCommunication instances in each connection,
   // and each of them has an independent _currentRequestId field!
@@ -102,7 +102,7 @@ class IsolateCommunication {
       if (completer != null) {
         if (msg is _ErrorResponse) {
           final trace = msg.stackTrace != null
-              ? StackTrace.fromString(msg.stackTrace)
+              ? StackTrace.fromString(msg.stackTrace!)
               : null;
 
           completer.completeError(msg.error, trace);
@@ -146,7 +146,7 @@ class IsolateCommunication {
   }
 
   /// Sends an erroneous response for a [Request].
-  void respondError(Request request, dynamic error, [StackTrace trace]) {
+  void respondError(Request request, dynamic error, [StackTrace? trace]) {
     // sending a message while closed will throw, so don't even try.
     if (isClosed) return;
 
@@ -390,9 +390,9 @@ class _Response implements IsolateMessage {
 class _ErrorResponse extends _Response {
   static const _tag = 6;
 
-  final String stackTrace;
+  final String? stackTrace;
 
-  dynamic get error => response;
+  Object get error => response as Object;
 
   _ErrorResponse(int requestId, dynamic error, [this.stackTrace])
       : super(requestId, error);

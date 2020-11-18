@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/backends.dart';
 import 'package:moor/moor.dart';

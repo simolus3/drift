@@ -80,12 +80,12 @@ class MyCustomObject {
 class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
   @override
-  MyCustomObject mapToDart(String fromDb) {
+  MyCustomObject? mapToDart(String? fromDb) {
     return fromDb == null ? null : MyCustomObject(fromDb);
   }
 
   @override
-  String mapToSql(MyCustomObject value) {
+  String? mapToSql(MyCustomObject? value) {
     return value?.data;
   }
 }

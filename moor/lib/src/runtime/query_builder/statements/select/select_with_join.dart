@@ -109,11 +109,11 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// ])
   /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
   /// ```
-  void where(Expression<bool> predicate) {
+  void where(Expression<bool?> predicate) {
     if (whereExpr == null) {
       whereExpr = Where(predicate);
     } else {
-      whereExpr = Where(whereExpr.predicate & predicate);
+      whereExpr = Where(whereExpr!.predicate & predicate);
     }
   }
 
@@ -165,7 +165,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// Groups the result by values in [expressions].
   ///
   /// An optional [having] attribute can be set to exclude certain groups.
-  void groupBy(Iterable<Expression> expressions, {Expression<bool> having}) {
+  void groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
     _groupBy = GroupBy._(expressions.toList(), having);
   }
 
@@ -188,7 +188,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   }
 
   Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.executor.doWhenOpened((e) async {
+    final results = await ctx.executor!.doWhenOpened((e) async {
       try {
         return await e.runSelect(ctx.sql, ctx.boundVariables);
       } catch (e, s) {

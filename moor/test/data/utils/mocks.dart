@@ -72,7 +72,7 @@ class MockTransactionExecutor extends Mock implements TransactionExecutor {
 class MockStreamQueries extends Mock implements StreamQueryStore {}
 
 DatabaseConnection createConnection(QueryExecutor executor,
-    [StreamQueryStore streams]) {
+    [StreamQueryStore? streams]) {
   return DatabaseConnection(
       SqlTypeSystem.defaultInstance, executor, streams ?? StreamQueryStore());
 }

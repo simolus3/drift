@@ -38,7 +38,7 @@ class Batch {
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
   void insert<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row,
-      {InsertMode mode, DoUpdate<T, D> onConflict}) {
+      {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
     final context = InsertStatement<Table, D>(_engine, table)
@@ -60,7 +60,7 @@ class Batch {
   /// support it. For details and examples, see [InsertStatement.insert].
   void insertAll<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, List<Insertable<D>> rows,
-      {InsertMode mode, DoUpdate<T, D> onConflict}) {
+      {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
     for (final row in rows) {
       insert<T, D>(table, row, mode: mode, onConflict: onConflict);
     }
@@ -82,7 +82,7 @@ class Batch {
   /// [UpdateStatement.write] or the [documentation with examples](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   void update<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row,
-      {Expression<bool> Function(T table) where}) {
+      {Expression<bool> Function(T table)? where}) {
     _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_engine, table);
     if (where != null) stmt.where(where);
@@ -148,8 +148,8 @@ class Batch {
   /// See also:
   ///  - [QueryEngine.customStatement], the equivalent method outside of
   ///    batches.
-  void customStatement(String sql, [List<dynamic> args]) {
-    _addSqlAndArguments(sql, args);
+  void customStatement(String sql, [List<dynamic>? args]) {
+    _addSqlAndArguments(sql, args ?? const []);
   }
 
   void _addContext(GenerationContext ctx) {
@@ -171,17 +171,17 @@ class Batch {
     await _engine.executor.ensureOpen(_engine.attachedDatabase);
 
     if (_startTransaction) {
-      TransactionExecutor transaction;
+      TransactionExecutor? transaction;
 
       try {
         transaction = _engine.executor.beginTransaction();
-        await transaction.ensureOpen(null);
+        await transaction.ensureOpen(_engine.attachedDatabase);
 
         await _runWith(transaction);
 
         await transaction.send();
       } catch (e) {
-        await transaction.rollback();
+        await transaction?.rollback();
         rethrow;
       }
     } else {

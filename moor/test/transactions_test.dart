@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:async';
 
 @TestOn('!browser') // todo: Figure out why this doesn't run in js

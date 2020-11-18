@@ -11,7 +11,7 @@ import 'package:moor/moor.dart';
 /// instead of `NaN`.
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlPow(Expression<num> base, Expression<num> exponent) {
+Expression<num?> sqlPow(Expression<num?> base, Expression<num?> exponent) {
   return FunctionCallExpression('pow', [base, exponent]);
 }
 
@@ -21,7 +21,7 @@ Expression<num> sqlPow(Expression<num> base, Expression<num> exponent) {
 /// of `NaN` for negative values.
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlSqrt(Expression<num> value) {
+Expression<num?> sqlSqrt(Expression<num?> value) {
   return FunctionCallExpression('sqrt', [value]);
 }
 
@@ -30,7 +30,7 @@ Expression<num> sqlSqrt(Expression<num> value) {
 /// This function is equivalent to [sin].
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlSin(Expression<num> value) {
+Expression<num?> sqlSin(Expression<num?> value) {
   return FunctionCallExpression('sin', [value]);
 }
 
@@ -39,7 +39,7 @@ Expression<num> sqlSin(Expression<num> value) {
 /// This function is equivalent to [sin].
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlCos(Expression<num> value) {
+Expression<num?> sqlCos(Expression<num?> value) {
   return FunctionCallExpression('cos', [value]);
 }
 
@@ -48,7 +48,7 @@ Expression<num> sqlCos(Expression<num> value) {
 /// This function is equivalent to [tan].
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlTan(Expression<num> value) {
+Expression<num?> sqlTan(Expression<num?> value) {
   return FunctionCallExpression('tan', [value]);
 }
 
@@ -58,7 +58,7 @@ Expression<num> sqlTan(Expression<num> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlAsin(Expression<num> value) {
+Expression<num?> sqlAsin(Expression<num?> value) {
   return FunctionCallExpression('asin', [value]);
 }
 
@@ -68,7 +68,7 @@ Expression<num> sqlAsin(Expression<num> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlAcos(Expression<num> value) {
+Expression<num?> sqlAcos(Expression<num?> value) {
   return FunctionCallExpression('acos', [value]);
 }
 
@@ -78,13 +78,13 @@ Expression<num> sqlAcos(Expression<num> value) {
 /// instead of `NaN`.
 ///
 /// This function is only available when using `moor_ffi`.
-Expression<num> sqlAtan(Expression<num> value) {
+Expression<num?> sqlAtan(Expression<num?> value) {
   return FunctionCallExpression('atan', [value]);
 }
 
 /// Adds functionality to string expressions that only work when using
 /// `moor_ffi`.
-extension MoorFfiSpecificStringExtensions on Expression<String> {
+extension MoorFfiSpecificStringExtensions on Expression<String?> {
   /// Version of `contains` that allows controlling case sensitivity better.
   ///
   /// The default `contains` method uses sqlite's `LIKE`, which is case-
@@ -102,7 +102,7 @@ extension MoorFfiSpecificStringExtensions on Expression<String> {
   ///
   /// Note that this is only available when using `moor_ffi` version 0.6.0 or
   /// greater.
-  Expression<bool> containsCase(String substring,
+  Expression<bool?> containsCase(String substring,
       {bool caseSensitive = false}) {
     return FunctionCallExpression('moor_contains', [
       this,

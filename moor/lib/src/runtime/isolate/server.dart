@@ -3,7 +3,7 @@ part of 'moor_isolate.dart';
 class _MoorServer {
   final Server server;
 
-  DatabaseConnection connection;
+  final DatabaseConnection connection;
 
   final Map<int, QueryExecutor> _managedExecutors = {};
   int _currentExecutorId = 0;
@@ -19,20 +19,20 @@ class _MoorServer {
   final StreamController<void> _backlogUpdated =
       StreamController.broadcast(sync: true);
 
-  _IsolateDelegatedUser _dbUser;
+  late final _IsolateDelegatedUser _dbUser = _IsolateDelegatedUser(this);
 
   SendPort get portToOpenConnection => server.portToOpenConnection;
 
-  _MoorServer(DatabaseOpener opener) : server = Server(const _MoorCodec()) {
+  _MoorServer(DatabaseOpener opener)
+      : connection = opener(),
+        server = Server(const _MoorCodec()) {
     server.openedConnections.listen((connection) {
       connection.setRequestHandler(_handleRequest);
     });
-    connection = opener();
-    _dbUser = _IsolateDelegatedUser(this);
   }
 
   /// Returns the first connected client, or null if no client is connected.
-  IsolateCommunication get firstClient {
+  IsolateCommunication? get firstClient {
     final channels = server.currentChannels;
     return channels.isEmpty ? null : channels.first;
   }
@@ -74,8 +74,8 @@ class _MoorServer {
     return await executor.ensureOpen(_dbUser);
   }
 
-  Future<dynamic> _runQuery(
-      _StatementMethod method, String sql, List args, int transactionId) async {
+  Future<dynamic> _runQuery(_StatementMethod method, String sql, List args,
+      int? transactionId) async {
     final executor = await _loadExecutor(transactionId);
 
     switch (method) {
@@ -88,23 +88,21 @@ class _MoorServer {
       case _StatementMethod.select:
         return executor.runSelect(sql, args);
     }
-
-    throw AssertionError("Unknown _StatementMethod, this can't happen.");
   }
 
-  Future<void> _runBatched(BatchedStatements stmts, int transactionId) async {
+  Future<void> _runBatched(BatchedStatements stmts, int? transactionId) async {
     final executor = await _loadExecutor(transactionId);
     await executor.runBatched(stmts);
   }
 
-  Future<QueryExecutor> _loadExecutor(int transactionId) async {
+  Future<QueryExecutor> _loadExecutor(int? transactionId) async {
     await _waitForTurn(transactionId);
     return transactionId != null
-        ? _managedExecutors[transactionId]
+        ? _managedExecutors[transactionId]!
         : connection.executor;
   }
 
-  Future<int> _spawnTransaction(int executor) async {
+  Future<int> _spawnTransaction(int? executor) async {
     final transaction = (await _loadExecutor(executor)).beginTransaction();
     final id = _putExecutor(transaction, beforeCurrent: true);
 
@@ -126,7 +124,7 @@ class _MoorServer {
   }
 
   Future<dynamic> _transactionControl(
-      _TransactionControl action, int executorId) async {
+      _TransactionControl action, int? executorId) async {
     if (action == _TransactionControl.begin) {
       return await _spawnTransaction(executorId);
     }
@@ -142,21 +140,19 @@ class _MoorServer {
       );
     }
 
-    final transaction = executor as TransactionExecutor;
-
     try {
       switch (action) {
         case _TransactionControl.commit:
-          await transaction.send();
+          await executor.send();
           break;
         case _TransactionControl.rollback:
-          await transaction.rollback();
+          await executor.rollback();
           break;
         default:
           assert(false, 'Unknown TransactionControl');
       }
     } finally {
-      _releaseExecutor(executorId);
+      _releaseExecutor(executorId!);
     }
   }
 
@@ -166,7 +162,7 @@ class _MoorServer {
     _notifyActiveExecutorUpdated();
   }
 
-  Future<void> _waitForTurn(int transactionId) {
+  Future<void> _waitForTurn(int? transactionId) {
     bool idIsActive() {
       if (transactionId == null) {
         return _executorBacklog.isEmpty;
@@ -202,7 +198,7 @@ class _IsolateDelegatedUser implements QueryExecutorUser {
       QueryExecutor executor, OpeningDetails details) async {
     final id = server._putExecutor(executor, beforeCurrent: true);
     try {
-      await server.firstClient.request(_RunBeforeOpen(details, id));
+      await server.firstClient!.request(_RunBeforeOpen(details, id));
     } finally {
       server._releaseExecutor(id);
     }

@@ -1,6 +1,7 @@
+//@dart=2.9
+@TestOn('vm')
 import 'package:moor/moor.dart';
 import 'package:moor/ffi.dart';
-@TestOn('vm')
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';

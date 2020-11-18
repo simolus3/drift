@@ -31,7 +31,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
-  final Expression<bool> on;
+  final Expression<bool>? on;
 
   /// Whether [table] should appear in the result set (defaults to true).
   ///
@@ -41,7 +41,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
-  Join._(this.type, this.table, this.on, {bool includeInResult})
+  Join._(this.type, this.table, this.on, {bool? includeInResult})
       : includeInResult = includeInResult ?? true;
 
   @override
@@ -53,7 +53,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
     if (type != _JoinType.cross) {
       context.buffer.write(' ON ');
-      on.writeInto(context);
+      on!.writeInto(context);
     }
   }
 }
@@ -71,7 +71,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
 Join innerJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool> on,
-    {bool useColumns}) {
+    {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
@@ -85,7 +85,7 @@ Join innerJoin<T extends Table, D extends DataClass>(
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
 Join leftOuterJoin<T extends Table, D extends DataClass>(
     TableInfo<T, D> other, Expression<bool> on,
-    {bool useColumns}) {
+    {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 
@@ -97,6 +97,6 @@ Join leftOuterJoin<T extends Table, D extends DataClass>(
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin<T, D>(TableInfo other, {bool useColumns}) {
+Join crossJoin<T, D>(TableInfo other, {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }

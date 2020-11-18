@@ -7,7 +7,7 @@ class Limit extends Component {
 
   /// When the offset is non null, the first offset rows will be skipped an not
   /// included in the result.
-  final int offset;
+  final int? offset;
 
   /// Construct a limit clause from the [amount] of rows to include an a
   /// nullable [offset].

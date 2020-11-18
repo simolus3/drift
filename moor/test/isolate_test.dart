@@ -1,3 +1,4 @@
+//@dart=2.9
 @TestOn('vm')
 import 'dart:async';
 import 'dart:isolate';

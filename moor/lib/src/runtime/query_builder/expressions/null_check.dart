@@ -1,8 +1,5 @@
 part of '../query_builder.dart';
 
-// we're not using extensions for this because I'm not sure if / how this could
-// look together with NNBD in the future
-
 /// Expression that is true if the inner expression resolves to a null value.
 @Deprecated('Use isNull through the SqlIsNull extension')
 Expression<bool> isNull(Expression inner) => _NullCheck(inner, true);

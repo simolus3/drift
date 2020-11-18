@@ -30,7 +30,7 @@ part 'table.dart';
 ///   );
 /// }
 /// ```
-Null /* = Never */ _isGenerated() {
+Never _isGenerated() {
   throw UnsupportedError(
     'This method should not be called at runtime. Are you sure you re-ran the '
     'builder after changing your tables or databases?',

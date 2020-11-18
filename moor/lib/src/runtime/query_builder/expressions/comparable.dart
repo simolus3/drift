@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Defines extension functions to express comparisons in sql
-extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
+extension ComparableExpr<DT extends Comparable<dynamic>?> on Expression<DT> {
   /// Returns an expression that is true if this expression is strictly bigger
   /// than the other expression.
   Expression<bool> isBiggerThan(Expression<DT> other) {
@@ -84,9 +84,9 @@ class _BetweenExpression extends Expression<bool> {
   final Expression higher;
 
   _BetweenExpression(
-      {@required this.target,
-      @required this.lower,
-      @required this.higher,
+      {required this.target,
+      required this.lower,
+      required this.higher,
       this.not = false});
 
   @override

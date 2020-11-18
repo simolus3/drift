@@ -63,7 +63,7 @@ class _MoorCodec extends MessageCodec {
         for (final update in payload.updates)
           [
             update.table,
-            update.kind.index,
+            update.kind?.index,
           ]
       ];
     } else if (payload is SqlTypeSystem) {
@@ -80,7 +80,7 @@ class _MoorCodec extends MessageCodec {
     if (encoded == null || encoded is bool) return encoded;
 
     int tag;
-    List fullMessage;
+    List? fullMessage;
 
     if (encoded is int) {
       tag = encoded;
@@ -89,7 +89,8 @@ class _MoorCodec extends MessageCodec {
       tag = fullMessage[0] as int;
     }
 
-    int readInt(int index) => fullMessage[index] as int;
+    int readInt(int index) => fullMessage![index] as int;
+    int? readNullableInt(int index) => fullMessage![index] as int?;
 
     switch (tag) {
       case _tag_NoArgsRequest_getTypeSystem:
@@ -98,12 +99,12 @@ class _MoorCodec extends MessageCodec {
         return _NoArgsRequest.terminateAll;
       case _tag_ExecuteQuery:
         final method = _StatementMethod.values[readInt(1)];
-        final sql = fullMessage[2] as String;
+        final sql = fullMessage![2] as String;
         final args = (fullMessage[3] as List).map(_decodeDbValue).toList();
-        final executorId = fullMessage[4] as int /*?*/;
+        final executorId = readNullableInt(4);
         return _ExecuteQuery(method, sql, args, executorId);
       case _tag_ExecuteBatchedStatement:
-        final sql = (fullMessage[1] as List).cast<String>();
+        final sql = (fullMessage![1] as List).cast<String>();
         final args = <ArgumentsForBatchedStatement>[];
 
         for (var i = 2; i < fullMessage.length - 1; i++) {
@@ -118,19 +119,19 @@ class _MoorCodec extends MessageCodec {
             BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:
         final control = _TransactionControl.values[readInt(1)];
-        return _RunTransactionAction(control, readInt(2));
+        return _RunTransactionAction(control, readNullableInt(2));
       case _tag_EnsureOpen:
-        return _EnsureOpen(readInt(1), readInt(2));
+        return _EnsureOpen(readInt(1), readNullableInt(2));
       case _tag_RunBeforeOpen:
         return _RunBeforeOpen(
-          OpeningDetails(readInt(1), readInt(2)),
+          OpeningDetails(readNullableInt(1), readInt(2)),
           readInt(3),
         );
       case _tag_DefaultSqlTypeSystem:
         return SqlTypeSystem.defaultInstance;
       case _tag_NotifyTablesUpdated:
         final updates = <TableUpdate>[];
-        for (var i = 1; i < fullMessage.length; i++) {
+        for (var i = 1; i < fullMessage!.length; i++) {
           final encodedUpdate = fullMessage[i] as List;
           updates.add(
             TableUpdate(encodedUpdate[0] as String,
@@ -186,7 +187,7 @@ class _ExecuteQuery {
   final _StatementMethod method;
   final String sql;
   final List<dynamic> args;
-  final int executorId;
+  final int? executorId;
 
   _ExecuteQuery(this.method, this.sql, this.args, [this.executorId]);
 
@@ -202,7 +203,7 @@ class _ExecuteQuery {
 /// Sent from the client to run [BatchedStatements]
 class _ExecuteBatchedStatement {
   final BatchedStatements stmts;
-  final int executorId;
+  final int? executorId;
 
   _ExecuteBatchedStatement(this.stmts, [this.executorId]);
 }
@@ -219,7 +220,7 @@ enum _TransactionControl {
 /// Sent from the client to commit or rollback a transaction
 class _RunTransactionAction {
   final _TransactionControl control;
-  final int executorId;
+  final int? executorId;
 
   _RunTransactionAction(this.control, this.executorId);
 
@@ -233,7 +234,7 @@ class _RunTransactionAction {
 /// database connection, using the [schemaVersion].
 class _EnsureOpen {
   final int schemaVersion;
-  final int executorId;
+  final int? executorId;
 
   _EnsureOpen(this.schemaVersion, this.executorId);
 

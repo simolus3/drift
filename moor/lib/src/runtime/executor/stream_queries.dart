@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/utils/start_with_value_transformer.dart';
 import 'package:pedantic/pedantic.dart';
@@ -22,13 +21,13 @@ class QueryStreamFetcher<T> {
 
   /// Key that can be used to check whether two fetchers will yield the same
   /// result when operating on the same data.
-  final StreamKey key;
+  final StreamKey? key;
 
   /// Function that asynchronously fetches the latest set of data.
   final Future<T> Function() fetchData;
 
   QueryStreamFetcher(
-      {@required this.readsFrom, this.key, @required this.fetchData});
+      {required this.readsFrom, this.key, required this.fetchData});
 }
 
 /// Key that uniquely identifies a select statement. If two keys created from
@@ -67,7 +66,7 @@ class StreamKey {
 /// updates them when needed.
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
-  final HashSet<StreamKey> _keysPendingRemoval = HashSet<StreamKey>();
+  final HashSet<StreamKey?> _keysPendingRemoval = HashSet<StreamKey?>();
 
   bool _isShuttingDown = false;
   // we track pending timers since Flutter throws an exception when timers
@@ -185,17 +184,15 @@ class QueryStream<T> {
   final QueryStreamFetcher<T> _fetcher;
   final StreamQueryStore _store;
 
-  StreamController<T> _controller;
-  StreamSubscription _tablesChangedSubscription;
+  late final StreamController<T> _controller = StreamController.broadcast(
+    onListen: _onListen,
+    onCancel: _onCancel,
+  );
+  StreamSubscription? _tablesChangedSubscription;
 
-  T _lastData;
+  T? _lastData;
 
   Stream<T> get stream {
-    _controller ??= StreamController.broadcast(
-      onListen: _onListen,
-      onCancel: _onCancel,
-    );
-
     return _controller.stream.transform(StartWithValueTransformer(_cachedData));
   }
 
@@ -205,7 +202,7 @@ class QueryStream<T> {
 
   /// Called when we have a new listener, makes the stream query behave similar
   /// to an `BehaviorSubject` from rxdart.
-  T _cachedData() => _lastData;
+  T? _cachedData() => _lastData;
 
   void _onListen() {
     _store.markAsOpened(this);
@@ -282,7 +279,7 @@ class MultipleUpdateQuery extends TableUpdateQuery {
 }
 
 class SpecificUpdateQuery extends TableUpdateQuery {
-  final UpdateKind limitUpdateKind;
+  final UpdateKind? limitUpdateKind;
   final String table;
 
   const SpecificUpdateQuery(this.table, {this.limitUpdateKind});

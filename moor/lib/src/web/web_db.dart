@@ -13,7 +13,7 @@ class WebDatabase extends DelegatedDatabase {
   /// [name] can be used to identify multiple databases. The optional
   /// [initializer] can be used to initialize the database if it doesn't exist.
   WebDatabase(String name,
-      {bool logStatements = false, CreateWebDatabase initializer})
+      {bool logStatements = false, CreateWebDatabase? initializer})
       : super(_WebDelegate(MoorWebStorage(name), initializer),
             logStatements: logStatements, isSequential: true);
 
@@ -23,15 +23,17 @@ class WebDatabase extends DelegatedDatabase {
   /// constructor of [MoorWebStorage] will use local storage for that, but an
   /// IndexedDB-based implementation is available via.
   WebDatabase.withStorage(MoorWebStorage storage,
-      {bool logStatements = false, CreateWebDatabase initializer})
+      {bool logStatements = false, CreateWebDatabase? initializer})
       : super(_WebDelegate(storage, initializer),
             logStatements: logStatements, isSequential: true);
 }
 
 class _WebDelegate extends DatabaseDelegate {
   final MoorWebStorage storage;
-  final CreateWebDatabase initializer;
-  SqlJsDatabase _db;
+  final CreateWebDatabase? initializer;
+
+  late SqlJsDatabase _db;
+  bool _isOpen = false;
 
   bool _inTransaction = false;
 
@@ -56,13 +58,13 @@ class _WebDelegate extends DatabaseDelegate {
   @override
   DbVersionDelegate get versionDelegate =>
       _versionDelegate ??= _WebVersionDelegate(this);
-  DbVersionDelegate _versionDelegate;
+  DbVersionDelegate? _versionDelegate;
 
   @override
-  bool get isOpen => _db != null;
+  bool get isOpen => _isOpen;
 
   @override
-  Future<void> open([QueryExecutorUser db]) async {
+  Future<void> open(QueryExecutorUser db) async {
     final dbVersion = db.schemaVersion;
     assert(dbVersion >= 1, 'Database schema version needs to be at least 1');
 
@@ -72,11 +74,15 @@ class _WebDelegate extends DatabaseDelegate {
     var restored = await storage.restore();
 
     if (restored == null && initializer != null) {
-      restored = await initializer();
-      await storage.store(restored);
+      restored = await initializer?.call();
+
+      if (restored != null) {
+        await storage.store(restored);
+      }
     }
 
     _db = module.createDatabase(restored);
+    _isOpen = true;
   }
 
   @override
@@ -118,7 +124,7 @@ class _WebDelegate extends DatabaseDelegate {
     // todo at least for stream queries we should cache prepared statements.
     final stmt = _db.prepare(statement)..executeWith(args);
 
-    List<String> columnNames;
+    List<String>? columnNames;
     final rows = <List<dynamic>>[];
 
     while (stmt.step()) {
@@ -141,7 +147,10 @@ class _WebDelegate extends DatabaseDelegate {
   @override
   Future<void> close() async {
     await _storeDb();
-    _db?.close();
+    if (_isOpen) {
+      _db.close();
+    }
+
     await storage.close();
   }
 
@@ -181,7 +190,7 @@ class _WebVersionDelegate extends DynamicVersionDelegate {
   @override
   Future<int> get schemaVersion async {
     final storage = delegate.storage;
-    int version;
+    int? version;
     if (storage is _CustomSchemaVersionSave) {
       version = storage.schemaVersion;
     }

@@ -16,7 +16,7 @@ class GenerationContext {
   final SqlDialect dialect;
 
   /// The actual [QueryEngine] that's going to execute the generated query.
-  final QueryEngine executor;
+  final QueryEngine? executor;
 
   final List<dynamic> _boundVariables = [];
 
@@ -40,8 +40,8 @@ class GenerationContext {
   /// Constructs a [GenerationContext] by copying the relevant fields from the
   /// database.
   GenerationContext.fromDb(this.executor)
-      : typeSystem = executor.typeSystem,
-        dialect = executor.executor?.dialect ?? SqlDialect.sqlite;
+      : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance,
+        dialect = executor?.executor.dialect ?? SqlDialect.sqlite;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.

@@ -60,8 +60,8 @@ class InsertStatement<T extends Table, D extends DataClass> {
   /// Still, the future will always complete with an error if the insert fails.
   Future<int> insert(
     Insertable<D> entity, {
-    InsertMode mode,
-    DoUpdate<T, D> onConflict,
+    InsertMode? mode,
+    DoUpdate<T, D>? onConflict,
   }) async {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict);
@@ -94,7 +94,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
-      {DoUpdate<T, D> onConflict}) {
+      {DoUpdate<T, D>? onConflict}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -105,7 +105,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
       final columnName = column.$name;
 
       if (rawValues.containsKey(columnName)) {
-        map[columnName] = rawValues[columnName];
+        map[columnName] = rawValues[columnName]!;
       } else {
         if (column.clientDefault != null) {
           map[columnName] = column._evaluateClientDefault();
@@ -164,7 +164,13 @@ class InsertStatement<T extends Table, D extends DataClass> {
 
       ctx.buffer.write(' ON CONFLICT(');
 
-      final conflictTarget = onConflict.target ?? table.$primaryKey.toList();
+      final conflictTarget = onConflict.target ?? table.$primaryKey?.toList();
+
+      if (conflictTarget == null || conflictTarget.isEmpty) {
+        throw ArgumentError(
+            'Table has no primary key, so a conflict target is needed.');
+      }
+
       var first = true;
       for (final target in conflictTarget) {
         if (!first) ctx.buffer.write(', ');
@@ -254,7 +260,7 @@ class DoUpdate<T extends Table, D extends DataClass> {
   /// specifies the uniqueness constraint that will trigger the upsert.
   ///
   /// By default, the primary key of the table will be used.
-  final List<Column> /*?*/ target;
+  final List<Column>? target;
 
   /// For an example, see [InsertStatement.insert].
   DoUpdate(Insertable<D> Function(T old) update, {this.target})

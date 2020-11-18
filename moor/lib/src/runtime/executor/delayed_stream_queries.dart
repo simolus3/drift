@@ -7,8 +7,8 @@ import 'stream_queries.dart';
 /// This class is internal and should not be exposed to moor users. It's used
 /// through a delayed database connection.
 class DelayedStreamQueryStore implements StreamQueryStore {
-  Future<StreamQueryStore> _delegate;
-  StreamQueryStore _resolved;
+  late Future<StreamQueryStore> _delegate;
+  StreamQueryStore? _resolved;
 
   /// Creates a [StreamQueryStore] that will work after [delegate] is
   /// available.

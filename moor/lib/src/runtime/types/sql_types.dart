@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:convert/convert.dart';
 import 'package:moor/moor.dart';
 
@@ -29,7 +30,7 @@ abstract class SqlType<T> {
 
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
-class BoolType extends SqlType<bool> {
+class BoolType extends SqlType<bool?> {
   /// Constant constructor used by the type system
   const BoolType();
 
@@ -37,14 +38,14 @@ class BoolType extends SqlType<bool> {
   String get sqlName => 'INTEGER';
 
   @override
-  bool mapFromDatabaseResponse(dynamic response) {
+  bool? mapFromDatabaseResponse(dynamic response) {
     // ignore: avoid_returning_null
     if (response == null) return null;
     return response != 0;
   }
 
   @override
-  String mapToSqlConstant(bool content) {
+  String mapToSqlConstant(bool? content) {
     if (content == null) {
       return 'NULL';
     }
@@ -52,7 +53,7 @@ class BoolType extends SqlType<bool> {
   }
 
   @override
-  int mapToSqlVariable(bool content) {
+  int? mapToSqlVariable(bool? content) {
     if (content == null) {
       // ignore: avoid_returning_null
       return null;
@@ -62,7 +63,7 @@ class BoolType extends SqlType<bool> {
 }
 
 /// Mapper for string values in sql.
-class StringType extends SqlType<String> {
+class StringType extends SqlType<String?> {
   /// Constant constructor used by the type system
   const StringType();
 
@@ -70,10 +71,12 @@ class StringType extends SqlType<String> {
   String get sqlName => 'TEXT';
 
   @override
-  String mapFromDatabaseResponse(dynamic response) => response?.toString();
+  String? mapFromDatabaseResponse(dynamic response) => response?.toString();
 
   @override
-  String mapToSqlConstant(String content) {
+  String mapToSqlConstant(String? content) {
+    if (content == null) return 'NULL';
+
     // From the sqlite docs: (https://www.sqlite.org/lang_expr.html)
     // A string constant is formed by enclosing the string in single quotes (').
     // A single quote within the string can be encoded by putting two single
@@ -84,11 +87,11 @@ class StringType extends SqlType<String> {
   }
 
   @override
-  String mapToSqlVariable(String content) => content;
+  String? mapToSqlVariable(String? content) => content;
 }
 
 /// Maps [int] values from and to sql
-class IntType extends SqlType<int> {
+class IntType extends SqlType<int?> {
   /// Constant constructor used by the type system
   const IntType();
 
@@ -96,22 +99,22 @@ class IntType extends SqlType<int> {
   String get sqlName => 'INTEGER';
 
   @override
-  int mapFromDatabaseResponse(dynamic response) {
-    if (response == null || response is int /*?*/) return response as int /*?*/;
+  int? mapFromDatabaseResponse(dynamic response) {
+    if (response == null || response is int?) return response as int?;
     return int.parse(response.toString());
   }
 
   @override
-  String mapToSqlConstant(int content) => content?.toString() ?? 'NULL';
+  String mapToSqlConstant(int? content) => content?.toString() ?? 'NULL';
 
   @override
-  int mapToSqlVariable(int content) {
+  int? mapToSqlVariable(int? content) {
     return content;
   }
 }
 
 /// Maps [DateTime] values from and to sql
-class DateTimeType extends SqlType<DateTime> {
+class DateTimeType extends SqlType<DateTime?> {
   /// Constant constructor used by the type system
   const DateTimeType();
 
@@ -119,7 +122,7 @@ class DateTimeType extends SqlType<DateTime> {
   String get sqlName => 'INTEGER';
 
   @override
-  DateTime mapFromDatabaseResponse(dynamic response) {
+  DateTime? mapFromDatabaseResponse(dynamic response) {
     if (response == null) return null;
 
     final unixSeconds = response as int;
@@ -128,14 +131,14 @@ class DateTimeType extends SqlType<DateTime> {
   }
 
   @override
-  String mapToSqlConstant(DateTime content) {
+  String mapToSqlConstant(DateTime? content) {
     if (content == null) return 'NULL';
 
     return (content.millisecondsSinceEpoch ~/ 1000).toString();
   }
 
   @override
-  int mapToSqlVariable(DateTime content) {
+  int? mapToSqlVariable(DateTime? content) {
     // ignore: avoid_returning_null
     if (content == null) return null;
 
@@ -144,7 +147,7 @@ class DateTimeType extends SqlType<DateTime> {
 }
 
 /// Maps [Uint8List] values from and to sql
-class BlobType extends SqlType<Uint8List> {
+class BlobType extends SqlType<Uint8List?> {
   /// Constant constructor used by the type system
   const BlobType();
 
@@ -155,18 +158,18 @@ class BlobType extends SqlType<Uint8List> {
   Uint8List mapFromDatabaseResponse(dynamic response) => response as Uint8List;
 
   @override
-  String mapToSqlConstant(Uint8List content) {
+  String mapToSqlConstant(Uint8List? content) {
     // BLOB literals are string literals containing hexadecimal data and
     // preceded by a single "x" or "X" character. Example: X'53514C697465'
     return "x'${hex.encode(content)}'";
   }
 
   @override
-  Uint8List mapToSqlVariable(Uint8List content) => content;
+  Uint8List? mapToSqlVariable(Uint8List? content) => content;
 }
 
 /// Maps [double] values from and to sql
-class RealType extends SqlType<double> {
+class RealType extends SqlType<double?> {
   /// Constant constructor used by the type system
   const RealType();
 
@@ -174,12 +177,12 @@ class RealType extends SqlType<double> {
   String get sqlName => 'REAL';
 
   @override
-  double mapFromDatabaseResponse(dynamic response) {
-    return (response as num)?.toDouble();
+  double? mapFromDatabaseResponse(dynamic response) {
+    return (response as num?)?.toDouble();
   }
 
   @override
-  String mapToSqlConstant(num content) {
+  String mapToSqlConstant(num? content) {
     if (content == null) {
       return 'NULL';
     }
@@ -187,5 +190,5 @@ class RealType extends SqlType<double> {
   }
 
   @override
-  num mapToSqlVariable(num content) => content;
+  num? mapToSqlVariable(num? content) => content;
 }

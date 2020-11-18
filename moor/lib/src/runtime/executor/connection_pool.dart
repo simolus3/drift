@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:moor/backends.dart';
 import 'package:moor/moor.dart';
 
@@ -10,7 +9,7 @@ abstract class MultiExecutor extends QueryExecutor {
   /// with [write]. Select statements outside of a transaction are executed on
   /// [read].
   factory MultiExecutor(
-      {@required QueryExecutor read, @required QueryExecutor write}) {
+      {required QueryExecutor read, required QueryExecutor write}) {
     return _MultiExecutorImpl(read, write);
   }
 
@@ -44,7 +43,7 @@ class _MultiExecutorImpl extends MultiExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement, [List args]) async {
+  Future<void> runCustom(String statement, [List? args]) async {
     await _writes.runCustom(statement, args);
   }
 

@@ -36,7 +36,7 @@ class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
   Future<int> go() async {
     final ctx = constructQuery();
 
-    return ctx.executor.doWhenOpened((e) async {
+    return ctx.executor!.doWhenOpened((e) async {
       final rows = await e.runDelete(ctx.sql, ctx.boundVariables);
 
       if (rows > 0) {

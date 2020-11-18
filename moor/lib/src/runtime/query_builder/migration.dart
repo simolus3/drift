@@ -35,7 +35,7 @@ class MigrationStrategy {
   /// and all migrations ran), but before any other queries will be sent. This
   /// makes it a suitable place to populate data after the database has been
   /// created or set sqlite `PRAGMAS` that you need.
-  final OnBeforeOpen /*?*/ beforeOpen;
+  final OnBeforeOpen? beforeOpen;
 
   /// Construct a migration strategy from the provided [onCreate] and
   /// [onUpgrade] methods.
@@ -121,7 +121,7 @@ class Migrator {
   @experimental
   Future<void> alterTable(TableMigration migration) async {
     final foreignKeysEnabled =
-        (await _db.customSelect('PRAGMA foreign_keys').getSingle())
+        (await _db.customSelect('PRAGMA foreign_keys').getSingle())!
             .readBool('foreign_keys');
 
     if (foreignKeysEnabled) {
@@ -255,7 +255,7 @@ class Migrator {
     final dontWritePk = dslTable.dontWriteConstraints || hasAutoIncrement;
     if (hasPrimaryKey && !dontWritePk) {
       context.buffer.write(', PRIMARY KEY (');
-      final pkList = table.$primaryKey.toList(growable: false);
+      final pkList = table.$primaryKey!.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {
         final column = pkList[i];
 
@@ -266,7 +266,7 @@ class Migrator {
       context.buffer.write(')');
     }
 
-    final constraints = dslTable.customConstraints ?? [];
+    final constraints = dslTable.customConstraints;
 
     for (var i = 0; i < constraints.length; i++) {
       context.buffer..write(', ')..write(constraints[i]);
@@ -369,11 +369,11 @@ class Migrator {
 
   /// Executes the custom query.
   @Deprecated('Use customStatement in the database class')
-  Future<void> issueCustomQuery(String sql, [List<dynamic> args]) {
+  Future<void> issueCustomQuery(String sql, [List<dynamic>? args]) {
     return _issueCustomQuery(sql, args);
   }
 
-  Future<void> _issueCustomQuery(String sql, [List<dynamic> args]) {
+  Future<void> _issueCustomQuery(String sql, [List<dynamic>? args]) {
     return _db.customStatement(sql, args);
   }
 }
@@ -383,7 +383,7 @@ class Migrator {
 class OpeningDetails {
   /// The schema version before the database has been opened, or `null` if the
   /// database has just been created.
-  final int versionBefore;
+  final int? versionBefore;
 
   /// The schema version after running migrations.
   final int versionNow;
@@ -395,7 +395,9 @@ class OpeningDetails {
   bool get hadUpgrade => !wasCreated && versionBefore != versionNow;
 
   /// Used internally by moor when opening a database.
-  const OpeningDetails(this.versionBefore, this.versionNow);
+  const OpeningDetails(this.versionBefore, this.versionNow)
+      // Should use null instead of 0 for consistency
+      : assert(versionBefore != 0);
 }
 
 /// Extension providing the [destructiveFallback] strategy.

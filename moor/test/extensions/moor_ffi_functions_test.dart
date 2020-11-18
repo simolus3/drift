@@ -1,3 +1,4 @@
+//@dart=2.9
 @TestOn('vm')
 import 'package:moor/moor.dart';
 import 'package:moor/extensions/moor_ffi.dart';

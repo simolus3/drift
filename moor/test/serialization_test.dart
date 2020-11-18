@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/data_class.dart';
 import 'package:test/test.dart';
