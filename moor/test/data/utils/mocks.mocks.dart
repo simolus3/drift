@@ -91,10 +91,6 @@ class MockTransactionsInternal extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockStreamQueries extends _i1.Mock implements _i5.StreamQueryStore {
-  MockStreamQueries() {
-    _i1.throwOnMissingStub(this);
-  }
-
   _i4.Stream<T> registerStream<T>(_i5.QueryStreamFetcher<T>? fetcher) =>
       super.noSuchMethod(
           Invocation.method(#registerStream, [fetcher]), Stream<T>.empty());

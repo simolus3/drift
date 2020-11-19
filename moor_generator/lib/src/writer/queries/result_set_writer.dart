@@ -13,6 +13,7 @@ class ResultSetWriter {
   void write() {
     final className = query.resultClassName;
     final fieldNames = <String>[];
+    final nonNullableFields = <String>{};
     final into = scope.leaf();
 
     final resultSet = query.resultSet;
@@ -34,25 +35,33 @@ class ResultSetWriter {
       into.write('$modifier $runtimeType $name\n;');
 
       fieldNames.add(name);
+      if (!column.nullable) nonNullableFields.add(name);
     }
 
     for (final nested in resultSet.nestedResults) {
       final typeName = nested.table.dartTypeName;
       final fieldName = nested.dartFieldName;
 
-      into.write('$modifier $typeName $fieldName;\n');
+      if (scope.generationOptions.nnbd) {
+        into.write('$modifier $typeName? $fieldName;\n');
+      } else {
+        into.write('$modifier $typeName $fieldName;\n');
+      }
 
       fieldNames.add(fieldName);
     }
 
     // write the constructor
     if (scope.options.rawResultSetData) {
-      into.write('$className({@required QueryRow row,');
+      into.write('$className({${scope.required} QueryRow row,');
     } else {
       into.write('$className({');
     }
 
     for (final column in fieldNames) {
+      if (nonNullableFields.contains(column)) {
+        into..write(scope.required)..write(' ');
+      }
       into.write('this.$column,');
     }
 

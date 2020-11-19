@@ -190,7 +190,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
   /// [d] will be matched.
   void whereSamePrimaryKey(Insertable<D> d) {
     assert(
-        table.$primaryKey != null && table.$primaryKey!.isNotEmpty,
+        table.$primaryKey.isNotEmpty,
         'When using Query.whereSamePrimaryKey, which is also called from '
         'DeleteStatement.delete and UpdateStatement.replace, the affected table'
         'must have a primary key. You can either specify a primary implicitly '
@@ -202,7 +202,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
         'UpdateStatement.write respectively. In that case, you need to use a '
         'custom where statement.');
 
-    final primaryKeyColumns = Map.fromEntries(table.$primaryKey!.map((column) {
+    final primaryKeyColumns = Map.fromEntries(table.$primaryKey.map((column) {
       return MapEntry(column.$name, column);
     }));
 

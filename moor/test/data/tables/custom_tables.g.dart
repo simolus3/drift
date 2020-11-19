@@ -11,7 +11,7 @@ class Config extends DataClass implements Insertable<Config> {
   final String configKey;
   final String? configValue;
   final SyncType? syncState;
-  final SyncType syncStateImplicit;
+  final SyncType? syncStateImplicit;
   Config(
       {required this.configKey,
       this.configValue,
@@ -24,7 +24,7 @@ class Config extends DataClass implements Insertable<Config> {
     final intType = db.typeSystem.forDartType<int>();
     return Config(
       configKey: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}config_key']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
       syncState: ConfigTable.$converter0.mapToDart(intType
@@ -37,29 +37,25 @@ class Config extends DataClass implements Insertable<Config> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || configKey != null) {
-      map['config_key'] = Variable<String>(configKey);
-    }
+    map['config_key'] = Variable<String>(configKey);
     if (!nullToAbsent || configValue != null) {
-      map['config_value'] = Variable<String>(configValue);
+      map['config_value'] = Variable<String?>(configValue);
     }
     if (!nullToAbsent || syncState != null) {
       final converter = ConfigTable.$converter0;
-      map['sync_state'] = Variable<int>(converter.mapToSql(syncState));
+      map['sync_state'] = Variable<int?>(converter.mapToSql(syncState));
     }
     if (!nullToAbsent || syncStateImplicit != null) {
       final converter = ConfigTable.$converter1;
       map['sync_state_implicit'] =
-          Variable<int>(converter.mapToSql(syncStateImplicit));
+          Variable<int?>(converter.mapToSql(syncStateImplicit));
     }
     return map;
   }
 
   ConfigCompanion toCompanion(bool nullToAbsent) {
     return ConfigCompanion(
-      configKey: configKey == null && nullToAbsent
-          ? const Value.absent()
-          : Value(configKey),
+      configKey: Value(configKey),
       configValue: configValue == null && nullToAbsent
           ? const Value.absent()
           : Value(configValue),
@@ -80,7 +76,7 @@ class Config extends DataClass implements Insertable<Config> {
       configValue: serializer.fromJson<String?>(json['config_value']),
       syncState: serializer.fromJson<SyncType?>(json['sync_state']),
       syncStateImplicit:
-          serializer.fromJson<SyncType>(json['sync_state_implicit']),
+          serializer.fromJson<SyncType?>(json['sync_state_implicit']),
     );
   }
   factory Config.fromJsonString(String encodedJson,
@@ -94,7 +90,7 @@ class Config extends DataClass implements Insertable<Config> {
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String?>(configValue),
       'sync_state': serializer.toJson<SyncType?>(syncState),
-      'sync_state_implicit': serializer.toJson<SyncType>(syncStateImplicit),
+      'sync_state_implicit': serializer.toJson<SyncType?>(syncStateImplicit),
     };
   }
 
@@ -102,7 +98,7 @@ class Config extends DataClass implements Insertable<Config> {
           {String? configKey,
           Value<String?> configValue = const Value.absent(),
           Value<SyncType?> syncState = const Value.absent(),
-          Value<SyncType> syncStateImplicit = const Value.absent()}) =>
+          Value<SyncType?> syncStateImplicit = const Value.absent()}) =>
       Config(
         configKey: configKey ?? this.configKey,
         configValue: configValue.present ? configValue.value : this.configValue,
@@ -141,7 +137,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<String> configKey;
   final Value<String?> configValue;
   final Value<SyncType?> syncState;
-  final Value<SyncType> syncStateImplicit;
+  final Value<SyncType?> syncStateImplicit;
   const ConfigCompanion({
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
@@ -156,9 +152,9 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   }) : configKey = Value(configKey);
   static Insertable<Config> custom({
     Expression<String>? configKey,
-    Expression<String>? configValue,
-    Expression<int>? syncState,
-    Expression<int>? syncStateImplicit,
+    Expression<String?>? configValue,
+    Expression<SyncType?>? syncState,
+    Expression<SyncType?>? syncStateImplicit,
   }) {
     return RawValuesInsertable({
       if (configKey != null) 'config_key': configKey,
@@ -172,7 +168,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       {Value<String>? configKey,
       Value<String?>? configValue,
       Value<SyncType?>? syncState,
-      Value<SyncType>? syncStateImplicit}) {
+      Value<SyncType?>? syncStateImplicit}) {
     return ConfigCompanion(
       configKey: configKey ?? this.configKey,
       configValue: configValue ?? this.configValue,
@@ -188,16 +184,16 @@ class ConfigCompanion extends UpdateCompanion<Config> {
       map['config_key'] = Variable<String>(configKey.value);
     }
     if (configValue.present) {
-      map['config_value'] = Variable<String>(configValue.value);
+      map['config_value'] = Variable<String?>(configValue.value);
     }
     if (syncState.present) {
       final converter = ConfigTable.$converter0;
-      map['sync_state'] = Variable<int>(converter.mapToSql(syncState.value));
+      map['sync_state'] = Variable<int?>(converter.mapToSql(syncState.value));
     }
     if (syncStateImplicit.present) {
       final converter = ConfigTable.$converter1;
       map['sync_state_implicit'] =
-          Variable<int>(converter.mapToSql(syncStateImplicit.value));
+          Variable<int?>(converter.mapToSql(syncStateImplicit.value));
     }
     return map;
   }
@@ -265,7 +261,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
     final data = instance.toColumns(true);
     if (data.containsKey('config_key')) {
       context.handle(_configKeyMeta,
-          configKey.isAcceptableOrUnknown(data['config_key'], _configKeyMeta));
+          configKey.isAcceptableOrUnknown(data['config_key']!, _configKeyMeta));
     } else if (isInserting) {
       context.missing(_configKeyMeta);
     }
@@ -273,7 +269,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       context.handle(
           _configValueMeta,
           configValue.isAcceptableOrUnknown(
-              data['config_value'], _configValueMeta));
+              data['config_value']!, _configValueMeta));
     }
     context.handle(_syncStateMeta, const VerificationResult.success());
     context.handle(_syncStateImplicitMeta, const VerificationResult.success());
@@ -294,7 +290,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   }
 
   static TypeConverter<SyncType?, int?> $converter0 = const SyncTypeConverter();
-  static TypeConverter<SyncType, int?> $converter1 =
+  static TypeConverter<SyncType?, int?> $converter1 =
       const EnumIndexConverter<SyncType>(SyncType.values);
   @override
   bool get dontWriteConstraints => true;
@@ -318,10 +314,10 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<String>(a);
+      map['a'] = Variable<String?>(a);
     }
     if (!nullToAbsent || b != null) {
-      map['b'] = Variable<int>(b);
+      map['b'] = Variable<int?>(b);
     }
     return map;
   }
@@ -391,8 +387,8 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
     this.b = const Value.absent(),
   });
   static Insertable<WithDefault> custom({
-    Expression<String>? a,
-    Expression<int>? b,
+    Expression<String?>? a,
+    Expression<int?>? b,
   }) {
     return RawValuesInsertable({
       if (a != null) 'a': a,
@@ -411,10 +407,10 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (a.present) {
-      map['a'] = Variable<String>(a.value);
+      map['a'] = Variable<String?>(a.value);
     }
     if (b.present) {
-      map['b'] = Variable<int>(b.value);
+      map['b'] = Variable<int?>(b.value);
     }
     return map;
   }
@@ -462,10 +458,10 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('a')) {
-      context.handle(_aMeta, a.isAcceptableOrUnknown(data['a'], _aMeta));
+      context.handle(_aMeta, a.isAcceptableOrUnknown(data['a']!, _aMeta));
     }
     if (data.containsKey('b')) {
-      context.handle(_bMeta, b.isAcceptableOrUnknown(data['b'], _bMeta));
+      context.handle(_bMeta, b.isAcceptableOrUnknown(data['b']!, _bMeta));
     }
     return context;
   }
@@ -496,23 +492,19 @@ class NoId extends DataClass implements Insertable<NoId> {
     final uint8ListType = db.typeSystem.forDartType<Uint8List>();
     return NoId(
       payload: uint8ListType
-          .mapFromDatabaseResponse(data['${effectivePrefix}payload']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || payload != null) {
-      map['payload'] = Variable<Uint8List>(payload);
-    }
+    map['payload'] = Variable<Uint8List>(payload);
     return map;
   }
 
   NoIdsCompanion toCompanion(bool nullToAbsent) {
     return NoIdsCompanion(
-      payload: payload == null && nullToAbsent
-          ? const Value.absent()
-          : Value(payload),
+      payload: Value(payload),
     );
   }
 
@@ -618,7 +610,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
     final data = instance.toColumns(true);
     if (data.containsKey('payload')) {
       context.handle(_payloadMeta,
-          payload.isAcceptableOrUnknown(data['payload'], _payloadMeta));
+          payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta));
     } else if (isInserting) {
       context.missing(_payloadMeta);
     }
@@ -658,7 +650,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
     final doubleType = db.typeSystem.forDartType<double>();
     return WithConstraint(
       a: stringType.mapFromDatabaseResponse(data['${effectivePrefix}a']),
-      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b']),
+      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b'])!,
       c: doubleType.mapFromDatabaseResponse(data['${effectivePrefix}c']),
     );
   }
@@ -666,13 +658,11 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<String>(a);
+      map['a'] = Variable<String?>(a);
     }
-    if (!nullToAbsent || b != null) {
-      map['b'] = Variable<int>(b);
-    }
+    map['b'] = Variable<int>(b);
     if (!nullToAbsent || c != null) {
-      map['c'] = Variable<double>(c);
+      map['c'] = Variable<double?>(c);
     }
     return map;
   }
@@ -680,7 +670,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   WithConstraintsCompanion toCompanion(bool nullToAbsent) {
     return WithConstraintsCompanion(
       a: a == null && nullToAbsent ? const Value.absent() : Value(a),
-      b: b == null && nullToAbsent ? const Value.absent() : Value(b),
+      b: Value(b),
       c: c == null && nullToAbsent ? const Value.absent() : Value(c),
     );
   }
@@ -754,9 +744,9 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
     this.c = const Value.absent(),
   }) : b = Value(b);
   static Insertable<WithConstraint> custom({
-    Expression<String>? a,
+    Expression<String?>? a,
     Expression<int>? b,
-    Expression<double>? c,
+    Expression<double?>? c,
   }) {
     return RawValuesInsertable({
       if (a != null) 'a': a,
@@ -778,13 +768,13 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (a.present) {
-      map['a'] = Variable<String>(a.value);
+      map['a'] = Variable<String?>(a.value);
     }
     if (b.present) {
       map['b'] = Variable<int>(b.value);
     }
     if (c.present) {
-      map['c'] = Variable<double>(c.value);
+      map['c'] = Variable<double?>(c.value);
     }
     return map;
   }
@@ -838,15 +828,15 @@ class WithConstraints extends Table
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('a')) {
-      context.handle(_aMeta, a.isAcceptableOrUnknown(data['a'], _aMeta));
+      context.handle(_aMeta, a.isAcceptableOrUnknown(data['a']!, _aMeta));
     }
     if (data.containsKey('b')) {
-      context.handle(_bMeta, b.isAcceptableOrUnknown(data['b'], _bMeta));
+      context.handle(_bMeta, b.isAcceptableOrUnknown(data['b']!, _bMeta));
     } else if (isInserting) {
       context.missing(_bMeta);
     }
     if (data.containsKey('c')) {
-      context.handle(_cMeta, c.isAcceptableOrUnknown(data['c'], _cMeta));
+      context.handle(_cMeta, c.isAcceptableOrUnknown(data['c']!, _cMeta));
     }
     return context;
   }
@@ -886,7 +876,8 @@ class MytableData extends DataClass implements Insertable<MytableData> {
     final boolType = db.typeSystem.forDartType<bool>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return MytableData(
-      someid: intType.mapFromDatabaseResponse(data['${effectivePrefix}someid']),
+      someid:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}someid'])!,
       sometext: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
       isInserting: boolType
@@ -898,25 +889,22 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || someid != null) {
-      map['someid'] = Variable<int>(someid);
-    }
+    map['someid'] = Variable<int>(someid);
     if (!nullToAbsent || sometext != null) {
-      map['sometext'] = Variable<String>(sometext);
+      map['sometext'] = Variable<String?>(sometext);
     }
     if (!nullToAbsent || isInserting != null) {
-      map['is_inserting'] = Variable<bool>(isInserting);
+      map['is_inserting'] = Variable<bool?>(isInserting);
     }
     if (!nullToAbsent || somedate != null) {
-      map['somedate'] = Variable<DateTime>(somedate);
+      map['somedate'] = Variable<DateTime?>(somedate);
     }
     return map;
   }
 
   MytableCompanion toCompanion(bool nullToAbsent) {
     return MytableCompanion(
-      someid:
-          someid == null && nullToAbsent ? const Value.absent() : Value(someid),
+      someid: Value(someid),
       sometext: sometext == null && nullToAbsent
           ? const Value.absent()
           : Value(sometext),
@@ -1011,9 +999,9 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   });
   static Insertable<MytableData> custom({
     Expression<int>? someid,
-    Expression<String>? sometext,
-    Expression<bool>? isInserting,
-    Expression<DateTime>? somedate,
+    Expression<String?>? sometext,
+    Expression<bool?>? isInserting,
+    Expression<DateTime?>? somedate,
   }) {
     return RawValuesInsertable({
       if (someid != null) 'someid': someid,
@@ -1043,13 +1031,13 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
       map['someid'] = Variable<int>(someid.value);
     }
     if (sometext.present) {
-      map['sometext'] = Variable<String>(sometext.value);
+      map['sometext'] = Variable<String?>(sometext.value);
     }
     if (isInserting.present) {
-      map['is_inserting'] = Variable<bool>(isInserting.value);
+      map['is_inserting'] = Variable<bool?>(isInserting.value);
     }
     if (somedate.present) {
-      map['somedate'] = Variable<DateTime>(somedate.value);
+      map['somedate'] = Variable<DateTime?>(somedate.value);
     }
     return map;
   }
@@ -1115,22 +1103,22 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
     final data = instance.toColumns(true);
     if (data.containsKey('someid')) {
       context.handle(_someidMeta,
-          someid.isAcceptableOrUnknown(data['someid'], _someidMeta));
+          someid.isAcceptableOrUnknown(data['someid']!, _someidMeta));
     }
     if (data.containsKey('sometext')) {
       context.handle(_sometextMeta,
-          sometext.isAcceptableOrUnknown(data['sometext'], _sometextMeta));
+          sometext.isAcceptableOrUnknown(data['sometext']!, _sometextMeta));
     }
     if (data.containsKey('is_inserting')) {
       context.handle(
           _isInsertingMeta,
           this
               .isInserting
-              .isAcceptableOrUnknown(data['is_inserting'], _isInsertingMeta));
+              .isAcceptableOrUnknown(data['is_inserting']!, _isInsertingMeta));
     }
     if (data.containsKey('somedate')) {
       context.handle(_somedateMeta,
-          somedate.isAcceptableOrUnknown(data['somedate'], _somedateMeta));
+          somedate.isAcceptableOrUnknown(data['somedate']!, _somedateMeta));
     }
     return context;
   }
@@ -1163,34 +1151,26 @@ class EMail extends DataClass implements Insertable<EMail> {
     final stringType = db.typeSystem.forDartType<String>();
     return EMail(
       sender:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}sender']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}sender'])!,
       title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
-      body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || sender != null) {
-      map['sender'] = Variable<String>(sender);
-    }
-    if (!nullToAbsent || title != null) {
-      map['title'] = Variable<String>(title);
-    }
-    if (!nullToAbsent || body != null) {
-      map['body'] = Variable<String>(body);
-    }
+    map['sender'] = Variable<String>(sender);
+    map['title'] = Variable<String>(title);
+    map['body'] = Variable<String>(body);
     return map;
   }
 
   EmailCompanion toCompanion(bool nullToAbsent) {
     return EmailCompanion(
-      sender:
-          sender == null && nullToAbsent ? const Value.absent() : Value(sender),
-      title:
-          title == null && nullToAbsent ? const Value.absent() : Value(title),
-      body: body == null && nullToAbsent ? const Value.absent() : Value(body),
+      sender: Value(sender),
+      title: Value(title),
+      body: Value(body),
     );
   }
 
@@ -1348,19 +1328,19 @@ class Email extends Table
     final data = instance.toColumns(true);
     if (data.containsKey('sender')) {
       context.handle(_senderMeta,
-          sender.isAcceptableOrUnknown(data['sender'], _senderMeta));
+          sender.isAcceptableOrUnknown(data['sender']!, _senderMeta));
     } else if (isInserting) {
       context.missing(_senderMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title'], _titleMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('body')) {
       context.handle(
-          _bodyMeta, body.isAcceptableOrUnknown(data['body'], _bodyMeta));
+          _bodyMeta, body.isAcceptableOrUnknown(data['body']!, _bodyMeta));
     } else if (isInserting) {
       context.missing(_bodyMeta);
     }
@@ -1404,7 +1384,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT\n  config_key AS ck,\n  config_value as cf,\n  sync_state AS cs1,\n  sync_state_implicit AS cs2\nFROM config WHERE config_key = ?',
         variables: [
-          Variable.withString(var1)
+          Variable<String>(var1)
         ],
         readsFrom: {
           config
@@ -1426,7 +1406,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
         variables: [
-          for (var $ in var1) Variable.withString($),
+          for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables
         ],
         readsFrom: {
@@ -1442,16 +1422,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType> var2) {
+  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2) {
     var $arrayStartIndex = 2;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
         'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
         variables: [
-          Variable.withInt(ConfigTable.$converter0.mapToSql(var1)),
+          Variable<int>(ConfigTable.$converter0.mapToSql(var1)!),
           for (var $ in var2)
-            Variable.withInt(ConfigTable.$converter1.mapToSql($))
+            Variable<int>(ConfigTable.$converter1.mapToSql($)!)
         ],
         readsFrom: {
           config
@@ -1502,7 +1482,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<EMail> searchEmails({required String term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
-        variables: [Variable.withString(term)],
+        variables: [Variable<String>(term)],
         readsFrom: {email}).map(email.mapFromRow);
   }
 
@@ -1534,7 +1514,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Future<int> writeConfig({required String key, required String value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (:key, :value)',
-      variables: [Variable.withString(key), Variable.withString(value)],
+      variables: [Variable<String>(key), Variable<String>(value)],
       updates: {config},
     );
   }
@@ -1572,8 +1552,8 @@ class JsonResult extends CustomResultSet {
   final String key;
   final String? value;
   JsonResult({
-    @required QueryRow row,
-    this.key,
+    required QueryRow row,
+    required this.key,
     this.value,
   }) : super(row);
   @override
@@ -1597,9 +1577,9 @@ class JsonResult extends CustomResultSet {
 class MultipleResult extends CustomResultSet {
   final String? a;
   final int? b;
-  final WithConstraint c;
+  final WithConstraint? c;
   MultipleResult({
-    @required QueryRow row,
+    required QueryRow row,
     this.a,
     this.b,
     this.c,
@@ -1629,11 +1609,11 @@ class ReadRowIdResult extends CustomResultSet {
   final String configKey;
   final String? configValue;
   final SyncType? syncState;
-  final SyncType syncStateImplicit;
+  final SyncType? syncStateImplicit;
   ReadRowIdResult({
-    @required QueryRow row,
-    this.rowid,
-    this.configKey,
+    required QueryRow row,
+    required this.rowid,
+    required this.configKey,
     this.configValue,
     this.syncState,
     this.syncStateImplicit,

@@ -18,19 +18,19 @@ abstract class SqlType<T> {
 
   /// Maps the [content] to a value that we can send together with a prepared
   /// statement to represent the given value.
-  dynamic mapToSqlVariable(T content);
+  dynamic mapToSqlVariable(T? content);
 
   /// Maps the given content to a sql literal that can be included in the query
   /// string.
-  String mapToSqlConstant(T content);
+  String? mapToSqlConstant(T? content);
 
   /// Maps the response from sql back to a readable dart type.
-  T mapFromDatabaseResponse(dynamic response);
+  T? mapFromDatabaseResponse(dynamic response);
 }
 
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
-class BoolType extends SqlType<bool?> {
+class BoolType extends SqlType<bool> {
   /// Constant constructor used by the type system
   const BoolType();
 
@@ -63,7 +63,7 @@ class BoolType extends SqlType<bool?> {
 }
 
 /// Mapper for string values in sql.
-class StringType extends SqlType<String?> {
+class StringType extends SqlType<String> {
   /// Constant constructor used by the type system
   const StringType();
 
@@ -91,7 +91,7 @@ class StringType extends SqlType<String?> {
 }
 
 /// Maps [int] values from and to sql
-class IntType extends SqlType<int?> {
+class IntType extends SqlType<int> {
   /// Constant constructor used by the type system
   const IntType();
 
@@ -114,7 +114,7 @@ class IntType extends SqlType<int?> {
 }
 
 /// Maps [DateTime] values from and to sql
-class DateTimeType extends SqlType<DateTime?> {
+class DateTimeType extends SqlType<DateTime> {
   /// Constant constructor used by the type system
   const DateTimeType();
 
@@ -147,7 +147,7 @@ class DateTimeType extends SqlType<DateTime?> {
 }
 
 /// Maps [Uint8List] values from and to sql
-class BlobType extends SqlType<Uint8List?> {
+class BlobType extends SqlType<Uint8List> {
   /// Constant constructor used by the type system
   const BlobType();
 
@@ -169,7 +169,7 @@ class BlobType extends SqlType<Uint8List?> {
 }
 
 /// Maps [double] values from and to sql
-class RealType extends SqlType<double?> {
+class RealType extends SqlType<double> {
   /// Constant constructor used by the type system
   const RealType();
 

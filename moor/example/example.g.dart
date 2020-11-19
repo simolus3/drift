@@ -17,7 +17,7 @@ class Category extends DataClass implements Insertable<Category> {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       description: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
     );
@@ -25,18 +25,16 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
+    map['id'] = Variable<int>(id);
     if (!nullToAbsent || description != null) {
-      map['description'] = Variable<String>(description);
+      map['description'] = Variable<String?>(description);
     }
     return map;
   }
 
   CategoriesCompanion toCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      id: Value(id),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
@@ -103,7 +101,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   });
   static Insertable<Category> custom({
     Expression<int>? id,
-    Expression<String>? description,
+    Expression<String?>? description,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -125,7 +123,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       map['id'] = Variable<int>(id.value);
     }
     if (description.present) {
-      map['description'] = Variable<String>(description.value);
+      map['description'] = Variable<String?>(description.value);
     }
     return map;
   }
@@ -179,13 +177,13 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('description')) {
       context.handle(
           _descriptionMeta,
           description.isAcceptableOrUnknown(
-              data['description'], _descriptionMeta));
+              data['description']!, _descriptionMeta));
     }
     return context;
   }
@@ -220,11 +218,11 @@ class Recipe extends DataClass implements Insertable<Recipe> {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Recipe(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
       instructions: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}instructions']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}instructions'])!,
       category:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
@@ -232,29 +230,20 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || title != null) {
-      map['title'] = Variable<String>(title);
-    }
-    if (!nullToAbsent || instructions != null) {
-      map['instructions'] = Variable<String>(instructions);
-    }
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    map['instructions'] = Variable<String>(instructions);
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category);
+      map['category'] = Variable<int?>(category);
     }
     return map;
   }
 
   RecipesCompanion toCompanion(bool nullToAbsent) {
     return RecipesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      title:
-          title == null && nullToAbsent ? const Value.absent() : Value(title),
-      instructions: instructions == null && nullToAbsent
-          ? const Value.absent()
-          : Value(instructions),
+      id: Value(id),
+      title: Value(title),
+      instructions: Value(instructions),
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
@@ -343,7 +332,7 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? instructions,
-    Expression<int>? category,
+    Expression<int?>? category,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -379,7 +368,7 @@ class RecipesCompanion extends UpdateCompanion<Recipe> {
       map['instructions'] = Variable<String>(instructions.value);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<int?>(category.value);
     }
     return map;
   }
@@ -452,11 +441,11 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title'], _titleMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
@@ -464,13 +453,13 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
       context.handle(
           _instructionsMeta,
           instructions.isAcceptableOrUnknown(
-              data['instructions'], _instructionsMeta));
+              data['instructions']!, _instructionsMeta));
     } else if (isInserting) {
       context.missing(_instructionsMeta);
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category'], _categoryMeta));
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     }
     return context;
   }
@@ -501,34 +490,26 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Ingredient(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       caloriesPer100g:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}calories']),
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}calories'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || caloriesPer100g != null) {
-      map['calories'] = Variable<int>(caloriesPer100g);
-    }
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['calories'] = Variable<int>(caloriesPer100g);
     return map;
   }
 
   IngredientsCompanion toCompanion(bool nullToAbsent) {
     return IngredientsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      caloriesPer100g: caloriesPer100g == null && nullToAbsent
-          ? const Value.absent()
-          : Value(caloriesPer100g),
+      id: Value(id),
+      name: Value(name),
+      caloriesPer100g: Value(caloriesPer100g),
     );
   }
 
@@ -696,11 +677,11 @@ class $IngredientsTable extends Ingredients
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
@@ -708,7 +689,7 @@ class $IngredientsTable extends Ingredients
       context.handle(
           _caloriesPer100gMeta,
           caloriesPer100g.isAcceptableOrUnknown(
-              data['calories'], _caloriesPer100gMeta));
+              data['calories']!, _caloriesPer100gMeta));
     } else if (isInserting) {
       context.missing(_caloriesPer100gMeta);
     }
@@ -744,38 +725,28 @@ class IngredientInRecipe extends DataClass
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     return IngredientInRecipe(
-      recipe: intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe']),
-      ingredient:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}ingredient']),
+      recipe:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe'])!,
+      ingredient: intType
+          .mapFromDatabaseResponse(data['${effectivePrefix}ingredient'])!,
       amountInGrams:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}amount']),
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}amount'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || recipe != null) {
-      map['recipe'] = Variable<int>(recipe);
-    }
-    if (!nullToAbsent || ingredient != null) {
-      map['ingredient'] = Variable<int>(ingredient);
-    }
-    if (!nullToAbsent || amountInGrams != null) {
-      map['amount'] = Variable<int>(amountInGrams);
-    }
+    map['recipe'] = Variable<int>(recipe);
+    map['ingredient'] = Variable<int>(ingredient);
+    map['amount'] = Variable<int>(amountInGrams);
     return map;
   }
 
   IngredientInRecipesCompanion toCompanion(bool nullToAbsent) {
     return IngredientInRecipesCompanion(
-      recipe:
-          recipe == null && nullToAbsent ? const Value.absent() : Value(recipe),
-      ingredient: ingredient == null && nullToAbsent
-          ? const Value.absent()
-          : Value(ingredient),
-      amountInGrams: amountInGrams == null && nullToAbsent
-          ? const Value.absent()
-          : Value(amountInGrams),
+      recipe: Value(recipe),
+      ingredient: Value(ingredient),
+      amountInGrams: Value(amountInGrams),
     );
   }
 
@@ -949,7 +920,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
     final data = instance.toColumns(true);
     if (data.containsKey('recipe')) {
       context.handle(_recipeMeta,
-          recipe.isAcceptableOrUnknown(data['recipe'], _recipeMeta));
+          recipe.isAcceptableOrUnknown(data['recipe']!, _recipeMeta));
     } else if (isInserting) {
       context.missing(_recipeMeta);
     }
@@ -957,7 +928,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
       context.handle(
           _ingredientMeta,
           ingredient.isAcceptableOrUnknown(
-              data['ingredient'], _ingredientMeta));
+              data['ingredient']!, _ingredientMeta));
     } else if (isInserting) {
       context.missing(_ingredientMeta);
     }
@@ -965,7 +936,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
       context.handle(
           _amountInGramsMeta,
           amountInGrams.isAcceptableOrUnknown(
-              data['amount'], _amountInGramsMeta));
+              data['amount']!, _amountInGramsMeta));
     } else if (isInserting) {
       context.missing(_amountInGramsMeta);
     }
@@ -1018,9 +989,9 @@ class TotalWeightResult extends CustomResultSet {
   final String title;
   final int totalWeight;
   TotalWeightResult({
-    @required QueryRow row,
-    this.title,
-    this.totalWeight,
+    required QueryRow row,
+    required this.title,
+    required this.totalWeight,
   }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));

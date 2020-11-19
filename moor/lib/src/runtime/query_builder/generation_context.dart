@@ -41,7 +41,8 @@ class GenerationContext {
   /// database.
   GenerationContext.fromDb(this.executor)
       : typeSystem = executor?.typeSystem ?? SqlTypeSystem.defaultInstance,
-        dialect = executor?.executor.dialect ?? SqlDialect.sqlite;
+        // ignore: invalid_null_aware_operator, (doesn't seem to actually work)
+        dialect = executor?.executor?.dialect ?? SqlDialect.sqlite;
 
   /// Constructs a custom [GenerationContext] by setting the fields manually.
   /// See [GenerationContext.fromDb] for a more convenient factory.

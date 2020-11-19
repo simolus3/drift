@@ -73,11 +73,11 @@ class QueryRow {
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
   /// The dart type [T] must be supported by the type system of the database
-  /// used (mostly contains booleans, strings, integers and dates).
+  /// used (mostly contains booleans, strings, numbers and dates).
   T read<T>(String key) {
     final type = _db.typeSystem.forDartType<T>();
 
-    return type.mapFromDatabaseResponse(data[key]);
+    return type.mapFromDatabaseResponse(data[key]) as T;
   }
 
   /// Reads a bool from the column named [key].

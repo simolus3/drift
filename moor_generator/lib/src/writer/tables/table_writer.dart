@@ -210,6 +210,8 @@ class TableWriter {
 
     const locals = {'instance', 'isInserting', 'context', 'data'};
 
+    final nonNullAssert = scope.generationOptions.nnbd ? '!' : '';
+
     for (final column in table.columns) {
       final getterName = column.thisIfNeeded(locals);
       final metaName = _fieldNameForColumnMeta(column);
@@ -228,7 +230,7 @@ class TableWriter {
         ..write('context.handle('
             '$metaName, '
             '$getterName.isAcceptableOrUnknown('
-            'data[$columnNameString], $metaName));')
+            'data[$columnNameString]$nonNullAssert, $metaName));')
         ..write('}');
 
       if (table.isColumnRequiredForInsert(column)) {

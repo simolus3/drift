@@ -26,11 +26,11 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
     final stringType = db.typeSystem.forDartType<String>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       title:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
-      content:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}content']),
+      content: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}content'])!,
       targetDate: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
       category:
@@ -40,32 +40,26 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
+    map['id'] = Variable<int>(id);
     if (!nullToAbsent || title != null) {
-      map['title'] = Variable<String>(title);
+      map['title'] = Variable<String?>(title);
     }
-    if (!nullToAbsent || content != null) {
-      map['content'] = Variable<String>(content);
-    }
+    map['content'] = Variable<String>(content);
     if (!nullToAbsent || targetDate != null) {
-      map['target_date'] = Variable<DateTime>(targetDate);
+      map['target_date'] = Variable<DateTime?>(targetDate);
     }
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category);
+      map['category'] = Variable<int?>(category);
     }
     return map;
   }
 
   TodosTableCompanion toCompanion(bool nullToAbsent) {
     return TodosTableCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      id: Value(id),
       title:
           title == null && nullToAbsent ? const Value.absent() : Value(title),
-      content: content == null && nullToAbsent
-          ? const Value.absent()
-          : Value(content),
+      content: Value(content),
       targetDate: targetDate == null && nullToAbsent
           ? const Value.absent()
           : Value(targetDate),
@@ -168,10 +162,10 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
   }) : content = Value(content);
   static Insertable<TodoEntry> custom({
     Expression<int>? id,
-    Expression<String>? title,
+    Expression<String?>? title,
     Expression<String>? content,
-    Expression<DateTime>? targetDate,
-    Expression<int>? category,
+    Expression<DateTime?>? targetDate,
+    Expression<int?>? category,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -204,16 +198,16 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
       map['id'] = Variable<int>(id.value);
     }
     if (title.present) {
-      map['title'] = Variable<String>(title.value);
+      map['title'] = Variable<String?>(title.value);
     }
     if (content.present) {
       map['content'] = Variable<String>(content.value);
     }
     if (targetDate.present) {
-      map['target_date'] = Variable<DateTime>(targetDate.value);
+      map['target_date'] = Variable<DateTime?>(targetDate.value);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<int?>(category.value);
     }
     return map;
   }
@@ -300,15 +294,15 @@ class $TodosTableTable extends TodosTable
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title'], _titleMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     }
     if (data.containsKey('content')) {
       context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content'], _contentMeta));
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
@@ -316,11 +310,11 @@ class $TodosTableTable extends TodosTable
       context.handle(
           _targetDateMeta,
           targetDate.isAcceptableOrUnknown(
-              data['target_date'], _targetDateMeta));
+              data['target_date']!, _targetDateMeta));
     }
     if (data.containsKey('category')) {
       context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category'], _categoryMeta));
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
     }
     return context;
   }
@@ -351,38 +345,30 @@ class Category extends DataClass implements Insertable<Category> {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       description:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converter0.mapToDart(
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}priority'])),
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || description != null) {
-      map['desc'] = Variable<String>(description);
-    }
-    if (!nullToAbsent || priority != null) {
+    map['id'] = Variable<int>(id);
+    map['desc'] = Variable<String>(description);
+    {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.mapToSql(priority));
+      map['priority'] = Variable<int>(converter.mapToSql(priority)!);
     }
     return map;
   }
 
   CategoriesCompanion toCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      description: description == null && nullToAbsent
-          ? const Value.absent()
-          : Value(description),
-      priority: priority == null && nullToAbsent
-          ? const Value.absent()
-          : Value(priority),
+      id: Value(id),
+      description: Value(description),
+      priority: Value(priority),
     );
   }
 
@@ -456,7 +442,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? description,
-    Expression<int>? priority,
+    Expression<CategoryPriority>? priority,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -487,7 +473,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (priority.present) {
       final converter = $CategoriesTable.$converter0;
-      map['priority'] = Variable<int>(converter.mapToSql(priority.value));
+      map['priority'] = Variable<int>(converter.mapToSql(priority.value)!);
     }
     return map;
   }
@@ -547,11 +533,11 @@ class $CategoriesTable extends Categories
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('desc')) {
       context.handle(_descriptionMeta,
-          description.isAcceptableOrUnknown(data['desc'], _descriptionMeta));
+          description.isAcceptableOrUnknown(data['desc']!, _descriptionMeta));
     } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
@@ -597,50 +583,34 @@ class User extends DataClass implements Insertable<User> {
     final uint8ListType = db.typeSystem.forDartType<Uint8List>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       isAwesome: boolType
-          .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome'])!,
       profilePicture: uint8ListType
-          .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture'])!,
       creationTime: dateTimeType
-          .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}creation_time'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || isAwesome != null) {
-      map['is_awesome'] = Variable<bool>(isAwesome);
-    }
-    if (!nullToAbsent || profilePicture != null) {
-      map['profile_picture'] = Variable<Uint8List>(profilePicture);
-    }
-    if (!nullToAbsent || creationTime != null) {
-      map['creation_time'] = Variable<DateTime>(creationTime);
-    }
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['is_awesome'] = Variable<bool>(isAwesome);
+    map['profile_picture'] = Variable<Uint8List>(profilePicture);
+    map['creation_time'] = Variable<DateTime>(creationTime);
     return map;
   }
 
   UsersCompanion toCompanion(bool nullToAbsent) {
     return UsersCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      isAwesome: isAwesome == null && nullToAbsent
-          ? const Value.absent()
-          : Value(isAwesome),
-      profilePicture: profilePicture == null && nullToAbsent
-          ? const Value.absent()
-          : Value(profilePicture),
-      creationTime: creationTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(creationTime),
+      id: Value(id),
+      name: Value(name),
+      isAwesome: Value(isAwesome),
+      profilePicture: Value(profilePicture),
+      creationTime: Value(creationTime),
     );
   }
 
@@ -864,23 +834,23 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (data.containsKey('is_awesome')) {
       context.handle(_isAwesomeMeta,
-          isAwesome.isAcceptableOrUnknown(data['is_awesome'], _isAwesomeMeta));
+          isAwesome.isAcceptableOrUnknown(data['is_awesome']!, _isAwesomeMeta));
     }
     if (data.containsKey('profile_picture')) {
       context.handle(
           _profilePictureMeta,
           profilePicture.isAcceptableOrUnknown(
-              data['profile_picture'], _profilePictureMeta));
+              data['profile_picture']!, _profilePictureMeta));
     } else if (isInserting) {
       context.missing(_profilePictureMeta);
     }
@@ -888,7 +858,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       context.handle(
           _creationTimeMeta,
           creationTime.isAcceptableOrUnknown(
-              data['creation_time'], _creationTimeMeta));
+              data['creation_time']!, _creationTimeMeta));
     }
     return context;
   }
@@ -916,26 +886,22 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     return SharedTodo(
-      todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo']),
-      user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user']),
+      todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo'])!,
+      user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || todo != null) {
-      map['todo'] = Variable<int>(todo);
-    }
-    if (!nullToAbsent || user != null) {
-      map['user'] = Variable<int>(user);
-    }
+    map['todo'] = Variable<int>(todo);
+    map['user'] = Variable<int>(user);
     return map;
   }
 
   SharedTodosCompanion toCompanion(bool nullToAbsent) {
     return SharedTodosCompanion(
-      todo: todo == null && nullToAbsent ? const Value.absent() : Value(todo),
-      user: user == null && nullToAbsent ? const Value.absent() : Value(user),
+      todo: Value(todo),
+      user: Value(user),
     );
   }
 
@@ -1077,13 +1043,13 @@ class $SharedTodosTable extends SharedTodos
     final data = instance.toColumns(true);
     if (data.containsKey('todo')) {
       context.handle(
-          _todoMeta, todo.isAcceptableOrUnknown(data['todo'], _todoMeta));
+          _todoMeta, todo.isAcceptableOrUnknown(data['todo']!, _todoMeta));
     } else if (isInserting) {
       context.missing(_todoMeta);
     }
     if (data.containsKey('user')) {
       context.handle(
-          _userMeta, user.isAcceptableOrUnknown(data['user'], _userMeta));
+          _userMeta, user.isAcceptableOrUnknown(data['user']!, _userMeta));
     } else if (isInserting) {
       context.missing(_userMeta);
     }
@@ -1122,39 +1088,30 @@ class TableWithoutPKData extends DataClass
     final stringType = db.typeSystem.forDartType<String>();
     return TableWithoutPKData(
       notReallyAnId: intType
-          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
       someFloat: doubleType
-          .mapFromDatabaseResponse(data['${effectivePrefix}some_float']),
-      custom: $TableWithoutPKTable.$converter0.mapToDart(
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}custom'])),
+          .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$converter0.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || notReallyAnId != null) {
-      map['not_really_an_id'] = Variable<int>(notReallyAnId);
-    }
-    if (!nullToAbsent || someFloat != null) {
-      map['some_float'] = Variable<double>(someFloat);
-    }
-    if (!nullToAbsent || custom != null) {
+    map['not_really_an_id'] = Variable<int>(notReallyAnId);
+    map['some_float'] = Variable<double>(someFloat);
+    {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.mapToSql(custom));
+      map['custom'] = Variable<String>(converter.mapToSql(custom)!);
     }
     return map;
   }
 
   TableWithoutPKCompanion toCompanion(bool nullToAbsent) {
     return TableWithoutPKCompanion(
-      notReallyAnId: notReallyAnId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(notReallyAnId),
-      someFloat: someFloat == null && nullToAbsent
-          ? const Value.absent()
-          : Value(someFloat),
-      custom:
-          custom == null && nullToAbsent ? const Value.absent() : Value(custom),
+      notReallyAnId: Value(notReallyAnId),
+      someFloat: Value(someFloat),
+      custom: Value(custom),
     );
   }
 
@@ -1229,7 +1186,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
   static Insertable<TableWithoutPKData> createCustom({
     Expression<int>? notReallyAnId,
     Expression<double>? someFloat,
-    Expression<String>? custom,
+    Expression<MyCustomObject>? custom,
   }) {
     return RawValuesInsertable({
       if (notReallyAnId != null) 'not_really_an_id': notReallyAnId,
@@ -1260,7 +1217,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     }
     if (custom.present) {
       final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.mapToSql(custom.value));
+      map['custom'] = Variable<String>(converter.mapToSql(custom.value)!);
     }
     return map;
   }
@@ -1332,13 +1289,13 @@ class $TableWithoutPKTable extends TableWithoutPK
       context.handle(
           _notReallyAnIdMeta,
           notReallyAnId.isAcceptableOrUnknown(
-              data['not_really_an_id'], _notReallyAnIdMeta));
+              data['not_really_an_id']!, _notReallyAnIdMeta));
     } else if (isInserting) {
       context.missing(_notReallyAnIdMeta);
     }
     if (data.containsKey('some_float')) {
       context.handle(_someFloatMeta,
-          someFloat.isAcceptableOrUnknown(data['some_float'], _someFloatMeta));
+          someFloat.isAcceptableOrUnknown(data['some_float']!, _someFloatMeta));
     } else if (isInserting) {
       context.missing(_someFloatMeta);
     }
@@ -1378,7 +1335,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || txt != null) {
-      map['insert'] = Variable<String>(txt);
+      map['insert'] = Variable<String?>(txt);
     }
     return map;
   }
@@ -1435,7 +1392,7 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     this.txt = const Value.absent(),
   });
   static Insertable<PureDefault> custom({
-    Expression<String>? txt,
+    Expression<String?>? txt,
   }) {
     return RawValuesInsertable({
       if (txt != null) 'insert': txt,
@@ -1452,7 +1409,7 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (txt.present) {
-      map['insert'] = Variable<String>(txt.value);
+      map['insert'] = Variable<String?>(txt.value);
     }
     return map;
   }
@@ -1497,7 +1454,7 @@ class $PureDefaultsTable extends PureDefaults
     final data = instance.toColumns(true);
     if (data.containsKey('insert')) {
       context.handle(
-          _txtMeta, txt.isAcceptableOrUnknown(data['insert'], _txtMeta));
+          _txtMeta, txt.isAcceptableOrUnknown(data['insert']!, _txtMeta));
     }
     return context;
   }
@@ -1547,7 +1504,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   Future<int> deleteTodoById(int var1) {
     return customUpdate(
       'DELETE FROM todos WHERE id = ?',
-      variables: [Variable.withInt(var1)],
+      variables: [Variable<int>(var1)],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
     );
@@ -1560,9 +1517,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
-          Variable.withString(var1),
-          Variable.withString(var2),
-          for (var $ in var3) Variable.withInt($)
+          Variable<String>(var1),
+          Variable<String>(var2),
+          for (var $ in var3) Variable<int>($)
         ],
         readsFrom: {
           todosTable
@@ -1572,7 +1529,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   Selectable<TodoEntry> search({required int id}) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
-        variables: [Variable.withInt(id)],
+        variables: [Variable<int>(id)],
         readsFrom: {todosTable}).map(todosTable.mapFromRow);
   }
 
@@ -1582,7 +1539,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
             variables: [],
             readsFrom: {tableWithoutPK})
         .map((QueryRow row) => $TableWithoutPKTable.$converter0
-            .mapToDart(row.readString('custom')));
+            .mapToDart(row.readString('custom'))!);
   }
 
   @override
@@ -1607,14 +1564,14 @@ class AllTodosWithCategoryResult extends CustomResultSet {
   final int catId;
   final String catDesc;
   AllTodosWithCategoryResult({
-    @required QueryRow row,
-    this.id,
+    required QueryRow row,
+    required this.id,
     this.title,
-    this.content,
+    required this.content,
     this.targetDate,
     this.category,
-    this.catId,
-    this.catDesc,
+    required this.catId,
+    required this.catDesc,
   }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(
@@ -1664,7 +1621,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
         'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
-        variables: [Variable.withInt(user)],
+        variables: [Variable<int>(user)],
         readsFrom: {todosTable, sharedTodos, users}).map(todosTable.mapFromRow);
   }
 }

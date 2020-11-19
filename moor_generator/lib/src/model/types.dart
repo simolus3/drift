@@ -18,12 +18,21 @@ abstract class HasType {
 
 extension OperationOnTypes on HasType {
   /// the Dart type of this column that can be handled by moors type mapping.
-  /// Basically the same as [dartTypeCode], minus custom types.
+  /// Basically the same as [dartTypeCode], minus custom types and nullability.
   String get variableTypeName => dartTypeNames[type];
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
   String get sqlTypeName => sqlTypes[type];
+
+  /// The moor Dart type that matches the type of this column.
+  ///
+  /// This is the same as [dartTypeCode] but without custom types.
+  String variableTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    final hasSuffix = nullable && options.nnbd;
+    return hasSuffix ? '$variableTypeName?' : variableTypeName;
+  }
 
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be
@@ -33,8 +42,7 @@ extension OperationOnTypes on HasType {
       return typeConverter.mappedType?.codeString(options);
     }
 
-    final hasSuffix = nullable && options.nnbd;
-    return hasSuffix ? '$variableTypeName?' : variableTypeName;
+    return variableTypeCode(options);
   }
 }
 

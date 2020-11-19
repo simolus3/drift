@@ -115,7 +115,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
         ? Map<String, Expression>.of(columns)
         : columns;
 
-    final primaryKeys = table.$primaryKey?.map((c) => c.$name) ?? const [];
+    final primaryKeys = table.$primaryKey.map((c) => c.$name);
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here

@@ -251,11 +251,11 @@ class Migrator {
     // as table constraint if it has already been written on a primary key
     // column, even though that column appears in table.$primaryKey because we
     // need to know all primary keys for the update(table).replace(row) API
-    final hasPrimaryKey = table.$primaryKey?.isNotEmpty ?? false;
+    final hasPrimaryKey = table.$primaryKey.isNotEmpty;
     final dontWritePk = dslTable.dontWriteConstraints || hasAutoIncrement;
     if (hasPrimaryKey && !dontWritePk) {
       context.buffer.write(', PRIMARY KEY (');
-      final pkList = table.$primaryKey!.toList(growable: false);
+      final pkList = table.$primaryKey.toList(growable: false);
       for (var i = 0; i < pkList.length; i++) {
         final column = pkList[i];
 

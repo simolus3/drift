@@ -164,9 +164,9 @@ class InsertStatement<T extends Table, D extends DataClass> {
 
       ctx.buffer.write(' ON CONFLICT(');
 
-      final conflictTarget = onConflict.target ?? table.$primaryKey?.toList();
+      final conflictTarget = onConflict.target ?? table.$primaryKey.toList();
 
-      if (conflictTarget == null || conflictTarget.isEmpty) {
+      if (conflictTarget.isEmpty) {
         throw ArgumentError(
             'Table has no primary key, so a conflict target is needed.');
       }
@@ -196,7 +196,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
     return ctx;
   }
 
-  void _validateIntegrity(Insertable<D> d) {
+  void _validateIntegrity(Insertable<D>? d) {
     if (d == null) {
       throw InvalidDataException(
           'Cannot write null row into ${table.$tableName}');

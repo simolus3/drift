@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/table.dart';
@@ -36,7 +37,7 @@ class UsedTypeConverter {
     @required this.sqlType,
   });
 
-  factory UsedTypeConverter.forEnumColumn(DartType enumType) {
+  factory UsedTypeConverter.forEnumColumn(DartType enumType, bool nullable) {
     if (enumType.element is! ClassElement) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
     }
@@ -50,7 +51,10 @@ class UsedTypeConverter {
 
     return UsedTypeConverter(
       expression: 'const EnumIndexConverter<$className>($className.values)',
-      mappedType: enumType,
+      mappedType: creatingClass.instantiate(
+          typeArguments: const [],
+          nullabilitySuffix:
+              nullable ? NullabilitySuffix.question : NullabilitySuffix.none),
       sqlType: ColumnType.integer,
     );
   }

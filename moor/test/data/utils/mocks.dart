@@ -15,7 +15,8 @@ export 'mocks.mocks.dart';
   customMocks: [
     MockSpec<QueryExecutor>(as: #MockExecutorInternal),
     MockSpec<TransactionExecutor>(as: #MockTransactionsInternal),
-    MockSpec<StreamQueryStore>(as: #MockStreamQueries)
+    MockSpec<StreamQueryStore>(
+        as: #MockStreamQueries, returnNullOnMissingStub: true)
   ],
 )
 // ignore: unused_element
@@ -29,6 +30,7 @@ class MockExecutor extends MockExecutorInternal {
   bool _opened = false;
 
   MockExecutor([this.openingDetails]) {
+    when(dialect).thenReturn(SqlDialect.sqlite);
     when(runSelect(any, any)).thenAnswer((_) {
       assert(_opened);
       return Future.value([]);

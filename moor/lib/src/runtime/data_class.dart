@@ -113,7 +113,9 @@ class Value<T> {
   T get value => _value as T;
 
   /// Create a (present) value by wrapping the [value] provided.
-  const Value(this._value) : present = true;
+  const Value(T value)
+      : _value = value,
+        present = true;
 
   /// Create an absent value that will not be written into the database, the
   /// default value or null will be used instead.

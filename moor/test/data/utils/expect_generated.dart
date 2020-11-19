@@ -10,7 +10,7 @@ Matcher generates(dynamic sql, [dynamic variables]) {
 
 class _GeneratesSqlMatcher extends Matcher {
   final Matcher _matchSql;
-  final Matcher _matchVariables;
+  final Matcher? _matchVariables;
 
   _GeneratesSqlMatcher(this._matchSql, this._matchVariables);
 
@@ -44,7 +44,7 @@ class _GeneratesSqlMatcher extends Matcher {
 
       mismatchDescription =
           mismatchDescription.add('generated variables $vars, which ');
-      mismatchDescription = _matchVariables.describeMismatch(
+      mismatchDescription = _matchVariables!.describeMismatch(
           vars, mismatchDescription, matchState['vars_match'] as Map, verbose);
     }
     return mismatchDescription;
@@ -57,9 +57,8 @@ class _GeneratesSqlMatcher extends Matcher {
       return false;
     }
 
-    final component = item as Component;
     final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
-    component.writeInto(ctx);
+    item.writeInto(ctx);
 
     var matches = true;
 
@@ -72,7 +71,7 @@ class _GeneratesSqlMatcher extends Matcher {
 
     final argsMatchState = {};
     if (_matchVariables != null &&
-        !_matchVariables.matches(ctx.boundVariables, argsMatchState)) {
+        !_matchVariables!.matches(ctx.boundVariables, argsMatchState)) {
       matchState['vars'] = ctx.boundVariables;
       matchState['vars_match'] = argsMatchState;
       matches = false;

@@ -9,17 +9,17 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
 
-  /// The primary key of this table. Can be null or empty if no custom primary
-  /// key has been specified.
+  /// The primary key of this table. Can be empty if no custom primary key has
+  /// been specified.
   ///
   /// Additional to the [Table.primaryKey] columns declared by an user, this
   /// also contains auto-increment integers, which are primary key by default.
-  Set<GeneratedColumn>? get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => const {};
 
   // ensure the primaryKey getter is consistent with $primaryKey, which can
   // contain additional columns.
   @override
-  Set<Column>? get primaryKey => $primaryKey;
+  Set<Column> get primaryKey => $primaryKey;
 
   /// The table name in the sql table. This can be an alias for the actual table
   /// name. See [actualTableName] for a table name that is not aliased.
