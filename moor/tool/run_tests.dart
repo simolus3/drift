@@ -11,8 +11,7 @@ Future<void> main() async {
   await for (final entity in directory.list(recursive: true)) {
     if (entity is! File || !entity.path.endsWith('_test.dart')) continue;
 
-    final process = await Process.start(
-        '/home/simon/bin/dart-sdk/beta/bin/dart', [
+    final process = await Process.start('dart', [
       '--no-sound-null-safety',
       'run',
       'test',
