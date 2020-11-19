@@ -106,3 +106,8 @@ test('stream emits a new user when the name updates', () async {
   await expectation;
 });
 ```
+
+## Testing migrations
+
+Moor can help you generate code for schema migrations. For more details, see
+[this guide]({{< relref "Advanced Features/migrations.md#verifying-migrations" >}}).

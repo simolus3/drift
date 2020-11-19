@@ -68,4 +68,5 @@ The generated file (`schema.json` in this case) contains information about all
 - `@create`-queries from included moor files
 - dependecies thereof
 
-The schema format is still a work-in-progress and might change in the future.
+Exporting a schema can be used to generate test code for your schema migrations. For details,
+see [the guide]({{< relref "Advanced Features/migrations.md#verifying-migrations" >}}).
