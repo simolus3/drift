@@ -51,6 +51,10 @@ class MockExecutor extends MockExecutorInternal {
       assert(_opened);
       return Future.value();
     });
+    when(runBatched(any)).thenAnswer((_) {
+      assert(_opened);
+      return Future.value();
+    });
     when(beginTransaction()).thenAnswer((_) {
       assert(_opened);
       return transactions;
@@ -76,10 +80,13 @@ class MockExecutor extends MockExecutorInternal {
 
 class MockTransactionExecutor extends MockTransactionsInternal {
   MockTransactionExecutor() {
+    when(dialect).thenReturn(SqlDialect.sqlite);
     when(runSelect(any, any)).thenAnswer((_) => Future.value([]));
     when(runUpdate(any, any)).thenAnswer((_) => Future.value(0));
     when(runDelete(any, any)).thenAnswer((_) => Future.value(0));
     when(runInsert(any, any)).thenAnswer((_) => Future.value(0));
+    when(runCustom(any, any)).thenAnswer((_) => Future.value());
+    when(runBatched(any)).thenAnswer((_) => Future.value());
     when(ensureOpen(any)).thenAnswer((_) => Future.value());
 
     when(send()).thenAnswer((_) => Future.value(null));

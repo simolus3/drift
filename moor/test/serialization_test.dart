@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/data_class.dart';
 import 'package:test/test.dart';
@@ -8,24 +7,24 @@ final DateTime someDate = DateTime(2019, 06, 08);
 
 final TodoEntry someTodoEntry = TodoEntry(
   id: 3,
-  title: 'a title',
-  content: null,
+  title: null,
+  content: 'content',
   targetDate: someDate,
   category: 3,
 );
 
 final Map<String, dynamic> regularSerialized = {
   'id': 3,
-  'title': 'a title',
-  'content': null,
+  'title': null,
+  'content': 'content',
   'target_date': someDate.millisecondsSinceEpoch,
   'category': 3,
 };
 
 final Map<String, dynamic> customSerialized = {
   'id': 3,
-  'title': 'a title',
-  'content': 'set to null',
+  'title': 'set to null',
+  'content': 'content',
   'target_date': someDate.toIso8601String(),
   'category': 3,
 };
@@ -33,10 +32,10 @@ final Map<String, dynamic> customSerialized = {
 class CustomSerializer extends ValueSerializer {
   @override
   T fromJson<T>(dynamic json) {
-    if (T == DateTime) {
+    if (<T>[] is List<DateTime?>) {
       return DateTime.parse(json.toString()) as T;
     } else if (json == 'set to null') {
-      return null;
+      return null as T;
     } else {
       return json as T;
     }
@@ -44,8 +43,8 @@ class CustomSerializer extends ValueSerializer {
 
   @override
   dynamic toJson<T>(T value) {
-    if (T == DateTime) {
-      return (value as DateTime).toIso8601String();
+    if (<T>[] is List<DateTime?>) {
+      return (value as DateTime?)?.toIso8601String();
     } else if (value == null) {
       return 'set to null';
     } else {
@@ -57,8 +56,8 @@ class CustomSerializer extends ValueSerializer {
 void main() {
   test('default serializer', () {
     const serializer = ValueSerializer.defaults();
-    expect(serializer.toJson<DateTime>(null), null);
-    expect(serializer.fromJson<DateTime>(null), null);
+    expect(serializer.toJson<DateTime?>(null), null);
+    expect(serializer.fromJson<DateTime?>(null), null);
   });
 
   group('serialization', () {

@@ -36,23 +36,19 @@ void main() {
   });
 
   test('can convert a companion to a row class', () {
-    const companion = UsersCompanion(
+    const companion = CategoriesCompanion(
       id: Value(3),
-      name: Value('hi'),
-      profilePicture: Value.absent(),
-      // false for https://github.com/simolus3/moor/issues/559
-      isAwesome: Value(false),
+      description: Value('description'),
+      priority: Value(CategoryPriority.low),
     );
 
-    final user = db.users.mapFromCompanion(companion);
+    final user = db.categories.mapFromCompanion(companion);
     expect(
       user,
-      User(
+      Category(
         id: 3,
-        name: 'hi',
-        profilePicture: null,
-        isAwesome: false,
-        creationTime: null,
+        description: 'description',
+        priority: CategoryPriority.low,
       ),
     );
   });

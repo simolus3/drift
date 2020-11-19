@@ -42,7 +42,7 @@ dependency_overrides:
   # Switch back to regular project after https://github.com/tekartik/synchronized.dart/pull/14
   synchronized:
     git:
-      url: https://github.com/simolus3/synchronized.dart.git
+      url: https://github.com/tekartik/synchronized.dart.git
       ref: null_safety
       path: synchronized
 
