@@ -14,7 +14,7 @@ dependencies:
   collection: ^1.15.0-nullsafety.5
   synchronized: ^2.1.0
   pedantic: ^1.10.0-nullsafety.3
-  sqlite3: ^0.1.6
+  sqlite3: ^0.1.9-nullsafety
 
 dev_dependencies:
   analyzer: ^0.40.6
@@ -32,14 +32,6 @@ dependency_overrides:
   sqlparser:
     path: ../sqlparser
 
-  # Temporary overrides for null safety
-  sqlite3:
-    git:
-      url: https://github.com/simolus3/sqlite3.dart.git
-      ref: nnbd
-      path: sqlite3
-
-  # Switch back to regular project after https://github.com/tekartik/synchronized.dart/pull/14
   synchronized:
     git:
       url: https://github.com/tekartik/synchronized.dart.git
