@@ -29,15 +29,15 @@ jobs:
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
         working-directory: moor
-      - run: dart --no-sound-null-safety test --coverage=coverage -x background_isolate
+      - run: dart --no-sound-null-safety test #-x background_isolate --coverage=coverage
         working-directory: moor
-      - uses: actions/upload-artifact@v2
-        with:
-          name: moor-coverage-data
-          path: |
-            moor/coverage/
-            moor/.dart_tool/package_config.json
-          retention-days: 1
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: moor-coverage-data
+#          path: |
+#            moor/coverage/
+#            moor/.dart_tool/package_config.json
+#          retention-days: 1
 
   moor_generator:
     runs-on: ubuntu-20.04
@@ -71,15 +71,15 @@ jobs:
       - run: dart analyze --fatal-infos --fatal-warnings
         working-directory: sqlparser/
       # tests and coverage
-      - run: dart test --coverage=coverage
+      - run: dart test #--coverage=coverage
         working-directory: sqlparser
-      - uses: actions/upload-artifact@v2
-        with:
-          name: sqlparser-coverage-data
-          path: |
-            sqlparser/coverage/
-            sqlparser/.dart_tool/package_config.json
-          retention-days: 1
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: sqlparser-coverage-data
+#          path: |
+#            sqlparser/coverage/
+#            sqlparser/.dart_tool/package_config.json
+#          retention-days: 1
 
   misc_integration_tests:
     name: "Integration tests"
@@ -93,25 +93,25 @@ jobs:
         name: Install sqlite3 for tests
       - run: tool/misc_integration_test.sh
 
-  upload_coverage:
-    runs-on: ubuntu-20.04
-    needs: [moor, sqlparser]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: cedx/setup-dart@v2
-      - run: dart pub upgrade
-        name: "Setup coverage processor"
-        working-directory: extras/coverage_formatting
-      - uses: actions/download-artifact@v2
-        with:
-          name: moor-coverage-data
-          path: moor/
-      - uses: actions/download-artifact@v2
-        with:
-          name: sqlparser-coverage-data
-          path: sqlparser/
-      - run: dart run extras/coverage_formatting/bin/coverage.dart
-        name: "Format coverage from raw data"
-      - uses: codecov/codecov-action@v1
-        with:
-          file: lcov.info
+#  upload_coverage:
+#    runs-on: ubuntu-20.04
+#    needs: [moor, sqlparser]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: cedx/setup-dart@v2
+#      - run: dart pub upgrade
+#        name: "Setup coverage processor"
+#        working-directory: extras/coverage_formatting
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: moor-coverage-data
+#          path: moor/
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: sqlparser-coverage-data
+#          path: sqlparser/
+#      - run: dart run extras/coverage_formatting/bin/coverage.dart
+#        name: "Format coverage from raw data"
+#      - uses: codecov/codecov-action@v1
+#        with:
+#          file: lcov.info
