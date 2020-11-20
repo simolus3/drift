@@ -27,7 +27,7 @@ jobs:
       - run: dart analyze --fatal-infos --fatal-warnings
         working-directory: moor/
       # build, test and upload coverage
-      - run: dart run build_runner build
+      - run: dart run build_runner build --delete-conflicting-outputs
         working-directory: moor
       - run: dart --no-sound-null-safety test --coverage=coverage
         working-directory: moor

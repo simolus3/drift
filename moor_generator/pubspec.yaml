@@ -52,3 +52,4 @@ dependency_overrides:
    path: ../sqlparser
   moor:
     path: ../moor
+  convert: ^3.0.0-nullsafety

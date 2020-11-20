@@ -21,6 +21,9 @@ void main() {
 
   try {
     library = open.openSqlite();
+
+    // Some platforms have sqlite3, but no sqlite3_keyword_count
+    library.lookup('sqlite3_keyword_count');
   } on dynamic {
     skip = 'sqlite3 is not available in test environment';
   }
