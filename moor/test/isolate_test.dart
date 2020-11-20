@@ -28,7 +28,7 @@ void main() {
     }
 
     _runTests(spawnBackground, true);
-  });
+  }, tags: 'background_isolate');
 
   test('stream queries across isolates', () async {
     // three isolates:
@@ -59,7 +59,7 @@ void main() {
     writer.kill();
     await expectation;
     await moorIsolate.shutdownAll();
-  });
+  }, tags: 'background_isolate');
 
   test('errors propagate across isolates', () async {
     final isolate = await MoorIsolate.spawn(_backgroundConnection);
@@ -78,7 +78,7 @@ void main() {
 
     await db.close();
     await isolate.shutdownAll();
-  });
+  }, tags: 'background_isolate');
 }
 
 void _runTests(

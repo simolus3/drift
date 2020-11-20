@@ -1,5 +1,6 @@
 tags:
   integration:
+  background_isolate:
 
 platforms:
   - vm
