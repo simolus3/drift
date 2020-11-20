@@ -24,3 +24,4 @@ dependency_overrides:
 
   # todo: Remove after built_value supports analyzer ^0.40
   analyzer: 0.40.4
+  convert: ^3.0.0-nullsafety
