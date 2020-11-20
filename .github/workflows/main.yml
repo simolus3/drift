@@ -34,7 +34,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: moor-coverage-data
-          path: moor/coverage/
+          path: |
+            moor/coverage/
+            moor/.dart_tool/package_config.json
           retention-days: 1
 
   moor_generator:
@@ -74,7 +76,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: sqlparser-coverage-data
-          path: sqlparser/coverage
+          path: |
+            sqlparser/coverage/
+            sqlparser/.dart_tool/package_config.json
           retention-days: 1
 
   misc_integration_tests:
@@ -101,11 +105,11 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: moor-coverage-data
-          path: moor/coverage/
+          path: moor/
       - uses: actions/download-artifact@v2
         with:
           name: sqlparser-coverage-data
-          path: sqlparser/coverage/
+          path: sqlparser/
       - run: dart run extras/coverage_formatting/bin/coverage.dart
         name: "Format coverage from raw data"
       - uses: codecov/codecov-action@v1
