@@ -155,10 +155,13 @@ class BlobType extends SqlType<Uint8List> {
   String get sqlName => 'BLOB';
 
   @override
-  Uint8List mapFromDatabaseResponse(dynamic response) => response as Uint8List;
+  Uint8List? mapFromDatabaseResponse(dynamic response) {
+    return response as Uint8List?;
+  }
 
   @override
   String mapToSqlConstant(Uint8List? content) {
+    if (content == null) return 'NULL';
     // BLOB literals are string literals containing hexadecimal data and
     // preceded by a single "x" or "X" character. Example: X'53514C697465'
     return "x'${hex.encode(content)}'";
