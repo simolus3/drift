@@ -162,5 +162,5 @@ Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
 }
 ```
 
-Aller the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
+All the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
 They have that `sql` prefix to avoid clashes with `dart:math`.
