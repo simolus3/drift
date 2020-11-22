@@ -7,10 +7,10 @@ import '../data/utils/expect_generated.dart';
 
 void main() {
   test('in expressions are generated', () {
-    final innerExpression = GeneratedTextColumn('name', null, true);
+    final innerExpression = GeneratedTextColumn('name', 'table', true);
     final isInExpression = innerExpression.isIn(['Max', 'Tobias']);
 
-    final context = GenerationContext.fromDb(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb());
     isInExpression.writeInto(context);
 
     expect(context.sql, 'name IN (?, ?)');
@@ -18,7 +18,7 @@ void main() {
   });
 
   test('not in expressions are generated', () {
-    final innerExpression = GeneratedTextColumn('name', null, true);
+    final innerExpression = GeneratedTextColumn('name', 'table', true);
     final isNotIn = innerExpression.isNotIn(['Max', 'Tobias']);
 
     expect(isNotIn, generates('name NOT IN (?, ?)', ['Max', 'Tobias']));

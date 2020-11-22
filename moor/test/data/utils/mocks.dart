@@ -87,7 +87,7 @@ class MockTransactionExecutor extends MockTransactionsInternal {
     when(runInsert(any, any)).thenAnswer((_) => Future.value(0));
     when(runCustom(any, any)).thenAnswer((_) => Future.value());
     when(runBatched(any)).thenAnswer((_) => Future.value());
-    when(ensureOpen(any)).thenAnswer((_) => Future.value());
+    when(ensureOpen(any)).thenAnswer((_) => Future.value(true));
 
     when(send()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));

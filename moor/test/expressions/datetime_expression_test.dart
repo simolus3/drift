@@ -8,7 +8,7 @@ import '../data/utils/expect_generated.dart';
 typedef _Extractor = Expression<int> Function(Expression<DateTime> d);
 
 void main() {
-  final column = GeneratedDateTimeColumn('val', null, false);
+  final column = GeneratedDateTimeColumn('val', 'table', false);
 
   group('extracting information via top-level method', () {
     final expectedResults = <_Extractor, String>{

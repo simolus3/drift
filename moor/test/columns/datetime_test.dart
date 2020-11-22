@@ -1,14 +1,13 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final nullable = GeneratedDateTimeColumn('name', null, true);
-  final nonNull = GeneratedDateTimeColumn('name', null, false);
+  final nullable = GeneratedDateTimeColumn('name', 'table', true);
+  final nonNull = GeneratedDateTimeColumn('name', 'table', false);
 
   test('should write column definition', () {
-    final nonNullQuery = GenerationContext(null, null);
-    final nullableQuery = GenerationContext(null, null);
+    final nonNullQuery = GenerationContext.fromDb(null);
+    final nullableQuery = GenerationContext.fromDb(null);
     nonNull.writeColumnDefinition(nonNullQuery);
     nullable.writeColumnDefinition(nullableQuery);
 
@@ -17,7 +16,7 @@ void main() {
   });
 
   test('can compare', () {
-    final ctx = GenerationContext(null, null);
+    final ctx = GenerationContext.fromDb(null);
     nonNull.isSmallerThan(currentDateAndTime).writeInto(ctx);
 
     expect(ctx.sql, "name < strftime('%s', CURRENT_TIMESTAMP)");

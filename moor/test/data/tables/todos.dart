@@ -2,6 +2,8 @@ import 'package:moor/moor.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:uuid/uuid.dart';
 
+import '../utils/null_executor.dart';
+
 part 'todos.g.dart';
 
 mixin AutoIncrement on Table {
@@ -112,7 +114,7 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   },
 )
 class TodoDb extends _$TodoDb {
-  TodoDb(QueryExecutor e) : super(e) {
+  TodoDb([QueryExecutor? e]) : super(e ?? const NullExecutor()) {
     moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
   TodoDb.connect(DatabaseConnection connection) : super.connect(connection) {

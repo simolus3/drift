@@ -8,7 +8,7 @@ void main() {
   test('maps the variable to sql', () {
     final variable =
         Variable(DateTime.fromMillisecondsSinceEpoch(1551297563000));
-    final ctx = GenerationContext.fromDb(TodoDb(null));
+    final ctx = GenerationContext.fromDb(TodoDb());
 
     variable.writeInto(ctx);
 
@@ -17,8 +17,8 @@ void main() {
   });
 
   test('writes null directly for null values', () {
-    final variable = Variable.withString(null);
-    final ctx = GenerationContext.fromDb(TodoDb(null));
+    const variable = Variable<String>(null);
+    final ctx = GenerationContext.fromDb(TodoDb());
 
     variable.writeInto(ctx);
 

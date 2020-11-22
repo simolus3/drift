@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -6,8 +5,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_equality.dart';
 
 void main() {
-  final expression = GeneratedIntColumn('col', null, false);
-  final db = TodoDb(null);
+  final expression = GeneratedIntColumn('col', 'table', false);
+  final db = TodoDb();
 
   final comparisons = {
     expression.isSmallerThan: '<',
@@ -24,7 +23,7 @@ void main() {
   };
 
   group('can compare with other expressions', () {
-    final compare = GeneratedIntColumn('compare', null, false);
+    final compare = GeneratedIntColumn('compare', 'table', false);
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
@@ -54,8 +53,8 @@ void main() {
 
   group('between', () {
     test('other expressions', () {
-      final low = GeneratedIntColumn('low', null, false);
-      final high = GeneratedIntColumn('high', null, false);
+      final low = GeneratedIntColumn('low', 'table', false);
+      final high = GeneratedIntColumn('high', 'table', false);
 
       final ctx = GenerationContext.fromDb(db);
       expression.isBetween(low, high).writeInto(ctx);

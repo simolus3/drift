@@ -32,7 +32,7 @@ void main() {
 }
 
 void testStringMapping(String dart, String expectedLiteral) {
-  final ctx = GenerationContext.fromDb(TodoDb(null));
+  final ctx = GenerationContext.fromDb(TodoDb());
   final constant = Constant(dart);
 
   constant.writeInto(ctx);

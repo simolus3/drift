@@ -143,7 +143,7 @@ class TypedResult {
   /// as a column, for instance via [JoinedSelectStatement.addColumns].
   ///
   /// To access the underlying columns directly, use [rawData].
-  D? read<D, T extends SqlType<D>>(Expression<D> expr) {
+  D? read<D>(Expression<D> expr) {
     if (_parsedExpressions != null) {
       return _parsedExpressions![expr] as D;
     }

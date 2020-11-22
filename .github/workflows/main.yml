@@ -29,7 +29,7 @@ jobs:
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
         working-directory: moor
-      - run: dart --no-sound-null-safety test #-x background_isolate --coverage=coverage
+      - run: dart --no-sound-null-safety --null-assertions test #-x background_isolate --coverage=coverage
         working-directory: moor
 #      - uses: actions/upload-artifact@v2
 #        with:

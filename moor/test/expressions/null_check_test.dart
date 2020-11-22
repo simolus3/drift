@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:moor/moor.dart' as moor;
 import 'package:test/test.dart';
@@ -7,7 +6,7 @@ import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final innerExpression = GeneratedTextColumn('name', null, true);
+  final innerExpression = GeneratedTextColumn('name', 'table', true);
 
   test('IS NULL expressions are generated', () {
     final oldFunction = moor.isNull(innerExpression);
@@ -30,7 +29,7 @@ void main() {
   });
 
   test('generates COALESCE expressions', () {
-    final expr = moor.coalesce([const Constant<int>(null), const Constant(3)]);
+    final expr = moor.coalesce([const Constant<int?>(null), const Constant(3)]);
 
     expect(expr, generates('COALESCE(NULL, 3)'));
   });

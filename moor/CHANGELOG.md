@@ -1,5 +1,7 @@
-## unreleased
+## unreleased (breaking - 4.0)
 
+- __Breaking__: Removed the second type parameter from `TypedResult.read`
+- Support null safety
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`
 - Added extensions for `isNull` and `isNotNull`
 - Support creating a `VmDatabase` from a raw sqlite3 `Database` via `VmDatabase.opened`

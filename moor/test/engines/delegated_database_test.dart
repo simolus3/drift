@@ -43,19 +43,20 @@ void main() {
         final db = DelegatedDatabase(delegate, isSequential: sequential);
         await db.ensureOpen(_FakeExecutorUser());
 
-        expect(await db.runSelect(null, null), isEmpty);
-        expect(await db.runUpdate(null, null), 3);
-        expect(await db.runInsert(null, null), 4);
-        await db.runCustom(null);
-        await db.runBatched(null);
+        expect(await db.runSelect('select', const []), isEmpty);
+        expect(await db.runUpdate('update', const []), 3);
+        expect(await db.runInsert('insert', const []), 4);
+        await db.runCustom('custom');
+        final batched = BatchedStatements([], []);
+        await db.runBatched(batched);
 
         verifyInOrder([
           delegate.isOpen,
-          delegate.runSelect(null, null),
-          delegate.runUpdate(null, null),
-          delegate.runInsert(null, null),
-          delegate.runCustom(null, []),
-          delegate.runBatched(null),
+          delegate.runSelect('select', const []),
+          delegate.runUpdate('update', const []),
+          delegate.runInsert('insert', const []),
+          delegate.runCustom('custom', const []),
+          delegate.runBatched(batched),
         ]);
       });
     }
@@ -150,12 +151,12 @@ void main() {
 
       final transaction = db.beginTransaction();
       await transaction.ensureOpen(_FakeExecutorUser());
-      await transaction.runSelect(null, null);
+      await transaction.runSelect('SELECT 1;', const []);
       await transaction.send();
 
       verifyInOrder([
         delegate.runCustom('BEGIN TRANSACTION', []),
-        delegate.runSelect(null, null),
+        delegate.runSelect('SELECT 1;', const []),
         delegate.runCustom('COMMIT TRANSACTION', []),
       ]);
     });

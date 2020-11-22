@@ -14,7 +14,7 @@ void main() {
       hasAutoIncrement: true,
     );
 
-    final context = GenerationContext.fromDb(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);
 
     expect(
@@ -30,7 +30,7 @@ void main() {
       hasAutoIncrement: false,
     );
 
-    final context = GenerationContext.fromDb(TodoDb(null));
+    final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);
 
     expect(context.sql, equals('foo INTEGER NOT NULL PRIMARY KEY'));
