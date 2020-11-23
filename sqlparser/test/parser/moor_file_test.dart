@@ -10,7 +10,7 @@ import 'another.moor';
 CREATE TABLE tbl (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   -- this is a single-line comment
-  place VARCHAR REFERENCES other(location)
+  place VARCHAR REFERENCES other(location) AS "placeRef"
 ) AS RowName;
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
@@ -50,6 +50,7 @@ void main() {
                     ],
                   ),
                 ),
+                MoorDartName(null, identifier('placeRef')),
               ],
             ),
           ],

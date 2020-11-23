@@ -1,3 +1,7 @@
+## 0.12.0
+
+- Parser support for new moor features
+
 ## 0.11.0
 
 - New `package:sqlparser/utils/node_to_text.dart` library that turns an AST node back into a

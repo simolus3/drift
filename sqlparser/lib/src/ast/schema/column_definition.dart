@@ -211,7 +211,7 @@ class MappedBy extends ColumnConstraint {
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
-/// A `JSON KEY xyz` constraint which, which is only parsed for moor files.
+/// A `JSON KEY xyz` constraint, which is only parsed for moor files.
 class JsonKey extends ColumnConstraint {
   Token json;
   Token key;
@@ -223,6 +223,22 @@ class JsonKey extends ColumnConstraint {
   String get jsonKey => jsonNameToken.identifier;
 
   JsonKey(String name, this.jsonNameToken) : super(name);
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}
+
+/// A `AS xyz` constraint, which is only parsed for moor files.
+class MoorDartName extends ColumnConstraint {
+  Token as;
+  IdentifierToken identifier;
+
+  @override
+  final Iterable<AstNode> childNodes = const [];
+
+  String get dartName => identifier.identifier;
+
+  MoorDartName(String name, this.identifier) : super(name);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
