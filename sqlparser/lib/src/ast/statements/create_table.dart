@@ -51,14 +51,6 @@ class CreateTableStatement extends TableInducingStatement {
 
   @override
   Iterable<AstNode> get childNodes => [...columns, ...tableConstraints];
-
-  @override
-  bool contentEquals(CreateTableStatement other) {
-    return other.ifNotExists == ifNotExists &&
-        other.tableName == tableName &&
-        other.withoutRowId == withoutRowId &&
-        other.overriddenDataClassName == overriddenDataClassName;
-  }
 }
 
 class CreateVirtualTableStatement extends TableInducingStatement {
@@ -94,12 +86,4 @@ class CreateVirtualTableStatement extends TableInducingStatement {
 
   @override
   Iterable<AstNode> get childNodes => const [];
-
-  @override
-  bool contentEquals(CreateVirtualTableStatement other) {
-    return other.ifNotExists == ifNotExists &&
-        other.tableName == tableName &&
-        other.moduleName == moduleName &&
-        const ListEquality().equals(other.argumentContent, argumentContent);
-  }
 }

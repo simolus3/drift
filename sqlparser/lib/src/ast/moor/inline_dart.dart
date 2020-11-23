@@ -31,13 +31,6 @@ abstract class DartPlaceholder extends AstNode {
     return visitor.visitDartPlaceholder(this, arg);
   }
 
-  bool _dartEquals(covariant DartPlaceholder other) => true;
-
-  @override
-  bool contentEquals(DartPlaceholder other) {
-    return other.name == name && other._dartEquals(other);
-  }
-
   T when<T>(
       {T Function(DartExpressionPlaceholder) isExpression,
       T Function(DartLimitPlaceholder) isLimit,

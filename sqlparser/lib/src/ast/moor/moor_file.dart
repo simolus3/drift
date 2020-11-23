@@ -28,7 +28,4 @@ class MoorFile extends AstNode {
   /// Returns the imports defined in this file.
   Iterable<ImportStatement> get imports =>
       childNodes.whereType<ImportStatement>();
-
-  @override
-  bool contentEquals(MoorFile other) => true;
 }

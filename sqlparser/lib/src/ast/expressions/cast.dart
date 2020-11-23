@@ -19,9 +19,4 @@ class CastExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [operand];
-
-  @override
-  bool contentEquals(CastExpression other) {
-    return other.typeName == typeName;
-  }
 }

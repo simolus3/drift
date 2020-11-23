@@ -72,11 +72,6 @@ class SelectStatement extends BaseSelectStatement
       if (orderBy != null) orderBy,
     ];
   }
-
-  @override
-  bool contentEquals(SelectStatement other) {
-    return other.distinct == distinct;
-  }
 }
 
 class CompoundSelectStatement extends BaseSelectStatement {
@@ -109,12 +104,6 @@ class CompoundSelectStatement extends BaseSelectStatement {
     base = transformer.transformChild(base, this, arg);
     transformer.transformChildren(additional, this, arg);
   }
-
-  @override
-  bool contentEquals(CompoundSelectStatement other) {
-    // this class doesn't contain anything but child nodes
-    return true;
-  }
 }
 
 /// A select statement of the form `VALUES (expr-list), ..., (expr-list-N)`.
@@ -137,9 +126,6 @@ class ValuesSelectStatement extends BaseSelectStatement
 
   @override
   Iterable<AstNode> get childNodes => values;
-
-  @override
-  bool contentEquals(ValuesSelectStatement other) => true;
 }
 
 abstract class ResultColumn extends AstNode {}
@@ -156,11 +142,6 @@ class StarResultColumn extends ResultColumn {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
-
-  @override
-  bool contentEquals(StarResultColumn other) {
-    return other.tableName == tableName;
-  }
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -191,11 +172,6 @@ class ExpressionResultColumn extends ResultColumn
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitExpressionResultColumn(this, arg);
   }
-
-  @override
-  bool contentEquals(ExpressionResultColumn other) {
-    return other.as == as;
-  }
 }
 
 class GroupBy extends AstNode {
@@ -218,11 +194,6 @@ class GroupBy extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [...by, if (having != null) having];
-
-  @override
-  bool contentEquals(GroupBy other) {
-    return true; // Defined via child nodes
-  }
 }
 
 enum CompoundSelectMode {
@@ -256,7 +227,4 @@ class CompoundSelectPart extends AstNode {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     select = transformer.transformChild(select, this, arg);
   }
-
-  @override
-  bool contentEquals(CompoundSelectPart other) => mode == other.mode;
 }

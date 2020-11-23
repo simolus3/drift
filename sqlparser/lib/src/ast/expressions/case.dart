@@ -22,9 +22,6 @@ class CaseExpression extends Expression {
   @override
   Iterable<AstNode> get childNodes =>
       [if (base != null) base, ...whens, if (elseExpr != null) elseExpr];
-
-  @override
-  bool contentEquals(CaseExpression other) => true;
 }
 
 class WhenComponent extends AstNode {
@@ -46,7 +43,4 @@ class WhenComponent extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [when, then];
-
-  @override
-  bool contentEquals(WhenComponent other) => true;
 }

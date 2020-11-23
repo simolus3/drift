@@ -1,9 +1,9 @@
-import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/reader/syntactic_entity.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
+import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/src/utils/meta.dart';
 
 part 'clauses/limit.dart';
@@ -167,7 +167,16 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   /// Whether the content of this node is equal to the [other] node of the same
   /// type. The "content" refers to anything stored only in this node, children
   /// are ignored.
-  bool contentEquals(covariant AstNode other);
+  @nonVirtual
+  bool contentEquals(AstNode other) {
+    final checker = EqualityEnforcingVisitor(this, considerChildren: false);
+    try {
+      checker.visit(other, null);
+      return true;
+    } on NotEqualException {
+      return false;
+    }
+  }
 
   @override
   String toString() {

@@ -30,7 +30,4 @@ class DeleteStatement extends CrudStatement
         from,
         if (where != null) where,
       ];
-
-  @override
-  bool contentEquals(DeleteStatement other) => true;
 }

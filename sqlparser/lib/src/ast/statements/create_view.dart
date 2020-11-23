@@ -32,11 +32,4 @@ class CreateViewStatement extends Statement implements CreatingStatement {
 
   @override
   Iterable<AstNode> get childNodes => [query];
-
-  @override
-  bool contentEquals(CreateViewStatement other) {
-    return other.ifNotExists == ifNotExists &&
-        other.viewName == viewName &&
-        const ListEquality().equals(other.columns, columns);
-  }
 }

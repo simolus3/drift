@@ -38,11 +38,6 @@ class CreateIndexStatement extends Statement
   @override
   Iterable<AstNode> get childNodes =>
       [on, ...columns, if (where != null) where];
-
-  @override
-  bool contentEquals(CreateIndexStatement other) {
-    return other.indexName == indexName;
-  }
 }
 
 /// Note that this class matches the productions listed at https://www.sqlite.org/syntax/indexed-column.html
@@ -70,7 +65,4 @@ class IndexedColumn extends AstNode {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     expression = transformer.transformChild(expression, this, arg);
   }
-
-  @override
-  bool contentEquals(IndexedColumn other) => other.ordering == ordering;
 }

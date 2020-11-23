@@ -18,11 +18,6 @@ class UnaryExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [inner];
-
-  @override
-  bool contentEquals(UnaryExpression other) {
-    return other.operator.type == operator.type;
-  }
 }
 
 class CollateExpression extends UnaryExpression {
@@ -39,12 +34,6 @@ class CollateExpression extends UnaryExpression {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitCollateExpression(this, arg);
-  }
-
-  @override
-  bool contentEquals(CollateExpression other) {
-    return super.contentEquals(other) &&
-        other.collateFunction.type == collateFunction.type;
   }
 }
 
@@ -68,11 +57,6 @@ class BinaryExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
-
-  @override
-  bool contentEquals(BinaryExpression other) {
-    return other.operator.type == operator.type;
-  }
 }
 
 /// A like, glob, match or regexp expression.
@@ -104,9 +88,6 @@ class StringComparisonExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [left, right, if (escape != null) escape];
-
-  @override
-  bool contentEquals(StringComparisonExpression other) => other.not == not;
 }
 
 /// `(NOT)? $left IS $right`
@@ -130,11 +111,6 @@ class IsExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [left, right];
-
-  @override
-  bool contentEquals(IsExpression other) {
-    return other.negated == negated;
-  }
 }
 
 class IsNullExpression extends Expression {
@@ -157,11 +133,6 @@ class IsNullExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [operand];
-
-  @override
-  bool contentEquals(IsNullExpression other) {
-    return other.negated == negated;
-  }
 }
 
 /// `$check BETWEEN $lower AND $upper`
@@ -187,9 +158,6 @@ class BetweenExpression extends Expression {
 
   @override
   List<Expression> get childNodes => [check, lower, upper];
-
-  @override
-  bool contentEquals(BetweenExpression other) => other.not == not;
 }
 
 /// `$left$ IN $inside`.
@@ -219,9 +187,6 @@ class InExpression extends Expression {
     left = transformer.transformChild(left, this, arg);
     inside = transformer.transformChild(inside, this, arg);
   }
-
-  @override
-  bool contentEquals(InExpression other) => other.not == not;
 }
 
 class Parentheses extends Expression {
@@ -245,7 +210,4 @@ class Parentheses extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [expression];
-
-  @override
-  bool contentEquals(Parentheses other) => true;
 }

@@ -27,11 +27,6 @@ class Reference extends Expression with ReferenceOwner {
   Iterable<AstNode> get childNodes => const [];
 
   @override
-  bool contentEquals(Reference other) {
-    return other.tableName == tableName && other.columnName == columnName;
-  }
-
-  @override
   String toString() {
     if (tableName != null) {
       return 'Reference to the column $tableName.$columnName';

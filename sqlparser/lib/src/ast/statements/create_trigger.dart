@@ -46,13 +46,6 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
         if (when != null) when,
         action,
       ];
-
-  @override
-  bool contentEquals(CreateTriggerStatement other) {
-    return other.ifNotExists == ifNotExists &&
-        other.triggerName == triggerName &&
-        other.mode == mode;
-  }
 }
 
 enum TriggerMode { before, after, insteadOf }
@@ -74,9 +67,6 @@ abstract class TriggerTarget extends AstNode {
   /// Whether this target introduces the "old" table reference in the sub-scope
   /// of the create trigger statement.
   bool get introducesOld;
-
-  @override
-  bool contentEquals(TriggerTarget other) => true;
 }
 
 class DeleteTarget extends TriggerTarget {

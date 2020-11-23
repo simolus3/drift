@@ -28,7 +28,4 @@ class Tuple extends Expression {
 
   @override
   List<Expression> get childNodes => expressions;
-
-  @override
-  bool contentEquals(Tuple other) => true;
 }

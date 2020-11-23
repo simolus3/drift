@@ -54,11 +54,6 @@ class UpdateStatement extends CrudStatement
         if (where != null) where,
       ];
 
-  @override
-  bool contentEquals(UpdateStatement other) {
-    return other.or == or;
-  }
-
   static FailureMode failureModeFromToken(TokenType token) {
     return _tokensToMode[token];
   }
@@ -83,7 +78,4 @@ class SetComponent extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => [column, expression];
-
-  @override
-  bool contentEquals(SetComponent other) => true;
 }
