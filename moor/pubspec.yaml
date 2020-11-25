@@ -12,7 +12,7 @@ dependencies:
   meta: ^1.3.0-nullsafety.6
   convert: ^3.0.0-nullsafety
   collection: ^1.15.0-nullsafety.5
-  synchronized: ^2.1.0
+  synchronized: ^3.0.0-nullsafety
   pedantic: ^1.10.0-nullsafety.3
   sqlite3: ^0.1.9-nullsafety
 
@@ -33,12 +33,6 @@ dependency_overrides:
     path: ../moor_generator
   sqlparser:
     path: ../sqlparser
-
-  synchronized:
-    git:
-      url: https://github.com/tekartik/synchronized.dart.git
-      ref: null_safety
-      path: synchronized
 
   # Remove after https://github.com/dart-lang/mockito/issues/297 is fixed
   mockito:
