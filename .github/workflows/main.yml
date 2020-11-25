@@ -1,7 +1,6 @@
 name: CI
 
-#on: [push, pull_request]
-on: push
+on: [push, pull_request]
 
 env:
   PUB_ENVIRONMENT: bot.github
