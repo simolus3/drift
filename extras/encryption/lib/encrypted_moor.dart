@@ -6,7 +6,6 @@ library encrypted_moor;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/backends.dart';
@@ -19,21 +18,25 @@ typedef DatabaseCreator = FutureOr<void> Function(File file);
 
 class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   @override
-  s.Database db;
+  late s.Database db;
+  bool _isOpen = false;
 
   final bool inDbFolder;
   final String path;
-  final String password;
+  final String? password;
 
   bool singleInstance;
-  final DatabaseCreator creator;
+  final DatabaseCreator? creator;
 
-  _SqfliteDelegate(this.inDbFolder, this.path,
-      {this.singleInstance, this.creator, this.password}) {
-    singleInstance ??= true;
-  }
+  _SqfliteDelegate(
+    this.inDbFolder,
+    this.path, {
+    this.singleInstance = true,
+    this.creator,
+    this.password,
+  });
 
-  DbVersionDelegate _delegate;
+  DbVersionDelegate? _delegate;
   @override
   DbVersionDelegate get versionDelegate {
     return _delegate ??= _SqfliteVersionDelegate(db);
@@ -44,7 +47,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       _SqfliteTransactionDelegate(this);
 
   @override
-  bool get isOpen => db != null;
+  bool get isOpen => _isOpen;
 
   @override
   Future<void> open(QueryExecutorUser user) async {
@@ -57,7 +60,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
 
     final file = File(resolvedPath);
     if (creator != null && !await file.exists()) {
-      await creator(file);
+      await creator!(file);
     }
 
     db = await s.openDatabase(
@@ -65,6 +68,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
       password: password,
       singleInstance: singleInstance,
     );
+    _isOpen = true;
   }
 
   @override
@@ -98,7 +102,6 @@ class _SqfliteTransactionDelegate extends SupportedTransactionDelegate {
   @override
   void startTransaction(Future<void> Function(QueryDelegate) run) {
     delegate.db.transaction((transaction) async {
-      assert(transaction != null);
       final executor = _SqfliteTransactionExecutor(transaction);
       await run(executor);
     }).catchError((_) {
@@ -131,23 +134,23 @@ mixin _SqfliteExecutor on QueryDelegate {
   }
 
   @override
-  Future<void> runCustom(String statement, List args) {
+  Future<void> runCustom(String statement, List<Object?> args) {
     return db.execute(statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     return db.rawInsert(statement, args);
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List args) async {
+  Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final result = await db.rawQuery(statement, args);
     return QueryResult.fromRows(result);
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     return db.rawUpdate(statement, args);
   }
 }
@@ -165,11 +168,11 @@ class EncryptedExecutor extends DelegatedDatabase {
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
   /// moor.
   EncryptedExecutor(
-      {@required String path,
-      @required String password,
-      bool logStatements,
-      bool singleInstance,
-      DatabaseCreator creator})
+      {required String path,
+      required String password,
+      bool? logStatements,
+      bool singleInstance = true,
+      DatabaseCreator? creator})
       : super(
             _SqfliteDelegate(false, path,
                 singleInstance: singleInstance,
@@ -189,11 +192,11 @@ class EncryptedExecutor extends DelegatedDatabase {
   /// [MigrationStrategy.onCreate] callback because it hasn't been created by
   /// moor.
   EncryptedExecutor.inDatabaseFolder(
-      {@required String path,
-      @required String password,
-      bool logStatements,
-      bool singleInstance,
-      DatabaseCreator creator})
+      {required String path,
+      required String password,
+      bool? logStatements,
+      bool singleInstance = true,
+      DatabaseCreator? creator})
       : super(
             _SqfliteDelegate(true, path,
                 singleInstance: singleInstance,
@@ -212,8 +215,8 @@ class EncryptedExecutor extends DelegatedDatabase {
   ///
   /// Note that this returns null until the moor database has been opened.
   /// A moor database is opened lazily when the first query runs.
-  s.Database get sqfliteDb {
+  s.Database? get sqfliteDb {
     final sqfliteDelegate = delegate as _SqfliteDelegate;
-    return sqfliteDelegate.db;
+    return sqfliteDelegate.isOpen ? sqfliteDelegate.db : null;
   }
 }
