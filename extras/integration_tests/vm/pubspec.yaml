@@ -17,4 +17,3 @@ dev_dependencies:
 dependency_overrides:
   moor:
     path: ../../../moor
-  convert: ^3.0.0-nullsafety
