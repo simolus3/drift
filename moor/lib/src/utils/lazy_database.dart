@@ -51,23 +51,25 @@ class LazyDatabase extends QueryExecutor {
       _delegate.runBatched(statements);
 
   @override
-  Future<void> runCustom(String statement, [List? args]) =>
+  Future<void> runCustom(String statement, [List<Object?>? args]) =>
       _delegate.runCustom(statement, args);
 
   @override
-  Future<int> runDelete(String statement, List args) =>
+  Future<int> runDelete(String statement, List<Object?> args) =>
       _delegate.runDelete(statement, args);
 
   @override
-  Future<int> runInsert(String statement, List args) =>
+  Future<int> runInsert(String statement, List<Object?> args) =>
       _delegate.runInsert(statement, args);
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) =>
-      _delegate.runSelect(statement, args);
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
+    return _delegate.runSelect(statement, args);
+  }
 
   @override
-  Future<int> runUpdate(String statement, List args) =>
+  Future<int> runUpdate(String statement, List<Object?> args) =>
       _delegate.runUpdate(statement, args);
 
   @override

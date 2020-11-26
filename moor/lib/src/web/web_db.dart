@@ -106,13 +106,13 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runCustom(String statement, List args) {
+  Future<void> runCustom(String statement, List<Object?> args) {
     _db.runWithArgs(statement, args);
     return Future.value();
   }
 
   @override
-  Future<int> runInsert(String statement, List args) async {
+  Future<int> runInsert(String statement, List<Object?> args) async {
     _db.runWithArgs(statement, args);
     final insertId = _db.lastInsertId();
     await _handlePotentialUpdate();
@@ -120,7 +120,7 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List args) {
+  Future<QueryResult> runSelect(String statement, List<Object?> args) {
     // todo at least for stream queries we should cache prepared statements.
     final stmt = _db.prepare(statement)..executeWith(args);
 
@@ -139,7 +139,7 @@ class _WebDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     _db.runWithArgs(statement, args);
     return _handlePotentialUpdate();
   }

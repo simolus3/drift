@@ -182,7 +182,7 @@ class _VmDelegate extends DatabaseDelegate {
     return Future.value();
   }
 
-  Future _runWithArgs(String statement, List<dynamic> args) async {
+  Future _runWithArgs(String statement, List<Object?> args) async {
     if (args.isEmpty) {
       _db.execute(statement);
     } else {
@@ -193,24 +193,24 @@ class _VmDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runCustom(String statement, List args) async {
+  Future<void> runCustom(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) async {
+  Future<int> runInsert(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
     return _db.lastInsertRowId;
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) async {
+  Future<int> runUpdate(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
     return _db.getUpdatedRows();
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List args) async {
+  Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _db.prepare(statement);
     final result = stmt.select(args);
     stmt.dispose();

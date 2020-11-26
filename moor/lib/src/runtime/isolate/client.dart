@@ -52,13 +52,14 @@ abstract class _BaseExecutor extends QueryExecutor {
         .request(_ExecuteBatchedStatement(statements, _executorId));
   }
 
-  Future<T> _runRequest<T>(_StatementMethod method, String sql, List? args) {
+  Future<T> _runRequest<T>(
+      _StatementMethod method, String sql, List<Object?>? args) {
     return client._channel
         .request<T>(_ExecuteQuery(method, sql, args ?? const [], _executorId));
   }
 
   @override
-  Future<void> runCustom(String statement, [List? args]) {
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
     return _runRequest(
       _StatementMethod.custom,
       statement,
@@ -67,22 +68,23 @@ abstract class _BaseExecutor extends QueryExecutor {
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
+  Future<int> runDelete(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.insert, statement, args);
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.select, statement, args);
   }
 }

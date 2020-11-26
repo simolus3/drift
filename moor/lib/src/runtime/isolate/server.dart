@@ -74,8 +74,8 @@ class _MoorServer {
     return await executor.ensureOpen(_dbUser);
   }
 
-  Future<dynamic> _runQuery(_StatementMethod method, String sql, List args,
-      int? transactionId) async {
+  Future<dynamic> _runQuery(_StatementMethod method, String sql,
+      List<Object?> args, int? transactionId) async {
     final executor = await _loadExecutor(transactionId);
 
     switch (method) {

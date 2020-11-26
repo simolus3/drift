@@ -26,15 +26,15 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
     }
   }
 
-  void _log(String sql, List<dynamic> args) {
+  void _log(String sql, List<Object?> args) {
     if (logStatements) {
       print('Moor: Sent $sql with args $args');
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(
-      String statement, List args) async {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) async {
     assert(_ensureOpenCalled);
     final result = await _synchronized(() {
       _log(statement, args);
@@ -44,7 +44,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -53,7 +53,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
+  Future<int> runDelete(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -62,7 +62,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -71,7 +71,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement, [List<dynamic>? args]) {
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       final resolvedArgs = args ?? const [];

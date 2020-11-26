@@ -21,20 +21,20 @@ class MockExecutorInternal extends _i1.Mock implements _i2.QueryExecutor {
   _i4.Future<bool> ensureOpen(_i2.QueryExecutorUser? user) =>
       super.noSuchMethod(
           Invocation.method(#ensureOpen, [user]), Future.value(false));
-  _i4.Future<List<Map<String, dynamic>>> runSelect(
-          String? statement, List<dynamic>? args) =>
+  _i4.Future<List<Map<String, Object?>>> runSelect(
+          String? statement, List<Object?>? args) =>
       super.noSuchMethod(Invocation.method(#runSelect, [statement, args]),
-          Future.value(<Map<String, dynamic>>[]));
-  _i4.Future<int> runInsert(String? statement, List<dynamic>? args) =>
+          Future.value(<Map<String, Object?>>[]));
+  _i4.Future<int> runInsert(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runInsert, [statement, args]), Future.value(0));
-  _i4.Future<int> runUpdate(String? statement, List<dynamic>? args) =>
+  _i4.Future<int> runUpdate(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runUpdate, [statement, args]), Future.value(0));
-  _i4.Future<int> runDelete(String? statement, List<dynamic>? args) =>
+  _i4.Future<int> runDelete(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runDelete, [statement, args]), Future.value(0));
-  _i4.Future<void> runCustom(String? statement, [List<dynamic>? args]) =>
+  _i4.Future<void> runCustom(String? statement, [List<Object?>? args]) =>
       super.noSuchMethod(
           Invocation.method(#runCustom, [statement, args]), Future.value(null));
   _i4.Future<void> runBatched(_i2.BatchedStatements? statements) =>
@@ -62,20 +62,20 @@ class MockTransactionsInternal extends _i1.Mock
   _i4.Future<bool> ensureOpen(_i2.QueryExecutorUser? user) =>
       super.noSuchMethod(
           Invocation.method(#ensureOpen, [user]), Future.value(false));
-  _i4.Future<List<Map<String, dynamic>>> runSelect(
-          String? statement, List<dynamic>? args) =>
+  _i4.Future<List<Map<String, Object?>>> runSelect(
+          String? statement, List<Object?>? args) =>
       super.noSuchMethod(Invocation.method(#runSelect, [statement, args]),
-          Future.value(<Map<String, dynamic>>[]));
-  _i4.Future<int> runInsert(String? statement, List<dynamic>? args) =>
+          Future.value(<Map<String, Object?>>[]));
+  _i4.Future<int> runInsert(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runInsert, [statement, args]), Future.value(0));
-  _i4.Future<int> runUpdate(String? statement, List<dynamic>? args) =>
+  _i4.Future<int> runUpdate(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runUpdate, [statement, args]), Future.value(0));
-  _i4.Future<int> runDelete(String? statement, List<dynamic>? args) =>
+  _i4.Future<int> runDelete(String? statement, List<Object?>? args) =>
       super.noSuchMethod(
           Invocation.method(#runDelete, [statement, args]), Future.value(0));
-  _i4.Future<void> runCustom(String? statement, [List<dynamic>? args]) =>
+  _i4.Future<void> runCustom(String? statement, [List<Object?>? args]) =>
       super.noSuchMethod(
           Invocation.method(#runCustom, [statement, args]), Future.value(null));
   _i4.Future<void> runBatched(_i2.BatchedStatements? statements) =>

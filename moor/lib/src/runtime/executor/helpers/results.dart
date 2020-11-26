@@ -5,7 +5,7 @@ class QueryResult {
 
   /// The data returned by the select statement. Each list represents a row,
   /// which has the data in the same order as [columnNames].
-  final List<List<dynamic>> rows;
+  final List<List<Object?>> rows;
 
   final Map<String, int> _columnIndexes;
 

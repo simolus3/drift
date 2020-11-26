@@ -1,5 +1,6 @@
 ## unreleased (breaking - 4.0)
 
+- __Breaking__: Changed the `args` parameter in `QueryExecutor` methods to `List<Object?>`
 - __Breaking__: Removed the second type parameter from `TypedResult.read`
 - Support null safety
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`

@@ -23,23 +23,23 @@ abstract class QueryExecutor {
 
   /// Runs a select statement with the given variables and returns the raw
   /// results.
-  Future<List<Map<String, dynamic>>> runSelect(
-      String statement, List<dynamic> args);
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args);
 
   /// Runs an insert statement with the given variables. Returns the row id or
   /// the auto_increment id of the inserted row.
-  Future<int> runInsert(String statement, List<dynamic> args);
+  Future<int> runInsert(String statement, List<Object?> args);
 
   /// Runs an update statement with the given variables and returns how many
   /// rows where affected.
-  Future<int> runUpdate(String statement, List<dynamic> args);
+  Future<int> runUpdate(String statement, List<Object?> args);
 
   /// Runs an delete statement and returns how many rows where affected.
-  Future<int> runDelete(String statement, List<dynamic> args);
+  Future<int> runDelete(String statement, List<Object?> args);
 
   /// Runs a custom SQL statement without any variables. The result of that
   /// statement will be ignored.
-  Future<void> runCustom(String statement, [List<dynamic>? args]);
+  Future<void> runCustom(String statement, [List<Object?>? args]);
 
   /// Prepares and runs [statements].
   ///
@@ -119,7 +119,7 @@ class ArgumentsForBatchedStatement {
   final int statementIndex;
 
   /// Bound arguments for the referenced statement.
-  final List<dynamic> arguments;
+  final List<Object?> arguments;
 
   /// Used internally by moor.
   ArgumentsForBatchedStatement(this.statementIndex, this.arguments);

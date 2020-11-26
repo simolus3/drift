@@ -19,27 +19,28 @@ class NullExecutor implements QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement, [List? args]) {
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
     throw UnsupportedError('runCustom');
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
+  Future<int> runDelete(String statement, List<Object?> args) {
     throw UnsupportedError('runDelete');
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     throw UnsupportedError('runInsert');
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
     throw UnsupportedError('runSelect');
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     throw UnsupportedError('runUpdate');
   }
 
