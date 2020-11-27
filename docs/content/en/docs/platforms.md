@@ -100,7 +100,7 @@ void main() {
 
 DynamicLibrary _openOnLinux() {
   final script = File(Platform.script.toFilePath());
-  final libraryNextToScript = File('${script.path}/sqlite3.so');
+  final libraryNextToScript = File('${script.parent.path}/sqlite3.so');
   return DynamicLibrary.open(libraryNextToScript.path);
 }
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`
