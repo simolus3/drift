@@ -93,4 +93,4 @@ To use this implementation on browsers that support it, replace `WebDatabase(nam
 WebDatabase.withStorage(MoorWebStorage.indexedDbIfSupported(name))
 ```
 
-Moor will automatically migrate data from local storage to `IndexeDb` when it is available.
+Moor will automatically migrate data from local storage to `IndexedDb` when it is available.
