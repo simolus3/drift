@@ -40,9 +40,10 @@ abstract class Table {
   /// ```
   /// The getter must return a set literal using the `=>` syntax so that the
   /// moor generator can understand the code.
-  /// Also, please not that it's an error to have a
+  /// Also, please note that it's an error to have an
   /// [IntColumnBuilder.autoIncrement] column and a custom primary key.
-  /// Writing such table in sql will throw at runtime.
+  /// As an auto-incremented `IntColumn` is recognized by moor to be the
+  /// primary key, doing so will result in an exception thrown at runtime.
   @visibleForOverriding
   Set<Column> get primaryKey => null;
 
@@ -65,7 +66,7 @@ abstract class Table {
   /// Creates a column to store an `enum` class [T].
   ///
   /// In the database, the column will be represented as an integer
-  /// corresponding to the enums index. Note that this can invalidate your data
+  /// corresponding to the enum's index. Note that this can invalidate your data
   /// if you add another value to the enum class.
   @protected
   IntColumnBuilder intEnum<T>() => _isGenerated();
