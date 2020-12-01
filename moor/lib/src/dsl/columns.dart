@@ -203,11 +203,13 @@ class RealColumnBuilder
 class TextColumnBuilder
     extends ColumnBuilder<TextColumnBuilder, TextColumn, String?> {
   /// Puts a constraint on the minimum and maximum length of text that can be
-  /// stored in this column (will be validated whenever this column is updated
-  /// or a value is inserted). If [min] is not null and one tries to write a
-  /// string so that [String.length] is smaller than [min], the query will throw
-  /// an exception when executed and no data will be written. The same applies
-  /// for [max].
+  /// stored in this column.
+  ///
+  /// Both [min] and [max] are inclusive. This constraint will be validated in
+  /// Dart, it doesn't have an impact on the database schema. If [min] is not
+  /// null and one tries to write a string which [String.length] is
+  /// _strictly less_ than [min], an exception will be thrown. Similarly, you
+  /// can't insert strings with a length _strictly greater_ than [max].
   TextColumnBuilder withLength({int? min, int? max}) => _isGenerated();
 }
 
