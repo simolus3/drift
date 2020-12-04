@@ -1366,6 +1366,197 @@ class Email extends Table
   String get moduleAndArgs => 'fts5(sender, title, body)';
 }
 
+class WeirdData extends DataClass implements Insertable<WeirdData> {
+  final int sqlClass;
+  final String textColumn;
+  WeirdData({required this.sqlClass, required this.textColumn});
+  factory WeirdData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return WeirdData(
+      sqlClass:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}class'])!,
+      textColumn:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
+    );
+  }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['class'] = Variable<int>(sqlClass);
+    map['text'] = Variable<String>(textColumn);
+    return map;
+  }
+
+  WeirdTableCompanion toCompanion(bool nullToAbsent) {
+    return WeirdTableCompanion(
+      sqlClass: Value(sqlClass),
+      textColumn: Value(textColumn),
+    );
+  }
+
+  factory WeirdData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return WeirdData(
+      sqlClass: serializer.fromJson<int>(json['class']),
+      textColumn: serializer.fromJson<String>(json['text']),
+    );
+  }
+  factory WeirdData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      WeirdData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'class': serializer.toJson<int>(sqlClass),
+      'text': serializer.toJson<String>(textColumn),
+    };
+  }
+
+  WeirdData copyWith({int? sqlClass, String? textColumn}) => WeirdData(
+        sqlClass: sqlClass ?? this.sqlClass,
+        textColumn: textColumn ?? this.textColumn,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('WeirdData(')
+          ..write('sqlClass: $sqlClass, ')
+          ..write('textColumn: $textColumn')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(sqlClass.hashCode, textColumn.hashCode));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is WeirdData &&
+          other.sqlClass == this.sqlClass &&
+          other.textColumn == this.textColumn);
+}
+
+class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
+  final Value<int> sqlClass;
+  final Value<String> textColumn;
+  const WeirdTableCompanion({
+    this.sqlClass = const Value.absent(),
+    this.textColumn = const Value.absent(),
+  });
+  WeirdTableCompanion.insert({
+    required int sqlClass,
+    required String textColumn,
+  })   : sqlClass = Value(sqlClass),
+        textColumn = Value(textColumn);
+  static Insertable<WeirdData> custom({
+    Expression<int>? sqlClass,
+    Expression<String>? textColumn,
+  }) {
+    return RawValuesInsertable({
+      if (sqlClass != null) 'class': sqlClass,
+      if (textColumn != null) 'text': textColumn,
+    });
+  }
+
+  WeirdTableCompanion copyWith(
+      {Value<int>? sqlClass, Value<String>? textColumn}) {
+    return WeirdTableCompanion(
+      sqlClass: sqlClass ?? this.sqlClass,
+      textColumn: textColumn ?? this.textColumn,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sqlClass.present) {
+      map['class'] = Variable<int>(sqlClass.value);
+    }
+    if (textColumn.present) {
+      map['text'] = Variable<String>(textColumn.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WeirdTableCompanion(')
+          ..write('sqlClass: $sqlClass, ')
+          ..write('textColumn: $textColumn')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
+  final GeneratedDatabase _db;
+  final String? _alias;
+  WeirdTable(this._db, [this._alias]);
+  final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
+  late final GeneratedIntColumn sqlClass = _constructSqlClass();
+  GeneratedIntColumn _constructSqlClass() {
+    return GeneratedIntColumn('class', $tableName, false,
+        $customConstraints: 'NOT NULL');
+  }
+
+  final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
+  late final GeneratedTextColumn textColumn = _constructTextColumn();
+  GeneratedTextColumn _constructTextColumn() {
+    return GeneratedTextColumn('text', $tableName, false,
+        $customConstraints: 'NOT NULL');
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [sqlClass, textColumn];
+  @override
+  WeirdTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'Expression';
+  @override
+  final String actualTableName = 'Expression';
+  @override
+  VerificationContext validateIntegrity(Insertable<WeirdData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('class')) {
+      context.handle(_sqlClassMeta,
+          sqlClass.isAcceptableOrUnknown(data['class']!, _sqlClassMeta));
+    } else if (isInserting) {
+      context.missing(_sqlClassMeta);
+    }
+    if (data.containsKey('text')) {
+      context.handle(_textColumnMeta,
+          textColumn.isAcceptableOrUnknown(data['text']!, _textColumnMeta));
+    } else if (isInserting) {
+      context.missing(_textColumnMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return WeirdData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  WeirdTable createAlias(String alias) {
+    return WeirdTable(_db, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
@@ -1380,6 +1571,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);
   late final Email email = Email(this);
+  late final WeirdTable weirdTable = WeirdTable(this);
   Selectable<Config> readConfig(String var1) {
     return customSelect(
         'SELECT\n  config_key AS ck,\n  config_value as cf,\n  sync_state AS cs1,\n  sync_state_implicit AS cs2\nFROM config WHERE config_key = ?',
@@ -1532,7 +1724,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         noIds,
         withConstraints,
         mytable,
-        email
+        email,
+        weirdTable
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(

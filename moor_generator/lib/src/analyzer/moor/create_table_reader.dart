@@ -45,6 +45,7 @@ class CreateTableReader {
     for (final column in table.resultColumns) {
       final features = <ColumnFeature>[];
       final sqlName = column.name;
+      String overriddenDartName;
       final dartName = ReCase(sqlName).camelCase;
       final constraintWriter = StringBuffer();
       final moorType = mapper.resolvedToMoor(column.type);
@@ -122,6 +123,11 @@ class CreateTableReader {
           // those are moor-specific as well, don't write them
           continue;
         }
+        if (constraint is MoorDartName) {
+          overriddenDartName = constraint.dartName;
+          // ditto
+          continue;
+        }
 
         if (constraintWriter.isNotEmpty) {
           constraintWriter.write(' ');
@@ -141,7 +147,7 @@ class CreateTableReader {
       final parsed = MoorColumn(
         type: moorType,
         nullable: column.type.nullable,
-        dartGetterName: dartName,
+        dartGetterName: overriddenDartName ?? dartName,
         name: ColumnName.implicitly(sqlName),
         features: features,
         customConstraints: constraintWriter.toString(),
@@ -155,9 +161,23 @@ class CreateTableReader {
     }
 
     final tableName = table.name;
-    final dartTableName = ReCase(tableName).pascalCase;
-    final dataClassName = stmt.overriddenDataClassName ??
-        dataClassNameForClassName(dartTableName);
+    String dartTableName, dataClassName;
+
+    final overriddenNames = stmt.overriddenDataClassName;
+    if (overriddenNames != null) {
+      if (overriddenNames.contains('/')) {
+        // Feature to also specify the generated table class. This is extremely
+        // rarely used if there's a conflicting class from moor. See #932
+        final names = overriddenNames.split('/');
+        dataClassName = names[0];
+        dartTableName = names[1];
+      } else {
+        dataClassName = overriddenNames;
+      }
+    }
+
+    dartTableName ??= ReCase(tableName).pascalCase;
+    dataClassName ??= dataClassNameForClassName(dartTableName);
 
     final constraints = table.tableConstraints.map((c) => c.span.text).toList();
 

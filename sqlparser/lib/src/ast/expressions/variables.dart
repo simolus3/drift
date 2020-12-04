@@ -23,11 +23,6 @@ class NumberedVariable extends Expression with Variable {
 
   @override
   Iterable<AstNode> get childNodes => const [];
-
-  @override
-  bool contentEquals(NumberedVariable other) {
-    return other.explicitIndex == explicitIndex;
-  }
 }
 
 class ColonNamedVariable extends Expression with Variable {
@@ -46,9 +41,4 @@ class ColonNamedVariable extends Expression with Variable {
 
   @override
   Iterable<AstNode> get childNodes => [];
-
-  @override
-  bool contentEquals(ColonNamedVariable other) {
-    return other.name == name;
-  }
 }

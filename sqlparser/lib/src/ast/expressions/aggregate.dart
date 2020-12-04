@@ -62,11 +62,6 @@ class AggregateExpression extends Expression
       if (windowDefinition != null) windowDefinition,
     ];
   }
-
-  @override
-  bool contentEquals(AggregateExpression other) {
-    return other.name == name && other.windowName == windowName;
-  }
 }
 
 /// A window declaration that appears in a `SELECT` statement like
@@ -107,11 +102,6 @@ class WindowDefinition extends AstNode {
   @override
   Iterable<AstNode> get childNodes =>
       [...partitionBy, if (orderBy != null) orderBy, frameSpec];
-
-  @override
-  bool contentEquals(WindowDefinition other) {
-    return other.baseWindowName == baseWindowName;
-  }
 }
 
 class FrameSpec extends AstNode {
@@ -148,14 +138,6 @@ class FrameSpec extends AstNode {
         if (start.isExpressionOffset) start.offset,
         if (end.isExpressionOffset) end.offset,
       ];
-
-  @override
-  bool contentEquals(FrameSpec other) {
-    return other.type == type &&
-        other.excludeMode == excludeMode &&
-        other.start == start &&
-        other.end == end;
-  }
 }
 
 /// Defines how a [FrameBoundary] count rows or groups. See

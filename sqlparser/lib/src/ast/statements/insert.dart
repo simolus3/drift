@@ -56,11 +56,6 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
         source,
         if (upsert != null) upsert
       ];
-
-  @override
-  bool contentEquals(InsertStatement other) {
-    return other.mode == mode && other.source.runtimeType == source.runtimeType;
-  }
 }
 
 abstract class InsertSource extends AstNode {
@@ -95,9 +90,6 @@ class ValuesSource extends InsertSource {
   }
 
   @override
-  bool contentEquals(ValuesSource other) => true;
-
-  @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     transformer.transformChildren(values, this, arg);
   }
@@ -118,9 +110,6 @@ class SelectInsertSource extends InsertSource {
   }
 
   @override
-  bool contentEquals(SelectInsertSource other) => true;
-
-  @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     stmt = transformer.transformChild(stmt, this, arg);
   }
@@ -135,9 +124,6 @@ class DefaultValues extends InsertSource {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitDefaultValues(this, arg);
   }
-
-  @override
-  bool contentEquals(DefaultValues other) => true;
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}

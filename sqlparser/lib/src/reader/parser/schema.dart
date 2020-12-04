@@ -500,6 +500,14 @@ mixin SchemaParser on ParserBase {
         ..json = jsonToken
         ..key = keyToken;
     }
+    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+      final asToken = _previous;
+      final nameToken = _consumeIdentifier('Expected Dart getter name');
+
+      return MoorDartName(resolvedName, nameToken)
+        ..setSpan(first, _previous)
+        ..as = asToken;
+    }
 
     // no known column constraint matched. If orNull is set and we're not
     // guaranteed to be in a constraint clause (started with CONSTRAINT), we

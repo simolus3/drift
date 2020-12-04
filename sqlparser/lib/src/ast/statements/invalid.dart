@@ -11,8 +11,5 @@ class InvalidStatement extends Statement {
   Iterable<AstNode> get childNodes => const Iterable.empty();
 
   @override
-  bool contentEquals(InvalidStatement other) => true;
-
-  @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }

@@ -40,11 +40,6 @@ class FunctionExpression extends Expression
   Iterable<AstNode> get childNodes {
     return [parameters];
   }
-
-  @override
-  bool contentEquals(FunctionExpression other) {
-    return other.name == name;
-  }
 }
 
 /// Marker interface for anything that can be inside the parentheses after a
@@ -67,11 +62,6 @@ class StarFunctionParameter extends FunctionParameters {
 
   @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
-
-  @override
-  bool contentEquals(StarFunctionParameter other) {
-    return true;
-  }
 }
 
 class ExprFunctionParameters extends FunctionParameters {
@@ -92,9 +82,4 @@ class ExprFunctionParameters extends FunctionParameters {
 
   @override
   List<AstNode> get childNodes => parameters;
-
-  @override
-  bool contentEquals(ExprFunctionParameters other) {
-    return other.distinct == distinct;
-  }
 }

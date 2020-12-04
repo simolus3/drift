@@ -19,9 +19,6 @@ class SubQuery extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [select];
-
-  @override
-  bool contentEquals(SubQuery other) => true;
 }
 
 class ExistsExpression extends Expression {
@@ -41,7 +38,4 @@ class ExistsExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes => [select];
-
-  @override
-  bool contentEquals(ExistsExpression other) => true;
 }

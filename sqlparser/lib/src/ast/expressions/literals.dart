@@ -30,9 +30,6 @@ class NullLiteral<T> extends Literal {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitNullLiteral(this, arg);
   }
-
-  @override
-  bool contentEquals(NullLiteral other) => true;
 }
 
 class NumericLiteral extends Literal<num> {
@@ -47,9 +44,6 @@ class NumericLiteral extends Literal<num> {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitNumericLiteral(this, arg);
   }
-
-  @override
-  bool contentEquals(NumericLiteral other) => other.value == value;
 }
 
 class BooleanLiteral extends Literal<bool> {
@@ -66,11 +60,6 @@ class BooleanLiteral extends Literal<bool> {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitBooleanLiteral(this, arg);
-  }
-
-  @override
-  bool contentEquals(BooleanLiteral other) {
-    return other.value == value;
   }
 }
 
@@ -91,11 +80,6 @@ class StringLiteral extends Literal {
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitStringLiteral(this, arg);
   }
-
-  @override
-  bool contentEquals(StringLiteral other) {
-    return other.isBinary == isBinary && other.value == value;
-  }
 }
 
 enum TimeConstantKind { currentTime, currentDate, currentTimestamp }
@@ -108,11 +92,6 @@ class TimeConstantLiteral extends Literal {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitTimeConstantLiteral(this, arg);
-  }
-
-  @override
-  bool contentEquals(TimeConstantLiteral other) {
-    return other.kind == kind;
   }
 
   @override

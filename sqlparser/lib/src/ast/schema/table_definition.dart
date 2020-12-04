@@ -35,11 +35,6 @@ class ForeignKeyClause extends AstNode {
         ...columnNames,
         if (deferrable != null) deferrable,
       ];
-
-  @override
-  bool contentEquals(ForeignKeyClause other) {
-    return other.onDelete == onDelete && other.onUpdate == onUpdate;
-  }
 }
 
 enum InitialDeferrableMode {
@@ -70,11 +65,6 @@ class DeferrableClause extends AstNode {
   Iterable<AstNode> get childNodes => const Iterable.empty();
 
   @override
-  bool contentEquals(DeferrableClause other) {
-    return other.not == not && other.declaredInitially == declaredInitially;
-  }
-
-  @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
@@ -89,13 +79,7 @@ abstract class TableConstraint extends AstNode {
     return visitor.visitTableConstraint(this, arg);
   }
 
-  @override
-  bool contentEquals(TableConstraint other) {
-    return other.name == name && _constraintEquals(other);
-  }
-
-  @visibleForOverriding
-  bool _constraintEquals(covariant TableConstraint other);
+  bool constraintEquals(covariant TableConstraint other);
 }
 
 class KeyClause extends TableConstraint {
@@ -112,7 +96,7 @@ class KeyClause extends TableConstraint {
       : super(name);
 
   @override
-  bool _constraintEquals(KeyClause other) {
+  bool constraintEquals(KeyClause other) {
     return other.isPrimaryKey == isPrimaryKey && other.onConflict == onConflict;
   }
 
@@ -131,7 +115,7 @@ class CheckTable extends TableConstraint {
   CheckTable(String name, this.expression) : super(name);
 
   @override
-  bool _constraintEquals(CheckTable other) => true;
+  bool constraintEquals(CheckTable other) => true;
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
@@ -151,7 +135,7 @@ class ForeignKeyTableConstraint extends TableConstraint {
       : super(name);
 
   @override
-  bool _constraintEquals(ForeignKeyTableConstraint other) => true;
+  bool constraintEquals(ForeignKeyTableConstraint other) => true;
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

@@ -36,11 +36,6 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   @override
   Iterable<AstNode> get childNodes =>
       [statement, if (parameters != null) ...parameters];
-
-  @override
-  bool contentEquals(DeclaredStatement other) {
-    return other.identifier == identifier && other.as == as;
-  }
 }
 
 /// How a statement was declared in a moor file.
@@ -123,11 +118,6 @@ class VariableTypeHint extends StatementParameter {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     variable = transformer.transformChild(variable, this, arg);
   }
-
-  @override
-  bool contentEquals(VariableTypeHint other) {
-    return other.typeName == typeName;
-  }
 }
 
 /// Set a default value for a dart placeholder.
@@ -149,11 +139,6 @@ class DartPlaceholderDefaultValue extends StatementParameter {
 
   @override
   Iterable<AstNode> get childNodes => [defaultValue];
-
-  @override
-  bool contentEquals(DartPlaceholderDefaultValue other) {
-    return other.variableName == variableName;
-  }
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {

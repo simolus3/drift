@@ -18,9 +18,4 @@ class ImportStatement extends Statement implements PartOfMoorFile {
 
   @override
   final Iterable<AstNode> childNodes = const [];
-
-  @override
-  bool contentEquals(ImportStatement other) {
-    return other.importedFile == importedFile;
-  }
 }

@@ -56,11 +56,6 @@ class TableReference extends TableOrSubquery
   }
 
   @override
-  bool contentEquals(TableReference other) {
-    return other.tableName == tableName && other.as == as;
-  }
-
-  @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 
   @override
@@ -93,11 +88,6 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     statement = transformer.transformChild(statement, this, arg);
   }
-
-  @override
-  bool contentEquals(SelectStatementAsSource other) {
-    return other.as == as;
-  }
 }
 
 /// https://www.sqlite.org/syntax/join-clause.html
@@ -120,11 +110,6 @@ class JoinClause extends Queryable {
 
   @override
   Iterable<AstNode> get childNodes => [primary, ...joins];
-
-  @override
-  bool contentEquals(JoinClause other) {
-    return true; // equality is defined by child nodes
-  }
 }
 
 enum JoinOperator {
@@ -154,27 +139,6 @@ class Join extends AstNode {
       query,
       if (constraint is OnConstraint) (constraint as OnConstraint).expression
     ];
-  }
-
-  @override
-  bool contentEquals(Join other) {
-    if (other.natural != natural || other.operator != operator) {
-      return false;
-    }
-
-    if (constraint is OnConstraint) {
-      return other.constraint is OnConstraint;
-    } else if (constraint is UsingConstraint) {
-      final typedConstraint = constraint as UsingConstraint;
-      if (other.constraint is! UsingConstraint) {
-        return false;
-      }
-      final typedOther = other.constraint as UsingConstraint;
-
-      return const ListEquality()
-          .equals(typedConstraint.columnNames, typedOther.columnNames);
-    }
-    return true;
   }
 
   @override
@@ -238,9 +202,4 @@ class TableValuedFunction extends Queryable
 
   @override
   bool get visibleToChildren => false;
-
-  @override
-  bool contentEquals(TableValuedFunction other) {
-    return other.name == name;
-  }
 }

@@ -22,9 +22,6 @@ class WithClause extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => ctes;
-
-  @override
-  bool contentEquals(WithClause other) => other.recursive == recursive;
 }
 
 class CommonTableExpression extends AstNode with ResultSet {
@@ -56,11 +53,6 @@ class CommonTableExpression extends AstNode with ResultSet {
 
   @override
   Iterable<AstNode> get childNodes => [as];
-
-  @override
-  bool contentEquals(CommonTableExpression other) {
-    return other.cteTableName == cteTableName;
-  }
 
   @override
   List<Column> get resolvedColumns {

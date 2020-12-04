@@ -20,7 +20,4 @@ class Block extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes => statements;
-
-  @override
-  bool contentEquals(Block other) => true;
 }

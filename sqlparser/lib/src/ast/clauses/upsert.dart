@@ -29,9 +29,6 @@ class UpsertClause extends AstNode implements HasWhereClause {
       action,
     ];
   }
-
-  @override
-  bool contentEquals(UpsertClause other) => true;
 }
 
 abstract class UpsertAction extends AstNode {}
@@ -47,9 +44,6 @@ class DoNothing extends UpsertAction {
 
   @override
   Iterable<AstNode> get childNodes => const [];
-
-  @override
-  bool contentEquals(DoNothing other) => true;
 }
 
 class DoUpdate extends UpsertAction implements HasWhereClause {
@@ -72,7 +66,4 @@ class DoUpdate extends UpsertAction implements HasWhereClause {
 
   @override
   Iterable<AstNode> get childNodes => [...set, if (where != null) where];
-
-  @override
-  bool contentEquals(DoUpdate other) => true;
 }

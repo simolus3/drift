@@ -26,11 +26,6 @@ class OrderBy extends AstNode implements OrderByBase {
 
   @override
   Iterable<AstNode> get childNodes => terms;
-
-  @override
-  bool contentEquals(OrderBy other) {
-    return true;
-  }
 }
 
 enum OrderingMode { ascending, descending }
@@ -59,9 +54,4 @@ class OrderingTerm extends AstNode implements OrderingTermBase {
 
   @override
   Iterable<AstNode> get childNodes => [expression];
-
-  @override
-  bool contentEquals(OrderingTerm other) {
-    return other.orderingMode == orderingMode && other.nulls == nulls;
-  }
 }

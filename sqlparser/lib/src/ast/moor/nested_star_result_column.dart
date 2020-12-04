@@ -18,11 +18,6 @@ class NestedStarResultColumn extends ResultColumn {
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 
   @override
-  bool contentEquals(NestedStarResultColumn other) {
-    return other.tableName == tableName;
-  }
-
-  @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitMoorNestedStarResultColumn(this, arg);
   }
