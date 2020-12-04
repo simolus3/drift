@@ -104,6 +104,36 @@ void main() {
     expect(item.category, isNull);
   });
 
+  test('rename tables', () async {
+    // Create todos table with old name
+    final executor = VmDatabase.memory(setup: (db) {
+      db.execute('''
+        CREATE TABLE todos_old_name (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          target_date INTEGER NOT NULL,
+          category INTEGER NULL
+        );
+      ''');
+
+      db.execute('INSERT INTO todos_old_name (title, content, target_date) '
+          "VALUES ('title', 'content', 0)");
+    });
+
+    final db = TodoDb(executor);
+    db.migration = MigrationStrategy(
+      onCreate: (m) async {
+        await m.renameTable(db.todosTable, 'todos_old_name');
+      },
+    );
+
+    // basic check to ensure we can query the table by its new name and that
+    // we have all the necessary data.
+    final entry = await db.select(db.todosTable).getSingle();
+    expect(entry.title, 'title');
+  });
+
   test('add columns with default value', () async {
     final executor = VmDatabase.memory(setup: (db) {
       // Create todos table without content column

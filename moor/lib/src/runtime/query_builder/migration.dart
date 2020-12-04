@@ -367,6 +367,19 @@ class Migrator {
     return _issueCustomQuery(context.sql);
   }
 
+  /// Changes the [table] name from [oldName] to the current
+  /// [TableInfo.actualTableName].
+  ///
+  /// After renaming a table in moor or Dart and re-running the generator, you
+  /// can use [renameTable] in a migration step to rename the table in existing
+  /// databases.
+  Future<void> renameTable(TableInfo table, String oldName) async {
+    final context = _createContext();
+    context.buffer.write('ALTER TABLE ${escapeIfNeeded(oldName)} '
+        'RENAME TO ${escapeIfNeeded(table.actualTableName)};');
+    return _issueCustomQuery(context.sql);
+  }
+
   /// Executes the custom query.
   @Deprecated('Use customStatement in the database class')
   Future<void> issueCustomQuery(String sql, [List<dynamic>? args]) {

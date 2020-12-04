@@ -7,6 +7,7 @@
 - Added extensions for `isNull` and `isNotNull`
 - Support creating a `VmDatabase` from a raw sqlite3 `Database` via `VmDatabase.opened`
 - New `named_parameters` build option to generate named parameters for named variables in moor files
+- Added `Migrator.renameTable` to rename tables
 
 ## 3.4.0
 
