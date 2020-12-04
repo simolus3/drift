@@ -8,24 +8,24 @@ abstract class Column<T> extends Expression<T> {
 }
 
 /// A column that stores int values.
-abstract class IntColumn extends Column<int> {}
+abstract class IntColumn extends Column<int?> {}
 
 /// A column that stores boolean values. Booleans will be stored as an integer
 /// that can either be 0 (false) or 1 (true).
-abstract class BoolColumn extends Column<bool> {}
+abstract class BoolColumn extends Column<bool?> {}
 
 /// A column that stores text.
-abstract class TextColumn extends Column<String> {}
+abstract class TextColumn extends Column<String?> {}
 
 /// A column that stores a [DateTime]. Times will be stored as unix timestamp
 /// and will thus have a second accuracy.
-abstract class DateTimeColumn extends Column<DateTime> {}
+abstract class DateTimeColumn extends Column<DateTime?> {}
 
 /// A column that stores arbitrary blobs of data as a [Uint8List].
-abstract class BlobColumn extends Column<Uint8List> {}
+abstract class BlobColumn extends Column<Uint8List?> {}
 
 /// A column that stores floating point numeric values.
-abstract class RealColumn extends Column<double> {}
+abstract class RealColumn extends Column<double?> {}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
@@ -173,7 +173,8 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
 /// for details.
-class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, int> {
+class IntColumnBuilder
+    extends ColumnBuilder<IntColumnBuilder, IntColumn, int?> {
   /// Enables auto-increment for this column, which will also make this column
   /// the primary key of the table.
   ///
@@ -185,35 +186,37 @@ class IntColumnBuilder extends ColumnBuilder<IntColumnBuilder, IntColumn, int> {
 /// Tells the generator to build an [BoolColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class BoolColumnBuilder
-    extends ColumnBuilder<BoolColumnBuilder, BoolColumn, bool> {}
+    extends ColumnBuilder<BoolColumnBuilder, BoolColumn, bool?> {}
 
 /// Tells the generator to build an [BlobColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class BlobColumnBuilder
-    extends ColumnBuilder<BlobColumnBuilder, BlobColumn, Uint8List> {}
+    extends ColumnBuilder<BlobColumnBuilder, BlobColumn, Uint8List?> {}
 
 /// Tells the generator to build an [RealColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class RealColumnBuilder
-    extends ColumnBuilder<RealColumnBuilder, RealColumn, num> {}
+    extends ColumnBuilder<RealColumnBuilder, RealColumn, num?> {}
 
 /// Tells the generator to build an [TextColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class TextColumnBuilder
-    extends ColumnBuilder<TextColumnBuilder, TextColumn, String> {
+    extends ColumnBuilder<TextColumnBuilder, TextColumn, String?> {
   /// Puts a constraint on the minimum and maximum length of text that can be
-  /// stored in this column (will be validated whenever this column is updated
-  /// or a value is inserted). If [min] is not null and one tries to write a
-  /// string so that [String.length] is smaller than [min], the query will throw
-  /// an exception when executed and no data will be written. The same applies
-  /// for [max].
-  TextColumnBuilder withLength({int min, int max}) => _isGenerated();
+  /// stored in this column.
+  ///
+  /// Both [min] and [max] are inclusive. This constraint will be validated in
+  /// Dart, it doesn't have an impact on the database schema. If [min] is not
+  /// null and one tries to write a string which [String.length] is
+  /// _strictly less_ than [min], an exception will be thrown. Similarly, you
+  /// can't insert strings with a length _strictly greater_ than [max].
+  TextColumnBuilder withLength({int? min, int? max}) => _isGenerated();
 }
 
 /// Tells the generator to build an [DateTimeColumn]. See the docs at
 /// [ColumnBuilder] for details.
 class DateTimeColumnBuilder
-    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn, DateTime> {}
+    extends ColumnBuilder<DateTimeColumnBuilder, DateTimeColumn, DateTime?> {}
 
 /// Annotation to use on column getters inside of a [Table] to define the name
 /// of the column in the json used by [DataClass.toJson].

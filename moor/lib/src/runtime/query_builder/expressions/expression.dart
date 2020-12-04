@@ -264,7 +264,7 @@ class _Comparison extends _InfixOperator<bool> {
   final _ComparisonOperator op;
 
   @override
-  String get operator => _operatorNames[op];
+  String get operator => _operatorNames[op]!;
 
   @override
   Precedence get precedence {

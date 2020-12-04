@@ -84,7 +84,8 @@ class QueryWriter {
   void _writeMappingLambda() {
     if (_select.resultSet.singleColumn) {
       final column = _select.resultSet.columns.single;
-      _buffer.write('(QueryRow row) => ${readingCode(column)}');
+      _buffer.write('(QueryRow row) => '
+          '${readingCode(column, scope.generationOptions)}');
     } else if (_select.resultSet.matchingTable != null) {
       // note that, even if the result set has a matching table, we can't just
       // use the mapFromRow() function of that table - the column names might
@@ -118,7 +119,8 @@ class QueryWriter {
 
       for (final column in _select.resultSet.columns) {
         final fieldName = _select.resultSet.dartNameFor(column);
-        _buffer.write('$fieldName: ${readingCode(column)},');
+        _buffer.write(
+            '$fieldName: ${readingCode(column, scope.generationOptions)},');
       }
       for (final nested in _select.resultSet.nestedResults) {
         final prefix = _select.resultSet.nestedPrefixFor(nested);
@@ -137,15 +139,18 @@ class QueryWriter {
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  static String readingCode(ResultColumn column) {
+  static String readingCode(ResultColumn column, GenerationOptions options) {
     final readMethod = readFromMethods[column.type];
 
     final dartLiteral = asDartLiteral(column.name);
     var code = 'row.$readMethod($dartLiteral)';
 
     if (column.typeConverter != null) {
+      final needsAssert = !column.nullable && options.nnbd;
+
       final converter = column.typeConverter;
       code = '${_converter(converter)}.mapToDart($code)';
+      if (needsAssert) code += '!';
     }
     return code;
   }
@@ -400,17 +405,24 @@ class QueryWriter {
 
       if (element is FoundVariable) {
         // Variables without type converters are written as:
-        // `Variable.withInt(x)`. When there's a type converter, we instead use
-        // `Variable.withInt(typeConverter.mapToSql(x))`.
+        // `Variable<int>(x)`. When there's a type converter, we instead use
+        // `Variable<int>(typeConverter.mapToSql(x))`.
         // Finally, if we're dealing with a list, we use a collection for to
         // write all the variables sequentially.
         String constructVar(String dartExpr) {
-          final buffer = StringBuffer(createVariable[element.type])..write('(');
+          final type = element.variableTypeCode(scope.generationOptions);
+          final buffer = StringBuffer('Variable<$type>(');
 
           if (element.typeConverter != null) {
             // Apply the converter
             buffer.write(
                 '${_converter(element.typeConverter)}.mapToSql($dartExpr)');
+
+            final needsNullAssertion =
+                !element.nullable && scope.generationOptions.nnbd;
+            if (needsNullAssertion) {
+              buffer.write('!');
+            }
           } else {
             buffer.write(dartExpr);
           }

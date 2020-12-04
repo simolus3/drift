@@ -1,3 +1,5 @@
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -5,9 +7,9 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
-  MockStreamQueries streamQueries;
+  late TodoDb db;
+  late MockExecutor executor;
+  late MockStreamQueries streamQueries;
 
   setUp(() {
     executor = MockExecutor();
@@ -29,8 +31,10 @@ void main() {
 
   test('can insert floating point values', () async {
     // regression test for https://github.com/simolus3/moor/issues/30
-    await db.into(db.tableWithoutPK).insert(
-        TableWithoutPKData(notReallyAnId: 42, someFloat: 3.1415, custom: null));
+    await db.into(db.tableWithoutPK).insert(TableWithoutPKData(
+        notReallyAnId: 42,
+        someFloat: 3.1415,
+        custom: MyCustomObject('custom')));
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
@@ -74,8 +78,8 @@ void main() {
       try {
         await db.into(db.todosTable).insert(
               const TodosTableCompanion(
-                // not declared as nullable in table definition
-                content: Value(null),
+                // has a min length of 4
+                title: Value('s'),
               ),
             );
         fail('inserting invalid data did not throw');
@@ -102,7 +106,7 @@ void main() {
       expect(
         () {
           final insert = TodosTableCompanion.insert(content: 'content');
-          const update = TodosTableCompanion(content: Value(null));
+          const update = TodosTableCompanion(title: Value('s'));
           return db
               .into(db.todosTable)
               .insert(insert, onConflict: DoUpdate((_) => update));
@@ -110,16 +114,6 @@ void main() {
         throwsA(isA<InvalidDataException>()),
       );
     });
-  });
-
-  test("doesn't allow writing null rows", () {
-    expect(
-      () {
-        return db.into(db.todosTable).insert(null);
-      },
-      throwsA(const TypeMatcher<InvalidDataException>().having(
-          (e) => e.message, 'message', contains('Cannot write null row'))),
-    );
   });
 
   test('reports auto-increment id', () {

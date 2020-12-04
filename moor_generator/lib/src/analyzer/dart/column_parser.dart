@@ -199,7 +199,7 @@ class ColumnParser {
 
       final enumType = remainingExpr.typeArgumentTypes[0];
       try {
-        converter = UsedTypeConverter.forEnumColumn(enumType);
+        converter = UsedTypeConverter.forEnumColumn(enumType, nullable);
       } on InvalidTypeForEnumConverterException catch (e) {
         base.step.errors.report(ErrorInDartCode(
           message: e.errorDescription,

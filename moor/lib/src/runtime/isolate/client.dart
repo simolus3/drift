@@ -3,20 +3,18 @@ part of 'moor_isolate.dart';
 class _MoorClient {
   final IsolateCommunication _channel;
   final SqlTypeSystem typeSystem;
-  _IsolateStreamQueryStore _streamStore;
 
-  DatabaseConnection _connection;
+  late final _IsolateStreamQueryStore _streamStore =
+      _IsolateStreamQueryStore(this);
+  late final DatabaseConnection _connection = DatabaseConnection(
+    typeSystem,
+    _IsolateQueryExecutor(this),
+    _streamStore,
+  );
 
-  QueryExecutorUser _connectedDb;
+  late QueryExecutorUser _connectedDb;
 
   _MoorClient(this._channel, this.typeSystem) {
-    _streamStore = _IsolateStreamQueryStore(this);
-
-    _connection = DatabaseConnection(
-      typeSystem,
-      _IsolateQueryExecutor(this),
-      _streamStore,
-    );
     _channel.setRequestHandler(_handleRequest);
   }
 
@@ -44,7 +42,7 @@ class _MoorClient {
 
 abstract class _BaseExecutor extends QueryExecutor {
   final _MoorClient client;
-  int _executorId;
+  int? _executorId;
 
   _BaseExecutor(this.client, [this._executorId]);
 
@@ -54,13 +52,14 @@ abstract class _BaseExecutor extends QueryExecutor {
         .request(_ExecuteBatchedStatement(statements, _executorId));
   }
 
-  Future<T> _runRequest<T>(_StatementMethod method, String sql, List args) {
+  Future<T> _runRequest<T>(
+      _StatementMethod method, String sql, List<Object?>? args) {
     return client._channel
         .request<T>(_ExecuteQuery(method, sql, args ?? const [], _executorId));
   }
 
   @override
-  Future<void> runCustom(String statement, [List args]) {
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
     return _runRequest(
       _StatementMethod.custom,
       statement,
@@ -69,31 +68,32 @@ abstract class _BaseExecutor extends QueryExecutor {
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
+  Future<int> runDelete(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.insert, statement, args);
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
     return _runRequest(_StatementMethod.select, statement, args);
   }
 }
 
 class _IsolateQueryExecutor extends _BaseExecutor {
-  _IsolateQueryExecutor(_MoorClient client, [int executorId])
+  _IsolateQueryExecutor(_MoorClient client, [int? executorId])
       : super(client, executorId);
 
-  Completer<void> _setSchemaVersion;
+  Completer<void>? _setSchemaVersion;
 
   @override
   TransactionExecutor beginTransaction() {
@@ -104,7 +104,7 @@ class _IsolateQueryExecutor extends _BaseExecutor {
   Future<bool> ensureOpen(QueryExecutorUser user) async {
     client._connectedDb = user;
     if (_setSchemaVersion != null) {
-      await _setSchemaVersion.future;
+      await _setSchemaVersion!.future;
       _setSchemaVersion = null;
     }
     return client._channel
@@ -123,17 +123,18 @@ class _IsolateQueryExecutor extends _BaseExecutor {
 
 class _TransactionIsolateExecutor extends _BaseExecutor
     implements TransactionExecutor {
-  final int _outerExecutorId;
+  final int? _outerExecutorId;
 
   _TransactionIsolateExecutor(_MoorClient client, this._outerExecutorId)
       : super(client);
 
-  Completer<bool> _pendingOpen;
+  Completer<bool>? _pendingOpen;
   bool _done = false;
 
-  // nested transactions aren't supported
   @override
-  TransactionExecutor beginTransaction() => null;
+  TransactionExecutor beginTransaction() {
+    throw UnsupportedError('Nested transactions');
+  }
 
   @override
   Future<bool> ensureOpen(_) {
@@ -143,8 +144,8 @@ class _TransactionIsolateExecutor extends _BaseExecutor
       'somewhere?',
     );
 
-    _pendingOpen ??= Completer()..complete(_openAtServer());
-    return _pendingOpen.future;
+    final completer = _pendingOpen ??= Completer()..complete(_openAtServer());
+    return completer.future;
   }
 
   Future<bool> _openAtServer() async {

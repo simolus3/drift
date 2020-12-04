@@ -31,7 +31,8 @@ Future runForProject(String projectName) async {
   final hitmap = await parseCoverage(files, 1);
 
   final resolver = MoorResolver(
-      projectRoot: projectName, packagesPath: p.join(projectName, '.packages'));
+      projectRoot: projectName,
+      packagesPath: p.join(projectName, '.dart_tool', 'package_config.json'));
 
   final output =
       await LcovFormatter(resolver, reportOn: [p.join(projectName, 'lib')])

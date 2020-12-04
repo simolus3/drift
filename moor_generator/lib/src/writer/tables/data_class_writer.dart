@@ -109,7 +109,11 @@ class DataClassWriter {
         loadType = '$loaded.mapToDart($loadType)';
       }
 
-      _buffer.write('$getter: $loadType,');
+      if (!column.nullable && scope.generationOptions.nnbd) {
+        _buffer.write('$getter: $loadType!,');
+      } else {
+        _buffer.write('$getter: $loadType,');
+      }
     }
 
     _buffer.write(');}\n');
@@ -217,18 +221,32 @@ class DataClassWriter {
       ..write('final map = <String, Expression> {};');
 
     for (final column in table.columns) {
-      _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null) {');
+      // We include all columns that are not null. If nullToAbsent is false, we
+      // also include null columns. When generating NNBD code, we can include
+      // non-nullable columns without an additional null check.
+      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      final needsScope = needsNullCheck || column.typeConverter != null;
+      if (needsNullCheck) {
+        _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null)');
+      }
+      if (needsScope) _buffer.write('{');
+
+      final typeName = column.variableTypeCode(scope.generationOptions);
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
-          'Variable<${column.variableTypeName}>';
+          'Variable<$typeName>';
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
         final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
+
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql(${column.dartGetterName}));');
+          ..write('(converter.mapToSql(${column.dartGetterName})');
+        if (assertNotNull) _buffer.write('!');
+        _buffer.write(');');
       } else {
         // no type converter. Write variable directly
         _buffer
@@ -238,7 +256,8 @@ class DataClassWriter {
           ..write(');');
       }
 
-      _buffer.write('}');
+      // This one closes the optional if from before.
+      if (needsScope) _buffer.write('}');
     }
 
     _buffer.write('return map; \n}\n');
@@ -256,13 +275,17 @@ class DataClassWriter {
 
     for (final column in table.columns) {
       final dartName = column.dartGetterName;
-      _buffer
-        ..write(dartName)
-        ..write(': ')
-        ..write(dartName)
-        ..write(' == null && nullToAbsent ? const Value.absent() : Value (')
-        ..write(dartName)
-        ..write('),');
+      _buffer..write(dartName)..write(': ');
+
+      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      if (needsNullCheck) {
+        _buffer
+          ..write(dartName)
+          ..write(' == null && nullToAbsent ? const Value.absent() : ');
+        // We'll write the non-null case afterwards
+      }
+
+      _buffer..write('Value (')..write(dartName)..write('),');
     }
 
     _buffer.writeln(');\n}');

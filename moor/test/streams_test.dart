@@ -1,4 +1,7 @@
+//@dart=2.9
 import 'dart:async';
+
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
@@ -86,7 +89,7 @@ void main() {
       await first.first; // subscribe to first stream, then drop subscription
 
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {'id': 1, 'description': 'd'}
+            {'id': 1, 'desc': 'd', 'priority': 0}
           ]));
       await db
           .into(db.categories)
@@ -102,7 +105,7 @@ void main() {
       final subscription = first.listen((_) {});
 
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {'id': 1, 'description': 'd'}
+            {'id': 1, 'desc': 'd', 'priority': 0}
           ]));
       await db
           .into(db.categories)

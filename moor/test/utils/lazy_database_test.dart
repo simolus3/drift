@@ -1,3 +1,5 @@
+//@dart=2.9
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
@@ -25,7 +27,8 @@ void main() {
     clearInteractions(inner);
 
     lazy.beginTransaction();
-    await lazy.runBatched(null);
+    final batched = BatchedStatements([], []);
+    await lazy.runBatched(batched);
     await lazy.runCustom('custom_stmt');
     await lazy.runDelete('delete_stmt', [1]);
     await lazy.runInsert('insert_stmt', [2]);
@@ -33,7 +36,7 @@ void main() {
     await lazy.runUpdate('update_stmt', [4]);
 
     verifyInOrder([
-      inner.runBatched(null),
+      inner.runBatched(batched),
       inner.runCustom('custom_stmt'),
       inner.runDelete('delete_stmt', [1]),
       inner.runInsert('insert_stmt', [2]),

@@ -9,8 +9,10 @@ typedef DatabaseOpener = FutureOr<QueryExecutor> Function();
 /// A special database executor that delegates work to another [QueryExecutor].
 /// The other executor is lazily opened by a [DatabaseOpener].
 class LazyDatabase extends QueryExecutor {
-  QueryExecutor _delegate;
-  Completer<void> _openDelegate;
+  late QueryExecutor _delegate;
+  bool _delegateAvailable = false;
+
+  Completer<void>? _openDelegate;
 
   /// The function that will open the database when this [LazyDatabase] gets
   /// opened for the first time.
@@ -21,17 +23,18 @@ class LazyDatabase extends QueryExecutor {
   LazyDatabase(this.opener);
 
   Future<void> _awaitOpened() {
-    if (_delegate != null) {
+    if (_delegateAvailable) {
       return Future.value();
     } else if (_openDelegate != null) {
-      return _openDelegate.future;
+      return _openDelegate!.future;
     } else {
-      _openDelegate = Completer();
+      final delegate = _openDelegate = Completer();
       Future.value(opener()).then((database) {
         _delegate = database;
-        _openDelegate.complete();
+        _delegateAvailable = true;
+        delegate.complete();
       });
-      return _openDelegate.future;
+      return delegate.future;
     }
   }
 
@@ -48,28 +51,30 @@ class LazyDatabase extends QueryExecutor {
       _delegate.runBatched(statements);
 
   @override
-  Future<void> runCustom(String statement, [List args]) =>
+  Future<void> runCustom(String statement, [List<Object?>? args]) =>
       _delegate.runCustom(statement, args);
 
   @override
-  Future<int> runDelete(String statement, List args) =>
+  Future<int> runDelete(String statement, List<Object?> args) =>
       _delegate.runDelete(statement, args);
 
   @override
-  Future<int> runInsert(String statement, List args) =>
+  Future<int> runInsert(String statement, List<Object?> args) =>
       _delegate.runInsert(statement, args);
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(String statement, List args) =>
-      _delegate.runSelect(statement, args);
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) {
+    return _delegate.runSelect(statement, args);
+  }
 
   @override
-  Future<int> runUpdate(String statement, List args) =>
+  Future<int> runUpdate(String statement, List<Object?> args) =>
       _delegate.runUpdate(statement, args);
 
   @override
   Future<void> close() {
-    if (_delegate != null) {
+    if (_delegateAvailable) {
       return _delegate.close();
     } else {
       return Future.value();

@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:moor/backends.dart';
 import 'package:moor/moor.dart';
 
@@ -10,7 +9,7 @@ abstract class MultiExecutor extends QueryExecutor {
   /// with [write]. Select statements outside of a transaction are executed on
   /// [read].
   factory MultiExecutor(
-      {@required QueryExecutor read, @required QueryExecutor write}) {
+      {required QueryExecutor read, required QueryExecutor write}) {
     return _MultiExecutorImpl(read, write);
   }
 
@@ -44,28 +43,28 @@ class _MultiExecutorImpl extends MultiExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement, [List args]) async {
+  Future<void> runCustom(String statement, [List<Object?>? args]) async {
     await _writes.runCustom(statement, args);
   }
 
   @override
-  Future<int> runDelete(String statement, List args) async {
+  Future<int> runDelete(String statement, List<Object?> args) async {
     return await _writes.runDelete(statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) async {
+  Future<int> runInsert(String statement, List<Object?> args) async {
     return await _writes.runInsert(statement, args);
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(
-      String statement, List args) async {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) async {
     return await _reads.runSelect(statement, args);
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) async {
+  Future<int> runUpdate(String statement, List<Object?> args) async {
     return await _writes.runUpdate(statement, args);
   }
 

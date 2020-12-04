@@ -52,12 +52,10 @@ class DatabaseConnection {
       return connection;
     }
 
-    final future = connection as Future<DatabaseConnection>;
-
     return DatabaseConnection(
       SqlTypeSystem.defaultInstance,
-      LazyDatabase(() async => (await future).executor),
-      DelayedStreamQueryStore(future.then((conn) => conn.streamQueries)),
+      LazyDatabase(() async => (await connection).executor),
+      DelayedStreamQueryStore(connection.then((conn) => conn.streamQueries)),
     );
   }
 
@@ -89,16 +87,16 @@ abstract class DatabaseConnectionUser {
   /// Constructs a database connection user, which is responsible to store query
   /// streams, wrap the underlying executor and perform type mapping.
   DatabaseConnectionUser(SqlTypeSystem typeSystem, QueryExecutor executor,
-      {StreamQueryStore streamQueries})
+      {StreamQueryStore? streamQueries})
       : connection = DatabaseConnection(
             typeSystem, executor, streamQueries ?? StreamQueryStore());
 
   /// Creates another [DatabaseConnectionUser] by referencing the implementation
   /// from the [other] user.
   DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
-      {SqlTypeSystem typeSystem,
-      QueryExecutor executor,
-      StreamQueryStore streamQueries})
+      {SqlTypeSystem? typeSystem,
+      QueryExecutor? executor,
+      StreamQueryStore? streamQueries})
       : connection = DatabaseConnection(
           typeSystem ?? other.connection.typeSystem,
           executor ?? other.connection.executor,

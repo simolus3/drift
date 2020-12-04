@@ -111,7 +111,8 @@ class UpdateCompanionWriter {
       ..write('({');
 
     for (final column in table.columns) {
-      final type = scope.nullableType('Expression<${column.variableTypeName}>');
+      final typeName = column.dartTypeCode(scope.generationOptions);
+      final type = scope.nullableType('Expression<$typeName>');
       _buffer.write('$type ${column.dartGetterName}, \n');
     }
 
@@ -160,14 +161,15 @@ class UpdateCompanionWriter {
           '(bool nullToAbsent) {\n')
       ..write('final map = <String, Expression> {};');
 
-    const locals = {'map', 'nullToAbsent'};
+    const locals = {'map', 'nullToAbsent', 'converter'};
 
     for (final column in table.columns) {
       final getterName = column.thisIfNeeded(locals);
 
       _buffer.write('if ($getterName.present) {');
+      final typeName = column.variableTypeCode(scope.generationOptions);
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
-          'Variable<${column.variableTypeName}>';
+          'Variable<$typeName>';
 
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
@@ -176,7 +178,12 @@ class UpdateCompanionWriter {
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)
-          ..write('(converter.mapToSql($getterName.value));');
+          ..write('(converter.mapToSql($getterName.value)');
+
+        if (!column.nullable && scope.generationOptions.nnbd) {
+          _buffer.write('!');
+        }
+        _buffer.write(');');
       } else {
         // no type converter. Write variable directly
         _buffer

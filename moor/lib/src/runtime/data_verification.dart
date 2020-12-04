@@ -18,7 +18,7 @@ class VerificationResult {
 
   /// If not [success]-ful, contains a human readable description of what went
   /// wrong.
-  final String message;
+  final String? message;
 
   /// Used internally by moor
   const VerificationResult(this.success, this.message);

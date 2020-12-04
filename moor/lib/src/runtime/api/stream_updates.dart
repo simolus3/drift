@@ -60,8 +60,7 @@ class WritePropagation extends UpdateRule {
   final List<TableUpdate> result;
 
   /// Default constructor. See [WritePropagation] for details.
-  const WritePropagation({@required this.on, @required this.result})
-      : super._();
+  const WritePropagation({required this.on, required this.result}) : super._();
 }
 
 /// Classifies a [TableUpdate] by what kind of write happened - an insert, an
@@ -83,7 +82,7 @@ class TableUpdate {
   /// What kind of update was applied to the [table].
   ///
   /// Can be null, which indicates that the update is not known.
-  final UpdateKind /*?*/ kind;
+  final UpdateKind? kind;
 
   /// Name of the table that was updated.
   final String table;
@@ -93,7 +92,7 @@ class TableUpdate {
 
   /// Creates a [TableUpdate] instance based on a [TableInfo] instead of the raw
   /// name.
-  factory TableUpdate.onTable(TableInfo table, {UpdateKind kind}) {
+  factory TableUpdate.onTable(TableInfo table, {UpdateKind? kind}) {
     return TableUpdate(table.actualTableName, kind: kind);
   }
 
@@ -131,14 +130,14 @@ abstract class TableUpdateQuery {
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
   const factory TableUpdateQuery.onTableName(String table,
-      {UpdateKind limitUpdateKind}) = SpecificUpdateQuery;
+      {UpdateKind? limitUpdateKind}) = SpecificUpdateQuery;
 
   /// A query that listens for all updates on a specific [table].
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
   factory TableUpdateQuery.onTable(TableInfo table,
-      {UpdateKind limitUpdateKind}) {
+      {UpdateKind? limitUpdateKind}) {
     return TableUpdateQuery.onTableName(
       table.actualTableName,
       limitUpdateKind: limitUpdateKind,

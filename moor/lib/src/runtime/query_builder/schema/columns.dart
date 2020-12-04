@@ -21,11 +21,11 @@ abstract class GeneratedColumn<T> extends Column<T> {
   /// If custom constraints have been specified for this column via
   /// [ColumnBuilder.customConstraint], these are kept here. Otherwise, this
   /// field is going to be null.
-  final String $customConstraints;
+  final String? $customConstraints;
 
   /// The default expression to be used during inserts when no value has been
   /// specified. Can be null if no default value is set.
-  final Expression<T> defaultValue;
+  final Expression<T>? defaultValue;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -33,7 +33,7 @@ abstract class GeneratedColumn<T> extends Column<T> {
   /// [defaultValue] and [clientDefault] are non-null.
   ///
   /// See also: [ColumnBuilder.clientDefault].
-  T Function() clientDefault;
+  T Function()? clientDefault;
 
   /// Used by generated code.
   GeneratedColumn(this.$name, this.tableName, this.$nullable,
@@ -48,6 +48,7 @@ abstract class GeneratedColumn<T> extends Column<T> {
     if ($customConstraints == null) {
       into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
 
+      final defaultValue = this.defaultValue;
       if (defaultValue != null) {
         into.buffer.write(' DEFAULT ');
 
@@ -137,18 +138,18 @@ abstract class GeneratedColumn<T> extends Column<T> {
   }
 
   Variable _evaluateClientDefault() {
-    return Variable<T>(clientDefault());
+    return Variable<T>(clientDefault!());
   }
 }
 
 /// Implementation for [TextColumn].
-class GeneratedTextColumn extends GeneratedColumn<String>
+class GeneratedTextColumn extends GeneratedColumn<String?>
     implements TextColumn {
   /// Optional. The minimum text length.
-  final int minTextLength;
+  final int? minTextLength;
 
   /// Optional. The maximum text length.
-  final int maxTextLength;
+  final int? maxTextLength;
 
   /// Used by generated code.
   GeneratedTextColumn(
@@ -157,8 +158,8 @@ class GeneratedTextColumn extends GeneratedColumn<String>
     bool nullable, {
     this.minTextLength,
     this.maxTextLength,
-    String $customConstraints,
-    Expression<String> defaultValue,
+    String? $customConstraints,
+    Expression<String?>? defaultValue,
   }) : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -166,16 +167,16 @@ class GeneratedTextColumn extends GeneratedColumn<String>
   final String typeName = 'TEXT';
 
   @override
-  VerificationResult isAcceptableValue(String value, VerificationMeta meta) {
+  VerificationResult isAcceptableValue(String? value, VerificationMeta meta) {
     // handle nullability check in common column
     if (value == null) return super.isAcceptableValue(null, meta);
 
     final length = value.length;
-    if (minTextLength != null && minTextLength > length) {
+    if (minTextLength != null && minTextLength! > length) {
       return VerificationResult.failure(
           'Must at least be $minTextLength characters long.');
     }
-    if (maxTextLength != null && maxTextLength < length) {
+    if (maxTextLength != null && maxTextLength! < length) {
       return VerificationResult.failure(
           'Must at most be $maxTextLength characters long.');
     }
@@ -185,10 +186,10 @@ class GeneratedTextColumn extends GeneratedColumn<String>
 }
 
 /// Implementation for [BoolColumn].
-class GeneratedBoolColumn extends GeneratedColumn<bool> implements BoolColumn {
+class GeneratedBoolColumn extends GeneratedColumn<bool?> implements BoolColumn {
   /// Used by generated code
   GeneratedBoolColumn(String name, String tableName, bool nullable,
-      {String $customConstraints, Expression<bool> defaultValue})
+      {String? $customConstraints, Expression<bool?>? defaultValue})
       : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -202,7 +203,7 @@ class GeneratedBoolColumn extends GeneratedColumn<bool> implements BoolColumn {
 }
 
 /// Implementation for [IntColumn]
-class GeneratedIntColumn extends GeneratedColumn<int> implements IntColumn {
+class GeneratedIntColumn extends GeneratedColumn<int?> implements IntColumn {
   /// Whether this column was declared to be a primary key via a column
   /// constraint. The only way to do this in Dart is with
   /// [IntColumnBuilder.autoIncrement]. In `.moor` files, declaring a column
@@ -226,8 +227,8 @@ class GeneratedIntColumn extends GeneratedColumn<int> implements IntColumn {
     bool nullable, {
     this.declaredAsPrimaryKey = false,
     this.hasAutoIncrement = false,
-    String $customConstraints,
-    Expression<int> defaultValue,
+    String? $customConstraints,
+    Expression<int?>? defaultValue,
   }) : super(name, tableName, nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -248,15 +249,15 @@ class GeneratedIntColumn extends GeneratedColumn<int> implements IntColumn {
 }
 
 /// Implementation for [DateTimeColumn].
-class GeneratedDateTimeColumn extends GeneratedColumn<DateTime>
+class GeneratedDateTimeColumn extends GeneratedColumn<DateTime?>
     implements DateTimeColumn {
   /// Used by generated code.
   GeneratedDateTimeColumn(
     String $name,
     String tableName,
     bool $nullable, {
-    String $customConstraints,
-    Expression<DateTime> defaultValue,
+    String? $customConstraints,
+    Expression<DateTime?>? defaultValue,
   }) : super($name, tableName, $nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -265,11 +266,11 @@ class GeneratedDateTimeColumn extends GeneratedColumn<DateTime>
 }
 
 /// Implementation for [BlobColumn]
-class GeneratedBlobColumn extends GeneratedColumn<Uint8List>
+class GeneratedBlobColumn extends GeneratedColumn<Uint8List?>
     implements BlobColumn {
   /// Used by generated code.
   GeneratedBlobColumn(String $name, String tableName, bool $nullable,
-      {String $customConstraints, Expression<Uint8List> defaultValue})
+      {String? $customConstraints, Expression<Uint8List?>? defaultValue})
       : super($name, tableName, $nullable,
             $customConstraints: $customConstraints, defaultValue: defaultValue);
 
@@ -278,15 +279,15 @@ class GeneratedBlobColumn extends GeneratedColumn<Uint8List>
 }
 
 /// Implementation for [RealColumn]
-class GeneratedRealColumn extends GeneratedColumn<double>
+class GeneratedRealColumn extends GeneratedColumn<double?>
     implements RealColumn {
   /// Used by generated code
   GeneratedRealColumn(
     String $name,
     String tableName,
     bool $nullable, {
-    Expression<double> defaultValue,
-    String $customConstraints,
+    Expression<double>? defaultValue,
+    String? $customConstraints,
   }) : super($name, tableName, $nullable,
             defaultValue: defaultValue, $customConstraints: $customConstraints);
 

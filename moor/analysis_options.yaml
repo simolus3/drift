@@ -8,3 +8,4 @@ analyzer:
     - "example_web/**"
     - "example/**"
     - "**/*.g.dart"
+    - "**/*.mocks.dart"

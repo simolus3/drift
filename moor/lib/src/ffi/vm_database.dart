@@ -32,14 +32,15 @@ class VmDatabase extends DelegatedDatabase {
   /// SQLCipher implementations.
   /// {@endtemplate}
   factory VmDatabase(File file,
-      {bool logStatements = false, DatabaseSetup setup}) {
+      {bool logStatements = false, DatabaseSetup? setup}) {
     return VmDatabase._(_VmDelegate(file, setup), logStatements);
   }
 
   /// Creates an in-memory database won't persist its changes on disk.
   ///
   /// {@macro moor_vm_database_factory}
-  factory VmDatabase.memory({bool logStatements = false, DatabaseSetup setup}) {
+  factory VmDatabase.memory(
+      {bool logStatements = false, DatabaseSetup? setup}) {
     return VmDatabase._(_VmDelegate(null, setup), logStatements);
   }
 
@@ -51,7 +52,7 @@ class VmDatabase extends DelegatedDatabase {
   ///
   /// {@macro moor_vm_database_factory}
   factory VmDatabase.opened(Database database,
-      {bool logStatements = false, DatabaseSetup setup}) {
+      {bool logStatements = false, DatabaseSetup? setup}) {
     return VmDatabase._(_VmDelegate._opened(database, setup), logStatements);
   }
 
@@ -106,11 +107,11 @@ class VmDatabase extends DelegatedDatabase {
 }
 
 class _VmDelegate extends DatabaseDelegate {
-  Database _db;
+  late Database _db;
   bool _isOpen = false;
 
-  final File file;
-  final DatabaseSetup setup;
+  final File? file;
+  final DatabaseSetup? setup;
 
   _VmDelegate(this.file, this.setup);
 
@@ -122,14 +123,14 @@ class _VmDelegate extends DatabaseDelegate {
   TransactionDelegate get transactionDelegate => const NoTransactionDelegate();
 
   @override
-  DbVersionDelegate versionDelegate;
+  late DbVersionDelegate versionDelegate;
 
   @override
   Future<bool> get isOpen => Future.value(_isOpen);
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    if (_db == null) {
+    if (!_isOpen) {
       _createDatabase();
     }
     _initializeDatabase();
@@ -138,7 +139,9 @@ class _VmDelegate extends DatabaseDelegate {
   }
 
   void _createDatabase() {
-    assert(_db == null);
+    assert(!_isOpen);
+
+    final file = this.file;
     if (file != null) {
       // Create the parent directory if it doesn't exist. sqlite will emit
       // confusing misuse warnings otherwise
@@ -156,9 +159,7 @@ class _VmDelegate extends DatabaseDelegate {
 
   void _initializeDatabase() {
     _db.useMoorVersions();
-    if (setup != null) {
-      setup(_db);
-    }
+    setup?.call(_db);
     versionDelegate = _VmVersionDelegate(_db);
   }
 
@@ -181,7 +182,7 @@ class _VmDelegate extends DatabaseDelegate {
     return Future.value();
   }
 
-  Future _runWithArgs(String statement, List<dynamic> args) async {
+  Future _runWithArgs(String statement, List<Object?> args) async {
     if (args.isEmpty) {
       _db.execute(statement);
     } else {
@@ -192,24 +193,24 @@ class _VmDelegate extends DatabaseDelegate {
   }
 
   @override
-  Future<void> runCustom(String statement, List args) async {
+  Future<void> runCustom(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
   }
 
   @override
-  Future<int> runInsert(String statement, List args) async {
+  Future<int> runInsert(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
     return _db.lastInsertRowId;
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) async {
+  Future<int> runUpdate(String statement, List<Object?> args) async {
     await _runWithArgs(statement, args);
     return _db.getUpdatedRows();
   }
 
   @override
-  Future<QueryResult> runSelect(String statement, List args) async {
+  Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     final stmt = _db.prepare(statement);
     final result = stmt.select(args);
     stmt.dispose();

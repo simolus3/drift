@@ -1,5 +1,7 @@
+//@dart=2.9
 import 'dart:async';
 
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -37,22 +39,6 @@ void main() {
 
       verify(executor.runUpdate(
           'UPDATE todos SET title = ? WHERE id < ?;', ['Changed title', 50]));
-    });
-
-    test('for data classes', () async {
-      await (db.update(db.users)..where((u) => u.id.equals(3))).write(User(
-        isAwesome: true,
-        // these fields shouldn't change
-        id: null,
-        name: null,
-        profilePicture: null,
-        creationTime: null,
-      ));
-
-      verify(executor.runUpdate(
-        'UPDATE users SET is_awesome = ? WHERE id = ?;',
-        [1, 3],
-      ));
     });
 
     test('with escaped column names', () async {

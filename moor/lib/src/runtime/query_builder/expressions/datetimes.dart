@@ -19,27 +19,27 @@ class _CustomDateTimeExpression extends CustomExpression<DateTime> {
 
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
-extension DateTimeExpressions on Expression<DateTime> {
+extension DateTimeExpressions on Expression<DateTime?> {
   /// Extracts the (UTC) year from `this` datetime expression.
-  Expression<int> get year => _StrftimeSingleFieldExpression('%Y', this);
+  Expression<int?> get year => _StrftimeSingleFieldExpression('%Y', this);
 
   /// Extracts the (UTC) month from `this` datetime expression.
-  Expression<int> get month => _StrftimeSingleFieldExpression('%m', this);
+  Expression<int?> get month => _StrftimeSingleFieldExpression('%m', this);
 
   /// Extracts the (UTC) day from `this` datetime expression.
-  Expression<int> get day => _StrftimeSingleFieldExpression('%d', this);
+  Expression<int?> get day => _StrftimeSingleFieldExpression('%d', this);
 
   /// Extracts the (UTC) hour from `this` datetime expression.
-  Expression<int> get hour => _StrftimeSingleFieldExpression('%H', this);
+  Expression<int?> get hour => _StrftimeSingleFieldExpression('%H', this);
 
   /// Extracts the (UTC) minute from `this` datetime expression.
-  Expression<int> get minute => _StrftimeSingleFieldExpression('%M', this);
+  Expression<int?> get minute => _StrftimeSingleFieldExpression('%M', this);
 
   /// Extracts the (UTC) second from `this` datetime expression.
-  Expression<int> get second => _StrftimeSingleFieldExpression('%S', this);
+  Expression<int?> get second => _StrftimeSingleFieldExpression('%S', this);
 
   /// Formats this datetime in the format `year-month-day`.
-  Expression<String> get date {
+  Expression<String?> get date {
     return FunctionCallExpression(
       'DATE',
       [this, const Constant<String>('unixepoch')],
@@ -68,9 +68,9 @@ extension DateTimeExpressions on Expression<DateTime> {
 
 /// Expression that extracts components out of a date time by using the builtin
 /// sqlite function "strftime" and casting the result to an integer.
-class _StrftimeSingleFieldExpression extends Expression<int> {
+class _StrftimeSingleFieldExpression extends Expression<int?> {
   final String format;
-  final Expression<DateTime> date;
+  final Expression<DateTime?> date;
 
   _StrftimeSingleFieldExpression(this.format, this.date);
 

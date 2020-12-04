@@ -31,6 +31,6 @@ void main() {
         .equalsExp(Variable.withString('bar')));
 
     final resultRow = await query.getSingle();
-    expect(resultRow.read(arrayLengthExpr), 3);
+    expect(resultRow!.read(arrayLengthExpr), 3);
   }, tags: const ['integration']);
 }

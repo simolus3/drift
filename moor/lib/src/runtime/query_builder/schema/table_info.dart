@@ -9,12 +9,12 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
   TableDsl get asDslTable;
 
-  /// The primary key of this table. Can be null or empty if no custom primary
-  /// key has been specified.
+  /// The primary key of this table. Can be empty if no custom primary key has
+  /// been specified.
   ///
   /// Additional to the [Table.primaryKey] columns declared by an user, this
   /// also contains auto-increment integers, which are primary key by default.
-  Set<GeneratedColumn> get $primaryKey => null;
+  Set<GeneratedColumn> get $primaryKey => const {};
 
   // ensure the primaryKey getter is consistent with $primaryKey, which can
   // contain additional columns.
@@ -35,7 +35,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   /// All columns defined in this table.
   List<GeneratedColumn> get $columns;
 
-  Map<String, GeneratedColumn> _columnsByName;
+  Map<String, GeneratedColumn>? _columnsByName;
 
   /// Gets all [$columns] in this table, indexed by their (non-escaped) name.
   Map<String, GeneratedColumn> get columnsByName {
@@ -54,7 +54,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
   }
 
   /// Maps the given row returned by the database into the fitting data class.
-  D map(Map<String, dynamic> data, {String tablePrefix});
+  D map(Map<String, dynamic> data, {String? tablePrefix});
 
   /// Converts a [companion] to the real model class, [D].
   ///
@@ -120,13 +120,13 @@ extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
   }
 
   /// Like [map], but from a [row] instead of the low-level map.
-  D mapFromRow(QueryRow row, {String tablePrefix}) {
+  D mapFromRow(QueryRow row, {String? tablePrefix}) {
     return map(row.data, tablePrefix: tablePrefix);
   }
 
   /// Like [mapFromRow], but returns null if a non-nullable column of this table
   /// is null in [row].
-  D /*?*/ mapFromRowOrNull(QueryRow row, {String tablePrefix}) {
+  D? mapFromRowOrNull(QueryRow row, {String? tablePrefix}) {
     final resolvedPrefix = tablePrefix == null ? '' : '$tablePrefix.';
 
     final notInRow = $columns
@@ -153,7 +153,7 @@ extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
   /// `'c2': 'bar'` in [alias].
   D mapFromRowWithAlias(QueryRow row, Map<String, String> alias) {
     return map({
-      for (final entry in row.data.entries) alias[entry.key]: entry.value,
+      for (final entry in row.data.entries) alias[entry.key]!: entry.value,
     });
   }
 }

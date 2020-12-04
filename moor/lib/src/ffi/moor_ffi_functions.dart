@@ -96,12 +96,12 @@ extension EnableMoorFunctions on Database {
       deterministic: true,
       directOnly: false,
       argumentCount: const AllowedArgumentCount(0),
-      function: (List<dynamic> args) => DateTime.now().millisecondsSinceEpoch,
+      function: (List<Object?> args) => DateTime.now().millisecondsSinceEpoch,
     );
   }
 }
 
-num _pow(List<dynamic> args) {
+num? _pow(List<Object?> args) {
   final first = args[0];
   final second = args[1];
 
@@ -109,7 +109,7 @@ num _pow(List<dynamic> args) {
     return null;
   }
 
-  return pow(first as num, second as num);
+  return pow(first, second);
 }
 
 /// Base implementation for a sqlite function that takes one numerical argument
@@ -117,8 +117,8 @@ num _pow(List<dynamic> args) {
 ///
 /// When not called with a number, returns will null. Otherwise, returns with
 /// [calculation].
-num Function(List<dynamic>) _unaryNumFunction(num Function(num) calculation) {
-  return (List<dynamic> args) {
+num? Function(List<Object?>) _unaryNumFunction(num Function(num) calculation) {
+  return (List<Object?> args) {
     // sqlite will ensure that this is only called with one argument
     final value = args[0];
     if (value is num) {
@@ -129,7 +129,7 @@ num Function(List<dynamic>) _unaryNumFunction(num Function(num) calculation) {
   };
 }
 
-bool _regexpImpl(List<dynamic> args) {
+bool? _regexpImpl(List<Object?> args) {
   var multiLine = false;
   var caseSensitive = true;
   var unicode = false;
@@ -165,7 +165,7 @@ bool _regexpImpl(List<dynamic> args) {
   RegExp regex;
   try {
     regex = RegExp(
-      firstParam as String,
+      firstParam,
       multiLine: multiLine,
       caseSensitive: caseSensitive,
       unicode: unicode,
@@ -175,7 +175,7 @@ bool _regexpImpl(List<dynamic> args) {
     throw 'Invalid regex';
   }
 
-  return regex.hasMatch(secondParam as String);
+  return regex.hasMatch(secondParam);
 }
 
 bool _containsImpl(List<dynamic> args) {
@@ -193,12 +193,9 @@ bool _containsImpl(List<dynamic> args) {
 
   final caseSensitive = argCount == 3 && args[2] == 1;
 
-  final firstAsString = first as String;
-  final secondAsString = second as String;
-
   final result = caseSensitive
-      ? firstAsString.contains(secondAsString)
-      : firstAsString.toLowerCase().contains(secondAsString.toLowerCase());
+      ? first.contains(second)
+      : first.toLowerCase().contains(second.toLowerCase());
 
   return result;
 }

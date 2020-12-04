@@ -47,7 +47,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       // if an overridden executor has been specified for this zone (this will
       // happen for transactions), use that one.
       final resolved = Zone.current[_zoneRootUserKey];
-      return (resolved as QueryEngine) ?? this;
+      return (resolved as QueryEngine?) ?? this;
     }
   }
 
@@ -201,8 +201,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   Future<int> customUpdate(
     String query, {
     List<Variable> variables = const [],
-    Set<TableInfo> updates,
-    UpdateKind updateKind,
+    Set<TableInfo>? updates,
+    UpdateKind? updateKind,
   }) async {
     return _customWrite(
       query,
@@ -221,7 +221,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
   Future<int> customInsert(String query,
-      {List<Variable> variables = const [], Set<TableInfo> updates}) {
+      {List<Variable> variables = const [], Set<TableInfo>? updates}) {
     return _customWrite(
       query,
       variables,
@@ -239,8 +239,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   Future<T> _customWrite<T>(
     String query,
     List<Variable> variables,
-    Set<TableInfo> updates,
-    UpdateKind updateKind,
+    Set<TableInfo>? updates,
+    UpdateKind? updateKind,
     _CustomWriter<T> writer,
   ) async {
     final engine = _resolvedEngine;
@@ -273,7 +273,6 @@ mixin QueryEngine on DatabaseConnectionUser {
   Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<TableInfo> readsFrom = const {}}) {
-    readsFrom ??= {};
     return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
   }
 
@@ -294,7 +293,7 @@ mixin QueryEngine on DatabaseConnectionUser {
   }
 
   /// Executes the custom sql [statement] on the database.
-  Future<void> customStatement(String statement, [List<dynamic> args]) {
+  Future<void> customStatement(String statement, [List<dynamic>? args]) {
     final engine = _resolvedEngine;
 
     return engine.doWhenOpened((executor) {
@@ -408,7 +407,7 @@ mixin QueryEngine on DatabaseConnectionUser {
 
   /// Will be used by generated code to resolve inline Dart components in sql.
   @protected
-  GenerationContext $write(Component component, {bool hasMultipleTables}) {
+  GenerationContext $write(Component component, {bool? hasMultipleTables}) {
     final context = GenerationContext.fromDb(this);
     if (hasMultipleTables != null) {
       context.hasMultipleTables = hasMultipleTables;

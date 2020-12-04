@@ -25,7 +25,7 @@ class OrderingTerm extends Component {
 
   /// Creates an ordering term by the [expression] and the [mode] (defaults to
   /// ascending).
-  OrderingTerm({@required this.expression, this.mode = OrderingMode.asc});
+  OrderingTerm({required this.expression, this.mode = OrderingMode.asc});
 
   /// Creates an ordering term that sorts for ascending values of [expression].
   factory OrderingTerm.asc(Expression expression) {

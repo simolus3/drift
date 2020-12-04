@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -19,13 +20,9 @@ void main() {
   });
 
   test('can deserialize ints as doubles', () {
-    final entry = TableWithoutPKData.fromJson({
-      'notReallyAnId': 3,
-      'someFloat': 4,
-    });
+    const serializer = ValueSerializer.defaults();
 
-    expect(entry,
-        TableWithoutPKData(notReallyAnId: 3, someFloat: 4, custom: null));
+    expect(serializer.fromJson<double>(3), 3.0);
   });
 
   test('default serializer can be overridden globally', () {

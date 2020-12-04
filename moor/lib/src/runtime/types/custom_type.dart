@@ -13,12 +13,11 @@ abstract class TypeConverter<D, S> {
   const TypeConverter();
 
   /// Map a value from an object in Dart into something that will be understood
-  /// by the database. Be aware that [value] is nullable.
-  S mapToSql(D value);
+  /// by the database.
+  S? mapToSql(D? value);
 
-  /// Maps a column from the database back to Dart. Be aware that [fromDb] is
-  /// nullable.
-  D mapToDart(S fromDb);
+  /// Maps a column from the database back to Dart.
+  D? mapToDart(S? fromDb);
 }
 
 /// Implementation for an enum to int converter that uses the index of the enum
@@ -31,12 +30,12 @@ class EnumIndexConverter<T> extends TypeConverter<T, int> {
   const EnumIndexConverter(this.values);
 
   @override
-  T mapToDart(int fromDb) {
+  T? mapToDart(int? fromDb) {
     return fromDb == null ? null : values[fromDb];
   }
 
   @override
-  int mapToSql(T value) {
+  int? mapToSql(T? value) {
     return (value as dynamic)?.index as int;
   }
 }

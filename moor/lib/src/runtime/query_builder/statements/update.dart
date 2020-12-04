@@ -7,7 +7,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
   UpdateStatement(QueryEngine database, TableInfo<T, D> table)
       : super(database, table);
 
-  Map<String, Expression> _updatedFields;
+  late Map<String, Expression> _updatedFields;
 
   @override
   void writeStartPart(GenerationContext ctx) {
@@ -31,7 +31,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
 
   Future<int> _performQuery() async {
     final ctx = constructQuery();
-    final rows = await ctx.executor.doWhenOpened((e) async {
+    final rows = await ctx.executor!.doWhenOpened((e) async {
       return await e.runUpdate(ctx.sql, ctx.boundVariables);
     });
 
@@ -123,7 +123,7 @@ class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
       // if a default value exists and no value is set, apply the default
       if (column.defaultValue != null &&
           !_updatedFields.containsKey(column.$name)) {
-        _updatedFields[column.$name] = column.defaultValue;
+        _updatedFields[column.$name] = column.defaultValue!;
       }
     }
 

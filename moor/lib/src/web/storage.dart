@@ -13,7 +13,7 @@ abstract class MoorWebStorage {
   /// Restore the last database version that was saved with [store].
   ///
   /// If no saved data was found, returns null.
-  Future<Uint8List> restore();
+  Future<Uint8List?> restore();
 
   /// Store the entire database.
   Future<void> store(Uint8List data);
@@ -72,8 +72,8 @@ abstract class MoorWebStorage {
 }
 
 abstract class _CustomSchemaVersionSave implements MoorWebStorage {
-  int /*?*/ get schemaVersion;
-  set schemaVersion(int value);
+  int? get schemaVersion;
+  set schemaVersion(int? value);
 }
 
 String _persistenceKeyForLocalStorage(String name) {
@@ -84,7 +84,7 @@ String _legacyVersionKeyForLocalStorage(String name) {
   return 'moor_db_version_$name';
 }
 
-Uint8List /*?*/ _restoreLocalStorage(String name) {
+Uint8List? _restoreLocalStorage(String name) {
   final raw = window.localStorage[_persistenceKeyForLocalStorage(name)];
   if (raw != null) {
     return bin2str.decode(raw);
@@ -101,7 +101,7 @@ class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
   const _LocalStorageImpl(this.name);
 
   @override
-  int get schemaVersion {
+  int? get schemaVersion {
     final versionStr = window.localStorage[_versionKey];
     // ignore: avoid_returning_null
     if (versionStr == null) return null;
@@ -110,8 +110,14 @@ class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
   }
 
   @override
-  set schemaVersion(int value) {
-    window.localStorage[_versionKey] = value.toString();
+  set schemaVersion(int? value) {
+    final key = _versionKey;
+
+    if (value == null) {
+      window.localStorage.remove(key);
+    } else {
+      window.localStorage[_versionKey] = value.toString();
+    }
   }
 
   @override
@@ -121,7 +127,7 @@ class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
   Future<void> open() => Future.value();
 
   @override
-  Future<Uint8List> restore() async {
+  Future<Uint8List?> restore() async {
     return _restoreLocalStorage(name);
   }
 
@@ -141,7 +147,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   final bool migrateFromLocalStorage;
   final bool inWebWorker;
 
-  Database _database;
+  late Database _database;
 
   _IndexedDbStorage(this.name,
       {this.migrateFromLocalStorage = true, this.inWebWorker = false});
@@ -153,7 +159,7 @@ class _IndexedDbStorage implements MoorWebStorage {
     final indexedDb =
         inWebWorker ? WorkerGlobalScope.instance.indexedDB : window.indexedDB;
 
-    _database = await indexedDb.open(
+    _database = await indexedDb!.open(
       _objectStoreName,
       version: 1,
       onUpgradeNeeded: (event) {
@@ -188,12 +194,12 @@ class _IndexedDbStorage implements MoorWebStorage {
   }
 
   @override
-  Future<Uint8List> restore() async {
+  Future<Uint8List?> restore() async {
     final transaction =
         _database.transactionStore(_objectStoreName, 'readonly');
     final store = transaction.objectStore(_objectStoreName);
 
-    final result = await store.getObject(name) as Blob /*?*/;
+    final result = await store.getObject(name) as Blob?;
     if (result == null) return null;
 
     final reader = FileReader();

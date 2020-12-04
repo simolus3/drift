@@ -32,13 +32,13 @@ abstract class DataClass {
   /// [json]. The [serializer] can be used to configure how individual values
   /// will be encoded. By default, [MoorRuntimeOptions.defaultSerializer] will
   /// be used. See [ValueSerializer.defaults] for details.
-  Map<String, dynamic> toJson({ValueSerializer serializer});
+  Map<String, dynamic> toJson({ValueSerializer? serializer});
 
   /// Converts this object into a json representation. The [serializer] can be
   /// used to configure how individual values will be encoded. By default,
   /// [MoorRuntimeOptions.defaultSerializer] will be used. See
   /// [ValueSerializer.defaults] for details.
-  String toJsonString({ValueSerializer serializer}) {
+  String toJsonString({ValueSerializer? serializer}) {
     return json.encode(toJson(serializer: serializer));
   }
 
@@ -73,11 +73,7 @@ abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
     if (identical(this, other)) return true;
     if (other is! UpdateCompanion<D>) return false;
 
-    return _mapEquality.equals(
-      // ignore: test_types_in_equals
-      (other as UpdateCompanion<D>).toColumns(false),
-      toColumns(false),
-    );
+    return _mapEquality.equals(other.toColumns(false), toColumns(false));
   }
 }
 
@@ -111,16 +107,20 @@ class Value<T> {
   /// inserted or updated.
   final bool present;
 
+  final T? _value;
+
   /// If this value is [present], contains the value to update or insert.
-  final T value;
+  T get value => _value as T;
 
   /// Create a (present) value by wrapping the [value] provided.
-  const Value(this.value) : present = true;
+  const Value(T value)
+      : _value = value,
+        present = true;
 
   /// Create an absent value that will not be written into the database, the
   /// default value or null will be used instead.
   const Value.absent()
-      : value = null,
+      : _value = null,
         present = false;
 
   @override
@@ -164,20 +164,22 @@ class _DefaultValueSerializer extends ValueSerializer {
   @override
   T fromJson<T>(dynamic json) {
     if (json == null) {
-      return null;
+      return null as T;
     }
 
-    if (T == DateTime) {
+    final _typeList = <T>[];
+
+    if (_typeList is List<DateTime?>) {
       return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
     }
 
-    if (T == double && json is int) {
+    if (_typeList is List<double> && json is int) {
       return json.toDouble() as T;
     }
 
     // blobs are encoded as a regular json array, so we manually convert that to
     // a Uint8List
-    if (T == Uint8List && json is! Uint8List) {
+    if (_typeList is List<Uint8List> && json is! Uint8List) {
       final asList = (json as List).cast<int>();
       return Uint8List.fromList(asList) as T;
     }

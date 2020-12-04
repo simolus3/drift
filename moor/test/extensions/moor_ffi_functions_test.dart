@@ -8,8 +8,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final a = GeneratedRealColumn('a', null, false);
-  final b = GeneratedRealColumn('b', null, false);
+  final a = GeneratedRealColumn('a', 'table', false);
+  final b = GeneratedRealColumn('b', 'table', false);
 
   test('pow', () {
     expect(sqlPow(a, b), generates('pow(a, b)'));
@@ -24,7 +24,7 @@ void main() {
   test('atan', () => expect(sqlAtan(a), generates('atan(a)')));
 
   test('containsCase', () {
-    final c = GeneratedTextColumn('a', null, false);
+    final c = GeneratedTextColumn('a', 'table', false);
 
     expect(c.containsCase('foo'), generates('moor_contains(a, ?, 0)', ['foo']));
     expect(
@@ -38,11 +38,11 @@ void main() {
     // insert exactly one row so that we can evaluate expressions from Dart
     await db.into(db.pureDefaults).insert(PureDefaultsCompanion.insert());
 
-    Future<bool> evaluate(Expression<bool> expr) async {
+    Future<bool> evaluate(Expression<bool?> expr) async {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result.read(expr);
+      return result!.read<bool?>(expr)!;
     }
 
     expect(
@@ -58,7 +58,7 @@ void main() {
   });
 
   group('regexp flags', () {
-    TodoDb db;
+    late TodoDb db;
 
     setUp(() async {
       db = TodoDb(VmDatabase.memory());
@@ -68,11 +68,11 @@ void main() {
 
     tearDown(() => db.close());
 
-    Future<bool> evaluate(Expression<bool> expr) async {
+    Future<bool> evaluate(Expression<bool?> expr) async {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result.read(expr);
+      return result!.read<bool?>(expr)!;
     }
 
     test('multiLine', () {

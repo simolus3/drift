@@ -36,7 +36,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   }
 
   Future<List<D>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.executor.doWhenOpened((e) async {
+    final results = await ctx.executor!.doWhenOpened((e) async {
       return await e.runSelect(ctx.sql, ctx.boundVariables);
     });
     return results.map(table.map).toList();
@@ -69,10 +69,10 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
     final statement = JoinedSelectStatement(database, table, joins, distinct);
 
     if (whereExpr != null) {
-      statement.where(whereExpr.predicate);
+      statement.where(whereExpr!.predicate);
     }
     if (orderByExpr != null) {
-      statement.orderBy(orderByExpr.terms);
+      statement.orderBy(orderByExpr!.terms);
     }
     if (limitExpr != null) {
       statement.limitExpr = limitExpr;
@@ -129,7 +129,7 @@ class TypedResult {
   TypedResult(this._parsedData, this.rawData, [this._parsedExpressions]);
 
   final Map<TableInfo, dynamic> _parsedData;
-  final Map<Expression, dynamic> _parsedExpressions;
+  final Map<Expression, dynamic>? _parsedExpressions;
 
   /// The raw data contained in this row.
   final QueryRow rawData;
@@ -142,10 +142,10 @@ class TypedResult {
   /// Reads a single column from an [expr]. The expression must have been added
   /// as a column, for instance via [JoinedSelectStatement.addColumns].
   ///
-  /// To access the underlying columns directly, use
-  D read<D, T extends SqlType<D>>(Expression<D> expr) {
+  /// To access the underlying columns directly, use [rawData].
+  D? read<D>(Expression<D> expr) {
     if (_parsedExpressions != null) {
-      return _parsedExpressions[expr] as D;
+      return _parsedExpressions![expr] as D;
     }
     return null;
   }

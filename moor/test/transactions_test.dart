@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:async';
 
 @TestOn('!browser') // todo: Figure out why this doesn't run in js
@@ -19,6 +20,7 @@ package:mockito/src/mock.dart 128:22                                          Mo
  */
 
 import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 
 import 'data/tables/todos.dart';

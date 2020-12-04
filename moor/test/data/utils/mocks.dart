@@ -1,18 +1,36 @@
 import 'dart:async';
 
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:mockito/annotations.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
 
-export 'package:mockito/mockito.dart';
+import 'mocks.mocks.dart';
+export 'mocks.mocks.dart';
 
-class MockExecutor extends Mock implements QueryExecutor {
+@GenerateMocks(
+  [],
+  customMocks: [
+    MockSpec<QueryExecutor>(as: #MockExecutorInternal),
+    MockSpec<TransactionExecutor>(as: #MockTransactionsInternal),
+    MockSpec<StreamQueryStore>(
+        as: #MockStreamQueries, returnNullOnMissingStub: true)
+  ],
+)
+// ignore: unused_element
+void _pleaseGenerateMocks() {
+  // needed so that mockito generates classes for us.
+}
+
+class MockExecutor extends MockExecutorInternal {
   final MockTransactionExecutor transactions = MockTransactionExecutor();
-  final OpeningDetails openingDetails;
-
-  var _opened = false;
+  final OpeningDetails? openingDetails;
+  bool _opened = false;
 
   MockExecutor([this.openingDetails]) {
+    when(dialect).thenReturn(SqlDialect.sqlite);
     when(runSelect(any, any)).thenAnswer((_) {
       assert(_opened);
       return Future.value([]);
@@ -33,6 +51,10 @@ class MockExecutor extends Mock implements QueryExecutor {
       assert(_opened);
       return Future.value();
     });
+    when(runBatched(any)).thenAnswer((_) {
+      assert(_opened);
+      return Future.value();
+    });
     when(beginTransaction()).thenAnswer((_) {
       assert(_opened);
       return transactions;
@@ -42,7 +64,7 @@ class MockExecutor extends Mock implements QueryExecutor {
       if (!_opened && openingDetails != null) {
         _opened = true;
         await (i.positionalArguments.single as QueryExecutorUser)
-            .beforeOpen(this, openingDetails);
+            .beforeOpen(this, openingDetails!);
       }
 
       _opened = true;
@@ -56,23 +78,24 @@ class MockExecutor extends Mock implements QueryExecutor {
   }
 }
 
-class MockTransactionExecutor extends Mock implements TransactionExecutor {
+class MockTransactionExecutor extends MockTransactionsInternal {
   MockTransactionExecutor() {
+    when(dialect).thenReturn(SqlDialect.sqlite);
     when(runSelect(any, any)).thenAnswer((_) => Future.value([]));
     when(runUpdate(any, any)).thenAnswer((_) => Future.value(0));
     when(runDelete(any, any)).thenAnswer((_) => Future.value(0));
     when(runInsert(any, any)).thenAnswer((_) => Future.value(0));
-    when(ensureOpen(any)).thenAnswer((_) => Future.value());
+    when(runCustom(any, any)).thenAnswer((_) => Future.value());
+    when(runBatched(any)).thenAnswer((_) => Future.value());
+    when(ensureOpen(any)).thenAnswer((_) => Future.value(true));
 
     when(send()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
   }
 }
 
-class MockStreamQueries extends Mock implements StreamQueryStore {}
-
 DatabaseConnection createConnection(QueryExecutor executor,
-    [StreamQueryStore streams]) {
+    [StreamQueryStore? streams]) {
   return DatabaseConnection(
       SqlTypeSystem.defaultInstance, executor, streams ?? StreamQueryStore());
 }

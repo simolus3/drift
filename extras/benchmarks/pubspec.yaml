@@ -1,6 +1,9 @@
 name: benchmarks
 description: Runs simple and complex benchmarks to measure performance of moor and moor_ffi
 
+environment:
+  sdk: '>=2.6.0 <3.0.0'
+
 dependencies:
   moor:
   sqlite3: ^0.1.3

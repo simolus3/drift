@@ -8,5 +8,6 @@ pubspec.lock
 .dart_tool/
 
 benchmark_results.json
+.flutter-plugins
 .flutter-plugins-dependencies
 flutter_export_environment.sh

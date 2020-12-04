@@ -15,7 +15,7 @@ abstract class Table {
   /// valid, whereas `@override final String tableName = 'my_table';` or
   /// `@override String get tableName => createMyTableName();` is not.
   @visibleForOverriding
-  String get tableName => null;
+  String? get tableName => null;
 
   /// Whether to append a `WITHOUT ROWID` clause in the `CREATE TABLE`
   /// statement. This is intended to be used by generated code only.
@@ -45,7 +45,7 @@ abstract class Table {
   /// As an auto-incremented `IntColumn` is recognized by moor to be the
   /// primary key, doing so will result in an exception thrown at runtime.
   @visibleForOverriding
-  Set<Column> get primaryKey => null;
+  Set<Column>? get primaryKey => null;
 
   /// Custom table constraints that should be added to the table.
   ///

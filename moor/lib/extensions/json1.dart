@@ -12,7 +12,7 @@ import 'package:meta/meta.dart';
 import '../moor.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.
-extension JsonExtensions on Expression<String> {
+extension JsonExtensions on Expression<String?> {
   /// Assuming that this string is a json array, returns the length of this json
   /// array.
   ///
@@ -28,7 +28,7 @@ extension JsonExtensions on Expression<String> {
   ///
   /// See also:
   ///  - the [sqlite documentation for this function](https://www.sqlite.org/json1.html#the_json_array_length_function)
-  Expression<int> jsonArrayLength([String path]) {
+  Expression<int> jsonArrayLength([String? path]) {
     return FunctionCallExpression('json_array_length', [
       this,
       if (path != null) Variable.withString(path),

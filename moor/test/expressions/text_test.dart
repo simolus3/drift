@@ -5,8 +5,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final expression = GeneratedTextColumn('col', null, false);
-  final db = TodoDb(null);
+  final expression = GeneratedTextColumn('col', 'table', false);
+  final db = TodoDb();
 
   test('generates like expressions', () {
     final ctx = GenerationContext.fromDb(db);

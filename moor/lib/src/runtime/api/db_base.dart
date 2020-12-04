@@ -30,7 +30,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// changes in your schema, you'll need a custom migration strategy to create
   /// the new tables or change the columns.
   MigrationStrategy get migration => MigrationStrategy();
-  MigrationStrategy _cachedMigration;
+  MigrationStrategy? _cachedMigration;
   MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
 
   /// The collection of update rules contains information on how updates on
@@ -58,7 +58,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   /// Used by generated code
   GeneratedDatabase(SqlTypeSystem types, QueryExecutor executor,
-      {StreamQueryStore streamStore})
+      {StreamQueryStore? streamStore})
       : super(types, executor, streamQueries: streamStore) {
     assert(_handleInstantiated());
   }
@@ -75,7 +75,9 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       _openedDbCount[runtimeType] = 1;
       return true;
     }
-    final count = ++_openedDbCount[runtimeType];
+
+    final count =
+        _openedDbCount[runtimeType] = _openedDbCount[runtimeType]! + 1;
     if (count > 1) {
       // ignore: avoid_print
       print(
@@ -117,7 +119,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
       } else if (details.hadUpgrade) {
         final migrator = createMigrator();
         await _resolvedMigration.onUpgrade(
-            migrator, details.versionBefore, details.versionNow);
+            migrator, details.versionBefore!, details.versionNow);
       }
 
       await _resolvedMigration.beforeOpen?.call(details);
@@ -131,7 +133,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
     assert(() {
       if (_openedDbCount[runtimeType] != null) {
-        _openedDbCount[runtimeType]--;
+        _openedDbCount[runtimeType] = _openedDbCount[runtimeType]! - 1;
       }
       return true;
     }());

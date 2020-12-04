@@ -69,7 +69,8 @@ class CreateTableReader {
           ));
         } else {
           try {
-            converter = UsedTypeConverter.forEnumColumn(dartType);
+            converter =
+                UsedTypeConverter.forEnumColumn(dartType, column.type.nullable);
           } on InvalidTypeForEnumConverterException catch (e) {
             step.reportError(ErrorInMoorFile(
               message: e.errorDescription,

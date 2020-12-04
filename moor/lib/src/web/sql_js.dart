@@ -7,12 +7,12 @@ import 'dart:typed_data';
 // This way, projects using moor can run on flutter as long as they don't import
 // this file.
 
-Completer<SqlJsModule> _moduleCompleter;
+Completer<SqlJsModule>? _moduleCompleter;
 
 /// Calls the `initSqlJs` function from the native sql.js library.
 Future<SqlJsModule> initSqlJs() {
   if (_moduleCompleter != null) {
-    return _moduleCompleter.future;
+    return _moduleCompleter!.future;
   }
 
   _moduleCompleter = Completer();
@@ -26,7 +26,7 @@ Future<SqlJsModule> initSqlJs() {
   (context.callMethod('initSqlJs') as JsObject)
       .callMethod('then', [_handleModuleResolved]);
 
-  return _moduleCompleter.future;
+  return _moduleCompleter!.future;
 }
 
 // We're extracting this into its own method so that we don't have to call
@@ -34,7 +34,7 @@ Future<SqlJsModule> initSqlJs() {
 // todo figure out why dart2js generates invalid js when wrapping this in
 // allowInterop
 void _handleModuleResolved(dynamic module) {
-  _moduleCompleter.complete(SqlJsModule._(module as JsObject));
+  _moduleCompleter!.complete(SqlJsModule._(module as JsObject));
 }
 
 /// `sql.js` module from the underlying library
@@ -43,7 +43,7 @@ class SqlJsModule {
   SqlJsModule._(this._obj);
 
   /// Constructs a new [SqlJsDatabase], optionally from the [data] blob.
-  SqlJsDatabase createDatabase([Uint8List data]) {
+  SqlJsDatabase createDatabase([Uint8List? data]) {
     final dbObj = _createInternally(data);
     assert(() {
       // set the window.db variable to make debugging easier
@@ -54,7 +54,7 @@ class SqlJsModule {
     return SqlJsDatabase._(dbObj);
   }
 
-  JsObject _createInternally(Uint8List data) {
+  JsObject _createInternally(Uint8List? data) {
     final constructor = _obj['Database'] as JsFunction;
 
     if (data != null) {

@@ -26,15 +26,15 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
     }
   }
 
-  void _log(String sql, List<dynamic> args) {
+  void _log(String sql, List<Object?> args) {
     if (logStatements) {
       print('Moor: Sent $sql with args $args');
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> runSelect(
-      String statement, List args) async {
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) async {
     assert(_ensureOpenCalled);
     final result = await _synchronized(() {
       _log(statement, args);
@@ -44,7 +44,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runUpdate(String statement, List args) {
+  Future<int> runUpdate(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -53,7 +53,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runDelete(String statement, List args) {
+  Future<int> runDelete(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -62,7 +62,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<int> runInsert(String statement, List args) {
+  Future<int> runInsert(String statement, List<Object?> args) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       _log(statement, args);
@@ -71,7 +71,7 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   }
 
   @override
-  Future<void> runCustom(String statement, [List<dynamic> args]) {
+  Future<void> runCustom(String statement, [List<Object?>? args]) {
     assert(_ensureOpenCalled);
     return _synchronized(() {
       final resolvedArgs = args ?? const [];
@@ -97,7 +97,7 @@ class _TransactionExecutor extends TransactionExecutor
   final DelegatedDatabase _db;
 
   @override
-  QueryDelegate impl;
+  late QueryDelegate impl;
 
   @override
   bool get isSequential => _db.isSequential;
@@ -106,10 +106,10 @@ class _TransactionExecutor extends TransactionExecutor
   bool get logStatements => _db.logStatements;
 
   final Completer<void> _sendCalled = Completer();
-  Completer<bool> _openingCompleter;
+  Completer<bool>? _openingCompleter;
 
-  String _sendOnCommit;
-  String _sendOnRollback;
+  String? _sendOnCommit;
+  String? _sendOnRollback;
 
   Future get completed => _sendCalled.future;
   bool _sendFakeErrorOnRollback = false;
@@ -133,7 +133,7 @@ class _TransactionExecutor extends TransactionExecutor
 
     _ensureOpenCalled = true;
     if (_openingCompleter != null) {
-      return await _openingCompleter.future;
+      return await _openingCompleter!.future;
     }
 
     _openingCompleter = Completer();
@@ -178,7 +178,7 @@ class _TransactionExecutor extends TransactionExecutor
     }
 
     await transactionStarted.future;
-    _openingCompleter.complete(true);
+    _openingCompleter!.complete(true);
     return true;
   }
 
@@ -188,7 +188,7 @@ class _TransactionExecutor extends TransactionExecutor
     if (_openingCompleter == null) return;
 
     if (_sendOnCommit != null) {
-      await runCustom(_sendOnCommit, const []);
+      await runCustom(_sendOnCommit!, const []);
       _db.delegate.isInTransaction = false;
     }
 
@@ -202,7 +202,7 @@ class _TransactionExecutor extends TransactionExecutor
     if (_openingCompleter == null) return;
 
     if (_sendOnRollback != null) {
-      await runCustom(_sendOnRollback, const []);
+      await runCustom(_sendOnRollback!, const []);
       _db.delegate.isInTransaction = false;
     }
 
@@ -238,10 +238,8 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   /// Constructs a delegated database by providing the [delegate].
   DelegatedDatabase(this.delegate,
-      {this.logStatements, this.isSequential = false}) {
-    // not using default value because it's commonly set to null
-    logStatements ??= false;
-  }
+      {bool? logStatements, this.isSequential = false})
+      : logStatements = logStatements ?? false;
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -260,7 +258,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   Future<void> _runMigrations(QueryExecutorUser user) async {
     final versionDelegate = delegate.versionDelegate;
-    int oldVersion;
+    int? oldVersion;
     final currentVersion = user.schemaVersion;
 
     if (versionDelegate is NoVersionDelegate) {

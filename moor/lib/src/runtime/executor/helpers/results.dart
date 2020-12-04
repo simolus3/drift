@@ -5,17 +5,17 @@ class QueryResult {
 
   /// The data returned by the select statement. Each list represents a row,
   /// which has the data in the same order as [columnNames].
-  final List<List<dynamic>> rows;
+  final List<List<Object?>> rows;
 
-  Map<String, int> _columnIndexes;
+  final Map<String, int> _columnIndexes;
 
   /// Constructs a [QueryResult] by specifying the order of column names in
   /// [columnNames] and the associated data in [rows].
-  QueryResult(this.columnNames, this.rows) {
-    _columnIndexes = {
-      for (var column in columnNames) column: columnNames.lastIndexOf(column)
-    };
-  }
+  QueryResult(this.columnNames, this.rows)
+      : _columnIndexes = {
+          for (var column in columnNames)
+            column: columnNames.lastIndexOf(column)
+        };
 
   /// Converts the [rows] into [columnNames] and raw data [QueryResult.rows].
   /// We assume that each map in [rows] has the same keys.
@@ -38,7 +38,7 @@ class QueryResult {
   Iterable<Map<String, dynamic>> get asMap {
     return rows.map((row) {
       return {
-        for (var column in columnNames) column: row[_columnIndexes[column]],
+        for (var column in columnNames) column: row[_columnIndexes[column]!],
       };
     });
   }

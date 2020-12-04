@@ -1,3 +1,5 @@
+//@dart=2.9
+import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';

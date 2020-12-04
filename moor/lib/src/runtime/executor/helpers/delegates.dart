@@ -76,7 +76,7 @@ abstract class QueryDelegate {
   ///
   /// If the statement can't be executed, an exception should be thrown. See
   /// the class documentation of [DatabaseDelegate] on what types are supported.
-  Future<QueryResult> runSelect(String statement, List<dynamic> args);
+  Future<QueryResult> runSelect(String statement, List<Object?> args);
 
   /// Prepares and executes the [statement] with the variables bound to [args].
   /// The statement will either be an `UPDATE` or `DELETE` statement.
@@ -84,7 +84,7 @@ abstract class QueryDelegate {
   /// If the statement completes successfully, the amount of changed rows should
   /// be returned, or `0` if no rows where updated. Should throw if the
   /// statement can't be executed.
-  Future<int> runUpdate(String statement, List<dynamic> args);
+  Future<int> runUpdate(String statement, List<Object?> args);
 
   /// Prepares and executes the [statement] with the variables bound to [args].
   /// The statement will be an `INSERT` statement.
@@ -92,11 +92,11 @@ abstract class QueryDelegate {
   /// If the statement completes successfully, the insert id of the row can be
   /// returned. If that information is not available, `null` can be returned.
   /// The method should throw if the statement can't be executed.
-  Future<int> runInsert(String statement, List<dynamic> args);
+  Future<int> runInsert(String statement, List<Object?> args);
 
   /// Runs a custom [statement] with the given [args]. Ignores all results, but
   /// throws when the statement can't be executed.
-  Future<void> runCustom(String statement, List<dynamic> args);
+  Future<void> runCustom(String statement, List<Object?> args);
 
   /// Runs multiple [statements] without having to prepare the same statement
   /// multiple times.
