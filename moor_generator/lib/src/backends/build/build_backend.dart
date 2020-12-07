@@ -95,6 +95,8 @@ class BuildBackendTask extends BackendTask {
           if (isLastTry) rethrow;
         }
       }
+
+      throw AssertionError('Unreachable, we rethrow in the last iteration');
     }
   }
 
