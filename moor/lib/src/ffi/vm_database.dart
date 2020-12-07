@@ -108,6 +108,8 @@ class VmDatabase extends DelegatedDatabase {
 
 class _VmDelegate extends DatabaseDelegate {
   late Database _db;
+
+  bool _hasCreatedDatabase = false;
   bool _isOpen = false;
 
   final File? file;
@@ -115,7 +117,9 @@ class _VmDelegate extends DatabaseDelegate {
 
   _VmDelegate(this.file, this.setup);
 
-  _VmDelegate._opened(this._db, this.setup) : file = null {
+  _VmDelegate._opened(this._db, this.setup)
+      : file = null,
+        _hasCreatedDatabase = true {
     _initializeDatabase();
   }
 
@@ -130,16 +134,18 @@ class _VmDelegate extends DatabaseDelegate {
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    if (!_isOpen) {
+    if (!_hasCreatedDatabase) {
       _createDatabase();
+      _initializeDatabase();
     }
-    _initializeDatabase();
+
     _isOpen = true;
     return Future.value();
   }
 
   void _createDatabase() {
-    assert(!_isOpen);
+    assert(!_hasCreatedDatabase);
+    _hasCreatedDatabase = true;
 
     final file = this.file;
     if (file != null) {
