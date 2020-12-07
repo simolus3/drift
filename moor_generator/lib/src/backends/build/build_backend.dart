@@ -78,26 +78,39 @@ class BuildBackendTask extends BackendTask {
     } else {
       _currentAnalysisSession ??= element.session;
 
-      // Transform element to new session if necessary, also updating the
-      // session if it was invalidated by another builder
-      var library = element.library;
-      if (library.session != _currentAnalysisSession) {
+      for (var retries = 0; retries < _maxSessionRetries; retries++) {
         try {
-          library = await _currentAnalysisSession
-              .getLibraryByUri(assetId.uri.toString());
+          final library =
+              await _libraryInCurrentSession(element.library, assetId);
+
+          final result = await _currentAnalysisSession
+              .getResolvedLibraryByElement(library);
+          _cachedResults[assetId] = result;
+
+          // Note: getElementDeclaration works by comparing source offsets, so
+          // element.session != session is not a problem in this case.
+          return result.getElementDeclaration(element);
         } on InconsistentAnalysisException {
-          library = await step.resolver.libraryFor(assetId);
-          _currentAnalysisSession = library.session;
+          final isLastTry = retries == _maxSessionRetries - 1;
+          if (isLastTry) rethrow;
         }
       }
+    }
+  }
 
-      final result =
-          await _currentAnalysisSession.getResolvedLibraryByElement(library);
-      _cachedResults[assetId] = result;
+  Future<LibraryElement> _libraryInCurrentSession(
+      LibraryElement library, AssetId definingAsset) async {
+    if (library.session == _currentAnalysisSession) return library;
 
-      // Note: getElementDeclaration works by comparing source offsets, so
-      // element.session != session is not a problem in this case.
-      return result.getElementDeclaration(element);
+    try {
+      // This is safe: If this build step knows the library, it has already read
+      // the originating asset. We can bypass the build asset reader!
+      return await _currentAnalysisSession
+          .getLibraryByUri(definingAsset.uri.toString());
+    } on InconsistentAnalysisException {
+      final library = await step.resolver.libraryFor(definingAsset);
+      _currentAnalysisSession = library.session;
+      return library;
     }
   }
 
@@ -127,4 +140,6 @@ class BuildBackendTask extends BackendTask {
     return typeDeserializer
         .deserialize(SerializedType.fromJson(serializedType));
   }
+
+  static const int _maxSessionRetries = 5;
 }
