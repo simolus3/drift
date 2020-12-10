@@ -100,7 +100,7 @@ jobs:
 #      - uses: cedx/setup-dart@v2
 #      - run: dart pub upgrade
 #        name: "Setup coverage processor"
-#        working-directory: extras/coverage_formatting
+#        working-directory: extras/tooling
 #      - uses: actions/download-artifact@v2
 #        with:
 #          name: moor-coverage-data
@@ -109,7 +109,7 @@ jobs:
 #        with:
 #          name: sqlparser-coverage-data
 #          path: sqlparser/
-#      - run: dart run extras/coverage_formatting/bin/coverage.dart
+#      - run: dart run extras/tooling/bin/coverage.dart
 #        name: "Format coverage from raw data"
 #      - uses: codecov/codecov-action@v1
 #        with:
