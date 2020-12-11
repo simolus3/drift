@@ -17,7 +17,7 @@ class Scanner {
   final List<Token> tokens = [];
   final List<TokenizerError> errors = [];
 
-  int _startOffset;
+  int _startOffset = 0;
   int _currentOffset = 0;
   bool get _isAtEnd => _currentOffset >= source.length;
 
@@ -145,7 +145,7 @@ class Scanner {
           buffer.writeCharCode(_nextChar());
         }
 
-        int explicitIndex;
+        int? explicitIndex;
         if (buffer.isNotEmpty) {
           explicitIndex = int.parse(buffer.toString());
         }
@@ -161,11 +161,11 @@ class Scanner {
         }
         break;
       case $dollar:
-        final name = _matchColumnName();
+        final name = _matchColumnName()!;
         tokens.add(DollarSignVariableToken(_currentSpan, name));
         break;
       case $at:
-        final name = _matchColumnName();
+        final name = _matchColumnName()!;
         tokens.add(AtSignVariableToken(_currentSpan, name));
         break;
       case $semicolon:
@@ -312,8 +312,8 @@ class Scanner {
       return !noDigit;
     }
 
-    String beforeDecimal;
-    String afterDecimal;
+    String? beforeDecimal;
+    String? afterDecimal;
     var hasDecimal = false;
 
     // ok, we're not dealing with a hexadecimal number.
@@ -344,7 +344,7 @@ class Scanner {
       }
     }
 
-    int parsedExponent;
+    int? parsedExponent;
 
     // ok, we've read the first part of the number. But there's more! If it's
     // not a hexadecimal number, it could be in scientific notation.
@@ -384,7 +384,7 @@ class Scanner {
         exponent: parsedExponent));
   }
 
-  void _identifier({int escapeChar}) {
+  void _identifier({int? escapeChar}) {
     if (escapeChar != null) {
       // find the closing quote
       while (!_isAtEnd && _peek() != escapeChar) {
@@ -407,16 +407,16 @@ class Scanner {
       // not escaped, so it could be a keyword
       final text = _currentSpan.text.toUpperCase();
       if (keywords.containsKey(text)) {
-        tokens.add(KeywordToken(keywords[text], _currentSpan));
+        tokens.add(KeywordToken(keywords[text]!, _currentSpan));
       } else if (scanMoorTokens && moorKeywords.containsKey(text)) {
-        tokens.add(KeywordToken(moorKeywords[text], _currentSpan));
+        tokens.add(KeywordToken(moorKeywords[text]!, _currentSpan));
       } else {
         tokens.add(IdentifierToken(false, _currentSpan));
       }
     }
   }
 
-  String _matchColumnName() {
+  String? _matchColumnName() {
     if (_isAtEnd || !canStartIdentifier(_peek())) return null;
 
     final buffer = StringBuffer()..writeCharCode(_nextChar());

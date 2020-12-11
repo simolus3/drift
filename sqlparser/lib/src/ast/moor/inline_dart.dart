@@ -16,7 +16,7 @@ part of '../ast.dart';
 abstract class DartPlaceholder extends AstNode {
   final String name;
 
-  DollarSignVariableToken token;
+  DollarSignVariableToken? token;
 
   DartPlaceholder._(this.name);
 
@@ -31,11 +31,11 @@ abstract class DartPlaceholder extends AstNode {
     return visitor.visitDartPlaceholder(this, arg);
   }
 
-  T when<T>(
-      {T Function(DartExpressionPlaceholder) isExpression,
-      T Function(DartLimitPlaceholder) isLimit,
-      T Function(DartOrderingTermPlaceholder) isOrderingTerm,
-      T Function(DartOrderByPlaceholder) isOrderBy}) {
+  T? when<T>(
+      {T Function(DartExpressionPlaceholder)? isExpression,
+      T Function(DartLimitPlaceholder)? isLimit,
+      T Function(DartOrderingTermPlaceholder)? isOrderingTerm,
+      T Function(DartOrderByPlaceholder)? isOrderBy}) {
     if (this is DartExpressionPlaceholder) {
       return isExpression?.call(this as DartExpressionPlaceholder);
     } else if (this is DartLimitPlaceholder) {
@@ -51,18 +51,18 @@ abstract class DartPlaceholder extends AstNode {
 }
 
 class DartExpressionPlaceholder extends DartPlaceholder implements Expression {
-  DartExpressionPlaceholder({@required String name}) : super._(name);
+  DartExpressionPlaceholder({required String name}) : super._(name);
 }
 
 class DartLimitPlaceholder extends DartPlaceholder implements LimitBase {
-  DartLimitPlaceholder({@required String name}) : super._(name);
+  DartLimitPlaceholder({required String name}) : super._(name);
 }
 
 class DartOrderingTermPlaceholder extends DartPlaceholder
     implements OrderingTermBase {
-  DartOrderingTermPlaceholder({@required String name}) : super._(name);
+  DartOrderingTermPlaceholder({required String name}) : super._(name);
 }
 
 class DartOrderByPlaceholder extends DartPlaceholder implements OrderByBase {
-  DartOrderByPlaceholder({@required String name}) : super._(name);
+  DartOrderByPlaceholder({required String name}) : super._(name);
 }

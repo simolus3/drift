@@ -52,7 +52,6 @@ class RoughTypeExpectation extends TypeExpectation {
       case _RoughType.numeric:
         return baseType == BasicType.int || baseType == BasicType.real;
     }
-    return false;
   }
 
   ResolvedType defaultType() {
@@ -60,8 +59,6 @@ class RoughTypeExpectation extends TypeExpectation {
       case _RoughType.numeric:
         return const ResolvedType(type: BasicType.real);
     }
-
-    throw AssertionError();
   }
 }
 

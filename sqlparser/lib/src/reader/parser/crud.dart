@@ -10,7 +10,7 @@ const _startJoinOperators = [
 ];
 
 mixin CrudParser on ParserBase {
-  CrudStatement _crud() {
+  CrudStatement? _crud() {
     final withClause = _withClause();
 
     if (_check(TokenType.select) || _check(TokenType.$values)) {
@@ -25,7 +25,7 @@ mixin CrudParser on ParserBase {
     return null;
   }
 
-  WithClause _withClause() {
+  WithClause? _withClause() {
     if (!_matchOne(TokenType.$with)) return null;
     final withToken = _previous;
 
@@ -35,7 +35,7 @@ mixin CrudParser on ParserBase {
     final ctes = <CommonTableExpression>[];
     do {
       final name = _consumeIdentifier('Expected name for common table');
-      List<String> columnNames;
+      List<String>? columnNames;
 
       // can optionally declare the column names in (foo, bar, baz) syntax
       if (_matchOne(TokenType.leftParen)) {
@@ -76,13 +76,13 @@ mixin CrudParser on ParserBase {
   }
 
   @override
-  BaseSelectStatement _fullSelect() {
+  BaseSelectStatement? _fullSelect() {
     final clause = _withClause();
     return select(withClause: clause);
   }
 
   @override
-  BaseSelectStatement select({bool noCompound, WithClause withClause}) {
+  BaseSelectStatement? select({bool? noCompound, WithClause? withClause}) {
     if (noCompound == true) {
       return _selectNoCompound(withClause);
     } else {
@@ -123,12 +123,12 @@ mixin CrudParser on ParserBase {
           withClause: withClause,
           base: first,
           additional: parts,
-        )..setSpan(withClause?.first ?? first.first, _previous);
+        )..setSpan(withClause?.first ?? first.first!, _previous);
       }
     }
   }
 
-  SelectStatementNoCompound _selectNoCompound([WithClause withClause]) {
+  SelectStatementNoCompound? _selectNoCompound([WithClause? withClause]) {
     if (_peek.type == TokenType.$values) return _valuesSelect(withClause);
     if (!_match(const [TokenType.select])) return null;
     final selectToken = _previous;
@@ -167,7 +167,7 @@ mixin CrudParser on ParserBase {
     )..setSpan(first, _previous);
   }
 
-  ValuesSelectStatement _valuesSelect([WithClause withClause]) {
+  ValuesSelectStatement? _valuesSelect([WithClause? withClause]) {
     if (!_matchOne(TokenType.$values)) return null;
     final firstToken = _previous;
 
@@ -180,7 +180,7 @@ mixin CrudParser on ParserBase {
       ..setSpan(firstToken, _previous);
   }
 
-  CompoundSelectPart _compoundSelectPart() {
+  CompoundSelectPart? _compoundSelectPart() {
     if (_match(
         const [TokenType.union, TokenType.intersect, TokenType.except])) {
       final firstModeToken = _previous;
@@ -189,17 +189,17 @@ mixin CrudParser on ParserBase {
         TokenType.intersect: CompoundSelectMode.intersect,
         TokenType.except: CompoundSelectMode.except,
       }[firstModeToken.type];
-      Token allToken;
+      Token? allToken;
 
       if (firstModeToken.type == TokenType.union && _matchOne(TokenType.all)) {
         allToken = _previous;
         mode = CompoundSelectMode.unionAll;
       }
 
-      final select = _selectNoCompound();
+      final select = _selectNoCompound()!;
 
       return CompoundSelectPart(
-        mode: mode,
+        mode: mode!,
         select: select,
       )
         ..firstModeToken = firstModeToken
@@ -252,7 +252,7 @@ mixin CrudParser on ParserBase {
 
   /// Returns an identifier followed after an optional "AS" token in sql.
   /// Returns null if there is
-  IdentifierToken _as() {
+  IdentifierToken? _as() {
     if (_match(const [TokenType.as])) {
       return _consume(TokenType.identifier, 'Expected an identifier')
           as IdentifierToken;
@@ -263,7 +263,7 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  Queryable /*?*/ _from() {
+  Queryable? _from() {
     if (!_matchOne(TokenType.from)) return null;
 
     // Can either be a list of <TableOrSubquery> or a join. Joins also start
@@ -277,7 +277,7 @@ mixin CrudParser on ParserBase {
     // this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
     // we currently only support regular tables, table functions and nested
     // selects
-    final tableRef = _tableReference();
+    final tableRef = _tableReferenceOrNull();
     if (tableRef != null) {
       // this is a bit hacky. If the table reference only consists of one
       // identifer and it's followed by a (, it's a table-valued function
@@ -288,13 +288,13 @@ mixin CrudParser on ParserBase {
 
         return TableValuedFunction(tableRef.tableName, params,
             as: alias?.identifier)
-          ..setSpan(tableRef.first, _previous);
+          ..setSpan(tableRef.first!, _previous);
       }
 
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;
-      final innerStmt = select();
+      final innerStmt = select()!;
       _consume(TokenType.rightParen,
           'Expected a right bracket to terminate the inner select');
 
@@ -307,22 +307,26 @@ mixin CrudParser on ParserBase {
     _error('Expected a table name or a nested select statement');
   }
 
-  TableReference _tableReference() {
+  TableReference? _tableReferenceOrNull() {
     _suggestHint(const TableNameDescription());
-    if (_matchOne(TokenType.identifier)) {
-      // ignore the schema name, it's not supported. Besides that, we're on the
-      // first branch in the diagram here https://www.sqlite.org/syntax/table-or-subquery.html
-      final firstToken = _previous as IdentifierToken;
-      final tableName = firstToken.identifier;
-      final alias = _as();
-      return TableReference(tableName, alias?.identifier)
-        ..setSpan(firstToken, _previous)
-        ..tableNameToken = firstToken;
-    }
+    if (_check(TokenType.identifier)) return _tableReference();
     return null;
   }
 
-  JoinClause _joinClause(TableOrSubquery start) {
+  TableReference _tableReference() {
+    _suggestHint(const TableNameDescription());
+    // ignore the schema name, it's not supported. Besides that, we're on the
+    // first branch in the diagram here https://www.sqlite.org/syntax/table-or-subquery.html
+    final firstToken = _consumeIdentifier('Expected a table reference');
+
+    final tableName = firstToken.identifier;
+    final alias = _as();
+    return TableReference(tableName, alias?.identifier)
+      ..setSpan(firstToken, _previous)
+      ..tableNameToken = firstToken;
+  }
+
+  JoinClause? _joinClause(TableOrSubquery start) {
     var operator = _parseJoinOperator();
     if (operator == null) {
       return null;
@@ -362,11 +366,11 @@ mixin CrudParser on ParserBase {
     }
 
     return JoinClause(primary: start, joins: joins)
-      ..setSpan(start.first, _previous);
+      ..setSpan(start.first!, _previous);
   }
 
   /// Parses https://www.sqlite.org/syntax/join-operator.html
-  List<TokenType> _parseJoinOperator() {
+  List<TokenType>? _parseJoinOperator() {
     if (_match(_startJoinOperators)) {
       final operators = [_previous.type];
 
@@ -393,7 +397,7 @@ mixin CrudParser on ParserBase {
   }
 
   /// Parses https://www.sqlite.org/syntax/join-constraint.html
-  JoinConstraint /*?*/ _joinConstraint() {
+  JoinConstraint? _joinConstraint() {
     if (_matchOne(TokenType.on)) {
       return OnConstraint(expression: expression());
     } else if (_matchOne(TokenType.using)) {
@@ -415,20 +419,20 @@ mixin CrudParser on ParserBase {
   }
 
   /// Parses a where clause if there is one at the current position
-  Expression _where() {
+  Expression? _where() {
     if (_match(const [TokenType.where])) {
       return expression();
     }
     return null;
   }
 
-  GroupBy _groupBy() {
+  GroupBy? _groupBy() {
     if (_matchOne(TokenType.group)) {
       final groupToken = _previous;
 
       _consume(TokenType.by, 'Expected a "BY"');
       final by = <Expression>[];
-      Expression having;
+      Expression? having;
 
       do {
         by.add(expression());
@@ -458,7 +462,7 @@ mixin CrudParser on ParserBase {
     return declarations;
   }
 
-  OrderByBase _orderBy() {
+  OrderByBase? _orderBy() {
     if (_matchOne(TokenType.order)) {
       final orderToken = _previous;
       _consume(TokenType.by, 'Expected "BY" after "ORDER" token');
@@ -474,7 +478,7 @@ mixin CrudParser on ParserBase {
       if (terms.length == 1 && terms.single is DartOrderingTermPlaceholder) {
         final termPlaceholder = terms.single as DartOrderingTermPlaceholder;
         return DartOrderByPlaceholder(name: termPlaceholder.name)
-          ..setSpan(termPlaceholder.first, termPlaceholder.last);
+          ..setSpan(termPlaceholder.first!, termPlaceholder.last!);
       }
 
       return OrderBy(terms: terms)..setSpan(orderToken, _previous);
@@ -486,7 +490,7 @@ mixin CrudParser on ParserBase {
     final expr = expression();
     final mode = _orderingModeOrNull();
 
-    OrderingBehaviorForNulls nulls;
+    OrderingBehaviorForNulls? nulls;
 
     if (_matchOne(TokenType.nulls)) {
       if (_matchOne(TokenType.first)) {
@@ -503,15 +507,15 @@ mixin CrudParser on ParserBase {
     // placeholder and let users define the mode at runtime.
     if (mode == null && nulls == null && expr is DartExpressionPlaceholder) {
       return DartOrderingTermPlaceholder(name: expr.name)
-        ..setSpan(expr.first, expr.last);
+        ..setSpan(expr.first!, expr.last!);
     }
 
     return OrderingTerm(expression: expr, orderingMode: mode, nulls: nulls)
-      ..setSpan(expr.first, _previous);
+      ..setSpan(expr.first!, _previous);
   }
 
   @override
-  OrderingMode _orderingModeOrNull() {
+  OrderingMode? _orderingModeOrNull() {
     if (_match(const [TokenType.asc, TokenType.desc])) {
       final mode = _previous.type == TokenType.asc
           ? OrderingMode.ascending
@@ -523,7 +527,7 @@ mixin CrudParser on ParserBase {
 
   /// Parses a [Limit] clause, or returns null if there is no limit token after
   /// the current position.
-  LimitBase _limit() {
+  LimitBase? _limit() {
     if (!_matchOne(TokenType.limit)) return null;
 
     final limitToken = _previous;
@@ -554,17 +558,14 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  DeleteStatement _deleteStmt([WithClause withClause]) {
+  DeleteStatement? _deleteStmt([WithClause? withClause]) {
     if (!_matchOne(TokenType.delete)) return null;
     final deleteToken = _previous;
 
     _consume(TokenType.from, 'Expected a FROM here');
 
     final table = _tableReference();
-    Expression where;
-    if (table == null) {
-      _error('Expected a table reference');
-    }
+    Expression? where;
 
     if (_matchOne(TokenType.where)) {
       where = expression();
@@ -577,11 +578,11 @@ mixin CrudParser on ParserBase {
     )..setSpan(withClause?.first ?? deleteToken, _previous);
   }
 
-  UpdateStatement _update([WithClause withClause]) {
+  UpdateStatement? _update([WithClause? withClause]) {
     if (!_matchOne(TokenType.update)) return null;
     final updateToken = _previous;
 
-    FailureMode failureMode;
+    FailureMode? failureMode;
     if (_matchOne(TokenType.or)) {
       failureMode = UpdateStatement.failureModeFromToken(_advance().type);
     }
@@ -619,11 +620,11 @@ mixin CrudParser on ParserBase {
     return set;
   }
 
-  InsertStatement _insertStmt([WithClause withClause]) {
+  InsertStatement? _insertStmt([WithClause? withClause]) {
     if (!_match(const [TokenType.insert, TokenType.replace])) return null;
 
     final firstToken = _previous;
-    InsertMode insertMode;
+    InsertMode? insertMode;
     if (_previous.type == TokenType.insert) {
       // insert modes can have a failure clause (INSERT OR xxx)
       if (_matchOne(TokenType.or)) {
@@ -669,7 +670,7 @@ mixin CrudParser on ParserBase {
 
     return InsertStatement(
       withClause: withClause,
-      mode: insertMode,
+      mode: insertMode!,
       table: table,
       targetColumns: targetColumns,
       source: source,
@@ -699,14 +700,14 @@ mixin CrudParser on ParserBase {
     }
   }
 
-  UpsertClause _upsertClauseOrNull() {
+  UpsertClause? _upsertClauseOrNull() {
     if (!_matchOne(TokenType.on)) return null;
 
     final first = _previous;
     _consume(TokenType.conflict, 'Expected CONFLICT keyword for upsert clause');
 
-    List<IndexedColumn> indexedColumns;
-    Expression where;
+    List<IndexedColumn>? indexedColumns;
+    Expression? where;
     if (_matchOne(TokenType.leftParen)) {
       indexedColumns = _indexedColumns();
 
@@ -719,7 +720,7 @@ mixin CrudParser on ParserBase {
     _consume(TokenType.$do,
         'Expected DO, followed by the action (NOTHING or UPDATE SET)');
 
-    UpsertAction action;
+    late UpsertAction action;
     if (_matchOne(TokenType.nothing)) {
       action = DoNothing()..setSpan(_previous, _previous);
     } else if (_check(TokenType.update)) {
@@ -739,7 +740,7 @@ mixin CrudParser on ParserBase {
     _consume(TokenType.set, 'Expected UPDATE SET keyword here');
 
     final set = _setComponents();
-    Expression where;
+    Expression? where;
     if (_matchOne(TokenType.where)) {
       where = expression();
     }
@@ -752,8 +753,8 @@ mixin CrudParser on ParserBase {
     _consume(TokenType.leftParen, 'Expected opening parenthesis');
     final leftParen = _previous;
 
-    String baseWindowName;
-    OrderByBase orderBy;
+    String? baseWindowName;
+    OrderByBase? orderBy;
 
     final partitionBy = <Expression>[];
     if (_matchOne(TokenType.identifier)) {
@@ -783,7 +784,7 @@ mixin CrudParser on ParserBase {
   }
 
   /// https://www.sqlite.org/syntax/frame-spec.html
-  FrameSpec _frameSpec() {
+  FrameSpec? _frameSpec() {
     if (!_match(const [TokenType.range, TokenType.rows, TokenType.groups])) {
       return null;
     }

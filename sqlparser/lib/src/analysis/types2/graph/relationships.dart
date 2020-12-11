@@ -7,7 +7,7 @@ class NullableIfSomeOtherIs extends TypeRelation
   @override
   final Typeable target;
   @override
-  final List<Typeable> from;
+  final List<Typeable?> from;
 
   NullableIfSomeOtherIs(this.target, this.from);
 }
@@ -16,12 +16,12 @@ class NullableIfSomeOtherIs extends TypeRelation
 class CopyTypeFrom extends TypeRelation implements DirectedRelation {
   @override
   final Typeable target;
-  final Typeable other;
+  final Typeable? other;
 
   /// When true, [target] will be the array-variant of [other]. When false,
   /// [target] will be the scalar variant of [other]. When null, nothing will be
   /// transformed.
-  final bool array;
+  final bool? array;
 
   CopyTypeFrom(this.target, this.other, {this.array});
 }
@@ -29,11 +29,11 @@ class CopyTypeFrom extends TypeRelation implements DirectedRelation {
 /// Dependency declaring that [target] has a type that matches all of [from].
 class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
   @override
-  final Typeable target;
+  final Typeable? target;
   @override
-  final List<Typeable> from;
+  final List<Typeable?> from;
 
-  final CastMode /*?*/ cast;
+  final CastMode? cast;
 
   CopyEncapsulating(this.target, this.from, [this.cast]);
 }
@@ -47,7 +47,7 @@ class HaveSameType extends TypeRelation {
 
   HaveSameType(this.first, this.second);
 
-  Typeable getOther(Typeable t) {
+  Typeable getOther(Typeable? t) {
     assert(t == first || t == second);
     return t == first ? second : first;
   }
@@ -58,8 +58,8 @@ class HaveSameType extends TypeRelation {
 class DefaultType extends TypeRelation implements DirectedRelation {
   @override
   final Typeable target;
-  final ResolvedType /*?*/ defaultType;
-  final bool /*?*/ isNullable;
+  final ResolvedType? defaultType;
+  final bool? isNullable;
 
   DefaultType(this.target, {this.defaultType, this.isNullable});
 }

@@ -2,14 +2,14 @@ part of '../ast.dart';
 
 class DeleteStatement extends CrudStatement
     implements StatementWithWhere, HasPrimarySource {
-  TableReference from;
+  TableReference? from;
   @override
-  Expression where;
+  Expression? where;
 
   @override
-  TableReference get table => from;
+  TableReference? get table => from;
 
-  DeleteStatement({WithClause withClause, @required this.from, this.where})
+  DeleteStatement({WithClause? withClause, required this.from, this.where})
       : super._(withClause);
 
   @override
@@ -20,14 +20,14 @@ class DeleteStatement extends CrudStatement
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
-    from = transformer.transformChild(from, this, arg);
+    from = transformer.transformChild(from!, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (withClause != null) withClause,
-        from,
-        if (where != null) where,
+        if (withClause != null) withClause!,
+        from!,
+        if (where != null) where!,
       ];
 }

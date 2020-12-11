@@ -46,7 +46,7 @@ LIMIT 5 OFFSET 5 * 3
   result.errors.forEach(print);
 
   final select = result.root as SelectStatement;
-  final columns = select.resolvedColumns;
+  final columns = select.resolvedColumns!;
 
   print('the query returns ${columns.length} columns');
 

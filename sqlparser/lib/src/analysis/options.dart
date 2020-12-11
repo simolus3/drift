@@ -19,7 +19,7 @@ class AnalyzeStatementOptions {
   /// Looks up the defined type for that variable.
   ///
   /// Returns null if the type of that variable hasn't been set.
-  ResolvedType specifiedTypeOf(Variable variable) {
+  ResolvedType? specifiedTypeOf(Variable variable) {
     // colon-named variables also have an index!
     if (variable.resolvedIndex != null &&
         indexedVariableTypes.containsKey(variable.resolvedIndex)) {

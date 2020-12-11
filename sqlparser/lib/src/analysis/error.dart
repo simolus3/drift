@@ -1,18 +1,18 @@
 part of 'analysis.dart';
 
 class AnalysisError {
-  final SyntacticEntity source;
+  final SyntacticEntity? source;
 
-  final String message;
+  final String? message;
   final AnalysisErrorType type;
 
   AnalysisError._internal(this.type, this.message, this.source);
 
-  AnalysisError({@required this.type, this.message, AstNode relevantNode})
+  AnalysisError({required this.type, this.message, AstNode? relevantNode})
       : source = relevantNode;
 
   @Deprecated('Use source instead')
-  AstNode get relevantNode => source as AstNode;
+  AstNode? get relevantNode => source as AstNode?;
 
   factory AnalysisError.fromParser(ParsingError error) {
     return AnalysisError._internal(
@@ -25,7 +25,7 @@ class AnalysisError {
   /// The relevant portion of the source code that caused this error. Some AST
   /// nodes don't have a span, in that case this error is going to have a null
   /// span as well.
-  FileSpan get span => source.span;
+  FileSpan? get span => source!.span;
 
   @override
   String toString() {
@@ -46,10 +46,10 @@ class UnresolvedReferenceError extends AnalysisError {
   final Iterable<String> available;
 
   UnresolvedReferenceError(
-      {@required AnalysisErrorType type,
-      this.reference,
-      this.available,
-      AstNode relevantNode})
+      {required AnalysisErrorType type,
+      required this.reference,
+      required this.available,
+      AstNode? relevantNode})
       : super(type: type, relevantNode: relevantNode);
 
   @override

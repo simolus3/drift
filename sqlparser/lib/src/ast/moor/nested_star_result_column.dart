@@ -7,7 +7,7 @@ part of '../ast.dart';
 /// when using moor.
 class NestedStarResultColumn extends ResultColumn {
   final String tableName;
-  ResultSet resultSet;
+  ResultSet? resultSet;
 
   NestedStarResultColumn(this.tableName);
 

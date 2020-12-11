@@ -12,9 +12,9 @@ class TypeInferenceSession {
   final TypeGraph graph = TypeGraph();
   final EngineOptions options;
   final AnalysisContext context;
-  TypeInferenceResults results;
+  TypeInferenceResults? results;
 
-  TypeInferenceSession(this.context, [EngineOptions options])
+  TypeInferenceSession(this.context, [EngineOptions? options])
       : options = options ?? EngineOptions() {
     results = TypeInferenceResults._(this);
   }
@@ -30,7 +30,7 @@ class TypeInferenceSession {
   }
 
   /// Returns the inferred type of [t], or `null` if it couldn't be inferred.
-  ResolvedType typeOf(Typeable t) {
+  ResolvedType? typeOf(Typeable? t) {
     return graph[t];
   }
 
@@ -45,7 +45,6 @@ class TypeInferenceSession {
 
   /// This is not currently implemented.
   void _hintNullability(Typeable t, bool nullable) {
-    assert(nullable != null);
     graph.markNullability(t, nullable);
   }
 
@@ -67,7 +66,7 @@ class TypeInferenceResults {
 
   /// Finds the resolved type of [t], or `null` if the type of [t] could not
   /// be inferred.
-  ResolvedType typeOf(Typeable t) {
+  ResolvedType? typeOf(Typeable t) {
     return session.typeOf(t);
   }
 }

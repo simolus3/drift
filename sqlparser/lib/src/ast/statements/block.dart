@@ -2,8 +2,8 @@ part of '../ast.dart';
 
 /// BLOCK = 'BEGIN' < CRUD-STATEMENT ';' > 'END'
 class Block extends AstNode {
-  Token begin;
-  Token end;
+  Token? begin;
+  Token? end;
   final List<CrudStatement> statements;
 
   Block(this.statements);

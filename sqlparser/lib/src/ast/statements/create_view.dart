@@ -5,17 +5,17 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   final bool ifNotExists;
 
   final String viewName;
-  IdentifierToken viewNameToken;
+  IdentifierToken? viewNameToken;
 
   BaseSelectStatement query;
 
-  final List<String> columns;
+  final List<String>? columns;
 
   CreateViewStatement(
       {this.ifNotExists = false,
-      @required this.viewName,
+      required this.viewName,
       this.columns,
-      @required this.query});
+      required this.query});
 
   @override
   String get createdName => viewName;

@@ -11,7 +11,7 @@ const _expectString = ExactTypeExpectation.laxly(_textType);
 class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   final TypeInferenceSession session;
 
-  final Set<Column> _handledColumns = {};
+  final Set<Column?> _handledColumns = {};
 
   TypeResolver(this.session);
 
@@ -56,7 +56,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitSubQuery(SubQuery e, TypeExpectation arg) {
-    final columnsOfQuery = e.select.resolvedColumns;
+    final columnsOfQuery = e.select.resolvedColumns!;
     if (columnsOfQuery.isEmpty) {
       return super.visitSubQuery(e, arg);
     }
@@ -70,7 +70,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitInsertStatement(InsertStatement e, TypeExpectation arg) {
-    if (e.withClause != null) visit(e.withClause, arg);
+    if (e.withClause != null) visit(e.withClause!, arg);
     visitList(e.targetColumns, const NoTypeExpectation());
 
     final targets = e.resolvedTargetColumns ?? const [];
@@ -78,7 +78,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     final expectations = targets.map((r) {
       if (session.graph.knowsType(r)) {
-        return ExactTypeExpectation(session.typeOf(r));
+        return ExactTypeExpectation(session.typeOf(r)!);
       }
       return const NoTypeExpectation();
     }).toList();
@@ -152,16 +152,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitFrameSpec(FrameSpec e, TypeExpectation arg) {
     // handle something like "RANGE BETWEEN ? PRECEDING AND ? FOLLOWING
     if (e.start.isExpressionOffset) {
-      visit(e.start.offset, _expectInt);
+      visit(e.start.offset!, _expectInt);
     }
     if (e.end.isExpressionOffset) {
-      visit(e.end.offset, _expectInt);
+      visit(e.end.offset!, _expectInt);
     }
   }
 
   @override
   void defaultLiteral(Literal e, TypeExpectation arg) {
-    ResolvedType type;
+    late ResolvedType type;
     var nullable = false;
 
     if (e is NullLiteral) {
@@ -196,7 +196,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   void _inferAsVariable(Expression e, TypeExpectation arg) {
-    ResolvedType resolved;
+    ResolvedType? resolved;
     if (e is Variable) {
       resolved = session.context.stmtOptions.specifiedTypeOf(e);
     }
@@ -448,11 +448,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  FunctionHandler /*?*/ _functionHandlerFor(ExpressionInvocation e) {
+  FunctionHandler? _functionHandlerFor(ExpressionInvocation e) {
     return session.options.addedFunctions[e.name.toLowerCase()];
   }
 
-  ResolvedType _resolveInvocation(ExpressionInvocation e) {
+  ResolvedType? _resolveInvocation(ExpressionInvocation e) {
     final params = e.expandParameters();
     void nullableIfChildIs() {
       session._addRelation(NullableIfSomeOtherIs(e, params));
@@ -556,7 +556,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     final extensionHandler = _functionHandlerFor(e);
     if (extensionHandler != null) {
-      return extensionHandler.inferReturnType(session.context, e, params)?.type;
+      return extensionHandler.inferReturnType(session.context, e, params).type;
     }
 
     session.context.reportError(AnalysisError(
@@ -584,11 +584,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       for (final arg in params) {
         if (arg is! Expression) continue;
 
-        final expressionArgument = arg as Expression;
+        final expressionArgument = arg;
 
         final result = extensionHandler.inferArgumentType(
             session.context, e, expressionArgument);
-        final type = result?.type;
+        final type = result.type;
         if (type != null) {
           session._markTypeResolved(expressionArgument, type);
         }
@@ -612,14 +612,14 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitExcept(e, e.where, arg);
   }
 
-  void _handleColumn(Column column) {
+  void _handleColumn(Column? column) {
     if (session.graph.knowsType(column) || _handledColumns.contains(column)) {
       return;
     }
     _handledColumns.add(column);
 
     if (column is ColumnWithType) {
-      session._markTypeResolved(column, column.type);
+      session._markTypeResolved(column, column.type!);
     } else if (column is ExpressionColumn) {
       _lazyCopy(column, column.expression);
     } else if (column is CompoundSelectColumn) {
@@ -633,9 +633,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  void _lazyCopy(Typeable to, Typeable from) {
+  void _lazyCopy(Typeable to, Typeable? from) {
     if (session.graph.knowsType(from)) {
-      session._markTypeResolved(to, session.typeOf(from));
+      session._markTypeResolved(to, session.typeOf(from)!);
     } else {
       session._addRelation(CopyTypeFrom(to, from));
     }
@@ -646,11 +646,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       // assume that a where statement is a boolean expression. Sqlite
       // internally casts (https://www.sqlite.org/lang_expr.html#booleanexpr),
       // so be lax
-      visit(e.where, const ExactTypeExpectation.laxly(ResolvedType.bool()));
+      visit(e.where!, const ExactTypeExpectation.laxly(ResolvedType.bool()));
     }
   }
 
-  ResolvedType _inferFromContext(TypeExpectation expectation) {
+  ResolvedType? _inferFromContext(TypeExpectation expectation) {
     if (expectation is ExactTypeExpectation) {
       return expectation.type;
     }
@@ -666,7 +666,7 @@ class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitBaseSelectStatement(BaseSelectStatement stmt, void arg) {
     if (stmt.resolvedColumns != null) {
-      stmt.resolvedColumns.forEach(resolver._handleColumn);
+      stmt.resolvedColumns!.forEach(resolver._handleColumn);
     }
 
     visitChildren(stmt, arg);

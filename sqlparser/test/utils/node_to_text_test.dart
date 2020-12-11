@@ -10,7 +10,7 @@ void main() {
 
   void testFormat(String input, {_ParseKind kind = _ParseKind.statement}) {
     AstNode parse(String input) {
-      ParseResult result;
+      late ParseResult result;
 
       switch (kind) {
         case _ParseKind.statement:

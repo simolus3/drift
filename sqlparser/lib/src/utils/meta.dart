@@ -7,8 +7,8 @@ mixin HasMetaMixin {
   /// Nodes can have arbitrary annotations on them set via [setMeta] and
   /// obtained via [meta]. This mechanism is used to, for instance, attach
   /// variable scopes to a subtree.
-  T meta<T>() {
-    return _metadata[T] as T;
+  T? meta<T>() {
+    return _metadata[T] as T?;
   }
 
   /// Sets the metadata of type [T] to the specified [value].

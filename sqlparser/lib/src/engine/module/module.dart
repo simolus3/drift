@@ -53,7 +53,7 @@ mixin ArgumentCountLinter {
   ///
   /// If the function is unknown, or if the result would be ambiguous, returns
   /// null.
-  int /*?*/ argumentCountFor(String function);
+  int? argumentCountFor(String function);
 
   int actualArgumentCount(SqlInvocation call) {
     return call.expandParameters().length;
@@ -72,7 +72,7 @@ mixin ArgumentCountLinter {
   }
 
   void reportArgumentCountMismatch(
-      SqlInvocation call, AnalysisContext context, int expected, int actual) {
+      SqlInvocation call, AnalysisContext context, int? expected, int actual) {
     context.reportError(AnalysisError(
       relevantNode: call,
       message: '${call.name} expects $expected arguments, '

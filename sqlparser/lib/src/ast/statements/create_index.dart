@@ -5,19 +5,19 @@ class CreateIndexStatement extends Statement
   final String indexName;
   final bool unique;
   final bool ifNotExists;
-  IdentifierToken nameToken;
+  IdentifierToken? nameToken;
 
   TableReference on;
   final List<IndexedColumn> columns;
   @override
-  Expression where;
+  Expression? where;
 
   CreateIndexStatement(
-      {@required this.indexName,
+      {required this.indexName,
       this.unique = false,
       this.ifNotExists = false,
-      @required this.on,
-      @required this.columns,
+      required this.on,
+      required this.columns,
       this.where});
 
   @override
@@ -37,7 +37,7 @@ class CreateIndexStatement extends Statement
 
   @override
   Iterable<AstNode> get childNodes =>
-      [on, ...columns, if (where != null) where];
+      [on, ...columns, if (where != null) where!];
 }
 
 /// Note that this class matches the productions listed at https://www.sqlite.org/syntax/indexed-column.html
@@ -49,7 +49,7 @@ class IndexedColumn extends AstNode {
   /// [Reference], for simple column names.
   Expression expression;
   // nullable
-  final OrderingMode ordering;
+  final OrderingMode? ordering;
 
   IndexedColumn(this.expression, [this.ordering]);
 

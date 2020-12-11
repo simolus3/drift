@@ -23,7 +23,7 @@ abstract class Column
 abstract class ColumnWithType implements Column {
   /// The type of this column, which is available before any resolution happens
   /// (we know it from the schema structure).
-  ResolvedType get type;
+  ResolvedType? get type;
 }
 
 /// A column that is part of a table.
@@ -43,16 +43,16 @@ class TableColumn extends Column implements ColumnWithType {
   ///
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
-  List<ColumnConstraint> get constraints => definition.constraints;
+  List<ColumnConstraint?> get constraints => definition!.constraints;
 
   /// The definition in the AST that was used to create this column model.
-  final ColumnDefinition definition;
+  final ColumnDefinition? definition;
 
   /// Whether this column has a definition from the ast.
   bool get hasDefinition => definition != null;
 
   /// The table this column belongs to.
-  Table table;
+  Table? table;
 
   TableColumn(this.name, this._type, {this.definition});
 
@@ -60,7 +60,7 @@ class TableColumn extends Column implements ColumnWithType {
   ///
   /// The [hint] will then be reflected in the [type].
   void applyTypeHint(TypeHint hint) {
-    _type = _type?.copyWith(hint: hint);
+    _type = _type.copyWith(hint: hint);
   }
 
   /// Whether this column is an alias for the rowid, as defined in
@@ -75,14 +75,14 @@ class TableColumn extends Column implements ColumnWithType {
   bool isAliasForRowId() {
     if (definition == null ||
         table == null ||
-        type?.type != BasicType.int ||
-        table.withoutRowId) {
+        type.type != BasicType.int ||
+        table!.withoutRowId) {
       return false;
     }
 
     // We need to check whether this column is a primary key, which could happen
     // because of a table or a column constraint
-    final columnsWithKey = table.tableConstraints.whereType<KeyClause>();
+    final columnsWithKey = table!.tableConstraints.whereType<KeyClause>();
     for (final tableConstraint in columnsWithKey) {
       if (!tableConstraint.isPrimaryKey) continue;
 
@@ -97,7 +97,7 @@ class TableColumn extends Column implements ColumnWithType {
       if (primaryConstraint.mode == OrderingMode.descending) return false;
 
       // additional restriction: Column type must be exactly "INTEGER"
-      return definition.typeName == 'INTEGER';
+      return definition!.typeName == 'INTEGER';
     }
 
     return false;
@@ -105,22 +105,22 @@ class TableColumn extends Column implements ColumnWithType {
 
   @override
   String humanReadableDescription() {
-    return '$name in ${table.humanReadableDescription()}';
+    return '$name in ${table!.humanReadableDescription()}';
   }
 }
 
 /// A column that is part of a view.
 class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
-  final String _name;
+  final String? _name;
 
   @override
-  final ResolvedType type;
+  final ResolvedType? type;
 
   @override
   final Column innerColumn;
 
   /// The view this column belongs to.
-  View view;
+  View? view;
 
   /// Creates a view column wrapping a [Column] from the select statement used
   /// to create the view.
@@ -134,7 +134,7 @@ class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
 
   @override
   String humanReadableDescription() {
-    return '$name in ${view.humanReadableDescription()}';
+    return '$name in ${view!.humanReadableDescription()}';
   }
 }
 
@@ -156,39 +156,39 @@ class ExpressionColumn extends Column {
   final String name;
 
   /// The expression returned by this column.
-  final Expression expression;
+  final Expression? expression;
 
-  ExpressionColumn({@required this.name, this.expression});
+  ExpressionColumn({required this.name, this.expression});
 }
 
 /// A column that is created by a reference expression. The difference to an
 /// [ExpressionColumn] is that the correct case of the column name depends on
 /// the resolved reference.
 class ReferenceExpressionColumn extends ExpressionColumn {
-  Reference get reference => expression as Reference;
+  Reference? get reference => expression as Reference?;
 
   @override
   String get name {
     return overriddenName ??
-        reference.resolvedColumn?.name ??
+        reference!.resolvedColumn?.name ??
         // The resolved column might not have been resolved yet. Use the
         // syntactic name from the reference as a fallback: It's only different
         // for rowid references, and those are easier to resolve.
-        reference.columnName;
+        reference!.columnName;
   }
 
-  final String overriddenName;
+  final String? overriddenName;
 
   ReferenceExpressionColumn(Reference ref, {this.overriddenName})
-      : super(name: null, expression: ref);
+      : super(name: '_', expression: ref);
 }
 
 /// A column that wraps another column.
 mixin DelegatedColumn on Column {
-  Column get innerColumn;
+  Column? get innerColumn;
 
   @override
-  String get name => innerColumn.name;
+  String get name => innerColumn!.name;
 }
 
 /// The result column of a [CompoundSelectStatement].
@@ -208,12 +208,12 @@ class CommonTableExpressionColumn extends Column with DelegatedColumn {
   final String name;
 
   @override
-  Column innerColumn;
+  Column? innerColumn;
 
   // note that innerColumn is mutable because the column might not be known
   // during all analysis phases.
 
-  CommonTableExpressionColumn(this.name, this.innerColumn);
+  CommonTableExpressionColumn(this.name, [this.innerColumn]);
 }
 
 /// Result column coming from a `VALUES` select statement.

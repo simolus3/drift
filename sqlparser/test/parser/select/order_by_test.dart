@@ -13,7 +13,7 @@ void main() {
 
     enforceHasSpan(parsed);
     enforceEqual(
-      parsed.orderBy,
+      parsed.orderBy!,
       OrderBy(
         terms: [
           OrderingTerm(
@@ -38,7 +38,7 @@ void main() {
 
     enforceHasSpan(parsed);
     enforceEqual(
-      parsed.orderBy,
+      parsed.orderBy!,
       OrderBy(
         terms: [
           OrderingTerm(

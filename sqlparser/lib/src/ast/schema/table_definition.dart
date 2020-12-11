@@ -5,13 +5,13 @@ enum ReferenceAction { setNull, setDefault, cascade, restrict, noAction }
 class ForeignKeyClause extends AstNode {
   TableReference foreignTable;
   final List<Reference> columnNames;
-  final ReferenceAction onDelete;
-  final ReferenceAction onUpdate;
-  DeferrableClause deferrable;
+  final ReferenceAction? onDelete;
+  final ReferenceAction? onUpdate;
+  DeferrableClause? deferrable;
 
   ForeignKeyClause({
-    @required this.foreignTable,
-    @required this.columnNames,
+    required this.foreignTable,
+    required this.columnNames,
     this.onDelete,
     this.onUpdate,
     this.deferrable,
@@ -26,14 +26,14 @@ class ForeignKeyClause extends AstNode {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     foreignTable = transformer.transformChild(foreignTable, this, arg);
     transformer.transformChildren(columnNames, this, arg);
-    deferrable = transformer.transformChild(deferrable, this, arg);
+    deferrable = transformer.transformChild(deferrable!, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes => [
         foreignTable,
         ...columnNames,
-        if (deferrable != null) deferrable,
+        if (deferrable != null) deferrable!,
       ];
 }
 
@@ -44,11 +44,11 @@ enum InitialDeferrableMode {
 
 class DeferrableClause extends AstNode {
   final bool not;
-  final InitialDeferrableMode /*?*/ declaredInitially;
+  final InitialDeferrableMode? declaredInitially;
 
   DeferrableClause(this.not, this.declaredInitially);
 
-  InitialDeferrableMode get effectiveInitialMode {
+  InitialDeferrableMode? get effectiveInitialMode {
     if (not || declaredInitially == null) {
       return InitialDeferrableMode.immediate;
     }
@@ -69,8 +69,8 @@ class DeferrableClause extends AstNode {
 }
 
 abstract class TableConstraint extends AstNode {
-  final String name;
-  Token nameToken;
+  final String? name;
+  Token? nameToken;
 
   TableConstraint(this.name);
 
@@ -85,13 +85,13 @@ abstract class TableConstraint extends AstNode {
 class KeyClause extends TableConstraint {
   final bool isPrimaryKey;
   final List<Reference> indexedColumns;
-  final ConflictClause onConflict;
+  final ConflictClause? onConflict;
 
   bool get isUnique => !isPrimaryKey;
 
-  KeyClause(String name,
-      {@required this.isPrimaryKey,
-      @required this.indexedColumns,
+  KeyClause(String? name,
+      {required this.isPrimaryKey,
+      required this.indexedColumns,
       this.onConflict})
       : super(name);
 
@@ -112,7 +112,7 @@ class KeyClause extends TableConstraint {
 class CheckTable extends TableConstraint {
   Expression expression;
 
-  CheckTable(String name, this.expression) : super(name);
+  CheckTable(String? name, this.expression) : super(name);
 
   @override
   bool constraintEquals(CheckTable other) => true;
@@ -130,8 +130,8 @@ class ForeignKeyTableConstraint extends TableConstraint {
   final List<Reference> columns;
   ForeignKeyClause clause;
 
-  ForeignKeyTableConstraint(String name,
-      {@required this.columns, @required this.clause})
+  ForeignKeyTableConstraint(String? name,
+      {required this.columns, required this.clause})
       : super(name);
 
   @override

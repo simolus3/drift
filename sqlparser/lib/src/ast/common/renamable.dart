@@ -1,5 +1,5 @@
 part of '../ast.dart';
 
 abstract class Renamable {
-  String get as;
+  String? get as;
 }

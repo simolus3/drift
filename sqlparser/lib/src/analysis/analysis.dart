@@ -1,5 +1,6 @@
-import 'dart:math' show min, max;
+import 'dart:math' show max;
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 // hiding because of http://dartbug.com/39263
@@ -24,9 +25,7 @@ part 'steps/linting_visitor.dart';
 part 'steps/prepare_ast.dart';
 part 'steps/reference_resolver.dart';
 part 'steps/set_parent_visitor.dart';
-part 'steps/type_resolver.dart';
 part 'types/data.dart';
-part 'types/resolver.dart';
 part 'types/typeable.dart';
 part 'options.dart';
 part 'utils/expand_function_parameters.dart';

@@ -1,11 +1,11 @@
 part of '../ast.dart';
 
 class CaseExpression extends Expression {
-  Expression /*?*/ base;
+  Expression? base;
   final List<WhenComponent> whens;
-  Expression /*?*/ elseExpr;
+  Expression? elseExpr;
 
-  CaseExpression({this.base, @required this.whens, this.elseExpr});
+  CaseExpression({this.base, required this.whens, this.elseExpr});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -21,14 +21,14 @@ class CaseExpression extends Expression {
 
   @override
   Iterable<AstNode> get childNodes =>
-      [if (base != null) base, ...whens, if (elseExpr != null) elseExpr];
+      [if (base != null) base!, ...whens, if (elseExpr != null) elseExpr!];
 }
 
 class WhenComponent extends AstNode {
   Expression when;
   Expression then;
 
-  WhenComponent({this.when, this.then});
+  WhenComponent({required this.when, required this.then});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

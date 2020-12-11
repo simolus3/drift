@@ -5,7 +5,7 @@ part of '../ast.dart';
 class SubQuery extends Expression {
   BaseSelectStatement select;
 
-  SubQuery({this.select});
+  SubQuery({required this.select});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -24,7 +24,7 @@ class SubQuery extends Expression {
 class ExistsExpression extends Expression {
   BaseSelectStatement select;
 
-  ExistsExpression({@required this.select});
+  ExistsExpression({required this.select});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/autocomplete/engine.dart';
@@ -36,7 +35,7 @@ class ParsingError implements Exception {
 abstract class ParserBase {
   final List<Token> tokens;
   final List<ParsingError> errors = [];
-  final AutoCompleteEngine autoComplete;
+  final AutoCompleteEngine? autoComplete;
 
   /// Whether to enable the extensions moor makes to the sql grammar.
   final bool enableMoorExtensions;
@@ -128,14 +127,13 @@ abstract class ParserBase {
     return _previous;
   }
 
-  @alwaysThrows
-  Null _error(String message) {
+  Never _error(String message) {
     final error = ParsingError(_peek, message);
     errors.add(error);
     throw error;
   }
 
-  Token _consume(TokenType type, [String message]) {
+  Token _consume(TokenType type, [String? message]) {
     if (_check(type)) return _advance();
 
     _error(message ?? 'Expected $type');
@@ -160,7 +158,7 @@ abstract class ParserBase {
   // Common operations that we are referenced very often
   Expression expression();
 
-  List<Token> _typeName();
+  List<Token>? _typeName();
 
   /// Parses a [Tuple]. If [orSubQuery] is set (defaults to false), a [SubQuery]
   /// (in brackets) will be accepted as well.
@@ -176,19 +174,19 @@ abstract class ParserBase {
   ///
   /// See also:
   /// https://www.sqlite.org/lang_select.html
-  BaseSelectStatement select({bool noCompound});
+  BaseSelectStatement? select({bool? noCompound});
 
   /// Parses a select statement as defined in [the sqlite documentation][s-d],
   /// which means that compound selects and a with clause is supported.
   ///
   /// [s-d]: https://sqlite.org/syntax/select-stmt.html
-  BaseSelectStatement _fullSelect();
+  BaseSelectStatement? _fullSelect();
 
   // False positive in the analyzer? It's definitely used.
   // ignore: unused_element
-  Variable _variableOrNull();
-  Literal _literalOrNull();
-  OrderingMode _orderingModeOrNull();
+  Variable? _variableOrNull();
+  Literal? _literalOrNull();
+  OrderingMode? _orderingModeOrNull();
 
   /// https://www.sqlite.org/syntax/window-defn.html
   WindowDefinition _windowDefinition();
@@ -221,7 +219,7 @@ abstract class ParserBase {
 class Parser extends ParserBase
     with ExpressionParser, SchemaParser, CrudParser {
   Parser(List<Token> tokens,
-      {bool useMoor = false, AutoCompleteEngine autoComplete})
+      {bool useMoor = false, AutoCompleteEngine? autoComplete})
       : super(tokens, useMoor, autoComplete);
 
   // todo remove this and don't be that lazy in moorFile()
@@ -235,7 +233,7 @@ class Parser extends ParserBase
 
   Statement statement() {
     final first = _peek;
-    Statement stmt = _crud();
+    Statement? stmt = _crud();
     stmt ??= _create();
 
     if (enableMoorExtensions) {
@@ -258,7 +256,7 @@ class Parser extends ParserBase
 
   MoorFile moorFile() {
     final first = _peek;
-    final foundComponents = <PartOfMoorFile>[];
+    final foundComponents = <PartOfMoorFile?>[];
 
     // (we try again if the last statement had a parsing error)
 
@@ -289,7 +287,7 @@ class Parser extends ParserBase
 
     foundComponents.removeWhere((c) => c == null);
 
-    final file = MoorFile(foundComponents);
+    final file = MoorFile(foundComponents.cast());
     if (foundComponents.isNotEmpty) {
       file.setSpan(first, _previous);
     } else {
@@ -298,7 +296,7 @@ class Parser extends ParserBase
     return file;
   }
 
-  ImportStatement _import() {
+  ImportStatement? _import() {
     if (_matchOne(TokenType.import)) {
       final importToken = _previous;
       final import = _consume(TokenType.stringLiteral,
@@ -312,7 +310,7 @@ class Parser extends ParserBase
     return null;
   }
 
-  DeclaredStatement _declaredStatement() {
+  DeclaredStatement? _declaredStatement() {
     DeclaredStatementIdentifier identifier;
 
     if (_check(TokenType.identifier) || _peek is KeywordToken) {
@@ -338,7 +336,7 @@ class Parser extends ParserBase
       _consume(TokenType.rightParen, 'Expected closing parenthesis');
     }
 
-    String as;
+    String? as;
     if (_matchOne(TokenType.as)) {
       as = _consumeIdentifier('Expected a name of the result class').identifier;
     }
@@ -370,10 +368,7 @@ class Parser extends ParserBase
       // Type hint for a variable
       final as = _consume(TokenType.as, 'Expected AS followed by a type');
 
-      final typeNameTokens = _typeName();
-      if (typeNameTokens == null) {
-        _error('Expected a type name here');
-      }
+      final typeNameTokens = _typeName() ?? _error('Expected a type name here');
 
       final typeName = typeNameTokens.lexeme;
       return VariableTypeHint(variable, typeName)
@@ -394,11 +389,11 @@ class Parser extends ParserBase
 
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
-  T _parseAsStatement<T extends Statement>(T Function() parser,
+  T? _parseAsStatement<T extends Statement>(T? Function() parser,
       {bool requireSemicolon = true}) {
     _lastStmtHadParsingError = false;
     final first = _peek;
-    T result;
+    T? result;
     try {
       result = parser();
 

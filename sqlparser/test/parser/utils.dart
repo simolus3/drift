@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
@@ -6,12 +7,14 @@ import 'package:test/test.dart';
 
 export 'package:sqlparser/src/reader/tokenizer/token.dart';
 
+final defaultSpan = fakeSpan('fake');
+
 Token token(TokenType type) {
-  return Token(type, null);
+  return Token(type, defaultSpan);
 }
 
 StringLiteralToken stringLiteral(String value) {
-  return StringLiteralToken(value, null);
+  return StringLiteralToken(value, defaultSpan);
 }
 
 InlineDartToken inlineDart(String dartCode) {
@@ -55,9 +58,9 @@ void testAll(Map<String, AstNode> testCases) {
 
 /// The parser should make sure [AstNode.hasSpan] is true on relevant nodes.
 void enforceHasSpan(AstNode node) {
-  final problematic = [node].followedBy(node.allDescendants).firstWhere(
-      (node) => !node.hasSpan && !node.synthetic,
-      orElse: () => null);
+  final problematic = [node]
+      .followedBy(node.allDescendants)
+      .firstWhereOrNull((node) => !node.hasSpan && !node.synthetic);
 
   if (problematic != null) {
     throw ArgumentError('Node $problematic did not have a span');

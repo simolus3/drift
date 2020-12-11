@@ -4,24 +4,24 @@ part of '../ast.dart';
 class CreateTriggerStatement extends Statement implements CreatingStatement {
   final bool ifNotExists;
   final String triggerName;
-  IdentifierToken triggerNameToken;
+  IdentifierToken? triggerNameToken;
 
   final TriggerMode mode;
   TriggerTarget target;
 
   TableReference onTable;
 
-  Expression when;
+  Expression? when;
   Block action;
 
   CreateTriggerStatement(
       {this.ifNotExists = false,
-      @required this.triggerName,
-      @required this.mode,
-      @required this.target,
-      @required this.onTable,
+      required this.triggerName,
+      required this.mode,
+      required this.target,
+      required this.onTable,
       this.when,
-      @required this.action});
+      required this.action});
 
   @override
   String get createdName => triggerName;
@@ -43,7 +43,7 @@ class CreateTriggerStatement extends Statement implements CreatingStatement {
   Iterable<AstNode> get childNodes => [
         target,
         onTable,
-        if (when != null) when,
+        if (when != null) when!,
         action,
       ];
 }
@@ -70,7 +70,7 @@ abstract class TriggerTarget extends AstNode {
 }
 
 class DeleteTarget extends TriggerTarget {
-  Token deleteToken;
+  Token? deleteToken;
 
   @override
   bool get introducesNew => false;
@@ -87,7 +87,7 @@ class DeleteTarget extends TriggerTarget {
 }
 
 class InsertTarget extends TriggerTarget {
-  Token insertToken;
+  Token? insertToken;
 
   @override
   bool get introducesNew => true;
@@ -104,7 +104,7 @@ class InsertTarget extends TriggerTarget {
 }
 
 class UpdateTarget extends TriggerTarget {
-  Token updateToken;
+  Token? updateToken;
   final List<Reference> columnNames;
 
   UpdateTarget(this.columnNames);

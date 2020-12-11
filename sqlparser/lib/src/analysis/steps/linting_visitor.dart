@@ -15,7 +15,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       return super.visitCreateViewStatement(e, arg);
     }
 
-    final amountOfNames = e.columns.length;
+    final amountOfNames = e.columns!.length;
     final amountOfColumns = resolvedColumns.length;
 
     if (amountOfNames != amountOfColumns) {
@@ -34,7 +34,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitInvocation(SqlInvocation e, void arg) {
     final lowercaseCall = e.name.toLowerCase();
     if (options.addedFunctions.containsKey(lowercaseCall)) {
-      options.addedFunctions[lowercaseCall].reportErrors(e, context);
+      options.addedFunctions[lowercaseCall]!.reportErrors(e, context);
     }
 
     visitChildren(e, arg);
@@ -44,7 +44,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitTuple(Tuple e, void arg) {
     if (!e.usedAsRowValue) return;
 
-    bool isRowValue(Expression expr) => expr is Tuple || expr is SubQuery;
+    bool isRowValue(Expression? expr) => expr is Tuple || expr is SubQuery;
 
     var parent = e.parent;
     var isAllowed = false;
@@ -79,7 +79,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       if (parent.base == null) {
         isAllowed = false;
       } else {
-        final comparisons = <Expression>[
+        final comparisons = <Expression?>[
           parent.base,
           for (final branch in parent.whens) branch.when
         ];
@@ -103,7 +103,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
-    final expectedColumns = e.resolvedColumns.length;
+    final expectedColumns = e.resolvedColumns!.length;
 
     for (final tuple in e.values) {
       final elementsInTuple = tuple.expressions.length;

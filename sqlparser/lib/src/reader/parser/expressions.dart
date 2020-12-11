@@ -32,7 +32,7 @@ mixin ExpressionParser on ParserBase {
       final operator = _previous;
       final right = higherPrecedence();
       expression = BinaryExpression(expression, operator, right)
-        ..setSpan(expression.first, _previous);
+        ..setSpan(expression.first!, _previous);
     }
     return expression;
   }
@@ -49,7 +49,7 @@ mixin ExpressionParser on ParserBase {
 
       final inside = _variableOrNull() ?? _consumeTuple(orSubQuery: true);
       return InExpression(left: left, inside: inside, not: not)
-        ..setSpan(left.first, _previous);
+        ..setSpan(left.first!, _previous);
     }
 
     return left;
@@ -87,17 +87,17 @@ mixin ExpressionParser on ParserBase {
 
         expression = BetweenExpression(
             not: not, check: expression, lower: lower, upper: upper)
-          ..setSpan(first, _previous);
+          ..setSpan(first!, _previous);
       } else if (_match(ops)) {
         final operator = _previous;
         if (operator.type == TokenType.$is) {
           final not = _match(const [TokenType.not]);
           // special case: is not expression
           expression = IsExpression(not, expression, _comparison())
-            ..setSpan(first, _previous);
+            ..setSpan(first!, _previous);
         } else {
           expression = BinaryExpression(expression, operator, _comparison())
-            ..setSpan(first, _previous);
+            ..setSpan(first!, _previous);
         }
       } else if (_checkAnyWithNot(stringOps)) {
         final not = _matchOne(TokenType.not);
@@ -105,7 +105,7 @@ mixin ExpressionParser on ParserBase {
         final operator = _previous;
 
         final right = _comparison();
-        Expression escape;
+        Expression? escape;
         if (_matchOne(TokenType.escape)) {
           escape = _comparison();
         }
@@ -116,7 +116,7 @@ mixin ExpressionParser on ParserBase {
             operator: operator,
             right: right,
             escape: escape)
-          ..setSpan(first, _previous);
+          ..setSpan(first!, _previous);
       } else {
         break; // no matching operator with this precedence was found
       }
@@ -162,7 +162,7 @@ mixin ExpressionParser on ParserBase {
       final operator = _previous;
       final expression = _unary();
       return UnaryExpression(operator, expression)
-        ..setSpan(operator, expression.last);
+        ..setSpan(operator, expression.last!);
     } else if (_matchOne(TokenType.exists)) {
       final existsToken = _previous;
       _consume(
@@ -224,7 +224,7 @@ mixin ExpressionParser on ParserBase {
 
       final base = _check(TokenType.when) ? null : _primary();
       final whens = <WhenComponent>[];
-      Expression $else;
+      Expression? $else;
 
       while (_matchOne(TokenType.when)) {
         final whenToken = _previous;
@@ -249,10 +249,10 @@ mixin ExpressionParser on ParserBase {
   }
 
   @override
-  Literal _literalOrNull() {
+  Literal? _literalOrNull() {
     final token = _peek;
 
-    Literal _parseInner() {
+    Literal? _parseInner() {
       if (_matchOne(TokenType.numberLiteral)) {
         final number = token as NumericToken;
         return NumericLiteral(number.parsedNumber, token);
@@ -278,7 +278,7 @@ mixin ExpressionParser on ParserBase {
 
       if (_match(timeLiterals.keys)) {
         final token = _previous;
-        return TimeConstantLiteral(timeLiterals[token.type], token);
+        return TimeConstantLiteral(timeLiterals[token.type]!, token);
       }
 
       return null;
@@ -335,7 +335,7 @@ mixin ExpressionParser on ParserBase {
       _consume(TokenType.leftParen, 'Expected opening parenthesis after CAST');
       final operand = expression();
       _consume(TokenType.as, 'Expected AS operator here');
-      final type = _typeName();
+      final type = _typeName()!;
       final typeName = type.lexeme;
       _consume(TokenType.rightParen, 'Expected closing bracket here');
 
@@ -378,7 +378,7 @@ mixin ExpressionParser on ParserBase {
   }
 
   @override
-  Variable _variableOrNull() {
+  Variable? _variableOrNull() {
     if (_matchOne(TokenType.questionMarkVariable)) {
       return NumberedVariable(_previous as QuestionMarkVariableToken)
         ..setSpan(_previous, _previous);
@@ -417,7 +417,7 @@ mixin ExpressionParser on ParserBase {
 
   AggregateExpression _aggregate(
       IdentifierToken name, FunctionParameters params) {
-    Expression filter;
+    Expression? filter;
 
     // https://www.sqlite.org/syntax/filter.html (it's optional)
     if (_matchOne(TokenType.filter)) {
@@ -430,8 +430,8 @@ mixin ExpressionParser on ParserBase {
 
     _consume(TokenType.over, 'Expected OVER to begin window clause');
 
-    String windowName;
-    WindowDefinition window;
+    String? windowName;
+    WindowDefinition? window;
 
     if (_matchOne(TokenType.identifier)) {
       windowName = (_previous as IdentifierToken).identifier;

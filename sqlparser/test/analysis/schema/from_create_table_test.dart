@@ -97,7 +97,7 @@ void main() {
       expect(view.name, 'my_view');
       expect(view.resolvedColumns.map((e) => e.name), ['id', 'content']);
       expect(
-        view.resolvedColumns.map((e) => e.type.type),
+        view.resolvedColumns.map((e) => e.type!.type),
         [BasicType.int, BasicType.text],
       );
     });

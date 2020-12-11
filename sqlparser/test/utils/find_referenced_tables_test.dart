@@ -3,10 +3,10 @@ import 'package:sqlparser/utils/find_referenced_tables.dart';
 import 'package:test/test.dart';
 
 void main() {
-  SqlEngine engine;
+  late SqlEngine engine;
   const schemaReader = SchemaFromCreateTable();
-  Table users, logins;
-  View oldUsers;
+  late Table users, logins;
+  late View oldUsers;
 
   setUpAll(() {
     engine = SqlEngine();

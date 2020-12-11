@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import '../data.dart';
 
 // Cases copied from the regular type inference algorithm test
-const Map<String, ResolvedType> _types = {
+const Map<String, ResolvedType?> _types = {
   'SELECT * FROM demo WHERE id = ?': ResolvedType(type: BasicType.int),
   'SELECT * FROM demo WHERE content = ?': ResolvedType(type: BasicType.text),
   'SELECT * FROM demo WHERE content == ?': ResolvedType(type: BasicType.text),

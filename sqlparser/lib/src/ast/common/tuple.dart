@@ -14,7 +14,7 @@ class Tuple extends Expression {
   /// [r v]: https://www.sqlite.org/rowvalue.html
   final bool usedAsRowValue;
 
-  Tuple({@required this.expressions, this.usedAsRowValue = false});
+  Tuple({required this.expressions, this.usedAsRowValue = false});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

@@ -385,7 +385,7 @@ class Token implements SyntacticEntity {
   String get lexeme => span.text;
 
   /// The index of this [Token] in the list of tokens scanned.
-  int index;
+  late int index;
 
   Token(this.type, this.span);
 
@@ -446,7 +446,7 @@ abstract class VariableToken extends Token {
 class QuestionMarkVariableToken extends Token {
   /// The explicit index, if this variable was of the form `?123`. Otherwise
   /// null.
-  final int explicitIndex;
+  final int? explicitIndex;
 
   QuestionMarkVariableToken(FileSpan span, this.explicitIndex)
       : super(TokenType.questionMarkVariable, span);
@@ -512,23 +512,23 @@ class KeywordToken extends Token {
 class NumericToken extends Token {
   /// The digits before the decimal point, or null if this numeric token was
   /// written in hexadecimal notation or started with a decimal point.
-  String /*?*/ digitsBeforeDecimal;
+  String? digitsBeforeDecimal;
 
   /// Whether this token has a decimal point in it.
   bool hasDecimalPoint;
 
   /// The digits after the decimal point, or null if this numeric token doesn't
   /// have anything after its decimal point.
-  String /*?*/ digitsAfterDecimal;
+  String? digitsAfterDecimal;
 
   /// The hexadecimal digits of this token, or null if this token was not in
   /// hex notation.
-  String /*?*/ hexDigits;
+  String? hexDigits;
 
   /// An exponent to the base of ten.
   ///
   /// For instance, `2E-2` has an [exponent] of `-2`.
-  final int /*?*/ exponent;
+  final int? exponent;
 
   NumericToken(
     FileSpan span, {
@@ -542,11 +542,11 @@ class NumericToken extends Token {
   /// The numeric literal represented by this token.
   num get parsedNumber {
     if (hexDigits != null) {
-      return int.parse(hexDigits, radix: 16);
+      return int.parse(hexDigits!, radix: 16);
     }
 
     final beforeDecimal =
-        digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal) : 0;
+        digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal!) : 0;
 
     num number;
 
@@ -560,7 +560,7 @@ class NumericToken extends Token {
     }
 
     if (exponent != null) {
-      number *= pow(10, exponent);
+      number *= pow(10, exponent!);
     }
     return number;
   }

@@ -1,4 +1,4 @@
-import 'package:sqlparser/sqlparser.dart' hide TypeResolver;
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/analysis/types2/types.dart';
 import 'package:test/test.dart';
 
@@ -9,13 +9,13 @@ void main() {
     ..registerTable(demoTable)
     ..registerTable(anotherTable);
 
-  TypeResolver _obtainResolver(String sql, {AnalyzeStatementOptions options}) {
+  TypeResolver _obtainResolver(String sql, {AnalyzeStatementOptions? options}) {
     final context = engine.analyze(sql, stmtOptions: options);
     return TypeResolver(TypeInferenceSession(context))..run(context.root);
   }
 
-  ResolvedType _resolveFirstVariable(String sql,
-      {AnalyzeStatementOptions options}) {
+  ResolvedType? _resolveFirstVariable(String sql,
+      {AnalyzeStatementOptions? options}) {
     final resolver = _obtainResolver(sql, options: options);
     final session = resolver.session;
     final variable =
@@ -23,11 +23,11 @@ void main() {
     return session.typeOf(variable);
   }
 
-  ResolvedType _resolveResultColumn(String sql) {
+  ResolvedType? _resolveResultColumn(String sql) {
     final resolver = _obtainResolver(sql);
     final session = resolver.session;
     final stmt = session.context.root as SelectStatement;
-    return session.typeOf(stmt.resolvedColumns.single);
+    return session.typeOf(stmt.resolvedColumns!.single);
   }
 
   test('resolves literals', () {
@@ -247,7 +247,7 @@ WITH RECURSIVE
       ),
     ).session;
 
-    Variable start, end;
+    Variable? start, end;
     for (final variable in session.context.root.allDescendants
         .whereType<ColonNamedVariable>()) {
       if (variable.name == ':start') start = variable;

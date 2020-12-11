@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class Fts5Extension implements Extension {
@@ -38,9 +37,9 @@ class _Fts5Module extends Module {
 
 class _Fts5Table extends Table {
   _Fts5Table(
-      {@required String name,
-      List<TableColumn> columns,
-      CreateVirtualTableStatement definition})
+      {required String name,
+      required List<TableColumn> columns,
+      CreateVirtualTableStatement? definition})
       : super(
           name: name,
           resolvedColumns: [
@@ -62,7 +61,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
   @override
   ResolveResult inferArgumentType(
       AnalysisContext context, SqlInvocation call, Expression argument) {
-    int argumentIndex;
+    int? argumentIndex;
     if (call.parameters is ExprFunctionParameters) {
       argumentIndex = (call.parameters as ExprFunctionParameters)
           .parameters
@@ -113,7 +112,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
   }
 
   @override
-  int argumentCountFor(String function) {
+  int? argumentCountFor(String function) {
     return const {
       'bm25': 1,
       'highlight': 4,
@@ -141,7 +140,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
       return;
     }
 
-    Column firstResolved;
+    Column? firstResolved;
     if (args.first is Reference) {
       firstResolved = (args.first as Reference).resolvedColumn;
     }

@@ -13,7 +13,7 @@ void main() {
 
     enforceHasSpan(stmt);
     return enforceEqual(
-      stmt.groupBy,
+      stmt.groupBy!,
       GroupBy(
         by: [Reference(columnName: 'country')],
         having: StringComparisonExpression(

@@ -2,6 +2,8 @@ import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:test/test.dart';
 
+import '../parser/utils.dart';
+
 void expectFullToken(String token, TokenType type) {
   final scanner = Scanner(token);
   List<Token> tokens;
@@ -97,28 +99,33 @@ void main() {
     }
 
     test('hexadecimal', () {
-      checkLiteral('0x123', NumericToken(null, hexDigits: '123'), 0x123);
+      checkLiteral('0x123', NumericToken(defaultSpan, hexDigits: '123'), 0x123);
     });
 
     test('integer without exponent', () {
-      checkLiteral('42', NumericToken(null, digitsBeforeDecimal: '42'), 42);
+      checkLiteral(
+          '42', NumericToken(defaultSpan, digitsBeforeDecimal: '42'), 42);
     });
 
     test('integer, positive exponent', () {
-      checkLiteral('42E1',
-          NumericToken(null, digitsBeforeDecimal: '42', exponent: 1), 420);
+      checkLiteral(
+          '42E1',
+          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: 1),
+          420);
     });
 
     test('integer, negative exponent', () {
-      checkLiteral('42E-1',
-          NumericToken(null, digitsBeforeDecimal: '42', exponent: -1), 4.2);
+      checkLiteral(
+          '42E-1',
+          NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -1),
+          4.2);
     });
 
     test('decimal', () {
       checkLiteral(
         '4.2',
         NumericToken(
-          null,
+          defaultSpan,
           digitsBeforeDecimal: '4',
           digitsAfterDecimal: '2',
           hasDecimalPoint: true,
@@ -131,7 +138,7 @@ void main() {
       checkLiteral(
         '4.e2',
         NumericToken(
-          null,
+          defaultSpan,
           digitsBeforeDecimal: '4',
           exponent: 2,
           hasDecimalPoint: true,
@@ -144,7 +151,7 @@ void main() {
       checkLiteral(
         '.2',
         NumericToken(
-          null,
+          defaultSpan,
           digitsAfterDecimal: '2',
           hasDecimalPoint: true,
         ),

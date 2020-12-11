@@ -7,7 +7,7 @@ abstract class SyntacticEntity {
   bool get hasSpan;
 
   /// The piece of text forming this syntactic entity.
-  FileSpan get span;
+  FileSpan? get span;
 
   /// The first position of this entity, as an zero-based offset in the file it
   /// was read from.
@@ -43,14 +43,14 @@ extension UnionEntityExtension on Iterable<SyntacticEntity> {
 
     final firstSpan = first.span;
     return skip(1).fold(
-      firstSpan,
-      (previousValue, entity) => previousValue.expand(entity.span),
+      firstSpan!,
+      (previousValue, entity) => previousValue.expand(entity.span!),
     );
   }
 
   /// Returns the common [span] of these syntactic entities, or `null` if the
   /// iterable is empty.
-  FileSpan /*?*/ get spanOrNull {
+  FileSpan? get spanOrNull {
     return isEmpty ? null : span;
   }
 }

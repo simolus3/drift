@@ -12,7 +12,7 @@ abstract class OrderingTermBase extends AstNode {}
 class OrderBy extends AstNode implements OrderByBase {
   final List<OrderingTermBase> terms;
 
-  OrderBy({this.terms});
+  OrderBy({this.terms = const []});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -34,13 +34,13 @@ enum OrderingBehaviorForNulls { first, last }
 
 class OrderingTerm extends AstNode implements OrderingTermBase {
   Expression expression;
-  OrderingMode orderingMode;
-  OrderingBehaviorForNulls nulls;
+  OrderingMode? orderingMode;
+  OrderingBehaviorForNulls? nulls;
 
   OrderingMode get resolvedOrderingMode =>
       orderingMode ?? OrderingMode.ascending;
 
-  OrderingTerm({this.expression, this.orderingMode, this.nulls});
+  OrderingTerm({required this.expression, this.orderingMode, this.nulls});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

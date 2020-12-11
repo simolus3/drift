@@ -16,7 +16,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
 
     if (e.tableName != null) {
       // first find the referenced table, then use the column on that table.
-      final tableResolver = scope.resolve<ResolvesToResultSet>(e.tableName);
+      final tableResolver = scope.resolve<ResolvesToResultSet>(e.tableName!);
       final resultSet = tableResolver?.resultSet;
 
       if (resultSet == null) {
@@ -46,7 +46,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       // find any column with the referenced name.
       // todo special case for USING (...) in joins?
       final columns =
-          scope.availableColumns.where((c) => c?.name == e.columnName).toSet();
+          scope.availableColumns.where((c) => c.name == e.columnName).toSet();
 
       if (columns.isEmpty) {
         _reportUnknownColumnError(e);
@@ -69,11 +69,10 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  void _reportUnknownColumnError(Reference e, {Iterable<Column> columns}) {
+  void _reportUnknownColumnError(Reference e, {Iterable<Column>? columns}) {
     columns ??= e.scope.availableColumns;
     final columnNames = e.scope.availableColumns
         .map((c) => c.humanReadableDescription())
-        .where((desc) => desc != null)
         .join(', ');
 
     context.reportError(AnalysisError(
@@ -83,7 +82,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     ));
   }
 
-  Column _resolveRowIdAlias(Reference e) {
+  Column? _resolveRowIdAlias(Reference e) {
     // to resolve those aliases when they're not bound to a table, the
     // surrounding statement may only read from one table
     final stmt = e.enclosingOfType<HasPrimarySource>();
@@ -95,7 +94,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       return null;
     }
 
-    final table = (from as TableReference).resolved as Table;
+    final table = from.resolved as Table?;
     if (table == null) return null;
 
     // table.findColumn contains logic to resolve row id aliases
@@ -105,7 +104,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   @override
   void visitAggregateExpression(AggregateExpression e, void arg) {
     if (e.windowName != null && e.resolved == null) {
-      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName);
+      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
       e.resolved = resolved;
     }
 

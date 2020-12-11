@@ -24,7 +24,7 @@ class FunctionExpression extends Expression
   @override
   FunctionParameters parameters;
 
-  FunctionExpression({@required this.name, @required this.parameters});
+  FunctionExpression({required this.name, required this.parameters});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -50,7 +50,7 @@ abstract class FunctionParameters extends AstNode {}
 class StarFunctionParameter extends FunctionParameters {
   StarFunctionParameter();
 
-  Token starToken;
+  Token? starToken;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

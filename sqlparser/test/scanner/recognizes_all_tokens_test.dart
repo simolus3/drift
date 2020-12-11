@@ -16,15 +16,15 @@ typedef sqlite3_keyword_name = int Function(
     int, Pointer<Pointer<Uint8>>, Pointer<Int32>);
 
 void main() {
-  String skip;
-  DynamicLibrary library;
+  String? skip;
+  late DynamicLibrary library;
 
   try {
     library = open.openSqlite();
 
     // Some platforms have sqlite3, but no sqlite3_keyword_count
     library.lookup('sqlite3_keyword_count');
-  } on dynamic {
+  } on Object {
     skip = 'sqlite3 is not available in test environment';
   }
 

@@ -3,16 +3,16 @@ part of '../ast.dart';
 /// https://www.sqlite.org/syntax/column-def.html
 class ColumnDefinition extends AstNode {
   final String columnName;
-  final String /*?*/ typeName;
+  final String? typeName;
   final List<ColumnConstraint> constraints;
 
   /// The tokens there were involved in defining the type of this column.
-  List<Token> typeNames;
-  Token nameToken;
+  List<Token>? typeNames;
+  Token? nameToken;
 
   ColumnDefinition(
-      {@required this.columnName,
-      @required this.typeName,
+      {required this.columnName,
+      required this.typeName,
       this.constraints = const []});
 
   @override
@@ -29,7 +29,7 @@ class ColumnDefinition extends AstNode {
   Iterable<AstNode> get childNodes => constraints;
 
   /// Finds a constraint of type [T], or null, if none is set.
-  T findConstraint<T extends ColumnConstraint>() {
+  T? findConstraint<T extends ColumnConstraint>() {
     final typedConstraints = constraints.whereType<T>().iterator;
     if (typedConstraints.moveNext()) {
       return typedConstraints.current;
@@ -40,7 +40,7 @@ class ColumnDefinition extends AstNode {
 
 /// https://www.sqlite.org/syntax/column-constraint.html
 abstract class ColumnConstraint extends AstNode {
-  final String name;
+  final String? name;
 
   ColumnConstraint(this.name);
 
@@ -49,16 +49,16 @@ abstract class ColumnConstraint extends AstNode {
     return visitor.visitColumnConstraint(this, arg);
   }
 
-  T when<T>({
-    T Function(NotNull) notNull,
-    T Function(NullColumnConstraint) nullable,
-    T Function(PrimaryKeyColumn) primaryKey,
-    T Function(UniqueColumn) unique,
-    T Function(CheckColumn) check,
-    T Function(Default) isDefault,
-    T Function(CollateConstraint) collate,
-    T Function(ForeignKeyColumnConstraint) foreignKey,
-    T Function(MappedBy) mappedBy,
+  T? when<T>({
+    T Function(NotNull)? notNull,
+    T Function(NullColumnConstraint)? nullable,
+    T Function(PrimaryKeyColumn)? primaryKey,
+    T Function(UniqueColumn)? unique,
+    T Function(CheckColumn)? check,
+    T Function(Default)? isDefault,
+    T Function(CollateConstraint)? collate,
+    T Function(ForeignKeyColumnConstraint)? foreignKey,
+    T Function(MappedBy)? mappedBy,
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
@@ -88,9 +88,9 @@ enum ConflictClause { rollback, abort, fail, ignore, replace }
 
 class NullColumnConstraint extends ColumnConstraint {
   /// The `NULL` token forming this constraint.
-  Token $null;
+  Token? $null;
 
-  NullColumnConstraint(String name, {this.$null}) : super(name);
+  NullColumnConstraint(String? name, {this.$null}) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => const Iterable.empty();
@@ -100,12 +100,12 @@ class NullColumnConstraint extends ColumnConstraint {
 }
 
 class NotNull extends ColumnConstraint {
-  final ConflictClause onConflict;
+  final ConflictClause? onConflict;
 
-  Token not;
-  Token $null;
+  Token? not;
+  Token? $null;
 
-  NotNull(String name, {this.onConflict}) : super(name);
+  NotNull(String? name, {this.onConflict}) : super(name);
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -116,10 +116,10 @@ class NotNull extends ColumnConstraint {
 
 class PrimaryKeyColumn extends ColumnConstraint {
   final bool autoIncrement;
-  final ConflictClause onConflict;
-  final OrderingMode mode;
+  final ConflictClause? onConflict;
+  final OrderingMode? mode;
 
-  PrimaryKeyColumn(String name,
+  PrimaryKeyColumn(String? name,
       {this.autoIncrement = false, this.mode, this.onConflict})
       : super(name);
 
@@ -131,9 +131,9 @@ class PrimaryKeyColumn extends ColumnConstraint {
 }
 
 class UniqueColumn extends ColumnConstraint {
-  final ConflictClause onConflict;
+  final ConflictClause? onConflict;
 
-  UniqueColumn(String name, this.onConflict) : super(name);
+  UniqueColumn(String? name, this.onConflict) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => const [];
@@ -145,7 +145,7 @@ class UniqueColumn extends ColumnConstraint {
 class CheckColumn extends ColumnConstraint {
   Expression expression;
 
-  CheckColumn(String name, this.expression) : super(name);
+  CheckColumn(String? name, this.expression) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
@@ -159,7 +159,7 @@ class CheckColumn extends ColumnConstraint {
 class Default extends ColumnConstraint {
   Expression expression;
 
-  Default(String name, this.expression) : super(name);
+  Default(String? name, this.expression) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [expression];
@@ -173,7 +173,7 @@ class Default extends ColumnConstraint {
 class CollateConstraint extends ColumnConstraint {
   final String collation;
 
-  CollateConstraint(String name, this.collation) : super(name);
+  CollateConstraint(String? name, this.collation) : super(name);
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -185,7 +185,7 @@ class CollateConstraint extends ColumnConstraint {
 class ForeignKeyColumnConstraint extends ColumnConstraint {
   ForeignKeyClause clause;
 
-  ForeignKeyColumnConstraint(String name, this.clause) : super(name);
+  ForeignKeyColumnConstraint(String? name, this.clause) : super(name);
 
   @override
   Iterable<AstNode> get childNodes => [clause];
@@ -202,7 +202,7 @@ class MappedBy extends ColumnConstraint {
   /// The Dart expression creating the type converter we use to map this token.
   final InlineDartToken mapper;
 
-  MappedBy(String name, this.mapper) : super(name);
+  MappedBy(String? name, this.mapper) : super(name);
 
   @override
   final Iterable<AstNode> childNodes = const [];
@@ -213,8 +213,8 @@ class MappedBy extends ColumnConstraint {
 
 /// A `JSON KEY xyz` constraint, which is only parsed for moor files.
 class JsonKey extends ColumnConstraint {
-  Token json;
-  Token key;
+  Token? json;
+  Token? key;
   IdentifierToken jsonNameToken;
 
   @override
@@ -222,7 +222,7 @@ class JsonKey extends ColumnConstraint {
 
   String get jsonKey => jsonNameToken.identifier;
 
-  JsonKey(String name, this.jsonNameToken) : super(name);
+  JsonKey(String? name, this.jsonNameToken) : super(name);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
@@ -230,7 +230,7 @@ class JsonKey extends ColumnConstraint {
 
 /// A `AS xyz` constraint, which is only parsed for moor files.
 class MoorDartName extends ColumnConstraint {
-  Token as;
+  Token? as;
   IdentifierToken identifier;
 
   @override
@@ -238,7 +238,7 @@ class MoorDartName extends ColumnConstraint {
 
   String get dartName => identifier.identifier;
 
-  MoorDartName(String name, this.identifier) : super(name);
+  MoorDartName(String? name, this.identifier) : super(name);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}

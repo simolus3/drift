@@ -5,13 +5,13 @@ import 'package:test/test.dart';
 /// Parses the [moorFile] and computes available autocomplete suggestions at
 /// the position of a `^` character in the source.
 ComputedSuggestions completionsFor(String moorFile,
-    {void Function(SqlEngine) setup}) {
+    {void Function(SqlEngine)? setup}) {
   final position = moorFile.indexOf('^');
   final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
   setup?.call(engine);
 
   final result = engine.parseMoorFile(moorFile.replaceFirst('^', ''));
-  return result.autoCompleteEngine.suggestCompletions(position - 1);
+  return result.autoCompleteEngine!.suggestCompletions(position - 1);
 }
 
 Matcher hasCode(String code) => _SuggestionWithCode(code);
@@ -41,7 +41,7 @@ class _SuggestsMatcher extends CustomMatcher {
       : super('Suggestions containing', 'suggestions', matcher);
 
   @override
-  List<Suggestion> featureValueOf(dynamic actual) {
+  List<Suggestion>? featureValueOf(dynamic actual) {
     if (actual is ComputedSuggestions) {
       return actual.suggestions;
     }

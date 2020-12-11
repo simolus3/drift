@@ -14,14 +14,14 @@ void main() {
             'WHERE _rowid_ = 3');
 
     final select = context.root as SelectStatement;
-    final resolvedColumns = select.resolvedColumns;
+    final resolvedColumns = select.resolvedColumns!;
 
     expect(context.errors, isEmpty);
 
     expect(resolvedColumns.map((c) => c.name),
         ['id', 'content', 'id', 'content', '3 + 4']);
 
-    expect(resolvedColumns.map((c) => context.typeOf(c).type.type), [
+    expect(resolvedColumns.map((c) => context.typeOf(c).type!.type), [
       BasicType.int,
       BasicType.text,
       BasicType.int,
@@ -52,10 +52,10 @@ void main() {
     final context = engine.analyze('SELECT * FROM my_view');
     expect(context.errors, isEmpty);
 
-    final resolvedColumns = (context.root as SelectStatement).resolvedColumns;
+    final resolvedColumns = (context.root as SelectStatement).resolvedColumns!;
     expect(resolvedColumns.map((e) => e.name), ['foo', 'bar']);
     expect(
-      resolvedColumns.map((e) => context.typeOf(e).type.type),
+      resolvedColumns.map((e) => context.typeOf(e).type!.type),
       [BasicType.int, BasicType.text],
     );
   });
@@ -84,7 +84,7 @@ void main() {
     final resolved = expression.resolved as ExpressionColumn;
 
     enforceEqual(
-      resolved.expression,
+      resolved.expression!,
       BinaryExpression(
         NumericLiteral(3, token(TokenType.numberLiteral)),
         token(TokenType.star),
@@ -106,7 +106,7 @@ void main() {
     final select = context.root as SelectStatement;
     expect(select.resolvedColumns, hasLength(1));
     expect(
-      context.typeOf(select.resolvedColumns.single).type.type,
+      context.typeOf(select.resolvedColumns!.single).type!.type,
       BasicType.int,
     );
   });
@@ -119,7 +119,7 @@ void main() {
     test('when virtual id', () {
       final context = engine.analyze('SELECT oid, _rowid_ FROM tbl');
       final select = context.root as SelectStatement;
-      final resolvedColumns = select.resolvedColumns;
+      final resolvedColumns = select.resolvedColumns!;
 
       expect(resolvedColumns.map((c) => c.name), ['rowid', 'rowid']);
     });
@@ -127,7 +127,7 @@ void main() {
     test('when alias to actual column', () {
       final context = engine.analyze('SELECT oid, _rowid_ FROM demo');
       final select = context.root as SelectStatement;
-      final resolvedColumns = select.resolvedColumns;
+      final resolvedColumns = select.resolvedColumns!;
 
       expect(resolvedColumns.map((c) => c.name), ['id', 'id']);
     });
@@ -161,10 +161,10 @@ SELECT row_number() OVER wnd FROM demo
   WINDOW wnd AS (PARTITION BY content GROUPS CURRENT ROW EXCLUDE TIES)
     ''');
 
-    final column = (context.root as SelectStatement).resolvedColumns.single
+    final column = (context.root as SelectStatement).resolvedColumns!.single
         as ExpressionColumn;
 
-    final over = (column.expression as AggregateExpression).over;
+    final over = (column.expression as AggregateExpression).over!;
 
     enforceEqual(
       over,

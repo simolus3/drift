@@ -8,9 +8,9 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   final List<StatementParameter> parameters;
 
   /// The desired result class name, if set.
-  final String /*?*/ as;
+  final String? as;
 
-  Token colon;
+  Token? colon;
 
   /// Whether this is a regular query, meaning that Dart methods are generated
   /// for it. Special queries are annotated with an `@` and have special
@@ -18,7 +18,7 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   bool get isRegularQuery => identifier is SimpleName;
 
   DeclaredStatement(this.identifier, this.statement,
-      {this.parameters, this.as});
+      {this.parameters = const [], this.as});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -28,14 +28,11 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     statement = transformer.transformChild(statement, this, arg);
-    if (parameters != null) {
-      transformer.transformChildren(parameters, this, arg);
-    }
+    transformer.transformChildren(parameters, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes =>
-      [statement, if (parameters != null) ...parameters];
+  Iterable<AstNode> get childNodes => [statement, ...parameters];
 }
 
 /// How a statement was declared in a moor file.
@@ -50,7 +47,7 @@ abstract class DeclaredStatementIdentifier {
 class SimpleName extends DeclaredStatementIdentifier {
   @override
   final String name;
-  IdentifierToken identifier;
+  IdentifierToken? identifier;
 
   SimpleName(this.name);
 
@@ -70,7 +67,7 @@ class SimpleName extends DeclaredStatementIdentifier {
 /// database is created.
 class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
   final String specialName;
-  AtSignVariableToken nameToken;
+  AtSignVariableToken? nameToken;
 
   SpecialStatementIdentifier(this.specialName);
 
@@ -107,7 +104,7 @@ class VariableTypeHint extends StatementParameter {
   Variable variable;
   final String typeName;
 
-  Token as;
+  Token? as;
 
   VariableTypeHint(this.variable, this.typeName);
 
@@ -133,7 +130,7 @@ class DartPlaceholderDefaultValue extends StatementParameter {
   final String variableName;
   Expression defaultValue;
 
-  DollarSignVariableToken variableToken;
+  DollarSignVariableToken? variableToken;
 
   DartPlaceholderDefaultValue(this.variableName, this.defaultValue);
 

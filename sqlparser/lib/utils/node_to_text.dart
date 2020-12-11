@@ -61,7 +61,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   void _keyword(TokenType type) {
-    _symbol(reverseKeywords[type], spaceAfter: true, spaceBefore: true);
+    _symbol(reverseKeywords[type]!, spaceAfter: true, spaceBefore: true);
   }
 
   void _space() => _buffer.writeCharCode($space);
@@ -80,7 +80,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _needsSpace = spaceAfter;
   }
 
-  void _where(Expression /*?*/ where) {
+  void _where(Expression? where) {
     if (where != null) {
       _keyword(TokenType.where);
       visit(where, null);
@@ -99,16 +99,16 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.filter);
       _symbol('(', spaceBefore: true);
       _keyword(TokenType.where);
-      visit(e.filter, arg);
+      visit(e.filter!, arg);
       _symbol(')', spaceAfter: true);
     }
 
     if (e.windowDefinition != null) {
       _keyword(TokenType.over);
-      visit(e.windowDefinition, arg);
+      visit(e.windowDefinition!, arg);
     } else if (e.windowName != null) {
       _keyword(TokenType.over);
-      _identifier(e.windowName);
+      _identifier(e.windowName!);
     }
   }
 
@@ -207,7 +207,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _identifier(e.collation);
   }
 
-  void _conflictClause(ConflictClause clause) {
+  void _conflictClause(ConflictClause? clause) {
     if (clause != null) {
       _keyword(TokenType.on);
       _keyword(TokenType.conflict);
@@ -218,7 +218,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
         ConflictClause.fail: TokenType.fail,
         ConflictClause.ignore: TokenType.ignore,
         ConflictClause.replace: TokenType.replace,
-      }[clause]);
+      }[clause]!);
     }
   }
 
@@ -226,7 +226,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitColumnConstraint(ColumnConstraint e, void arg) {
     if (e.name != null) {
       _keyword(TokenType.constraint);
-      _identifier(e.name);
+      _identifier(e.name!);
     }
 
     e.when(
@@ -277,7 +277,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitColumnDefinition(ColumnDefinition e, void arg) {
     _identifier(e.columnName);
     if (e.typeName != null) {
-      _symbol(e.typeName, spaceAfter: true, spaceBefore: true);
+      _symbol(e.typeName!, spaceAfter: true, spaceBefore: true);
     }
 
     visitList(e.constraints, arg);
@@ -287,7 +287,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     _identifier(e.cteTableName);
     if (e.columnNames != null) {
-      _symbol('(${e.columnNames.join(', ')})');
+      _symbol('(${e.columnNames!.join(', ')})');
     }
 
     _keyword(TokenType.as);
@@ -392,7 +392,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.when != null) {
       _keyword(TokenType.when);
-      visit(e.when, arg);
+      visit(e.when!, arg);
     }
 
     visit(e.action, arg);
@@ -408,7 +408,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.columns != null) {
       _symbol('(', spaceBefore: true);
-      _symbol(e.columns.join(','));
+      _symbol(e.columns!.join(','));
       _symbol(')', spaceAfter: true);
     }
 
@@ -471,7 +471,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     _keyword(TokenType.delete);
     _keyword(TokenType.from);
-    visit(e.from, null);
+    visit(e.from!, null);
     _where(e.where);
   }
 
@@ -546,12 +546,12 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.onUpdate != null) {
       _keyword(TokenType.on);
       _keyword(TokenType.update);
-      referenceAction(e.onUpdate);
+      referenceAction(e.onUpdate!);
     }
     if (e.onDelete != null) {
       _keyword(TokenType.on);
       _keyword(TokenType.delete);
-      referenceAction(e.onDelete);
+      referenceAction(e.onDelete!);
     }
 
     visitNullable(e.deferrable, arg);
@@ -564,7 +564,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
         if (boundary.isUnbounded) {
           _keyword(TokenType.unbounded);
         } else {
-          visit(boundary.offset, arg);
+          visit(boundary.offset!, arg);
         }
 
         _keyword(preceding ? TokenType.preceding : TokenType.following);
@@ -584,20 +584,16 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       FrameType.range: TokenType.range,
       FrameType.rows: TokenType.rows,
       FrameType.groups: TokenType.groups,
-    }[e.type]);
+    }[e.type!]!);
 
-    if (e.end != null) {
-      _keyword(TokenType.between);
-      frameBoundary(e.start);
-      _keyword(TokenType.and);
-      frameBoundary(e.end);
-    } else {
-      frameBoundary(e.start);
-    }
+    _keyword(TokenType.between);
+    frameBoundary(e.start);
+    _keyword(TokenType.and);
+    frameBoundary(e.end);
 
     if (e.excludeMode != null) {
       _keyword(TokenType.exclude);
-      switch (e.excludeMode) {
+      switch (e.excludeMode!) {
         case ExcludeMode.noOthers:
           _keyword(TokenType.no);
           _keyword(TokenType.others);
@@ -633,7 +629,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.having != null) {
       _keyword(TokenType.having);
-      visit(e.having, arg);
+      visit(e.having!, arg);
     }
   }
 
@@ -673,11 +669,11 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
         InsertMode.insertOrAbort: TokenType.abort,
         InsertMode.insertOrFail: TokenType.fail,
         InsertMode.insertOrIgnore: TokenType.ignore,
-      }[mode]);
+      }[mode]!);
     }
 
     _keyword(TokenType.into);
-    visit(e.table, arg);
+    visit(e.table!, arg);
 
     if (e.targetColumns.isNotEmpty) {
       _symbol('(', spaceBefore: true);
@@ -778,7 +774,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.offset != null) {
       _keyword(TokenType.offset);
-      visit(e.offset, arg);
+      visit(e.offset!, arg);
     }
   }
 
@@ -794,7 +790,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.as != null) {
       _keyword(TokenType.as);
-      _identifier(e.as);
+      _identifier(e.as!);
     }
 
     _symbol(':', spaceAfter: true);
@@ -864,12 +860,12 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _join(e.terms, ',');
   }
 
-  void _orderingMode(OrderingMode mode) {
+  void _orderingMode(OrderingMode? mode) {
     if (mode != null) {
       _keyword(const {
         OrderingMode.ascending: TokenType.asc,
         OrderingMode.descending: TokenType.desc,
-      }[mode]);
+      }[mode]!);
     }
   }
 
@@ -884,7 +880,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(const {
         OrderingBehaviorForNulls.first: TokenType.first,
         OrderingBehaviorForNulls.last: TokenType.last,
-      }[e.nulls]);
+      }[e.nulls!]!);
     }
   }
 
@@ -900,7 +896,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     var hasTable = false;
     if (e.tableName != null) {
       hasTable = true;
-      _identifier(e.tableName, spaceAfter: false);
+      _identifier(e.tableName!, spaceAfter: false);
       _symbol('.');
     }
 
@@ -910,7 +906,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitStarResultColumn(StarResultColumn e, void arg) {
     if (e.tableName != null) {
-      _identifier(e.tableName);
+      _identifier(e.tableName!);
       _symbol('.');
     }
 
@@ -928,7 +924,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.expression, arg);
     if (e.as != null) {
       _keyword(TokenType.as);
-      _identifier(e.as);
+      _identifier(e.as!);
     }
   }
 
@@ -949,7 +945,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.from != null) {
       _keyword(TokenType.from);
-      visit(e.from, arg);
+      visit(e.from!, arg);
     }
     _where(e.where);
     visitNullable(e.groupBy, arg);
@@ -981,7 +977,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.as != null) {
       _keyword(TokenType.as);
-      _identifier(e.as);
+      _identifier(e.as!);
     }
   }
 
@@ -1009,7 +1005,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.escape != null) {
       _keyword(TokenType.escape);
-      visit(e.escape, arg);
+      visit(e.escape!, arg);
     }
   }
 
@@ -1029,7 +1025,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitTableConstraint(TableConstraint e, void arg) {
     if (e.name != null) {
       _keyword(TokenType.constraint);
-      _identifier(e.name);
+      _identifier(e.name!);
     }
 
     if (e is KeyClause) {
@@ -1064,7 +1060,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _identifier(e.tableName);
     if (e.as != null) {
       _keyword(TokenType.as);
-      _identifier(e.as);
+      _identifier(e.as!);
     }
   }
 
@@ -1077,7 +1073,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
 
     if (e.as != null) {
       _keyword(TokenType.as);
-      _identifier(e.as);
+      _identifier(e.as!);
     }
   }
 
@@ -1139,7 +1135,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
         FailureMode.replace: TokenType.replace,
         FailureMode.fail: TokenType.fail,
         FailureMode.ignore: TokenType.ignore,
-      }[e.or]);
+      }[e.or!]!);
     }
 
     visit(e.table, arg);
@@ -1163,7 +1159,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _keyword(TokenType.conflict);
 
     if (e.onColumns != null) {
-      _join(e.onColumns, ',');
+      _join(e.onColumns!, ',');
       _where(e.where);
     }
 
@@ -1196,7 +1192,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _symbol('(', spaceBefore: true);
 
     if (e.baseWindowName != null) {
-      _identifier(e.baseWindowName);
+      _identifier(e.baseWindowName!);
     }
 
     if (e.partitionBy.isNotEmpty) {

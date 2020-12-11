@@ -28,7 +28,7 @@ void main() {
       expect(suggestion, suggestsTables);
     });
 
-    test('in triger', () {
+    test('in trigger', () {
       final suggestion = _compute('CREATE TRIGGER name BEFORE DELETE ON ^');
       expect(suggestion, suggestsTables);
     });

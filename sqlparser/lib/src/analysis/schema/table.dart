@@ -29,17 +29,17 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   final List<TableConstraint> tableConstraints;
 
   /// The ast node that created this table
-  final TableInducingStatement definition;
+  final TableInducingStatement? definition;
 
   @override
   bool get visibleToChildren => true;
 
-  TableColumn _rowIdColumn;
+  TableColumn? _rowIdColumn;
 
   /// Constructs a table from the known [name] and [resolvedColumns].
   Table(
-      {@required this.name,
-      this.resolvedColumns,
+      {required this.name,
+      required this.resolvedColumns,
       this.withoutRowId = false,
       this.tableConstraints = const [],
       this.definition}) {
@@ -53,7 +53,7 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   }
 
   @override
-  Column findColumn(String name) {
+  Column? findColumn(String name) {
     final defaultSearch = super.findColumn(name);
     if (defaultSearch != null) return defaultSearch;
 
@@ -78,10 +78,10 @@ class TableAlias implements ResultSet, HumanReadable {
   TableAlias(this.delegate, this.alias);
 
   @override
-  List<Column> get resolvedColumns => delegate.resolvedColumns;
+  List<Column> get resolvedColumns => delegate.resolvedColumns!;
 
   @override
-  Column findColumn(String name) => delegate.findColumn(name);
+  Column? findColumn(String name) => delegate.findColumn(name);
 
   @override
   ResultSet get resultSet => this;

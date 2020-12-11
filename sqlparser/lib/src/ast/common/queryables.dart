@@ -5,10 +5,10 @@ part of '../ast.dart';
 abstract class Queryable extends AstNode {
   // todo remove this, introduce more visit methods for subclasses
   T when<T>({
-    @required T Function(TableReference) isTable,
-    @required T Function(SelectStatementAsSource) isSelect,
-    @required T Function(JoinClause) isJoin,
-    @required T Function(TableValuedFunction) isTableFunction,
+    required T Function(TableReference) isTable,
+    required T Function(SelectStatementAsSource) isSelect,
+    required T Function(JoinClause) isJoin,
+    required T Function(TableValuedFunction) isTableFunction,
   }) {
     if (this is TableReference) {
       return isTable(this as TableReference);
@@ -40,10 +40,10 @@ class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet {
   final String tableName;
-  Token tableNameToken;
+  Token? tableNameToken;
 
   @override
-  final String as;
+  final String? as;
 
   TableReference(this.tableName, [this.as]);
 
@@ -59,8 +59,8 @@ class TableReference extends TableOrSubquery
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 
   @override
-  ResultSet get resultSet {
-    return resolved as ResultSet;
+  ResultSet? get resultSet {
+    return resolved as ResultSet?;
   }
 
   @override
@@ -71,10 +71,10 @@ class TableReference extends TableOrSubquery
 /// different from nested select expressions, which can only return one value.
 class SelectStatementAsSource extends TableOrSubquery implements Renamable {
   @override
-  final String as;
+  final String? as;
   BaseSelectStatement statement;
 
-  SelectStatementAsSource({@required this.statement, this.as});
+  SelectStatementAsSource({required this.statement, this.as});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -95,7 +95,7 @@ class JoinClause extends Queryable {
   TableOrSubquery primary;
   final List<Join> joins;
 
-  JoinClause({@required this.primary, @required this.joins});
+  JoinClause({required this.primary, required this.joins});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -125,12 +125,12 @@ class Join extends AstNode {
   final bool natural;
   final JoinOperator operator;
   TableOrSubquery query;
-  final JoinConstraint /*?*/ constraint;
+  final JoinConstraint? constraint;
 
   Join(
       {this.natural = false,
-      @required this.operator,
-      @required this.query,
+      required this.operator,
+      required this.query,
       this.constraint});
 
   @override
@@ -162,13 +162,13 @@ abstract class JoinConstraint {}
 
 class OnConstraint extends JoinConstraint {
   Expression expression;
-  OnConstraint({@required this.expression});
+  OnConstraint({required this.expression});
 }
 
 class UsingConstraint extends JoinConstraint {
   final List<String> columnNames;
 
-  UsingConstraint({@required this.columnNames});
+  UsingConstraint({required this.columnNames});
 }
 
 class TableValuedFunction extends Queryable
@@ -177,13 +177,13 @@ class TableValuedFunction extends Queryable
   final String name;
 
   @override
-  final String as;
+  final String? as;
 
   @override
   FunctionParameters parameters;
 
   @override
-  ResultSet resultSet;
+  ResultSet? resultSet;
 
   TableValuedFunction(this.name, this.parameters, {this.as});
 

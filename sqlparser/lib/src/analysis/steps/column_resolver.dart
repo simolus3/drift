@@ -52,7 +52,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitDoUpdate(DoUpdate e, void arg) {
     final surroundingInsert = e.parents.whereType<InsertStatement>().first;
-    final table = surroundingInsert.table.resultSet;
+    final table = surroundingInsert.table!.resultSet;
 
     if (table != null) {
       // add "excluded" table qualifier that referring to the row that would
@@ -78,13 +78,13 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
-    _addIfResolved(e, e.table);
+    _addIfResolved(e, e.table!);
     visitChildren(e, arg);
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
-    _addIfResolved(e, e.from);
+    _addIfResolved(e, e.from!);
     visitChildren(e, arg);
   }
 
@@ -119,7 +119,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         if (resolved != null) {
           // an error will be logged when resolved is null, so the != null check
           // is fine and avoids crashes
-          availableColumns.addAll(table.resultSet.resolvedColumns);
+          availableColumns.addAll(table.resultSet!.resolvedColumns!);
         }
       },
       isSelect: (select) {
@@ -137,7 +137,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           throw AssertionError('Unknown type of select statement: $stmt');
         }
 
-        availableColumns.addAll(stmt.resolvedColumns);
+        availableColumns.addAll(stmt.resolvedColumns!);
       },
       isJoin: (join) {
         _handle(join.primary, availableColumns);
@@ -158,7 +158,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           ));
         } else {
           function.resultSet = resolved;
-          availableColumns.addAll(resolved.resolvedColumns);
+          availableColumns.addAll(resolved.resolvedColumns!);
         }
       },
     );
@@ -167,7 +167,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   void _resolveSelect(SelectStatement s) {
     final availableColumns = <Column>[];
     if (s.from != null) {
-      _handle(s.from, availableColumns);
+      _handle(s.from!, availableColumns);
     }
 
     final usedColumns = <Column>[];
@@ -177,19 +177,19 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     // result, but also expressions that appear as result columns
     for (final resultColumn in s.columns) {
       if (resultColumn is StarResultColumn) {
-        Iterable<Column> visibleColumnsForStar;
+        Iterable<Column>? visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
-          final tableResolver = scope
-              .resolve<ResolvesToResultSet>(resultColumn.tableName, orElse: () {
+          final tableResolver = scope.resolve<ResolvesToResultSet>(
+              resultColumn.tableName!, orElse: () {
             context.reportError(AnalysisError(
               type: AnalysisErrorType.referencedUnknownTable,
               message: 'Unknown table: ${resultColumn.tableName}',
               relevantNode: resultColumn,
             ));
-          });
+          })!;
 
-          visibleColumnsForStar = tableResolver.resultSet.resolvedColumns;
+          visibleColumnsForStar = tableResolver.resultSet!.resolvedColumns;
         } else {
           // we have a * column without a table, that resolves to every columns
           // available
@@ -197,7 +197,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         }
 
         usedColumns
-            .addAll(visibleColumnsForStar.where((e) => e.includedInResults));
+            .addAll(visibleColumnsForStar!.where((e) => e.includedInResults));
       } else if (resultColumn is ExpressionResultColumn) {
         final expression = resultColumn.expression;
         Column column;
@@ -206,7 +206,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           column = ReferenceExpressionColumn(expression,
               overriddenName: resultColumn.as);
         } else {
-          final name = _nameOfResultColumn(resultColumn);
+          final name = _nameOfResultColumn(resultColumn)!;
           column =
               ExpressionColumn(name: name, expression: resultColumn.expression);
         }
@@ -246,9 +246,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     ];
 
     // each select statement must return the same amount of columns
-    final amount = columnSets.first.length;
+    final amount = columnSets.first!.length;
     for (var i = 1; i < columnSets.length; i++) {
-      if (columnSets[i].length != amount) {
+      if (columnSets[i]!.length != amount) {
         context.reportError(AnalysisError(
           type: AnalysisErrorType.compoundColumnCountMismatch,
           relevantNode: statement,
@@ -265,7 +265,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     for (var i = 0; i < amount; i++) {
       final columnsAtThisIndex = [
         for (var set in columnSets)
-          if (set.length > i) set[i]
+          if (set!.length > i) set[i]
       ];
 
       resolved.add(CompoundSelectColumn(columnsAtThisIndex));
@@ -277,10 +277,10 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     // ideally all tuples should have the same arity, but the parser doesn't
     // enforce that.
     final amountOfColumns =
-        statement.values.fold<int>(null, (maxLength, tuple) {
+        statement.values.fold<int?>(null, (maxLength, tuple) {
       final lengthHere = tuple.expressions.length;
       return maxLength == null ? lengthHere : max(maxLength, lengthHere);
-    });
+    })!;
 
     final columns = <Column>[];
 
@@ -299,7 +299,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     statement.resolvedColumns = columns;
   }
 
-  String _nameOfResultColumn(ExpressionResultColumn c) {
+  String? _nameOfResultColumn(ExpressionResultColumn c) {
     if (c.as != null) return c.as;
 
     if (c.expression is Reference) {
@@ -314,7 +314,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     return span;
   }
 
-  ResultSet _resolveTableReference(TableReference r) {
+  ResultSet? _resolveTableReference(TableReference r) {
     final scope = r.scope;
     final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
       final available = scope.allOf<ResultSet>().map((t) {

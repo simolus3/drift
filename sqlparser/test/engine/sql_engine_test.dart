@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('does not throw when parsing invalid statements', () {
     final engine = SqlEngine();
-    ParseResult result;
+    late ParseResult result;
 
     try {
       result = engine.parse('UDPATE foo SET bar = foo;');
@@ -17,7 +17,7 @@ void main() {
 
   test('does not throw when analyzing invalid statements', () {
     final engine = SqlEngine();
-    AnalysisContext result;
+    late AnalysisContext result;
 
     try {
       result = engine.analyze('UDPATE foo SET bar = foo;');

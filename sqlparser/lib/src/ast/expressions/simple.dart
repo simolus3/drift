@@ -26,9 +26,9 @@ class CollateExpression extends UnaryExpression {
   String get collation => collateFunction.lexeme;
 
   CollateExpression(
-      {@required Token operator,
-      @required Expression inner,
-      @required this.collateFunction})
+      {required Token operator,
+      required Expression inner,
+      required this.collateFunction})
       : super(operator, inner);
 
   @override
@@ -65,13 +65,13 @@ class StringComparisonExpression extends Expression {
   final Token operator;
   Expression left;
   Expression right;
-  Expression escape;
+  Expression? escape;
 
   StringComparisonExpression(
       {this.not = false,
-      @required this.left,
-      @required this.operator,
-      @required this.right,
+      required this.left,
+      required this.operator,
+      required this.right,
       this.escape});
 
   @override
@@ -87,7 +87,8 @@ class StringComparisonExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode> get childNodes => [left, right, if (escape != null) escape];
+  Iterable<AstNode > get childNodes =>
+      [left, right, if (escape != null) escape!];
 }
 
 /// `(NOT)? $left IS $right`
@@ -142,7 +143,11 @@ class BetweenExpression extends Expression {
   Expression lower;
   Expression upper;
 
-  BetweenExpression({this.not = false, this.check, this.lower, this.upper});
+  BetweenExpression(
+      {this.not = false,
+      required this.check,
+      required this.lower,
+      required this.upper});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -171,7 +176,7 @@ class InExpression extends Expression {
   /// tuple of variables at runtime.
   Expression inside;
 
-  InExpression({this.not = false, @required this.left, @required this.inside})
+  InExpression({this.not = false, required this.left, required this.inside})
       : assert(inside is Tuple || inside is Variable || inside is SubQuery);
 
   @override

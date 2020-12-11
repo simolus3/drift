@@ -1,13 +1,13 @@
 part of '../ast.dart';
 
 abstract class Statement extends AstNode {
-  Token semicolon;
+  Token? semicolon;
 }
 
 /// A statement that reads from an existing table structure and has an optional
 /// `WITH` clause.
 abstract class CrudStatement extends Statement {
-  WithClause withClause;
+  WithClause? withClause;
 
   CrudStatement._(this.withClause);
 }
@@ -21,7 +21,7 @@ abstract class HasPrimarySource extends Statement {
   /// The primary table this statement operates on. This is the part after the
   /// `FROM` for select and delete statements, the part after the `INTO` for
   /// inserts and the name after the `UPDATE` for updates.
-  Queryable get table;
+  Queryable? get table;
 }
 
 /// Interface for statements that have a primary where clause (select, update,

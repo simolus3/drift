@@ -31,7 +31,7 @@ END;
           contains(const TypeMatcher<AnalysisError>()
               .having((e) => e.type, 'type',
                   AnalysisErrorType.referencedUnknownTable)
-              .having((e) => e.span.text, 'span.text', 'new')),
+              .having((e) => e.span!.text, 'span.text', 'new')),
         );
       });
     });
@@ -59,7 +59,7 @@ END;
           contains(const TypeMatcher<AnalysisError>()
               .having((e) => e.type, 'type',
                   AnalysisErrorType.referencedUnknownTable)
-              .having((e) => e.span.text, 'span.text', 'old')),
+              .having((e) => e.span!.text, 'span.text', 'old')),
         );
       });
     });
@@ -109,7 +109,7 @@ INSERT INTO demo VALUES (?, ?)
     final context = engine.analyze("VALUES ('foo', 3), ('bar', 5)");
 
     expect(context.errors, isEmpty);
-    final columns = (context.root as ResultSet).resolvedColumns;
+    final columns = (context.root as ResultSet).resolvedColumns!;
 
     expect(columns.map((e) => e.name), ['Column1', 'Column2']);
     expect(columns.map((e) => context.typeOf(e).type?.type),
@@ -126,7 +126,7 @@ INSERT INTO demo VALUES (?, ?)
     final context = engine.analyze("VALUES ('foo', 3), ('bar')");
 
     expect(context.errors, isNotEmpty);
-    final columns = (context.root as ResultSet).resolvedColumns;
+    final columns = (context.root as ResultSet).resolvedColumns!;
 
     expect(columns.map((e) => e.name), ['Column1', 'Column2']);
     expect(columns.map((e) => context.typeOf(e).type?.type),

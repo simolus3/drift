@@ -18,9 +18,9 @@ class SqlEngine {
   /// Internal options for this sql engine.
   final EngineOptions options;
 
-  SchemaFromCreateTable _schemaReader;
+  SchemaFromCreateTable? _schemaReader;
 
-  SqlEngine([EngineOptions engineOptions])
+  SqlEngine([EngineOptions? engineOptions])
       : options = engineOptions ?? EngineOptions() {
     for (final extension in options.enabledExtensions) {
       extension.register(this);
@@ -77,7 +77,7 @@ class SqlEngine {
     options.addTableValuedFunctionHandler(handler);
   }
 
-  ReferenceScope _constructRootScope({ReferenceScope parent}) {
+  ReferenceScope _constructRootScope({ReferenceScope? parent}) {
     final scope = parent == null ? ReferenceScope(null) : parent.createChild();
     for (final resultSet in knownResultSets) {
       scope.register(resultSet.name, resultSet);
@@ -141,7 +141,7 @@ class SqlEngine {
   /// [registerTable] before calling this method.
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
-  AnalysisContext analyze(String sql, {AnalyzeStatementOptions stmtOptions}) {
+  AnalysisContext analyze(String sql, {AnalyzeStatementOptions? stmtOptions}) {
     final result = parse(sql);
     final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
 
@@ -162,7 +162,7 @@ class SqlEngine {
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
   AnalysisContext analyzeParsed(ParseResult result,
-      {AnalyzeStatementOptions stmtOptions}) {
+      {AnalyzeStatementOptions? stmtOptions}) {
     final node = result.rootNode;
 
     final context = _createContext(node, result.sql, stmtOptions);
@@ -182,14 +182,14 @@ class SqlEngine {
   /// The [stmtOptions] can be used to pass additional options used to analyze
   /// this statement only.
   AnalysisContext analyzeNode(AstNode node, String file,
-      {AnalyzeStatementOptions stmtOptions}) {
+      {AnalyzeStatementOptions? stmtOptions}) {
     final context = _createContext(node, file, stmtOptions);
     _analyzeContext(context);
     return context;
   }
 
   AnalysisContext _createContext(
-      AstNode node, String sql, AnalyzeStatementOptions stmtOptions) {
+      AstNode node, String sql, AnalyzeStatementOptions? stmtOptions) {
     return AnalysisContext(node, sql, options,
         stmtOptions: stmtOptions, schemaSupport: schemaReader);
   }
@@ -205,14 +205,10 @@ class SqlEngine {
         ..acceptWithoutArg(ColumnResolver(context))
         ..acceptWithoutArg(ReferenceResolver(context));
 
-      if (options.useLegacyTypeInference) {
-        node.acceptWithoutArg(TypeResolvingVisitor(context));
-      } else {
-        final session = t2.TypeInferenceSession(context, options);
-        final resolver = t2.TypeResolver(session);
-        resolver.run(node);
-        context.types2 = session.results;
-      }
+      final session = t2.TypeInferenceSession(context, options);
+      final resolver = t2.TypeResolver(session);
+      resolver.run(node);
+      context.types2 = session.results!;
 
       node.acceptWithoutArg(LintingVisitor(options, context));
     } catch (_) {
@@ -251,7 +247,7 @@ class ParseResult {
 
   /// The engine which can be used to handle auto-complete requests on this
   /// result.
-  final AutoCompleteEngine autoCompleteEngine;
+  final AutoCompleteEngine? autoCompleteEngine;
 
   ParseResult._(this.rootNode, this.tokens, this.errors, this.sql,
       this.autoCompleteEngine) {
@@ -261,7 +257,7 @@ class ParseResult {
   /// Attempts to find the most relevant (bottom-most in the AST) nodes that
   /// intersects with the source range from [offset] to [offset] + [length].
   List<AstNode> findNodesAtPosition(int offset, {int length = 0}) {
-    if (tokens.isEmpty || rootNode == null) return const [];
+    if (tokens.isEmpty) return const [];
 
     final candidates = <AstNode>{};
     final unchecked = Queue<AstNode>();
@@ -270,7 +266,7 @@ class ParseResult {
     while (unchecked.isNotEmpty) {
       final node = unchecked.removeFirst();
 
-      final span = node.span;
+      final span = node.span!;
       final start = span.start.offset;
       final end = span.end.offset;
 

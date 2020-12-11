@@ -9,13 +9,13 @@ class AggregateExpression extends Expression
 
   @override
   FunctionParameters parameters;
-  Expression filter;
+  Expression? filter;
 
   @override
-  Referencable resolved;
-  WindowDefinition get over {
+  Referencable? resolved;
+  WindowDefinition? get over {
     if (windowDefinition != null) return windowDefinition;
-    return (resolved as NamedWindowDeclaration)?.definition;
+    return (resolved as NamedWindowDeclaration?)?.definition;
   }
 
   /// The window definition as declared in the `OVER` clause in sql. If this
@@ -24,17 +24,17 @@ class AggregateExpression extends Expression
   /// this field will be null. Either [windowDefinition] or [windowName] are
   /// null. The resolved [WindowDefinition] is available in [over] in either
   /// case.
-  WindowDefinition windowDefinition;
+  WindowDefinition? windowDefinition;
 
   /// An aggregate expression can be written as `OVER <window-name>` instead of
   /// declaring its own [windowDefinition]. Either [windowDefinition] or
   /// [windowName] are null. The resolved [WindowDefinition] is available in
   /// [over] in either case.
-  final String windowName;
+  final String? windowName;
 
   AggregateExpression(
-      {@required this.function,
-      @required this.parameters,
+      {required this.function,
+      required this.parameters,
       this.filter,
       this.windowDefinition,
       this.windowName})
@@ -58,8 +58,8 @@ class AggregateExpression extends Expression
   Iterable<AstNode> get childNodes {
     return [
       parameters,
-      if (filter != null) filter,
-      if (windowDefinition != null) windowDefinition,
+      if (filter != null) filter!,
+      if (windowDefinition != null) windowDefinition!,
     ];
   }
 }
@@ -76,16 +76,16 @@ class NamedWindowDeclaration with Referencable {
 }
 
 class WindowDefinition extends AstNode {
-  final String baseWindowName;
+  final String? baseWindowName;
   final List<Expression> partitionBy;
-  OrderByBase orderBy;
+  OrderByBase? orderBy;
   FrameSpec frameSpec;
 
   WindowDefinition(
       {this.baseWindowName,
       this.partitionBy = const [],
       this.orderBy,
-      @required this.frameSpec});
+      required this.frameSpec});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -101,19 +101,19 @@ class WindowDefinition extends AstNode {
 
   @override
   Iterable<AstNode> get childNodes =>
-      [...partitionBy, if (orderBy != null) orderBy, frameSpec];
+      [...partitionBy, if (orderBy != null) orderBy!, frameSpec];
 }
 
 class FrameSpec extends AstNode {
-  final FrameType type;
-  final ExcludeMode excludeMode;
+  final FrameType? type;
+  final ExcludeMode? excludeMode;
   FrameBoundary start;
   FrameBoundary end;
 
   FrameSpec({
     this.type = FrameType.range,
-    FrameBoundary start,
-    FrameBoundary end,
+    FrameBoundary? start,
+    FrameBoundary? end,
     this.excludeMode = ExcludeMode.noOthers,
   })  : start = start ?? FrameBoundary.unboundedPreceding(),
         end = end ?? FrameBoundary.currentRow();
@@ -126,17 +126,17 @@ class FrameSpec extends AstNode {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     if (start.isExpressionOffset) {
-      start.offset = transformer.transformChild(start.offset, this, arg);
+      start.offset = transformer.transformChild(start.offset!, this, arg);
     }
     if (end.isExpressionOffset) {
-      end.offset = transformer.transformChild(end.offset, this, arg);
+      end.offset = transformer.transformChild(end.offset!, this, arg);
     }
   }
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (start.isExpressionOffset) start.offset,
-        if (end.isExpressionOffset) end.offset,
+        if (start.isExpressionOffset) start.offset!,
+        if (end.isExpressionOffset) end.offset!,
       ];
 }
 
@@ -173,7 +173,7 @@ class FrameBoundary {
 
   /// The (integer) expression that specifies the amount of rows to include
   /// before or after the row being processed.
-  Expression offset;
+  Expression? offset;
 
   /// Whether this boundary refers to a row before the current row.
   final bool preceding;
@@ -217,7 +217,7 @@ class FrameBoundary {
     final typedOther = other as FrameBoundary; // ignore: test_types_in_equals
     return typedOther._type == _type &&
         (typedOther.offset == null && offset == null ||
-            typedOther.offset.contentEquals(offset)) &&
+            typedOther.offset!.contentEquals(offset!)) &&
         typedOther.preceding == preceding;
   }
 }

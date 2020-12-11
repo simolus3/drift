@@ -41,10 +41,10 @@ class SchemaFromCreateTable {
   /// final view = const SchemaFromCreateTable().readView(ctx, createViewStmt);
   /// ```
   View readView(AnalysisContext context, CreateViewStatement stmt) {
-    final columnsFromSelect = stmt.query.resolvedColumns;
+    final columnsFromSelect = stmt.query.resolvedColumns!;
     final overriddenNames = stmt.columns ?? const [];
 
-    final viewColumns = List<ViewColumn>(columnsFromSelect.length);
+    final viewColumns = <ViewColumn>[];
 
     for (var i = 0; i < columnsFromSelect.length; i++) {
       final column = columnsFromSelect[i];
@@ -53,7 +53,7 @@ class SchemaFromCreateTable {
       // CREATE VIEW statement, but we try not to crash.
       final name = i < overriddenNames.length ? overriddenNames[i] : null;
 
-      viewColumns[i] = ViewColumn(column, context.typeOf(column).type, name);
+      viewColumns.add(ViewColumn(column, context.typeOf(column).type, name));
     }
 
     return View(
@@ -91,7 +91,7 @@ class SchemaFromCreateTable {
   /// [IsDateTime] hints if the type name contains `BOOL` or `DATE`,
   /// respectively.
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
-  ResolvedType resolveColumnType(String /*?*/ typeName) {
+  ResolvedType resolveColumnType(String? typeName) {
     if (typeName == null) {
       return const ResolvedType(type: BasicType.blob);
     }
@@ -130,7 +130,8 @@ class SchemaFromCreateTable {
   /// rules described here:
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
   @visibleForTesting
-  BasicType columnAffinity(String typeName) => resolveColumnType(typeName).type;
+  BasicType? columnAffinity(String? typeName) =>
+      resolveColumnType(typeName).type;
 }
 
 /// Thrown when a table schema could not be read.

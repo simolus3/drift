@@ -2,7 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 void main() {
-  SqlEngine engine;
+  late SqlEngine engine;
   setUp(() {
     engine = SqlEngine();
   });
@@ -69,7 +69,7 @@ extension on AnalysisContext {
       [
         isA<AnalysisError>()
             .having((e) => e.type, 'type', AnalysisErrorType.rowValueMisuse)
-            .having((e) => e.span.text, 'span.text', lexeme),
+            .having((e) => e.span!.text, 'span.text', lexeme),
       ],
     );
   }

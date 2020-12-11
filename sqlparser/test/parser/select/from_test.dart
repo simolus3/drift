@@ -7,7 +7,7 @@ import '../utils.dart';
 
 void _enforceFrom(SelectStatement stmt, Queryable expected) {
   enforceHasSpan(stmt);
-  enforceEqual(stmt.from, expected);
+  enforceEqual(stmt.from!, expected);
 }
 
 void main() {
@@ -16,7 +16,7 @@ void main() {
       final stmt =
           SqlEngine().parse('SELECT * FROM tbl').rootNode as SelectStatement;
 
-      enforceEqual(stmt.from, TableReference('tbl', null));
+      enforceEqual(stmt.from!, TableReference('tbl', null));
     });
 
     test('from more than one table', () {

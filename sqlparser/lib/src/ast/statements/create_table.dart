@@ -8,9 +8,9 @@ abstract class TableInducingStatement extends Statement
   /// Specific to moor. Overrides the name of the data class used to hold a
   /// result for of this table. Will be null when the moor extensions are not
   /// enabled or if no name has been set.
-  final String overriddenDataClassName;
+  final String? overriddenDataClassName;
 
-  Token tableNameToken;
+  Token? tableNameToken;
 
   TableInducingStatement._(this.ifNotExists, this.tableName,
       [this.overriddenDataClassName]);
@@ -26,16 +26,16 @@ class CreateTableStatement extends TableInducingStatement {
   final List<TableConstraint> tableConstraints;
   final bool withoutRowId;
 
-  Token openingBracket;
-  Token closingBracket;
+  Token? openingBracket;
+  Token? closingBracket;
 
   CreateTableStatement(
       {bool ifNotExists = false,
-      @required String tableName,
+      required String tableName,
       this.columns = const [],
       this.tableConstraints = const [],
       this.withoutRowId = false,
-      String overriddenDataClassName})
+      String? overriddenDataClassName})
       : super._(ifNotExists, tableName, overriddenDataClassName);
 
   @override
@@ -56,13 +56,13 @@ class CreateTableStatement extends TableInducingStatement {
 class CreateVirtualTableStatement extends TableInducingStatement {
   /// The module that will be invoked when creating the virtual table.
   final String moduleName;
-  Token moduleNameToken;
+  Token? moduleNameToken;
 
   /// Arguments passed to the module. Since the specific module is responsible
   /// for parsing them, the general parser only exposes them as strings with a
   /// source location.
   final List<SourceSpanWithContext> arguments;
-  List<String> _argumentText;
+  List<String>? _argumentText;
 
   List<String> get argumentContent {
     return _argumentText ??= arguments.map((a) => a.text).toList();
@@ -70,10 +70,10 @@ class CreateVirtualTableStatement extends TableInducingStatement {
 
   CreateVirtualTableStatement({
     bool ifNotExists = false,
-    @required String tableName,
-    @required this.moduleName,
+    required String tableName,
+    required this.moduleName,
     this.arguments = const [],
-    String overriddenDataClassName,
+    String? overriddenDataClassName,
   }) : super._(ifNotExists, tableName, overriddenDataClassName);
 
   @override

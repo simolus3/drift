@@ -12,7 +12,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   final List<Variable> _foundVariables = [];
   final AnalysisContext context;
 
-  AstPreparingVisitor({this.context});
+  AstPreparingVisitor({required this.context});
 
   void start(AstNode root) {
     root.accept(this, null);
@@ -90,7 +90,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       // doesn't need special treatment, star expressions can't be referenced
     } else if (e is ExpressionResultColumn) {
       if (e.as != null) {
-        e.scope.register(e.as, e);
+        e.scope.register(e.as!, e);
       }
     }
     visitChildren(e, arg);
@@ -109,12 +109,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
           // package and moor_generator might depend on this being a table
           // directly (e.g. nested result sets in moor).
           // Same for nested selects, joins and table-valued functions below.
-          scope.register(table.as, table);
+          scope.register(table.as!, table);
         }
       },
       isSelect: (select) {
         if (select.as != null) {
-          scope.register(select.as, select.statement);
+          scope.register(select.as!, select.statement);
         }
       },
       isJoin: (join) {
@@ -124,7 +124,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       },
       isTableFunction: (function) {
         if (function.as != null) {
-          scope.register(function.as, function);
+          scope.register(function.as!, function);
         }
         scope.register(function.name, function);
       },
@@ -166,8 +166,8 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         // resolved index and the next variable will have index 124. Otherwise,
         // just assigned the current largest assigned index plus one.
         if (variable.explicitIndex != null) {
-          variable.resolvedIndex = variable.explicitIndex;
-          largestAssigned = max(largestAssigned, variable.resolvedIndex);
+          final index = variable.resolvedIndex = variable.explicitIndex!;
+          largestAssigned = max(largestAssigned, index);
         } else {
           variable.resolvedIndex = largestAssigned + 1;
           largestAssigned++;
@@ -184,7 +184,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     }
   }
 
-  void _forkScope(AstNode node, {bool inheritAvailableColumns}) {
+  void _forkScope(AstNode node, {bool? inheritAvailableColumns}) {
     node.scope = node.scope
         .createChild(inheritAvailableColumns: inheritAvailableColumns);
   }

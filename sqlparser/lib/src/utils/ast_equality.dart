@@ -19,7 +19,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   EqualityEnforcingVisitor(this._current, {bool considerChildren = true})
       : _considerChildren = considerChildren;
 
-  void _check(AstNode childOfCurrent, AstNode childOfOther) {
+  void _check(AstNode? childOfCurrent, AstNode? childOfOther) {
     if (identical(childOfCurrent, childOfOther)) return;
 
     if ((childOfCurrent == null) != (childOfOther == null)) {
@@ -28,8 +28,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
 
     // Both non nullable here
     final savedCurrent = _current;
-    _current = childOfCurrent;
-    visit(childOfOther, null);
+    _current = childOfCurrent!;
+    visit(childOfOther!, null);
     _current = savedCurrent;
   }
 
@@ -50,7 +50,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     }
   }
 
-  Null /*Never*/ _notEqual(AstNode other) {
+  Never _notEqual(AstNode other) {
     throw NotEqualException('$_current and $other');
   }
 
@@ -59,7 +59,6 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     if (current is T) return current;
 
     _notEqual(context);
-    return null;
   }
 
   void _assert(bool contentEqual, AstNode context) {

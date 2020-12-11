@@ -7,10 +7,10 @@ abstract class LimitBase implements AstNode {}
 
 class Limit extends AstNode implements LimitBase {
   Expression count;
-  Token offsetSeparator; // can either be OFFSET or just a comma
-  Expression offset; // nullable
+  Token? offsetSeparator; // can either be OFFSET or just a comma
+  Expression? offset;
 
-  Limit({this.count, this.offsetSeparator, this.offset});
+  Limit({required this.count, this.offsetSeparator, this.offset});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -27,10 +27,10 @@ class Limit extends AstNode implements LimitBase {
   Iterable<AstNode> get childNodes {
     if (offsetSeparator?.type == TokenType.offset) {
       // Amount first, then offset
-      return [count, offset];
+      return [count, offset!];
     }
 
     // If using a comma, the count is followed by an optional offset
-    return [count, if (offset != null) offset];
+    return [count, if (offset != null) offset!];
   }
 }

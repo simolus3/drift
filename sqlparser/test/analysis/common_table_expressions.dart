@@ -15,11 +15,10 @@ void main() {
 
     expect(context.errors, isEmpty);
     final select = context.root as SelectStatement;
-    final types = context.types;
 
-    expect(select.resolvedColumns.map((c) => c.name), ['foo', 'bar']);
+    expect(select.resolvedColumns!.map((c) => c.name), ['foo', 'bar']);
     expect(
-      select.resolvedColumns.map((c) => types.resolveColumn(c).type),
+      select.resolvedColumns!.map((c) => context.typeOf(c).type),
       [id.type, content.type],
     );
   });
@@ -55,7 +54,7 @@ void main() {
 
     expect(context.errors, isEmpty);
     final select = context.root as SelectStatement;
-    final column = select.resolvedColumns.single;
+    final column = select.resolvedColumns!.single;
     final type = context.typeOf(column);
 
     expect(type.type, const ResolvedType(type: BasicType.int));

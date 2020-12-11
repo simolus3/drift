@@ -47,29 +47,29 @@ part 'visitor.dart';
 abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   /// The parent of this node, or null if this is the root node. Will be set
   /// by the analyzer after the tree has been parsed.
-  AstNode parent;
+  AstNode? parent;
 
   /// The first token that appears in this node. This information is not set for
   /// all nodes.
-  Token first;
+  Token? first;
 
   /// The last token that appears in this node. This information is not set for
   /// all nodes.
-  Token last;
+  Token? last;
 
   @override
   bool synthetic = false;
 
   @override
-  int get firstPosition => first.span.start.offset;
+  int get firstPosition => first!.span.start.offset;
 
   @override
-  int get lastPosition => last.span.end.offset;
+  int get lastPosition => last!.span.end.offset;
 
   @override
-  FileSpan get span {
+  FileSpan? get span {
     if (!hasSpan) return null;
-    return first.span.expand(last.span);
+    return first!.span.expand(last!.span);
   }
 
   @override
@@ -116,7 +116,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   /// Finds the first element in [selfAndParents] of the type [T].
   ///
   /// Returns `null` if there's no node of type [T] surrounding this ast node.
-  T /*?*/ enclosingOfType<T extends AstNode>() {
+  T? enclosingOfType<T extends AstNode>() {
     for (final element in selfAndParents) {
       if (element is T) {
         return element;
@@ -129,7 +129,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   /// The [ReferenceScope], which contains available tables, column references
   /// and functions for this node.
   ReferenceScope get scope {
-    var node = this;
+    AstNode? node = this;
 
     while (node != null) {
       final scope = node.meta<ReferenceScope>();
@@ -147,7 +147,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   }
 
   /// All direct children of this node.
-  Iterable<AstNode> get childNodes;
+  Iterable<AstNode > get childNodes;
 
   /// Calls the appropriate method on the [visitor] to make it recognize this
   /// node.
@@ -181,7 +181,7 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
   @override
   String toString() {
     if (hasSpan) {
-      return '$runtimeType: ${span.text}';
+      return '$runtimeType: ${span!.text}';
     }
     return super.toString();
   }
@@ -189,5 +189,5 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
 
 /// Common interface for every node that has a `where` clause.
 abstract class HasWhereClause implements AstNode {
-  Expression get where;
+  Expression? get where;
 }

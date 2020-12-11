@@ -13,26 +13,26 @@ enum InsertMode {
 class InsertStatement extends CrudStatement implements HasPrimarySource {
   final InsertMode mode;
   @override
-  TableReference table;
+  TableReference? table;
   final List<Reference> targetColumns;
   InsertSource source;
-  UpsertClause upsert;
+  UpsertClause? upsert;
 
-  List<Column> get resolvedTargetColumns {
+  List<Column?>? get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
       return targetColumns.map((c) => c.resolvedColumn).toList();
     } else {
       // no columns declared - assume all columns from the table
-      return table.resultSet?.resolvedColumns;
+      return table!.resultSet?.resolvedColumns;
     }
   }
 
   InsertStatement(
-      {WithClause withClause,
+      {WithClause? withClause,
       this.mode = InsertMode.insert,
-      @required this.table,
-      @required this.targetColumns,
-      @required this.source,
+      required this.table,
+      required this.targetColumns,
+      required this.source,
       this.upsert})
       : super._(withClause);
 
@@ -44,25 +44,25 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
-    table = transformer.transformChild(table, this, arg);
+    table = transformer.transformChild(table!, this, arg);
     transformer.transformChildren(targetColumns, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes => [
-        if (withClause != null) withClause,
-        table,
+        if (withClause != null) withClause!,
+        table!,
         ...targetColumns,
         source,
-        if (upsert != null) upsert
+        if (upsert != null) upsert!
       ];
 }
 
 abstract class InsertSource extends AstNode {
-  T when<T>(
-      {T Function(ValuesSource) isValues,
-      T Function(SelectInsertSource) isSelect,
-      T Function(DefaultValues) isDefaults}) {
+  T? when<T>(
+      {T Function(ValuesSource)? isValues,
+      T Function(SelectInsertSource)? isSelect,
+      T Function(DefaultValues)? isDefaults}) {
     if (this is ValuesSource) {
       return isValues?.call(this as ValuesSource);
     } else if (this is SelectInsertSource) {

@@ -33,7 +33,7 @@ void main() {
   });
 
   group('type inference for function calls', () {
-    SqlEngine engine;
+    late SqlEngine engine;
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
@@ -48,7 +48,7 @@ void main() {
           .analyze('SELECT *, bm25(foo) AS b FROM foo WHERE foo MATCH \'\'');
 
       final select = result.root as SelectStatement;
-      final column = select.resolvedColumns.singleWhere((c) => c.name == 'b');
+      final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(result.typeOf(column),
           const ResolveResult(ResolvedType(type: BasicType.real)));
     });
@@ -59,7 +59,7 @@ void main() {
               "FROM foo WHERE foo MATCH ''");
 
       final select = result.root as SelectStatement;
-      final column = select.resolvedColumns.singleWhere((c) => c.name == 'b');
+      final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(result.typeOf(column),
           const ResolveResult(ResolvedType(type: BasicType.text)));
     });
@@ -70,14 +70,14 @@ void main() {
               "FROM foo WHERE foo MATCH ''");
 
       final select = result.root as SelectStatement;
-      final column = select.resolvedColumns.singleWhere((c) => c.name == 'b');
+      final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(result.typeOf(column),
           const ResolveResult(ResolvedType(type: BasicType.text)));
     });
   });
 
   group('type inference for function arguments', () {
-    SqlEngine engine;
+    late SqlEngine engine;
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
@@ -92,7 +92,7 @@ void main() {
       final foundVars = result.root.allDescendants.whereType<Variable>();
 
       expect(
-        foundVars.map((Typeable t) => result.typeOf(t).type.type),
+        foundVars.map((Typeable t) => result.typeOf(t).type!.type),
         expected,
       );
     }
@@ -123,7 +123,7 @@ void main() {
   });
 
   group('error reporting', () {
-    SqlEngine engine;
+    late SqlEngine engine;
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries

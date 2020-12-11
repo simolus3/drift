@@ -14,7 +14,7 @@ void main() {
 
       enforceHasSpan(select);
       enforceEqual(
-        select.limit,
+        select.limit!,
         Limit(
           count: BinaryExpression(
             NumericLiteral(5, token(TokenType.numberLiteral)),
@@ -32,7 +32,7 @@ void main() {
 
       enforceHasSpan(select);
       enforceEqual(
-        select.limit,
+        select.limit!,
         Limit(
           count: NumericLiteral(10, token(TokenType.numberLiteral)),
           offsetSeparator: token(TokenType.offset),
@@ -50,7 +50,7 @@ void main() {
 
       enforceHasSpan(select);
       enforceEqual(
-        select.limit,
+        select.limit!,
         Limit(
           count: NumericLiteral(2, token(TokenType.numberLiteral)),
           offsetSeparator: token(TokenType.comma),

@@ -1,7 +1,7 @@
 part of 'parser.dart';
 
 mixin SchemaParser on ParserBase {
-  SchemaStatement _create() {
+  SchemaStatement? _create() {
     if (!_matchOne(TokenType.create)) return null;
 
     if (_check(TokenType.table) || _check(TokenType.virtual)) {
@@ -105,14 +105,14 @@ mixin SchemaParser on ParserBase {
     if (_matchOne(TokenType.leftParen)) {
       // args can be just about anything, so we accept any token until the right
       // parenthesis closing it of.
-      Token currentStart;
+      Token? currentStart;
       var levelOfParens = 0;
 
       void addCurrent() {
         if (currentStart == null) {
           _error('Expected at least one token for the previous argument');
         } else {
-          args.add(currentStart.span.expand(_previous.span));
+          args.add(currentStart!.span.expand(_previous.span));
           currentStart = null;
         }
       }
@@ -164,7 +164,7 @@ mixin SchemaParser on ParserBase {
       ..moduleNameToken = moduleName;
   }
 
-  String _overriddenDataClassName() {
+  String? _overriddenDataClassName() {
     if (enableMoorExtensions && _matchOne(TokenType.as)) {
       return _consumeIdentifier('Expected the name for the data class')
           .identifier;
@@ -174,7 +174,7 @@ mixin SchemaParser on ParserBase {
 
   /// Parses a "CREATE TRIGGER" statement, assuming that the create token has
   /// already been consumed.
-  CreateTriggerStatement _createTrigger() {
+  CreateTriggerStatement? _createTrigger() {
     final create = _previous;
     assert(create.type == TokenType.create);
 
@@ -235,7 +235,7 @@ mixin SchemaParser on ParserBase {
       _consume(TokenType.row, msg);
     }
 
-    Expression when;
+    Expression? when;
     if (_matchOne(TokenType.when)) {
       when = expression();
     }
@@ -257,7 +257,7 @@ mixin SchemaParser on ParserBase {
 
   /// Parses a [CreateViewStatement]. The `CREATE` token must have already been
   /// accepted.
-  CreateViewStatement _createView() {
+  CreateViewStatement? _createView() {
     final create = _previous;
     assert(create.type == TokenType.create);
 
@@ -266,7 +266,7 @@ mixin SchemaParser on ParserBase {
     final ifNotExists = _ifNotExists();
     final name = _consumeIdentifier('Expected a name for this view');
 
-    List<String> columnNames;
+    List<String>? columnNames;
     if (_matchOne(TokenType.leftParen)) {
       columnNames = _columnNames();
       _consume(TokenType.rightParen, 'Expected closing bracket');
@@ -274,7 +274,7 @@ mixin SchemaParser on ParserBase {
 
     _consume(TokenType.as, 'Expected AS SELECT');
 
-    final query = _fullSelect();
+    final query = _fullSelect()!;
 
     return CreateViewStatement(
       ifNotExists: ifNotExists,
@@ -288,7 +288,7 @@ mixin SchemaParser on ParserBase {
 
   /// Parses a [CreateIndexStatement]. The `CREATE` token must have already been
   /// accepted.
-  CreateIndexStatement _createIndex() {
+  CreateIndexStatement? _createIndex() {
     final create = _previous;
     assert(create.type == TokenType.create);
 
@@ -310,7 +310,7 @@ mixin SchemaParser on ParserBase {
 
     _consume(TokenType.rightParen, 'Expected closing bracket');
 
-    Expression where;
+    Expression? where;
     if (_matchOne(TokenType.where)) {
       where = expression();
     }
@@ -345,7 +345,7 @@ mixin SchemaParser on ParserBase {
       final expr = expression();
       final mode = _orderingModeOrNull();
 
-      indexes.add(IndexedColumn(expr, mode)..setSpan(expr.first, _previous));
+      indexes.add(IndexedColumn(expr, mode)..setSpan(expr.first!, _previous));
     } while (_matchOne(TokenType.comma));
 
     return indexes;
@@ -366,16 +366,16 @@ mixin SchemaParser on ParserBase {
         as IdentifierToken;
 
     final typeTokens = _typeName();
-    String typeName;
+    String? typeName;
 
     if (typeTokens != null) {
       typeName = typeTokens.lexeme;
     }
 
     final constraints = <ColumnConstraint>[];
-    ColumnConstraint constraint;
+    ColumnConstraint? constraint;
     while ((constraint = _columnConstraint(orNull: true)) != null) {
-      constraints.add(constraint);
+      constraints.add(constraint!);
     }
 
     return ColumnDefinition(
@@ -389,7 +389,7 @@ mixin SchemaParser on ParserBase {
   }
 
   @override
-  List<Token> _typeName() {
+  List<Token>? _typeName() {
     // sqlite doesn't really define what a type name is and has very loose rules
     // at turning them into a type affinity. We support this pattern:
     // typename = identifier [ "(" { identifier | comma | number_literal } ")" ]
@@ -417,7 +417,7 @@ mixin SchemaParser on ParserBase {
     return typeNames;
   }
 
-  ColumnConstraint _columnConstraint({bool orNull = false}) {
+  ColumnConstraint? _columnConstraint({bool orNull = false}) {
     final first = _peek;
 
     final resolvedName = _constraintNameOrNull()?.identifier;
@@ -462,7 +462,7 @@ mixin SchemaParser on ParserBase {
       return CheckColumn(resolvedName, expr)..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.$default)) {
-      Expression expr = _literalOrNull();
+      Expression? expr = _literalOrNull();
 
       // when not a literal, expect an expression in parentheses
       expr ??= _expressionInParentheses();
@@ -518,12 +518,12 @@ mixin SchemaParser on ParserBase {
     _error('Expected a constraint (primary key, nullability, etc.)');
   }
 
-  TableConstraint _tableConstraintOrNull() {
+  TableConstraint? _tableConstraintOrNull() {
     final first = _peek;
     final nameToken = _constraintNameOrNull();
     final name = nameToken?.identifier;
 
-    TableConstraint result;
+    TableConstraint? result;
     if (_match([TokenType.unique, TokenType.primary])) {
       final isPrimaryKey = _previous.type == TokenType.primary;
 
@@ -565,7 +565,7 @@ mixin SchemaParser on ParserBase {
     return null;
   }
 
-  IdentifierToken _constraintNameOrNull() {
+  IdentifierToken? _constraintNameOrNull() {
     if (_matchOne(TokenType.constraint)) {
       final name = _consumeIdentifier('Expect a name for the constraint here');
       return name;
@@ -580,7 +580,7 @@ mixin SchemaParser on ParserBase {
     return expr;
   }
 
-  ConflictClause _conflictClauseOrNull() {
+  ConflictClause? _conflictClauseOrNull() {
     _suggestHint(HintDescription.token(TokenType.on));
     if (_matchOne(TokenType.on)) {
       _consume(TokenType.conflict,
@@ -616,7 +616,7 @@ mixin SchemaParser on ParserBase {
 
     final columnNames = _listColumnsInParentheses(allowEmpty: true);
 
-    ReferenceAction onDelete, onUpdate;
+    ReferenceAction? onDelete, onUpdate;
 
     _suggestHint(HintDescription.token(TokenType.on));
     while (_matchOne(TokenType.on)) {
@@ -631,14 +631,14 @@ mixin SchemaParser on ParserBase {
       }
     }
 
-    DeferrableClause deferrable;
+    DeferrableClause? deferrable;
     if (_checkWithNot(TokenType.deferrable)) {
       final first = _peekNext;
 
       final not = _matchOne(TokenType.not);
       _consume(TokenType.deferrable);
 
-      InitialDeferrableMode mode;
+      InitialDeferrableMode? mode;
       if (_matchOne(TokenType.initially)) {
         if (_matchOne(TokenType.deferred)) {
           mode = InitialDeferrableMode.deferred;

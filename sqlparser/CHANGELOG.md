@@ -1,5 +1,7 @@
 ## 0.12.0
 
+- Migrate to null-safety
+- Remove legacy type inference
 - Parser support for new moor features
 
 ## 0.11.0

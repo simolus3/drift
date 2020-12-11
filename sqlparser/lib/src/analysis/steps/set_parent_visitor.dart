@@ -8,11 +8,10 @@ class SetParentVisitor {
     _applyFor(root, null);
   }
 
-  void _applyFor(AstNode node, AstNode parent) {
+  void _applyFor(AstNode node, AstNode? parent) {
     node.parent = parent;
 
     for (final child in node.childNodes) {
-      assert(child != null, '$node had a null-child');
       _applyFor(child, node);
     }
   }

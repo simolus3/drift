@@ -9,7 +9,7 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   final Set<Table> foundTables = {};
   final Set<View> foundViews = {};
 
-  void _add(NamedResultSet resultSet) {
+  void _add(NamedResultSet? resultSet) {
     if (resultSet is Table) {
       foundTables.add(resultSet);
     } else if (resultSet is View) {
@@ -29,11 +29,11 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  NamedResultSet /*?*/ _toResultSetOrNull(ResolvesToResultSet resultSet) {
+  NamedResultSet? _toResultSetOrNull(ResolvesToResultSet? resultSet) {
     var resolved = resultSet?.resultSet;
 
     while (resolved != null && resolved is TableAlias) {
-      resolved = (resolved as TableAlias).delegate;
+      resolved = resolved.delegate;
     }
 
     return resolved is NamedResultSet ? resolved : null;
@@ -82,7 +82,7 @@ class UpdatedTablesVisitor extends ReferencedTablesVisitor {
   /// SELECT * FROM bar`).
   final Set<TableWrite> writtenTables = {};
 
-  void _addIfResolved(ResolvesToResultSet r, UpdateKind kind) {
+  void _addIfResolved(ResolvesToResultSet? r, UpdateKind kind) {
     final resolved = _toResultSetOrNull(r);
     if (resolved != null && resolved is Table) {
       writtenTables.add(TableWrite(resolved, kind));

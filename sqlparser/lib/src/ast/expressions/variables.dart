@@ -1,16 +1,19 @@
 part of '../ast.dart';
 
-mixin Variable on Expression {
-  int resolvedIndex;
+abstract class Variable extends Expression {
+  int? resolvedIndex;
 }
 
 /// A "?" or "?123" variable placeholder
-class NumberedVariable extends Expression with Variable {
+class NumberedVariable extends Expression implements Variable {
   final QuestionMarkVariableToken token;
-  int get explicitIndex => token.explicitIndex;
+  int? get explicitIndex => token.explicitIndex;
+
+  @override
+  int? resolvedIndex;
 
   NumberedVariable(this.token) {
-    resolvedIndex = explicitIndex;
+    resolvedIndex = token.explicitIndex;
   }
 
   @override
@@ -25,9 +28,12 @@ class NumberedVariable extends Expression with Variable {
   Iterable<AstNode> get childNodes => const [];
 }
 
-class ColonNamedVariable extends Expression with Variable {
+class ColonNamedVariable extends Expression implements Variable {
   final ColonVariableToken token;
   String get name => token.name;
+
+  @override
+  int? resolvedIndex;
 
   ColonNamedVariable(this.token);
 

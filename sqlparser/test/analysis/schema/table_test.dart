@@ -6,7 +6,7 @@ void main() {
     final engine = SqlEngine();
     const schemaParser = SchemaFromCreateTable();
 
-    Column findWith(String createTbl, String columnName) {
+    Column? findWith(String createTbl, String columnName) {
       final stmt = engine.parse(createTbl).rootNode as CreateTableStatement;
       final table = schemaParser.read(stmt);
       return table.findColumn(columnName);
@@ -19,7 +19,7 @@ void main() {
 
     test('when alias to rowid', () {
       final column = findWith('CREATE TABLE x (id INTEGER PRIMARY KEY)', 'oid');
-      expect(column.name, 'id');
+      expect(column?.name, 'id');
       expect(column, isA<TableColumn>());
     });
 

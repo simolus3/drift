@@ -3,6 +3,10 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
+ColonVariableToken _colon(String name) {
+  return ColonVariableToken(fakeSpan(name), name);
+}
+
 void main() {
   final caseExpr = CaseExpression(
     whens: [
@@ -10,9 +14,7 @@ void main() {
         when: BinaryExpression(
           NumericLiteral(1, token(TokenType.numberLiteral)),
           token(TokenType.equal),
-          ColonNamedVariable(
-            ColonVariableToken(null, ':isReviewFolderSelected'),
-          ),
+          ColonNamedVariable(_colon(':isReviewFolderSelected')),
         ),
         then: IsExpression(
           true,
@@ -31,9 +33,7 @@ void main() {
   final folderExpr = BinaryExpression(
     Reference(tableName: 'n', columnName: 'folderId'),
     token(TokenType.equal),
-    ColonNamedVariable(
-      ColonVariableToken(null, ':selectedFolderId'),
-    ),
+    ColonNamedVariable(_colon(':selectedFolderId')),
   );
 
   test('repro 1', () {

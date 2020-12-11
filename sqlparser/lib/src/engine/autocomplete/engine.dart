@@ -21,7 +21,8 @@ class AutoCompleteEngine {
   UnmodifiableListView<Hint> get foundHints => _hintsView;
   // hints are always sorted by their offset
   final List<Hint> _hints = [];
-  UnmodifiableListView<Hint> _hintsView;
+  late final UnmodifiableListView<Hint> _hintsView =
+      UnmodifiableListView(_hints);
 
   final List<Token> _tokens;
   final SqlEngine _engine;
@@ -44,9 +45,7 @@ class AutoCompleteEngine {
     }
   }
 
-  AutoCompleteEngine(this._tokens, this._engine) {
-    _hintsView = UnmodifiableListView(_hints);
-  }
+  AutoCompleteEngine(this._tokens, this._engine);
 
   /// Suggest completions at a specific [offset].
   ///
@@ -54,7 +53,7 @@ class AutoCompleteEngine {
   /// that has been analyzed, providing the surrounding [context] can yield
   /// better results (for instance when completing column names).
   ComputedSuggestions suggestCompletions(int offset,
-      [AnalysisContext context]) {
+      [AnalysisContext? context]) {
     if (_hints.isEmpty) {
       return ComputedSuggestions(-1, -1, []);
     }
@@ -111,9 +110,9 @@ class AutoCompleteEngine {
 class Hint {
   /// The token that appears just before this hint, or `null` if the hint
   /// appears at the beginning of the file.
-  final Token before;
+  final Token? before;
 
-  int get offset => before?.span?.end?.offset ?? 0;
+  int get offset => before?.span.end.offset ?? 0;
 
   HintDescription description;
 
@@ -122,7 +121,7 @@ class Hint {
 
 class CalculationRequest {
   final SqlEngine engine;
-  final AnalysisContext context;
+  final AnalysisContext? context;
 
   CalculationRequest(this.engine, [this.context]);
 }

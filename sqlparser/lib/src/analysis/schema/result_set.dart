@@ -3,13 +3,13 @@ part of '../analysis.dart';
 /// Something that will resolve to an [ResultSet] when referred to via
 /// the [ReferenceScope].
 abstract class ResolvesToResultSet with Referencable {
-  ResultSet get resultSet;
+  ResultSet? get resultSet;
 }
 
 /// Something that returns a set of columns when evaluated.
 abstract class ResultSet implements ResolvesToResultSet {
   /// The columns that will be returned when evaluating this query.
-  List<Column> get resolvedColumns;
+  List<Column>? get resolvedColumns;
 
   @override
   ResultSet get resultSet => this;
@@ -17,9 +17,8 @@ abstract class ResultSet implements ResolvesToResultSet {
   @override
   bool get visibleToChildren => false;
 
-  Column findColumn(String name) {
-    return resolvedColumns.firstWhere((c) => c.name == name,
-        orElse: () => null);
+  Column? findColumn(String name) {
+    return resolvedColumns!.firstWhereOrNull((c) => c.name == name);
   }
 }
 
