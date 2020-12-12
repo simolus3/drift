@@ -60,6 +60,8 @@ jobs:
       # setup
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
+        with:
+          release-channel: beta
       - run: sudo apt-get install -y libsqlite3-dev
         name: Install sqlite3 for tests
       - run: dart pub upgrade

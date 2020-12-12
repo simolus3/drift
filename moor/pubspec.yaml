@@ -44,12 +44,12 @@ dependency_overrides:
 
   uuid:
     git:
-      url: https://github.com/simolus3/dart-uuid.git
-      ref: null-safety
+      url: https://github.com/Daegalus/dart-uuid.git
+      ref: nullsafety
 
   crypto:
     git:
       url: https://github.com/dart-lang/crypto.git
-      ref: "3.0"
+      ref: master
 
   convert: ^3.0.0-nullsafety
