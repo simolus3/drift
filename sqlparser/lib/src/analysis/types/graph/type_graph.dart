@@ -92,6 +92,9 @@ class TypeGraph {
         if (edge.array != null) {
           type = type!.toArray(edge.array);
         }
+        if (edge.makeNullable) {
+          _knownNullability[edge.target] = true;
+        }
         _copyType(resolved, edge.other, edge.target, type);
       } else if (edge is HaveSameType) {
         _copyType(resolved, t, edge.getOther(t));

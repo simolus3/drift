@@ -270,4 +270,28 @@ WITH RECURSIVE
       expect(type, const ResolvedType(type: BasicType.int, isArray: false));
     });
   });
+
+  test('columns from LEFT OUTER joins are nullable', () {
+    final resolver = _obtainResolver('''
+    WITH
+     sq_1 (one ) AS (SELECT 1),
+     sq_2 (two) AS (SELECT 2),
+     sq_3 (three) AS (SELECT 3)
+    
+    SELECT one, two, three
+     FROM sq_1
+     LEFT JOIN sq_2
+     LEFT OUTER JOIN sq_3
+    ''');
+
+    final session = resolver.session;
+    final stmt = resolver.session.context.root as SelectStatement;
+    final columns = stmt.resolvedColumns!;
+
+    expect(session.typeOf(columns[0]), const ResolvedType(type: BasicType.int));
+    expect(session.typeOf(columns[1]),
+        const ResolvedType(type: BasicType.int, nullable: true));
+    expect(session.typeOf(columns[2]),
+        const ResolvedType(type: BasicType.int, nullable: true));
+  });
 }

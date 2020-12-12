@@ -62,8 +62,9 @@ class CommonTableExpression extends AstNode with ResultSet {
     // the select statement
     if (columnNames == null) return columnsOfSelect;
 
-    final cached = _cachedColumns ??=
-        columnNames!.map((name) => CommonTableExpressionColumn(name)).toList();
+    final cached = _cachedColumns ??= columnNames!
+        .map((name) => CommonTableExpressionColumn(name)..containingSet = this)
+        .toList();
 
     if (columnsOfSelect != null) {
       // bind the CommonTableExpressionColumn to the real underlying column

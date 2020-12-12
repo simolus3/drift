@@ -19,7 +19,6 @@ dependencies:
   sqlite3: ^0.1.9-nullsafety
 
 dev_dependencies:
-  analyzer: ^0.40.6
   build_test: ^1.3.0
   build_runner_core: ^6.1.0
   moor_generator: ^3.2.0
@@ -40,7 +39,7 @@ dependency_overrides:
   mockito:
     git:
       url: https://github.com/simolus3/mockito.git
-      ref: generate-inheritance
+      ref: version-for-moor
 
   uuid:
     git:

@@ -430,7 +430,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     if (resolved == null) return;
 
     _handleColumn(resolved);
-    _lazyCopy(e, resolved);
+
+    final isNullable = JoinModel.of(e)?.isFromNullableTable(resolved) ?? false;
+    _lazyCopy(e, resolved, makeNullable: isNullable);
   }
 
   @override
@@ -633,11 +635,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     }
   }
 
-  void _lazyCopy(Typeable to, Typeable? from) {
+  void _lazyCopy(Typeable to, Typeable? from, {bool makeNullable = false}) {
     if (session.graph.knowsType(from)) {
-      session._markTypeResolved(to, session.typeOf(from)!);
+      var type = session.typeOf(from)!;
+      if (makeNullable) type = type.withNullable(true);
+      session._markTypeResolved(to, type);
     } else {
-      session._addRelation(CopyTypeFrom(to, from));
+      session._addRelation(CopyTypeFrom(to, from, makeNullable: makeNullable));
     }
   }
 

@@ -5,6 +5,8 @@ import 'dart:async' as _i4;
 import 'package:moor/src/runtime/executor/stream_queries.dart' as _i5;
 import 'package:moor/src/runtime/api/runtime_api.dart' as _i6;
 
+class _FakeType extends _i1.Fake implements Type {}
+
 class _FakeTransactionExecutor extends _i1.Fake
     implements _i2.TransactionExecutor {}
 
@@ -18,6 +20,9 @@ class MockExecutorInternal extends _i1.Mock implements _i2.QueryExecutor {
 
   _i3.SqlDialect get dialect =>
       super.noSuchMethod(Invocation.getter(#dialect), _i3.SqlDialect.sqlite);
+  int get hashCode => super.noSuchMethod(Invocation.getter(#hashCode), 0);
+  Type get runtimeType =>
+      super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType());
   _i4.Future<bool> ensureOpen(_i2.QueryExecutorUser? user) =>
       super.noSuchMethod(
           Invocation.method(#ensureOpen, [user]), Future.value(false));
@@ -44,6 +49,9 @@ class MockExecutorInternal extends _i1.Mock implements _i2.QueryExecutor {
       Invocation.method(#beginTransaction, []), _FakeTransactionExecutor());
   _i4.Future<void> close() =>
       super.noSuchMethod(Invocation.method(#close, []), Future.value(null));
+  bool operator ==(Object? other) =>
+      super.noSuchMethod(Invocation.method(#==, [other]), false);
+  String toString() => super.noSuchMethod(Invocation.method(#toString, []), '');
 }
 
 /// A class which mocks [TransactionExecutor].
@@ -55,6 +63,11 @@ class MockTransactionsInternal extends _i1.Mock
     _i1.throwOnMissingStub(this);
   }
 
+  _i3.SqlDialect get dialect =>
+      super.noSuchMethod(Invocation.getter(#dialect), _i3.SqlDialect.sqlite);
+  int get hashCode => super.noSuchMethod(Invocation.getter(#hashCode), 0);
+  Type get runtimeType =>
+      super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType());
   _i4.Future<void> send() =>
       super.noSuchMethod(Invocation.method(#send, []), Future.value(null));
   _i4.Future<void> rollback() =>
@@ -85,12 +98,18 @@ class MockTransactionsInternal extends _i1.Mock
       Invocation.method(#beginTransaction, []), _FakeTransactionExecutor());
   _i4.Future<void> close() =>
       super.noSuchMethod(Invocation.method(#close, []), Future.value(null));
+  bool operator ==(Object? other) =>
+      super.noSuchMethod(Invocation.method(#==, [other]), false);
+  String toString() => super.noSuchMethod(Invocation.method(#toString, []), '');
 }
 
 /// A class which mocks [StreamQueryStore].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockStreamQueries extends _i1.Mock implements _i5.StreamQueryStore {
+  int get hashCode => super.noSuchMethod(Invocation.getter(#hashCode), 0);
+  Type get runtimeType =>
+      super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType());
   _i4.Stream<T> registerStream<T>(_i5.QueryStreamFetcher<T>? fetcher) =>
       super.noSuchMethod(
           Invocation.method(#registerStream, [fetcher]), Stream<T>.empty());
@@ -107,4 +126,7 @@ class MockStreamQueries extends _i1.Mock implements _i5.StreamQueryStore {
       super.noSuchMethod(Invocation.method(#markAsOpened, [stream]));
   _i4.Future<void> close() =>
       super.noSuchMethod(Invocation.method(#close, []), Future.value(null));
+  bool operator ==(Object? other) =>
+      super.noSuchMethod(Invocation.method(#==, [other]), false);
+  String toString() => super.noSuchMethod(Invocation.method(#toString, []), '');
 }

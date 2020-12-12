@@ -1,10 +1,10 @@
 import 'package:sqlparser/sqlparser.dart';
 
-part 'expectation.dart';
+import 'join_analysis.dart';
 
+part 'expectation.dart';
 part 'graph/relationships.dart';
 part 'graph/type_graph.dart';
-
 part 'resolving_visitor.dart';
 
 /// Contains all information associated to a single type inference pass.

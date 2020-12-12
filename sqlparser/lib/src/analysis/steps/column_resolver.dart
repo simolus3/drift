@@ -268,7 +268,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           if (set!.length > i) set[i]
       ];
 
-      resolved.add(CompoundSelectColumn(columnsAtThisIndex));
+      resolved.add(
+          CompoundSelectColumn(columnsAtThisIndex)..containingSet = statement);
     }
     statement.resolvedColumns = resolved;
   }
@@ -293,7 +294,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           .map((tuple) => tuple.expressions[i])
           .toList();
 
-      columns.add(ValuesSelectColumn(columnName, expressions));
+      columns.add(ValuesSelectColumn(columnName, expressions)
+        ..containingSet = statement);
     }
 
     statement.resolvedColumns = columns;

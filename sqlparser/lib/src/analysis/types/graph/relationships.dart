@@ -23,7 +23,11 @@ class CopyTypeFrom extends TypeRelation implements DirectedRelation {
   /// transformed.
   final bool? array;
 
-  CopyTypeFrom(this.target, this.other, {this.array});
+  /// Whether [target] is the nullable version of [other].
+  final bool makeNullable;
+
+  CopyTypeFrom(this.target, this.other,
+      {this.array, this.makeNullable = false});
 }
 
 /// Dependency declaring that [target] has a type that matches all of [from].

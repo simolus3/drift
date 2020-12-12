@@ -13,6 +13,10 @@ abstract class Column
   /// Some columns, notably the rowid aliases, are exempt from this.
   bool get includedInResults => true;
 
+  /// The result set containing this column, or null if this column is not part
+  /// of a known result set.
+  ResultSet? containingSet;
+
   @override
   String humanReadableDescription() {
     return name;
@@ -30,6 +34,9 @@ abstract class ColumnWithType implements Column {
 class TableColumn extends Column implements ColumnWithType {
   @override
   final String name;
+
+  @override
+  ResultSet? get containingSet => table;
 
   @override
   ResolvedType get type => _type;
@@ -118,6 +125,9 @@ class ViewColumn extends Column with DelegatedColumn implements ColumnWithType {
 
   @override
   final Column innerColumn;
+
+  @override
+  ResultSet? get containingSet => view;
 
   /// The view this column belongs to.
   View? view;
