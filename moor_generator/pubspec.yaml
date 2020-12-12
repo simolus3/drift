@@ -27,8 +27,8 @@ dependencies:
   sqlparser: ^0.12.0-dev
 
   # Dart analysis
-  analyzer: ^0.40.0
-  analyzer_plugin_fork: ^0.3.0
+  analyzer: ">=0.40.0 <0.42.0"
+  analyzer_plugin: ">=0.3.0 <0.5.0"
   source_span: ^1.5.5
 
   # Build system
