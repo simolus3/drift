@@ -1,4 +1,7 @@
-part of '../analysis.dart';
+import 'package:sqlparser/src/engine/sql_engine.dart';
+
+/// Something that has a type.
+abstract class Typeable {}
 
 /// A type that sql expressions can have at runtime.
 enum BasicType {

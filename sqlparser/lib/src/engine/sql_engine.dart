@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/analysis/types2/types.dart' as t2;
+import 'package:sqlparser/src/analysis/types/types.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/reader/parser/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
@@ -205,8 +205,8 @@ class SqlEngine {
         ..acceptWithoutArg(ColumnResolver(context))
         ..acceptWithoutArg(ReferenceResolver(context));
 
-      final session = t2.TypeInferenceSession(context, options);
-      final resolver = t2.TypeResolver(session);
+      final session = TypeInferenceSession(context, options);
+      final resolver = TypeResolver(session);
       resolver.run(node);
       context.types2 = session.results!;
 

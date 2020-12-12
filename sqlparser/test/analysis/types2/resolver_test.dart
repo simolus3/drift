@@ -1,5 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/analysis/types2/types.dart';
+import 'package:sqlparser/src/analysis/types/types.dart';
 import 'package:test/test.dart';
 
 import '../data.dart';
