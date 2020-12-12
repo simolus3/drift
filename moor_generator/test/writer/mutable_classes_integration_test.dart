@@ -6,6 +6,7 @@ import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:test/test.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 const _testInput = r'''
 import 'package:moor/moor.dart';
@@ -27,24 +28,32 @@ class Database extends _$Database {}
 ''';
 
 void main() {
-  test('generates mutable classes if needed', () async {
-    await testBuilder(
-      MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
-      const {'a|lib/main.dart': _testInput},
-      reader: await PackageAssetReader.currentIsolate(),
-      outputs: const {
-        'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
-          {'User', 'UsersCompanion', 'SomeQueryResult'},
-        ),
-      },
-    );
+  group('generates mutable classes if needed', () {
+    Future<void> _testWith(bool nnbd) async {
+      await testBuilder(
+        MoorPartBuilder(const BuilderOptions({'mutable_classes': true})),
+        {'a|lib/main.dart': nnbd ? _testInput : '//@dart=2.6\n$_testInput'},
+        reader: await PackageAssetReader.currentIsolate(),
+        outputs: {
+          'a|lib/main.moor.dart': _GeneratesWithoutFinalFields(
+            {'User', 'UsersCompanion', 'SomeQueryResult'},
+            isNullSafe: nnbd,
+          ),
+        },
+      );
+    }
+
+    test('null-safety', () => _testWith(true));
+    test('legacy', () => _testWith(false));
   }, tags: 'analyzer');
 }
 
 class _GeneratesWithoutFinalFields extends Matcher {
   final Set<String> expectedWithoutFinals;
+  final bool isNullSafe;
 
-  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals);
+  const _GeneratesWithoutFinalFields(this.expectedWithoutFinals,
+      {this.isNullSafe = false});
 
   @override
   Description describe(Description description) {
@@ -67,7 +76,10 @@ class _GeneratesWithoutFinalFields extends Matcher {
 
     final parsed = parseFile(
       path: '/foo.dart',
-      featureSet: FeatureSet.forTesting(),
+      featureSet: FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: Version(2, isNullSafe ? 12 : 6, 0),
+        flags: const [],
+      ),
       resourceProvider: resourceProvider,
       throwIfDiagnostics: true,
     ).unit;
