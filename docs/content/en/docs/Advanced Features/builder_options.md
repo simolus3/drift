@@ -58,9 +58,6 @@ At the moment, moor supports these options:
   details.
 * `eagerly_load_dart_ast`: Moor's builder will load the resolved AST whenever it encounters a Dart file,
   instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
-* `legacy_type_inference`: Use the old type inference from moor 1 and 2. Note that `use_experimental_inference`
-   is now the default and no longer exists.
-   If you're using this flag, please open an issue and explain how the new inference isn't working for you, thanks!
 * `data_class_to_companions` (defaults to `true`): Controls whether moor will write the `toCompanion` method in generated
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final

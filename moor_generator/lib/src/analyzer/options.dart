@@ -57,11 +57,6 @@ class MoorOptions {
   @JsonKey(name: 'generate_connect_constructor', defaultValue: false)
   final bool generateConnectConstructor;
 
-  /// Whether the old, legacy type inference engine should be used when
-  /// analyzing custom sql queries.
-  @JsonKey(name: 'legacy_type_inference', defaultValue: false)
-  final bool legacyTypeInference;
-
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
   final List<SqlModule> modules;
 
@@ -96,7 +91,6 @@ class MoorOptions {
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = false,
     this.generateConnectConstructor = false,
-    this.legacyTypeInference = false,
     this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,

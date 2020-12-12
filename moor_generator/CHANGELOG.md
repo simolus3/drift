@@ -1,3 +1,7 @@
+## 4.0.0
+
+- Remove the `legacy_type_inference` option
+
 ## 3.4.0
 
 - Add experimental apis for schema verification
