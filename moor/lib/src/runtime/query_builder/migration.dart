@@ -121,7 +121,7 @@ class Migrator {
   @experimental
   Future<void> alterTable(TableMigration migration) async {
     final foreignKeysEnabled =
-        (await _db.customSelect('PRAGMA foreign_keys').getSingle())!
+        (await _db.customSelect('PRAGMA foreign_keys').getSingle())
             .readBool('foreign_keys');
 
     if (foreignKeysEnabled) {

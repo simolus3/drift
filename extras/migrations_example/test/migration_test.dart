@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart';
 import 'package:migrations_example/database.dart';
 import 'package:test/test.dart';
 import 'package:moor_generator/api/migrations.dart';

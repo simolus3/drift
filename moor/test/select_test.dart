@@ -134,8 +134,15 @@ void main() {
     test('get once', () {
       when(executor.runSelect('SELECT * FROM todos;', any))
           .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
-
       expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
+    });
+
+    test('get once without rows', () {
+      when(executor.runSelect('SELECT * FROM todos;', any))
+          .thenAnswer((_) => Future.value([]));
+
+      expect(db.select(db.todosTable).getSingle(), throwsA(anything));
+      expect(db.select(db.todosTable).getSingleOrNull(), completion(isNull));
     });
 
     test('get multiple times', () {
@@ -150,7 +157,11 @@ void main() {
         return Future.value(resultRows[_currentRow++]);
       });
 
-      expectLater(db.select(db.todosTable).watchSingle(),
+      expectLater(
+          db.select(db.todosTable).watchSingle(),
+          emitsInOrder(
+              [_todoEntry, emitsError(anything), emitsError(anything)]));
+      expectLater(db.select(db.todosTable).watchSingleOrNull(),
           emitsInOrder([_todoEntry, isNull, emitsError(anything)]));
 
       db

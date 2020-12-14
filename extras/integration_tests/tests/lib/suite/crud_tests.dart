@@ -1,3 +1,4 @@
+import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 import 'package:tests/database/database.dart';
 import 'package:tests/suite/suite.dart';

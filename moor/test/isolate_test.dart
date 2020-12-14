@@ -123,7 +123,7 @@ void _runTests(
   test('stream queries work as expected', () async {
     final initialCompanion = TodosTableCompanion.insert(content: 'my content');
 
-    final stream = database.select(database.todosTable).watchSingle();
+    final stream = database.select(database.todosTable).watchSingleOrNull();
 
     await expectLater(stream, emits(null));
     await database.into(database.todosTable).insert(initialCompanion);

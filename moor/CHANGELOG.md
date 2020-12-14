@@ -1,5 +1,7 @@
 ## unreleased (breaking - 4.0)
 
+- __Breaking__: `getSingle()` and `watchSingle()` are now non-nullable and throw for empty results.
+  Use `getSingleOrNull()` and `watchSingleOrNull()` for the old behavior.
 - __Breaking__: Changed the `args` parameter in `QueryExecutor` methods to `List<Object?>`
 - __Breaking__: Removed the second type parameter from `TypedResult.read`
 - Support null safety

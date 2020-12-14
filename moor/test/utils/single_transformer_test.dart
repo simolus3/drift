@@ -18,9 +18,15 @@ void main() {
     final controller = StreamController<List<int>>();
     final stream = controller.stream.transform(singleElements());
 
-    expectLater(stream, emitsInOrder([1, emitsError(anything), 2, null]));
+    expectLater(stream,
+        emitsInOrder([1, emitsError(anything), 2, emitsError(anything)]));
 
     controller..add([1])..add([2, 3])..add([2])..add([]);
     controller.close();
+  });
+
+  test('singleElementsOrNull() emits null for empty data', () {
+    final stream = Stream.value([]);
+    expect(stream.transform(singleElementsOrNull()), emits(isNull));
   });
 }

@@ -265,8 +265,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// query once, use [Selectable.get]. For an auto-updating streams, set the
   /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
   /// know the query will never emit more than one row, you can also use
-  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
-  /// directly or wrapping it into a list.
+  /// `getSingle` and `SelectableUtils.watchSingle` which return the item
+  /// directly without wrapping it into a list.
   ///
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
@@ -280,8 +280,8 @@ mixin QueryEngine on DatabaseConnectionUser {
   /// query once, use [Selectable.get]. For an auto-updating streams, set the
   /// set of tables the ready [readsFrom] and use [Selectable.watch]. If you
   /// know the query will never emit more than one row, you can also use
-  /// [Selectable.getSingle] and [Selectable.watchSingle] which return the item
-  /// directly or wrapping it into a list.
+  /// `getSingle` and `watchSingle` which return the item directly without
+  /// wrapping it into a list.
   ///
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.

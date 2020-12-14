@@ -42,7 +42,7 @@ void main() {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result!.read<bool?>(expr)!;
+      return result.read<bool?>(expr)!;
     }
 
     expect(
@@ -72,7 +72,7 @@ void main() {
       final result = await (db.selectOnly(db.pureDefaults)..addColumns([expr]))
           .getSingle();
 
-      return result!.read<bool?>(expr)!;
+      return result.read<bool?>(expr)!;
     }
 
     test('multiLine', () {

@@ -120,7 +120,7 @@ void main() {
   });
 
   test('applies default parameter expressions when not set', () async {
-    await db.readDynamic().getSingle();
+    await db.readDynamic().getSingleOrNull();
 
     verify(mock.runSelect('SELECT * FROM config WHERE (TRUE)', []));
   });

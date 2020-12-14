@@ -56,7 +56,7 @@ void main() {
             readsFrom: {db.users},
           )
           .map((r) => r.readInt('_mocked_'))
-          .watchSingle();
+          .watchSingleOrNull();
       didSetUpStream.complete();
 
       await makeUpdate.future;

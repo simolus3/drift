@@ -75,10 +75,14 @@ abstract class Selectable<T> {
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
   Stream<List<T>> watch();
+}
 
+/// Defines extensions to only get a single element from a query, or to map
+/// selectables.
+extension SelectableUtils<T> on Selectable<T> {
   /// Executes this statement, like [get], but only returns one value. If the
-  /// result too many values, this method will throw. If no row is returned,
-  /// `null` will be returned instead.
+  /// query returns no or too many rows, the returned future will complete with
+  /// an error.
   ///
   /// {@template moor_single_query_expl}
   /// Be aware that this operation won't put a limit clause on this statement,
@@ -96,7 +100,22 @@ abstract class Selectable<T> {
   /// one row, for instance because you used `limit(1)` or you know the `where`
   /// clause will only allow one row.
   /// {@endtemplate}
-  Future<T?> getSingle() async {
+  ///
+  /// See also: [getSingleOrNull], which returns `null` instead of throwing if
+  /// the query completes with no rows.
+  Future<T> getSingle() async {
+    return (await get()).single;
+  }
+
+  /// Executes this statement, like [get], but only returns one value. If the
+  /// result too many values, this method will throw. If no row is returned,
+  /// `null` will be returned instead.
+  ///
+  /// {@macro moor_single_query_expl}
+  ///
+  /// See also: [getSingle], which can be used if the query will never evaluate
+  /// to exactly one row.
+  Future<T?> getSingleOrNull() async {
     final list = await get();
     final iterator = list.iterator;
 
@@ -113,14 +132,25 @@ abstract class Selectable<T> {
 
   /// Creates an auto-updating stream of this statement, similar to [watch].
   /// However, it is assumed that the query will only emit one result, so
-  /// instead of returning a [Stream<List<T>>], this returns a [Stream<T>]. If
+  /// instead of returning a `Stream<List<T>>`, this returns a `Stream<T>`. If,
+  /// at any point, the query emits no or more than one rows, an error will be
+  /// added to the stream instead.
+  ///
+  /// {@macro moor_single_query_expl}
+  Stream<T> watchSingle() {
+    return watch().transform(singleElements());
+  }
+
+  /// Creates an auto-updating stream of this statement, similar to [watch].
+  /// However, it is assumed that the query will only emit one result, so
+  /// instead of returning a `Stream<List<T>>`, this returns a `Stream<T?>`. If
   /// the query emits more than one row at some point, an error will be emitted
   /// to the stream instead. If the query emits zero rows at some point, `null`
   /// will be added to the stream instead.
   ///
   /// {@macro moor_single_query_expl}
-  Stream<T?> watchSingle() {
-    return watch().transform(singleElements());
+  Stream<T?> watchSingleOrNull() {
+    return watch().transform(singleElementsOrNull());
   }
 
   /// Maps this selectable by the [mapper] function.
