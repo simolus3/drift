@@ -338,8 +338,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitIsExpression(IsExpression e, TypeExpectation arg) {
-    session._checkAndResolve(e, const ResolvedType.bool(), arg);
-    session._hintNullability(e, false);
+    session
+      .._checkAndResolve(e, const ResolvedType.bool(), arg)
+      .._addRelation(HaveSameType(e.left, e.right))
+      .._hintNullability(e, false);
+
     visitChildren(e, const NoTypeExpectation());
   }
 
