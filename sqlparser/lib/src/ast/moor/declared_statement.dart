@@ -103,10 +103,11 @@ abstract class StatementParameter extends AstNode {
 class VariableTypeHint extends StatementParameter {
   Variable variable;
   final String typeName;
+  final bool orNull;
 
   Token? as;
 
-  VariableTypeHint(this.variable, this.typeName);
+  VariableTypeHint(this.variable, this.typeName, {this.orNull = false});
 
   @override
   Iterable<AstNode> get childNodes => [variable];

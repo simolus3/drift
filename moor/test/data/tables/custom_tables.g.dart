@@ -1614,16 +1614,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType var1, List<SyncType?> var2) {
+  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2) {
     var $arrayStartIndex = 2;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
         'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
         variables: [
-          Variable<int>(ConfigTable.$converter0.mapToSql(var1)!),
+          Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           for (var $ in var2)
-            Variable<int?>(ConfigTable.$converter1.mapToSql($)!)
+            Variable<int?>(ConfigTable.$converter1.mapToSql($))
         ],
         readsFrom: {
           config
@@ -1671,10 +1671,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<EMail> searchEmails({required String term}) {
+  Selectable<EMail> searchEmails({String? term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
-        variables: [Variable<String>(term)],
+        variables: [Variable<String?>(term)],
         readsFrom: {email}).map(email.mapFromRow);
   }
 
@@ -1703,10 +1703,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {}).map((QueryRow row) => row.readInt('x'));
   }
 
-  Future<int> writeConfig({required String key, required String value}) {
+  Future<int> writeConfig({required String key, String? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (:key, :value)',
-      variables: [Variable<String>(key), Variable<String>(value)],
+      variables: [Variable<String>(key), Variable<String?>(value)],
       updates: {config},
     );
   }

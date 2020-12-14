@@ -454,7 +454,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
       final current = _currentAs<VariableTypeHint>(e);
-      _assert(current.typeName == e.typeName, e);
+      _assert(current.typeName == e.typeName && current.orNull == e.orNull, e);
     } else if (e is DartPlaceholderDefaultValue) {
       final current = _currentAs<DartPlaceholderDefaultValue>(e);
       _assert(current.variableName == e.variableName, e);

@@ -71,7 +71,7 @@ multiple: SELECT d.*, c.** FROM with_constraints c
    ON d.a = c.a AND d.b = c.b
  WHERE $predicate;
 
-searchEmails: SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
+searchEmails(:term AS TEXT OR NULL): SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 

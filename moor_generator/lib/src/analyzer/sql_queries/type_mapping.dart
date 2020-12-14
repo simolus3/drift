@@ -152,6 +152,7 @@ class TypeMapper {
           index: currentIndex,
           name: name,
           type: type,
+          nullable: internalType.type?.nullable ?? false,
           variable: used,
           isArray: isArray,
           typeConverter: converter,

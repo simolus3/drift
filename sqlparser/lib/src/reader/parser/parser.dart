@@ -367,11 +367,16 @@ class Parser extends ParserBase
     if (variable != null) {
       // Type hint for a variable
       final as = _consume(TokenType.as, 'Expected AS followed by a type');
-
       final typeNameTokens = _typeName() ?? _error('Expected a type name here');
-
       final typeName = typeNameTokens.lexeme;
-      return VariableTypeHint(variable, typeName)
+
+      var orNull = false;
+      if (_matchOne(TokenType.or)) {
+        _consume(TokenType.$null, 'Expected NULL to finish OR NULL');
+        orNull = true;
+      }
+
+      return VariableTypeHint(variable, typeName, orNull: orNull)
         ..as = as
         ..setSpan(first, _previous);
     } else if (_matchOne(TokenType.dollarSignVariable)) {

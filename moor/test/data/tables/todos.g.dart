@@ -1510,15 +1510,15 @@ abstract class _$TodoDb extends GeneratedDatabase {
     );
   }
 
-  Selectable<TodoEntry> withIn(String var1, String var2, List<int> var3) {
+  Selectable<TodoEntry> withIn(String? var1, String? var2, List<int> var3) {
     var $arrayStartIndex = 3;
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelect(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
-          Variable<String>(var1),
-          Variable<String>(var2),
+          Variable<String?>(var1),
+          Variable<String?>(var2),
           for (var $ in var3) Variable<int>($)
         ],
         readsFrom: {

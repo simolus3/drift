@@ -122,7 +122,9 @@ class SqlAnalyzer extends BaseAnalyzer {
     for (final parameter in stmt.parameters) {
       if (parameter is VariableTypeHint) {
         final variable = parameter.variable;
-        final type = reader.resolveColumnType(parameter.typeName);
+        final type = reader
+            .resolveColumnType(parameter.typeName)
+            .withNullable(parameter.orNull);
 
         if (variable is ColonNamedVariable) {
           namedHints[variable.name] = type;

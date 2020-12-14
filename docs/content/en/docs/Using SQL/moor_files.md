@@ -89,6 +89,12 @@ of a variable:
 myQuery(:variable AS TEXT): SELECT :variable;
 ```
 
+In addition to the base type, you can also declare that the type is nullable:
+
+```sql
+myQuery(:variable AS TEXT OR NULL): SELECT :variable;
+```
+
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:

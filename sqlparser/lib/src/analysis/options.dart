@@ -21,9 +21,9 @@ class AnalyzeStatementOptions {
   /// Returns null if the type of that variable hasn't been set.
   ResolvedType? specifiedTypeOf(Variable variable) {
     // colon-named variables also have an index!
-    if (variable.resolvedIndex != null &&
-        indexedVariableTypes.containsKey(variable.resolvedIndex)) {
-      return indexedVariableTypes[variable.resolvedIndex];
+    final index = variable.resolvedIndex;
+    if (index != null && indexedVariableTypes.containsKey(index)) {
+      return indexedVariableTypes[index];
     } else if (variable is ColonNamedVariable) {
       return namedVariableTypes[variable.name];
     }

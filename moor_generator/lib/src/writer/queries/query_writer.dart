@@ -286,9 +286,14 @@ class QueryWriter {
           _buffer.write('$type ${optional.dartParameterName} = '
               'const CustomExpression($defaultSql)');
         } else {
-          // No default value, this element is required
-          _buffer.write(scope.required);
-          _buffer.write(' $type ${optional.dartParameterName}');
+          // No default value, this element is required if it's not nullable
+          final isNullable =
+              optional is FoundVariable && optional.nullableInDart;
+          if (!isNullable) {
+            _buffer..write(scope.required)..write(' ');
+          }
+
+          _buffer.write('$type ${optional.dartParameterName}');
         }
       }
 

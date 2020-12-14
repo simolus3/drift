@@ -15,7 +15,8 @@ CREATE TABLE tbl (
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
-typeHints(:foo AS TEXT, $predicate = TRUE): SELECT :foo WHERE $predicate;
+typeHints(:foo AS TEXT OR NULL, $predicate = TRUE):
+  SELECT :foo WHERE $predicate;
 nested AS MyResultSet: SELECT foo.** FROM tbl foo;
 ''';
 
@@ -86,6 +87,7 @@ void main() {
                 ColonVariableToken(fakeSpan(':foo'), ':foo'),
               ),
               'TEXT',
+              orNull: true,
             ),
             DartPlaceholderDefaultValue(
               'predicate',
