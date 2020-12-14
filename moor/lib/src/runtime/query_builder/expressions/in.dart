@@ -1,6 +1,6 @@
 part of '../query_builder.dart';
 
-class _InExpression<T> extends Expression<bool> {
+class _InExpression<T> extends Expression<bool?> {
   final Expression<T> _expression;
   final List<T> _values;
   final bool _not;

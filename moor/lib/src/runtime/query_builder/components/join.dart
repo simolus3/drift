@@ -31,7 +31,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
-  final Expression<bool>? on;
+  final Expression<bool?>? on;
 
   /// Whether [table] should appear in the result set (defaults to true).
   ///

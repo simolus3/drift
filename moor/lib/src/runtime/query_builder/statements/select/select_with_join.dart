@@ -165,7 +165,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// Groups the result by values in [expressions].
   ///
   /// An optional [having] attribute can be set to exclude certain groups.
-  void groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
+  void groupBy(Iterable<Expression> expressions, {Expression<bool?>? having}) {
     _groupBy = GroupBy._(expressions.toList(), having);
   }
 

@@ -9,7 +9,7 @@ part of '../query_builder.dart';
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
-Expression<int> countAll({Expression<bool>? filter}) {
+Expression<int> countAll({Expression<bool?>? filter}) {
   return _AggregateExpression('COUNT', const _StarFunctionParameter(),
       filter: filter);
 }
@@ -24,7 +24,7 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// counted twice. An optional [filter] can be used to only include values
   /// matching the filter. Note that [filter] is only available from sqlite
   /// 3.30 and most devices will use an older sqlite version.
-  Expression<int> count({bool? distinct, Expression<bool>? filter}) {
+  Expression<int> count({bool? distinct, Expression<bool?>? filter}) {
     return _AggregateExpression('COUNT', this,
         filter: filter, distinct: distinct);
   }
@@ -88,7 +88,7 @@ class _AggregateExpression<D> extends Expression<D> {
   final Where? filter;
 
   _AggregateExpression(this.functionName, this.parameter,
-      {Expression<bool>? filter, bool? distinct})
+      {Expression<bool?>? filter, bool? distinct})
       : filter = filter != null ? Where(filter) : null,
         distinct = distinct ?? false;
 
