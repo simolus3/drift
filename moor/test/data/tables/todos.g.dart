@@ -558,7 +558,7 @@ class $CategoriesTable extends Categories
     return $CategoriesTable(_db, alias);
   }
 
-  static TypeConverter<CategoryPriority, int?> $converter0 =
+  static TypeConverter<CategoryPriority, int> $converter0 =
       const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
 }
 
@@ -1316,7 +1316,7 @@ class $TableWithoutPKTable extends TableWithoutPK
     return $TableWithoutPKTable(_db, alias);
   }
 
-  static TypeConverter<MyCustomObject, String?> $converter0 =
+  static TypeConverter<MyCustomObject, String> $converter0 =
       const CustomConverter();
 }
 

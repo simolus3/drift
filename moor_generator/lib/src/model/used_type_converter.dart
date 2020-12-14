@@ -37,6 +37,9 @@ class UsedTypeConverter {
     @required this.sqlType,
   });
 
+  bool get hasNullableDartType =>
+      mappedType.nullabilitySuffix == NullabilitySuffix.question;
+
   factory UsedTypeConverter.forEnumColumn(DartType enumType, bool nullable) {
     if (enumType.element is! ClassElement) {
       throw InvalidTypeForEnumConverterException('Not a class', enumType);
@@ -61,7 +64,7 @@ class UsedTypeConverter {
 
   /// A suitable typename to store an instance of the type converter used here.
   String converterNameInCode(GenerationOptions options) {
-    final sqlDartType = options.nullableType(dartTypeNames[sqlType]);
+    final sqlDartType = dartTypeNames[sqlType];
     return 'TypeConverter<${mappedType.codeString(options)}, $sqlDartType>';
   }
 }

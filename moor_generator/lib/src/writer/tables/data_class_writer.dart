@@ -176,15 +176,17 @@ class DataClassWriter {
     for (var i = 0; i < table.columns.length; i++) {
       final column = table.columns[i];
       final last = i == table.columns.length - 1;
+      final isNullable = column.nullableInDart;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
-      if (wrapNullableInValue && column.nullable) {
+      if (wrapNullableInValue && isNullable) {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')
           ..write('= const Value.absent()');
-      } else if (!column.nullable && scope.generationOptions.nnbd) {
-        // We always write nullable types in the copyWith constructor, since all
-        // parameters are optional.
+      } else if (!isNullable && scope.generationOptions.nnbd) {
+        // We always use nullable parameters in copyWith, since all parameters
+        // are optional. The !isNullable check is there to avoid a duplicate
+        // question mark in the type name.
         _buffer.write('$typeName? ${column.dartGetterName}');
       } else {
         _buffer.write('$typeName ${column.dartGetterName}');

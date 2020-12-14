@@ -289,8 +289,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
     return ConfigTable(_db, alias);
   }
 
-  static TypeConverter<SyncType?, int?> $converter0 = const SyncTypeConverter();
-  static TypeConverter<SyncType?, int?> $converter1 =
+  static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
+  static TypeConverter<SyncType?, int> $converter1 =
       const EnumIndexConverter<SyncType>(SyncType.values);
   @override
   bool get dontWriteConstraints => true;
@@ -1614,7 +1614,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2) {
+  Selectable<String> typeConverterVar(SyncType var1, List<SyncType?> var2) {
     var $arrayStartIndex = 2;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
@@ -1623,7 +1623,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [
           Variable<int>(ConfigTable.$converter0.mapToSql(var1)!),
           for (var $ in var2)
-            Variable<int>(ConfigTable.$converter1.mapToSql($)!)
+            Variable<int?>(ConfigTable.$converter1.mapToSql($)!)
         ],
         readsFrom: {
           config

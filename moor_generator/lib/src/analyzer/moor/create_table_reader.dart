@@ -11,6 +11,7 @@ import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -217,8 +218,11 @@ class CreateTableReader {
     }
 
     final interfaceType = type as InterfaceType;
-    // TypeConverter declares a "D mapToDart(S fromDb);". We need to know D
-    final typeInDart = interfaceType.getMethod('mapToDart').returnType;
+    final asTypeConverter = interfaceType.allSupertypes.firstWhere(
+        (type) => isFromMoor(type) && type.element.name == 'TypeConverter');
+
+    // TypeConverter<D, S>, where D is the type in Dart
+    final typeInDart = asTypeConverter.typeArguments.first;
 
     return UsedTypeConverter(
         expression: code, mappedType: typeInDart, sqlType: sqlType);

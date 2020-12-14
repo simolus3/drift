@@ -17,6 +17,11 @@ abstract class HasType {
 }
 
 extension OperationOnTypes on HasType {
+  /// Whether this type is nullable in Dart
+  bool get nullableInDart {
+    return nullable || typeConverter?.hasNullableDartType == true;
+  }
+
   /// the Dart type of this column that can be handled by moors type mapping.
   /// Basically the same as [dartTypeCode], minus custom types and nullability.
   String get variableTypeName => dartTypeNames[type];
@@ -30,7 +35,7 @@ extension OperationOnTypes on HasType {
   /// This is the same as [dartTypeCode] but without custom types.
   String variableTypeCode(
       [GenerationOptions options = const GenerationOptions()]) {
-    final hasSuffix = nullable && options.nnbd;
+    final hasSuffix = nullableInDart && options.nnbd;
     return hasSuffix ? '$variableTypeName?' : variableTypeName;
   }
 
@@ -39,7 +44,10 @@ extension OperationOnTypes on HasType {
   /// [int].
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     if (typeConverter != null) {
-      return typeConverter.mappedType?.codeString(options);
+      final needsSuffix = nullable && !typeConverter.hasNullableDartType;
+      final baseType = typeConverter.mappedType.codeString(options);
+
+      return needsSuffix ? '$baseType?' : baseType;
     }
 
     return variableTypeCode(options);
