@@ -4,6 +4,7 @@ import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
 
+import '../data/tables/custom_tables.dart';
 import '../data/tables/todos.dart';
 
 void main() {
@@ -172,5 +173,31 @@ void main() {
 
     final entry = await db.select(db.todosTable).getSingle();
     expect(entry.content, 'content');
+  });
+
+  test('alter table without rowid', () async {
+    final executor = VmDatabase.memory(setup: (db) {
+      db.execute(
+          'CREATE TABLE no_ids (old BLOB NOT NULL PRIMARY KEY) WITHOUT ROWID');
+    });
+
+    final db = CustomTablesDb(executor);
+    db.migration = MigrationStrategy(
+      onCreate: (m) async {
+        await m.alterTable(TableMigration(
+          db.noIds,
+          columnTransformer: {
+            db.noIds.payload: const CustomExpression('old'),
+          },
+          newColumns: [db.noIds.payload],
+        ));
+      },
+    );
+
+    final entry = await db
+        .customSelect("SELECT sql FROM sqlite_master WHERE name = 'no_ids'")
+        .getSingle();
+
+    expect(entry.readString('sql'), contains('WITHOUT ROWID'));
   });
 }

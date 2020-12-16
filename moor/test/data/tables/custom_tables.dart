@@ -18,4 +18,7 @@ class CustomTablesDb extends _$CustomTablesDb {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy migration = MigrationStrategy();
 }
