@@ -85,7 +85,7 @@ class MoorTable implements MoorSchemaEntity {
 
   /// When non-null, the generated table class will override the `withoutRowId`
   /// getter on the table class with this value.
-  final bool overrideWithoutRowId;
+  final bool /*?*/ overrideWithoutRowId;
 
   /// When non-null, the generated table class will override the
   /// `dontWriteConstraint` getter on the table class with this value.

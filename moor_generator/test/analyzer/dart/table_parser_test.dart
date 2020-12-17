@@ -23,6 +23,8 @@ void main() {
       
       class TableWithCustomName extends Table {
         @override String get tableName => 'my-fancy-table';
+        
+        @override bool get withoutRowId => true;
       }
       
       class Users extends Table {
@@ -117,6 +119,7 @@ void main() {
     test('use overridden name', () async {
       final parsed = await parse('TableWithCustomName');
       expect(parsed.sqlName, equals('my-fancy-table'));
+      expect(parsed.overrideWithoutRowId, isTrue);
     });
 
     test('use re-cased class name', () async {

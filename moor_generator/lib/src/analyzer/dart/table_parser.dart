@@ -20,6 +20,7 @@ class TableParser {
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
       primaryKey: primaryKey,
+      overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
     );
 
@@ -87,11 +88,8 @@ class TableParser {
       ClassElement element, List<MoorColumn> columns) async {
     final primaryKeyGetter =
         element.lookUpGetter('primaryKey', element.library);
-    final parentOfResolved = primaryKeyGetter.enclosingElement;
 
-    if (parentOfResolved is ClassElement &&
-        parentOfResolved.name == 'Table' &&
-        isFromMoor(parentOfResolved.thisType)) {
+    if (primaryKeyGetter.isFromDefaultTable) {
       // resolved primaryKey is from the Table dsl superclass. That means there
       // is no primary key
       return null;
@@ -128,6 +126,30 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
+  Future<bool /*?*/ > _overrideWithoutRowId(ClassElement element) async {
+    final getter = element.lookUpGetter('withoutRowId', element.library);
+
+    // Was the getter overridden at all?
+    if (getter.isFromDefaultTable) return null;
+
+    final resolved = await base.loadElementDeclaration(getter);
+    final ast = resolved.node as MethodDeclaration;
+    final expr = base.returnExpressionOfMethod(ast);
+
+    if (expr == null) return null;
+
+    if (expr is BooleanLiteral) {
+      return expr.value;
+    } else {
+      base.step.reportError(ErrorInDartCode(
+        affectedElement: getter,
+        message: 'This must directly return a boolean literal.',
+      ));
+    }
+
+    return null;
+  }
+
   Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
         .map((t) => t.element)
@@ -154,5 +176,15 @@ class TableParser {
     }));
 
     return results.where((c) => c != null);
+  }
+}
+
+extension on Element {
+  bool get isFromDefaultTable {
+    final parent = enclosingElement;
+
+    return parent is ClassElement &&
+        parent.name == 'Table' &&
+        isFromMoor(parent.thisType);
   }
 }
