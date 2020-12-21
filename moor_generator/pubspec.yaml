@@ -19,7 +19,7 @@ dependencies:
   # CLI
   args: ^1.5.0
   logging: '>=0.11.0 <1.0.0'
-  cli_util: ^0.1.0
+  cli_util: '>=0.1.0 <0.3.0'
 
   # Moor-specific analysis and apis
   moor: ^4.0.0-nullsafety
