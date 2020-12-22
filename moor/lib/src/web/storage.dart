@@ -67,8 +67,8 @@ abstract class MoorWebStorage {
         // Try opening a mock database to check if IndexedDB is really
         // available. This avoids the problem with Firefox incorrectly
         // reporting IndexedDB as supported in private mode.
-        final testDb = await window.indexedDB.open('moor_mock_db');
-        testDb.close();
+        final mockDb = await window.indexedDB.open('moor_mock_db');
+        mockDb.close();
       } catch (error) {
         isIndexedDbSupported = false;
       }
