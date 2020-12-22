@@ -90,7 +90,7 @@ performant, since we don't have to encode binary blobs as strings.
 To use this implementation on browsers that support it, replace `WebDatabase(name)` with:
 
 ```dart
-WebDatabase.withStorage(MoorWebStorage.indexedDbIfSupported(name))
+WebDatabase.withStorage(await MoorWebStorage.indexedDbIfSupported(name))
 ```
 
 Moor will automatically migrate data from local storage to `IndexedDb` when it is available.
