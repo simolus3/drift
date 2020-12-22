@@ -47,22 +47,30 @@ abstract class MoorWebStorage {
 
   /// Uses [MoorWebStorage.indexedDb] if the current browser supports it.
   /// Otherwise, falls back to the local storage based implementation.
-  factory MoorWebStorage.indexedDbIfSupported(String name,
-      {bool inWebWorker = false}) {
-    return supportsIndexedDb(inWebWorker: inWebWorker)
+  static Future<MoorWebStorage> indexedDbIfSupported(String name,
+      {bool inWebWorker = false}) async {
+    return await supportsIndexedDb(inWebWorker: inWebWorker)
         ? MoorWebStorage.indexedDb(name, inWebWorker: inWebWorker)
         : MoorWebStorage(name);
   }
 
   /// Attempts to check whether the current browser supports the
   /// [MoorWebStorage.indexedDb] storage implementation.
-  static bool supportsIndexedDb({bool inWebWorker = false}) {
+  static Future<bool> supportsIndexedDb({bool inWebWorker = false}) async {
     var isIndexedDbSupported = false;
     if (inWebWorker && WorkerGlobalScope.instance.indexedDB != null) {
       isIndexedDbSupported = true;
     } else {
       try {
         isIndexedDbSupported = IdbFactory.supported;
+
+        if (isIndexedDbSupported) {
+          // Try opening a mock database to check if IndexedDB is really
+          // available. This avoids the problem with Firefox incorrectly
+          // reporting IndexedDB as supported in private mode.
+          final mockDb = await window.indexedDB!.open('moor_mock_db');
+          mockDb.close();
+        }
       } catch (error) {
         isIndexedDbSupported = false;
       }
