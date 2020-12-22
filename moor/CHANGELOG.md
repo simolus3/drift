@@ -4,6 +4,7 @@
   Use `getSingleOrNull()` and `watchSingleOrNull()` for the old behavior.
 - __Breaking__: Changed the `args` parameter in `QueryExecutor` methods to `List<Object?>`
 - __Breaking__: Removed the second type parameter from `TypedResult.read`
+- __Breaking__: `MoorWebStorage.indexedDbIfSupported` now returns a future
 - Support null safety
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`
 - Added extensions for `isNull` and `isNotNull`
