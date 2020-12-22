@@ -76,6 +76,11 @@ The generated `User` class will then have a `preferences` column of type
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absolute_url }}).
 
+{{% alert title="Caution with equality" color="warning"  %}}
+> If your converter returns an object that is not comparable by value, the generated dataclass will not
+  be comparable by value.
+{{% /alert %}}
+
 ### Implicit enum converters
 
 A common scenario for type converters is to map between enums and integers by representing enums

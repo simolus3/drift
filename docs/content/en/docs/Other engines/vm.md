@@ -65,7 +65,7 @@ import 'package:path/path.dart' as p;
 
 LazyDatabase(() async {
   final dbFolder = await getDatabasesPath();
-  final file = File(j.join(dbFolder, 'db.sqlite'));
+  final file = File(p.join(dbFolder, 'db.sqlite'));
   return VmDatabase(file);
 })
 ```
@@ -162,5 +162,5 @@ Future<List<Coordinate>> findNearby(Coordinate center, int radius) {
 }
 ```
 
-Aller the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
+All the other functions are available under a similar name (`sqlSin`, `sqlCos`, `sqlAtan` and so on).
 They have that `sql` prefix to avoid clashes with `dart:math`.
