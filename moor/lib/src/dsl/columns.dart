@@ -81,8 +81,8 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
   /// The column will use this expression when a row is inserted and no value
   /// has been specified.
   ///
-  /// Note: Unless most other methods used to declare tables, the parameter
-  /// [e] which denotes the default expression, doesn't have to be a Dart
+  /// Note: Unlike most other methods used to declare tables, the parameter
+  /// [e] which denotes the default expression doesn't have to be a Dart
   /// constant.
   /// Particularly, you can use operators like those defined in
   /// [BooleanExpressionOperators] to form expressions here.
