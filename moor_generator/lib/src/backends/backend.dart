@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
@@ -33,12 +33,11 @@ abstract class BackendTask {
     throw UnsupportedError('Resolving dart expressions not supported');
   }
 
-  Future<ElementDeclarationResult> loadElementDeclaration(
-      Element element) async {
+  Future<AstNode> loadElementDeclaration(Element element) async {
     final resolvedLibrary = await element.library.session
         .getResolvedLibraryByElement(element.library);
 
-    return resolvedLibrary.getElementDeclaration(element);
+    return resolvedLibrary.getElementDeclaration(element)?.node;
   }
 
   /// Checks whether a file at [uri] exists.

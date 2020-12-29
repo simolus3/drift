@@ -68,10 +68,8 @@ class TableParser {
 
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
-    final tableNameDeclaration =
-        await base.loadElementDeclaration(tableNameGetter);
-    final returnExpr = base.returnExpressionOfMethod(
-        tableNameDeclaration.node as MethodDeclaration);
+    final node = await base.loadElementDeclaration(tableNameGetter);
+    final returnExpr = base.returnExpressionOfMethod(node as MethodDeclaration);
 
     final tableName = base.readStringLiteral(returnExpr, () {
       base.step.reportError(ErrorInDartCode(
@@ -95,8 +93,8 @@ class TableParser {
       return null;
     }
 
-    final resolved = await base.loadElementDeclaration(primaryKeyGetter);
-    final ast = resolved.node as MethodDeclaration;
+    final ast = await base.loadElementDeclaration(primaryKeyGetter)
+        as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
       base.step.reportError(ErrorInDartCode(
@@ -132,8 +130,7 @@ class TableParser {
     // Was the getter overridden at all?
     if (getter.isFromDefaultTable) return null;
 
-    final resolved = await base.loadElementDeclaration(getter);
-    final ast = resolved.node as MethodDeclaration;
+    final ast = await base.loadElementDeclaration(getter) as MethodDeclaration;
     final expr = base.returnExpressionOfMethod(ast);
 
     if (expr == null) return null;
@@ -169,8 +166,8 @@ class TableParser {
     });
 
     final results = await Future.wait(fields.map((field) async {
-      final resolved = await base.loadElementDeclaration(field.getter);
-      final node = resolved.node as MethodDeclaration;
+      final node =
+          await base.loadElementDeclaration(field.getter) as MethodDeclaration;
 
       return await base.parseColumn(node, field.getter);
     }));
