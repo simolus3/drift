@@ -20,6 +20,7 @@ class TableParser {
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: _readDartTypeName(element),
       primaryKey: primaryKey,
+      overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
     );
 
@@ -67,10 +68,8 @@ class TableParser {
 
     // we expect something like get tableName => "myTableName", the getter
     // must do nothing more complicated
-    final tableNameDeclaration =
-        await base.loadElementDeclaration(tableNameGetter);
-    final returnExpr = base.returnExpressionOfMethod(
-        tableNameDeclaration.node as MethodDeclaration);
+    final node = await base.loadElementDeclaration(tableNameGetter);
+    final returnExpr = base.returnExpressionOfMethod(node as MethodDeclaration);
 
     final tableName = base.readStringLiteral(returnExpr, () {
       base.step.reportError(ErrorInDartCode(
@@ -87,18 +86,15 @@ class TableParser {
       ClassElement element, List<MoorColumn> columns) async {
     final primaryKeyGetter =
         element.lookUpGetter('primaryKey', element.library);
-    final parentOfResolved = primaryKeyGetter.enclosingElement;
 
-    if (parentOfResolved is ClassElement &&
-        parentOfResolved.name == 'Table' &&
-        isFromMoor(parentOfResolved.thisType)) {
+    if (primaryKeyGetter.isFromDefaultTable) {
       // resolved primaryKey is from the Table dsl superclass. That means there
       // is no primary key
       return null;
     }
 
-    final resolved = await base.loadElementDeclaration(primaryKeyGetter);
-    final ast = resolved.node as MethodDeclaration;
+    final ast = await base.loadElementDeclaration(primaryKeyGetter)
+        as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
       base.step.reportError(ErrorInDartCode(
@@ -128,6 +124,29 @@ class TableParser {
     return parsedPrimaryKey;
   }
 
+  Future<bool /*?*/ > _overrideWithoutRowId(ClassElement element) async {
+    final getter = element.lookUpGetter('withoutRowId', element.library);
+
+    // Was the getter overridden at all?
+    if (getter.isFromDefaultTable) return null;
+
+    final ast = await base.loadElementDeclaration(getter) as MethodDeclaration;
+    final expr = base.returnExpressionOfMethod(ast);
+
+    if (expr == null) return null;
+
+    if (expr is BooleanLiteral) {
+      return expr.value;
+    } else {
+      base.step.reportError(ErrorInDartCode(
+        affectedElement: getter,
+        message: 'This must directly return a boolean literal.',
+      ));
+    }
+
+    return null;
+  }
+
   Future<Iterable<MoorColumn>> _parseColumns(ClassElement element) async {
     final columnNames = element.allSupertypes
         .map((t) => t.element)
@@ -147,12 +166,22 @@ class TableParser {
     });
 
     final results = await Future.wait(fields.map((field) async {
-      final resolved = await base.loadElementDeclaration(field.getter);
-      final node = resolved.node as MethodDeclaration;
+      final node =
+          await base.loadElementDeclaration(field.getter) as MethodDeclaration;
 
       return await base.parseColumn(node, field.getter);
     }));
 
     return results.where((c) => c != null);
+  }
+}
+
+extension on Element {
+  bool get isFromDefaultTable {
+    final parent = enclosingElement;
+
+    return parent is ClassElement &&
+        parent.name == 'Table' &&
+        isFromMoor(parent.thisType);
   }
 }

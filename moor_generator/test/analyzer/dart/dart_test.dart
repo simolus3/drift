@@ -34,8 +34,8 @@ void main() {
         ParseDartStep(task, session.registerFile(input), library));
 
     Future<MethodDeclaration> _loadDeclaration(Element element) async {
-      final declaration = await parser.loadElementDeclaration(element);
-      return declaration.node as MethodDeclaration;
+      final node = await parser.loadElementDeclaration(element);
+      return node as MethodDeclaration;
     }
 
     Future<void> _verifyReturnExpressionMatches(

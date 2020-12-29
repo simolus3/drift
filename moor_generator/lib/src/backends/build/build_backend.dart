@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/analysis/session.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
@@ -31,12 +30,6 @@ class BuildBackendTask extends BackendTask {
   final BuildBackend backend;
   final TypeDeserializer typeDeserializer;
 
-  final Map<AssetId, ResolvedLibraryResult> _cachedResults = {};
-
-  /// The analysis session might be invalidated every time we resolve a new
-  /// library, so we grab a new one instead of using `LibraryElement.session`.
-  AnalysisSession _currentAnalysisSession;
-
   BuildBackendTask(this.step, this.backend)
       : typeDeserializer = TypeDeserializer(step);
 
@@ -48,6 +41,11 @@ class BuildBackendTask extends BackendTask {
   }
 
   @override
+  Future<AstNode> loadElementDeclaration(Element element) async {
+    return await step.resolver.astNodeFor(element, resolve: true);
+  }
+
+  @override
   Future<String> readMoor(Uri uri) {
     return step.readAsString(_resolve(uri));
   }
@@ -56,48 +54,9 @@ class BuildBackendTask extends BackendTask {
   Future<LibraryElement> resolveDart(Uri uri) async {
     try {
       final asset = _resolve(uri);
-      final library = await step.resolver.libraryFor(asset);
-      _currentAnalysisSession = library.session;
-
-      return library;
+      return await step.resolver.libraryFor(asset);
     } on NonLibraryAssetException catch (_) {
       throw NotALibraryException(uri);
-    }
-  }
-
-  @override
-  Future<ElementDeclarationResult> loadElementDeclaration(
-      Element element) async {
-    // prefer to use a cached value in case the session changed because another
-    // dart file was read...
-    final assetId = await step.resolver.assetIdForElement(element);
-    final result = _cachedResults[assetId];
-
-    if (result != null) {
-      return result.getElementDeclaration(element);
-    } else {
-      _currentAnalysisSession ??= element.session;
-
-      // Transform element to new session if necessary, also updating the
-      // session if it was invalidated by another builder
-      var library = element.library;
-      if (library.session != _currentAnalysisSession) {
-        try {
-          library = await _currentAnalysisSession
-              .getLibraryByUri(assetId.uri.toString());
-        } on InconsistentAnalysisException {
-          library = await step.resolver.libraryFor(assetId);
-          _currentAnalysisSession = library.session;
-        }
-      }
-
-      final result =
-          await _currentAnalysisSession.getResolvedLibraryByElement(library);
-      _cachedResults[assetId] = result;
-
-      // Note: getElementDeclaration works by comparing source offsets, so
-      // element.session != session is not a problem in this case.
-      return result.getElementDeclaration(element);
     }
   }
 

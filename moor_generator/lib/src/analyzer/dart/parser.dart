@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -60,7 +59,7 @@ class MoorDartParser {
     return (method.body as ExpressionFunctionBody).expression;
   }
 
-  Future<ElementDeclarationResult> loadElementDeclaration(Element element) {
+  Future<AstNode> loadElementDeclaration(Element element) {
     return step.task.backend.loadElementDeclaration(element);
   }
 
