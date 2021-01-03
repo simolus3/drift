@@ -9,8 +9,8 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     with LimitContainerMixin, Selectable<TypedResult> {
   /// Used internally by moor, users should use [SimpleSelectStatement.join]
   /// instead.
-  JoinedSelectStatement(
-      QueryEngine database, TableInfo<FirstT, FirstD> table, this._joins,
+  JoinedSelectStatement(DatabaseConnectionUser database,
+      TableInfo<FirstT, FirstD> table, this._joins,
       [this.distinct = false, this._includeMainTableInResult = true])
       : super(database, table);
 

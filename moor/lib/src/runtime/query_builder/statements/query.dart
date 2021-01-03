@@ -5,13 +5,13 @@ part of '../query_builder.dart';
 abstract class Query<T extends Table, D extends DataClass> {
   /// The database this statement should be sent to.
   @protected
-  QueryEngine database;
+  DatabaseConnectionUser database;
 
   /// The (main) table this query operates on.
   TableInfo<T, D> table;
 
   /// Used internally by moor. Users should use the appropriate methods on
-  /// [QueryEngine] instead.
+  /// [DatabaseConnectionUser] instead.
   Query(this.database, this.table);
 
   /// The `WHERE` clause for this statement
@@ -205,7 +205,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
   ///  - The docs on [expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/),
   ///    which explains how to express most SQL expressions in Dart.
   /// If you want to remove duplicate rows from a query, use the `distinct`
-  /// parameter on [QueryEngine.select].
+  /// parameter on [DatabaseConnectionUser.select].
   void where(Expression<bool?> Function(T tbl) filter) {
     final predicate = filter(table.asDslTable);
 

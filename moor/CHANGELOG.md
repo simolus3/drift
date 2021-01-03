@@ -2,6 +2,7 @@
 
 - __Breaking__: `getSingle()` and `watchSingle()` are now non-nullable and throw for empty results.
   Use `getSingleOrNull()` and `watchSingleOrNull()` for the old behavior.
+- __Breaking__: Removed `QueryEngine`, its methods have been moved to `DatabaseConnectionUser`
 - __Breaking__: Changed the `args` parameter in `QueryExecutor` methods to `List<Object?>`
 - __Breaking__: Removed the second type parameter from `TypedResult.read`
 - __Breaking__: `MoorWebStorage.indexedDbIfSupported` now returns a future

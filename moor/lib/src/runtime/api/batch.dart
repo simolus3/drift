@@ -8,14 +8,14 @@ class Batch {
   final Map<String, int> _sqlToIndex = {};
   final List<ArgumentsForBatchedStatement> _createdArguments = [];
 
-  final QueryEngine _engine;
+  final DatabaseConnectionUser _user;
 
   /// Whether we should start a transaction when completing.
   final bool _startTransaction;
 
   final Set<TableUpdate> _createdUpdates = {};
 
-  Batch._(this._engine, this._startTransaction);
+  Batch._(this._user, this._startTransaction);
 
   void _addUpdate(TableInfo table, UpdateKind kind) {
     _createdUpdates.add(TableUpdate.onTable(table, kind: kind));
@@ -41,7 +41,7 @@ class Batch {
       {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
-    final context = InsertStatement<Table, D>(_engine, table)
+    final context = InsertStatement<Table, D>(_user, table)
         .createContext(row, actualMode, onConflict: onConflict);
     _addContext(context);
   }
@@ -84,7 +84,7 @@ class Batch {
       TableInfo<T, D> table, Insertable<D> row,
       {Expression<bool?> Function(T table)? where}) {
     _addUpdate(table, UpdateKind.update);
-    final stmt = UpdateStatement(_engine, table);
+    final stmt = UpdateStatement(_user, table);
     if (where != null) stmt.where(where);
 
     stmt.write(row, dontExecute: true);
@@ -103,8 +103,7 @@ class Batch {
     Insertable<D> row,
   ) {
     _addUpdate(table, UpdateKind.update);
-    final stmt = UpdateStatement(_engine, table)
-      ..replace(row, dontExecute: true);
+    final stmt = UpdateStatement(_user, table)..replace(row, dontExecute: true);
     _addContext(stmt.constructQuery());
   }
 
@@ -119,23 +118,23 @@ class Batch {
   /// Deletes [row] from the [table] when this batch is executed.
   ///
   /// See also:
-  /// - [QueryEngine.delete]
+  /// - [DatabaseConnectionUser.delete]
   /// - [DeleteStatement.delete]
   void delete<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Insertable<D> row) {
     _addUpdate(table, UpdateKind.delete);
-    final stmt = DeleteStatement(_engine, table)..whereSamePrimaryKey(row);
+    final stmt = DeleteStatement(_user, table)..whereSamePrimaryKey(row);
     _addContext(stmt.constructQuery());
   }
 
   /// Deletes all rows from [table] matching the provided [filter].
   ///
   /// See also:
-  ///  - [QueryEngine.delete]
+  ///  - [DatabaseConnectionUser.delete]
   void deleteWhere<T extends Table, D extends DataClass>(
       TableInfo<T, D> table, Expression<bool?> Function(T tbl) filter) {
     _addUpdate(table, UpdateKind.delete);
-    final stmt = DeleteStatement(_engine, table)..where(filter);
+    final stmt = DeleteStatement(_user, table)..where(filter);
     _addContext(stmt.constructQuery());
   }
 
@@ -146,8 +145,8 @@ class Batch {
   /// inspect the return value of individual statements.
   ///
   /// See also:
-  ///  - [QueryEngine.customStatement], the equivalent method outside of
-  ///    batches.
+  ///  - [DatabaseConnectionUser.customStatement], the equivalent method outside
+  ///    of batches.
   void customStatement(String sql, [List<dynamic>? args]) {
     _addSqlAndArguments(sql, args ?? const []);
   }
@@ -168,14 +167,14 @@ class Batch {
   }
 
   Future<void> _commit() async {
-    await _engine.executor.ensureOpen(_engine.attachedDatabase);
+    await _user.executor.ensureOpen(_user.attachedDatabase);
 
     if (_startTransaction) {
       TransactionExecutor? transaction;
 
       try {
-        transaction = _engine.executor.beginTransaction();
-        await transaction.ensureOpen(_engine.attachedDatabase);
+        transaction = _user.executor.beginTransaction();
+        await transaction.ensureOpen(_user.attachedDatabase);
 
         await _runWith(transaction);
 
@@ -185,10 +184,10 @@ class Batch {
         rethrow;
       }
     } else {
-      await _runWith(_engine.executor);
+      await _runWith(_user.executor);
     }
 
-    _engine.notifyUpdates(_createdUpdates);
+    _user.notifyUpdates(_createdUpdates);
   }
 
   Future<void> _runWith(QueryExecutor executor) {

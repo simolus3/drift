@@ -4,12 +4,13 @@ import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/runtime/executor/delayed_stream_queries.dart';
 import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:moor/src/runtime/executor/transactions.dart';
 
 part 'batch.dart';
 part 'connection.dart';
+part 'connection_user.dart';
 part 'db_base.dart';
 part 'dao_base.dart';
-part 'query_engine.dart';
 part 'stream_updates.dart';
 
 /// Defines additional runtime behavior for moor. Changing the fields of this

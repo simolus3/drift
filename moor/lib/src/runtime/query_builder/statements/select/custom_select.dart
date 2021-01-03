@@ -14,7 +14,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
   /// The variables for the prepared statement, in the order they appear in
   /// [query]. Variables are denoted using a question mark in the query.
   final List<Variable> variables;
-  final QueryEngine _db;
+  final DatabaseConnectionUser _db;
 
   /// Constructs a new custom select statement for the query, the variables,
   /// the affected tables and the database.
@@ -65,7 +65,7 @@ class QueryRow {
   /// it's stored in the database. To read a value, use any of the [read]
   /// methods.
   final Map<String, dynamic> data;
-  final QueryEngine _db;
+  final DatabaseConnectionUser _db;
 
   /// Construct a row from the raw data and the query engine that maps the raw
   /// response to appropriate dart types.

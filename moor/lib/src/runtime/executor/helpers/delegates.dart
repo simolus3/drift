@@ -152,7 +152,7 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
   /// Constant constructor on superclass
   const SupportedTransactionDelegate();
 
-  /// Start a transaction, which we assume implements [QueryEngine], and call
+  /// Start a transaction, which we assume implements [QueryDelegate], and call
   /// [run] with the transaction.
   ///
   /// If [run] completes with an error, rollback. Otherwise, commit.

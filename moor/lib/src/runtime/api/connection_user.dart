@@ -5,50 +5,77 @@ const _zoneRootUserKey = #DatabaseConnectionUser;
 typedef _CustomWriter<T> = Future<T> Function(
     QueryExecutor e, String sql, List<dynamic> vars);
 
-/// Mixin for a [DatabaseConnectionUser]. Provides an API to execute both
-/// high-level and custom queries and fetch their results.
-mixin QueryEngine on DatabaseConnectionUser {
-  /// Whether this connection user is "top level", e.g. there is no parent
-  /// connection user. We consider a [GeneratedDatabase] and a
-  /// [DatabaseAccessor] to be top-level, while a [Transaction] or a
-  /// [BeforeOpenRunner] aren't.
-  ///
-  /// If any query method is called on a [topLevel] database user, we check if
-  /// it could instead be delegated to a child executor. For instance, consider
-  /// this code, assuming its part of a subclass of [GeneratedDatabase]:
-  /// ```dart
-  /// void example() {
-  ///  transaction((t) async {
-  ///   await update(table).write(/*...*/)
-  ///  });
-  /// }
-  /// ```
-  /// Here, the `update` method would be called on the [GeneratedDatabase]
-  /// although it is very likely that the user meant to call it on the
-  /// [Transaction] t. We can detect this by calling the function passed to
-  /// `transaction` in a forked [Zone].
+/// Manages a [DatabaseConnection] to send queries to the database.
+abstract class DatabaseConnectionUser {
+  /// The database connection used by this [DatabaseConnectionUser].
   @protected
-  bool get topLevel => false;
+  final DatabaseConnection connection;
 
-  /// The database that this query engine is attached to.
+  /// The database class that this user is attached to.
   @visibleForOverriding
   GeneratedDatabase get attachedDatabase;
 
-  /// We can detect when a user called methods on the wrong [QueryEngine]
-  /// (e.g. calling [QueryEngine.into] in a transaction, where
-  /// [QueryEngine.into] should have been called instead). See the documentation
-  /// of [topLevel] on how this works.
-  QueryEngine get _resolvedEngine {
-    if (!topLevel) {
-      // called directly in a transaction / other child callback, so use this
-      // instance directly
-      return this;
-    } else {
-      // if an overridden executor has been specified for this zone (this will
-      // happen for transactions), use that one.
-      final resolved = Zone.current[_zoneRootUserKey];
-      return (resolved as QueryEngine?) ?? this;
-    }
+  /// The type system to use with this database. The type system is responsible
+  /// for mapping Dart objects into sql expressions and vice-versa.
+  SqlTypeSystem get typeSystem => connection.typeSystem;
+
+  /// The executor to use when queries are executed.
+  QueryExecutor get executor => connection.executor;
+
+  /// Manages active streams from select statements.
+  @visibleForTesting
+  @protected
+  StreamQueryStore get streamQueries => connection.streamQueries;
+
+  /// Constructs a database connection user, which is responsible to store query
+  /// streams, wrap the underlying executor and perform type mapping.
+  DatabaseConnectionUser(SqlTypeSystem typeSystem, QueryExecutor executor,
+      {StreamQueryStore? streamQueries})
+      : connection = DatabaseConnection(
+            typeSystem, executor, streamQueries ?? StreamQueryStore());
+
+  /// Creates another [DatabaseConnectionUser] by referencing the implementation
+  /// from the [other] user.
+  DatabaseConnectionUser.delegate(DatabaseConnectionUser other,
+      {SqlTypeSystem? typeSystem,
+      QueryExecutor? executor,
+      StreamQueryStore? streamQueries})
+      : connection = DatabaseConnection(
+          typeSystem ?? other.connection.typeSystem,
+          executor ?? other.connection.executor,
+          streamQueries ?? other.connection.streamQueries,
+        );
+
+  /// Constructs a [DatabaseConnectionUser] that will use the provided
+  /// [DatabaseConnection].
+  DatabaseConnectionUser.fromConnection(this.connection);
+
+  /// Creates and auto-updating stream from the given select statement. This
+  /// method should not be used directly.
+  Stream<T> createStream<T>(QueryStreamFetcher<T> stmt) =>
+      streamQueries.registerStream(stmt);
+
+  /// Creates a copy of the table with an alias so that it can be used in the
+  /// same query more than once.
+  ///
+  /// Example which uses the same table (here: points) more than once to
+  /// differentiate between the start and end point of a route:
+  /// ```
+  /// var source = alias(points, 'source');
+  /// var destination = alias(points, 'dest');
+  ///
+  /// select(routes).join([
+  ///   innerJoin(source, routes.startPoint.equalsExp(source.id)),
+  ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
+  /// ]);
+  /// ```
+  T alias<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table, String alias) {
+    return table.createAlias(alias).asDslTable;
+  }
+
+  DatabaseConnectionUser get _resolvedEngine {
+    return (Zone.current[_zoneRootUserKey] as DatabaseConnectionUser?) ?? this;
   }
 
   /// Marks the tables as updated. This method will be called internally
@@ -335,7 +362,7 @@ mixin QueryEngine on DatabaseConnectionUser {
       final transactionExecutor = executor.beginTransaction();
       final transaction = Transaction(this, transactionExecutor);
 
-      return _runEngineZoned(transaction, () async {
+      return _runConnectionZoned(transaction, () async {
         var success = false;
         try {
           final result = await action();
@@ -396,13 +423,11 @@ mixin QueryEngine on DatabaseConnectionUser {
   }
 
   /// Runs [calculation] in a forked [Zone] that has its [_resolvedEngine] set
-  /// to the [engine].
-  ///
-  /// For details, see the documentation at [topLevel].
+  /// to the [user].
   @protected
-  Future<T> _runEngineZoned<T>(
-      QueryEngine engine, Future<T> Function() calculation) {
-    return runZoned(calculation, zoneValues: {_zoneRootUserKey: engine});
+  Future<T> _runConnectionZoned<T>(
+      DatabaseConnectionUser user, Future<T> Function() calculation) {
+    return runZoned(calculation, zoneValues: {_zoneRootUserKey: user});
   }
 
   /// Will be used by generated code to resolve inline Dart components in sql.

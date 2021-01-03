@@ -15,8 +15,9 @@ class GenerationContext {
   /// The [SqlDialect] that should be respected when generating the query.
   final SqlDialect dialect;
 
-  /// The actual [QueryEngine] that's going to execute the generated query.
-  final QueryEngine? executor;
+  /// The actual [DatabaseConnectionUser] that's going to execute the generated
+  /// query.
+  final DatabaseConnectionUser? executor;
 
   final List<dynamic> _boundVariables = [];
 

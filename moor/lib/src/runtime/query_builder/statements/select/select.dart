@@ -12,9 +12,9 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// `SELECT DISTINCT` statement in sql). Defaults to false.
   final bool distinct;
 
-  /// Used internally by moor, users will want to call [QueryEngine.select]
-  /// instead.
-  SimpleSelectStatement(QueryEngine database, TableInfo<T, D> table,
+  /// Used internally by moor, users will want to call
+  /// [DatabaseConnectionUser.select] instead.
+  SimpleSelectStatement(DatabaseConnectionUser database, TableInfo<T, D> table,
       {this.distinct = false})
       : super(database, table);
 

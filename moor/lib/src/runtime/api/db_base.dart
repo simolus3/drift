@@ -11,11 +11,7 @@ Map<Type, int> _openedDbCount = {};
 
 /// A base class for all generated databases.
 abstract class GeneratedDatabase extends DatabaseConnectionUser
-    with QueryEngine
     implements QueryExecutorUser {
-  @override
-  bool get topLevel => true;
-
   @override
   GeneratedDatabase get attachedDatabase => this;
 
@@ -112,7 +108,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   @override
   @nonVirtual
   Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) {
-    return _runEngineZoned(BeforeOpenRunner(this, executor), () async {
+    return _runConnectionZoned(BeforeOpenRunner(this, executor), () async {
       if (details.wasCreated) {
         final migrator = createMigrator();
         await _resolvedMigration.onCreate(migrator);

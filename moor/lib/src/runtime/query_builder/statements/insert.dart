@@ -4,7 +4,7 @@ part of '../query_builder.dart';
 class InsertStatement<T extends Table, D extends DataClass> {
   /// The database to use then executing this statement
   @protected
-  final QueryEngine database;
+  final DatabaseConnectionUser database;
 
   /// The table we're inserting into
   @protected

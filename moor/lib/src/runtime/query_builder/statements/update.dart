@@ -4,7 +4,7 @@ part of '../query_builder.dart';
 class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// Used internally by moor, construct an update statement
-  UpdateStatement(QueryEngine database, TableInfo<T, D> table)
+  UpdateStatement(DatabaseConnectionUser database, TableInfo<T, D> table)
       : super(database, table);
 
   late Map<String, Expression> _updatedFields;

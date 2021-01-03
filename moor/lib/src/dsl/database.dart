@@ -7,7 +7,7 @@ part of 'dsl.dart';
 /// run the build runner using (flutter packages) pub run build_runner build.
 /// Moor will have generated a class that has the same name as your database
 /// class, but with `_$` as a prefix. You can now extend that class and provide
-/// a [QueryEngine] to use moor:
+/// a [QueryExecutor] to use moor:
 /// ```dart
 /// class MyDatabase extends _$MyDatabase { // _$MyDatabase was generated
 ///   MyDatabase():
