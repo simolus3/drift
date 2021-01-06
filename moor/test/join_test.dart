@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
@@ -6,8 +5,8 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
+  late TodoDb db;
+  late MockExecutor executor;
 
   setUp(() {
     executor = MockExecutor();
@@ -80,7 +79,7 @@ void main() {
     verify(executor.runSelect(argThat(contains('DISTINCT')), any));
   });
 
-  test('reports null when no data is available', () async {
+  test('throws when no data is available', () async {
     when(executor.runSelect(any, any)).thenAnswer((_) {
       return Future.value([
         {
@@ -101,7 +100,7 @@ void main() {
     expect(result, hasLength(1));
 
     final row = result.single;
-    expect(row.readTable(db.categories), null);
+    expect(() => row.readTable(db.categories), throwsArgumentError);
     expect(
         row.readTable(db.todosTable),
         TodoEntry(
@@ -258,7 +257,7 @@ void main() {
         'GROUP BY c.id HAVING COUNT(t.id) >= ?;',
         [10]));
 
-    expect(result.readTable(todos), isNull);
+    expect(result.readTableOrNull(todos), isNull);
     expect(
       result.readTable(categories),
       Category(
@@ -272,20 +271,27 @@ void main() {
 
   test('selectWithoutResults', () async {
     final avgLength = db.todosTable.content.length.avg();
-    final query = db.selectOnly(db.todosTable)..addColumns([avgLength]);
+    final maxLength = db.todosTable.content.length.max();
+    final minLength = db.todosTable.content.length.min();
+    final query = db.selectOnly(db.todosTable)
+      ..addColumns([avgLength, maxLength]);
 
     when(executor.runSelect(any, any)).thenAnswer((_) async {
       return [
-        {'c0': 3.0}
+        {'c0': 3.0, 'c1': null},
       ];
     });
 
-    final result = await query.map((row) => row.read(avgLength)).getSingle();
+    final row = await query.getSingle();
 
     verify(executor.runSelect(
-        'SELECT AVG(LENGTH(todos.content)) AS "c0" FROM todos;', []));
+        'SELECT AVG(LENGTH(todos.content)) AS "c0", '
+        'MAX(LENGTH(todos.content)) AS "c1" FROM todos;',
+        []));
 
-    expect(result, 3.0);
+    expect(row.read(avgLength), 3.0);
+    expect(row.read(maxLength), isNull);
+    expect(() => row.read(minLength), throwsArgumentError);
   });
 
   test('join on JoinedSelectStatement', () async {

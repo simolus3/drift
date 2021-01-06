@@ -5,6 +5,8 @@
 - __Breaking__: Removed `QueryEngine`, its methods have been moved to `DatabaseConnectionUser`
 - __Breaking__: Changed the `args` parameter in `QueryExecutor` methods to `List<Object?>`
 - __Breaking__: Removed the second type parameter from `TypedResult.read`
+- __Breaking__: `TypedResult.read` and `TypedResult.readTable` now throw if the row does not contain
+  the requested table or expression (they used to return `null`).
 - __Breaking__: `MoorWebStorage.indexedDbIfSupported` now returns a future
 - Support null safety
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`

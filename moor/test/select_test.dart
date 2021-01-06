@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 import 'package:mockito/mockito.dart';
@@ -23,8 +22,8 @@ final _todoEntry = TodoEntry(
 );
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
+  late TodoDb db;
+  late MockExecutor executor;
 
   setUp(() {
     executor = MockExecutor();

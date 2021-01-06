@@ -126,27 +126,51 @@ String _beginOfSelect(bool distinct) {
 /// multiple entities.
 class TypedResult {
   /// Creates the result from the parsed table data.
-  TypedResult(this._parsedData, this.rawData, [this._parsedExpressions]);
+  TypedResult(this._parsedData, this.rawData,
+      [this._parsedExpressions = const {}]);
 
   final Map<TableInfo, dynamic> _parsedData;
-  final Map<Expression, dynamic>? _parsedExpressions;
+  final Map<Expression, dynamic> _parsedExpressions;
 
   /// The raw data contained in this row.
   final QueryRow rawData;
 
   /// Reads all data that belongs to the given [table] from this row.
+  ///
+  /// If this row does not contain non-null columns of the [table], this method
+  /// will throw an [ArgumentError]. Use [readTableOrNull] for nullable tables.
   D readTable<T extends Table, D extends DataClass>(TableInfo<T, D> table) {
+    if (!_parsedData.containsKey(table)) {
+      throw ArgumentError(
+          'Invalid table passed to readTable: ${table.tableName}. This row '
+          'does not contain values for that table.');
+    }
+
     return _parsedData[table] as D;
+  }
+
+  /// Reads all data that belongs to the given [table] from this row.
+  ///
+  /// Returns `null` if this row does not contain non-null values of the
+  /// [table].
+  ///
+  /// See also: [readTable], which throws instead of returning `null`.
+  D? readTableOrNull<T extends Table, D extends DataClass>(
+      TableInfo<T, D> table) {
+    return _parsedData[table] as D?;
   }
 
   /// Reads a single column from an [expr]. The expression must have been added
   /// as a column, for instance via [JoinedSelectStatement.addColumns].
   ///
   /// To access the underlying columns directly, use [rawData].
-  D? read<D>(Expression<D> expr) {
-    if (_parsedExpressions != null) {
-      return _parsedExpressions![expr] as D;
+  D read<D>(Expression<D> expr) {
+    if (_parsedExpressions.containsKey(expr)) {
+      return _parsedExpressions[expr] as D;
     }
-    return null;
+
+    throw ArgumentError(
+        'Invalid call to read(): $expr. This result set does not have a column '
+        'for that expression.');
   }
 }

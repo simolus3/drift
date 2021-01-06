@@ -212,8 +212,6 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
           readTables[table] = table.map(row, tablePrefix: table.$tableName);
-        } else {
-          readTables[table] = null;
         }
       }
 
