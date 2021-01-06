@@ -142,9 +142,9 @@ void main() {
     verify(executor.transactions.rollback());
   });
 
-  test('transactions notify about table udpates after completing', () async {
-    when(executor.transactions.runUpdate(any, any))
-        .thenAnswer((_) => Future.value(2));
+  test('transactions notify about table updates after completing', () async {
+    final transactions = executor.transactions;
+    when(transactions.runUpdate(any, any)).thenAnswer((_) => Future.value(2));
 
     await db.transaction(() async {
       await db
