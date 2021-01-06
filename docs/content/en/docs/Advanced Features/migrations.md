@@ -278,7 +278,7 @@ You can put this test code whereever you want, but it makes sense to put it in a
 If we wanted to write them to `test/generated_migrations/`, we could use
 
 ```
-$ dart pub run moor_generator schema generate moor_migrations/ test/generated/
+$ dart pub run moor_generator schema generate moor_schemas/ test/generated/
 ```
 
 ### Writing tests
