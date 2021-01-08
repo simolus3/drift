@@ -93,6 +93,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'modules': 'sqlite_modules',
     'rawResultSetData': 'raw_result_set_data',
     'generateValuesInCopyWith': 'generate_values_in_copy_with',
+    'generateNamedParameters': 'named_parameters',
   });
 }
 

@@ -250,7 +250,7 @@ class QueryWriter {
     var needsComma = false;
     for (final element in query.elements) {
       // Placeholders with a default value generate optional (and thus, named)
-      // parameters. Since moor 3.5, we have an option to also generate named
+      // parameters. Since moor 4, we have an option to also generate named
       // parameters for named variables.
       final isNamed =
           (element is FoundDartPlaceholder && element.defaultValue != null) ||
@@ -277,23 +277,34 @@ class QueryWriter {
         if (needsComma) _buffer.write(', ');
         needsComma = true;
 
-        final type = optional.dartTypeCode(scope.generationOptions);
-        if (optional is FoundDartPlaceholder && optional.defaultValue != null) {
-          // Wrap the default expression in parentheses to avoid issues with the
-          // surrounding precedence in SQL.
-          final defaultSql =
-              "'(${escapeForDart(optional.defaultValue.toSql())})'";
-          _buffer.write('$type ${optional.dartParameterName} = '
-              'const CustomExpression($defaultSql)');
-        } else {
-          // No default value, this element is required if it's not nullable
-          final isNullable =
-              optional is FoundVariable && optional.nullableInDart;
-          if (!isNullable) {
-            _buffer..write(scope.required)..write(' ');
-          }
+        String defaultCode;
 
-          _buffer.write('$type ${optional.dartParameterName}');
+        if (optional is FoundDartPlaceholder) {
+          final kind = optional.type;
+          if (kind == DartPlaceholderType.expression &&
+              optional.defaultValue != null) {
+            // Wrap the default expression in parentheses to avoid issues with
+            // the surrounding precedence in SQL.
+            final defaultSql =
+                "'(${escapeForDart(optional.defaultValue.toSql())})'";
+            defaultCode = 'const CustomExpression($defaultSql)';
+          } else if (kind == DartPlaceholderType.orderBy) {
+            defaultCode = 'const OrderBy.nothing()';
+          }
+        }
+
+        final type = optional.dartTypeCode(scope.generationOptions);
+
+        // No default value, this element is required if it's not nullable
+        final isNullable = optional is FoundVariable && optional.nullableInDart;
+        final isRequired = !isNullable && defaultCode == null;
+        if (isRequired) {
+          _buffer..write(scope.required)..write(' ');
+        }
+
+        _buffer.write('$type ${optional.dartParameterName}');
+        if (defaultCode != null) {
+          _buffer..write(' =  ')..write(defaultCode);
         }
       }
 

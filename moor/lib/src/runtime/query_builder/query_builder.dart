@@ -46,6 +46,9 @@ part 'migration.dart';
 
 /// A component is anything that can appear in a sql query.
 abstract class Component {
+  /// Default, constant constructor.
+  const Component();
+
   /// Writes this component into the [context] by writing to its
   /// [GenerationContext.buffer] or by introducing bound variables. When writing
   /// into the buffer, no whitespace around the this component should be

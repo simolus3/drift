@@ -56,14 +56,18 @@ class OrderBy extends Component {
   final List<OrderingTerm> terms;
 
   /// Constructs an order by clause by the [terms].
-  OrderBy(this.terms);
+  const OrderBy(this.terms);
+
+  /// Orders by nothing.
+  ///
+  /// In this case, the ordering of result rows is undefined.
+  const OrderBy.nothing() : this(const []);
 
   @override
-  void writeInto(GenerationContext context, {bool writeOrderBy = true}) {
-    if (writeOrderBy) {
-      context.buffer.write('ORDER BY ');
-    }
+  void writeInto(GenerationContext context) {
+    if (terms.isEmpty) return;
 
+    context.buffer.write('ORDER BY ');
     _writeCommaSeparated(context, terms);
   }
 }

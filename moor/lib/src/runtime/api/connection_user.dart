@@ -437,14 +437,7 @@ abstract class DatabaseConnectionUser {
     if (hasMultipleTables != null) {
       context.hasMultipleTables = hasMultipleTables;
     }
-
-    // we don't want ORDER BY clauses to write the ORDER BY tokens because those
-    // are already declared in sql
-    if (component is OrderBy) {
-      component.writeInto(context, writeOrderBy: false);
-    } else {
-      component.writeInto(context);
-    }
+    component.writeInto(context);
 
     return context;
   }

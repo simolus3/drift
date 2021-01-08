@@ -1589,14 +1589,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readMultiple(List<String> var1,
-      {required OrderBy clause}) {
+      {OrderBy clause = const OrderBy.nothing()}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
     final generatedclause = $write(clause);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
-        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ORDER BY ${generatedclause.sql}',
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables

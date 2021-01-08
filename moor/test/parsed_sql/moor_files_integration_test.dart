@@ -131,6 +131,11 @@ void main() {
     verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
   });
 
+  test('order by-params are ignored by default', () async {
+    await db.readMultiple(['foo']).get();
+    verify(mock.runSelect(argThat(isNot(contains('with_defaults.a'))), any));
+  });
+
   test('runs queries with nested results', () async {
     const row = {
       'a': 'text for a',
