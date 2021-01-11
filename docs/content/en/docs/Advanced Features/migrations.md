@@ -284,7 +284,7 @@ You can put this test code whereever you want, but it makes sense to put it in a
 If we wanted to write them to `test/generated_migrations/`, we could use
 
 ```
-$ dart pub run moor_generator schema generate moor_schemas/ test/generated_migrations/
+$ dart pub run moor_generator schema generate moor_schemas/ test/generated/
 ```
 
 ### Writing tests
@@ -298,7 +298,7 @@ import 'package:test/test.dart';
 import 'package:moor_generator/api/migrations.dart';
 
 // The generated directory from before.
-import 'generated_migrations/schema.dart';
+import 'generated/schema.dart';
 
 void main() {
   SchemaVerifier verifier;

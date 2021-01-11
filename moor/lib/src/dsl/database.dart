@@ -70,7 +70,7 @@ class UseMoor {
 /// if you have a class called `MyDatabase`, this could look like this:
 /// ```dart
 /// class MyDao extends DatabaseAccessor<MyDatabase> {
-///   TodosDao(MyDatabase db) : super(db);
+///   MyDao(MyDatabase db) : super(db);
 /// }
 /// ```
 /// After having run the build step once more, moor will have generated a mixin

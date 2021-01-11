@@ -131,7 +131,7 @@ Note that the primary key must essentially be constant so that the generator can
 Moor supports a variety of column types out of the box. You can store custom classes in columns by using
 [type converters]({{<relref "../Advanced Features/type_converters.md">}}).
 
-| Dart type    | Colum         | Corresponding SQLite type                           |
+| Dart type    | Column        | Corresponding SQLite type                           |
 |--------------|---------------|-----------------------------------------------------|
 | `int`        | `integer()`   | `INTEGER`                                           |
 | `double`     | `real()`      | `REAL`                                              |
