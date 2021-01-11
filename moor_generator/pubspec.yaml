@@ -24,7 +24,7 @@ dependencies:
   # Moor-specific analysis and apis
   moor: ^4.0.0-nullsafety
   sqlite3: ^0.1.6
-  sqlparser: ^0.12.0-dev
+  sqlparser: ^0.12.0-nullsafety.0
 
   # Dart analysis
   analyzer: ">=0.40.0 <0.42.0"
@@ -47,8 +47,8 @@ dev_dependencies:
 executables:
   moor_generator:
 
-dependency_overrides:
-  sqlparser:
-   path: ../sqlparser
-  moor:
-    path: ../moor
+#dependency_overrides:
+#  sqlparser:
+#   path: ../sqlparser
+#  moor:
+#    path: ../moor

@@ -1,6 +1,7 @@
-## 4.0.0
+## 4.0.0-dev
 
 - Remove the `legacy_type_inference` option
+- Support moor 4
 
 ## 3.4.0
 

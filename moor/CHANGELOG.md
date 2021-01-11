@@ -1,4 +1,4 @@
-## unreleased (breaking - 4.0)
+## 4.0.0-nullsafety.1
 
 - __Breaking__: `getSingle()` and `watchSingle()` are now non-nullable and throw for empty results.
   Use `getSingleOrNull()` and `watchSingleOrNull()` for the old behavior.
