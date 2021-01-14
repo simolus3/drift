@@ -102,16 +102,13 @@ class PreprocessBuilder extends Builder {
     // we can now resolve the library we just wrote
 
     final createdLibrary = await buildStep.resolver.libraryFor(tempDartAsset);
-    final resolveResult = await createdLibrary.session
-        .getResolvedLibraryByElement(createdLibrary);
-
     final serializer = TypeSerializer(buildStep.resolver);
     final codeToType = <String, SerializedType>{};
 
     for (var i = 0; i < dartLexemes.length; i++) {
       final member =
           _findVariableDefinition(_nameForDartExpr(i), createdLibrary);
-      final node = resolveResult.getElementDeclaration(member).node
+      final node = await buildStep.resolver.astNodeFor(member, resolve: true)
           as VariableDeclaration;
 
       final type = node.initializer.staticType;
