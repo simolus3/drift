@@ -1,3 +1,8 @@
+## 3.4.1
+
+- Fix `InconsistentAnalysisException` in some cases
+- Support `cli_tool` versions `0.2.x`
+
 ## 3.4.0
 
 - Add experimental apis for schema verification
