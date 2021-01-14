@@ -8,6 +8,8 @@
 - __Breaking__: `TypedResult.read` and `TypedResult.readTable` now throw if the row does not contain
   the requested table or expression (they used to return `null`).
 - __Breaking__: `MoorWebStorage.indexedDbIfSupported` now returns a future
+- __Breaking__: `getSingle` and `watchSingle` (and their `orNull()` variants) are now an extension
+  on `Selectable`. Import `package:moor/moor.dart` to files using those methods.
 - Support null safety
 - Changed the sql representation of text types from `VARCHAR` to `TEXT`
 - Added extensions for `isNull` and `isNotNull`
