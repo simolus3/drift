@@ -10,16 +10,16 @@ environment:
 
 dependencies:
   collection: ^1.14.0
-  recase: '>=2.0.1 <4.0.0'
+  recase: '>=2.0.1 <5.0.0'
   meta: ^1.1.0
   path: ^1.6.0
-  json_annotation: ^3.0.0
-  stream_transform: '>=0.0.20 <2.0.0'
+  json_annotation: ^4.0.0-nullsafety
+  stream_transform: '>=0.1.0 <3.0.0'
 
   # CLI
-  args: ^1.5.0
-  logging: '>=0.11.0 <1.0.0'
-  cli_util: '>=0.1.0 <0.3.0'
+  args: ">=1.5.0 <3.0.0"
+  logging: '>=0.11.0 <2.0.0'
+  cli_util: '>=0.2.0 <0.4.0'
 
   # Moor-specific analysis and apis
   moor: ^4.0.0-nullsafety
@@ -42,13 +42,13 @@ dev_dependencies:
   test: ^1.6.0
   build_runner: ^1.6.7
   build_test: ^0.10.10
-  json_serializable: ^3.0.0
+  json_serializable: ^4.0.0-nullsafety
 
 executables:
   moor_generator:
 
-#dependency_overrides:
-#  sqlparser:
-#   path: ../sqlparser
-#  moor:
-#    path: ../moor
+dependency_overrides:
+  sqlparser:
+   path: ../sqlparser
+  moor:
+    path: ../moor
