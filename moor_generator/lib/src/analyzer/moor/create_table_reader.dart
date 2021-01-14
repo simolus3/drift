@@ -210,10 +210,21 @@ class CreateTableReader {
   Future<UsedTypeConverter> _readTypeConverter(
       ColumnType sqlType, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;
-    final type = await step.task.backend.resolveTypeOf(step.file.uri, code);
 
-    // todo report lint for any of those cases or when resolveTypeOf throws
+    DartType type;
+    try {
+      type = await step.task.backend.resolveTypeOf(step.file.uri, code);
+    } on CannotLoadTypeException catch (e) {
+      step.reportError(ErrorInMoorFile(span: mapper.span, message: e.msg));
+      return null;
+    }
+
     if (type is! InterfaceType) {
+      step.reportError(
+        ErrorInMoorFile(
+            span: mapper.span,
+            message: 'Must be an interface type (backed by a class)'),
+      );
       return null;
     }
 

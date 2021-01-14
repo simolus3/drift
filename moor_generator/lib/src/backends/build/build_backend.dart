@@ -76,7 +76,8 @@ class BuildBackendTask extends BackendTask {
         _resolve(context).changeExtension('.dart_in_moor');
 
     if (!await step.canRead(preparedHelperFile)) {
-      throw AssetNotFoundException(preparedHelperFile);
+      throw CannotLoadTypeException('Generated helper file not found. '
+          'Check the build log for earlier errors.');
     }
 
     final content = await step.readAsString(preparedHelperFile);

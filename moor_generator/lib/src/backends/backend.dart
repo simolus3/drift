@@ -30,7 +30,7 @@ abstract class BackendTask {
   Future<String> readMoor(Uri uri);
 
   Future<DartType> resolveTypeOf(Uri context, String dartExpression) {
-    throw UnsupportedError('Resolving dart expressions not supported');
+    throw CannotLoadTypeException('Resolving dart expressions not supported');
   }
 
   Future<AstNode> loadElementDeclaration(Element element) async {
@@ -58,4 +58,10 @@ class NotALibraryException implements Exception {
   final Uri uri;
 
   NotALibraryException(this.uri);
+}
+
+class CannotLoadTypeException implements Exception {
+  final String msg;
+
+  CannotLoadTypeException(this.msg);
 }

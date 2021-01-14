@@ -41,7 +41,7 @@ dependencies:
 dev_dependencies:
   test: ^1.6.0
   build_runner: ^1.6.7
-  build_test: ^0.10.10
+  build_test: ^1.3.4
   json_serializable: ^4.0.0-nullsafety
 
 executables:
