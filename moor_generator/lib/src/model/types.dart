@@ -44,7 +44,8 @@ extension OperationOnTypes on HasType {
   /// [int].
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     if (typeConverter != null) {
-      final needsSuffix = nullable && !typeConverter.hasNullableDartType;
+      final needsSuffix =
+          options.nnbd && nullable && !typeConverter.hasNullableDartType;
       final baseType = typeConverter.mappedType.codeString(options);
 
       return needsSuffix ? '$baseType?' : baseType;
