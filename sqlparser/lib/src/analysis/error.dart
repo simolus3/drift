@@ -59,11 +59,11 @@ class UnresolvedReferenceError extends AnalysisError {
 }
 
 enum AnalysisErrorType {
+  duplicatePrimaryKeyDeclaration,
   referencedUnknownTable,
   referencedUnknownColumn,
   ambiguousReference,
   synctactic,
-
   unknownFunction,
   compoundColumnCountMismatch,
   cteColumnCountMismatch,

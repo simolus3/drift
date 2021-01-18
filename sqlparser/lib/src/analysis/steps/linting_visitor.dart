@@ -9,6 +9,39 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   LintingVisitor(this.options, this.context);
 
   @override
+  void visitCreateTableStatement(CreateTableStatement e, void arg) {
+    var hasPrimaryKeyDeclaration = false;
+
+    // Ensure that a table declaration only has one PRIMARY KEY constraint
+    void handlePrimaryKeyNode(AstNode node) {
+      if (hasPrimaryKeyDeclaration) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.duplicatePrimaryKeyDeclaration,
+          message: 'Duplicate PRIMARY KEY constraint found',
+          relevantNode: node,
+        ));
+      }
+      hasPrimaryKeyDeclaration = true;
+    }
+
+    for (final column in e.columns) {
+      for (final constraint in column.constraints) {
+        if (constraint is PrimaryKeyColumn) {
+          handlePrimaryKeyNode(constraint);
+        }
+      }
+    }
+
+    for (final constraint in e.tableConstraints) {
+      if (constraint is KeyClause && constraint.isPrimaryKey) {
+        handlePrimaryKeyNode(constraint);
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitCreateViewStatement(CreateViewStatement e, void arg) {
     final resolvedColumns = e.query.resolvedColumns;
     if (e.columns == null || resolvedColumns == null) {
