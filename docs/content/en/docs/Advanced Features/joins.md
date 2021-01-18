@@ -34,8 +34,9 @@ Stream<List<EntryWithCategory>> entriesWithCategory() {
 ```
 
 ## Parsing results
+
 Calling `get()` or `watch` on a select statement with join returns a `Future` or `Stream` of
-`List<TypedResult>` respectively. Each `TypedResult` represents a row from which data can be 
+`List<TypedResult>`, respectively. Each `TypedResult` represents a row from which data can be 
 read. It contains a `rawData` getter to obtain the raw columns. But more importantly, the
 `readTable` method can be used to read a data class from a table.
 
@@ -45,14 +46,15 @@ return query.watch().map((rows) {
   return rows.map((row) {
     return EntryWithCategory(
       row.readTable(todos),
-      row.readTable(categories),
+      row.readTableOrNull(categories),
     );
   }).toList();
 });
 ```
 
-_Note_: `readTable` returns `null` when an entity is not present in the row. For instance, todo entries
-might not be in any category.For a row without a category, `row.readTable(categories)` would return `null`.
+_Note_: `readTable` will throw an `ArgumentError` when a table is not present in the row. For instance,
+todo entries might not be in any category. To account for that, we use `row.readTableOrNull` to load
+categories.
 
 ## Custom columns
 

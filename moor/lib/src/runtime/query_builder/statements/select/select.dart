@@ -143,7 +143,8 @@ class TypedResult {
     if (!_parsedData.containsKey(table)) {
       throw ArgumentError(
           'Invalid table passed to readTable: ${table.tableName}. This row '
-          'does not contain values for that table.');
+          'does not contain values for that table. \n'
+          'In moor version 4, you have to use readTableNull for outer joins.');
     }
 
     return _parsedData[table] as D;
