@@ -80,7 +80,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitUpdateStatement(UpdateStatement e, void arg) {
     _addIfResolved(e, e.table);
-    visitChildren(e, arg);
+    visitExcept(e, e.table, arg);
   }
 
   @override
