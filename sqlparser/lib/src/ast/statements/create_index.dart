@@ -48,7 +48,6 @@ class IndexedColumn extends AstNode {
   /// The expression on which the index should be created. Most commonly a
   /// [Reference], for simple column names.
   Expression expression;
-  // nullable
   final OrderingMode? ordering;
 
   IndexedColumn(this.expression, [this.ordering]);
