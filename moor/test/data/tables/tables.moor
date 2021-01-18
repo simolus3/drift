@@ -27,10 +27,11 @@ create table config (
 CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);
 
 CREATE TABLE mytable (
-    someid INTEGER NOT NULL PRIMARY KEY,
+    someid INTEGER NOT NULL,
     sometext TEXT,
     is_inserting BOOLEAN,
-    somedate DATETIME
+    somedate DATETIME,
+    PRIMARY KEY (someid DESC)
 );
 
 CREATE VIRTUAL TABLE email USING fts5(sender, title, body) AS EMail;

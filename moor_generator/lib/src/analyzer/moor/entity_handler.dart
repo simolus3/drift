@@ -31,7 +31,9 @@ class EntityHandler extends BaseAnalyzer {
     for (final entity in file.declaredEntities) {
       if (entity is MoorTable) {
         entity.references.clear();
-        _handleMoorDeclaration<MoorTableDeclaration>(entity, _tables);
+        final node =
+            _handleMoorDeclaration<MoorTableDeclaration>(entity, _tables);
+        _lint(node, entity.sqlName);
       } else if (entity is MoorTrigger) {
         entity.clearResolvedReferences();
 

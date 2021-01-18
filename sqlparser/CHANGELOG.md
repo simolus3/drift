@@ -1,3 +1,8 @@
+## 0.13.0-nullsafety.0
+
+- Parse ordering in table key constraints
+  - Deprecate `KeyClause.indexedColumns` in favor of `KeyClause.columns`
+
 ## 0.12.0-nullsafety.0
 
 - Migrate to null-safety

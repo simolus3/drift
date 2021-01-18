@@ -26,10 +26,12 @@ const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
     'sync_state_implicit INTEGER);';
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
-    'someid INTEGER NOT NULL PRIMARY KEY, '
+    'someid INTEGER NOT NULL, '
     'sometext TEXT, '
     'is_inserting INTEGER, '
-    'somedate INTEGER);';
+    'somedate INTEGER, '
+    'PRIMARY KEY (someid DESC)'
+    ');';
 
 const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
     'fts5(sender, title, body);';
@@ -85,6 +87,7 @@ void main() {
     expect(db.noIds.primaryKey, [db.noIds.payload]);
     expect(db.withDefaults.primaryKey, isEmpty);
     expect(db.config.primaryKey, [db.config.configKey]);
+    expect(db.mytable.primaryKey, [db.mytable.someid]);
   });
 
   test('supports absent values for primary key integers', () async {

@@ -7,6 +7,28 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   ReferenceResolver(this.context);
 
   @override
+  void visitForeignKeyClause(ForeignKeyClause e, void arg) {
+    final table = e.foreignTable.resultSet;
+    if (table == null) {
+      // If the table wasn't found, an earlier step will have reported an error
+      return super.visitForeignKeyClause(e, arg);
+    }
+
+    for (final columnName in e.columnNames) {
+      _resolveReferenceInTable(columnName, table);
+    }
+  }
+
+  void _resolveReferenceInTable(Reference ref, ResultSet resultSet) {
+    final column = resultSet.findColumn(ref.columnName);
+    if (column == null) {
+      _reportUnknownColumnError(ref, columns: resultSet.resolvedColumns);
+    } else {
+      ref.resolved = column;
+    }
+  }
+
+  @override
   void visitReference(Reference e, void arg) {
     if (e.resolved != null) {
       return super.visitReference(e, arg);
@@ -26,12 +48,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
           relevantNode: e,
         ));
       } else {
-        final column = resultSet.findColumn(e.columnName);
-        if (column == null) {
-          _reportUnknownColumnError(e, columns: resultSet.resolvedColumns);
-        } else {
-          e.resolved = column;
-        }
+        _resolveReferenceInTable(e, resultSet);
       }
     } else if (aliasesForRowId.contains(e.columnName.toLowerCase())) {
       // special case for aliases to a rowid

@@ -145,7 +145,7 @@ class SqlEngine {
     final result = parse(sql);
     final analyzed = analyzeParsed(result, stmtOptions: stmtOptions);
 
-    // Add parsing errors that occured to the beginning since they are the most
+    // Add parsing errors that occurred at the beginning since they are the most
     // prominent problems.
     analyzed.errors
         .insertAll(0, result.errors.map((e) => AnalysisError.fromParser(e)));

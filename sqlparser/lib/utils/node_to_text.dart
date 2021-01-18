@@ -1037,7 +1037,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       }
 
       _symbol('(');
-      _join(e.indexedColumns, ',');
+      _join(e.columns, ',');
       _symbol(')');
       _conflictClause(e.onConflict);
     } else if (e is CheckTable) {

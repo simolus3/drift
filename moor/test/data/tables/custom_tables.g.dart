@@ -1062,7 +1062,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   late final GeneratedIntColumn someid = _constructSomeid();
   GeneratedIntColumn _constructSomeid() {
     return GeneratedIntColumn('someid', $tableName, false,
-        declaredAsPrimaryKey: true, $customConstraints: 'NOT NULL PRIMARY KEY');
+        $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
@@ -1136,6 +1136,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
     return Mytable(_db, alias);
   }
 
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY (someid DESC)'];
   @override
   bool get dontWriteConstraints => true;
 }

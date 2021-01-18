@@ -94,9 +94,9 @@ void main() {
           KeyClause(
             null,
             isPrimaryKey: false,
-            indexedColumns: [
-              Reference(columnName: 'score'),
-              Reference(columnName: 'display_name'),
+            columns: [
+              IndexedColumn(Reference(columnName: 'score')),
+              IndexedColumn(Reference(columnName: 'display_name')),
             ],
             onConflict: ConflictClause.abort,
           ),
@@ -120,6 +120,28 @@ void main() {
               ),
             ),
           )
+        ],
+      ),
+    );
+  });
+
+  test('parses KEY ORDERING in PRIMARY KEY clause', () {
+    testStatement(
+      'CREATE TABLE a (b TEXT, PRIMARY KEY (b DESC))',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [ColumnDefinition(columnName: 'b', typeName: 'TEXT')],
+        tableConstraints: [
+          KeyClause(
+            null,
+            isPrimaryKey: true,
+            columns: [
+              IndexedColumn(
+                Reference(columnName: 'b'),
+                OrderingMode.descending,
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -2249,12 +2249,16 @@ class Parser {
         _consume(TokenType.key, 'Expected KEY to start PRIMARY KEY clause');
       }
 
-      final columns = _listColumnsInParentheses(allowEmpty: false);
+      _consume(TokenType.leftParen,
+          'Expected a left parenthesis to start key columns');
+      final columns = _indexedColumns();
+      _consume(
+          TokenType.rightParen, 'Expected a closing parenthesis after columns');
       final conflictClause = _conflictClauseOrNull();
 
       result = KeyClause(name,
           isPrimaryKey: isPrimaryKey,
-          indexedColumns: columns,
+          columns: columns,
           onConflict: conflictClause);
     } else if (_matchOne(TokenType.check)) {
       final expr = _expressionInParentheses();

@@ -41,6 +41,25 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitTableConstraint(TableConstraint e, void arg) {
+    if (e is KeyClause && e.isPrimaryKey) {
+      // Primary key clauses may only include simple columns
+      for (final column in e.columns) {
+        final expr = column.expression;
+        if (expr is! Reference || expr.tableName != null) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.synctactic,
+            message: 'Only column names can be used in a PRIMARY KEY clause',
+            relevantNode: expr,
+          ));
+        }
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitTuple(Tuple e, void arg) {
     if (!e.usedAsRowValue) return;
 

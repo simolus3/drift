@@ -84,15 +84,21 @@ abstract class TableConstraint extends AstNode {
 
 class KeyClause extends TableConstraint {
   final bool isPrimaryKey;
-  final List<Reference> indexedColumns;
+  final List<IndexedColumn> columns;
   final ConflictClause? onConflict;
 
   bool get isUnique => !isPrimaryKey;
 
+  @Deprecated('Use columns instead')
+  List<Reference> get indexedColumns {
+    return [
+      for (final column in columns)
+        if (column.expression is Reference) column.expression as Reference
+    ];
+  }
+
   KeyClause(String? name,
-      {required this.isPrimaryKey,
-      required this.indexedColumns,
-      this.onConflict})
+      {required this.isPrimaryKey, required this.columns, this.onConflict})
       : super(name);
 
   @override
@@ -102,11 +108,11 @@ class KeyClause extends TableConstraint {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(indexedColumns, this, arg);
+    transformer.transformChildren(columns, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes => indexedColumns;
+  Iterable<AstNode> get childNodes => columns;
 }
 
 class CheckTable extends TableConstraint {

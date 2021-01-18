@@ -184,11 +184,13 @@ class CreateTableReader {
 
     for (final keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
       if (keyConstraint.isPrimaryKey) {
-        primaryKeyFromTableConstraint = {
-          for (final column in keyConstraint.indexedColumns)
-            if (foundColumns.containsKey(column.columnName))
-              foundColumns[column.columnName]
-        };
+        primaryKeyFromTableConstraint = {};
+        for (final column in keyConstraint.columns) {
+          final expr = column.expression;
+          if (expr is Reference && foundColumns.containsKey(expr.columnName)) {
+            primaryKeyFromTableConstraint.add(foundColumns[expr.columnName]);
+          }
+        }
       }
     }
 

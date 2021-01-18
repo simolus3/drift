@@ -63,6 +63,13 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
+  @override
+  void visitTableReference(TableReference e, void arg) {
+    if (e.resolved == null) {
+      _resolveTableReference(e);
+    }
+  }
+
   void _addIfResolved(AstNode node, TableReference ref) {
     final table = _resolveTableReference(ref);
     if (table != null) {

@@ -61,6 +61,8 @@ class TableColumn extends Column implements ColumnWithType {
   /// The table this column belongs to.
   Table? table;
 
+  late final bool _isAliasForRowId = _computeIsAliasForRowId();
+
   TableColumn(this.name, this._type, {this.definition});
 
   /// Applies a type hint to this column.
@@ -80,6 +82,10 @@ class TableColumn extends Column implements ColumnWithType {
   /// - if this column has a [PrimaryKeyColumn], the [OrderingMode] of that
   ///   constraint is not [OrderingMode.descending].
   bool isAliasForRowId() {
+    return _isAliasForRowId;
+  }
+
+  bool _computeIsAliasForRowId() {
     if (definition == null ||
         table == null ||
         type.type != BasicType.int ||
@@ -93,8 +99,13 @@ class TableColumn extends Column implements ColumnWithType {
     for (final tableConstraint in columnsWithKey) {
       if (!tableConstraint.isPrimaryKey) continue;
 
-      final columns = tableConstraint.indexedColumns;
-      if (columns.length == 1 && columns.single.columnName == name) {
+      final columns = tableConstraint.columns;
+      if (columns.length != 1) continue;
+
+      final singleColumnExpr = columns.single.expression;
+
+      if (singleColumnExpr is Reference &&
+          singleColumnExpr.columnName == name) {
         return true;
       }
     }

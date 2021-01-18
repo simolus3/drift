@@ -20,6 +20,19 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitCreateTableStatement(CreateTableStatement e, void arg) {
+    final scope = e.scope = e.scope.createChild();
+    final registeredTable = scope.resolve(e.tableName) as Table?;
+
+    if (registeredTable != null) {
+      scope.availableColumns = registeredTable.resolvedColumns;
+      for (final column in registeredTable.resolvedColumns) {
+        scope.register(column.name, column);
+      }
+    }
+  }
+
+  @override
   void visitSelectStatement(SelectStatement e, void arg) {
     // a select statement can appear as a sub query which has its own scope, so
     // we need to fork the scope here. There is one special case though:
