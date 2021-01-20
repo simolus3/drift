@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -130,8 +129,8 @@ void main() {
     });
 
     test('equal when value is null and generic is different', () {
-      const first = Value<int>(null);
-      const equalToFirst = Value<String>(null);
+      const first = Value<int?>(null);
+      const equalToFirst = Value<String?>(null);
 
       expect(first.hashCode, equals(equalToFirst.hashCode));
       expect(first, equals(equalToFirst));

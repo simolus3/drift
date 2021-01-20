@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -7,8 +6,6 @@ import 'data/utils/mocks.dart';
 
 // the content is set to non-null and the title must be between 4 and 16 chars
 // long
-const nullContent =
-    TodosTableCompanion(title: Value('Test'), content: Value(null));
 const absentContent =
     TodosTableCompanion(title: Value('Test'), content: Value.absent());
 const shortTitle =
@@ -19,8 +16,8 @@ const valid =
     TodosTableCompanion(title: Value('Test'), content: Value('Some content'));
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
+  late TodoDb db;
+  late MockExecutor executor;
 
   setUp(() {
     executor = MockExecutor();
@@ -28,11 +25,6 @@ void main() {
   });
 
   test('detects errors on insert', () {
-    expect(
-      () => db.into(db.todosTable).insert(nullContent),
-      throwsA(predicate<InvalidDataException>(
-          (e) => e.message.contains('not nullable'))),
-    );
     expect(
       () => db.into(db.todosTable).insert(absentContent),
       throwsA(predicate<InvalidDataException>(

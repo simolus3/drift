@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
@@ -6,8 +5,8 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
+  late TodoDb db;
+  late MockExecutor executor;
 
   setUp(() {
     executor = MockExecutor();

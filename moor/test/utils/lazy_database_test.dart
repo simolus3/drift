@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:pedantic/pedantic.dart';

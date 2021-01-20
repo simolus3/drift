@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
@@ -9,9 +8,9 @@ import 'data/utils/mocks.dart';
 // ignore_for_file: lines_longer_than_80_chars
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
-  MockStreamQueries streamQueries;
+  late TodoDb db;
+  late MockExecutor executor;
+  late MockStreamQueries streamQueries;
 
   setUp(() {
     executor = MockExecutor();

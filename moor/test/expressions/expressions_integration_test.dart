@@ -1,4 +1,3 @@
-//@dart=2.9
 @TestOn('vm')
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
@@ -7,7 +6,7 @@ import 'package:test/test.dart';
 import '../data/tables/todos.dart';
 
 void main() {
-  TodoDb db;
+  late TodoDb db;
 
   setUp(() async {
     db = TodoDb(VmDatabase.memory());

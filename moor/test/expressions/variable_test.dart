@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:test/test.dart';
 import 'package:moor/moor.dart';
 
@@ -17,7 +16,7 @@ void main() {
   });
 
   test('writes null directly for null values', () {
-    const variable = Variable<String>(null);
+    const variable = Variable<String?>(null);
     final ctx = GenerationContext.fromDb(TodoDb());
 
     variable.writeInto(ctx);

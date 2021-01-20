@@ -27,7 +27,7 @@ dev_dependencies:
   build_runner: ^1.10.4
   test: ^1.16.0-nullsafety
   mockito: ^5.0.0-nullsafety
-  rxdart: ^0.24.0 # used to test compatibility with stream queries
+  rxdart: ^0.26.0-nullsafety
 
 dependency_overrides:
   moor_generator:

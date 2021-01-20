@@ -1,4 +1,3 @@
-//@dart=2.9
 @TestOn('vm')
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart' hide isNull;

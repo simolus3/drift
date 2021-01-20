@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 import 'package:mockito/mockito.dart';
@@ -9,9 +8,9 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
-  MockStreamQueries streamQueries;
+  late TodoDb db;
+  late MockExecutor executor;
+  late MockStreamQueries streamQueries;
 
   setUp(() {
     executor = MockExecutor();
@@ -116,7 +115,7 @@ void main() {
   test('can update with custom companions', () async {
     await db.update(db.todosTable).replace(TodosTableCompanion.custom(
           id: const Variable(4),
-          content: db.todosTable.content,
+          content: db.todosTable.content.dartCast(),
           targetDate: db.todosTable.targetDate + const Duration(days: 1),
         ));
 

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
@@ -7,9 +6,9 @@ import '../data/tables/todos.dart';
 import '../data/utils/mocks.dart';
 
 void main() {
-  MockExecutor read, write;
-  MultiExecutor multi;
-  TodoDb db;
+  late MockExecutor read, write;
+  late MultiExecutor multi;
+  late TodoDb db;
 
   setUp(() {
     read = MockExecutor();

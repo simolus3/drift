@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
@@ -49,15 +48,15 @@ const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
 
 void main() {
   // see ../data/tables/tables.moor
-  MockExecutor mock;
-  CustomTablesDb db;
+  late MockExecutor mock;
+  late CustomTablesDb db;
 
   setUp(() {
     mock = MockExecutor();
     db = CustomTablesDb(mock);
   });
 
-  tearDown(() => db?.close());
+  tearDown(() => db.close());
 
   test('creates everything as specified in .moor files', () async {
     await db.createMigrator().createAll();

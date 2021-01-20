@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:mockito/mockito.dart';
 import 'package:moor/moor.dart';
 import 'package:test/test.dart';
@@ -7,8 +6,8 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  QueryExecutor mockExecutor;
+  late TodoDb db;
+  late QueryExecutor mockExecutor;
 
   setUp(() {
     mockExecutor = MockExecutor();
@@ -129,7 +128,7 @@ void main() {
 
   test('can use migrations inside schema callbacks', () async {
     final executor = MockExecutor();
-    TodoDb db;
+    late TodoDb db;
     db = TodoDb(executor)
       ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {
         await db.transaction(() async {
