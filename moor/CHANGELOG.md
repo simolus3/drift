@@ -1,3 +1,8 @@
+## 4.0.0-nullsafety.2
+
+- Reverted the `SelectableUtils` extension, its members have been added back to the
+  `Selectable` class.
+
 ## 4.0.0-nullsafety.1
 
 - __Breaking__: `getSingle()` and `watchSingle()` are now non-nullable and throw for empty results.

@@ -75,11 +75,7 @@ abstract class Selectable<T> {
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
   Stream<List<T>> watch();
-}
 
-/// Defines extensions to only get a single element from a query, or to map
-/// selectables.
-extension SelectableUtils<T> on Selectable<T> {
   /// Executes this statement, like [get], but only returns one value. If the
   /// query returns no or too many rows, the returned future will complete with
   /// an error.

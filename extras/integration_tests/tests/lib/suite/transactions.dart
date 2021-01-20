@@ -1,4 +1,3 @@
-import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 import 'package:tests/data/sample_data.dart' as people;
 import 'package:tests/database/database.dart';
