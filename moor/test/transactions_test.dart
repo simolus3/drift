@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 @TestOn('!browser') // todo: Figure out why this doesn't run in js
@@ -27,9 +26,9 @@ import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
 
 void main() {
-  TodoDb db;
-  MockExecutor executor;
-  MockStreamQueries streamQueries;
+  late TodoDb db;
+  late MockExecutor executor;
+  late MockStreamQueries streamQueries;
 
   setUp(() {
     executor = MockExecutor();
@@ -43,7 +42,7 @@ void main() {
     // create a database without mocked stream queries
     db = TodoDb(MockExecutor());
 
-    Stream<int> stream;
+    late Stream<int?> stream;
 
     final didSetUpStream = Completer<void>();
     final makeUpdate = Completer<void>();
@@ -92,7 +91,7 @@ void main() {
   });
 
   test('stream queries terminate on exceptional transaction', () async {
-    Stream stream;
+    late Stream stream;
 
     try {
       await db.transaction(() async {

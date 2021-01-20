@@ -129,10 +129,10 @@ class Value<T> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Value && present == other.present && value == other.value;
+      other is Value && present == other.present && _value == other._value;
 
   @override
-  int get hashCode => present.hashCode ^ value.hashCode;
+  int get hashCode => present.hashCode ^ _value.hashCode;
 }
 
 /// Serializer responsible for mapping atomic types from and to json.

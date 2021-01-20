@@ -94,6 +94,15 @@ class MockTransactionExecutor extends MockExecutor
     when(send()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
   }
+
+  @override
+  Future<void> send() {
+    return _nsm(Invocation.method(#send, []), Future.value(null));
+  }
+
+  @override
+  Future<void> rollback() =>
+      _nsm(Invocation.method(#rollback, []), Future.value(null));
 }
 
 class MockStreamQueries extends Mock implements StreamQueryStore {

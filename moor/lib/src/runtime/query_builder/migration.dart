@@ -146,23 +146,23 @@ class Migrator {
 
       for (final row in schemaQuery) {
         final type = row.readString('type');
-        final sql = row.readString('sql');
+        final sql = row.read<String?>('sql');
         final name = row.readString('name');
+
+        if (sql == null) {
+          // These indexes are created by sqlite to enforce different kinds of
+          // special constraints.
+          // They do not have any SQL create statement as they are created
+          // automatically by the constraints on the table.
+          // They can not be re-created and need to be skipped.
+          assert(name.startsWith('sqlite_autoindex'));
+          continue;
+        }
 
         switch (type) {
           case 'trigger':
           case 'view':
-            createAffected.add(sql);
-            break;
           case 'index':
-            if (name.startsWith('sqlite_autoindex')) {
-              // These indexes are created by sqlite to enforce
-              // different kinds of special constraints.
-              // They do not have any SQL create statement as they are
-              // created automatically by the constraints on the table.
-              // They can not be re-created and need to be skipped.
-              break;
-            }
             createAffected.add(sql);
             break;
         }
