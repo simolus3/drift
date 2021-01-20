@@ -96,6 +96,18 @@ For custom selects, you should use the `readsFrom` parameter to specify from whi
 reading. When using a `Stream`, moor will be able to know after which updates the stream should emit
 items. 
 
+You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
+
+```dart
+Stream<int> amountOfTodosInCategory(int id) {
+  return customSelect(
+    'SELECT COUNT(*) AS c FROM todos WHERE category = ?',
+    variables: [Variable.withInt(id)],
+    readsFrom: {todos},
+  ).map((row) => row.readInt('c')).watch();
+}
+```
+
 ## Custom update statements
 For update and delete statements, you can use `customUpdate`. Just like `customSelect`, that method
 also takes a sql statement and optional variables. You can also tell moor which tables will be
