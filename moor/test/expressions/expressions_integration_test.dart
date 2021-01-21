@@ -19,6 +19,11 @@ void main() {
 
   tearDown(() => db.close());
 
+  Future<T> eval<T>(Expression<T> expr) {
+    final query = db.selectOnly(db.users)..addColumns([expr]);
+    return query.getSingle().then((row) => row.read(expr));
+  }
+
   test('plus and minus on DateTimes', () async {
     const nowExpr = currentDateAndTime;
     final tomorrow = nowExpr + const Duration(days: 1);
@@ -33,31 +38,40 @@ void main() {
         const Duration(days: 1).inSeconds);
   });
 
-  test('datetime.date format', () async {
+  test('datetime.date format', () {
     final expr = Variable.withDateTime(DateTime(2020, 09, 04, 8, 55));
     final asDate = expr.date;
 
-    final row =
-        await (db.selectOnly(db.users)..addColumns([asDate])).getSingle();
-
-    expect(row.read(asDate), '2020-09-04');
+    expect(eval(asDate), completion('2020-09-04'));
   });
 
-  test('text contains', () async {
-    const stringLiteral = Constant('Some sql string literal');
-    final containsSql = stringLiteral.contains('sql');
+  group('text', () {
+    test('contains', () {
+      const stringLiteral = Constant('Some sql string literal');
+      final containsSql = stringLiteral.contains('sql');
 
-    final row =
-        await (db.selectOnly(db.users)..addColumns([containsSql])).getSingle();
+      expect(eval(containsSql), completion(isTrue));
+    });
 
-    expect(row.read(containsSql), isTrue);
+    test('trim()', () {
+      const literal = Constant('  hello world    ');
+      expect(eval(literal.trim()), completion('hello world'));
+    });
+
+    test('trimLeft()', () {
+      const literal = Constant('  hello world    ');
+      expect(eval(literal.trimLeft()), completion('hello world    '));
+    });
+
+    test('trimRight()', () {
+      const literal = Constant('  hello world    ');
+      expect(eval(literal.trimRight()), completion('  hello world'));
+    });
   });
 
   test('coalesce', () async {
     final expr = coalesce<int>([const Constant(null), const Constant(3)]);
 
-    final row = await (db.selectOnly(db.users)..addColumns([expr])).getSingle();
-
-    expect(row.read(expr), equals(3));
+    expect(eval(expr), completion(3));
   });
 }

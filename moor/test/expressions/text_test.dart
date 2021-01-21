@@ -36,9 +36,20 @@ void main() {
         expression.contains('foo bar'), generates('col LIKE ?', ['%foo bar%']));
   });
 
-  test('can use string functions', () {
-    expect(expression.upper(), generates('UPPER(col)'));
-    expect(expression.lower(), generates('LOWER(col)'));
-    expect(expression.length, generates('LENGTH(col)'));
+  group('can use string functions', () {
+    final tests = {
+      expression.upper(): 'UPPER(col)',
+      expression.lower(): 'LOWER(col)',
+      expression.trim(): 'TRIM(col)',
+      expression.trimLeft(): 'LTRIM(col)',
+      expression.trimRight(): 'RTRIM(col)',
+      expression.length: 'LENGTH(col)',
+    };
+
+    tests.forEach((expr, sql) {
+      test(sql, () {
+        expect(expr, generates(sql));
+      });
+    });
   });
 }

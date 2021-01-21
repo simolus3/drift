@@ -105,6 +105,21 @@ extension StringExpressionOperators on Expression<String?> {
   Expression<int?> get length {
     return FunctionCallExpression('LENGTH', [this]);
   }
+
+  /// Removes spaces from both ends of this string.
+  Expression<String?> trim() {
+    return FunctionCallExpression('TRIM', [this]);
+  }
+
+  /// Removes spaces from the beginning of this string.
+  Expression<String?> trimLeft() {
+    return FunctionCallExpression('LTRIM', [this]);
+  }
+
+  /// Removes spaces from the end of this string.
+  Expression<String?> trimRight() {
+    return FunctionCallExpression('RTRIM', [this]);
+  }
 }
 
 /// A `text LIKE pattern` expression that will be true if the first expression

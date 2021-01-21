@@ -2,6 +2,7 @@
 
 - Reverted the `SelectableUtils` extension, its members have been added back to the
   `Selectable` class.
+- Add `trim`, `trimLeft()` and `trimRight()` extensions for text expressions
 
 ## 4.0.0-nullsafety.1
 
