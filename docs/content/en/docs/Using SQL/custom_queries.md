@@ -108,6 +108,9 @@ Stream<int> amountOfTodosInCategory(int id) {
 }
 ```
 
+Of course, you can also use indexed variables (like `?12`) - for more information on them, see 
+[the sqlite3 documentation](https://sqlite.org/lang_expr.html#varparam).
+
 ## Custom update statements
 For update and delete statements, you can use `customUpdate`. Just like `customSelect`, that method
 also takes a sql statement and optional variables. You can also tell moor which tables will be
