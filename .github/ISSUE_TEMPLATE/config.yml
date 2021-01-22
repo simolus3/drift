@@ -1,0 +1,7 @@
+contact_links:
+  - name: Discussions
+    url: https://github.com/simolus3/moor/discussions
+    about: "For questions on how to use moor, prefer a Q&A discussion over issues"
+  - name: Gitter community
+    url: https://gitter.im/moor-dart/community
+    about: "Chat room for quick questions"
