@@ -252,6 +252,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('SELECT x AND y');
     });
 
+    test('in', () {
+      testFormat('SELECT x IN (SELECT * FROM foo);');
+      testFormat('SELECT x NOT IN (SELECT * FROM foo);');
+    });
+
     test('boolean literals', () {
       testFormat('SELECT TRUE OR FALSE');
     });

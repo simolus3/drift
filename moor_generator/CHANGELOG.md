@@ -2,6 +2,10 @@
 
 - Remove the `legacy_type_inference` option
 - Support moor 4
+- Add the `new_sql_code_generation` option to generate compiled SQL queries
+  (from moor files and annotations) based on the parsed AST.
+  Please consider enabling this option and reporting issues! 
+  It will eventually become the default.
 
 ## 3.4.0
 

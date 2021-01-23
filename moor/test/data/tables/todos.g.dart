@@ -1485,7 +1485,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
-        'SELECT t.*, c.id as catId, c."desc" as catDesc FROM todos t INNER JOIN categories c ON c.id = t.category',
+        'SELECT t.*, c.id AS catId, c."desc" AS catDesc FROM todos AS t INNER JOIN categories AS c ON c.id = t.category',
         variables: [],
         readsFrom: {categories, todosTable}).map((QueryRow row) {
       return AllTodosWithCategoryResult(
@@ -1515,7 +1515,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelect(
-        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+        'SELECT * FROM todos WHERE title = ?2 OR id IN($expandedvar3) OR title = ?1',
         variables: [
           Variable<String?>(var1),
           Variable<String?>(var2),
@@ -1620,7 +1620,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
-        'SELECT t.* FROM todos t INNER JOIN shared_todos st ON st.todo = t.id INNER JOIN users u ON u.id = st.user WHERE u.id = :user',
+        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = :user',
         variables: [Variable<int>(user)],
         readsFrom: {todosTable, sharedTodos, users}).map(todosTable.mapFromRow);
   }

@@ -12,6 +12,7 @@ targets:
           apply_converters_on_variables: true
           generate_values_in_copy_with: true
           named_parameters: true
+          new_sql_code_generation: true
           sqlite_modules:
             - json1
             - fts5

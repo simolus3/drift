@@ -20,15 +20,17 @@ extension NodeToText on AstNode {
   /// ways to represent an equivalent node (e.g. the no-op `FOR EACH ROW` on
   /// triggers).
   String toSql() {
-    final builder = _NodeSqlBuilder();
+    final builder = NodeSqlBuilder();
     builder.visit(this, null);
-    return builder._buffer.toString();
+    return builder.buffer.toString();
   }
 }
 
-class _NodeSqlBuilder extends AstVisitor<void, void> {
-  final StringBuffer _buffer = StringBuffer();
+class NodeSqlBuilder extends AstVisitor<void, void> {
+  final StringSink buffer;
   bool _needsSpace = false;
+
+  NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
 
   void _join(Iterable<AstNode> nodes, String separatingSymbol) {
     var isFirst = true;
@@ -64,7 +66,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
     _symbol(reverseKeywords[type]!, spaceAfter: true, spaceBefore: true);
   }
 
-  void _space() => _buffer.writeCharCode($space);
+  void _space() => buffer.writeCharCode($space);
 
   void _stringLiteral(String content) {
     _symbol("'$content'", spaceBefore: true, spaceAfter: true);
@@ -76,7 +78,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
       _space();
     }
 
-    _buffer.write(lexeme);
+    buffer.write(lexeme);
     _needsSpace = spaceAfter;
   }
 
@@ -636,10 +638,11 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitInExpression(InExpression e, void arg) {
     visit(e.left, arg);
-    _keyword(TokenType.$is);
+
     if (e.not) {
       _keyword(TokenType.not);
     }
+    _keyword(TokenType.$in);
 
     visit(e.inside, arg);
   }
@@ -802,7 +805,7 @@ class _NodeSqlBuilder extends AstVisitor<void, void> {
   void visitMoorFile(MoorFile e, void arg) {
     for (final stmt in e.statements) {
       visit(stmt, arg);
-      _buffer.write('\n');
+      buffer.write('\n');
       _needsSpace = false;
     }
   }

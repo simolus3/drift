@@ -9,6 +9,8 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/node_to_text.dart';
 
+import 'sql_writer.dart';
+
 const highestAssignedIndexVar = '\$arrayStartIndex';
 
 int _compareNodes(AstNode a, AstNode b) =>
@@ -31,22 +33,6 @@ class QueryWriter {
 
   QueryWriter(this.query, this.scope) {
     _buffer = scope.leaf();
-  }
-
-  /// The expanded sql that we insert into queries whenever an array variable
-  /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
-  /// ```dart
-  /// test(List<int> var1) {
-  ///   final expandedvar1 = List.filled(var1.length, '?').join(',');
-  ///   customSelect('SELECT * FROM t WHERE x IN ($expandedvar1)', ...);
-  /// }
-  /// ```
-  String _expandedName(FoundVariable v) {
-    return 'expanded${v.dartParameterName}';
-  }
-
-  String _placeholderContextName(FoundDartPlaceholder placeholder) {
-    return 'generated${placeholder.name}';
   }
 
   void write() {
@@ -370,7 +356,7 @@ class QueryWriter {
           // final expandedvar1 = $expandVar(<startIndex>, <amount>);
           _buffer
             ..write('final ')
-            ..write(_expandedName(element))
+            ..write(expandedName(element))
             ..write(' = ')
             ..write(r'$expandVar(')
             ..write(highestAssignedIndexVar)
@@ -390,7 +376,7 @@ class QueryWriter {
 
         _buffer
           ..write('final ')
-          ..write(_placeholderContextName(element))
+          ..write(placeholderContextName(element))
           ..write(' = ')
           ..write(r'$write(')
           ..write(element.dartParameterName);
@@ -404,7 +390,7 @@ class QueryWriter {
         // similar to the case for expanded array variables, we need to
         // increase the index
         _increaseIndexCounter(
-            '${_placeholderContextName(element)}.amountOfVariables');
+            '${placeholderContextName(element)}.amountOfVariables');
       }
     }
   }
@@ -456,8 +442,8 @@ class QueryWriter {
           _buffer.write('${constructVar(name)}');
         }
       } else if (element is FoundDartPlaceholder) {
-        _buffer.write(
-            '...${_placeholderContextName(element)}.introducedVariables');
+        _buffer
+            .write('...${placeholderContextName(element)}.introducedVariables');
       }
     }
 
@@ -468,6 +454,14 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode() {
+    if (scope.options.newSqlCodeGeneration) {
+      return SqlWriter(query).write();
+    } else {
+      return _legacyQueryCode();
+    }
+  }
+
+  String _legacyQueryCode() {
     // sort variables and placeholders by the order in which they appear
     final toReplace = query.fromContext.root.allDescendants
         .where((node) =>
@@ -508,14 +502,14 @@ class QueryWriter {
             (f) => f.variable.resolvedIndex == rewriteTarget.resolvedIndex);
 
         if (moorVar.isArray) {
-          replaceNode(rewriteTarget, '(\$${_expandedName(moorVar)})');
+          replaceNode(rewriteTarget, '(\$${expandedName(moorVar)})');
         }
       } else if (rewriteTarget is DartPlaceholder) {
         final moorPlaceholder =
             query.placeholders.singleWhere((p) => p.astNode == rewriteTarget);
 
         replaceNode(rewriteTarget,
-            '\${${_placeholderContextName(moorPlaceholder)}.sql}');
+            '\${${placeholderContextName(moorPlaceholder)}.sql}');
       } else if (rewriteTarget is NestedStarResultColumn) {
         final result = doubleStarColumnToResolvedTable[rewriteTarget];
         if (result == null) continue;

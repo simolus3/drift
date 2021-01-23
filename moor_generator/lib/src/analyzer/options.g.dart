@@ -24,6 +24,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'apply_converters_on_variables',
       'generate_values_in_copy_with',
       'named_parameters',
+      'new_sql_code_generation',
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -68,6 +69,9 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
           false,
       generateNamedParameters:
           $checkedConvert(json, 'named_parameters', (v) => v as bool) ?? false,
+      newSqlCodeGeneration:
+          $checkedConvert(json, 'new_sql_code_generation', (v) => v as bool) ??
+              false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',
@@ -94,6 +98,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'rawResultSetData': 'raw_result_set_data',
     'generateValuesInCopyWith': 'generate_values_in_copy_with',
     'generateNamedParameters': 'named_parameters',
+    'newSqlCodeGeneration': 'new_sql_code_generation',
   });
 }
 

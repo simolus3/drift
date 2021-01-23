@@ -83,6 +83,9 @@ class MoorOptions {
   @JsonKey(name: 'named_parameters', defaultValue: false)
   final bool generateNamedParameters;
 
+  @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
+  final bool newSqlCodeGeneration;
+
   const MoorOptions({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
@@ -98,6 +101,7 @@ class MoorOptions {
     this.applyConvertersOnVariables = false,
     this.generateValuesInCopyWith = false,
     this.generateNamedParameters = false,
+    this.newSqlCodeGeneration = false,
     this.modules = const [],
   });
 
