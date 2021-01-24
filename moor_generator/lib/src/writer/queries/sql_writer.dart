@@ -60,7 +60,14 @@ class SqlWriter extends NodeSqlBuilder {
 
   void _writeArrayVariable(FoundVariable moorVar) {
     assert(moorVar.isArray);
-    _out.write('(\$${expandedName(moorVar)})');
+
+    _writeRawInSpaces('(\$${expandedName(moorVar)})');
+  }
+
+  void _writeRawInSpaces(String str) {
+    spaceIfNeeded();
+    _out.write(str);
+    needsSpace = true;
   }
 
   @override
@@ -68,7 +75,7 @@ class SqlWriter extends NodeSqlBuilder {
     final moorPlaceholder =
         query.placeholders.singleWhere((p) => p.astNode == e);
 
-    _out.write('\${${placeholderContextName(moorPlaceholder)}.sql}');
+    _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
   }
 
   @override

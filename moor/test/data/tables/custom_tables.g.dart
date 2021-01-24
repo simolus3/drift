@@ -1598,7 +1598,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final generatedclause = $write(clause);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
-        'SELECT * FROM config WHERE config_key IN($expandedvar1)${generatedclause.sql}',
+        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables
@@ -1611,7 +1611,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<Config> readDynamic(
       {Expression<bool> predicate = const CustomExpression('(TRUE)')}) {
     final generatedpredicate = $write(predicate);
-    return customSelect('SELECT * FROM config WHERE${generatedpredicate.sql}',
+    return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {config}).map(config.mapFromRow);
   }
@@ -1621,7 +1621,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN($expandedvar2)',
+        'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
         variables: [
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           for (var $ in var2)
@@ -1661,7 +1661,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple({required Expression<bool> predicate}) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
-        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints AS c INNER JOIN with_defaults AS d ON d.a = c.a AND d.b = c.b WHERE${generatedpredicate.sql}',
+        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints AS c INNER JOIN with_defaults AS d ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
       return MultipleResult(
@@ -1683,7 +1683,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<ReadRowIdResult> readRowId({required Expression<int> expr}) {
     final generatedexpr = $write(expr);
     return customSelect(
-        'SELECT oid, * FROM config WHERE _rowid_ =${generatedexpr.sql}',
+        'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [...generatedexpr.introducedVariables],
         readsFrom: {config}).map((QueryRow row) {
       return ReadRowIdResult(

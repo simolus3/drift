@@ -28,7 +28,9 @@ extension NodeToText on AstNode {
 
 class NodeSqlBuilder extends AstVisitor<void, void> {
   final StringSink buffer;
-  bool _needsSpace = false;
+
+  /// Whether we need to insert a space before writing the next identifier.
+  bool needsSpace = false;
 
   NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
 
@@ -68,18 +70,28 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   void _space() => buffer.writeCharCode($space);
 
+  /// Writes a space character if [needsSpace] is set.
+  ///
+  /// This also resets [needsSpace] to `false`.
+  void spaceIfNeeded() {
+    if (needsSpace) {
+      needsSpace = false;
+      _space();
+    }
+  }
+
   void _stringLiteral(String content) {
     _symbol("'$content'", spaceBefore: true, spaceAfter: true);
   }
 
   void _symbol(String lexeme,
       {bool spaceBefore = false, bool spaceAfter = false}) {
-    if (_needsSpace && spaceBefore) {
+    if (needsSpace && spaceBefore) {
       _space();
     }
 
     buffer.write(lexeme);
-    _needsSpace = spaceAfter;
+    needsSpace = spaceAfter;
   }
 
   void _where(Expression? where) {
@@ -806,7 +818,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     for (final stmt in e.statements) {
       visit(stmt, arg);
       buffer.write('\n');
-      _needsSpace = false;
+      needsSpace = false;
     }
   }
 
