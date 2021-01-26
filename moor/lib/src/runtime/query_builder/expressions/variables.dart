@@ -55,8 +55,7 @@ class Variable<T> extends Expression<T> {
   /// database engine. For instance, a [DateTime] will me mapped to its unix
   /// timestamp.
   dynamic mapToSimpleValue(GenerationContext context) {
-    final type = context.typeSystem.forDartType<T>();
-    return type.mapToSqlVariable(value);
+    return context.typeSystem.mapToVariable(value);
   }
 
   @override

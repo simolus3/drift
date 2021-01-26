@@ -7,11 +7,14 @@ class SqlTypeSystem {
   final List<SqlType> types;
 
   /// Constructs a [SqlTypeSystem] from the [types].
-  const SqlTypeSystem(this.types);
+  @Deprecated('Only the default instance is supported')
+  const factory SqlTypeSystem(List<SqlType> types) = SqlTypeSystem._;
+
+  const SqlTypeSystem._(this.types);
 
   /// Constructs a [SqlTypeSystem] from the default types.
   const SqlTypeSystem.withDefaults()
-      : this(const [
+      : this._(const [
           BoolType(),
           StringType(),
           IntType(),
@@ -30,5 +33,17 @@ class SqlTypeSystem {
   /// generic parameter.
   SqlType<T> forDartType<T>() {
     return types.singleWhere((t) => t is SqlType<T>) as SqlType<T>;
+  }
+
+  /// Maps a Dart object to a (possibly simpler) object that can be used as
+  /// parameters to raw sql queries.
+  Object? mapToVariable(Object? dart) {
+    if (dart == null) return null;
+
+    // These need special handling, all other types are a direct mapping
+    if (dart is DateTime) return const DateTimeType().mapToSqlVariable(dart);
+    if (dart is bool) return const BoolType().mapToSqlVariable(dart);
+
+    return dart;
   }
 }
