@@ -128,21 +128,18 @@ and minor code changes. Put this content in a file called `build.yaml` next to y
 targets:
   $default:
     builders:
-      # disable the default generator and enable the one emitting a .moor.dart file
-      moor_generator:
-        enabled: false
+      # disable the default generators, we'll only use the non-shared moor generator here
+      auto_apply_builders: false
       moor_generator|moor_generator_not_shared:
         enabled: true
         # If needed, you can configure the builder like this:
         # options:
         #   skip_verification_code: true
         #   use_experimental_inference: true
-
-      # Run built_value_generator when moor is done, which is not in this target.
-      built_value_generator|built_value:
-        enabled: false
-      # all other builders that need to work on moor classes should be disabled here
-      # as well
+      # This builder is necessary for moor-file preprocessing. You can disable it if you're not
+      # using .moor files with type converters.
+      moor_generator|preparing_builder:
+        enabled: true
   
   run_built_value:
     dependencies: ['your_package_name']

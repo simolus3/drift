@@ -73,9 +73,10 @@ That said, here's an incomplete (and obviously biased) list of great libraries a
 If you have experience with any of these (or other) libraries and want to share how they compare to moor, please
 feel invited to contribute to this page.
 
-## sqflite
+## sqflite, sqlite3
+
 Sqflite is a Flutter package that provides bindings to the sqlite api for both iOS and Android. It's well maintained
-and has stable api. In fact, moor is built on top of sqflite to send queries to the database. But even though sqflite
+and has stable api. In fact, the `moor_flutter` variant is built on top of sqflite. But even though sqflite
 has an api to construct some simple queries in Dart, moor goes a bit further by
 
 * Generating typesafe mapping code for your queries
@@ -84,6 +85,9 @@ has an api to construct some simple queries in Dart, moor goes a bit further by
 * A more fluent api to compose queries
 
 Still, for most apps that don't need these features, sqflite can be a very fitting persistence library.
+
+The same thing applies to the `sqlite3` package - `package:moor/ffi.dart` uses that library, but provides
+additional services on top.
 
 ### sqlcool
 Sqlcool is a lightweight library around sqflite that makes writing queries and schema management easier, it also has
