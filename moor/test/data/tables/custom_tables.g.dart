@@ -1564,10 +1564,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
   late final ConfigTable config = ConfigTable(this);
   late final Index valueIdx = Index('value_idx',
-      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);');
+      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)');
   late final WithDefaults withDefaults = WithDefaults(this);
   late final Trigger myTrigger = Trigger(
-      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN\n  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));\nEND;',
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
   late final NoIds noIds = NoIds(this);
   late final WithConstraints withConstraints = WithConstraints(this);

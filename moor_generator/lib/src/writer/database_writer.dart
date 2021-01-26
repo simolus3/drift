@@ -72,7 +72,7 @@ class DatabaseWriter {
           buffer: dbScope.leaf(),
           getterName: entity.dbGetterName,
           returnType: 'Trigger',
-          code: 'Trigger(${asDartLiteral(entity.create)}, '
+          code: 'Trigger(${asDartLiteral(entity.createSql(scope.options))}, '
               '${asDartLiteral(entity.displayName)})',
           options: scope.generationOptions,
         );
@@ -82,7 +82,7 @@ class DatabaseWriter {
           getterName: entity.dbGetterName,
           returnType: 'Index',
           code: 'Index(${asDartLiteral(entity.displayName)}, '
-              '${asDartLiteral(entity.createStmt)})',
+              '${asDartLiteral(entity.createSql(scope.options))})',
           options: scope.generationOptions,
         );
       }
@@ -119,7 +119,8 @@ class DatabaseWriter {
     schemaScope
       ..write(db.entities.map((e) {
         if (e is SpecialQuery) {
-          return 'OnCreateQuery(${asDartLiteral(e.sql)})';
+          final sql = e.formattedSql(scope.options);
+          return 'OnCreateQuery(${asDartLiteral(sql)})';
         }
 
         return entityGetters[e];

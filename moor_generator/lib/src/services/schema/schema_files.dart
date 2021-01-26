@@ -1,4 +1,5 @@
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -6,6 +7,8 @@ const _infoVersion = '0.1.0-dev-preview';
 
 /// Utilities to transform moor schema entities to json.
 class SchemaWriter {
+  static const _exportOptions = MoorOptions();
+
   /// The parsed and resolved database for which the schema should be written.
   final Database db;
 
@@ -46,7 +49,7 @@ class SchemaWriter {
           for (final ref in entity.bodyReferences) _idOf(ref),
         ],
         'name': entity.displayName,
-        'sql': entity.create,
+        'sql': entity.createSql(_exportOptions),
       };
     } else if (entity is MoorIndex) {
       type = 'index';

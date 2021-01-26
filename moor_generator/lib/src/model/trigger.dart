@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -37,7 +38,9 @@ class MoorTrigger implements MoorSchemaEntity {
   Iterable<MoorSchemaEntity> get references => {on, ...bodyReferences};
 
   /// The `CREATE TRIGGER` statement that can be used to create this trigger.
-  String get create => declaration.createSql;
+  String createSql(MoorOptions options) {
+    return declaration.formatSqlIfAvailable(options) ?? declaration.createSql;
+  }
 
   @override
   String get dbGetterName => dbFieldName(displayName);

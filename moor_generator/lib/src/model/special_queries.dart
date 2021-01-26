@@ -1,5 +1,7 @@
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/node_to_text.dart';
 
 import 'model.dart';
 
@@ -33,4 +35,12 @@ class SpecialQuery implements MoorSchemaEntity {
 
   @override
   List<MoorTable> references = [];
+
+  String formattedSql(MoorOptions options) {
+    final decl = declaration;
+    if (decl is MoorSpecialQueryDeclaration && options.newSqlCodeGeneration) {
+      return decl.node.statement.toSql();
+    }
+    return sql;
+  }
 }

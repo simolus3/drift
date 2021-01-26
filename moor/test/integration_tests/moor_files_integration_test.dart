@@ -36,12 +36,13 @@ const _createEmail = 'CREATE VIRTUAL TABLE IF NOT EXISTS email USING '
     'fts5(sender, title, body);';
 
 const _createMyTrigger =
-    '''CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
-  INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
-END;''';
+    'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN '
+    'INSERT INTO with_defaults '
+    'VALUES (new.config_key, LENGTH(new.config_value));'
+    'END';
 
 const _createValueIndex =
-    'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);';
+    'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)';
 
 const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
     "VALUES ('key', 'values')";

@@ -1,3 +1,4 @@
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -34,6 +35,14 @@ class MoorIndex extends MoorSchemaEntity {
 
   @override
   String get displayName => name;
+
+  /// The `CREATE INDEX` statement creating this index.
+  ///
+  /// Unlike [createStmt], this can be formatted to exclude comments and
+  /// unnecessary whitespace depending on the [options].
+  String createSql(MoorOptions options) {
+    return declaration.formatSqlIfAvailable(options) ?? createStmt;
+  }
 
   @override
   Iterable<MoorSchemaEntity> get references {

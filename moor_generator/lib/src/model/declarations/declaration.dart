@@ -1,7 +1,9 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/model/sources.dart';
 import 'package:sqlparser/sqlparser.dart';
+import 'package:sqlparser/utils/node_to_text.dart';
 
 part 'columns.dart';
 part 'database.dart';
@@ -32,4 +34,25 @@ abstract class DartDeclaration extends Declaration {
 abstract class MoorDeclaration extends Declaration {
   /// The ast node from a moor file for this declaration.
   AstNode get node;
+}
+
+extension ToSql on MoorDeclaration {
+  String exportSql(MoorOptions options) {
+    if (options.newSqlCodeGeneration) {
+      return node.toSql();
+    } else {
+      return node.span.text;
+    }
+  }
+}
+
+extension ToSqlIfAvailable on Declaration {
+  String formatSqlIfAvailable(MoorOptions options) {
+    final $this = this;
+    if ($this is MoorDeclaration) {
+      return $this.exportSql(options);
+    }
+
+    return null;
+  }
 }
