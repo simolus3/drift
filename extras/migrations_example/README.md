@@ -9,7 +9,7 @@ See `test/migration_test.dart` on how to use the generated verification code.
 After adapting a schema and incrementing the `schemaVersion` in the database, run
 
 ```
-dart pub run moor_generator schema dump lib/database.dart moor_migrations/moor_schema_v2.json
+dart run moor_generator schema dump lib/database.dart moor_migrations/moor_schema_v2.json
 ```
 
 Replace `_v2` with the current `schemaVersion`.
@@ -19,5 +19,5 @@ Replace `_v2` with the current `schemaVersion`.
 Run
 
 ```
-dart pub run moor_generator schema generate moor_migrations/ test/generated/
+dart run moor_generator schema generate moor_migrations/ test/generated/
 ```

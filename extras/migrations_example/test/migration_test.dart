@@ -37,4 +37,12 @@ void main() {
     await verifier.migrateAndValidate(db, 3);
     await db.close();
   });
+
+  test('upgrade from v3 to v4', () async {
+    final connection = await verifier.startAt(3);
+    final db = Database(connection);
+
+    await verifier.migrateAndValidate(db, 4);
+    await db.close();
+  });
 }

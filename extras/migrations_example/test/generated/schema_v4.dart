@@ -15,11 +15,8 @@ class _Users extends Table with TableInfo {
   GeneratedTextColumn _name;
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      $tableName,
-      false,
-    );
+    return GeneratedTextColumn('name', $tableName, false,
+        defaultValue: const Constant('name'));
   }
 
   @override
@@ -105,9 +102,9 @@ class _Groups extends Table with TableInfo {
   bool get dontWriteConstraints => true;
 }
 
-class DatabaseAtV3 extends GeneratedDatabase {
-  DatabaseAtV3(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  DatabaseAtV3.connect(DatabaseConnection c) : super.connect(c);
+class DatabaseAtV4 extends GeneratedDatabase {
+  DatabaseAtV4(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+  DatabaseAtV4.connect(DatabaseConnection c) : super.connect(c);
   _Users _users;
   _Users get users => _users ??= _Users(this);
   _Groups _groups;
@@ -117,5 +114,5 @@ class DatabaseAtV3 extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, groups];
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 }

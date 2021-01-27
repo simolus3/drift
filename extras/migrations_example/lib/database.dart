@@ -7,7 +7,7 @@ part 'database.g.dart';
 @UseMoor(include: {'tables.moor'})
 class Database extends _$Database {
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   Database(DatabaseConnection connection) : super.connect(connection);
 
@@ -31,6 +31,10 @@ class Database extends _$Database {
           } else if (target == 3) {
             // Migration from 2 to 3: We added the groups table
             await m.createTable(groups);
+          } else if (target == 4) {
+            // Migration from 3 to 4: users.name now has a default value
+            // No need to transform any data, just re-create the table
+            await m.alterTable(TableMigration(users));
           }
         }
       },

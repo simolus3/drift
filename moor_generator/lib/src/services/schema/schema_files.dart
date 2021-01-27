@@ -286,6 +286,8 @@ class SchemaReader {
       dartGetterName: ReCase(name).camelCase,
       type: moorType,
       nullable: nullable,
+      defaultArgument: data['default_dart'] as String,
+      clientDefaultCode: data['default_client_dart'] as String,
       customConstraints: customConstraints,
       features: dslFeatures,
     );
