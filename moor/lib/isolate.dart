@@ -4,6 +4,7 @@ library isolate;
 
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -50,9 +51,11 @@ class MoorIsolate {
         StreamChannelController(allowForeignErrors: false, sync: true);
     receive.listen((message) {
       if (message is SendPort) {
-        controller.local.stream.listen(message.send, onDone: receive.close);
+        controller.local.stream
+            .map(_prepareForTransport)
+            .listen(message.send, onDone: receive.close);
       } else {
-        controller.local.sink.add(message);
+        controller.local.sink.add(_decodeAfterTransport(message));
       }
     });
 
@@ -130,7 +133,13 @@ class _RunningMoorServer {
       if (message is SendPort) {
         final receiveForConnection = ReceivePort('moor channel #${_counter++}');
         message.send(receiveForConnection.sendPort);
-        final channel = IsolateChannel(receiveForConnection, message);
+        final channel = IsolateChannel(receiveForConnection, message)
+            .changeStream((source) => source.map(_decodeAfterTransport))
+            .transformSink(
+              StreamSinkTransformer.fromHandlers(
+                  handleData: (data, sink) =>
+                      sink.add(_prepareForTransport(data))),
+            );
 
         server.serve(channel);
       }
@@ -140,5 +149,25 @@ class _RunningMoorServer {
       subscription.cancel();
       connectPort.close();
     });
+  }
+}
+
+Object? _prepareForTransport(Object? source) {
+  if (source is! List) return source;
+
+  if (source is Uint8List) {
+    return TransferableTypedData.fromList([source]);
+  }
+
+  return source.map(_prepareForTransport).toList();
+}
+
+Object? _decodeAfterTransport(Object? source) {
+  if (source is TransferableTypedData) {
+    return source.materialize().asUint8List();
+  } else if (source is List) {
+    return source.map(_decodeAfterTransport).toList();
+  } else {
+    return source;
   }
 }
