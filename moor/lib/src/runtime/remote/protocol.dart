@@ -1,9 +1,14 @@
-part of 'moor_isolate.dart';
+// This is a moor-internal file
+// ignore_for_file: constant_identifier_names, public_member_api_docs
 
-// ignore_for_file: constant_identifier_names
+import 'package:moor/moor.dart';
 
-class _MoorCodec extends MessageCodec {
-  const _MoorCodec();
+class MoorProtocol {
+  const MoorProtocol();
+
+  static const _tag_Request = 0;
+  static const _tag_Response_success = 1;
+  static const _tag_Response_error = 2;
 
   static const _tag_NoArgsRequest_getTypeSystem = 0;
   static const _tag_NoArgsRequest_terminateAll = 1;
@@ -17,13 +22,53 @@ class _MoorCodec extends MessageCodec {
   static const _tag_DefaultSqlTypeSystem = 9;
   static const _tag_DirectValue = 10;
 
-  @override
+  Object? serialize(Message message) {
+    if (message is Request) {
+      return [
+        _tag_Request,
+        message.id,
+        encodePayload(message.payload),
+      ];
+    } else if (message is ErrorResponse) {
+      return [
+        _tag_Response_error,
+        message.requestId,
+        message.error.toString(),
+        message.stackTrace,
+      ];
+    } else if (message is SuccessResponse) {
+      return [
+        _tag_Response_success,
+        message.requestId,
+        encodePayload(message.response),
+      ];
+    }
+  }
+
+  Message deserialize(Object message) {
+    if (message is! List) throw const FormatException('Cannot read message');
+
+    final tag = message[0];
+    final id = message[1] as int;
+
+    switch (tag) {
+      case _tag_Request:
+        return Request(id, decodePayload(message[2]));
+      case _tag_Response_error:
+        return ErrorResponse(id, message[2] as Object, message[3] as String);
+      case _tag_Response_success:
+        return SuccessResponse(id, decodePayload(message[2]));
+    }
+
+    throw const FormatException('Unknown tag');
+  }
+
   dynamic encodePayload(dynamic payload) {
     if (payload == null || payload is bool) return payload;
 
-    if (payload is _NoArgsRequest) {
+    if (payload is NoArgsRequest) {
       return payload.index;
-    } else if (payload is _ExecuteQuery) {
+    } else if (payload is ExecuteQuery) {
       return [
         _tag_ExecuteQuery,
         payload.method.index,
@@ -31,7 +76,7 @@ class _MoorCodec extends MessageCodec {
         [for (final arg in payload.args) _encodeDbValue(arg)],
         payload.executorId,
       ];
-    } else if (payload is _ExecuteBatchedStatement) {
+    } else if (payload is ExecuteBatchedStatement) {
       return [
         _tag_ExecuteBatchedStatement,
         payload.stmts.statements,
@@ -42,22 +87,22 @@ class _MoorCodec extends MessageCodec {
           ],
         payload.executorId,
       ];
-    } else if (payload is _RunTransactionAction) {
+    } else if (payload is RunTransactionAction) {
       return [
         _tag_RunTransactionAction,
         payload.control.index,
         payload.executorId,
       ];
-    } else if (payload is _EnsureOpen) {
+    } else if (payload is EnsureOpen) {
       return [_tag_EnsureOpen, payload.schemaVersion, payload.executorId];
-    } else if (payload is _RunBeforeOpen) {
+    } else if (payload is RunBeforeOpen) {
       return [
         _tag_RunBeforeOpen,
         payload.details.versionBefore,
         payload.details.versionNow,
         payload.createdExecutor,
       ];
-    } else if (payload is _NotifyTablesUpdated) {
+    } else if (payload is NotifyTablesUpdated) {
       return [
         _tag_NotifyTablesUpdated,
         for (final update in payload.updates)
@@ -75,7 +120,6 @@ class _MoorCodec extends MessageCodec {
     }
   }
 
-  @override
   dynamic decodePayload(dynamic encoded) {
     if (encoded == null || encoded is bool) return encoded;
 
@@ -94,36 +138,35 @@ class _MoorCodec extends MessageCodec {
 
     switch (tag) {
       case _tag_NoArgsRequest_getTypeSystem:
-        return _NoArgsRequest.getTypeSystem;
+        return NoArgsRequest.getTypeSystem;
       case _tag_NoArgsRequest_terminateAll:
-        return _NoArgsRequest.terminateAll;
+        return NoArgsRequest.terminateAll;
       case _tag_ExecuteQuery:
-        final method = _StatementMethod.values[readInt(1)];
+        final method = StatementMethod.values[readInt(1)];
         final sql = fullMessage![2] as String;
-        final args = (fullMessage[3] as List).map(_decodeDbValue).toList();
+        final args = fullMessage[3] as List;
         final executorId = readNullableInt(4);
-        return _ExecuteQuery(method, sql, args, executorId);
+        return ExecuteQuery(method, sql, args, executorId);
       case _tag_ExecuteBatchedStatement:
         final sql = (fullMessage![1] as List).cast<String>();
         final args = <ArgumentsForBatchedStatement>[];
 
         for (var i = 2; i < fullMessage.length - 1; i++) {
           final list = fullMessage[i] as List;
-          args.add(ArgumentsForBatchedStatement(list[0] as int, [
-            for (var j = 1; j < list.length; j++) _decodeDbValue(list[j]),
-          ]));
+          args.add(ArgumentsForBatchedStatement(
+              list[0] as int, list.skip(1).toList()));
         }
 
         final executorId = fullMessage.last as int;
-        return _ExecuteBatchedStatement(
+        return ExecuteBatchedStatement(
             BatchedStatements(sql, args), executorId);
       case _tag_RunTransactionAction:
-        final control = _TransactionControl.values[readInt(1)];
-        return _RunTransactionAction(control, readNullableInt(2));
+        final control = TransactionControl.values[readInt(1)];
+        return RunTransactionAction(control, readNullableInt(2));
       case _tag_EnsureOpen:
-        return _EnsureOpen(readInt(1), readNullableInt(2));
+        return EnsureOpen(readInt(1), readNullableInt(2));
       case _tag_RunBeforeOpen:
-        return _RunBeforeOpen(
+        return RunBeforeOpen(
           OpeningDetails(readNullableInt(1), readInt(2)),
           readInt(3),
         );
@@ -138,7 +181,7 @@ class _MoorCodec extends MessageCodec {
                 kind: UpdateKind.values[encodedUpdate[1] as int]),
           );
         }
-        return _NotifyTablesUpdated(updates);
+        return NotifyTablesUpdated(updates);
       case _tag_DirectValue:
         return encoded[1];
     }
@@ -147,26 +190,65 @@ class _MoorCodec extends MessageCodec {
   }
 
   dynamic _encodeDbValue(dynamic variable) {
-    if (variable is List<int>) {
-      return TransferableTypedData.fromList([Uint8List.fromList(variable)]);
+    if (variable is List<int> && variable is! Uint8List) {
+      return Uint8List.fromList(variable);
     } else {
       return variable;
     }
   }
+}
 
-  dynamic _decodeDbValue(dynamic encoded) {
-    if (encoded is TransferableTypedData) {
-      return encoded.materialize().asUint8List();
-    } else {
-      return encoded;
-    }
+abstract class Message {}
+
+/// A request sent over a communication channel. It is expected that the other
+/// peer eventually answers with a matching response.
+class Request extends Message {
+  /// The id of this request.
+  ///
+  /// Ids are generated by the sender, so they are only unique per direction
+  /// and channel.
+  final int id;
+
+  /// The payload associated with this request.
+  final Object? payload;
+
+  Request(this.id, this.payload);
+
+  @override
+  String toString() {
+    return 'Request (id = $id): $payload';
+  }
+}
+
+class SuccessResponse extends Message {
+  final int requestId;
+  final Object? response;
+
+  SuccessResponse(this.requestId, this.response);
+
+  @override
+  String toString() {
+    return 'SuccessResponse (id = $requestId): $response';
+  }
+}
+
+class ErrorResponse extends Message {
+  final int requestId;
+  final Object error;
+  final String? stackTrace;
+
+  ErrorResponse(this.requestId, this.error, [this.stackTrace]);
+
+  @override
+  String toString() {
+    return 'ErrorResponse (id = $requestId): $error at $stackTrace';
   }
 }
 
 /// A request without further parameters
-enum _NoArgsRequest {
+enum NoArgsRequest {
   /// Sent from the client to the server. The server will reply with the
-  /// [SqlTypeSystem] of the [_MoorServer.connection] it's managing.
+  /// [SqlTypeSystem] of the connection it's managing.
   getTypeSystem,
 
   /// Close the background isolate, disconnect all clients, release all
@@ -174,7 +256,7 @@ enum _NoArgsRequest {
   terminateAll,
 }
 
-enum _StatementMethod {
+enum StatementMethod {
   custom,
   deleteOrUpdate,
   insert,
@@ -183,13 +265,13 @@ enum _StatementMethod {
 
 /// Sent from the client to run a sql query. The server replies with the
 /// result.
-class _ExecuteQuery {
-  final _StatementMethod method;
+class ExecuteQuery {
+  final StatementMethod method;
   final String sql;
   final List<dynamic> args;
   final int? executorId;
 
-  _ExecuteQuery(this.method, this.sql, this.args, [this.executorId]);
+  ExecuteQuery(this.method, this.sql, this.args, [this.executorId]);
 
   @override
   String toString() {
@@ -201,15 +283,15 @@ class _ExecuteQuery {
 }
 
 /// Sent from the client to run [BatchedStatements]
-class _ExecuteBatchedStatement {
+class ExecuteBatchedStatement {
   final BatchedStatements stmts;
   final int? executorId;
 
-  _ExecuteBatchedStatement(this.stmts, [this.executorId]);
+  ExecuteBatchedStatement(this.stmts, [this.executorId]);
 }
 
-enum _TransactionControl {
-  /// When using [begin], the [_RunTransactionAction.executorId] refers to the
+enum TransactionControl {
+  /// When using [begin], the [RunTransactionAction.executorId] refers to the
   /// executor starting the transaction. The server must reply with an int
   /// representing the created transaction executor.
   begin,
@@ -218,11 +300,11 @@ enum _TransactionControl {
 }
 
 /// Sent from the client to commit or rollback a transaction
-class _RunTransactionAction {
-  final _TransactionControl control;
+class RunTransactionAction {
+  final TransactionControl control;
   final int? executorId;
 
-  _RunTransactionAction(this.control, this.executorId);
+  RunTransactionAction(this.control, this.executorId);
 
   @override
   String toString() {
@@ -232,11 +314,11 @@ class _RunTransactionAction {
 
 /// Sent from the client to the server. The server should open the underlying
 /// database connection, using the [schemaVersion].
-class _EnsureOpen {
+class EnsureOpen {
   final int schemaVersion;
   final int? executorId;
 
-  _EnsureOpen(this.schemaVersion, this.executorId);
+  EnsureOpen(this.schemaVersion, this.executorId);
 
   @override
   String toString() {
@@ -246,11 +328,11 @@ class _EnsureOpen {
 
 /// Sent from the server to the client when it should run the before open
 /// callback.
-class _RunBeforeOpen {
+class RunBeforeOpen {
   final OpeningDetails details;
   final int createdExecutor;
 
-  _RunBeforeOpen(this.details, this.createdExecutor);
+  RunBeforeOpen(this.details, this.createdExecutor);
 
   @override
   String toString() {
@@ -261,8 +343,8 @@ class _RunBeforeOpen {
 /// Sent to notify that a previous query has updated some tables. When a server
 /// receives this message, it replies with `null` but forwards a new request
 /// with this payload to all connected clients.
-class _NotifyTablesUpdated {
+class NotifyTablesUpdated {
   final List<TableUpdate> updates;
 
-  _NotifyTablesUpdated(this.updates);
+  NotifyTablesUpdated(this.updates);
 }

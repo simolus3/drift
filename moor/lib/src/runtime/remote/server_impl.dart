@@ -1,9 +1,20 @@
-part of 'moor_isolate.dart';
+import 'dart:async';
 
-class _MoorServer {
-  final Server server;
+import 'package:moor/moor.dart';
+import 'package:moor/remote.dart';
+import 'package:stream_channel/stream_channel.dart';
 
+import 'communication.dart';
+import 'protocol.dart';
+
+/// The implementation of a moor server, manging remote channels to send
+/// database requests.
+class ServerImplementation implements MoorServer {
+  /// The Underlying database connection that will be used.
   final DatabaseConnection connection;
+
+  /// Whether clients are allowed to shutdown this server for all.
+  final bool allowRemoteShutdown;
 
   final Map<int, QueryExecutor> _managedExecutors = {};
   int _currentExecutorId = 0;
@@ -19,73 +30,96 @@ class _MoorServer {
   final StreamController<void> _backlogUpdated =
       StreamController.broadcast(sync: true);
 
-  late final _IsolateDelegatedUser _dbUser = _IsolateDelegatedUser(this);
+  late final _ServerDbUser _dbUser = _ServerDbUser(this);
 
-  SendPort get portToOpenConnection => server.portToOpenConnection;
+  bool _isShuttingDown = false;
+  final Set<MoorCommunication> _activeChannels = {};
+  final Completer<void> _done = Completer();
 
-  _MoorServer(DatabaseOpener opener)
-      : connection = opener(),
-        server = Server(const _MoorCodec()) {
-    server.openedConnections.listen((connection) {
-      connection.setRequestHandler(_handleRequest);
-    });
+  /// Creates a server from the underlying connection and further options.
+  ServerImplementation(this.connection, this.allowRemoteShutdown);
+
+  @override
+  Future<void> get done => _done.future;
+
+  @override
+  void serve(StreamChannel<Object?> channel) {
+    if (_isShuttingDown) {
+      throw StateError('Cannot add new channels after shutdown() was called');
+    }
+
+    final comm = MoorCommunication(channel)..setRequestHandler(_handleRequest);
+    _activeChannels.add(comm);
+    comm.closed.then((_) => _activeChannels.remove(comm));
   }
 
-  /// Returns the first connected client, or null if no client is connected.
-  IsolateCommunication? get firstClient {
-    final channels = server.currentChannels;
-    return channels.isEmpty ? null : channels.first;
+  @override
+  Future<void> shutdown() {
+    _isShuttingDown = true;
+    return done;
+  }
+
+  MoorCommunication? get _anyClient {
+    final iterator = _activeChannels.iterator;
+    if (iterator.moveNext()) {
+      return iterator.current;
+    }
+
+    return null;
   }
 
   dynamic _handleRequest(Request request) {
     final payload = request.payload;
 
-    if (payload is _NoArgsRequest) {
+    if (payload is NoArgsRequest) {
       switch (payload) {
-        case _NoArgsRequest.getTypeSystem:
+        case NoArgsRequest.getTypeSystem:
           return connection.typeSystem;
-        case _NoArgsRequest.terminateAll:
-          _backlogUpdated.close();
-          connection.executor.close();
-          server.close();
-          Isolate.current.kill();
+        case NoArgsRequest.terminateAll:
+          if (allowRemoteShutdown) {
+            _backlogUpdated.close();
+            shutdown();
+          } else {
+            throw StateError('Remote shutdowns not allowed');
+          }
+
           break;
       }
-    } else if (payload is _EnsureOpen) {
+    } else if (payload is EnsureOpen) {
       return _handleEnsureOpen(payload);
-    } else if (payload is _ExecuteQuery) {
+    } else if (payload is ExecuteQuery) {
       return _runQuery(
           payload.method, payload.sql, payload.args, payload.executorId);
-    } else if (payload is _ExecuteBatchedStatement) {
+    } else if (payload is ExecuteBatchedStatement) {
       return _runBatched(payload.stmts, payload.executorId);
-    } else if (payload is _NotifyTablesUpdated) {
-      for (final connected in server.currentChannels) {
+    } else if (payload is NotifyTablesUpdated) {
+      for (final connected in _activeChannels) {
         connected.request(payload);
       }
-    } else if (payload is _RunTransactionAction) {
+    } else if (payload is RunTransactionAction) {
       return _transactionControl(payload.control, payload.executorId);
     }
   }
 
-  Future<bool> _handleEnsureOpen(_EnsureOpen open) async {
+  Future<bool> _handleEnsureOpen(EnsureOpen open) async {
     _dbUser.schemaVersion = open.schemaVersion;
     final executor = await _loadExecutor(open.executorId);
 
     return await executor.ensureOpen(_dbUser);
   }
 
-  Future<dynamic> _runQuery(_StatementMethod method, String sql,
+  Future<dynamic> _runQuery(StatementMethod method, String sql,
       List<Object?> args, int? transactionId) async {
     final executor = await _loadExecutor(transactionId);
 
     switch (method) {
-      case _StatementMethod.custom:
+      case StatementMethod.custom:
         return executor.runCustom(sql, args);
-      case _StatementMethod.deleteOrUpdate:
+      case StatementMethod.deleteOrUpdate:
         return executor.runDelete(sql, args);
-      case _StatementMethod.insert:
+      case StatementMethod.insert:
         return executor.runInsert(sql, args);
-      case _StatementMethod.select:
+      case StatementMethod.select:
         return executor.runSelect(sql, args);
     }
   }
@@ -124,8 +158,8 @@ class _MoorServer {
   }
 
   Future<dynamic> _transactionControl(
-      _TransactionControl action, int? executorId) async {
-    if (action == _TransactionControl.begin) {
+      TransactionControl action, int? executorId) async {
+    if (action == TransactionControl.begin) {
       return await _spawnTransaction(executorId);
     }
 
@@ -142,10 +176,10 @@ class _MoorServer {
 
     try {
       switch (action) {
-        case _TransactionControl.commit:
+        case TransactionControl.commit:
           await executor.send();
           break;
-        case _TransactionControl.rollback:
+        case TransactionControl.rollback:
           await executor.rollback();
           break;
         default:
@@ -185,22 +219,22 @@ class _MoorServer {
   }
 }
 
-class _IsolateDelegatedUser implements QueryExecutorUser {
-  final _MoorServer server;
+class _ServerDbUser implements QueryExecutorUser {
+  final ServerImplementation _server;
 
   @override
-  int schemaVersion = 0; // will be overridden by client requests
+  int schemaVersion = 0;
 
-  _IsolateDelegatedUser(this.server);
+  _ServerDbUser(this._server); // will be overridden by client requests
 
   @override
   Future<void> beforeOpen(
       QueryExecutor executor, OpeningDetails details) async {
-    final id = server._putExecutor(executor, beforeCurrent: true);
+    final id = _server._putExecutor(executor, beforeCurrent: true);
     try {
-      await server.firstClient!.request(_RunBeforeOpen(details, id));
+      await _server._anyClient!.request(RunBeforeOpen(details, id));
     } finally {
-      server._releaseExecutor(id);
+      _server._releaseExecutor(id);
     }
   }
 }

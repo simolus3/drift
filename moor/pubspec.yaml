@@ -16,6 +16,7 @@ dependencies:
   collection: ^1.15.0-nullsafety.5
   synchronized: ^3.0.0-nullsafety
   pedantic: ^1.10.0-nullsafety.3
+  stream_channel: ^2.1.0-nullsafety.3
   sqlite3: ^0.1.9-nullsafety
 
 dev_dependencies:

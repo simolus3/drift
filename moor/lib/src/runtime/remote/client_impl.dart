@@ -1,47 +1,51 @@
-part of 'moor_isolate.dart';
+import 'dart:async';
 
-class _MoorClient {
-  final IsolateCommunication _channel;
-  final SqlTypeSystem typeSystem;
+import 'package:moor/src/runtime/api/runtime_api.dart';
+import 'package:moor/src/runtime/executor/executor.dart';
+import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:moor/src/runtime/types/sql_types.dart';
+import 'package:stream_channel/stream_channel.dart';
 
-  late final _IsolateStreamQueryStore _streamStore =
-      _IsolateStreamQueryStore(this);
-  late final DatabaseConnection _connection = DatabaseConnection(
-    typeSystem,
-    _IsolateQueryExecutor(this),
+import 'communication.dart';
+import 'protocol.dart';
+
+/// The client part of a remote moor communication scheme.
+class MoorClient {
+  final MoorCommunication _channel;
+
+  late final _RemoteStreamQueryStore _streamStore =
+      _RemoteStreamQueryStore(this);
+
+  /// The resulting database connection. Operations on this connection are
+  /// relayed through the remote communication channel.
+  late final DatabaseConnection connection = DatabaseConnection(
+    SqlTypeSystem.defaultInstance,
+    _RemoteQueryExecutor(this),
     _streamStore,
   );
 
   late QueryExecutorUser _connectedDb;
 
-  _MoorClient(this._channel, this.typeSystem) {
+  /// Starts relaying database operations over the request channel.
+  MoorClient(StreamChannel<Object?> channel, bool debugLog)
+      : _channel = MoorCommunication(channel, debugLog) {
     _channel.setRequestHandler(_handleRequest);
-  }
-
-  static Future<_MoorClient> connect(
-      MoorIsolate isolate, bool isolateDebugLog) async {
-    final connection = await IsolateCommunication.connectAsClient(
-        isolate.connectPort, const _MoorCodec(), isolateDebugLog);
-
-    final typeSystem =
-        await connection.request<SqlTypeSystem>(_NoArgsRequest.getTypeSystem);
-    return _MoorClient(connection, typeSystem);
   }
 
   dynamic _handleRequest(Request request) {
     final payload = request.payload;
 
-    if (payload is _RunBeforeOpen) {
-      final executor = _IsolateQueryExecutor(this, payload.createdExecutor);
+    if (payload is RunBeforeOpen) {
+      final executor = _RemoteQueryExecutor(this, payload.createdExecutor);
       return _connectedDb.beforeOpen(executor, payload.details);
-    } else if (payload is _NotifyTablesUpdated) {
+    } else if (payload is NotifyTablesUpdated) {
       _streamStore.handleTableUpdates(payload.updates.toSet(), true);
     }
   }
 }
 
 abstract class _BaseExecutor extends QueryExecutor {
-  final _MoorClient client;
+  final MoorClient client;
   int? _executorId;
 
   _BaseExecutor(this.client, [this._executorId]);
@@ -49,19 +53,19 @@ abstract class _BaseExecutor extends QueryExecutor {
   @override
   Future<void> runBatched(BatchedStatements statements) {
     return client._channel
-        .request(_ExecuteBatchedStatement(statements, _executorId));
+        .request(ExecuteBatchedStatement(statements, _executorId));
   }
 
   Future<T> _runRequest<T>(
-      _StatementMethod method, String sql, List<Object?>? args) {
+      StatementMethod method, String sql, List<Object?>? args) {
     return client._channel
-        .request<T>(_ExecuteQuery(method, sql, args ?? const [], _executorId));
+        .request<T>(ExecuteQuery(method, sql, args ?? const [], _executorId));
   }
 
   @override
   Future<void> runCustom(String statement, [List<Object?>? args]) {
     return _runRequest(
-      _StatementMethod.custom,
+      StatementMethod.custom,
       statement,
       args,
     );
@@ -69,35 +73,35 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   @override
   Future<int> runDelete(String statement, List<Object?> args) {
-    return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
+    return _runRequest(StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) {
-    return _runRequest(_StatementMethod.deleteOrUpdate, statement, args);
+    return _runRequest(StatementMethod.deleteOrUpdate, statement, args);
   }
 
   @override
   Future<int> runInsert(String statement, List<Object?> args) {
-    return _runRequest(_StatementMethod.insert, statement, args);
+    return _runRequest(StatementMethod.insert, statement, args);
   }
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
       String statement, List<Object?> args) {
-    return _runRequest(_StatementMethod.select, statement, args);
+    return _runRequest(StatementMethod.select, statement, args);
   }
 }
 
-class _IsolateQueryExecutor extends _BaseExecutor {
-  _IsolateQueryExecutor(_MoorClient client, [int? executorId])
+class _RemoteQueryExecutor extends _BaseExecutor {
+  _RemoteQueryExecutor(MoorClient client, [int? executorId])
       : super(client, executorId);
 
   Completer<void>? _setSchemaVersion;
 
   @override
   TransactionExecutor beginTransaction() {
-    return _TransactionIsolateExecutor(client, _executorId);
+    return _RemoteTransactionExecutor(client, _executorId);
   }
 
   @override
@@ -108,7 +112,7 @@ class _IsolateQueryExecutor extends _BaseExecutor {
       _setSchemaVersion = null;
     }
     return client._channel
-        .request<bool>(_EnsureOpen(user.schemaVersion, _executorId));
+        .request<bool>(EnsureOpen(user.schemaVersion, _executorId));
   }
 
   @override
@@ -121,11 +125,11 @@ class _IsolateQueryExecutor extends _BaseExecutor {
   }
 }
 
-class _TransactionIsolateExecutor extends _BaseExecutor
+class _RemoteTransactionExecutor extends _BaseExecutor
     implements TransactionExecutor {
   final int? _outerExecutorId;
 
-  _TransactionIsolateExecutor(_MoorClient client, this._outerExecutorId)
+  _RemoteTransactionExecutor(MoorClient client, this._outerExecutorId)
       : super(client);
 
   Completer<bool>? _pendingOpen;
@@ -150,12 +154,12 @@ class _TransactionIsolateExecutor extends _BaseExecutor
 
   Future<bool> _openAtServer() async {
     _executorId = await client._channel.request<int>(
-        _RunTransactionAction(_TransactionControl.begin, _outerExecutorId));
+        RunTransactionAction(TransactionControl.begin, _outerExecutorId));
     return true;
   }
 
-  Future<void> _sendAction(_TransactionControl action) {
-    return client._channel.request(_RunTransactionAction(action, _executorId));
+  Future<void> _sendAction(TransactionControl action) {
+    return client._channel.request(RunTransactionAction(action, _executorId));
   }
 
   @override
@@ -163,7 +167,7 @@ class _TransactionIsolateExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    await _sendAction(_TransactionControl.rollback);
+    await _sendAction(TransactionControl.rollback);
     _done = true;
   }
 
@@ -172,16 +176,16 @@ class _TransactionIsolateExecutor extends _BaseExecutor
     // don't do anything if the transaction isn't open yet
     if (_pendingOpen == null) return;
 
-    await _sendAction(_TransactionControl.commit);
+    await _sendAction(TransactionControl.commit);
     _done = true;
   }
 }
 
-class _IsolateStreamQueryStore extends StreamQueryStore {
-  final _MoorClient client;
+class _RemoteStreamQueryStore extends StreamQueryStore {
+  final MoorClient _client;
   final Set<Completer> _awaitingUpdates = {};
 
-  _IsolateStreamQueryStore(this.client);
+  _RemoteStreamQueryStore(this._client);
 
   @override
   void handleTableUpdates(Set<TableUpdate> updates,
@@ -195,7 +199,7 @@ class _IsolateStreamQueryStore extends StreamQueryStore {
       _awaitingUpdates.add(completer);
 
       completer.complete(
-          client._channel.request(_NotifyTablesUpdated(updates.toList())));
+          _client._channel.request(NotifyTablesUpdated(updates.toList())));
 
       completer.future.catchError((_) {
         // we don't care about errors if the connection is closed before the

@@ -1,8 +1,10 @@
-## 4.0.0-nullsafety.2
+## 4.1.0-dev
 
 - Reverted the `SelectableUtils` extension, its members have been added back to the
   `Selectable` class.
 - Add `trim`, `trimLeft()` and `trimRight()` extensions for text expressions
+- New `package:moor/remote.dart` library to access databases over a `StreamChannel`.
+  The isolate library has been rewritten on top of that api.
 
 ## 4.0.0-nullsafety.1
 
