@@ -120,7 +120,7 @@ class ServerImplementation implements MoorServer {
       case StatementMethod.insert:
         return executor.runInsert(sql, args);
       case StatementMethod.select:
-        return executor.runSelect(sql, args);
+        return SelectResult(await executor.runSelect(sql, args));
     }
   }
 

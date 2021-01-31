@@ -21,6 +21,7 @@ class MoorProtocol {
   static const _tag_NotifyTablesUpdated = 8;
   static const _tag_DefaultSqlTypeSystem = 9;
   static const _tag_DirectValue = 10;
+  static const _tag_SelectResult = 11;
 
   Object? serialize(Message message) {
     if (message is Request) {
@@ -115,6 +116,26 @@ class MoorProtocol {
       // assume connection uses SqlTypeSystem.defaultInstance, this can't
       // possibly be encoded.
       return _tag_DefaultSqlTypeSystem;
+    } else if (payload is SelectResult) {
+      // We can't necessary transport maps, so encode as list
+      final rows = payload.rows;
+      if (rows.isEmpty) {
+        return const [_tag_SelectResult];
+      } else {
+        // Encode by first sending column names, followed by row data
+        final result = <Object?>[_tag_SelectResult];
+
+        final columns = rows.first.keys.toList();
+        result
+          ..add(columns.length)
+          ..addAll(columns);
+
+        result.add(rows.length);
+        for (final row in rows) {
+          result.addAll(row.values);
+        }
+        return result;
+      }
     } else {
       return [_tag_DirectValue, payload];
     }
@@ -182,6 +203,26 @@ class MoorProtocol {
           );
         }
         return NotifyTablesUpdated(updates);
+      case _tag_SelectResult:
+        if (fullMessage!.length == 1) {
+          // Empty result set, no data
+          return const SelectResult([]);
+        }
+
+        final columnCount = readInt(1);
+        final columns = fullMessage.sublist(2, 2 + columnCount).cast<String>();
+        final rows = readInt(2 + columnCount);
+
+        final result = <Map<String, Object?>>[];
+        for (var i = 0; i < rows; i++) {
+          final rowOffset = 3 + columnCount + i * columnCount;
+
+          result.add({
+            for (var c = 0; c < columnCount; c++)
+              columns[c]: fullMessage[rowOffset + c]
+          });
+        }
+        return SelectResult(result);
       case _tag_DirectValue:
         return encoded[1];
     }
@@ -347,4 +388,10 @@ class NotifyTablesUpdated {
   final List<TableUpdate> updates;
 
   NotifyTablesUpdated(this.updates);
+}
+
+class SelectResult {
+  final List<Map<String, Object?>> rows;
+
+  const SelectResult(this.rows);
 }

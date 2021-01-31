@@ -94,3 +94,61 @@ WebDatabase.withStorage(await MoorWebStorage.indexedDbIfSupported(name))
 ```
 
 Moor will automatically migrate data from local storage to `IndexedDb` when it is available.
+
+### Using web workers
+
+Starting from moor 4.1, you can offload the database to a background thread by using 
+[Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
+Moor also supports [shared workers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker),
+which allows you to seamlessly synchronize query-streams and updates across multiple tabs!
+
+Since web workers can't use local storage, you need to use `MoorWebStorage.indexedDb` instead of
+the regular implementation.
+
+To write a web worker that will serve requests for moor, create a file called `worker.dart` in 
+the `web/` folder of your app. It could have the following content:
+
+```dart
+import 'dart:html';
+
+import 'package:moor/moor.dart';
+import 'package:moor/moor_web.dart';
+import 'package:moor/remote.dart';
+
+void main() {
+  final self = SharedWorkerGlobalScope.instance;
+  self.importScripts('sql-wasm.js');
+
+  final db = WebDatabase.withStorage(MoorWebStorage.indexedDb('worker',
+      migrateFromLocalStorage: false, inWebWorker: true));
+  final server = MoorServer(DatabaseConnection.fromExecutor(db));
+
+  self.onConnect.listen((event) {
+    final msg = event as MessageEvent;
+    server.serve(msg.ports.first.channel());
+  });
+}
+```
+
+For more information on this api, see the [remote API](https://pub.dev/documentation/moor/latest/remote/remote-library.html).
+
+Connecting to that worker is very simple with moor's web and remote apis. In your regular app code (outside of the worker),
+you can connect like this:
+
+```dart
+import 'dart:html';
+
+import 'package:moor/remote.dart';
+import 'package:moor/moor_web.dart';
+import 'package:web_worker_example/database.dart';
+
+DatabaseConnection connectToWorker() {
+    final worker = SharedWorker('worker.dart.js');
+    return remote(worker.port!.channel());
+}
+```
+
+You can pass that `DatabaseConnection` to your database by enabling the 
+`generate_connect_constructor` build option.
+For more information on the `DatabaseConnection` class, see the documentation on
+[isolates]({{< relref "../Advanced Features/isolates.md" >}}).

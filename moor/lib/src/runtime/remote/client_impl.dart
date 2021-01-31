@@ -89,8 +89,10 @@ abstract class _BaseExecutor extends QueryExecutor {
   @override
   Future<List<Map<String, Object?>>> runSelect(
       String statement, List<Object?> args) async {
-    return (await _runRequest<List>(StatementMethod.select, statement, args))
-        .cast();
+    final result = await _runRequest<SelectResult>(
+        StatementMethod.select, statement, args);
+
+    return result.rows;
   }
 }
 

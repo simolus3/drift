@@ -36,7 +36,7 @@ library remote;
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '' as self;
+//import '' as self;
 import 'moor.dart';
 
 import 'src/runtime/remote/client_impl.dart';
