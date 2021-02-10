@@ -1,6 +1,7 @@
 import 'package:moor/moor.dart' as m;
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/model/view.dart';
 import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
@@ -9,6 +10,7 @@ import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 /// library.
 class TypeMapper {
   final Map<Table, MoorTable> _engineTablesToSpecified = {};
+  final Map<View, MoorView> _engineViewsToSpecified = {};
   final bool applyTypeConvertersToVariables;
 
   TypeMapper({this.applyTypeConvertersToVariables = false});
@@ -85,6 +87,20 @@ class TypeMapper {
         return ColumnType.blob;
     }
     throw StateError('Unexpected type: $type');
+  }
+
+  /// Converts a [MoorView] into something that can be understood
+  /// by the sqlparser library.
+  View extractView(MoorView view) {
+    if (view.parserView != null) {
+      final parserView = view.parserView;
+      _engineViewsToSpecified[parserView] = view;
+      return parserView;
+    }
+    final engineView = View(name: view.name, resolvedColumns: view.columns);
+    engineView.setMeta<MoorView>(view);
+    _engineViewsToSpecified[engineView] = view;
+    return engineView;
   }
 
   /// Extracts variables and Dart templates from the [ctx]. Variables are
@@ -247,6 +263,10 @@ class TypeMapper {
 
   MoorTable tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
+  }
+
+  MoorView viewToMoor(View view) {
+    return _engineViewsToSpecified[view];
   }
 
   WrittenMoorTable writtenToMoor(s.TableWrite table) {

@@ -7,17 +7,19 @@ import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
+import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
 abstract class BaseAnalyzer {
   final List<MoorTable> tables;
+  final List<MoorView> views;
   final Step step;
 
   @protected
   final TypeMapper mapper;
   SqlEngine _engine;
 
-  BaseAnalyzer(this.tables, this.step)
+  BaseAnalyzer(this.tables, this.views, this.step)
       : mapper = TypeMapper(
           applyTypeConvertersToVariables:
               step.task.session.options.applyConvertersOnVariables,
@@ -28,8 +30,22 @@ abstract class BaseAnalyzer {
     if (_engine == null) {
       _engine = step.task.session.spawnEngine();
       tables.map(mapper.extractStructure).forEach(_engine.registerTable);
+      resolveViews();
+      views.map(mapper.extractView).forEach(_engine.registerView);
     }
     return _engine;
+  }
+
+  /// Parses the view and adds columns to its resolved columns.
+  @protected
+  void resolveViews() {
+    for (final view in views) {
+      final ctx = _engine.analyzeNode(
+          view.declaration.node, view.declaration.createSql);
+      view.parserView = const SchemaFromCreateTable(moorExtensions: true)
+          .readView(ctx, view.declaration.creatingStatement);
+      view.columns = view.parserView.resolvedColumns;
+    }
   }
 
   @protected
@@ -62,8 +78,9 @@ class SqlAnalyzer extends BaseAnalyzer {
 
   final List<SqlQuery> foundQueries = [];
 
-  SqlAnalyzer(Step step, List<MoorTable> tables, this.definedQueries)
-      : super(tables, step);
+  SqlAnalyzer(Step step, List<MoorTable> tables, List<MoorView> views,
+      this.definedQueries)
+      : super(tables, views, step);
 
   void parse() {
     for (final query in definedQueries) {

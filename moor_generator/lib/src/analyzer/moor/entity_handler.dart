@@ -4,6 +4,7 @@ import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
+import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
@@ -16,14 +17,18 @@ class EntityHandler extends BaseAnalyzer {
   AnalyzeMoorStep get moorStep => step as AnalyzeMoorStep;
 
   EntityHandler(
-      AnalyzeMoorStep step, this.file, List<MoorTable> availableTables)
-      : super(availableTables, step) {
+    AnalyzeMoorStep step,
+    this.file,
+    List<MoorTable> availableTables,
+    List<MoorView> availableViews,
+  ) : super(availableTables, availableViews, step) {
     _referenceResolver = _ReferenceResolvingVisitor(this);
   }
 
   final Map<CreateTriggerStatement, MoorTrigger> _triggers = {};
   final Map<TableInducingStatement, MoorTable> _tables = {};
   final Map<CreateIndexStatement, MoorIndex> _indexes = {};
+  final Map<CreateViewStatement, MoorView> _views = {};
 
   _ReferenceResolvingVisitor _referenceResolver;
 
@@ -56,6 +61,12 @@ class EntityHandler extends BaseAnalyzer {
 
         _lint(node, 'special @create table');
         entity.references.addAll(_findTables(node.statement));
+      } else if (entity is MoorView) {
+        final node =
+            _handleMoorDeclaration(entity, _views) as CreateViewStatement;
+        _lint(node, node.viewName);
+        entity.references.addAll(_findTables(node.query));
+        entity.references.addAll(_findViews(node.query));
       }
     }
   }
@@ -73,6 +84,12 @@ class EntityHandler extends BaseAnalyzer {
     final tablesFinder = ReferencedTablesVisitor();
     node.acceptWithoutArg(tablesFinder);
     return tablesFinder.foundTables.map(mapper.tableToMoor);
+  }
+
+  Iterable<MoorView> _findViews(AstNode node) {
+    final tablesFinder = ReferencedTablesVisitor();
+    node.acceptWithoutArg(tablesFinder);
+    return tablesFinder.foundViews.map(mapper.viewToMoor);
   }
 
   Iterable<WrittenMoorTable> _findUpdatedTables(AstNode node) {

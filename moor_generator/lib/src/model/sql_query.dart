@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/model/base_entity.dart';
 import 'package:moor_generator/src/utils/hash.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
@@ -108,7 +109,7 @@ abstract class SqlQuery {
 }
 
 class SqlSelectQuery extends SqlQuery {
-  final List<MoorTable> readsFrom;
+  final List<MoorSchemaEntity> readsFrom;
   final InferredResultSet resultSet;
 
   /// The name of the result class, as requested by the user.

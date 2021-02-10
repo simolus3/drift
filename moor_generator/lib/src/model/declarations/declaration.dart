@@ -11,6 +11,7 @@ part 'index.dart';
 part 'special_queries.dart';
 part 'tables.dart';
 part 'trigger.dart';
+part 'views.dart';
 
 /// Interface for model elements that are declared somewhere.
 abstract class HasDeclaration {

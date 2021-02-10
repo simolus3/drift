@@ -17,6 +17,7 @@ class QueryHandler {
   final TypeMapper mapper;
 
   Set<Table> _foundTables;
+  Set<View> _foundViews;
   List<FoundElement> _foundElements;
   Iterable<FoundVariable> get _foundVariables =>
       _foundElements.whereType<FoundVariable>();
@@ -75,8 +76,13 @@ class QueryHandler {
     final tableFinder = ReferencedTablesVisitor();
     _select.acceptWithoutArg(tableFinder);
     _foundTables = tableFinder.foundTables;
+    _foundViews = tableFinder.foundViews;
     final moorTables =
         _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
+    final moorViews =
+        _foundViews.map(mapper.viewToMoor).where((s) => s != null).toList();
+
+    final moorEntities = [...moorTables, ...moorViews];
 
     String requestedName;
     if (source is DeclaredMoorQuery) {
@@ -87,7 +93,7 @@ class QueryHandler {
       name,
       context,
       _foundElements,
-      moorTables,
+      moorEntities,
       _inferResultSet(),
       requestedName,
     );
@@ -118,6 +124,12 @@ class QueryHandler {
     if (nestedResults.isNotEmpty) {
       // The single table optimization doesn't make sense when nested result
       // sets are present.
+      candidatesForSingleTable.clear();
+    }
+
+    if (_foundViews.isNotEmpty) {
+      // For now we're not using the single table optimization when selecting
+      // from views.
       candidatesForSingleTable.clear();
     }
 
