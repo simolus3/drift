@@ -44,7 +44,6 @@ abstract class BaseAnalyzer {
           view.declaration.node, view.declaration.createSql);
       view.parserView = const SchemaFromCreateTable(moorExtensions: true)
           .readView(ctx, view.declaration.creatingStatement);
-      view.columns = view.parserView.resolvedColumns;
     }
   }
 

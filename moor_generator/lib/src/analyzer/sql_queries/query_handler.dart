@@ -129,7 +129,7 @@ class QueryHandler {
 
     if (_foundViews.isNotEmpty) {
       // For now we're not using the single table optimization when selecting
-      // from views.
+      // from views since we don't have view data classes yet.
       candidatesForSingleTable.clear();
     }
 

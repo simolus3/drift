@@ -81,6 +81,12 @@ class MoorParser {
       decl.file = analyzedFile;
     }
 
+    for (final entity in createdEntities) {
+      if (entity is MoorView) {
+        entity.file = analyzedFile;
+      }
+    }
+
     return analyzedFile;
   }
 }

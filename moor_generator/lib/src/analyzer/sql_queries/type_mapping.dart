@@ -97,10 +97,7 @@ class TypeMapper {
       _engineViewsToSpecified[parserView] = view;
       return parserView;
     }
-    final engineView = View(name: view.name, resolvedColumns: view.columns);
-    engineView.setMeta<MoorView>(view);
-    _engineViewsToSpecified[engineView] = view;
-    return engineView;
+    throw StateError('Views are currently only supported in moor files.');
   }
 
   /// Extracts variables and Dart templates from the [ctx]. Variables are

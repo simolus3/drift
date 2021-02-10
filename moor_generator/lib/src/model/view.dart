@@ -1,5 +1,6 @@
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import 'base_entity.dart';
@@ -15,12 +16,12 @@ class MoorView extends MoorSchemaEntity {
   /// sql queries. Note that this field is set lazily.
   View parserView;
 
+  ParsedMoorFile file;
+
   final String name;
 
   @override
   List<MoorSchemaEntity> references = [];
-
-  List<ViewColumn> columns;
 
   MoorView({
     this.declaration,
