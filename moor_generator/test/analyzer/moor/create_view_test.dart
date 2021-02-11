@@ -35,27 +35,32 @@ void main() {
       'foo|lib/table.moor': '''
         CREATE TABLE t (id INTEGER NOT NULL PRIMARY KEY, name TEXT NOT NULL);
       ''',
-      'foo|lib/view.moor': '''
-        CREATE VIEW v AS
-        SELECT id, name FROM t WHERE id % 2 = 0;
-      ''',
       'foo|lib/a.moor': '''
-        import 'view.moor';
-        CREATE VIEW random_view AS
-        SELECT name FROM v;
+        import 'table.moor';
+
+        CREATE VIEW parent_view AS
+        SELECT id, name FROM t WHERE id % 2 = 0;
+
+        CREATE VIEW child_view AS
+        SELECT name FROM parent_view;
       ''',
     });
 
     final file = await state.analyze('package:foo/a.moor');
-    final view = file.currentResult.declaredViews.single;
-    expect(view.parserView.resolvedColumns.length, equals(1));
-    final column = view.parserView.resolvedColumns.single;
+    final parentView = file.currentResult.declaredViews
+        .singleWhere((element) => element.name == 'parent_view');
+    final childView = file.currentResult.declaredViews
+        .singleWhere((element) => element.name == 'child_view');
+    expect(parentView.parserView.resolvedColumns.length, equals(2));
+    expect(childView.parserView.resolvedColumns.length, equals(1));
+    final column = childView.parserView.resolvedColumns.single;
 
     state.close();
 
-    expect(column.type.type, BasicType.text);
-
+    // Currently failing:
+    // is it a problem with sqlparser?
     expect(file.errors.errors, isEmpty);
+    expect(column.type.type, BasicType.text);
   });
 
   test('view without table', () async {

@@ -13,6 +13,7 @@ import 'package:moor_generator/src/analyzer/sql_queries/custom_result_class.dart
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/analyzer/runner/task.dart';
+import 'package:moor_generator/src/analyzer/view/view_analyzer.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/view.dart';
 import 'package:moor_generator/src/utils/entity_reference_sorter.dart';

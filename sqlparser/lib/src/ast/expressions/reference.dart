@@ -8,12 +8,13 @@ part of '../ast.dart';
 /// 2 * c AS d FROM table", the "c" after the "2 *" is a reference that refers
 /// to the expression "COUNT(*)".
 class Reference extends Expression with ReferenceOwner {
-  final String? tableName;
+  /// Entity can be either a table or a view.
+  final String? entityName;
   final String columnName;
 
   Column? get resolvedColumn => resolved as Column?;
 
-  Reference({this.tableName, required this.columnName});
+  Reference({this.entityName, required this.columnName});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -28,8 +29,8 @@ class Reference extends Expression with ReferenceOwner {
 
   @override
   String toString() {
-    if (tableName != null) {
-      return 'Reference to the column $tableName.$columnName';
+    if (entityName != null) {
+      return 'Reference to the column $entityName.$columnName';
     } else {
       return 'Reference to the column $columnName';
     }

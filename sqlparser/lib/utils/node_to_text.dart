@@ -909,9 +909,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitReference(Reference e, void arg) {
     var hasTable = false;
-    if (e.tableName != null) {
+    if (e.entityName != null) {
       hasTable = true;
-      _identifier(e.tableName!, spaceAfter: false);
+      _identifier(e.entityName!, spaceAfter: false);
       _symbol('.');
     }
 

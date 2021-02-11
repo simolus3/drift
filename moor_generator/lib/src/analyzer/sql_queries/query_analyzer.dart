@@ -30,21 +30,9 @@ abstract class BaseAnalyzer {
     if (_engine == null) {
       _engine = step.task.session.spawnEngine();
       tables.map(mapper.extractStructure).forEach(_engine.registerTable);
-      resolveViews();
       views.map(mapper.extractView).forEach(_engine.registerView);
     }
     return _engine;
-  }
-
-  /// Parses the view and adds columns to its resolved columns.
-  @protected
-  void resolveViews() {
-    for (final view in views) {
-      final ctx = _engine.analyzeNode(
-          view.declaration.node, view.declaration.createSql);
-      view.parserView = const SchemaFromCreateTable(moorExtensions: true)
-          .readView(ctx, view.declaration.creatingStatement);
-    }
   }
 
   @protected
