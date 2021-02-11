@@ -5,8 +5,12 @@ import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class ViewAnalyzer extends BaseAnalyzer {
-  ViewAnalyzer(Step step, List<MoorTable> tables, List<MoorView> views)
-      : super(tables, views, step);
+  final List<MoorView> viewsToAnalyze;
+
+  ViewAnalyzer(Step step, List<MoorTable> tables, this.viewsToAnalyze)
+      : // We're about to analyze views and add them to the engine, but don't
+        // add the unfinished views right away
+        super(tables, const [], step);
 
   List<MoorView> _viewsOrder;
   Set<MoorView> _resolvedViews;
@@ -16,7 +20,7 @@ class ViewAnalyzer extends BaseAnalyzer {
     _viewsOrder = [];
     _resolvedViews = {};
     // Topologically sorting all the views.
-    for (final view in views) {
+    for (final view in viewsToAnalyze) {
       if (!_resolvedViews.contains(view)) {
         _topologicalSort(view);
       }
@@ -32,6 +36,8 @@ class ViewAnalyzer extends BaseAnalyzer {
       }
       final ctx =
           engine.analyzeNode(view.declaration.node, view.file.parseResult.sql);
+      lintContext(ctx, view.name);
+
       view.parserView = const SchemaFromCreateTable(moorExtensions: true)
           .readView(ctx, view.declaration.creatingStatement);
       engine.registerView(mapper.extractView(view));

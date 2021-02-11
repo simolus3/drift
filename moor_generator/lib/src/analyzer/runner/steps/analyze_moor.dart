@@ -22,7 +22,7 @@ class AnalyzeMoorStep extends AnalyzingStep {
         .followedBy(parseResult.declaredViews)
         .toList();
 
-    EntityHandler(this, parseResult, availableTables, availableViews).handle();
+    EntityHandler(this, parseResult, availableTables).handle();
 
     ViewAnalyzer(this, availableTables, availableViews).resolve();
 

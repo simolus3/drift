@@ -4,6 +4,7 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
@@ -33,6 +34,16 @@ abstract class BaseAnalyzer {
       views.map(mapper.extractView).forEach(_engine.registerView);
     }
     return _engine;
+  }
+
+  @protected
+  void lintContext(AnalysisContext context, String displayName) {
+    context.errors.forEach(report);
+
+    // Additional, moor-specific analysis
+    final linter = Linter(context, mapper);
+    linter.reportLints();
+    reportLints(linter.lints, name: displayName);
   }
 
   @protected

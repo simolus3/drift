@@ -57,8 +57,6 @@ void main() {
 
     state.close();
 
-    // Currently failing:
-    // is it a problem with sqlparser?
     expect(file.errors.errors, isEmpty);
     expect(column.type.type, BasicType.text);
   });
@@ -81,6 +79,29 @@ void main() {
           (e) => e.message,
           'message',
           contains('Could not find t.'),
+        )));
+  });
+
+  test('does not allow nested columns', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': '''
+        CREATE TABLE foo (bar INTEGER NOT NULL PRIMARY KEY);
+      
+        CREATE VIEW v AS SELECT foo.** FROM foo;
+      ''',
+    });
+
+    final file = await state.analyze('package:foo/a.moor');
+
+    state.close();
+
+    expect(
+        file.errors.errors,
+        contains(isA<MoorError>().having(
+          (e) => e.message,
+          'message',
+          contains('Nested star columns may only appear in a top-level select '
+              'query.'),
         )));
   });
 }
