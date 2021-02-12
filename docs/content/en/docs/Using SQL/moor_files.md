@@ -327,9 +327,8 @@ At the moment, the following statements can appear in a `.moor` file.
 
 - `import 'other.moor'`: Import all tables and queries declared in the other file
    into the current file.
-- DDL statements: You can put `CREATE TABLE`, `CREATE INDEX` and `CREATE TRIGGER` statements
-  into moor files. Views are not currently supported, but [#162](https://github.com/simolus3/moor/issues/162)
-  tracks support for them.
+- DDL statements: You can put `CREATE TABLE`, `CREATE VIEW`, `CREATE INDEX` and `CREATE TRIGGER` statements
+  into moor files.
 - Query statements: We support `INSERT`, `SELECT`, `UPDATE` and `DELETE` statements.
 
 All imports must come before DDL statements, and those must come before named queries.

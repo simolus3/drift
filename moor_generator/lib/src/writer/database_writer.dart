@@ -85,6 +85,15 @@ class DatabaseWriter {
               '${asDartLiteral(entity.createSql(scope.options))})',
           options: scope.generationOptions,
         );
+      } else if (entity is MoorView) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf(),
+          getterName: entity.dbGetterName,
+          returnType: 'View',
+          code: 'View(${asDartLiteral(entity.displayName)}, '
+              '${asDartLiteral(entity.createSql(scope.options))})',
+          options: scope.generationOptions,
+        );
       }
     }
 

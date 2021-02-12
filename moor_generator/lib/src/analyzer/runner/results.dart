@@ -3,12 +3,16 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
+import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 abstract class FileResult {
   final List<MoorSchemaEntity> declaredEntities;
 
-  Iterable<MoorTable> get declaredTables => declaredEntities.whereType();
+  Iterable<MoorTable> get declaredTables =>
+      declaredEntities.whereType<MoorTable>();
+  Iterable<MoorView> get declaredViews =>
+      declaredEntities.whereType<MoorView>();
 
   FileResult(this.declaredEntities);
 }

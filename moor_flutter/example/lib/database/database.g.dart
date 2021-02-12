@@ -491,7 +491,7 @@ abstract class _$Database extends GeneratedDatabase {
   Future<int> _resetCategory(int var1) {
     return customUpdate(
       'UPDATE todos SET category = NULL WHERE category = ?',
-      variables: [Variable.withInt(var1)],
+      variables: [Variable<int>(var1)],
       updates: {todos},
       updateKind: UpdateKind.update,
     );
@@ -521,8 +521,8 @@ class CategoriesWithCountResult {
   final String desc;
   final int amount;
   CategoriesWithCountResult({
-    this.id,
-    this.desc,
-    this.amount,
+    @required this.id,
+    @required this.desc,
+    @required this.amount,
   });
 }

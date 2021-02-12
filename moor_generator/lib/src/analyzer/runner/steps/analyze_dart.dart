@@ -74,8 +74,9 @@ class AnalyzeDartStep extends AnalyzingStep {
           .expand((f) => f.resolvedQueries);
 
       final availableTables = availableEntities.whereType<MoorTable>().toList();
-      final parser =
-          SqlAnalyzer(this, availableTables, accessor.declaredQueries);
+      final availableViews = availableEntities.whereType<MoorView>().toList();
+      final parser = SqlAnalyzer(
+          this, availableTables, availableViews, accessor.declaredQueries);
       parser.parse();
 
       accessor

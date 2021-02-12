@@ -8,7 +8,7 @@ import 'package:sqlparser/sqlparser.dart';
 typedef LogFunction = void Function(dynamic message,
     [Object error, StackTrace stackTrace]);
 
-/// Base class for errors that can be presented to an user.
+/// Base class for errors that can be presented to a user.
 class MoorError {
   final Severity severity;
   final String message;

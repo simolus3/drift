@@ -18,10 +18,17 @@ class AnalyzeMoorStep extends AnalyzingStep {
         .followedBy(parseResult.declaredTables)
         .toList();
 
-    final parser = SqlAnalyzer(this, availableTables, parseResult.queries)
-      ..parse();
+    final availableViews = _availableViews(transitiveImports)
+        .followedBy(parseResult.declaredViews)
+        .toList();
 
     EntityHandler(this, parseResult, availableTables).handle();
+
+    ViewAnalyzer(this, availableTables, availableViews).resolve();
+
+    final parser =
+        SqlAnalyzer(this, availableTables, availableViews, parseResult.queries)
+          ..parse();
 
     parseResult.resolvedQueries = parser.foundQueries;
   }

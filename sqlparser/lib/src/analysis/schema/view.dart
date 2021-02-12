@@ -9,7 +9,7 @@ class View extends NamedResultSet with HasMetaMixin implements HumanReadable {
   @override
   final List<ViewColumn> resolvedColumns;
 
-  /// The ast node that created this table
+  /// The ast node that created this view
   final CreateViewStatement? definition;
 
   @override

@@ -88,7 +88,7 @@ void main() {
       BinaryExpression(
         NumericLiteral(3, token(TokenType.numberLiteral)),
         token(TokenType.star),
-        Reference(tableName: 'd', columnName: 'id'),
+        Reference(entityName: 'd', columnName: 'id'),
       ),
     );
   });

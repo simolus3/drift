@@ -721,7 +721,7 @@ class Parser {
         final second =
             _consumeIdentifier('Expected a column name here', lenient: true);
         return Reference(
-            tableName: first.identifier, columnName: second.identifier)
+            entityName: first.identifier, columnName: second.identifier)
           ..setSpan(first, second);
       } else if (_matchOne(TokenType.leftParen)) {
         // regular function invocation

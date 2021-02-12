@@ -194,7 +194,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
               message: 'Unknown table: ${resultColumn.tableName}',
               relevantNode: resultColumn,
             ));
-          })!;
+          });
+          if (tableResolver == null) continue;
 
           visibleColumnsForStar = tableResolver.resultSet!.resolvedColumns;
         } else {

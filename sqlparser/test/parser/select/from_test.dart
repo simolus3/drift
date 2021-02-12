@@ -162,7 +162,7 @@ WHERE json_each.value LIKE '704-%';
           distinct: true,
           columns: [
             ExpressionResultColumn(
-              expression: Reference(tableName: 'user', columnName: 'name'),
+              expression: Reference(entityName: 'user', columnName: 'name'),
             ),
           ],
           from: JoinClause(
@@ -173,14 +173,14 @@ WHERE json_each.value LIKE '704-%';
                 query: TableValuedFunction(
                   'json_each',
                   ExprFunctionParameters(parameters: [
-                    Reference(tableName: 'user', columnName: 'phone')
+                    Reference(entityName: 'user', columnName: 'phone')
                   ]),
                 ),
               ),
             ],
           ),
           where: StringComparisonExpression(
-            left: Reference(tableName: 'json_each', columnName: 'value'),
+            left: Reference(entityName: 'json_each', columnName: 'value'),
             operator: token(TokenType.like),
             right: StringLiteral(stringLiteral('704-%')),
           ),

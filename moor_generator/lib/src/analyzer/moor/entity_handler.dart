@@ -2,7 +2,6 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
-import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -16,8 +15,13 @@ class EntityHandler extends BaseAnalyzer {
   AnalyzeMoorStep get moorStep => step as AnalyzeMoorStep;
 
   EntityHandler(
-      AnalyzeMoorStep step, this.file, List<MoorTable> availableTables)
-      : super(availableTables, step) {
+    AnalyzeMoorStep step,
+    this.file,
+    List<MoorTable> availableTables,
+  ) :
+        // we'll analyze views later, so pass an empty list for now. Otherwise
+        // the incomplete views would be added to the engine.
+        super(availableTables, const [], step) {
     _referenceResolver = _ReferenceResolvingVisitor(this);
   }
 
@@ -62,11 +66,7 @@ class EntityHandler extends BaseAnalyzer {
 
   void _lint(AstNode node, String displayName) {
     final context = engine.analyzeNode(node, file.parseResult.sql);
-    context.errors.forEach(report);
-
-    final linter = Linter(context, mapper);
-    linter.reportLints();
-    reportLints(linter.lints, name: displayName);
+    lintContext(context, displayName);
   }
 
   Iterable<MoorTable> _findTables(AstNode node) {

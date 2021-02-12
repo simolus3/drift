@@ -10,3 +10,4 @@ export 'table.dart';
 export 'trigger.dart';
 export 'types.dart';
 export 'used_type_converter.dart';
+export 'view.dart';

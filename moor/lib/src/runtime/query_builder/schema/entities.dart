@@ -47,6 +47,27 @@ class Index extends DatabaseSchemaEntity {
   Index(this.entityName, this.createIndexStmt);
 }
 
+/// A sqlite view.
+///
+/// In moor, views can only be declared in `.moor` files.
+///
+/// For more information on views, see the [CREATE VIEW][sqlite-docs]
+/// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
+///
+/// [sqlite-docs]: https://www.sqlite.org/lang_createview.html
+/// [sql-tut]: https://www.sqlitetutorial.net/sqlite-create-view/
+class View extends DatabaseSchemaEntity {
+  @override
+  final String entityName;
+
+  /// The `CREATE VIEW` sql statement that can be used to create this view.
+  final String createViewStmt;
+
+  /// Creates an view model by the [createViewStmt] and its [entityName].
+  /// Mainly used by generated code.
+  View(this.entityName, this.createViewStmt);
+}
+
 /// An internal schema entity to run an sql statement when the database is
 /// created.
 ///
