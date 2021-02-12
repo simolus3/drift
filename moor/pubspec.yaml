@@ -28,7 +28,7 @@ dev_dependencies:
   path: ^1.8.0-nullsafety.3
   build_runner: ^1.10.4
   test: ^1.16.0-nullsafety
-  mockito: ^5.0.0-nullsafety
+  mockito: ^5.0.0-nullsafety.7
   rxdart: ^0.26.0-nullsafety
 
 dependency_overrides:

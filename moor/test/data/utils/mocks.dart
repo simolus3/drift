@@ -136,6 +136,6 @@ DatabaseConnection createConnection(QueryExecutor executor,
 
 extension on Mock {
   T _nsm<T>(Invocation invocation, Object? returnValue) {
-    return noSuchMethod(invocation, returnValue) as T;
+    return noSuchMethod(invocation, returnValue: returnValue) as T;
   }
 }
