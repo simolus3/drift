@@ -36,8 +36,8 @@ void main() {
       final nameFunction = library.lookupFunction<sqlite3_keyword_name_native,
           sqlite3_keyword_name>('sqlite3_keyword_name');
 
-      final charOut = allocate<Pointer<Uint8>>();
-      final lengthOut = allocate<Int32>();
+      final charOut = malloc<Pointer<Uint8>>();
+      final lengthOut = malloc<Int32>();
 
       final missingNames = <String>[];
 
@@ -54,8 +54,8 @@ void main() {
 
       missingNames.sort();
 
-      free(charOut);
-      free(lengthOut);
+      malloc.free(charOut);
+      malloc.free(lengthOut);
 
       expect(missingNames, isEmpty);
     },

@@ -1,6 +1,6 @@
 name: sqlparser
 description: Parses sqlite statements and performs static analysis on them
-version: 0.13.0-nullsafety.0
+version: 0.14.0-dev
 homepage: https://github.com/simolus3/moor/tree/develop/sqlparser
 #homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
@@ -9,13 +9,13 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  meta: ^1.3.0-nullsafety
-  collection: ^1.15.0-nullsafety.4
-  source_span: ^1.8.0-nullsafety
-  charcode: ^1.2.0-nullsafety
+  meta: ^1.3.0
+  collection: ^1.15.0
+  source_span: ^1.8.0
+  charcode: ^1.2.0
 
 dev_dependencies:
-  test: ^1.16.0-nullsafety
-  path: ^1.8.0-nullsafety
-  ffi: ^0.2.0-nullsafety
-  sqlite3: ^0.1.9-nullsafety
+  test: ^1.16.0
+  path: ^1.8.0
+  ffi: ^1.0.0
+  sqlite3: ^1.0.0

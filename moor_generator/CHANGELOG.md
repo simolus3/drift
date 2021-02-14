@@ -1,3 +1,8 @@
+## 4.1.0
+
+- Stabilized support for generating null-safe code
+- Initial support for views in moor files. Big thanks to [Hossein Yousefi](https://github.com/HosseinYousefi)!
+
 ## 4.0.0-dev
 
 - Remove the `legacy_type_inference` option
