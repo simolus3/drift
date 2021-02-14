@@ -24,25 +24,21 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     final scope = e.scope = e.scope.createChild();
     final registeredTable = scope.resolve(e.tableName) as Table?;
 
+    // This is used so that tables can refer to their own columns. Code using
+    // tables would first register the table and then run analysis again.
     if (registeredTable != null) {
       scope.availableColumns = registeredTable.resolvedColumns;
       for (final column in registeredTable.resolvedColumns) {
         scope.register(column.name, column);
       }
     }
+
+    visitChildren(e, arg);
   }
 
   @override
   void visitCreateViewStatement(CreateViewStatement e, void arg) {
-    final scope = e.scope = e.scope.createChild();
-    final registeredView = scope.resolve(e.viewName) as View?;
-    if (registeredView != null) {
-      scope.availableColumns = registeredView.resolvedColumns;
-      for (final column in registeredView.resolvedColumns) {
-        scope.register(column.name, column);
-      }
-    }
-
+    e.scope = e.scope.createChild();
     visitChildren(e, arg);
   }
 
