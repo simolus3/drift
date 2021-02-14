@@ -1,3 +1,8 @@
+## 4.0.0-nullsafety
+
+- Support moor version 4
+- Migrate to null-safety
+
 ## 3.1.0
 
 Don't write the schema version to the database if the migration throws an exception.
