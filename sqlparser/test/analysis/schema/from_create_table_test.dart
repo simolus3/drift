@@ -83,10 +83,11 @@ void main() {
   });
 
   group('can read views', () {
-    final engine = SqlEngine()..registerTable(demoTable);
-
     View readView(String sql) {
+      final engine = SqlEngine()..registerTable(demoTable);
       final context = engine.analyze(sql);
+      expect(context.errors, isEmpty);
+
       final stmt = context.root as CreateViewStatement;
       return const SchemaFromCreateTable().readView(context, stmt);
     }
@@ -108,6 +109,14 @@ void main() {
 
       expect(view.name, 'another_view');
       expect(view.resolvedColumns.map((e) => e.name), ['foo', 'bar']);
+    });
+
+    test('with WITH clause', () {
+      final view = readView('CREATE VIEW my_view AS '
+          'WITH foo AS (SELECT * FROM demo) SELECT * FROM foo;');
+
+      expect(view.name, 'my_view');
+      expect(view.resolvedColumns.map((e) => e.name), ['id', 'content']);
     });
   });
 

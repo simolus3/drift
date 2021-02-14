@@ -39,10 +39,11 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     if (registeredView != null) {
       scope.availableColumns = registeredView.resolvedColumns;
       for (final column in registeredView.resolvedColumns) {
-        print(column.name);
         scope.register(column.name, column);
       }
     }
+
+    visitChildren(e, arg);
   }
 
   @override

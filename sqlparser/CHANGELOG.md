@@ -1,3 +1,7 @@
+## 0.14.0-dev
+
+- Fix views using common table expressions
+
 ## 0.13.0-nullsafety.0
 
 - Parse ordering in table key constraints
