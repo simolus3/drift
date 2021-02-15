@@ -3,10 +3,17 @@ title: Encryption
 description: Use moor on encrypted databases
 ---
 
+There are two ways to use moor on encrypted databases. 
+The `encrypted_moor` package is similar to `moor_flutter` and uses a platform plugin written in
+Java.
+Alternatively, you can use the ffi-based implementation with the `sqlcipher_flutter_libs` package.
+
+## Using `encrypted_moor`
+
 Starting from 1.7, we have a version of moor that can work with encrypted databases by using the
 [sqflite_sqlcipher](https://pub.dev/packages/sqflite_sqlcipher) library
 by [@davidmartos96](https://github.com/davidmartos96). To use it, you need to
-remove the dependency on `moor_flutter` and `moor_ffi` from your `pubspec.yaml` and replace it
+remove the dependency on `moor_flutter` from your `pubspec.yaml` and replace it
 with this:
 ```yaml
 dependencies:
@@ -17,12 +24,12 @@ dependencies:
     path: extras/encryption 
 ```
 
-Instead of importing `package:moor_flutter/moor_flutter` in your apps, you would then import
-both `package:moor/moor.dart` and `package:encrypted_moor/encrypted_moor.dart`.
+Instead of importing `package:moor_flutter/moor_flutter` (or `package:moor/ffi.dart`) in your apps, 
+you would then import both `package:moor/moor.dart` and `package:encrypted_moor/encrypted_moor.dart`.
 
-Finally, you can replace `FlutterQueryExecutor` with an `EncryptedExecutor`.
+Finally, you can replace `FlutterQueryExecutor` (or an `VmDatabase`) with an `EncryptedExecutor`.
 
-## Extra setup on Android and iOS
+### Extra setup on Android and iOS
 
 Some extra steps may have to be taken in your project so that SQLCipher works correctly. For example, the ProGuard configuration on Android for apps built for release.
 
@@ -50,4 +57,17 @@ VmDatabase(
     rawDb.execute("PRAGMA key = 'passphrase';");
   }
 );
+```
+
+On Android, you also need to adapt the opening behavior of the `sqlite3` package to use the encrypted library instead
+of the regular `libsqlite3.so`:
+
+```dart
+import 'package:sqlite3/open.dart';
+
+// call this method before using moor
+void setupSqlcipher() {
+  open.overrideFor(
+      OperatingSystem.android, () => DynamicLibrary.open('libsqlcipher.so'));
+}
 ```
