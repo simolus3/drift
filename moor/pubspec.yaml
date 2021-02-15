@@ -14,7 +14,6 @@ dependencies:
   collection: ^1.15.0
   meta: ^1.3.0
   pedantic: ^1.10.0
-  synchronized: ^3.0.0-nullsafety.1
   stream_channel: ^2.1.0
   sqlite3: ">=0.1.9-nullsafety <2.0.0"
 

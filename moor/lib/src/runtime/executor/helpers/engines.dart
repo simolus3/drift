@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:moor/moor.dart';
+import 'package:moor/src/utils/synchronized.dart';
 import 'package:pedantic/pedantic.dart';
-import 'package:synchronized/synchronized.dart';
 
 import 'delegates.dart';
 
