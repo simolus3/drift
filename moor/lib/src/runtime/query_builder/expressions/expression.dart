@@ -101,6 +101,14 @@ abstract class Expression<D> implements FunctionParameter {
   }
 }
 
+Expression<bool> exists(Query subquery) {
+  return _ExistsExpression(subquery, false);
+}
+
+Expression<bool> notExists(Query subquery) {
+  return _ExistsExpression(subquery, true);
+}
+
 /// Used to order the precedence of sql expressions so that we can avoid
 /// unnecessary parens when generating sql statements.
 class Precedence implements Comparable<Precedence> {
