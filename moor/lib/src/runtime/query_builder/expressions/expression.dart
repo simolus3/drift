@@ -102,11 +102,11 @@ abstract class Expression<D> implements FunctionParameter {
 }
 
 Expression<bool> exists(Query subquery) {
-  return _ExistsExpression(subquery, false);
+  return _ExistsExpression(Subquery(subquery), false);
 }
 
 Expression<bool> notExists(Query subquery) {
-  return _ExistsExpression(subquery, true);
+  return _ExistsExpression(Subquery(subquery), true);
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid
