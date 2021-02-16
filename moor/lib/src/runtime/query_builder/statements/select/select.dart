@@ -5,7 +5,9 @@ part of '../../query_builder.dart';
 typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 
 /// The abstract base class for all select statements in the moor api.
-@internal
+///
+/// Users are not allowed to extend, implement or mix-in this class.
+@sealed
 abstract class BaseSelectStatement extends Component {
   int get _returnedColumnCount;
 }
