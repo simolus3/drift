@@ -2,7 +2,7 @@ part of '../query_builder.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
-abstract class Query<T extends Table, D extends DataClass> {
+abstract class Query<T extends Table, D extends DataClass> extends Component {
   /// The database this statement should be sent to.
   @protected
   DatabaseConnectionUser database;
@@ -33,6 +33,28 @@ abstract class Query<T extends Table, D extends DataClass> {
   @visibleForOverriding
   void writeStartPart(GenerationContext ctx);
 
+  @override
+  void writeInto(GenerationContext context) {
+    // whether we need to insert a space before writing the next component
+    var needsWhitespace = false;
+
+    void writeWithSpace(Component? component) {
+      if (component == null) return;
+
+      if (needsWhitespace) context.writeWhitespace();
+      component.writeInto(context);
+      needsWhitespace = true;
+    }
+
+    writeStartPart(context);
+    needsWhitespace = true;
+
+    writeWithSpace(whereExpr);
+    writeWithSpace(_groupBy);
+    writeWithSpace(orderByExpr);
+    writeWithSpace(limitExpr);
+  }
+
   /// Constructs the query that can then be sent to the database executor.
   ///
   /// This is used internally by moor to run the query. Users should use the
@@ -40,28 +62,8 @@ abstract class Query<T extends Table, D extends DataClass> {
   /// [moor-docs]: https://moor.simonbinder.eu/docs/getting-started/writing_queries/
   GenerationContext constructQuery() {
     final ctx = GenerationContext.fromDb(database);
-
-    // whether we need to insert a space before writing the next component
-    var needsWhitespace = false;
-
-    void writeWithSpace(Component? component) {
-      if (component == null) return;
-
-      if (needsWhitespace) ctx.writeWhitespace();
-      component.writeInto(ctx);
-      needsWhitespace = true;
-    }
-
-    writeStartPart(ctx);
-    needsWhitespace = true;
-
-    writeWithSpace(whereExpr);
-    writeWithSpace(_groupBy);
-    writeWithSpace(orderByExpr);
-    writeWithSpace(limitExpr);
-
+    writeInto(ctx);
     ctx.buffer.write(';');
-
     return ctx;
   }
 }

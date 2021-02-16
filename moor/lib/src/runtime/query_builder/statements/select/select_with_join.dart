@@ -6,7 +6,8 @@ part of '../../query_builder.dart';
 // queries that are more complex than SimpleSelectStatement
 class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     extends Query<FirstT, FirstD>
-    with LimitContainerMixin, Selectable<TypedResult> {
+    with LimitContainerMixin, Selectable<TypedResult>
+    implements BaseSelectStatement {
   /// Used internally by moor, users should use [SimpleSelectStatement.join]
   /// instead.
   JoinedSelectStatement(DatabaseConnectionUser database,
@@ -37,6 +38,12 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   /// The tables this select statement reads from
   @visibleForOverriding
   Set<TableInfo> get watchedTables => _queriedTables().toSet();
+
+  @override
+  int get _returnedColumnCount {
+    return _joins.fold(_selectedColumns.length,
+        (prev, join) => prev + join.table.$columns.length);
+  }
 
   /// Lists all tables this query reads from.
   ///

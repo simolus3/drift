@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 
 import 'package:moor/moor.dart';
+import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
 
 class _UnknownExpr extends Expression {
@@ -32,5 +33,23 @@ void main() {
     expect(expr.cast<DateTime>(), generates('CAST(c AS INTEGER)'));
     expect(expr.cast<double>(), generates('CAST(c AS REAL)'));
     expect(expr.cast<Uint8List>(), generates('CAST(c AS BLOB)'));
+  });
+
+  test('generates subqueries', () {
+    final db = TodoDb();
+
+    expect(
+        subqueryExpression<String>(
+            db.selectOnly(db.users)..addColumns([db.users.name])),
+        generates('(SELECT users.name AS "users.name" FROM users)'));
+  });
+
+  test('does not allow subqueries with more than one column', () {
+    final db = TodoDb();
+
+    expect(
+        () => subqueryExpression<String>(db.select(db.users)),
+        throwsA(isArgumentError.having((e) => e.message, 'message',
+            contains('Must return exactly one column'))));
   });
 }

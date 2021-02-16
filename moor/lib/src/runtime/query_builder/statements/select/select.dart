@@ -4,10 +4,17 @@ part of '../../query_builder.dart';
 /// a table.
 typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 
+/// The abstract base class for all select statements in the moor api.
+@internal
+abstract class BaseSelectStatement extends Component {
+  int get _returnedColumnCount;
+}
+
 /// A select statement that doesn't use joins
 class SimpleSelectStatement<T extends Table, D extends DataClass>
     extends Query<T, D>
-    with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D> {
+    with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D>
+    implements BaseSelectStatement {
   /// Whether duplicate rows should be eliminated from the result (this is a
   /// `SELECT DISTINCT` statement in sql). Defaults to false.
   final bool distinct;
@@ -21,6 +28,9 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// The tables this select statement reads from.
   @visibleForOverriding
   Set<TableInfo> get watchedTables => {table};
+
+  @override
+  int get _returnedColumnCount => table.$columns.length;
 
   @override
   void writeStartPart(GenerationContext ctx) {
