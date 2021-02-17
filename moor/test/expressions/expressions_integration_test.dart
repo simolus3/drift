@@ -74,4 +74,20 @@ void main() {
 
     expect(eval(expr), completion(3));
   });
+
+  test('subquery', () {
+    final query = db.selectOnly(db.users)..addColumns([db.users.name]);
+    final expr = subqueryExpression<String>(query);
+
+    expect(eval(expr), completion('User name'));
+  });
+
+  test('is in subquery', () {
+    final query = db.selectOnly(db.users)..addColumns([db.users.name]);
+    final match = Variable.withString('User name').isInQuery(query);
+    final noMatch = Variable.withString('Another name').isInQuery(query);
+
+    expect(eval(match), completion(isTrue));
+    expect(eval(noMatch), completion(isFalse));
+  });
 }

@@ -68,6 +68,24 @@ abstract class Expression<D> implements FunctionParameter {
     return _InExpression(this, values.toList(), true);
   }
 
+  /// An expression checking whether `this` is included in any row of the
+  /// provided [select] statement.
+  ///
+  /// The [select] statement may only have one column.
+  Expression<bool?> isInQuery(BaseSelectStatement select) {
+    _checkSubquery(select);
+    return _InSelectExpression(select, this, false);
+  }
+
+  /// An expression checking whether `this` is _not_ included in any row of the
+  /// provided [select] statement.
+  ///
+  /// The [select] statement may only have one column.
+  Expression<bool?> isNotInQuery(BaseSelectStatement select) {
+    _checkSubquery(select);
+    return _InSelectExpression(select, this, true);
+  }
+
   /// Writes this expression into the [GenerationContext], assuming that there's
   /// an outer expression with [precedence]. If the [Expression.precedence] of
   /// `this` expression is lower, it will be wrapped in
@@ -392,5 +410,43 @@ class FunctionCallExpression<R> extends Expression<R> {
     return other is FunctionCallExpression &&
         other.functionName == functionName &&
         _equality.equals(other.arguments, arguments);
+  }
+}
+
+void _checkSubquery(BaseSelectStatement statement) {
+  final columns = statement._returnedColumnCount;
+  if (columns != 1) {
+    throw ArgumentError.value(statement, 'statement',
+        'Must return exactly one column (actually returns $columns)');
+  }
+}
+
+/// Creates a subquery expression from the given [statement].
+///
+/// The statement, which can be created via [DatabaseConnectionUser.select] in
+/// a database class, must return exactly one row with exactly one column.
+Expression<R> subqueryExpression<R>(BaseSelectStatement statement) {
+  _checkSubquery(statement);
+  return _SubqueryExpression<R>(statement);
+}
+
+class _SubqueryExpression<R> extends Expression<R> {
+  final BaseSelectStatement statement;
+
+  _SubqueryExpression(this.statement);
+
+  @override
+  void writeInto(GenerationContext context) {
+    context.buffer.write('(');
+    statement.writeInto(context);
+    context.buffer.write(')');
+  }
+
+  @override
+  int get hashCode => $mrjf(statement.hashCode);
+
+  @override
+  bool operator ==(Object? other) {
+    return other is _SubqueryExpression && other.statement == statement;
   }
 }

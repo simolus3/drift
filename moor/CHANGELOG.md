@@ -2,8 +2,11 @@
 
 - Reverted the `SelectableUtils` extension, its members have been added back to the
   `Selectable` class.
-- Add `trim`, `trimLeft()` and `trimRight()` extensions for text expressions
-- New `package:moor/remote.dart` library to access databases over a `StreamChannel`.
+- Add `trim()`, `trimLeft()` and `trimRight()` extensions for text expressions
+- Initial support for sub-queries in the Dart api:
+  - `Expression.isInQuery` and `isNotInQuery` for `IS IN (SELECT ...)` matching
+  - `subqueryExpression` to use single-column, single-row selects as values
+- New `package:moor/remote.dart` library to access databases over any `StreamChannel`.
   The isolate library has been rewritten on top of that api.
 
 ## 4.0.0-nullsafety.1
