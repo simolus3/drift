@@ -23,6 +23,7 @@ part 'expressions/bools.dart';
 part 'expressions/comparable.dart';
 part 'expressions/custom.dart';
 part 'expressions/datetimes.dart';
+part 'expressions/exists.dart';
 part 'expressions/expression.dart';
 part 'expressions/in.dart';
 part 'expressions/null_check.dart';
