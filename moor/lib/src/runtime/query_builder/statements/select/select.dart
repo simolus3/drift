@@ -95,7 +95,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
 
   /// {@macro moor_select_addColumns}
   JoinedSelectStatement addColumns(List<Expression> expressions) {
-    return join(const [])..addColumns(expressions);
+    return join([])..addColumns(expressions);
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
