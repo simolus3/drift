@@ -223,6 +223,48 @@ void main() {
     expect(result.read(descriptionLength), 11);
   });
 
+  test('supports custom columns + join', () async {
+    final todos = db.alias(db.todosTable, 't');
+    final categories = db.alias(db.categories, 'c');
+    final descriptionLength = categories.description.length;
+
+    final query = db.select(categories).addColumns([descriptionLength]).join([
+      innerJoin(
+        todos,
+        categories.id.equalsExp(todos.category),
+        useColumns: false,
+      )
+    ]);
+
+    when(executor.runSelect(any, any)).thenAnswer((_) async {
+      return [
+        {'c.id': 3, 'c.desc': 'Description', 'c.priority': 1, 'c3': 11}
+      ];
+    });
+
+    final result = await query.getSingle();
+
+    verify(executor.runSelect(
+      'SELECT c.id AS "c.id", c."desc" AS "c.desc", c.priority AS "c.priority"'
+      ', LENGTH(c."desc") AS "c3" '
+      'FROM categories c '
+      'INNER JOIN todos t ON c.id = t.category;',
+      [],
+    ));
+
+    expect(
+      result.readTable(categories),
+      equals(
+        Category(
+          id: 3,
+          description: 'Description',
+          priority: CategoryPriority.medium,
+        ),
+      ),
+    );
+    expect(result.read(descriptionLength), 11);
+  });
+
   test('group by', () async {
     final categories = db.alias(db.categories, 'c');
     final todos = db.alias(db.todosTable, 't');
