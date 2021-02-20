@@ -4,6 +4,17 @@
 /// makes few assumptions over the underlying two-way communication channel,
 /// except that it must adhere to the [StreamChannel] guarantees.
 ///
+/// This allows you to use a moor database (including stream queries) over a
+/// remote connection as it were a local database. For instance, this api could
+/// be used for
+///
+///  - accessing databases on a remote isolate: The `package:moor/isolate.dart`
+///    library is implemented on top of this library.
+///  - running databases in web workers
+///  - synchronizing stream queries and data across multiple tabs with shared
+///    web workers
+///  - accessing databases over TCP or WebSockets.
+///
 /// Moor uses an internal protocol to serialize database requests over stream
 /// channels. To make the implementation of channels easier, moor guarantees
 /// that nothing but the following messages will be sent:
@@ -19,17 +30,23 @@
 ///
 /// Moor assumes full control over the [StreamChannel]s it manages. For this
 /// reason, do not send your own messages over them or close them prematurely.
-/// If you need further channels over the same connection, use a [MultiChannel]
-/// instead.
+/// If you need further channels over the same underlying connection, consider a
+/// [MultiChannel] instead.
 ///
-/// As long as this library is marked as experimental, moor's communication
-/// protocol can change in every moor version!
-/// Make sure that your server and clients are using exactly the same moor
-/// version to avoid conflicts.
+/// The public apis of this libraries are stable. The present [experimental]
+/// annotation refers to the underlying protocol implementation.
+/// As long as this library is marked as experimental, the communication
+/// protocol can change in every version. For this reason, please make sure that
+/// all channel participants are using the exact same moor version.
+/// For local communication across isolates or web workers, this is usually not
+/// an issue.
 ///
 /// For an example of a channel implementation, you could study the
 /// implementation of the `package:moor/isolate.dart` library, which uses this
 /// library to implement its apis.
+/// The [web](https://moor.simonbinder.eu/web/) documentation on the website
+/// contains another implementation based on web workers that might be of
+/// interest.
 @experimental
 library remote;
 

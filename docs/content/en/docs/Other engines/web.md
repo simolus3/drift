@@ -152,3 +152,6 @@ You can pass that `DatabaseConnection` to your database by enabling the
 `generate_connect_constructor` build option.
 For more information on the `DatabaseConnection` class, see the documentation on
 [isolates]({{< relref "../Advanced Features/isolates.md" >}}).
+
+A small, but working example is available under [extras/web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/web_worker_example)
+in the moor repository.
