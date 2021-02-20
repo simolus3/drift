@@ -56,7 +56,7 @@ class SharedTodos extends Table {
       ];
 }
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
