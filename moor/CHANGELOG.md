@@ -1,4 +1,4 @@
-## 4.1.0-dev
+## 4.1.0
 
 - Reverted the `SelectableUtils` extension, its members have been added back to the
   `Selectable` class.

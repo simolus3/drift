@@ -1,4 +1,4 @@
-## 0.14.0-dev
+## 0.14.0
 
 - Fix views using common table expressions
 
