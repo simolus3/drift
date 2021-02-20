@@ -190,6 +190,51 @@ When using a `VmDatabase`, a basic set of trigonometric functions will be availa
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in sql queries.
 For more information, see the [list of functions]({{< relref "../Other engines/vm.md#moor-only-functions" >}}) here.
 
+## Subqueries
+
+Starting from version 4.1, moor has basic support for subqueries in expressions.
+
+### Scalar subqueries
+
+A _scalar subquery_ is a select statement that returns exactly one row with exactly one column.
+Since it returns exactly one value, it can be used in another query:
+
+```dart
+Future<List<Todo>> findTodosInCategory(String description) async {
+  final groupId = selectOnly(categories)
+    ..addColumns([categories.id])
+    ..where(categories.description.equals(description));
+
+  return select(todos)..where((row) => row.category.equalsExp(subqueryExpression(groupId)));
+}
+```
+
+Here, `groupId` is a regular select statement. By default moor would select all columns, so we use
+`selectOnly` to only load the id of the category we care about.
+Then, we can use `subqueryExpression` to embed that query into an expression that we're using as
+a filter.
+
+### `isInQuery`
+
+Similar to [`isIn` and `isNotIn`](#in-and-not-in) functions, you can use `isInQuery` to pass
+a subquery instead of a direct set of values.
+
+The subquery must return exactly one column, but it is allowed to return more than one row.
+`isInQuery` returns true if that value is present in the query.
+
+### Exists
+
+The `existsQuery` and `notExistsQuery` functions can be used to check if a subquery contains
+any rows. For instance, we could use this to find empty categories:
+
+```dart
+Future<List<Category>> emptyCategories() {
+  final hasNoTodo = notExistsQuery(
+      select(todos)..where((row) => row.category.equalsExp(categories.id)));
+  return select(categories)..where((row) => hasNoTodo);
+}
+```
+
 ## Custom expressions
 If you want to inline custom sql into Dart queries, you can use a `CustomExpression` class.
 It takes a `sql` parameter that let's you write custom expressions:

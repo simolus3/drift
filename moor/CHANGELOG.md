@@ -6,6 +6,7 @@
 - Initial support for sub-queries in the Dart api:
   - `Expression.isInQuery` and `isNotInQuery` for `IS IN (SELECT ...)` matching
   - `subqueryExpression` to use single-column, single-row selects as values
+  - `existsQuery` and `notExistsQuery` for `EXISTS` expressions
 - New `package:moor/remote.dart` library to access databases over any `StreamChannel`.
   The isolate library has been rewritten on top of that api.
 
