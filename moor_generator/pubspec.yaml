@@ -9,6 +9,7 @@ environment:
   sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
+  charcode: ^1.2.0
   collection: ^1.14.0
   recase: '>=2.0.1 <5.0.0'
   meta: ^1.1.0
