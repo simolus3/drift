@@ -14,9 +14,7 @@ class _$Foo extends Foo {
       (new FooBuilder()..update(updates)).build();
 
   _$Foo._({this.moorField}) : super._() {
-    if (moorField == null) {
-      throw new BuiltValueNullFieldError('Foo', 'moorField');
-    }
+    BuiltValueNullFieldError.checkNotNull(moorField, 'Foo', 'moorField');
   }
 
   @override
@@ -54,8 +52,9 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
   FooBuilder();
 
   FooBuilder get _$this {
-    if (_$v != null) {
-      _moorField = _$v.moorField;
+    final $v = _$v;
+    if ($v != null) {
+      _moorField = $v.moorField;
       _$v = null;
     }
     return this;
@@ -63,9 +62,7 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
 
   @override
   void replace(Foo other) {
-    if (other == null) {
-      throw new ArgumentError.notNull('other');
-    }
+    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Foo;
   }
 
@@ -76,7 +73,10 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
 
   @override
   _$Foo build() {
-    final _$result = _$v ?? new _$Foo._(moorField: moorField);
+    final _$result = _$v ??
+        new _$Foo._(
+            moorField: BuiltValueNullFieldError.checkNotNull(
+                moorField, 'Foo', 'moorField'));
     replace(_$result);
     return _$result;
   }
