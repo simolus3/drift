@@ -162,4 +162,18 @@ void main() {
       );
     });
   });
+
+  test('does not include rank and table columns in result', () {
+    final engine = SqlEngine(_fts5Options);
+    final fts5Result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+        'fts5(bar, baz);');
+    engine.registerTable(const SchemaFromCreateTable()
+        .read(fts5Result.root as TableInducingStatement));
+
+    final selectResult = engine.analyze('SELECT * FROM foo;');
+    final columns = (selectResult.root as SelectStatement).resolvedColumns;
+
+    expect(columns, isNot(anyElement((Column c) => c.name == 'rank')));
+    expect(columns, isNot(anyElement((Column c) => c.name == 'foo')));
+  });
 }

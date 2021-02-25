@@ -1,3 +1,7 @@
+## 0.14.1-dev
+
+- Fix `rank` columns of fts5 tables being misreported as integers
+
 ## 0.14.0
 
 - Fix views using common table expressions

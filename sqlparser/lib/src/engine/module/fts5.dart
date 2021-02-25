@@ -164,7 +164,8 @@ class _Fts5RankColumn extends TableColumn {
   @override
   bool get includedInResults => false;
 
-  _Fts5RankColumn() : super('rank', const ResolvedType(type: BasicType.int));
+  _Fts5RankColumn()
+      : super('rank', const ResolvedType(type: BasicType.real, nullable: true));
 }
 
 /// A column that has the same name as the fts5 it's from. We introduce this
