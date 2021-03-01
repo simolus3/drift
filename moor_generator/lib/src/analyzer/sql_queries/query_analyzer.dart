@@ -10,6 +10,7 @@ import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
+import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 abstract class BaseAnalyzer {
   final List<MoorTable> tables;
@@ -34,6 +35,20 @@ abstract class BaseAnalyzer {
       views.map(mapper.extractView).forEach(_engine.registerView);
     }
     return _engine;
+  }
+
+  @protected
+  Iterable<MoorSchemaEntity> findReferences(AstNode node,
+      {bool includeViews = true}) {
+    final finder = ReferencedTablesVisitor();
+    node.acceptWithoutArg(finder);
+
+    var entities = finder.foundTables.map<MoorSchemaEntity>(mapper.tableToMoor);
+    if (includeViews) {
+      entities = entities.followedBy(finder.foundViews.map(mapper.viewToMoor));
+    }
+
+    return entities;
   }
 
   @protected

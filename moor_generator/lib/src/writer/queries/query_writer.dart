@@ -546,7 +546,7 @@ class QueryWriter {
   }
 
   void _writeReadsFrom() {
-    final from = _select.readsFrom.map((t) => t.dbGetterName).join(', ');
+    final from = _select.readsFromTables.map((t) => t.dbGetterName).join(', ');
     _buffer..write('readsFrom: {')..write(from)..write('}');
   }
 

@@ -12,6 +12,7 @@ import 'column.dart';
 import 'table.dart';
 import 'types.dart';
 import 'used_type_converter.dart';
+import 'view.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
 final _leadingDigits = RegExp(r'^\d*');
@@ -124,6 +125,16 @@ class SqlSelectQuery extends SqlQuery {
     this.requestedResultClass,
   ) : super(name, fromContext, elements,
             hasMultipleTables: readsFrom.length > 1);
+
+  Set<MoorTable> get readsFromTables {
+    return {
+      for (final entity in readsFrom)
+        if (entity is MoorTable)
+          entity
+        else if (entity is MoorView)
+          ...entity.transitiveTableReferences,
+    };
+  }
 
   /// Creates a copy of this [SqlSelectQuery] with a new [resultSet].
   ///

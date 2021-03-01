@@ -1569,6 +1569,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Trigger myTrigger = Trigger(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
+  late final View myView = View('my_view',
+      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
   late final NoIds noIds = NoIds(this);
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);
@@ -1698,6 +1700,20 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
+  Selectable<ReadViewResult> readView() {
+    return customSelect('SELECT * FROM my_view',
+        variables: [], readsFrom: {config}).map((QueryRow row) {
+      return ReadViewResult(
+        row: row,
+        configKey: row.readString('config_key'),
+        configValue: row.readString('config_value'),
+        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        syncStateImplicit: ConfigTable.$converter1
+            .mapToDart(row.readInt('sync_state_implicit')),
+      );
+    });
+  }
+
   Selectable<int> cfeTest() {
     return customSelect(
         'WITH RECURSIVE cnt(x)AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
@@ -1721,6 +1737,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         valueIdx,
         withDefaults,
         myTrigger,
+        myView,
         OnCreateQuery(
             'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')'),
         noIds,
@@ -1833,6 +1850,43 @@ class ReadRowIdResult extends CustomResultSet {
   String toString() {
     return (StringBuffer('ReadRowIdResult(')
           ..write('rowid: $rowid, ')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class ReadViewResult extends CustomResultSet {
+  final String configKey;
+  final String? configValue;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
+  ReadViewResult({
+    required QueryRow row,
+    required this.configKey,
+    this.configValue,
+    this.syncState,
+    this.syncStateImplicit,
+  }) : super(row);
+  @override
+  int get hashCode => $mrjf($mrjc(
+      configKey.hashCode,
+      $mrjc(configValue.hashCode,
+          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is ReadViewResult &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue &&
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
+  @override
+  String toString() {
+    return (StringBuffer('ReadViewResult(')
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')

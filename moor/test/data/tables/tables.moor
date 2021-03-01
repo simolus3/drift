@@ -46,6 +46,8 @@ CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN
   INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));
 END;
 
+CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2;
+
 readConfig: SELECT
   config_key AS ck,
   config_value as cf,
@@ -75,6 +77,8 @@ multiple: SELECT d.*, c.** FROM with_constraints c
 searchEmails(:term AS TEXT OR NULL): SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
+
+readView: SELECT * FROM my_view ;
 
 cfeTest: WITH RECURSIVE
   cnt(x) AS (

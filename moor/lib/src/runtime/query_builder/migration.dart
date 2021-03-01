@@ -73,6 +73,8 @@ class Migrator {
         await createIndex(entity);
       } else if (entity is OnCreateQuery) {
         await _issueCustomQuery(entity.sql, const []);
+      } else if (entity is View) {
+        await createView(entity);
       } else {
         throw AssertionError('Unknown entity: $entity');
       }
@@ -299,6 +301,11 @@ class Migrator {
   /// Executes a `CREATE INDEX` statement to create the [index].
   Future<void> createIndex(Index index) {
     return _issueCustomQuery(index.createIndexStmt, const []);
+  }
+
+  /// Executes a `CREATE VIEW` statement to create the [view].
+  Future<void> createView(View view) {
+    return _issueCustomQuery(view.createViewStmt, const []);
   }
 
   /// Drops a table, trigger or index.

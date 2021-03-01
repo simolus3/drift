@@ -12,28 +12,10 @@ class ViewAnalyzer extends BaseAnalyzer {
         // add the unfinished views right away
         super(tables, const [], step);
 
-  List<MoorView> _viewsOrder;
-  Set<MoorView> _resolvedViews;
-
   /// Resolves all the views in topological order.
   void resolve() {
-    _viewsOrder = [];
-    _resolvedViews = {};
-    // Topologically sorting all the views.
-    for (final view in viewsToAnalyze) {
-      if (!_resolvedViews.contains(view)) {
-        _topologicalSort(view);
-      }
-    }
-
     // Going through the topologically sorted list and analyzing each view.
-    for (final view in _viewsOrder) {
-      // Registering every table dependency.
-      for (final referencedEntity in view.references) {
-        if (referencedEntity is MoorTable) {
-          engine.registerTable(mapper.extractStructure(referencedEntity));
-        }
-      }
+    for (final view in viewsToAnalyze) {
       final ctx =
           engine.analyzeNode(view.declaration.node, view.file.parseResult.sql);
       lintContext(ctx, view.name);
@@ -41,18 +23,8 @@ class ViewAnalyzer extends BaseAnalyzer {
       view.parserView = const SchemaFromCreateTable(moorExtensions: true)
           .readView(ctx, view.declaration.creatingStatement);
       engine.registerView(mapper.extractView(view));
-    }
-  }
 
-  void _topologicalSort(MoorView view) {
-    _resolvedViews.add(view);
-    for (final referencedEntity in view.references) {
-      if (referencedEntity is MoorView) {
-        if (!_resolvedViews.contains(referencedEntity)) {
-          _topologicalSort(referencedEntity);
-        }
-      }
+      view.references = findReferences(view.declaration.node).toList();
     }
-    _viewsOrder.add(view);
   }
 }

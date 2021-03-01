@@ -28,6 +28,21 @@ class MoorView extends MoorSchemaEntity {
     this.name,
   });
 
+  /// Obtains all tables transitively referenced by the declaration of this
+  /// view.
+  ///
+  /// This includes all tables in [references]. If this view references other
+  /// views, their [transitiveTableReferences] will be included as well.
+  Set<MoorTable> get transitiveTableReferences {
+    return {
+      for (final reference in references)
+        if (reference is MoorTable)
+          reference
+        else if (reference is MoorView)
+          ...reference.transitiveTableReferences,
+    };
+  }
+
   factory MoorView.fromMoor(CreateViewStatement stmt, FoundFile file) {
     return MoorView(
       declaration: MoorViewDeclaration(stmt, file),

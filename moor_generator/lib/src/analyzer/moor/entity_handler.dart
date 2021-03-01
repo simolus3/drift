@@ -70,9 +70,7 @@ class EntityHandler extends BaseAnalyzer {
   }
 
   Iterable<MoorTable> _findTables(AstNode node) {
-    final tablesFinder = ReferencedTablesVisitor();
-    node.acceptWithoutArg(tablesFinder);
-    return tablesFinder.foundTables.map(mapper.tableToMoor);
+    return findReferences(node, includeViews: false).cast();
   }
 
   Iterable<WrittenMoorTable> _findUpdatedTables(AstNode node) {

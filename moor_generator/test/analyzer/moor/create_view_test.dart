@@ -1,5 +1,6 @@
 @Tags(['analyzer'])
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/model/table.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
@@ -26,7 +27,8 @@ void main() {
     state.close();
 
     expect(column.type.type, BasicType.text);
-
+    expect(view.references,
+        contains(isA<MoorTable>().having((t) => t.sqlName, 'sqlName', 't')));
     expect(file.errors.errors, isEmpty);
   });
 
@@ -56,6 +58,11 @@ void main() {
     final column = childView.parserView.resolvedColumns.single;
 
     state.close();
+
+    expect(parentView.references.map((e) => e.displayName), ['t']);
+    expect(childView.references, [parentView]);
+    expect(
+        childView.transitiveTableReferences.map((e) => e.displayName), ['t']);
 
     expect(file.errors.errors, isEmpty);
     expect(column.type.type, BasicType.text);
