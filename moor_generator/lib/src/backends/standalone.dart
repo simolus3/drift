@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
-import 'package:analyzer_plugin/protocol/protocol_generated.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
 import 'package:cli_util/cli_util.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/backends/common/base_plugin.dart';

@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
-import 'package:analyzer/src/dart/analysis/file_state.dart';
 import 'package:analyzer/src/generated/source.dart' show SourceKind;
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
@@ -23,9 +22,6 @@ class MoorDriver implements AnalysisDriverGeneric {
   final AnalysisDriver dartDriver;
   MoorIde ide;
 
-  /// The content overlay exists so that we can perform up-to-date analysis on
-  /// unsaved files.
-  final FileContentOverlay contentOverlay;
   final ResourceProvider _resourceProvider;
   final String contextRoot;
 
@@ -33,8 +29,8 @@ class MoorDriver implements AnalysisDriverGeneric {
   StreamSubscription _fileChangeSubscription;
   StreamSubscription _taskCompleteSubscription;
 
-  MoorDriver(this._tracker, this._scheduler, this.dartDriver,
-      this.contentOverlay, this._resourceProvider,
+  MoorDriver(
+      this._tracker, this._scheduler, this.dartDriver, this._resourceProvider,
       [MoorOptions options, this.contextRoot]) {
     _scheduler.add(this);
     final backend = CommonBackend(this);
@@ -128,11 +124,6 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   String readFile(String path) {
-    final overlay = contentOverlay[path];
-    if (overlay != null) {
-      return overlay;
-    }
-
     final file = _resourceProvider.getFile(path);
     return file.exists ? file.readAsStringSync() : '';
   }
@@ -147,8 +138,7 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   bool doesFileExist(String path) {
-    return contentOverlay[path] != null ||
-        _resourceProvider.getFile(path).exists;
+    return _resourceProvider.getFile(path).exists;
   }
 
   /// Finds the absolute path of a [reference] url, optionally assuming that the

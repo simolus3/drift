@@ -1,5 +1,5 @@
-import 'package:analyzer_plugin/protocol/protocol_common.dart';
-import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
+import 'package:analyzer_plugin_fork/utilities/navigation/navigation.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:moor_generator/src/backends/plugin/utils/ast_to_location.dart';

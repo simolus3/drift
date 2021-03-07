@@ -4,8 +4,8 @@ import 'package:analyzer/src/context/context_root.dart'; // ignore: implementati
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/analysis/driver.dart'
     show AnalysisDriverScheduler;
-import 'package:analyzer_plugin/plugin/plugin.dart';
-import 'package:analyzer_plugin/protocol/protocol_generated.dart' as proto;
+import 'package:analyzer_plugin_fork/plugin/plugin.dart';
+import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart' as proto;
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 
@@ -55,18 +55,21 @@ abstract class BaseMoorPlugin extends ServerPlugin {
     final builder = ContextBuilder(resourceProvider, sdkManager, null)
       ..analysisDriverScheduler = dartScheduler
       ..byteStore = byteStore
-      ..performanceLog = performanceLog
-      ..fileContentOverlay = fileContentOverlay;
-
+      ..performanceLog = performanceLog;
+    final workspace = ContextBuilder.createWorkspace(
+      resourceProvider: resourceProvider,
+      options: builder.builderOptions,
+      rootPath: contextRoot.root,
+    );
     // todo we listen because we copied this from the angular plugin. figure out
     // why exactly this is necessary
-    final dartDriver = builder.buildDriver(analyzerRoot)
+    final dartDriver = builder.buildDriver(analyzerRoot, workspace)
       ..results.listen((_) {}) // Consume the stream, otherwise we leak.
       ..exceptions.listen((_) {}); // Consume the stream, otherwise we leak.
 
     final tracker = FileTracker();
     final driver = MoorDriver(tracker, analysisDriverScheduler, dartDriver,
-        fileContentOverlay, resourceProvider, options, contextRoot.root);
+        resourceProvider, options, contextRoot.root);
     didCreateDriver(driver);
 
     return driver;
