@@ -21,8 +21,6 @@ dependency_overrides:
     path: ../../moor_generator
   sqlparser:
     path: ../../sqlparser
-
-  # todo: Remove after we can use analyzer ^1.0.0
-  analyzer: 0.40.4
-  dart_style: '>=1.2.0 <1.3.0'
+  # todo: Remove as soon as built_value_generator supports the latest analyzer
+  analyzer: ^1.0.0
   convert: ^3.0.0-nullsafety
