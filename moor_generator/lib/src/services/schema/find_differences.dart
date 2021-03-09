@@ -1,5 +1,3 @@
-//@dart=2.9
-import 'package:meta/meta.dart';
 import 'package:moor_generator/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
@@ -48,10 +46,10 @@ class FindSchemaDifferences {
   }
 
   CompareResult _compareNamed<T>({
-    @required List<T> reference,
-    @required List<T> actual,
-    @required String Function(T) name,
-    @required CompareResult Function(T, T) compare,
+    required List<T> reference,
+    required List<T> actual,
+    required String Function(T) name,
+    required CompareResult Function(T, T) compare,
     bool validateActualInReference = true,
   }) {
     final results = <String, CompareResult>{};
@@ -69,8 +67,8 @@ class FindSchemaDifferences {
         results['comparing $inReference'] = FoundDifference(
             'The actual schema does not contain anything with this name.');
       } else {
-        referenceToActual[referenceByName[inReference]] =
-            actualByName[inReference];
+        referenceToActual[referenceByName[inReference]!] =
+            actualByName[inReference]!;
       }
     }
 
@@ -188,7 +186,7 @@ class FindSchemaDifferences {
       return const Success();
     } catch (e) {
       return FoundDifference(
-          'Not equal: `${a.span.text}` and `${b.span.text}`');
+          'Not equal: `${a.span?.text}` and `${b.span?.text}`');
     }
   }
 

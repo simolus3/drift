@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 
 import 'package:moor_generator/src/services/schema/verifier_impl.dart';

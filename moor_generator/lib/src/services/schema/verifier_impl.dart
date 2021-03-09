@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:math';
 
 import 'package:moor/ffi.dart';
@@ -98,7 +97,7 @@ extension on QueryExecutor {
 class _DelegatingUser extends QueryExecutorUser {
   @override
   final int schemaVersion;
-  final QueryExecutorUser inner;
+  final QueryExecutorUser? inner;
 
   _DelegatingUser(this.schemaVersion, [this.inner]);
 

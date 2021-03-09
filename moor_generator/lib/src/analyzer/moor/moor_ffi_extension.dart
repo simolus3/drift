@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorFfiExtension implements Extension {
@@ -29,7 +28,7 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
   }
 
   @override
-  int argumentCountFor(String function) {
+  int? argumentCountFor(String function) {
     if (_unaryFunctions.contains(function)) {
       return 1;
     } else if (function == 'pow') {
@@ -37,8 +36,6 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
     } else if (function == 'current_time_millis') {
       return 0;
     }
-    // ignore: avoid_returning_null
-    return null;
   }
 
   @override

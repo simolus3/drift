@@ -1,3 +1,7 @@
+## 4.2.0-dev
+
+- Migrate `package:moor_generator/api/migrations.dart` to null-safety
+
 ## 4.1.0
 
 - Stabilized support for generating null-safe code
