@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/context/builder.dart'; // ignore: implementation_imports
 import 'package:analyzer/src/context/context_root.dart'; // ignore: implementation_imports

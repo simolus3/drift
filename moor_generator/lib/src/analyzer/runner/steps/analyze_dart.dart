@@ -1,3 +1,4 @@
+//@dart=2.9
 part of '../steps.dart';
 
 /// Analyzes the compiled queries found in a Dart file.

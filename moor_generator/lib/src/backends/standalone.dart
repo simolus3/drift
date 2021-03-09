@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:io';
 
 import 'package:analyzer/file_system/file_system.dart';

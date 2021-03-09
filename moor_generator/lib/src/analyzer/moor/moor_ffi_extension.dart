@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorFfiExtension implements Extension {

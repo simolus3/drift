@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor/moor.dart' as m;
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';

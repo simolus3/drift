@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';

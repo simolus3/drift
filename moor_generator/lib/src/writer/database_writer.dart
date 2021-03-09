@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor/moor.dart';
 // ignore: implementation_imports
 import 'package:moor/src/runtime/executor/stream_queries.dart';

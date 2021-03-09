@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:args/command_runner.dart';
 import 'package:moor_generator/src/cli/commands/schema/dump.dart';
 import 'package:moor_generator/src/cli/commands/schema/generate_utils.dart';

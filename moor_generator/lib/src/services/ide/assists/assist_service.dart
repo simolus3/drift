@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
 import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
 import 'package:analyzer_plugin_fork/utilities/assist/assist.dart';

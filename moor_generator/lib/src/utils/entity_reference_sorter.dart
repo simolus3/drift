@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 
 /// Topologically sorts a list of [MoorSchemaEntity]s by their

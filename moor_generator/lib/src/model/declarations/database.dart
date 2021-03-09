@@ -1,3 +1,4 @@
+//@dart=2.9
 part of 'declaration.dart';
 
 /// Declaration of a database or dao in a Dart file.

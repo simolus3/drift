@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/entity_reference_sorter.dart';
 import 'package:test/test.dart';

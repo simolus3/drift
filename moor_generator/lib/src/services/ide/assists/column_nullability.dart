@@ -1,3 +1,4 @@
+//@dart=2.9
 part of 'assist_service.dart';
 
 class ColumnNullability extends _AssistOnNodeContributor<ColumnDefinition> {

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:cli_util/cli_logging.dart' as cli;
 import 'package:logging/logging.dart' as log;
 

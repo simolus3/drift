@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';

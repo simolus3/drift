@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:test/test.dart';
 

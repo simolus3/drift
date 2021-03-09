@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:moor_generator/src/model/table.dart';

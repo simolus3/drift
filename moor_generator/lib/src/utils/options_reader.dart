@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:build_config/build_config.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 

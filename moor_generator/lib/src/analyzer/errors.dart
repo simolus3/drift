@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';

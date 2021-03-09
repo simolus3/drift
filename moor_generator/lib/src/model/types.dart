@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/model/model.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';

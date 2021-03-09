@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:meta/meta.dart';
 import 'package:moor_generator/src/analyzer/moor/moor_ffi_extension.dart';
 import 'package:sqlparser/sqlparser.dart';

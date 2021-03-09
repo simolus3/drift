@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer_plugin_fork/utilities/assist/assist.dart';
 import 'package:analyzer_plugin_fork/utilities/completion/completion_core.dart';

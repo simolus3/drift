@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer_plugin_fork/plugin/completion_mixin.dart';

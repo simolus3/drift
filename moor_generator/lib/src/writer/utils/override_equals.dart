@@ -1,3 +1,4 @@
+//@dart=2.9
 /// Writes a operator == override for a class consisting of the [fields] into
 /// the buffer provided by [into].
 void overrideEquals(

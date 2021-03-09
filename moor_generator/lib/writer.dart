@@ -1,3 +1,4 @@
+//@dart=2.9
 /// Provides access to the [Writer], which can generate Dart code for parsed
 /// databases, daos, queries, tables and more.
 library writer;

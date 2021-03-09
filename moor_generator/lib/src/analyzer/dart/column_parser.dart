@@ -1,3 +1,4 @@
+//@dart=2.9
 part of 'parser.dart';
 
 const String startInt = 'integer';

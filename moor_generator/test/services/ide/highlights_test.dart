@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
 import 'package:build/build.dart';
 import 'package:moor_generator/src/services/ide/moor_ide.dart';

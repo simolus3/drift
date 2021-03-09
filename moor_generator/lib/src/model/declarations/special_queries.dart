@@ -1,3 +1,4 @@
+//@dart=2.9
 part of 'declaration.dart';
 
 abstract class SpecialQueryDeclaration extends Declaration {}

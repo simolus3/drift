@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor/moor.dart' show UpdateKind;
 import 'package:moor_generator/src/analyzer/options.dart';

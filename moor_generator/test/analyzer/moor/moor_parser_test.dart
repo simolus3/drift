@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:build/build.dart';
 import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';

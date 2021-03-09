@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/moor_generator.dart';

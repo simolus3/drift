@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';

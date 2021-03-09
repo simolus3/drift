@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 // ignore: implementation_imports

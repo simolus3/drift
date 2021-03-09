@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/common/file_tracker.dart';
 import 'package:test/test.dart';

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/src/writer/utils/hash_code.dart';
 import 'package:test/test.dart';
 

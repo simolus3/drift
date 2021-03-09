@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';

@@ -1,3 +1,4 @@
+//@dart=2.9
 export 'base_entity.dart';
 export 'column.dart';
 export 'database.dart';
