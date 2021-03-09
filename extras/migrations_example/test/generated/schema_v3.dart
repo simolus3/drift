@@ -1,19 +1,18 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
+//@dart=2.12
 import 'package:moor/moor.dart';
 
 class _Users extends Table with TableInfo {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   _Users(this._db, [this._alias]);
-  GeneratedIntColumn _id;
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
-  GeneratedTextColumn _name;
-  GeneratedTextColumn get name => _name ??= _constructName();
+  late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
     return GeneratedTextColumn(
       'name',
@@ -33,8 +32,8 @@ class _Users extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Null map(Map<String, dynamic> data, {String tablePrefix}) {
-    return null;
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
   }
 
   @override
@@ -48,32 +47,28 @@ class _Users extends Table with TableInfo {
 
 class _Groups extends Table with TableInfo {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   _Groups(this._db, [this._alias]);
-  GeneratedIntColumn _id;
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         $customConstraints: 'NOT NULL');
   }
 
-  GeneratedTextColumn _title;
-  GeneratedTextColumn get title => _title ??= _constructTitle();
+  late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
     return GeneratedTextColumn('title', $tableName, false,
         $customConstraints: 'NOT NULL');
   }
 
-  GeneratedBoolColumn _deleted;
-  GeneratedBoolColumn get deleted => _deleted ??= _constructDeleted();
+  late final GeneratedBoolColumn deleted = _constructDeleted();
   GeneratedBoolColumn _constructDeleted() {
     return GeneratedBoolColumn('deleted', $tableName, true,
         $customConstraints: 'DEFAULT FALSE',
         defaultValue: const CustomExpression<bool>('FALSE'));
   }
 
-  GeneratedIntColumn _owner;
-  GeneratedIntColumn get owner => _owner ??= _constructOwner();
+  late final GeneratedIntColumn owner = _constructOwner();
   GeneratedIntColumn _constructOwner() {
     return GeneratedIntColumn('owner', $tableName, false,
         $customConstraints: 'NOT NULL REFERENCES users (id)');
@@ -90,8 +85,8 @@ class _Groups extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Null map(Map<String, dynamic> data, {String tablePrefix}) {
-    return null;
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
   }
 
   @override
@@ -108,10 +103,8 @@ class _Groups extends Table with TableInfo {
 class DatabaseAtV3 extends GeneratedDatabase {
   DatabaseAtV3(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   DatabaseAtV3.connect(DatabaseConnection c) : super.connect(c);
-  _Users _users;
-  _Users get users => _users ??= _Users(this);
-  _Groups _groups;
-  _Groups get groups => _groups ??= _Groups(this);
+  late final _Users users = _Users(this);
+  late final _Groups groups = _Groups(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

@@ -19,5 +19,5 @@ Replace `_v2` with the current `schemaVersion`.
 Run
 
 ```
-dart run moor_generator schema generate moor_migrations/ test/generated/
+dart run moor_generator schema generate --null-safety moor_migrations/ test/generated/
 ```

@@ -10,38 +10,34 @@ part of 'database.dart';
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
-  User({@required this.id, @required this.name});
+  User({required this.id, required this.name});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
     return map;
   }
 
   UsersCompanion toCompanion(bool nullToAbsent) {
     return UsersCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      id: Value(id),
+      name: Value(name),
     );
   }
 
   factory User.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return User(
       id: serializer.fromJson<int>(json['id']),
@@ -49,7 +45,7 @@ class User extends DataClass implements Insertable<User> {
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
@@ -57,7 +53,7 @@ class User extends DataClass implements Insertable<User> {
     };
   }
 
-  User copyWith({int id, String name}) => User(
+  User copyWith({int? id, String? name}) => User(
         id: id ?? this.id,
         name: name ?? this.name,
       );
@@ -87,11 +83,11 @@ class UsersCompanion extends UpdateCompanion<User> {
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
-    @required String name,
-  }) : name = Value(name);
+    this.name = const Value.absent(),
+  });
   static Insertable<User> custom({
-    Expression<int> id,
-    Expression<String> name,
+    Expression<int>? id,
+    Expression<String>? name,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -99,7 +95,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     });
   }
 
-  UsersCompanion copyWith({Value<int> id, Value<String> name}) {
+  UsersCompanion copyWith({Value<int>? id, Value<String>? name}) {
     return UsersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -130,27 +126,22 @@ class UsersCompanion extends UpdateCompanion<User> {
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => _name ??= _constructName();
+  late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      $tableName,
-      false,
-    );
+    return GeneratedTextColumn('name', $tableName, false,
+        defaultValue: const Constant('name'));
   }
 
   @override
@@ -167,13 +158,11 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     }
     return context;
   }
@@ -181,7 +170,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  User map(Map<String, dynamic> data, {String tablePrefix}) {
+  User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return User.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -195,81 +184,73 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 class Group extends DataClass implements Insertable<Group> {
   final int id;
   final String title;
-  final bool deleted;
+  final bool? deleted;
   final int owner;
   Group(
-      {@required this.id,
-      @required this.title,
+      {required this.id,
+      required this.title,
       this.deleted,
-      @required this.owner});
+      required this.owner});
   factory Group.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
     return Group(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
       deleted:
           boolType.mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
-      owner: intType.mapFromDatabaseResponse(data['${effectivePrefix}owner']),
+      owner: intType.mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || title != null) {
-      map['title'] = Variable<String>(title);
-    }
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
     if (!nullToAbsent || deleted != null) {
-      map['deleted'] = Variable<bool>(deleted);
+      map['deleted'] = Variable<bool?>(deleted);
     }
-    if (!nullToAbsent || owner != null) {
-      map['owner'] = Variable<int>(owner);
-    }
+    map['owner'] = Variable<int>(owner);
     return map;
   }
 
   GroupsCompanion toCompanion(bool nullToAbsent) {
     return GroupsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      title:
-          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      id: Value(id),
+      title: Value(title),
       deleted: deleted == null && nullToAbsent
           ? const Value.absent()
           : Value(deleted),
-      owner:
-          owner == null && nullToAbsent ? const Value.absent() : Value(owner),
+      owner: Value(owner),
     );
   }
 
   factory Group.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Group(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      deleted: serializer.fromJson<bool>(json['deleted']),
+      deleted: serializer.fromJson<bool?>(json['deleted']),
       owner: serializer.fromJson<int>(json['owner']),
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
-      'deleted': serializer.toJson<bool>(deleted),
+      'deleted': serializer.toJson<bool?>(deleted),
       'owner': serializer.toJson<int>(owner),
     };
   }
 
-  Group copyWith({int id, String title, bool deleted, int owner}) => Group(
+  Group copyWith({int? id, String? title, bool? deleted, int? owner}) => Group(
         id: id ?? this.id,
         title: title ?? this.title,
         deleted: deleted ?? this.deleted,
@@ -302,7 +283,7 @@ class Group extends DataClass implements Insertable<Group> {
 class GroupsCompanion extends UpdateCompanion<Group> {
   final Value<int> id;
   final Value<String> title;
-  final Value<bool> deleted;
+  final Value<bool?> deleted;
   final Value<int> owner;
   const GroupsCompanion({
     this.id = const Value.absent(),
@@ -312,16 +293,16 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   });
   GroupsCompanion.insert({
     this.id = const Value.absent(),
-    @required String title,
+    required String title,
     this.deleted = const Value.absent(),
-    @required int owner,
-  })  : title = Value(title),
+    required int owner,
+  })   : title = Value(title),
         owner = Value(owner);
   static Insertable<Group> custom({
-    Expression<int> id,
-    Expression<String> title,
-    Expression<bool> deleted,
-    Expression<int> owner,
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<bool?>? deleted,
+    Expression<int>? owner,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -332,10 +313,10 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   }
 
   GroupsCompanion copyWith(
-      {Value<int> id,
-      Value<String> title,
-      Value<bool> deleted,
-      Value<int> owner}) {
+      {Value<int>? id,
+      Value<String>? title,
+      Value<bool?>? deleted,
+      Value<int>? owner}) {
     return GroupsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -354,7 +335,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
       map['title'] = Variable<String>(title.value);
     }
     if (deleted.present) {
-      map['deleted'] = Variable<bool>(deleted.value);
+      map['deleted'] = Variable<bool?>(deleted.value);
     }
     if (owner.present) {
       map['owner'] = Variable<int>(owner.value);
@@ -376,27 +357,24 @@ class GroupsCompanion extends UpdateCompanion<Group> {
 
 class Groups extends Table with TableInfo<Groups, Group> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   Groups(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  GeneratedTextColumn _title;
-  GeneratedTextColumn get title => _title ??= _constructTitle();
+  late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
     return GeneratedTextColumn('title', $tableName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
-  GeneratedBoolColumn _deleted;
-  GeneratedBoolColumn get deleted => _deleted ??= _constructDeleted();
+  late final GeneratedBoolColumn deleted = _constructDeleted();
   GeneratedBoolColumn _constructDeleted() {
     return GeneratedBoolColumn('deleted', $tableName, true,
         $customConstraints: 'DEFAULT FALSE',
@@ -404,8 +382,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   }
 
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
-  GeneratedIntColumn _owner;
-  GeneratedIntColumn get owner => _owner ??= _constructOwner();
+  late final GeneratedIntColumn owner = _constructOwner();
   GeneratedIntColumn _constructOwner() {
     return GeneratedIntColumn('owner', $tableName, false,
         $customConstraints: 'NOT NULL REFERENCES users (id)');
@@ -425,21 +402,21 @@ class Groups extends Table with TableInfo<Groups, Group> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title'], _titleMeta));
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
     if (data.containsKey('deleted')) {
       context.handle(_deletedMeta,
-          deleted.isAcceptableOrUnknown(data['deleted'], _deletedMeta));
+          deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta));
     }
     if (data.containsKey('owner')) {
       context.handle(
-          _ownerMeta, owner.isAcceptableOrUnknown(data['owner'], _ownerMeta));
+          _ownerMeta, owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta));
     } else if (isInserting) {
       context.missing(_ownerMeta);
     }
@@ -449,7 +426,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Group map(Map<String, dynamic> data, {String tablePrefix}) {
+  Group map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Group.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -468,10 +445,8 @@ class Groups extends Table with TableInfo<Groups, Group> {
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
-  $UsersTable _users;
-  $UsersTable get users => _users ??= $UsersTable(this);
-  Groups _groups;
-  Groups get groups => _groups ??= Groups(this);
+  late final $UsersTable users = $UsersTable(this);
+  late final Groups groups = Groups(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

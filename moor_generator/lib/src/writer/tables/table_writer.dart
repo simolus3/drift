@@ -103,12 +103,13 @@ class TableWriter {
 
   void _writeMappingMethod() {
     if (scope.generationOptions.isGeneratingForSchema) {
-      _buffer
-        ..writeln('@override')
-        ..writeln('Null map(Map<String, dynamic> data, '
-            '{${scope.nullableType('String')} tablePrefix}) {')
-        ..writeln('return null;')
-        ..writeln('}');
+      final nullableString = scope.nullableType('String');
+      _buffer.writeln('''
+        @override
+        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
+          throw UnsupportedError('TableInfo.map in schema verification code');
+        }
+      ''');
       return;
     }
 

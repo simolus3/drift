@@ -6,7 +6,7 @@ import 'package:moor_generator/api/migrations.dart';
 import 'generated/schema.dart';
 
 void main() {
-  SchemaVerifier verifier;
+  late SchemaVerifier verifier;
 
   setUpAll(() {
     verifier = SchemaVerifier(GeneratedHelper());

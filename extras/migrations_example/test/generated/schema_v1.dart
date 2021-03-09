@@ -1,12 +1,12 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
+//@dart=2.12
 import 'package:moor/moor.dart';
 
 class _Users extends Table with TableInfo {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   _Users(this._db, [this._alias]);
-  GeneratedIntColumn _id;
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
@@ -23,8 +23,8 @@ class _Users extends Table with TableInfo {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Null map(Map<String, dynamic> data, {String tablePrefix}) {
-    return null;
+  Never map(Map<String, dynamic> data, {String? tablePrefix}) {
+    throw UnsupportedError('TableInfo.map in schema verification code');
   }
 
   @override
@@ -39,8 +39,7 @@ class _Users extends Table with TableInfo {
 class DatabaseAtV1 extends GeneratedDatabase {
   DatabaseAtV1(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   DatabaseAtV1.connect(DatabaseConnection c) : super.connect(c);
-  _Users _users;
-  _Users get users => _users ??= _Users(this);
+  late final _Users users = _Users(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

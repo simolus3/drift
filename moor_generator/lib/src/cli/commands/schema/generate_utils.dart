@@ -13,7 +13,13 @@ import 'package:path/path.dart' as p;
 class GenerateUtilsCommand extends Command {
   final MoorCli cli;
 
-  GenerateUtilsCommand(this.cli);
+  GenerateUtilsCommand(this.cli) {
+    argParser.addFlag(
+      'null-safety',
+      defaultsTo: false,
+      help: 'Whether to generate null-safe test code.',
+    );
+  }
 
   @override
   String get description {
@@ -30,6 +36,8 @@ class GenerateUtilsCommand extends Command {
 
   @override
   Future<void> run() async {
+    final isNnbd = argResults['null-safety'] as bool;
+
     final rest = argResults.rest;
     if (rest.length != 2) {
       usageException('Expected input and output directories');
@@ -51,10 +59,10 @@ class GenerateUtilsCommand extends Command {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
 
-      await _writeSchemaFile(outputDir, version, entities);
+      await _writeSchemaFile(outputDir, version, entities, isNnbd);
     }
 
-    await _writeLibraryFile(outputDir, schema.keys);
+    await _writeLibraryFile(outputDir, schema.keys, isNnbd);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
@@ -80,14 +88,15 @@ class GenerateUtilsCommand extends Command {
     return results;
   }
 
-  Future<void> _writeSchemaFile(
-      Directory output, int version, List<MoorSchemaEntity> entities) {
+  Future<void> _writeSchemaFile(Directory output, int version,
+      List<MoorSchemaEntity> entities, bool nnbd) {
     final writer = Writer(cli.project.moorOptions,
-        generationOptions: GenerationOptions(forSchema: version));
+        generationOptions: GenerationOptions(forSchema: version, nnbd: nnbd));
     final file = File(p.join(output.path, _filenameForVersion(version)));
 
     writer.leaf()
       ..writeln(_prefix)
+      ..writeDartVersion(nnbd)
       ..writeln("import 'package:moor/moor.dart';");
 
     final db = Database()..entities = entities;
@@ -96,9 +105,11 @@ class GenerateUtilsCommand extends Command {
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
   }
 
-  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions) {
+  Future<void> _writeLibraryFile(
+      Directory output, Iterable<int> versions, bool nnbd) {
     final buffer = StringBuffer()
       ..writeln(_prefix)
+      ..writeDartVersion(nnbd)
       ..writeln("import 'package:moor/moor.dart';")
       ..writeln("import 'package:moor_generator/api/migrations.dart';");
 
@@ -134,4 +145,10 @@ class GenerateUtilsCommand extends Command {
   static final _filenames = RegExp(r'moor_schema_v(\d+)\.json');
   static final _dartfmt = DartFormatter();
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.';
+}
+
+extension on StringBuffer {
+  void writeDartVersion(bool isNnbd) {
+    writeln(isNnbd ? '//@dart=2.12' : '//@dart=2.9');
+  }
 }
