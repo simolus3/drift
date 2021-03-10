@@ -21,8 +21,14 @@ abstract class MoorWebStorage {
   /// Creates the default storage implementation that uses the local storage
   /// apis.
   ///
-  /// The [name] parameter can be used to store multiple databases.
+  /// The [name] parameter is used as a key to store the database blob in local
+  /// storage. It can be used to store multiple databases.
   const factory MoorWebStorage(String name) = _LocalStorageImpl;
+
+  /// Creates an in-memory storage that doesn't persist data.
+  ///
+  /// This means that your database will be recreated at each page reload.
+  factory MoorWebStorage.volatile() = _VolatileStorage;
 
   /// An experimental storage implementation that uses IndexedDB.
   ///
@@ -216,5 +222,24 @@ class _IndexedDbStorage implements MoorWebStorage {
     await reader.onLoad.first;
 
     return reader.result as Uint8List;
+  }
+}
+
+class _VolatileStorage implements MoorWebStorage {
+  Uint8List? _storedData;
+
+  @override
+  Future<void> close() => Future.value();
+
+  @override
+  Future<void> open() => Future.value();
+
+  @override
+  Future<Uint8List?> restore() => Future.value(_storedData);
+
+  @override
+  Future<void> store(Uint8List data) {
+    _storedData = data;
+    return Future.value();
   }
 }

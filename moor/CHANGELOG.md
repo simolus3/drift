@@ -1,3 +1,7 @@
+## 4.2.0
+
+- 
+
 ## 4.1.0
 
 - Reverted the `SelectableUtils` extension, its members have been added back to the
