@@ -136,6 +136,17 @@ transformation:
 await m.alterTable(TableMigration(todos));
 ```
 
+### Deleting columns
+
+Deleting a column that's not referenced by a foreign key constraint is easy too:
+
+```dart
+await m.alterTable(TableMigration(yourTable));
+```
+
+To delete a column referenced by a foreign key, you'd have to migrate the referencing
+tables first.
+
 ### Renaming columns
 
 If you're renaming a column in Dart, note that the easiest way is to just rename the getter and use
