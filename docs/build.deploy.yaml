@@ -14,9 +14,6 @@ targets:
     builders:
       sass_builder:
         enabled: false
-      built_site:
-        release_options:
-          environment: "preview"
       build_web_compilers|entrypoint:
         release_options:
           # Turn of null assertions for release builds, it looks like this

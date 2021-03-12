@@ -37,6 +37,9 @@ environments:
   dev:
     minify: false
     base_url: "http://localhost:8080/"
+  preview:
+    minify: true
+    base_url: "https://moor.simonbinder.eu/"
   prod:
     minify: true
     base_url: "https://moor.simonbinder.eu/"
