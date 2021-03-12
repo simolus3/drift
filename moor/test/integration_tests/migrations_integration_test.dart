@@ -104,6 +104,45 @@ void main() {
     expect(item.category, isNull);
   });
 
+  test('delete column', () async {
+    // Create todos table with an additional column
+    final executor = VmDatabase.memory(setup: (db) {
+      db.execute('''
+        CREATE TABLE todos (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          target_date INTEGER NOT NULL,
+          category INTEGER NULL,
+          additional_column TEXT NULL
+        );
+      ''');
+
+      db.execute('INSERT INTO todos (title, content, target_date) '
+          "VALUES ('title', 'content', 0)");
+    });
+
+    final db = TodoDb(executor);
+    db.migration = MigrationStrategy(
+      onCreate: (m) async {
+        await m.alterTable(TableMigration(db.todosTable));
+      },
+    );
+
+    final createStmt = await db
+        .customSelect("SELECT sql FROM sqlite_master WHERE name = 'todos'")
+        .map((row) => row.readString('sql'))
+        .getSingle();
+
+    expect(
+      createStmt,
+      isNot(contains('additional_column')),
+    );
+
+    final item = await db.select(db.todosTable).getSingle();
+    expect(item.title, 'title');
+  });
+
   test('rename tables', () async {
     // Create todos table with old name
     final executor = VmDatabase.memory(setup: (db) {
