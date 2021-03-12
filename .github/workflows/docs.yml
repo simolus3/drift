@@ -27,7 +27,6 @@ jobs:
            enable-pull-request-comment: true
            enable-commit-comment: false
            netlify-config-path: "./netlify.toml"
-           alias: deploy-preview-${{ github.event.number }}
            github-token: ${{ secrets.GITHUB_TOKEN }}
          env:
            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
