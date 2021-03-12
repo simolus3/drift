@@ -1,0 +1,34 @@
+name: Build and deploy to netlify
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+       - uses: actions/checkout@v2
+       - uses: dart-lang/setup-dart@v1
+
+       - name: Get dependencies
+         run: dart pub get
+         working-directory: docs
+       - name: Run build
+         run: dart run build_runner build --release
+         working-directory: docs
+       - name: Output generated pages
+         run: >-
+           dart run build_runner build --release --output web:deploy
+           rm -rf deploy/packages deploy/build.manifest deploy/.dart_tool deploy/.packages
+         working-directory: docs
+       - name: Deploy to netlify
+         uses: nwtgck/actions-netlify@v1.1
+         with:
+           production-branch: master
+           enable-pull-request-comment: true
+           enable-commit-comment: false
+           netlify-config-path: "./netlify.toml"
+           alias: deploy-preview-${{ github.event.number }}
+           github-token: ${{ secrets.GITHUB_TOKEN }}
+         env:
+           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

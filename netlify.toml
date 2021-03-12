@@ -1,9 +1,7 @@
 # We use netlify to deploy the documentation.
 
 [build]
-  base = ""
   publish = "docs/deploy"
-  command = 'tool/netlify_build.sh'
 
 [[redirects]]
   from = "https://moor.netlify.app/*"
