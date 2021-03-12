@@ -24,6 +24,7 @@ jobs:
          uses: nwtgck/actions-netlify@v1.1
          with:
            production-branch: master
+           publish-dir: docs/deploy
            enable-pull-request-comment: true
            enable-commit-comment: false
            netlify-config-path: "./netlify.toml"
