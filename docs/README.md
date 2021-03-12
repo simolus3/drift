@@ -1,13 +1,33 @@
 # Moor documentation
-Contains the source code for the moor documentation, live at moor.simonbinder.eu
-We use [Docsy](https://github.com/google/docsy), a Hugo theme for this website. You'll need the extended version of Hugo as described 
-[here](https://www.docsy.dev/docs/getting-started/).
 
-To work on the documentation, first cd into this directory, then run `git submodule update --init --recursive` and
-`npm install`. To update the dependencies, run `git pull --recurse-submodules`.
+Welcome to the source of moor's documentation, live at moor.simonbinder.eu.
+We use a static site generator based on `build_runner` to build the documentation.
 
 ## Running the website locally
-After the setup, it's just a simple
+
+For a fast edit-refresh cycle, run
+
 ```
-hugo server
+dart run webdev serve --auto refresh pages:9999 web:8080
 ```
+
+You can ignore the `pages:9999` (or use any other port), it's just required
+so that the build system actually generates pages.
+
+## Building the website
+
+To build the website, first run
+
+```
+dart run build_runner build --release
+```
+
+To then copy generated contents into a directory, use:
+
+```
+dart run build_runner build --release --output web:out
+```
+
+Where `out` is the desired output directory.
+Note that both steps are necessary since the build system doesn't re-generate
+pages otherwise.

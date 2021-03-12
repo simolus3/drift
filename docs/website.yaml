@@ -1,0 +1,42 @@
+themes:
+ - docsy
+
+site:
+  title: "Moor"
+  language: "en"
+  copyright: "Simon Binder"
+  github_repo: "https://github.com/simolus3/moor"
+  github_subdir: "docs/"
+  github_branch: master
+#  gcs_engine_id: "002567324444333206795:_yptu7lact8"
+
+  links:
+    user:
+      - name: "Contact me via e-mail"
+        url: "mailto:oss@simonbinder.eu"
+        icon: "fa fa-envelope"
+      - name: "Room in gitter"
+        url: "https://gitter.im/moor-dart/community"
+        icon: "fab fa-gitter"
+      - name: "Project on GitHub"
+        url: "https://github.com/simolus3/moor"
+        icon: "fab fa-github"
+        desc: "Development takes place here"
+  menu:
+    main:
+     - name: "Documentation & Guides"
+       url: "/docs/"
+     - name: "Pub"
+       url: "https://pub.dev/packages/moor"
+     - name: "GitHub"
+       url: "https://github.com/simolus3/moor/"
+     - name: "API docs"
+       url: "https://pub.dev/documentation/moor/latest/"
+
+environments:
+  dev:
+    minify: false
+    base_url: "http://localhost:8080/"
+  prod:
+    minify: true
+    base_url: "https://moor.simonbinder.eu/"
