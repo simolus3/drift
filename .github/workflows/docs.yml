@@ -16,7 +16,7 @@ jobs:
          run: dart run build_runner build --release
          working-directory: docs
        - name: Output generated pages
-         run: >-
+         run: |
            dart run build_runner build --release --output web:deploy
            rm -rf deploy/packages deploy/build.manifest deploy/.dart_tool deploy/.packages
          working-directory: docs
