@@ -29,6 +29,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
 
   /// The tables this select statement reads from.
   @visibleForOverriding
+  @Deprecated('Use watchedTables on the GenerationContext')
   Set<TableInfo> get watchedTables => {table};
 
   @override
@@ -39,6 +40,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
     ctx.buffer
       ..write(_beginOfSelect(distinct))
       ..write(' * FROM ${table.tableWithAlias}');
+    ctx.watchedTables.add(table);
   }
 
   @override
@@ -121,7 +123,7 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   Stream<List<D>> watch() {
     final query = constructQuery();
     final fetcher = QueryStreamFetcher<List<D>>(
-      readsFrom: TableUpdateQuery.onAllTables(watchedTables),
+      readsFrom: TableUpdateQuery.onAllTables(query.watchedTables),
       fetchData: () => _getWithQuery(query),
       key: StreamKey(query.sql, query.boundVariables, D),
     );

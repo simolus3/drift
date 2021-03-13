@@ -90,4 +90,22 @@ void main() {
     expect(eval(match), completion(isTrue));
     expect(eval(noMatch), completion(isFalse));
   });
+
+  test('subqueries cause updates to stream queries', () async {
+    await db
+        .into(db.categories)
+        .insert(CategoriesCompanion.insert(description: 'description'));
+
+    final subquery = subqueryExpression<String>(
+        db.selectOnly(db.categories)..addColumns([db.categories.description]));
+    final stream = (db.selectOnly(db.users)..addColumns([subquery]))
+        .map((row) => row.read(subquery))
+        .watchSingle();
+
+    expect(stream, emitsInOrder(['description', 'changed']));
+
+    await db
+        .update(db.categories)
+        .write(const CategoriesCompanion(description: Value('changed')));
+  });
 }

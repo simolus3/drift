@@ -37,6 +37,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
   /// The tables this select statement reads from
   @visibleForOverriding
+  @Deprecated('Use watchedTables on the generated context')
   Set<TableInfo> get watchedTables => _queriedTables().toSet();
 
   @override
@@ -89,6 +90,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
     }
 
     ctx.buffer.write(' FROM ${table.tableWithAlias}');
+    ctx.watchedTables.add(table);
 
     if (_joins.isNotEmpty) {
       ctx.writeWhitespace();
@@ -180,7 +182,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher<List<TypedResult>>(
-      readsFrom: TableUpdateQuery.onAllTables(watchedTables),
+      readsFrom: TableUpdateQuery.onAllTables(ctx.watchedTables),
       fetchData: () => _getWithQuery(ctx),
       key: StreamKey(ctx.sql, ctx.boundVariables, TypedResult),
     );

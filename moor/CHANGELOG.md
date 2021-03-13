@@ -1,6 +1,6 @@
 ## 4.2.0
 
-- 
+- Fixed subqueries not affecting stream updates
 
 ## 4.1.0
 

@@ -50,6 +50,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
     context.buffer.write(' JOIN ');
 
     context.buffer.write(table.tableWithAlias);
+    context.watchedTables.add(table);
 
     if (type != _JoinType.cross) {
       context.buffer.write(' ON ');
