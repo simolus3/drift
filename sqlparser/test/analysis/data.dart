@@ -31,7 +31,7 @@ extension RegisterTableExtension on SqlEngine {
   /// Utility function that parses a `CREATE TABLE` statement and registers the
   /// created table to the engine.
   void registerTableFromSql(String createTable) {
-    final stmt = parse(createTable).rootNode as CreateTableStatement;
+    final stmt = analyze(createTable).root as TableInducingStatement;
     registerTable(schemaReader.read(stmt));
   }
 }

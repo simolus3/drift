@@ -45,3 +45,14 @@ abstract class NamedResultSet extends ResultSet {
     return isKeywordLexeme(name) ? '"$name"' : name;
   }
 }
+
+extension UnaliasResultSet on ResultSet {
+  ResultSet unalias() {
+    var $this = this;
+    while ($this is TableAlias) {
+      $this = $this.delegate;
+    }
+
+    return $this;
+  }
+}

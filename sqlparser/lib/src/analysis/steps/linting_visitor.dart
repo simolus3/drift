@@ -6,6 +6,8 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   final EngineOptions options;
   final AnalysisContext context;
 
+  bool _isTopLevelStatement = true;
+
   LintingVisitor(this.options, this.context);
 
   @override
@@ -100,6 +102,32 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       return;
     }
 
+    // https://www.sqlite.org/lang_returning.html#limitations_and_caveats
+    // Returning is not allowed in triggers
+    if (!_isTopLevelStatement) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.illegalUseOfReturning,
+        message: 'RETURNING is not allowed in triggers',
+        relevantNode: e,
+      ));
+    }
+
+    // Returning is not allowed against virtual tables
+    final parent = e.parent;
+    if (parent is HasPrimarySource) {
+      final source = parent.table;
+      if (source is TableReference) {
+        final referenced = source.resultSet?.unalias();
+        if (referenced is Table && referenced.isVirtual) {
+          context.reportError(AnalysisError(
+            type: AnalysisErrorType.illegalUseOfReturning,
+            message: 'RETURNING is not allowed against virtual tables',
+            relevantNode: e,
+          ));
+        }
+      }
+    }
+
     visitChildren(e, arg);
   }
 
@@ -120,6 +148,14 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, arg);
+  }
+
+  @override
+  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
+    final topLevelBefore = _isTopLevelStatement;
+    _isTopLevelStatement = false;
+    visitChildren(e, arg);
+    _isTopLevelStatement = topLevelBefore;
   }
 
   @override

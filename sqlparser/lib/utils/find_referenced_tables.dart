@@ -30,11 +30,7 @@ class ReferencedTablesVisitor extends RecursiveVisitor<void, void> {
   }
 
   NamedResultSet? _toResultSetOrNull(ResolvesToResultSet? resultSet) {
-    var resolved = resultSet?.resultSet;
-
-    while (resolved != null && resolved is TableAlias) {
-      resolved = resolved.delegate;
-    }
+    final resolved = resultSet?.resultSet?.unalias();
 
     return resolved is NamedResultSet ? resolved : null;
   }

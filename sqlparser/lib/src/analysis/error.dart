@@ -72,5 +72,6 @@ enum AnalysisErrorType {
   viewColumnNamesMismatch,
   rowValueMisuse,
   notSupportedInDesiredVersion,
+  illegalUseOfReturning,
   other,
 }

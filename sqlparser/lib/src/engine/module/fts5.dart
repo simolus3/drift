@@ -48,6 +48,7 @@ class _Fts5Table extends Table {
             _Fts5TableColumn(name),
           ],
           definition: definition,
+          isVirtual: true,
         );
 }
 

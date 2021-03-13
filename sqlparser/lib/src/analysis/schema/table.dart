@@ -31,18 +31,23 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   /// The ast node that created this table
   final TableInducingStatement? definition;
 
+  /// Whether this is a virtual table.
+  final bool isVirtual;
+
   @override
   bool get visibleToChildren => true;
 
   TableColumn? _rowIdColumn;
 
   /// Constructs a table from the known [name] and [resolvedColumns].
-  Table(
-      {required this.name,
-      required this.resolvedColumns,
-      this.withoutRowId = false,
-      this.tableConstraints = const [],
-      this.definition}) {
+  Table({
+    required this.name,
+    required this.resolvedColumns,
+    this.withoutRowId = false,
+    this.tableConstraints = const [],
+    this.definition,
+    this.isVirtual = false,
+  }) {
     for (final column in resolvedColumns) {
       column.table = this;
 

@@ -39,7 +39,11 @@ class TypeMapper {
       columns.add(column);
     }
 
-    final engineTable = Table(name: table.sqlName, resolvedColumns: columns);
+    final engineTable = Table(
+      name: table.sqlName,
+      resolvedColumns: columns,
+      isVirtual: table.isVirtualTable,
+    );
     engineTable.setMeta<MoorTable>(table);
     _engineTablesToSpecified[engineTable] = table;
     return engineTable;
