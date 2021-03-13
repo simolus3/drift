@@ -148,6 +148,15 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
+      test('with materialized CTEs', () {
+        testFormat('''
+          WITH 
+            foo (id) AS NOT MATERIALIZED (SELECT 1),
+            bar (id) AS MATERIALIZED (SELECT 2)
+          SELECT * FROM foo UNION ALL SELECT * FROM bar;
+        ''');
+      });
+
       test('compound', () {
         testFormat('''
         SELECT * FROM foo

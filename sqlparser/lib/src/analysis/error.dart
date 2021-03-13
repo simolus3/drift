@@ -8,7 +8,8 @@ class AnalysisError {
 
   AnalysisError._internal(this.type, this.message, this.source);
 
-  AnalysisError({required this.type, this.message, AstNode? relevantNode})
+  AnalysisError(
+      {required this.type, this.message, SyntacticEntity? relevantNode})
       : source = relevantNode;
 
   @Deprecated('Use source instead')
@@ -70,5 +71,6 @@ enum AnalysisErrorType {
   valuesSelectCountMismatch,
   viewColumnNamesMismatch,
   rowValueMisuse,
+  notSupportedInDesiredVersion,
   other,
 }

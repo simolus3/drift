@@ -24,8 +24,21 @@ class WithClause extends AstNode {
   Iterable<AstNode> get childNodes => ctes;
 }
 
+enum MaterializationHint {
+  materialized,
+  notMaterialized,
+}
+
 class CommonTableExpression extends AstNode with ResultSet {
   final String cteTableName;
+
+  final MaterializationHint? materializationHint;
+
+  /// The `not` token before the `materialized` token, if there is any.
+  Token? not;
+
+  /// The `materialized` token, if there is any.
+  Token? materialized;
 
   /// If this common table expression has explicit column names, e.g. with
   /// `cnt(x) AS (...)`, contains the column names (`['x']`, in that case).
@@ -38,8 +51,12 @@ class CommonTableExpression extends AstNode with ResultSet {
 
   List<CommonTableExpressionColumn>? _cachedColumns;
 
-  CommonTableExpression(
-      {required this.cteTableName, this.columnNames, required this.as});
+  CommonTableExpression({
+    required this.cteTableName,
+    this.materializationHint,
+    this.columnNames,
+    required this.as,
+  });
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

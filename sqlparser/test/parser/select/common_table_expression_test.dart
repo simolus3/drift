@@ -68,4 +68,35 @@ void main() {
       ),
     );
   });
+
+  test('parses MATERIALIZED / NOT MATERIALIZED clauses', () {
+    testStatement(
+      ''' 
+      WITH
+        foo(x) AS MATERIALIZED (SELECT *),
+        bar(x) AS NOT MATERIALIZED (SELECT *)
+        SELECT *;
+      ''',
+      SelectStatement(
+        withClause: WithClause(
+          recursive: false,
+          ctes: [
+            CommonTableExpression(
+              cteTableName: 'foo',
+              materializationHint: MaterializationHint.materialized,
+              columnNames: ['x'],
+              as: SelectStatement(columns: [StarResultColumn()]),
+            ),
+            CommonTableExpression(
+              cteTableName: 'bar',
+              materializationHint: MaterializationHint.notMaterialized,
+              columnNames: ['x'],
+              as: SelectStatement(columns: [StarResultColumn()]),
+            ),
+          ],
+        ),
+        columns: [StarResultColumn()],
+      ),
+    );
+  });
 }

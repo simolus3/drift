@@ -163,6 +163,10 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     final current = _currentAs<CommonTableExpression>(e);
     _assert(current.cteTableName == e.cteTableName, e);
+    _assert(current.materializationHint == e.materializationHint, e);
+    _assert(
+        const ListEquality().equals(current.columnNames, current.columnNames),
+        e);
     _checkChildren(e);
   }
 

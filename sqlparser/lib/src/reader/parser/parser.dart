@@ -887,6 +887,17 @@ class Parser {
       }
 
       final asToken = _consume(TokenType.as, 'Expected AS');
+      MaterializationHint? hint;
+      Token? not, materialized;
+
+      if (_matchOne(TokenType.not)) {
+        not = _previous;
+        materialized = _consume(TokenType.materialized);
+        hint = MaterializationHint.notMaterialized;
+      } else if (_matchOne(TokenType.materialized)) {
+        materialized = _previous;
+        hint = MaterializationHint.materialized;
+      }
 
       const msg = 'Expected select statement in brackets';
       _consume(TokenType.leftParen, msg);
@@ -895,12 +906,15 @@ class Parser {
 
       ctes.add(CommonTableExpression(
         cteTableName: name.identifier,
+        materializationHint: hint,
         columnNames: columnNames,
         as: selectStmt,
       )
         ..setSpan(name, _previous)
         ..asToken = asToken
-        ..tableNameToken = name);
+        ..tableNameToken = name
+        ..not = not
+        ..materialized = materialized);
     } while (_matchOne(TokenType.comma));
 
     return WithClause(

@@ -9,6 +9,20 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   LintingVisitor(this.options, this.context);
 
   @override
+  void visitCommonTableExpression(CommonTableExpression e, void arg) {
+    if (e.materializationHint != null &&
+        options.version < SqliteVersion.v3_35) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        message: 'MATERIALIZED / NOT MATERIALIZED requires sqlite3 version 35',
+        relevantNode: e.materialized ?? e,
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     var hasPrimaryKeyDeclaration = false;
 

@@ -312,6 +312,18 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     _keyword(TokenType.as);
+    switch (e.materializationHint) {
+      case MaterializationHint.notMaterialized:
+        _keyword(TokenType.not);
+        _keyword(TokenType.materialized);
+        break;
+      case MaterializationHint.materialized:
+        _keyword(TokenType.materialized);
+        break;
+      case null:
+        break;
+    }
+
     _symbol('(', spaceBefore: true);
     visit(e.as, arg);
     _symbol(')', spaceAfter: true);
