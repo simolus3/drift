@@ -76,7 +76,7 @@ SharedDatabase constructDb() {
 You can see all queries sent from moor to the underlying database engine by enabling the `logStatements`
 parameter on the `WebDatabase` - they will appear in the console.
 When you have assertions enabled (e.g. in debug mode), moor will expose the underlying 
-[database](http://sql-js.github.io/sql.js/documentation/#http://sql-js.github.io/sql.js/documentation/class/Database.html)
+[database](https://sql.js.org/documentation/Database.html)
 object via `window.db`. If you need to quickly run a query to check the state of the database, you can use
 `db.exec(sql)`.
 If you need to delete your databases, there stored using local storage. You can clear all your data with `localStorage.clear()`.

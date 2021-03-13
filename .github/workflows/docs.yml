@@ -15,9 +15,7 @@ jobs:
        - name: Run build
          env:
            IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' }}
-         run: |
-           dart run tool/ci_build.dart
-           rm -rf deploy/packages deploy/build.manifest deploy/.dart_tool deploy/.packages
+         run: dart run tool/ci_build.dart
          working-directory: docs
        - name: Deploy to netlify
          uses: nwtgck/actions-netlify@v1.1

@@ -1,6 +1,6 @@
 /// Flutter implementation for the moor database. This library merely provides
 /// a thin level of abstraction between the
-/// [sqflite](https://pub.dartlang.org/packages/sqflite) library and
+/// [sqflite](https://pub.dev/packages/sqflite) library and
 /// [moor](https://github.com/simolus3/moor)
 library moor_flutter;
 

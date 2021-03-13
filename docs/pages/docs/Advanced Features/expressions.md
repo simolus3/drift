@@ -5,7 +5,7 @@ data:
   weight: 200
 
 # used to be in the "getting started" section
-path: docs/Getting started/expressions/
+path: docs/getting-started/expressions/
 template: layouts/docs/single
 ---
 

@@ -13,8 +13,8 @@ how to get started. You can watch it [here](https://youtu.be/zpWsedYMczM).
 
 ## Adding the dependency
 First, lets add moor to your project's `pubspec.yaml`.
-At the moment, the current version of `moor` is [![Moor version](https://img.shields.io/pub/v/moor.svg)](https://pub.dartlang.org/packages/moor)
-and the latest version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dartlang.org/packages/moor_generator)
+At the moment, the current version of `moor` is [![Moor version](https://img.shields.io/pub/v/moor.svg)](https://pub.dev/packages/moor)
+and the latest version of `moor_generator` is [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dev/packages/moor_generator)
 
 ```yaml
 dependencies:
