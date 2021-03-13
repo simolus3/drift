@@ -19,8 +19,7 @@ Future<void> main() async {
     '--release',
     if (isRelease) '--config=deploy',
   ];
-  final build = await Process.start(
-      '/home/simon/bin/dart-sdk/stable/bin/dart', buildArgs,
+  final build = await Process.start('dart', buildArgs,
       mode: ProcessStartMode.inheritStdio);
   await build.exitCode;
 

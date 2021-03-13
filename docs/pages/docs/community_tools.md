@@ -7,7 +7,7 @@ template: layouts/docs/single
 
 {% block "blocks/pageinfo" %}
 Do you have a moor-related package you want to share? Awesome, please let me know!
-Contact me on [Gitter](https://gitter.im/simolus3), [Twitter](https://twitter.com/dersimolus)
+Contact me on [Gitter](https://gitter.im/moor-dart/community), [Twitter](https://twitter.com/dersimolus)
 or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 {% endblock %}
 
