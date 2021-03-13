@@ -89,6 +89,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       // Visit remaining children
       if (child != e.table && child != e.from) visit(child, arg);
     }
+
+    _resolveReturningClause(e);
   }
 
   void _addIfResolved(AstNode node, TableReference ref) {
@@ -102,12 +104,22 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   void visitInsertStatement(InsertStatement e, void arg) {
     _addIfResolved(e, e.table);
     visitChildren(e, arg);
+    _resolveReturningClause(e);
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
     _addIfResolved(e, e.from!);
     visitChildren(e, arg);
+    _resolveReturningClause(e);
+  }
+
+  void _resolveReturningClause(StatementReturningColumns stmt) {
+    final clause = stmt.returning;
+    if (clause == null) return;
+
+    final columns = _resolveColumns(stmt.scope, clause.columns);
+    stmt.returnedResultSet = CustomResultSet(columns);
   }
 
   @override
@@ -192,12 +204,20 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       _handle(s.from!, availableColumns);
     }
 
-    final usedColumns = <Column>[];
     final scope = s.scope;
+    scope.availableColumns = availableColumns;
+
+    s.resolvedColumns = _resolveColumns(scope, s.columns);
+  }
+
+  List<Column> _resolveColumns(
+      ReferenceScope scope, List<ResultColumn> columns) {
+    final usedColumns = <Column>[];
+    final availableColumns = scope.availableColumns;
 
     // a select statement can include everything from its sub queries as a
     // result, but also expressions that appear as result columns
-    for (final resultColumn in s.columns) {
+    for (final resultColumn in columns) {
       if (resultColumn is StarResultColumn) {
         Iterable<Column>? visibleColumnsForStar;
 
@@ -258,8 +278,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       }
     }
 
-    s.resolvedColumns = usedColumns;
-    scope.availableColumns = availableColumns;
+    return usedColumns;
   }
 
   void _resolveCompoundSelect(CompoundSelectStatement statement) {

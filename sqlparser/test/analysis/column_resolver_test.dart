@@ -157,4 +157,13 @@ INSERT INTO demo VALUES (?, ?)
 
     expect(result.errors, isEmpty);
   });
+
+  test('resolves RETURNING clause', () {
+    final result =
+        engine.analyze("INSERT INTO demo (content) VALUES ('hi') RETURNING *;");
+    final returning = (result.root as InsertStatement).returnedResultSet;
+
+    expect(returning, isNotNull);
+    expect(returning!.resolvedColumns!.map((e) => e.name), ['id', 'content']);
+  });
 }

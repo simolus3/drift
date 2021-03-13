@@ -42,7 +42,11 @@ abstract class HasFrom extends Statement {
 /// delete).
 abstract class StatementWithWhere extends Statement implements HasWhereClause {}
 
-/// Interface for statements that return columns after performing a write.
+/// Interface for statements that can return columns after writing data.
+///
+/// Columns are returned with a `RETURNING` clause (see [Returning]). After
+/// analyzing a node, statements with a [returning] clause will have their
+/// [returnedResultSet] set to the resolved columns.
 abstract class StatementReturningColumns extends Statement {
   /// The returning clause of this statement, if there is any.
   Returning? get returning;

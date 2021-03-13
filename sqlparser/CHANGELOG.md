@@ -3,6 +3,7 @@
 - __Breaking__: Change `InsertStatement.upsert` to a list of upsert clauses
    - Support multiple upsert clauses
    - Do not require a conflict target in the last clause
+- Support `RETURNING` clauses in updates, deletes and inserts
 - Support `FROM` clauses in `UPDATE` statements
 - Support `MATERIALIZED`/`NOT MATERIALIZED` hints in common table expressions
 - Add `BuiltInMathExtension` which corresponds to the `-DSQLITE_ENABLE_MATH_FUNCTIONS`
