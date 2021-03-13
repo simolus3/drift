@@ -22,16 +22,18 @@ class UpdateStatement extends CrudStatement
   @override
   TableReference table;
   final List<SetComponent> set;
+  Queryable? from;
   @override
   Expression? where;
 
-  UpdateStatement(
-      {WithClause? withClause,
-      this.or,
-      required this.table,
-      required this.set,
-      this.where})
-      : super._(withClause);
+  UpdateStatement({
+    WithClause? withClause,
+    this.or,
+    required this.table,
+    required this.set,
+    this.from,
+    this.where,
+  }) : super._(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -43,6 +45,7 @@ class UpdateStatement extends CrudStatement
     withClause = transformer.transformNullableChild(withClause, this, arg);
     table = transformer.transformChild(table, this, arg);
     transformer.transformChildren(set, this, arg);
+    from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformChild(where!, this, arg);
   }
 
@@ -51,6 +54,7 @@ class UpdateStatement extends CrudStatement
         if (withClause != null) withClause!,
         table,
         ...set,
+        if (from != null) from!,
         if (where != null) where!,
       ];
 

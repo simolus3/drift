@@ -101,6 +101,13 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
   }
 
+  void _from(Queryable? from) {
+    if (from != null) {
+      _keyword(TokenType.from);
+      visit(from, null);
+    }
+  }
+
   @override
   void visitAggregateExpression(AggregateExpression e, void arg) {
     _symbol(e.name);
@@ -484,8 +491,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visitNullable(e.withClause, arg);
 
     _keyword(TokenType.delete);
-    _keyword(TokenType.from);
-    visit(e.from!, null);
+    _from(e.from);
     _where(e.where);
   }
 
@@ -958,10 +964,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
     _join(e.columns, ',');
 
-    if (e.from != null) {
-      _keyword(TokenType.from);
-      visit(e.from!, arg);
-    }
+    _from(e.from);
     _where(e.where);
     visitNullable(e.groupBy, arg);
     if (e.windowDeclarations.isNotEmpty) {
@@ -1156,6 +1159,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.table, arg);
     _keyword(TokenType.set);
     _join(e.set, ',');
+    _from(e.from);
     _where(e.where);
   }
 

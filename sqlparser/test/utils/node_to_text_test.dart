@@ -239,6 +239,29 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
       });
     });
+
+    group('update', () {
+      test('simple', () {
+        testFormat('UPDATE foo SET bar = baz WHERE 1;');
+      });
+
+      const modes = [
+        'OR ABORT',
+        'OR FAIL',
+        'OR IGNORE',
+        'OR REPLACE',
+        ' OR ROLLBACK',
+      ];
+      for (var i = 0; i < modes.length; i++) {
+        test('failure mode #$i', () {
+          testFormat('UPDATE ${modes[i]} foo SET bar = baz');
+        });
+      }
+
+      test('from', () {
+        testFormat('UPDATE foo SET bar = baz FROM t1 CROSS JOIN t2');
+      });
+    });
   });
 
   group('expressions', () {

@@ -1447,6 +1447,7 @@ class Parser {
     _consume(TokenType.set, 'Expected SET after the table name');
 
     final set = _setComponents();
+    final from = _from();
 
     final where = _where();
     return UpdateStatement(
@@ -1454,6 +1455,7 @@ class Parser {
       or: failureMode,
       table: table,
       set: set,
+      from: from,
       where: where,
     )..setSpan(withClause?.first ?? updateToken, _previous);
   }
