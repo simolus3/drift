@@ -129,4 +129,10 @@ enum SqlModule {
   // note: We're ignoring the warning because we can't change the json key
   // ignore: constant_identifier_names
   moor_ffi,
+
+  /// Enables support for [built in math functions][math funs] when analysing
+  /// sql queries.
+  ///
+  /// [math funs]: https://www.sqlite.org/lang_mathfunc.html
+  math,
 }

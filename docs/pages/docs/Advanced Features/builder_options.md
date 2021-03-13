@@ -100,6 +100,8 @@ We currently support the following extensions:
   Functions like `highlight` or `bm25` are available as well.
 - `moor_ffi`: Enables support for functions that are only available when using `moor_ffi`. This contains `pow`, `sqrt` and a variety
   of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" }}).
+- `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
+  This module is largely incompatible with the `moor_ffi` module.
 
 ## Recommended options
 

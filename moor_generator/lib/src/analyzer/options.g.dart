@@ -133,4 +133,5 @@ const _$SqlModuleEnumMap = {
   SqlModule.json1: 'json1',
   SqlModule.fts5: 'fts5',
   SqlModule.moor_ffi: 'moor_ffi',
+  SqlModule.math: 'math',
 };
