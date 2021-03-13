@@ -1,7 +1,9 @@
-## 0.14.1-dev
+## 0.15.0-dev
 
 - Support `FROM` clauses in `UPDATE` statements
 - Support `MATERIALIZED`/`NOT MATERIALIZED` hints in common table expressions
+- Add `BuiltInMathExtension` which corresponds to the `-DSQLITE_ENABLE_MATH_FUNCTIONS`
+  compile-time option for sqlite.
 - Add `EngineOptions.version` argument to specify the desired sqlite version.
   Using newer features will be reported as analysis warnings.
 - Fix `rank` columns of fts5 tables being misreported as integers

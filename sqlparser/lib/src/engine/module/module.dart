@@ -11,6 +11,9 @@ abstract class Extension {
 /// Function handlers can be implemented by an [Extension] to add type analysis
 /// for additional function.
 abstract class FunctionHandler {
+  /// Constant default constructor to allow const implementations.
+  const FunctionHandler();
+
   /// The set of function names supported by this handler.
   ///
   /// The returned set shouldn't change over time.
