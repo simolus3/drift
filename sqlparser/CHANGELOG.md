@@ -1,6 +1,8 @@
 ## 0.14.1-dev
 
 - Support `FROM` clauses in `UPDATE` statements
+- Add `EngineOptions.version` argument to specify the desired sqlite version.
+  Using newer features will be reported as analysis warnings.
 - Fix `rank` columns of fts5 tables being misreported as integers
 
 ## 0.14.0
