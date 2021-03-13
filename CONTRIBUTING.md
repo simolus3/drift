@@ -20,7 +20,7 @@ branch for PRs. When possible, we only use the `master` branch to reflect the st
 been released to pub.
 
 If you have any question about moor internals that you feel are not explained well enough,
-you're most welcome to create an issue or [chat via gitter](http://gitter.im/simolus3).
+you're most welcome to create an issue or [chat via gitter](https://gitter.im/moor-dart/community).
 
 ## Project structure
 The project is divided into multiple modules:
