@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 
+import '../../analysis/analysis.dart';
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
 import '../node.dart';
@@ -40,6 +41,15 @@ abstract class HasFrom extends Statement {
 /// Interface for statements that have a primary where clause (select, update,
 /// delete).
 abstract class StatementWithWhere extends Statement implements HasWhereClause {}
+
+/// Interface for statements that return columns after performing a write.
+abstract class StatementReturningColumns extends Statement {
+  /// The returning clause of this statement, if there is any.
+  Returning? get returning;
+
+  /// The result set of the [returning] clause.
+  ResultSet? returnedResultSet;
+}
 
 /// Marker interface for statements that change the table structure.
 abstract class SchemaStatement extends Statement implements PartOfMoorFile {}

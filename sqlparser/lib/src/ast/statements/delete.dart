@@ -1,10 +1,12 @@
+import '../../analysis/analysis.dart';
 import '../ast.dart'; // todo: Remove this import
+import '../clauses/returning.dart';
 import '../node.dart';
 import '../visitor.dart';
 import 'statement.dart';
 
 class DeleteStatement extends CrudStatement
-    implements StatementWithWhere, HasPrimarySource {
+    implements StatementWithWhere, StatementReturningColumns, HasPrimarySource {
   TableReference? from;
   @override
   Expression? where;
@@ -12,7 +14,13 @@ class DeleteStatement extends CrudStatement
   @override
   TableReference? get table => from;
 
-  DeleteStatement({WithClause? withClause, required this.from, this.where})
+  @override
+  Returning? returning;
+  @override
+  ResultSet? returnedResultSet;
+
+  DeleteStatement(
+      {WithClause? withClause, required this.from, this.where, this.returning})
       : super(withClause);
 
   @override
@@ -25,6 +33,7 @@ class DeleteStatement extends CrudStatement
     withClause = transformer.transformNullableChild(withClause, this, arg);
     from = transformer.transformChild(from!, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
+    returning = transformer.transformNullableChild(returning, this, arg);
   }
 
   @override
@@ -32,5 +41,6 @@ class DeleteStatement extends CrudStatement
         if (withClause != null) withClause!,
         from!,
         if (where != null) where!,
+        if (returning != null) returning!,
       ];
 }

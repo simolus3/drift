@@ -207,4 +207,22 @@ void main() {
       );
     });
   });
+
+  test('parses RETURNING clause', () {
+    testStatement(
+      'INSERT INTO tbl DEFAULT VALUES RETURNING foo, 3, bar;',
+      InsertStatement(
+        table: TableReference('tbl'),
+        targetColumns: const [],
+        source: DefaultValues(),
+        returning: Returning([
+          ExpressionResultColumn(expression: Reference(columnName: 'foo')),
+          ExpressionResultColumn(
+            expression: NumericLiteral(3, token(TokenType.numberLiteral)),
+          ),
+          ExpressionResultColumn(expression: Reference(columnName: 'bar')),
+        ]),
+      ),
+    );
+  });
 }

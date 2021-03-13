@@ -1,3 +1,4 @@
+import 'package:sqlparser/src/ast/ast.dart';
 import 'package:test/test.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'utils.dart';
@@ -76,6 +77,22 @@ void main() {
           token(TokenType.equal),
           Reference(entityName: 'daily', columnName: 'itemId'),
         ),
+      ),
+    );
+  });
+
+  test('parses updates with RETURNING clause', () {
+    testStatement(
+      'UPDATE tbl SET foo = bar RETURNING *',
+      UpdateStatement(
+        table: TableReference('tbl'),
+        set: [
+          SetComponent(
+            column: Reference(columnName: 'foo'),
+            expression: Reference(columnName: 'bar'),
+          ),
+        ],
+        returning: Returning([StarResultColumn()]),
       ),
     );
   });

@@ -525,6 +525,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitReturning(Returning e, void arg) {
+    _currentAs<Returning>(e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitSelectInsertSource(SelectInsertSource e, void arg) {
     _currentAs<SelectInsertSource>(e);
     _checkChildren(e);

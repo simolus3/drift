@@ -962,6 +962,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitReturning(Returning e, void arg) {
+    _keyword(TokenType.returning);
+    _join(e.columns, ',');
+  }
+
+  @override
   void visitSelectInsertSource(SelectInsertSource e, void arg) {
     visit(e.stmt, arg);
   }

@@ -3,13 +3,16 @@ import 'package:sqlparser/src/analysis/analysis.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 // todo: Remove these imports after splitting up this library
+import 'expressions/expressions.dart';
 import 'node.dart';
 import 'statements/create_index.dart';
 import 'statements/select.dart';
 import 'statements/statement.dart';
 import 'visitor.dart';
 
+export 'clauses/returning.dart';
 export 'clauses/upsert.dart';
+export 'expressions/expressions.dart';
 export 'node.dart';
 export 'statements/block.dart';
 export 'statements/create_index.dart';
@@ -34,7 +37,6 @@ part 'common/tuple.dart';
 part 'expressions/aggregate.dart';
 part 'expressions/case.dart';
 part 'expressions/cast.dart';
-part 'expressions/expressions.dart';
 part 'expressions/function.dart';
 part 'expressions/literals.dart';
 part 'expressions/reference.dart';

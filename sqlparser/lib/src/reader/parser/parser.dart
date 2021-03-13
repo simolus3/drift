@@ -1002,14 +1002,10 @@ class Parser {
       distinct = false;
     }
 
-    final resultColumns = <ResultColumn>[];
-    do {
-      resultColumns.add(_resultColumn());
-    } while (_match(const [TokenType.comma]));
-
+    final resultColumns = _resultColumns();
     final from = _from();
 
-    final where = _where();
+    final where = _whereOrNull();
     final groupBy = _groupBy();
     final windowDecls = _windowDeclarations();
     final orderBy = _orderBy();
@@ -1069,47 +1065,6 @@ class Parser {
         ..setSpan(firstModeToken, _previous);
     }
     return null;
-  }
-
-  /// Parses a [ResultColumn] or throws if none is found.
-  /// https://www.sqlite.org/syntax/result-column.html
-  ResultColumn _resultColumn() {
-    if (_matchOne(TokenType.star)) {
-      return StarResultColumn(null)..setSpan(_previous, _previous);
-    }
-
-    final positionBefore = _current;
-
-    if (_matchOne(TokenType.identifier)) {
-      // two options. the identifier could be followed by ".*", in which case
-      // we have a star result column. If it's followed by anything else, it can
-      // still refer to a column in a table as part of a expression
-      // result column
-      final identifier = _previous as IdentifierToken;
-
-      if (_matchOne(TokenType.dot)) {
-        if (_matchOne(TokenType.star)) {
-          return StarResultColumn(identifier.identifier)
-            ..setSpan(identifier, _previous);
-        } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
-          return NestedStarResultColumn(identifier.identifier)
-            ..setSpan(identifier, _previous);
-        }
-      }
-
-      // not a star result column. go back and parse the expression.
-      // todo this is a bit unorthodox. is there a better way to parse the
-      // expression from before?
-      _current = positionBefore;
-    }
-
-    final tokenBefore = _peek;
-
-    final expr = expression();
-    final as = _as();
-
-    return ExpressionResultColumn(expression: expr, as: as?.identifier)
-      ..setSpan(tokenBefore, _previous);
   }
 
   /// Returns an identifier followed after an optional "AS" token in sql.
@@ -1290,8 +1245,8 @@ class Parser {
   }
 
   /// Parses a where clause if there is one at the current position
-  Expression? _where() {
-    if (_match(const [TokenType.where])) {
+  Expression? _whereOrNull() {
+    if (_matchOne(TokenType.where)) {
       return expression();
     }
     return null;
@@ -1435,16 +1390,15 @@ class Parser {
     _consume(TokenType.from, 'Expected a FROM here');
 
     final table = _tableReference();
-    Expression? where;
 
-    if (_matchOne(TokenType.where)) {
-      where = expression();
-    }
+    final where = _whereOrNull();
+    final returning = _returningOrNull();
 
     return DeleteStatement(
       withClause: withClause,
       from: table,
       where: where,
+      returning: returning,
     )..setSpan(withClause?.first ?? deleteToken, _previous);
   }
 
@@ -1463,7 +1417,8 @@ class Parser {
     final set = _setComponents();
     final from = _from();
 
-    final where = _where();
+    final where = _whereOrNull();
+    final returning = _returningOrNull();
     return UpdateStatement(
       withClause: withClause,
       or: failureMode,
@@ -1471,6 +1426,7 @@ class Parser {
       set: set,
       from: from,
       where: where,
+      returning: returning,
     )..setSpan(withClause?.first ?? updateToken, _previous);
   }
 
@@ -1542,6 +1498,7 @@ class Parser {
     while (_check(TokenType.on)) {
       upsert.add(_upsertClauseEntry());
     }
+    final returning = _returningOrNull();
 
     return InsertStatement(
       withClause: withClause,
@@ -1553,6 +1510,7 @@ class Parser {
           ? null
           : (UpsertClause(upsert)
             ..setSpan(upsert.first.first!, upsert.last.last!)),
+      returning: returning,
     )..setSpan(withClause?.first ?? firstToken, _previous);
   }
 
@@ -1739,6 +1697,63 @@ class Parser {
     }
 
     _error('Expected either PRECEDING or FOLLOWING here');
+  }
+
+  Returning? _returningOrNull() {
+    if (!_matchOne(TokenType.returning)) return null;
+
+    final previous = _previous;
+    return Returning(_resultColumns())..setSpan(previous, _previous);
+  }
+
+  List<ResultColumn> _resultColumns() {
+    final columns = <ResultColumn>[];
+    do {
+      columns.add(_resultColumn());
+    } while (_matchOne(TokenType.comma));
+
+    return columns;
+  }
+
+  /// Parses a [ResultColumn] or throws if none is found.
+  /// https://www.sqlite.org/syntax/result-column.html
+  ResultColumn _resultColumn() {
+    if (_matchOne(TokenType.star)) {
+      return StarResultColumn(null)..setSpan(_previous, _previous);
+    }
+
+    final positionBefore = _current;
+
+    if (_matchOne(TokenType.identifier)) {
+      // two options. the identifier could be followed by ".*", in which case
+      // we have a star result column. If it's followed by anything else, it can
+      // still refer to a column in a table as part of a expression
+      // result column
+      final identifier = _previous as IdentifierToken;
+
+      if (_matchOne(TokenType.dot)) {
+        if (_matchOne(TokenType.star)) {
+          return StarResultColumn(identifier.identifier)
+            ..setSpan(identifier, _previous);
+        } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
+          return NestedStarResultColumn(identifier.identifier)
+            ..setSpan(identifier, _previous);
+        }
+      }
+
+      // not a star result column. go back and parse the expression.
+      // todo this is a bit unorthodox. is there a better way to parse the
+      // expression from before?
+      _current = positionBefore;
+    }
+
+    final tokenBefore = _peek;
+
+    final expr = expression();
+    final as = _as();
+
+    return ExpressionResultColumn(expression: expr, as: as?.identifier)
+      ..setSpan(tokenBefore, _previous);
   }
 
   SchemaStatement? _create() {

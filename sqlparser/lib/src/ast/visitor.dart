@@ -15,6 +15,7 @@ abstract class AstVisitor<A, R> {
   R visitCreateViewStatement(CreateViewStatement e, A arg);
   R visitInvalidStatement(InvalidStatement e, A arg);
 
+  R visitReturning(Returning e, A arg);
   R visitWithClause(WithClause e, A arg);
   R visitUpsertClause(UpsertClause e, A arg);
   R visitUpsertClauseEntry(UpsertClauseEntry e, A arg);
@@ -205,6 +206,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg) {
     return visitResultColumn(e, arg);
+  }
+
+  @override
+  R? visitReturning(Returning e, A arg) {
+    return defaultNode(e, arg);
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'package:sqlparser/sqlparser.dart';
+
 import '../../analysis/analysis.dart';
 import '../ast.dart'; // todo: Remove this import
 import '../clauses/upsert.dart';
@@ -15,13 +17,19 @@ enum InsertMode {
   insertOrIgnore
 }
 
-class InsertStatement extends CrudStatement implements HasPrimarySource {
+class InsertStatement extends CrudStatement
+    implements HasPrimarySource, StatementReturningColumns {
   final InsertMode mode;
   @override
   TableReference table;
   final List<Reference> targetColumns;
   InsertSource source;
   UpsertClause? upsert;
+
+  @override
+  Returning? returning;
+  @override
+  ResultSet? returnedResultSet;
 
   List<Column?>? get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
@@ -32,14 +40,15 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
     }
   }
 
-  InsertStatement(
-      {WithClause? withClause,
-      this.mode = InsertMode.insert,
-      required this.table,
-      required this.targetColumns,
-      required this.source,
-      this.upsert})
-      : super(withClause);
+  InsertStatement({
+    WithClause? withClause,
+    this.mode = InsertMode.insert,
+    required this.table,
+    required this.targetColumns,
+    required this.source,
+    this.upsert,
+    this.returning,
+  }) : super(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -51,6 +60,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
     withClause = transformer.transformNullableChild(withClause, this, arg);
     table = transformer.transformChild(table, this, arg);
     transformer.transformChildren(targetColumns, this, arg);
+    returning = transformer.transformNullableChild(returning, this, arg);
   }
 
   @override
@@ -60,6 +70,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
         ...targetColumns,
         source,
         if (upsert != null) upsert!,
+        if (returning != null) returning!,
       ];
 }
 

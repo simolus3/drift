@@ -21,4 +21,14 @@ void main() {
       ),
     );
   });
+
+  test('parses delete statements with RETURNING', () {
+    testStatement(
+      'DELETE FROM tbl RETURNING *;',
+      DeleteStatement(
+        from: TableReference('tbl', null),
+        returning: Returning([StarResultColumn()]),
+      ),
+    );
+  });
 }

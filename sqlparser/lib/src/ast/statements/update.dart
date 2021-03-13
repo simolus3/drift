@@ -1,3 +1,5 @@
+import 'package:sqlparser/sqlparser.dart';
+
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
 import '../node.dart';
@@ -21,7 +23,11 @@ const Map<TokenType, FailureMode> _tokensToMode = {
 };
 
 class UpdateStatement extends CrudStatement
-    implements StatementWithWhere, HasPrimarySource, HasFrom {
+    implements
+        StatementWithWhere,
+        HasPrimarySource,
+        HasFrom,
+        StatementReturningColumns {
   final FailureMode? or;
   @override
   TableReference table;
@@ -31,6 +37,11 @@ class UpdateStatement extends CrudStatement
   @override
   Expression? where;
 
+  @override
+  Returning? returning;
+  @override
+  ResultSet? returnedResultSet;
+
   UpdateStatement({
     WithClause? withClause,
     this.or,
@@ -38,6 +49,7 @@ class UpdateStatement extends CrudStatement
     required this.set,
     this.from,
     this.where,
+    this.returning,
   }) : super(withClause);
 
   @override
@@ -52,6 +64,7 @@ class UpdateStatement extends CrudStatement
     transformer.transformChildren(set, this, arg);
     from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformChild(where!, this, arg);
+    returning = transformer.transformNullableChild(returning, this, arg);
   }
 
   @override
@@ -61,6 +74,7 @@ class UpdateStatement extends CrudStatement
         ...set,
         if (from != null) from!,
         if (where != null) where!,
+        if (returning != null) returning!,
       ];
 
   static FailureMode? failureModeFromToken(TokenType token) {
