@@ -102,7 +102,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       },
     );
 
-    visitList(e.upsert, const NoTypeExpectation());
+    visitNullable(e.upsert, const NoTypeExpectation());
   }
 
   @override
@@ -606,7 +606,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitUpsertClause(UpsertClause e, TypeExpectation arg) {
+  void visitUpsertClauseEntry(UpsertClauseEntry e, TypeExpectation arg) {
     _handleWhereClause(e);
     visitExcept(e, e.where, arg);
   }

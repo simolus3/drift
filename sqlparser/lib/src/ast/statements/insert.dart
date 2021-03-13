@@ -18,17 +18,17 @@ enum InsertMode {
 class InsertStatement extends CrudStatement implements HasPrimarySource {
   final InsertMode mode;
   @override
-  TableReference? table;
+  TableReference table;
   final List<Reference> targetColumns;
   InsertSource source;
-  final List<UpsertClause> upsert;
+  UpsertClause? upsert;
 
   List<Column?>? get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
       return targetColumns.map((c) => c.resolvedColumn).toList();
     } else {
       // no columns declared - assume all columns from the table
-      return table!.resultSet?.resolvedColumns;
+      return table.resultSet?.resolvedColumns;
     }
   }
 
@@ -38,7 +38,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
       required this.table,
       required this.targetColumns,
       required this.source,
-      this.upsert = const []})
+      this.upsert})
       : super(withClause);
 
   @override
@@ -49,17 +49,17 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
-    table = transformer.transformChild(table!, this, arg);
+    table = transformer.transformChild(table, this, arg);
     transformer.transformChildren(targetColumns, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes => [
         if (withClause != null) withClause!,
-        table!,
+        table,
         ...targetColumns,
         source,
-        ...upsert,
+        if (upsert != null) upsert!,
       ];
 }
 

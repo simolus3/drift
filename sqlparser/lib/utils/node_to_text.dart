@@ -706,7 +706,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     _keyword(TokenType.into);
-    visit(e.table!, arg);
+    visit(e.table, arg);
 
     if (e.targetColumns.isNotEmpty) {
       _symbol('(', spaceBefore: true);
@@ -715,7 +715,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visit(e.source, arg);
-    _join(e.upsert, '');
+    visitNullable(e.upsert, arg);
   }
 
   @override
@@ -1186,6 +1186,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitUpsertClause(UpsertClause e, void arg) {
+    _join(e.entries, '');
+  }
+
+  @override
+  void visitUpsertClauseEntry(UpsertClauseEntry e, void arg) {
     _keyword(TokenType.on);
     _keyword(TokenType.conflict);
 

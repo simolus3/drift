@@ -96,6 +96,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
 
   bool operator <(SqliteVersion other) => compareTo(other) < 0;
   bool operator >(SqliteVersion other) => compareTo(other) > 0;
+  bool operator >=(SqliteVersion other) => compareTo(other) >= 0;
 
   @override
   int compareTo(SqliteVersion other) {

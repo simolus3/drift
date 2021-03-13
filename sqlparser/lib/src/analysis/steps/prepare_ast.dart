@@ -224,9 +224,19 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   @override
   void visitUpsertClause(UpsertClause e, void arg) {
-    // report syntax error if DO UPDATE clause is used without specifying a
-    // conflict target.
-    if (e.onColumns == null && e.action is DoUpdate) {
+    for (var i = 0; i < e.entries.length; i++) {
+      _visitUpsertClauseEntry(e.entries[i], i == e.entries.length - 1);
+    }
+  }
+
+  void _visitUpsertClauseEntry(UpsertClauseEntry e, bool isLast) {
+    // Every DoUpdate except for the last ON CONFLICT clause must have a
+    // conflict target. When using older sqlite versions, every clause needs
+    // a conflict target.
+    final lastWithoutTargetOk =
+        context.engineOptions.version >= SqliteVersion.v3_35;
+    final withoutTargetOk = lastWithoutTargetOk && isLast;
+    if (e.onColumns == null && e.action is DoUpdate && !withoutTargetOk) {
       context.reportError(AnalysisError(
         type: AnalysisErrorType.synctactic,
         message: 'Expected a conflict clause when using DO UPDATE',
@@ -241,6 +251,6 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       _forkScope(e.action, inheritAvailableColumns: true);
     }
 
-    visitChildren(e, arg);
+    visitChildren(e, null);
   }
 }

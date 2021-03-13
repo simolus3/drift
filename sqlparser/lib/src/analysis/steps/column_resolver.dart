@@ -52,7 +52,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
   @override
   void visitDoUpdate(DoUpdate e, void arg) {
     final surroundingInsert = e.parents.whereType<InsertStatement>().first;
-    final table = surroundingInsert.table!.resultSet;
+    final table = surroundingInsert.table.resultSet;
 
     if (table != null) {
       // add "excluded" table qualifier that referring to the row that would
@@ -100,7 +100,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
-    _addIfResolved(e, e.table!);
+    _addIfResolved(e, e.table);
     visitChildren(e, arg);
   }
 

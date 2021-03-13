@@ -644,6 +644,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitUpsertClauseEntry(UpsertClauseEntry e, void arg) {
+    _currentAs<UpsertClauseEntry>(e);
+    _checkChildren(e);
+  }
+
+  @override
   void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
     _currentAs<ValuesSelectStatement>(e);
     _checkChildren(e);

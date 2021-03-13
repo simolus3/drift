@@ -168,6 +168,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitUpsertClause(UpsertClause e, void arg) {
+    final hasMultipleClauses = e.entries.length > 1;
+
+    if (hasMultipleClauses && options.version < SqliteVersion.v3_35) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        relevantNode: e,
+        message:
+            'Multiple on conflict clauses require sqlite version 3.35 or later',
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
     final expectedColumns = e.resolvedColumns!.length;
 

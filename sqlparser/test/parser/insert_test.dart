@@ -64,7 +64,7 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [UpsertClause(action: DoNothing())],
+          upsert: UpsertClause([UpsertClauseEntry(action: DoNothing())]),
         ),
       );
     });
@@ -76,18 +76,20 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [
-            UpsertClause(
-              onColumns: [
-                IndexedColumn(Reference(columnName: 'foo')),
-                IndexedColumn(
-                  Reference(columnName: 'bar'),
-                  OrderingMode.descending,
-                ),
-              ],
-              action: DoNothing(),
-            ),
-          ],
+          upsert: UpsertClause(
+            [
+              UpsertClauseEntry(
+                onColumns: [
+                  IndexedColumn(Reference(columnName: 'foo')),
+                  IndexedColumn(
+                    Reference(columnName: 'bar'),
+                    OrderingMode.descending,
+                  ),
+                ],
+                action: DoNothing(),
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -99,20 +101,22 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [
-            UpsertClause(
-              onColumns: [
-                IndexedColumn(Reference(columnName: 'foo')),
-                IndexedColumn(Reference(columnName: 'bar')),
-              ],
-              where: BinaryExpression(
-                NumericLiteral(2, token(TokenType.numberLiteral)),
-                token(TokenType.equal),
-                Reference(columnName: 'foo'),
+          upsert: UpsertClause(
+            [
+              UpsertClauseEntry(
+                onColumns: [
+                  IndexedColumn(Reference(columnName: 'foo')),
+                  IndexedColumn(Reference(columnName: 'bar')),
+                ],
+                where: BinaryExpression(
+                  NumericLiteral(2, token(TokenType.numberLiteral)),
+                  token(TokenType.equal),
+                  Reference(columnName: 'foo'),
+                ),
+                action: DoNothing(),
               ),
-              action: DoNothing(),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
@@ -124,19 +128,21 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [
-            UpsertClause(
-              action: DoUpdate(
-                [
-                  SetComponent(
-                    column: Reference(columnName: 'foo'),
-                    expression:
-                        NumericLiteral(2, token(TokenType.numberLiteral)),
-                  ),
-                ],
+          upsert: UpsertClause(
+            [
+              UpsertClauseEntry(
+                action: DoUpdate(
+                  [
+                    SetComponent(
+                      column: Reference(columnName: 'foo'),
+                      expression:
+                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
@@ -148,22 +154,24 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [
-            UpsertClause(
-              action: DoUpdate(
-                [
-                  SetComponent(
-                    column: Reference(columnName: 'foo'),
-                    expression:
-                        NumericLiteral(2, token(TokenType.numberLiteral)),
+          upsert: UpsertClause(
+            [
+              UpsertClauseEntry(
+                action: DoUpdate(
+                  [
+                    SetComponent(
+                      column: Reference(columnName: 'foo'),
+                      expression:
+                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                    ),
+                  ],
+                  where: NumberedVariable(
+                    QuestionMarkVariableToken(fakeSpan('?'), null),
                   ),
-                ],
-                where: NumberedVariable(
-                  QuestionMarkVariableToken(fakeSpan('?'), null),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });
@@ -175,24 +183,26 @@ void main() {
           table: TableReference('tbl'),
           targetColumns: const [],
           source: DefaultValues(),
-          upsert: [
-            UpsertClause(
-              onColumns: [IndexedColumn(Reference(columnName: 'foo'))],
-              action: DoNothing(),
-            ),
-            UpsertClause(
-              onColumns: [IndexedColumn(Reference(columnName: 'bar'))],
-              action: DoUpdate(
-                [
-                  SetComponent(
-                    column: Reference(columnName: 'x'),
-                    expression:
-                        NumericLiteral(2, token(TokenType.numberLiteral)),
-                  ),
-                ],
+          upsert: UpsertClause(
+            [
+              UpsertClauseEntry(
+                onColumns: [IndexedColumn(Reference(columnName: 'foo'))],
+                action: DoNothing(),
               ),
-            ),
-          ],
+              UpsertClauseEntry(
+                onColumns: [IndexedColumn(Reference(columnName: 'bar'))],
+                action: DoUpdate(
+                  [
+                    SetComponent(
+                      column: Reference(columnName: 'x'),
+                      expression:
+                          NumericLiteral(2, token(TokenType.numberLiteral)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     });

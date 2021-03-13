@@ -2,18 +2,37 @@ import '../ast.dart'; // todo: Remove this import
 import '../node.dart';
 import '../statements/create_index.dart' show IndexedColumn;
 
-class UpsertClause extends AstNode implements HasWhereClause {
+class UpsertClause extends AstNode {
+  final List<UpsertClauseEntry> entries;
+
+  UpsertClause(this.entries);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitUpsertClause(this, arg);
+  }
+
+  @override
+  List<UpsertClauseEntry> get childNodes => entries;
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    transformer.transformChildren(entries, this, arg);
+  }
+}
+
+class UpsertClauseEntry extends AstNode implements HasWhereClause {
   final List<IndexedColumn>? onColumns;
   @override
   Expression? where;
 
   UpsertAction action;
 
-  UpsertClause({this.onColumns, this.where, required this.action});
+  UpsertClauseEntry({this.onColumns, this.where, required this.action});
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitUpsertClause(this, arg);
+    return visitor.visitUpsertClauseEntry(this, arg);
   }
 
   @override

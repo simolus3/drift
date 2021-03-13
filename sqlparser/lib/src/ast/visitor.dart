@@ -17,6 +17,7 @@ abstract class AstVisitor<A, R> {
 
   R visitWithClause(WithClause e, A arg);
   R visitUpsertClause(UpsertClause e, A arg);
+  R visitUpsertClauseEntry(UpsertClauseEntry e, A arg);
   R visitCommonTableExpression(CommonTableExpression e, A arg);
   R visitOrderBy(OrderBy e, A arg);
   R visitOrderingTerm(OrderingTerm e, A arg);
@@ -213,6 +214,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitUpsertClause(UpsertClause e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R? visitUpsertClauseEntry(UpsertClauseEntry e, A arg) {
     return defaultNode(e, arg);
   }
 

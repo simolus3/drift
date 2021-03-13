@@ -8,17 +8,44 @@ import 'package:test/test.dart';
 import '../data.dart';
 
 void main() {
-  test('DO UPDATE clause without conflict target', () {
-    final engine = SqlEngine()..registerTable(demoTable);
-    final result = engine.analyze('INSERT INTO demo VALUES (?, ?)  '
-        'ON CONFLICT DO UPDATE SET id = 3;');
+  group('DO UPDATE clause without conflict target', () {
+    test('is forbidden on older sqlite versions', () {
+      final engine = SqlEngine()..registerTable(demoTable);
+      final result = engine.analyze('INSERT INTO demo VALUES (?, ?)  '
+          'ON CONFLICT DO UPDATE SET id = 3;');
 
-    expect(result.errors, [
-      const TypeMatcher<AnalysisError>()
-          .having((e) => e.type, 'type', AnalysisErrorType.synctactic)
-          .having((e) => e.message, 'message',
-              contains('Expected a conflict clause'))
-    ]);
+      expect(result.errors, [
+        const TypeMatcher<AnalysisError>()
+            .having((e) => e.type, 'type', AnalysisErrorType.synctactic)
+            .having((e) => e.message, 'message',
+                contains('Expected a conflict clause'))
+      ]);
+    });
+
+    test('is allowed on the last clause', () {
+      final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35))
+        ..registerTable(demoTable);
+      expect(
+        engine
+            .analyze('INSERT INTO demo VALUES (?, ?)  '
+                'ON CONFLICT DO UPDATE SET id = 3;')
+            .errors,
+        isEmpty,
+      );
+    });
+
+    test('is not allowed on previous clauses', () {
+      final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35))
+        ..registerTable(demoTable);
+      expect(
+        engine
+            .analyze('INSERT INTO demo VALUES (?, ?)  '
+                'ON CONFLICT DO UPDATE SET id = 3'
+                'ON CONFLICT DO NOTHING;')
+            .errors,
+        hasLength(1),
+      );
+    });
   });
 
   test('complex expressions in PRIMARY KEY clause', () {

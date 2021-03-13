@@ -1538,9 +1538,9 @@ class Parser {
           'Expected clpsing parenthesis after column list');
     }
     final source = _insertSource();
-    final upsert = <UpsertClause>[];
+    final upsert = <UpsertClauseEntry>[];
     while (_check(TokenType.on)) {
-      upsert.add(_upsertClause());
+      upsert.add(_upsertClauseEntry());
     }
 
     return InsertStatement(
@@ -1549,7 +1549,10 @@ class Parser {
       table: table,
       targetColumns: targetColumns,
       source: source,
-      upsert: upsert,
+      upsert: upsert.isEmpty
+          ? null
+          : (UpsertClause(upsert)
+            ..setSpan(upsert.first.first!, upsert.last.last!)),
     )..setSpan(withClause?.first ?? firstToken, _previous);
   }
 
@@ -1575,7 +1578,7 @@ class Parser {
     }
   }
 
-  UpsertClause _upsertClause() {
+  UpsertClauseEntry _upsertClauseEntry() {
     final first = _consume(TokenType.on);
     _consume(TokenType.conflict, 'Expected CONFLICT keyword for upsert clause');
 
@@ -1600,7 +1603,7 @@ class Parser {
       action = _doUpdate();
     }
 
-    return UpsertClause(
+    return UpsertClauseEntry(
       onColumns: indexedColumns,
       where: where,
       action: action,
