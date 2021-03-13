@@ -1,4 +1,4 @@
-part of '../ast.dart';
+import '../ast.dart';
 
 /// Used as a top-level substitute when no statement could be parsed otherwise.
 class InvalidStatement extends Statement {

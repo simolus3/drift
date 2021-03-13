@@ -1,4 +1,4 @@
-part of 'ast.dart';
+import 'ast.dart';
 
 abstract class AstVisitor<A, R> {
   R visitSelectStatement(SelectStatement e, A arg);

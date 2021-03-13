@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import 'package:source_span/source_span.dart';
+
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart'; // todo: Remove this import
+import 'statement.dart';
 
 abstract class TableInducingStatement extends Statement
     implements CreatingStatement {

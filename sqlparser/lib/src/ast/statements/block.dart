@@ -1,4 +1,7 @@
-part of '../ast.dart';
+import '../../reader/tokenizer/token.dart';
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 /// BLOCK = 'BEGIN' < CRUD-STATEMENT ';' > 'END'
 class Block extends AstNode {

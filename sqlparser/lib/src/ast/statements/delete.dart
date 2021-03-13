@@ -1,4 +1,7 @@
-part of '../ast.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 class DeleteStatement extends CrudStatement
     implements StatementWithWhere, HasPrimarySource {
@@ -10,7 +13,7 @@ class DeleteStatement extends CrudStatement
   TableReference? get table => from;
 
   DeleteStatement({WithClause? withClause, required this.from, this.where})
-      : super._(withClause);
+      : super(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

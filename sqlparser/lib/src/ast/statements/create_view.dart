@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 /// A "CREATE VIEW" statement, see https://sqlite.org/lang_createview.html
 class CreateViewStatement extends Statement implements CreatingStatement {

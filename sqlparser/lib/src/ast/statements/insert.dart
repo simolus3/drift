@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import '../../analysis/analysis.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 enum InsertMode {
   insert,
@@ -34,7 +38,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
       required this.targetColumns,
       required this.source,
       this.upsert})
-      : super._(withClause);
+      : super(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

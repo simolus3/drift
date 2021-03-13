@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 enum FailureMode {
   rollback,
@@ -34,7 +38,7 @@ class UpdateStatement extends CrudStatement
     required this.set,
     this.from,
     this.where,
-  }) : super._(withClause);
+  }) : super(withClause);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

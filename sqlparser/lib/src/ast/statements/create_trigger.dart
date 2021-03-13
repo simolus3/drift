@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../visitor.dart';
+import 'statement.dart';
 
 /// A "CREATE TRIGGER" statement, see https://sqlite.org/lang_createtrigger.html
 class CreateTriggerStatement extends Statement implements CreatingStatement {

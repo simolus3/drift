@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import 'package:meta/meta.dart';
+
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
 
 abstract class Statement extends AstNode {
   Token? semicolon;
@@ -9,7 +13,8 @@ abstract class Statement extends AstNode {
 abstract class CrudStatement extends Statement {
   WithClause? withClause;
 
-  CrudStatement._(this.withClause);
+  @internal
+  CrudStatement(this.withClause);
 }
 
 /// Interfaces for statements that have a primary source table on which they
