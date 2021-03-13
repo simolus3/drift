@@ -247,6 +247,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         testFormat('INSERT INTO foo VALUES (1, 2, 3) '
             'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
       });
+
+      test('upsert - multiple clauses', () {
+        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
+            'ON CONFLICT DO NOTHING '
+            'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
+      });
     });
 
     group('update', () {

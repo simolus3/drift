@@ -1,4 +1,6 @@
-part of '../ast.dart';
+import '../ast.dart'; // todo: Remove this import
+import '../node.dart';
+import '../statements/create_index.dart' show IndexedColumn;
 
 class UpsertClause extends AstNode implements HasWhereClause {
   final List<IndexedColumn>? onColumns;

@@ -102,7 +102,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       },
     );
 
-    visitNullable(e.upsert, const NoTypeExpectation());
+    visitList(e.upsert, const NoTypeExpectation());
   }
 
   @override

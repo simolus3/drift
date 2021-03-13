@@ -1,5 +1,6 @@
 import '../../analysis/analysis.dart';
 import '../ast.dart'; // todo: Remove this import
+import '../clauses/upsert.dart';
 import '../node.dart';
 import '../visitor.dart';
 import 'statement.dart';
@@ -20,7 +21,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
   TableReference? table;
   final List<Reference> targetColumns;
   InsertSource source;
-  UpsertClause? upsert;
+  final List<UpsertClause> upsert;
 
   List<Column?>? get resolvedTargetColumns {
     if (targetColumns.isNotEmpty) {
@@ -37,7 +38,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
       required this.table,
       required this.targetColumns,
       required this.source,
-      this.upsert})
+      this.upsert = const []})
       : super(withClause);
 
   @override
@@ -58,7 +59,7 @@ class InsertStatement extends CrudStatement implements HasPrimarySource {
         table!,
         ...targetColumns,
         source,
-        if (upsert != null) upsert!
+        ...upsert,
       ];
 }
 

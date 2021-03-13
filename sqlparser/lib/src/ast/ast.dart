@@ -7,9 +7,9 @@ import 'node.dart';
 import 'statements/create_index.dart';
 import 'statements/select.dart';
 import 'statements/statement.dart';
-import 'statements/update.dart';
 import 'visitor.dart';
 
+export 'clauses/upsert.dart';
 export 'node.dart';
 export 'statements/block.dart';
 export 'statements/create_index.dart';
@@ -27,7 +27,6 @@ export 'visitor.dart';
 // todo: Split up this mega-library
 part 'clauses/limit.dart';
 part 'clauses/ordering.dart';
-part 'clauses/upsert.dart';
 part 'clauses/with.dart';
 part 'common/queryables.dart';
 part 'common/renamable.dart';

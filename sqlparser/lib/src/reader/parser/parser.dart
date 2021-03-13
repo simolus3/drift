@@ -1538,7 +1538,10 @@ class Parser {
           'Expected clpsing parenthesis after column list');
     }
     final source = _insertSource();
-    final upsert = _upsertClauseOrNull();
+    final upsert = <UpsertClause>[];
+    while (_check(TokenType.on)) {
+      upsert.add(_upsertClause());
+    }
 
     return InsertStatement(
       withClause: withClause,
@@ -1572,10 +1575,8 @@ class Parser {
     }
   }
 
-  UpsertClause? _upsertClauseOrNull() {
-    if (!_matchOne(TokenType.on)) return null;
-
-    final first = _previous;
+  UpsertClause _upsertClause() {
+    final first = _consume(TokenType.on);
     _consume(TokenType.conflict, 'Expected CONFLICT keyword for upsert clause');
 
     List<IndexedColumn>? indexedColumns;

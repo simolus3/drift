@@ -584,9 +584,9 @@ extension VisitChildrenExtension<A, R> on AstVisitor<A, R?> {
   }
 
   /// Visits all [nodes] in sequence.
-  R? visitList(Iterable<AstNode?> nodes, A arg) {
+  R? visitList(Iterable<AstNode> nodes, A arg) {
     for (final node in nodes) {
-      node!.accept(this, arg);
+      node.accept(this, arg);
     }
     return null;
   }

@@ -1,5 +1,7 @@
 ## 0.15.0-dev
 
+- __Breaking__: Change `InsertStatement.upsert` to a list of upsert clauses
+   - Support multiple upsert clauses
 - Support `FROM` clauses in `UPDATE` statements
 - Support `MATERIALIZED`/`NOT MATERIALIZED` hints in common table expressions
 - Add `BuiltInMathExtension` which corresponds to the `-DSQLITE_ENABLE_MATH_FUNCTIONS`
