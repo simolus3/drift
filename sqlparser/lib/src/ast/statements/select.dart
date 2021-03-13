@@ -14,9 +14,14 @@ abstract class BaseSelectStatement extends CrudStatement with ResultSet {
 abstract class SelectStatementNoCompound implements BaseSelectStatement {}
 
 class SelectStatement extends BaseSelectStatement
-    implements StatementWithWhere, SelectStatementNoCompound, HasPrimarySource {
+    implements
+        StatementWithWhere,
+        SelectStatementNoCompound,
+        HasPrimarySource,
+        HasFrom {
   final bool distinct;
   final List<ResultColumn> columns;
+  @override
   Queryable? from;
 
   @override

@@ -70,17 +70,32 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     }
   }
 
+  @override
+  void visitUpdateStatement(UpdateStatement e, void arg) {
+    final availableColumns = <Column>[];
+
+    // Add columns from the main table, if it was resolved
+    final baseTable = _resolveTableReference(e.table);
+    if (baseTable != null) {
+      availableColumns.addAll(baseTable.resolvedColumns ?? const []);
+    }
+
+    // Also add columns from a FROM clause, if one is present
+    final from = e.from;
+    if (from != null) _handle(from, availableColumns);
+
+    e.scope.availableColumns = availableColumns;
+    for (final child in e.childNodes) {
+      // Visit remaining children
+      if (child != e.table && child != e.from) visit(child, arg);
+    }
+  }
+
   void _addIfResolved(AstNode node, TableReference ref) {
     final table = _resolveTableReference(ref);
     if (table != null) {
       node.scope.availableColumns = table.resolvedColumns;
     }
-  }
-
-  @override
-  void visitUpdateStatement(UpdateStatement e, void arg) {
-    _addIfResolved(e, e.table);
-    visitExcept(e, e.table, arg);
   }
 
   @override

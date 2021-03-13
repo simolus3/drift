@@ -58,7 +58,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
     if (isInFROM) {
       final surroundingSelect =
-          e.parents.firstWhere((node) => node is BaseSelectStatement).scope;
+          e.parents.firstWhere((node) => node is HasFrom).scope;
       final forked = surroundingSelect.createSibling();
       e.scope = forked;
     } else {

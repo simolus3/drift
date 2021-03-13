@@ -24,6 +24,14 @@ abstract class HasPrimarySource extends Statement {
   Queryable? get table;
 }
 
+/// Interfaces for statements that have a `FROM` clause.
+///
+/// This includes selects and, since recently, updates.
+abstract class HasFrom extends Statement {
+  /// The table, join clause or subquery appearing in the `FROM` clause.
+  Queryable? get from;
+}
+
 /// Interface for statements that have a primary where clause (select, update,
 /// delete).
 abstract class StatementWithWhere extends Statement implements HasWhereClause {}

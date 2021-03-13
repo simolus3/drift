@@ -17,11 +17,12 @@ const Map<TokenType, FailureMode> _tokensToMode = {
 };
 
 class UpdateStatement extends CrudStatement
-    implements StatementWithWhere, HasPrimarySource {
+    implements StatementWithWhere, HasPrimarySource, HasFrom {
   final FailureMode? or;
   @override
   TableReference table;
   final List<SetComponent> set;
+  @override
   Queryable? from;
   @override
   Expression? where;

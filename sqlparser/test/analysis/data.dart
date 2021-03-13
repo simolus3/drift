@@ -26,3 +26,12 @@ final Table anotherTable = Table(
   name: 'tbl',
   resolvedColumns: [anotherId, dateTime],
 );
+
+extension RegisterTableExtension on SqlEngine {
+  /// Utility function that parses a `CREATE TABLE` statement and registers the
+  /// created table to the engine.
+  void registerTableFromSql(String createTable) {
+    final stmt = parse(createTable).rootNode as CreateTableStatement;
+    registerTable(schemaReader.read(stmt));
+  }
+}

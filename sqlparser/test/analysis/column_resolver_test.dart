@@ -132,4 +132,29 @@ INSERT INTO demo VALUES (?, ?)
     expect(columns.map((e) => context.typeOf(e).type?.type),
         [BasicType.text, BasicType.int]);
   });
+
+  test('handles update statement with from clause', () {
+    // Example from here: https://www.sqlite.org/lang_update.html#upfrom
+    engine..registerTableFromSql('''
+      CREATE TABLE inventory (
+        itemId INTEGER PRIMARY KEY,
+        quantity INTEGER NOT NULL DEFAULT 0,
+      );
+    ''')..registerTableFromSql('''
+      CREATE TABLE sales (
+        itemId INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+      );
+    ''');
+
+    final result = engine.analyze('''
+      UPDATE inventory
+        SET quantity = quantity - daily.amt
+        FROM (SELECT sum(quantity) AS amt, itemId FROM sales GROUP BY 2) 
+          AS daily
+        WHERE inventory.itemId = daily.itemId;
+    ''');
+
+    expect(result.errors, isEmpty);
+  });
 }
