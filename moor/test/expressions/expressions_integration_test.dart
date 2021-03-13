@@ -108,4 +108,14 @@ void main() {
         .update(db.categories)
         .write(const CategoriesCompanion(description: Value('changed')));
   });
+
+  test('custom expressions can introduces new tables to watch', () async {
+    final custom = CustomExpression<int>('1', watchedTables: [db.sharedTodos]);
+    final stream = (db.selectOnly(db.users)..addColumns([custom]))
+        .map((row) => row.read(custom))
+        .watchSingle();
+
+    expect(stream, emitsInOrder([1, 1]));
+    db.markTablesUpdated({db.sharedTodos});
+  });
 }
