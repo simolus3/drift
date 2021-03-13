@@ -88,6 +88,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitReturning(Returning e, void arg) {
+    // RETURNING was added in sqlite version 3.35.0
+    if (context.engineOptions.version < SqliteVersion.v3_35) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        message: 'RETURNING requires sqlite version 3.35 or later',
+        relevantNode: e,
+      ));
+
+      return;
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitTableConstraint(TableConstraint e, void arg) {
     if (e is KeyClause && e.isPrimaryKey) {
       // Primary key clauses may only include simple columns

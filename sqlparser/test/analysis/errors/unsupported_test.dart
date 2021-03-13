@@ -42,4 +42,20 @@ void main() {
 
     expect(currentEngine.analyze(sql).errors, isEmpty);
   });
+
+  test('reports error for RETURNING on unsupported errors', () {
+    const sql = '''
+      UPDATE demo SET content = content || content RETURNING *;
+    ''';
+
+    final context = minimumEngine.analyze(sql);
+    expect(context.errors, hasLength(1));
+    expect(
+      context.errors.single,
+      isA<AnalysisError>().having((e) => e.message, 'message',
+          'RETURNING requires sqlite version 3.35 or later'),
+    );
+
+    expect(currentEngine.analyze(sql).errors, isEmpty);
+  });
 }
