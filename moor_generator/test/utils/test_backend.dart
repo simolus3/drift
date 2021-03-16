@@ -44,8 +44,8 @@ class TestBackend extends Backend {
 
   @override
   Uri resolve(Uri base, String import) {
-    final from = AssetId.resolve(base.toString());
-    return AssetId.resolve(import, from: from).uri;
+    final from = AssetId.resolve(base);
+    return AssetId.resolve(Uri.parse(import), from: from).uri;
   }
 }
 
@@ -63,17 +63,17 @@ class _TestBackendTask extends BackendTask {
   @override
   Future<String> readMoor(Uri path) async {
     await backend._ready;
-    return backend.fakeContent[AssetId.resolve(path.toString())];
+    return backend.fakeContent[AssetId.resolve(path)];
   }
 
   @override
   Future<LibraryElement> resolveDart(Uri path) async {
     await backend._ready;
-    return await backend._resolver.libraryFor(AssetId.resolve(path.toString()));
+    return await backend._resolver.libraryFor(AssetId.resolve(path));
   }
 
   @override
   Future<bool> exists(Uri uri) async {
-    return backend.fakeContent.containsKey(AssetId.resolve(uri.toString()));
+    return backend.fakeContent.containsKey(AssetId.resolve(uri));
   }
 }
