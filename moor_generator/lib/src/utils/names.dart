@@ -1,4 +1,3 @@
-//@dart=2.9
 String dataClassNameForClassName(String tableName) {
   // This implementation is very primitive at the moment. The basic idea is
   // that, very often, table names are formed from the plural of the entity

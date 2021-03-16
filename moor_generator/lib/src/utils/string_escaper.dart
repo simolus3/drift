@@ -1,4 +1,3 @@
-//@dart=2.9
 String asDartLiteral(String value) {
   final escaped = escapeForDart(value);
   return "'$escaped'";

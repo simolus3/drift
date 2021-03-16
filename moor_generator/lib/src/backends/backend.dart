@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -34,9 +33,12 @@ abstract class BackendTask {
     throw CannotLoadTypeException('Resolving dart expressions not supported');
   }
 
-  Future<AstNode> loadElementDeclaration(Element element) async {
-    final resolvedLibrary = await element.library.session
-        .getResolvedLibraryByElement(element.library);
+  Future<AstNode?> loadElementDeclaration(Element element) async {
+    final library = element.library;
+    if (library == null) return null;
+
+    final resolvedLibrary =
+        await library.session.getResolvedLibraryByElement(library);
 
     return resolvedLibrary.getElementDeclaration(element)?.node;
   }

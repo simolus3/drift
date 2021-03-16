@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart' show $mrjf, $mrjc;
 
 int hashAll(List<dynamic> objects) {
