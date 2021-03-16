@@ -21,6 +21,8 @@ dependency_overrides:
     path: ../../moor_generator
   sqlparser:
     path: ../../sqlparser
-  # todo: Remove as soon as built_value_generator supports the latest analyzer
+  # todo: Remove as soon as built_value_generator supports the latest analyzer and build packages
   analyzer: ^1.0.0
   convert: ^3.0.0-nullsafety
+  build: ^2.0.0
+  source_gen: ^0.9.10+4
