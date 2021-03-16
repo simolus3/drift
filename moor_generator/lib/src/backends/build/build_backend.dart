@@ -13,7 +13,7 @@ import 'package:moor_generator/src/backends/build/serialized_types.dart';
 class BuildBackend extends Backend {
   final MoorOptions options;
 
-  BuildBackend([this.options = const MoorOptions()]);
+  BuildBackend([this.options = const MoorOptions.defaults()]);
 
   BuildBackendTask createTask(BuildStep step) {
     return BuildBackendTask(step, this);

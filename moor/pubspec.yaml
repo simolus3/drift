@@ -35,3 +35,4 @@ dependency_overrides:
     path: ../sqlparser
   # todo: Remove once mockito version 5.0.2 is released
   build: ^2.0.0
+  source_gen: ^0.9.10+4

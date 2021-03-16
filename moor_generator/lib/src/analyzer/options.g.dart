@@ -6,7 +6,7 @@ part of 'options.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
+MoorOptions _$MoorOptionsFromJson(Map json) {
   return $checkedNew('MoorOptions', json, () {
     $checkKeys(json, allowedKeys: const [
       'write_from_json_string_constructor',
@@ -17,6 +17,7 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
       'use_column_name_as_json_key_when_defined_in_moor_file',
       'generate_connect_constructor',
       'sqlite_modules',
+      'sqlite',
       'eagerly_load_dart_ast',
       'data_class_to_companions',
       'mutable_classes',
@@ -79,6 +80,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
                   ?.map((e) => _$enumDecode(_$SqlModuleEnumMap, e))
                   .toList()) ??
           [],
+      sqliteAnalysisOptions: $checkedConvert(json, 'sqlite',
+          (v) => v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
     );
     return val;
   }, fieldKeyMap: const {
@@ -99,7 +102,8 @@ MoorOptions _$MoorOptionsFromJson(Map<String, dynamic> json) {
     'generateValuesInCopyWith': 'generate_values_in_copy_with',
     'generateNamedParameters': 'named_parameters',
     'newSqlCodeGeneration': 'new_sql_code_generation',
-    'modules': 'sqlite_modules'
+    'modules': 'sqlite_modules',
+    'sqliteAnalysisOptions': 'sqlite'
   });
 }
 
@@ -135,3 +139,21 @@ const _$SqlModuleEnumMap = {
   SqlModule.moor_ffi: 'moor_ffi',
   SqlModule.math: 'math',
 };
+
+SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) {
+  return $checkedNew('SqliteAnalysisOptions', json, () {
+    $checkKeys(json, allowedKeys: const ['modules', 'version']);
+    final val = SqliteAnalysisOptions(
+      modules: $checkedConvert(
+              json,
+              'modules',
+              (v) => (v as List<dynamic>?)
+                  ?.map((e) => _$enumDecode(_$SqlModuleEnumMap, e))
+                  .toList()) ??
+          [],
+      version: $checkedConvert(
+          json, 'version', (v) => _parseSqliteVersion(v as String?)),
+    );
+    return val;
+  });
+}

@@ -4,6 +4,8 @@ data:
   description: >-
     Advanced options applied when writing the generated code
 template: layouts/docs/single
+aliases:
+ - "options/"
 ---
 
 The `moor_generator` package has some options that control how the 
@@ -74,7 +76,32 @@ At the moment, moor supports these options:
   unecessary whitespace and comments. 
   If enabling this option breaks your queries, please file an issue!
 
-## Available extensions
+## Assumed sqlite environment
+
+You can configure the assumed sqlite version and available extensions.
+These options are used during analysis only and don't have an impact on the
+actual sqlite version at runtime.
+
+To define the sqlite version to use, set `sqlite.version` to the `major.minor`
+version:
+
+```yaml
+targets:
+  $default:
+    builders:
+      moor_generator:
+        options:
+          sqlite:
+            version: 3.34
+```
+
+With that option, the generator will emit warnings when using newer sqlite version.
+For instance, using more than one [upsert clause](https://sqlite.org/lang_upsert.html) is not supported
+in 3.34, so an error would be reported.
+Currently, the generator can't provide compatibility checks for versions below 3.34, which is the
+minimum version needed in options.
+
+### Available extensions
 
 __Note__: This enables extensions in the analyzer for custom queries only. For instance, when the `json1` extension is
 enabled, the [`json`](https://www.sqlite.org/json1.html) functions can be used in moor files. This doesn't necessarily
@@ -87,10 +114,11 @@ targets:
     builders:
       moor_generator:
         options:
-          sqlite_modules:
-            - json1
-            - fts5
-            - moor_ffi
+          sqlite:
+            modules:
+              - json1
+              - fts5
+              - moor_ffi
 ```
 
 We currently support the following extensions:

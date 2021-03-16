@@ -7,12 +7,12 @@ void main() {
   test('companion names', () {
     final table = MoorTable(overriddenName: 'GoogleUser', dartTypeName: 'User');
 
-    expect(table.getNameForCompanionClass(const MoorOptions()),
+    expect(table.getNameForCompanionClass(const MoorOptions.defaults()),
         'GoogleUserCompanion');
 
     expect(
       table.getNameForCompanionClass(
-          const MoorOptions(useDataClassNameForCompanions: true)),
+          const MoorOptions.defaults(useDataClassNameForCompanions: true)),
       'UserCompanion',
     );
   });

@@ -25,7 +25,7 @@ class MoorSession {
   final _completedTasks = StreamController<Task>.broadcast();
   final _changedFiles = StreamController<List<FoundFile>>.broadcast();
 
-  MoorSession(this.backend, {this.options = const MoorOptions()});
+  MoorSession(this.backend, {this.options = const MoorOptions.defaults()});
 
   /// Stream that emits a [Task] that has been completed.
   Stream<Task> get completedTasks => _completedTasks.stream;
@@ -46,6 +46,7 @@ class MoorSession {
         if (options.hasModule(SqlModule.moor_ffi)) const MoorFfiExtension(),
         if (options.hasModule(SqlModule.math)) const BuiltInMathExtension(),
       ],
+      version: options.sqliteVersion,
     );
 
     return SqlEngine(sqlOptions);

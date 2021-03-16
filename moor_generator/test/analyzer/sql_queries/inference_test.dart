@@ -36,7 +36,7 @@ totalDurationByArtist:
     INNER JOIN tracks ON tracks.album = albums.id
   GROUP BY artists.id;
     '''
-    }, options: const MoorOptions());
+    }, options: const MoorOptions.defaults());
 
     final file = await state.analyze('package:foo/a.moor');
     final result = file.currentResult as ParsedMoorFile;

@@ -39,7 +39,7 @@ CREATE VIEW total_duration_by_artist_view AS
 totalDurationByArtist:
 SELECT * FROM total_duration_by_artist_view;
     '''
-    }, options: const MoorOptions());
+    }, options: const MoorOptions.defaults());
 
     final file = await state.analyze('package:foo/a.moor');
     final result = file.currentResult as ParsedMoorFile;

@@ -36,7 +36,8 @@ class MoorDriver implements AnalysisDriverGeneric {
     _scheduler.add(this);
     final backend = CommonBackend(this);
 
-    session = MoorSession(backend, options: options ?? const MoorOptions());
+    session =
+        MoorSession(backend, options: options ?? const MoorOptions.defaults());
     ide = MoorIde(session, _DriverBasedFileManagement(this));
 
     _fileChangeSubscription =

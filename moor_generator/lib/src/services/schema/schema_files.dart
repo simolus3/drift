@@ -8,7 +8,7 @@ const _infoVersion = '0.1.0-dev-preview';
 
 /// Utilities to transform moor schema entities to json.
 class SchemaWriter {
-  static const _exportOptions = MoorOptions();
+  static const _exportOptions = MoorOptions.defaults();
 
   /// The parsed and resolved database for which the schema should be written.
   final Database db;

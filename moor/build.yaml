@@ -13,6 +13,8 @@ targets:
           generate_values_in_copy_with: true
           named_parameters: true
           new_sql_code_generation: true
-          sqlite_modules:
-            - json1
-            - fts5
+          sqlite:
+            version: "3.34"
+            modules:
+              - json1
+              - fts5

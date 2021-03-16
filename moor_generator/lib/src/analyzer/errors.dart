@@ -64,9 +64,17 @@ class ErrorInMoorFile extends MoorError {
 
   factory ErrorInMoorFile.fromSqlParser(AnalysisError error,
       {Severity overrideSeverity}) {
+    // Describe how to change the sqlite version for errors caused by a wrong
+    // version
+    var msg = error.message ?? error.type.toString();
+    if (error.type == AnalysisErrorType.notSupportedInDesiredVersion) {
+      msg = '$msg\nNote: You can change the sqlite version with build options. '
+          'See https://moor.simonbinder.eu/options/ for details!';
+    }
+
     return ErrorInMoorFile(
       span: error.span,
-      message: error.message ?? error.type.toString(),
+      message: msg,
       severity: overrideSeverity ?? Severity.error,
     );
   }

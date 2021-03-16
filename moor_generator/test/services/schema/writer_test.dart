@@ -63,7 +63,7 @@ class SettingsConverter extends TypeConverter<Settings, String> {
 @UseMoor(include: {'a.moor'}, tables: [Users])
 class Database {}
       ''',
-    }, options: const MoorOptions(modules: [SqlModule.fts5]));
+    }, options: const MoorOptions.defaults(modules: [SqlModule.fts5]));
 
     final file = await state.analyze('package:foo/main.dart');
     expect(state.session.errorsInFileAndImports(file), isEmpty);
@@ -82,7 +82,7 @@ class Database {}
 
     // Write the database. Not crashing is good enough for us here, we have
     // separate tests for verification
-    final writer = Writer(const MoorOptions(),
+    final writer = Writer(const MoorOptions.defaults(),
         generationOptions: const GenerationOptions(forSchema: 1));
     DatabaseWriter(fakeDb, writer.child()).write();
   });

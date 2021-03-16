@@ -1,20 +1,21 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
+import 'package:sqlparser/sqlparser.dart' show SqliteVersion;
 
 part 'options.g.dart';
-
-// note when working on this file: If you can't run the builder because
-// options.g.dart is missing, just re-create it from git. build_runner will
-// complain about existing outputs, let it delete the part file.
 
 /// Controllable options to define the behavior of the analyzer and the
 /// generator.
 @JsonSerializable(
   checked: true,
+  anyMap: true,
   disallowUnrecognizedKeys: true,
   fieldRename: FieldRename.snake,
   createToJson: false,
 )
 class MoorOptions {
+  static const _defaultSqliteVersion = SqliteVersion.v3(34);
+
   /// Whether moor should generate a `fromJsonString` factory for data classes.
   /// It basically wraps the regular `fromJson` constructor in a `json.decode`
   /// call.
@@ -58,7 +59,11 @@ class MoorOptions {
   final bool generateConnectConstructor;
 
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
+  @Deprecated('Use effectiveModules instead')
   final List<SqlModule> modules;
+
+  @JsonKey(name: 'sqlite')
+  final SqliteAnalysisOptions? sqliteAnalysisOptions;
 
   @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
   final bool eagerlyLoadDartAst;
@@ -86,7 +91,8 @@ class MoorOptions {
   @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
   final bool newSqlCodeGeneration;
 
-  const MoorOptions({
+  @internal
+  const MoorOptions.defaults({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
     this.compactQueryMethods = false,
@@ -103,16 +109,110 @@ class MoorOptions {
     this.generateNamedParameters = false,
     this.newSqlCodeGeneration = false,
     this.modules = const [],
+    this.sqliteAnalysisOptions,
   });
 
-  factory MoorOptions.fromJson(Map<String, dynamic> json) =>
-      _$MoorOptionsFromJson(json);
+  MoorOptions({
+    required this.generateFromJsonStringConstructor,
+    required this.overrideHashAndEqualsInResultSets,
+    required this.compactQueryMethods,
+    required this.skipVerificationCode,
+    required this.useDataClassNameForCompanions,
+    required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
+    required this.generateConnectConstructor,
+    required this.eagerlyLoadDartAst,
+    required this.dataClassToCompanions,
+    required this.generateMutableClasses,
+    required this.rawResultSetData,
+    required this.applyConvertersOnVariables,
+    required this.generateValuesInCopyWith,
+    required this.generateNamedParameters,
+    required this.newSqlCodeGeneration,
+    required this.modules,
+    required this.sqliteAnalysisOptions,
+  }) {
+    if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
+      throw ArgumentError.value(
+        modules,
+        'modules',
+        'May not be set when sqlite options are present. \n'
+            'Try moving modules into the sqlite block.',
+      );
+    }
+  }
+
+  factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
+
+  /// All enabled sqlite modules from these options.
+  List<SqlModule> get effectiveModules {
+    return sqliteAnalysisOptions?.modules ?? modules;
+  }
 
   /// Whether the [module] has been enabled in this configuration.
-  bool hasModule(SqlModule module) => modules.contains(module);
+  bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
   /// Checks whether a deprecated option is enabled.
   bool get enabledDeprecatedOption => eagerlyLoadDartAst;
+
+  /// The assumed sqlite version used when analyzing queries.
+  SqliteVersion get sqliteVersion {
+    return sqliteAnalysisOptions?.version ?? _defaultSqliteVersion;
+  }
+}
+
+@JsonSerializable(
+  checked: true,
+  anyMap: true,
+  disallowUnrecognizedKeys: true,
+  fieldRename: FieldRename.snake,
+  createToJson: false,
+)
+class SqliteAnalysisOptions {
+  @JsonKey(name: 'modules', defaultValue: [])
+  final List<SqlModule> modules;
+
+  @JsonKey(fromJson: _parseSqliteVersion)
+  final SqliteVersion? version;
+
+  const SqliteAnalysisOptions({this.modules = const [], this.version});
+
+  factory SqliteAnalysisOptions.fromJson(Map json) {
+    return _$SqliteAnalysisOptionsFromJson(json);
+  }
+}
+
+final _versionRegex = RegExp(r'(\d+)\.(\d+)');
+
+SqliteVersion? _parseSqliteVersion(String? name) {
+  if (name == null) return null;
+
+  final match = _versionRegex.firstMatch(name);
+  if (match == null) {
+    throw ArgumentError.value(name, 'name',
+        'Not a valid sqlite version: Expected format major.minor (e.g. 3.34)');
+  }
+
+  final major = int.parse(match.group(1)!);
+  final minor = int.parse(match.group(2)!);
+
+  final version = SqliteVersion(major, minor, 0);
+  if (version < SqliteVersion.minimum) {
+    throw ArgumentError.value(
+      name,
+      'name',
+      'Version is not supported for analysis (minimum is '
+          '${SqliteVersion.minimum}).',
+    );
+  } else if (version > SqliteVersion.current) {
+    throw ArgumentError.value(
+      name,
+      'name',
+      'Version is not supported for analysis (current maximum is '
+          '${SqliteVersion.current}).',
+    );
+  }
+
+  return version;
 }
 
 /// Set of sqlite modules that require special knowledge from the generator.

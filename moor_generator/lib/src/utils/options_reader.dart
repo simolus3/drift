@@ -14,5 +14,5 @@ MoorOptions readOptionsFromConfig(BuildConfig config) {
       .map((json) => MoorOptions.fromJson(json));
 
   final iterator = options.iterator;
-  return iterator.moveNext() ? iterator.current : const MoorOptions();
+  return iterator.moveNext() ? iterator.current : const MoorOptions.defaults();
 }

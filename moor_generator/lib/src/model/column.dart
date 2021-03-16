@@ -63,7 +63,7 @@ class MoorColumn implements HasDeclaration, HasType {
 
   /// An (optional) name to use as a json key instead of the [dartGetterName].
   final String overriddenJsonName;
-  String getJsonKey([MoorOptions options = const MoorOptions()]) {
+  String getJsonKey([MoorOptions options = const MoorOptions.defaults()]) {
     if (overriddenJsonName != null) return overriddenJsonName;
 
     final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
