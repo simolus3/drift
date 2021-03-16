@@ -131,7 +131,7 @@ class TypeDeserializer {
       }
     } else {
       final library =
-          await buildStep.resolver.libraryFor(AssetId.resolve(uri.toString()));
+          await buildStep.resolver.libraryFor(AssetId.resolve(uri));
       _lastSession ??= library?.session;
       return library;
     }

@@ -71,7 +71,8 @@ class PreprocessBuilder extends Builder {
 
           parsed.rootNode.allDescendants
               .whereType<ImportStatement>()
-              .map((stmt) => AssetId.resolve(stmt.importedFile, from: asset))
+              .map((stmt) =>
+                  AssetId.resolve(Uri.parse(stmt.importedFile), from: asset))
               .where((importedId) =>
                   !seenFiles.contains(importedId) &&
                   !queue.contains(importedId))

@@ -20,8 +20,8 @@ class BuildBackend extends Backend {
 
   @override
   Uri resolve(Uri base, String import) {
-    final from = AssetId.resolve(base.toString());
-    return AssetId.resolve(import, from: from).uri;
+    final from = AssetId.resolve(base);
+    return AssetId.resolve(Uri.parse(import), from: from).uri;
   }
 }
 
@@ -37,7 +37,7 @@ class BuildBackendTask extends BackendTask {
   Uri get entrypoint => step.inputId.uri;
 
   AssetId _resolve(Uri uri) {
-    return AssetId.resolve(uri.toString(), from: step.inputId);
+    return AssetId.resolve(uri, from: step.inputId);
   }
 
   @override
