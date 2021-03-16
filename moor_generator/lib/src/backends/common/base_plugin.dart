@@ -58,9 +58,15 @@ abstract class BaseMoorPlugin extends ServerPlugin {
       ..performanceLog = performanceLog
       ..fileContentOverlay = fileContentOverlay;
 
+    final workspace = ContextBuilder.createWorkspace(
+      resourceProvider: resourceProvider,
+      options: builder.builderOptions,
+      rootPath: contextRoot.root,
+    );
+
     // todo we listen because we copied this from the angular plugin. figure out
     // why exactly this is necessary
-    final dartDriver = builder.buildDriver(analyzerRoot)
+    final dartDriver = builder.buildDriver(analyzerRoot, workspace)
       ..results.listen((_) {}) // Consume the stream, otherwise we leak.
       ..exceptions.listen((_) {}); // Consume the stream, otherwise we leak.
 

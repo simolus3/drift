@@ -28,7 +28,7 @@ dependencies:
   sqlparser: ^0.14.0
 
   # Dart analysis
-  analyzer: ^1.2.0
+  analyzer: 1.1.0
   analyzer_plugin: ^0.4.0
   source_span: ^1.8.1
 
@@ -49,7 +49,7 @@ executables:
   moor_generator:
 
 dependency_overrides:
-  analyzer: ^1.2.0
+  analyzer: 1.1.0
   pub_semver: ^2.0.0
   sqlparser:
    path: ../sqlparser
