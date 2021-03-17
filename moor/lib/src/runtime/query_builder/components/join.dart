@@ -70,7 +70,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
 Join innerJoin<T extends Table, D extends DataClass>(
-    TableInfo<T, D> other, Expression<bool> on,
+    TableInfo<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
@@ -84,7 +84,7 @@ Join innerJoin<T extends Table, D extends DataClass>(
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
 Join leftOuterJoin<T extends Table, D extends DataClass>(
-    TableInfo<T, D> other, Expression<bool> on,
+    TableInfo<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
