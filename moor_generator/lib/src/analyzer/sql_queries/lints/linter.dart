@@ -30,6 +30,17 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
   _LintingVisitor(this.linter);
 
+  void _checkNoReturning(StatementReturningColumns stmt) {
+    if (stmt.returning != null) {
+      linter.lints.add(AnalysisError(
+        type: AnalysisErrorType.other,
+        message: 'RETURNING is not supported in this version of moor. '
+            'Follow https://github.com/simolus3/moor/issues/1096 for updates.',
+        relevantNode: stmt.returning,
+      ));
+    }
+  }
+
   @override
   void visitBinaryExpression(BinaryExpression e, void arg) {
     const numericOps = {
@@ -152,7 +163,14 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitDeleteStatement(DeleteStatement e, void arg) {
+    _checkNoReturning(e);
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInsertStatement(InsertStatement e, void arg) {
+    _checkNoReturning(e);
     final targeted = e.resolvedTargetColumns;
     if (targeted == null) return;
 
@@ -220,5 +238,11 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
         ));
       }
     }
+  }
+
+  @override
+  void visitUpdateStatement(UpdateStatement e, void arg) {
+    _checkNoReturning(e);
+    visitChildren(e, arg);
   }
 }

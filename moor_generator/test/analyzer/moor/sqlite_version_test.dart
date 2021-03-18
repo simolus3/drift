@@ -58,4 +58,29 @@ void main() {
     final file = await state.analyze('package:a/main.moor');
     expect(file.errors.errors, isEmpty);
   });
+
+  test('warns when using RETURNING', () async {
+    final state = TestState.withContent(
+      const {
+        'a|lib/main.moor': '''
+        CREATE TABLE foo (id INTEGER NOT NULL);
+        
+        query: DELETE FROM foo RETURNING *;
+        ''',
+      },
+      enableAnalyzer: false,
+      options: const MoorOptions.defaults(
+        sqliteAnalysisOptions: SqliteAnalysisOptions(
+          version: SqliteVersion.v3_35,
+        ),
+      ),
+    );
+
+    final file = await state.analyze('package:a/main.moor');
+    expect(file.errors.errors, hasLength(1));
+    expect(
+        file.errors.errors.single,
+        isA<MoorError>().having((e) => e.message, 'message',
+            contains('RETURNING is not supported in this version of moor')));
+  });
 }
