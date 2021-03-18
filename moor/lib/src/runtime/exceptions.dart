@@ -38,3 +38,33 @@ class MoorWrappedException implements Exception {
         'Moor detected a possible cause for this: $message';
   }
 }
+
+/// Exception thrown by moor when rolling back a transaction fails.
+///
+/// When using a `transaction` block, transactions are automatically rolled back
+/// when the inner block throws an exception.
+/// If sending the `ROLLBACK TRANSACTION` command fails as well, moor reports
+/// both that and the initial error with a [CouldNotRollBackException].
+class CouldNotRollBackException implements Exception {
+  /// The original exception that caused the transaction to be rolled back.
+  final Object cause;
+
+  /// The [StackTrace] of the original [cause].
+  final StackTrace originalStackTrace;
+
+  /// The exception thrown by the database implementation when attempting to
+  /// issue the `ROLLBACK` command.s
+  final Object exception;
+
+  /// Creates a [CouldNotRollBackException] from the [cause], its
+  /// [originalStackTrace] and the [exception].
+  CouldNotRollBackException(
+      this.cause, this.originalStackTrace, this.exception);
+
+  @override
+  String toString() {
+    return 'CouldNotRollBackException: $exception. \n'
+        'For context: The transaction was rolled back because of $cause, which '
+        'was thrown here: \n$originalStackTrace';
+  }
+}

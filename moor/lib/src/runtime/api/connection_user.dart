@@ -368,8 +368,12 @@ abstract class DatabaseConnectionUser {
           final result = await action();
           success = true;
           return result;
-        } catch (e) {
-          await transactionExecutor.rollback();
+        } catch (e, s) {
+          try {
+            await transactionExecutor.rollback();
+          } catch (rollBackException) {
+            throw CouldNotRollBackException(e, s, rollBackException);
+          }
 
           // pass the exception on to the one who called transaction()
           rethrow;

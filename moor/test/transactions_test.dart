@@ -173,4 +173,20 @@ void main() {
     final actual = await db.transaction(() async => 1);
     expect(actual, 1);
   });
+
+  test('reports original exception when rollback throws', () {
+    const rollbackException = 'rollback';
+    const cause = 'original cause';
+
+    final transactions = executor.transactions;
+    when(transactions.rollback())
+        .thenAnswer((_) => Future.error(rollbackException));
+
+    return expectLater(
+      db.transaction(() => Future.error(cause)),
+      throwsA(isA<CouldNotRollBackException>()
+          .having((e) => e.cause, 'cause', cause)
+          .having((e) => e.exception, 'exception', rollbackException)),
+    );
+  });
 }
