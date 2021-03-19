@@ -5,7 +5,7 @@ data:
   weight: 1
 template: layouts/docs/list
 aliases:
-  - /Getting started/  # Used to have this url
+  - /getting-started/  # Used to have this url
 ---
 
 _Note:_ If you prefer a tutorial video, Reso Coder has made a detailed video explaining

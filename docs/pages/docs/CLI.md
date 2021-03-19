@@ -2,7 +2,7 @@
 data:
   title: "Command line tools for moor"
   description: A set of CLI tools to interact with moor files
-url: /cli/
+path: /cli/
 template: layouts/docs/single
 ---
 
