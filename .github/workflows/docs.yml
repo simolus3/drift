@@ -1,4 +1,4 @@
-name: Build and deploy to netlify
+name: Documentation
 on:
   push:
   pull_request:
@@ -6,29 +6,29 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-       - uses: actions/checkout@v2
-       - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1
 
-       - name: Get dependencies
-         run: dart pub get
-         working-directory: docs
-       - name: Run build
-         env:
-           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' }}
-         run: dart run tool/ci_build.dart
-         working-directory: docs
-       - name: Deploy to netlify
-         uses: nwtgck/actions-netlify@v1.1
-         with:
-           production-branch: master
-           publish-dir: docs/deploy
-           enable-pull-request-comment: true
-           enable-commit-comment: false
-           netlify-config-path: "./netlify.toml"
-           github-token: ${{ secrets.GITHUB_TOKEN }}
-         env:
-           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Get dependencies
+        run: dart pub get
+        working-directory: docs
+      - name: Run build
+        env:
+          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' }}
+        run: dart run tool/ci_build.dart
+        working-directory: docs
+      - name: Deploy to netlify
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          production-branch: master
+          publish-dir: docs/deploy
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          netlify-config-path: "./netlify.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
   linkcheck:
     name: Check links in markdown
     runs-on: ubuntu-20.04
