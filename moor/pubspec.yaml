@@ -6,7 +6,7 @@ homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   async: ^2.5.0

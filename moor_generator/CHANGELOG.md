@@ -1,4 +1,4 @@
-## 4.2.0-dev
+## 4.2.0
 
 - Migrate `package:moor_generator/api/migrations.dart` to null-safety
 - Support for newer sqlite features in compiled queries
