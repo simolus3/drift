@@ -649,7 +649,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _identifier(e.name);
     _symbol('(');
     visit(e.parameters, arg);
-    _symbol(')');
+    _symbol(')', spaceAfter: true);
   }
 
   @override

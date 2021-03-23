@@ -1649,7 +1649,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<JsonResult> another() {
     return customSelect(
-        'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\')AS value',
+        'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
         variables: [],
         readsFrom: {}).map((QueryRow row) {
       return JsonResult(
@@ -1724,7 +1724,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<int?> nullableQuery() {
-    return customSelect('SELECT MAX(oid)FROM config',
+    return customSelect('SELECT MAX(oid) FROM config',
         variables: [],
         readsFrom: {config}).map((QueryRow row) => row.read<int?>('MAX(oid)'));
   }
