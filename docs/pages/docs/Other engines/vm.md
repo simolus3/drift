@@ -2,6 +2,7 @@
 data:
   title: moor ffi (Desktop support)
   description: Run moor on both mobile and desktop
+template: layouts/docs/single
 ---
 
 ## Supported platforms
