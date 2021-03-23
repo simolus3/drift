@@ -1631,7 +1631,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         readsFrom: {
           config
-        }).map((QueryRow row) => row.readString('config_key'));
+        }).map((QueryRow row) => row.read<String>('config_key'));
   }
 
   Selectable<JsonResult> tableValued() {
@@ -1641,8 +1641,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map((QueryRow row) {
       return JsonResult(
         row: row,
-        key: row.readString('key'),
-        value: row.readString('value'),
+        key: row.read<String>('key'),
+        value: row.read<String?>('value'),
       );
     });
   }
@@ -1654,8 +1654,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {}).map((QueryRow row) {
       return JsonResult(
         row: row,
-        key: row.readString('key'),
-        value: row.readString('value'),
+        key: row.read<String>('key'),
+        value: row.read<String?>('value'),
       );
     });
   }
@@ -1668,8 +1668,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
       return MultipleResult(
         row: row,
-        a: row.readString('a'),
-        b: row.readInt('b'),
+        a: row.read<String?>('a'),
+        b: row.read<int?>('b'),
         c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
       );
     });
@@ -1690,12 +1690,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map((QueryRow row) {
       return ReadRowIdResult(
         row: row,
-        rowid: row.readInt('rowid'),
-        configKey: row.readString('config_key'),
-        configValue: row.readString('config_value'),
-        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        rowid: row.read<int>('rowid'),
+        configKey: row.read<String>('config_key'),
+        configValue: row.read<String?>('config_value'),
+        syncState:
+            ConfigTable.$converter0.mapToDart(row.read<int?>('sync_state')),
         syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.readInt('sync_state_implicit')),
+            .mapToDart(row.read<int?>('sync_state_implicit')),
       );
     });
   }
@@ -1705,11 +1706,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         variables: [], readsFrom: {config}).map((QueryRow row) {
       return ReadViewResult(
         row: row,
-        configKey: row.readString('config_key'),
-        configValue: row.readString('config_value'),
-        syncState: ConfigTable.$converter0.mapToDart(row.readInt('sync_state')),
+        configKey: row.read<String>('config_key'),
+        configValue: row.read<String?>('config_value'),
+        syncState:
+            ConfigTable.$converter0.mapToDart(row.read<int?>('sync_state')),
         syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.readInt('sync_state_implicit')),
+            .mapToDart(row.read<int?>('sync_state_implicit')),
       );
     });
   }
@@ -1718,7 +1720,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'WITH RECURSIVE cnt(x)AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
-        readsFrom: {}).map((QueryRow row) => row.readInt('x'));
+        readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
+  }
+
+  Selectable<int?> nullableQuery() {
+    return customSelect('SELECT MAX(oid)FROM config',
+        variables: [],
+        readsFrom: {config}).map((QueryRow row) => row.read<int?>('MAX(oid)'));
   }
 
   Future<int> writeConfig({required String key, String? value}) {

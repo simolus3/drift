@@ -88,3 +88,5 @@ cfeTest: WITH RECURSIVE
       LIMIT 1000000
     )
   SELECT x FROM cnt;
+
+nullableQuery: SELECT MAX(oid) FROM config;

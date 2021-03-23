@@ -65,17 +65,6 @@ const Map<ColumnType, String> dartTypeNames = {
   ColumnType.real: 'double',
 };
 
-/// Maps to the method name of a "QueryRow" from moor to extract a column type
-/// of a result row.
-const Map<ColumnType, String> readFromMethods = {
-  ColumnType.boolean: 'readBool',
-  ColumnType.text: 'readString',
-  ColumnType.integer: 'readInt',
-  ColumnType.datetime: 'readDateTime',
-  ColumnType.blob: 'readBlob',
-  ColumnType.real: 'readDouble',
-};
-
 /// Maps from a column type to code that can be used to create a variable of the
 /// respective type.
 const Map<ColumnType, String> createVariable = {

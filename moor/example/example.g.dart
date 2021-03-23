@@ -972,8 +972,8 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {recipes, ingredientInRecipes}).map((QueryRow row) {
       return TotalWeightResult(
         row: row,
-        title: row.readString('title'),
-        totalWeight: row.readInt('total_weight'),
+        title: row.read<String>('title'),
+        totalWeight: row.read<int>('total_weight'),
       );
     });
   }

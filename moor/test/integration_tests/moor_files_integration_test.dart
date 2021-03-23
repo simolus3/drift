@@ -1,5 +1,5 @@
 import 'package:moor/ffi.dart';
-import 'package:moor/src/runtime/query_builder/query_builder.dart';
+import 'package:moor/src/runtime/query_builder/query_builder.dart' hide isNull;
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
@@ -10,7 +10,7 @@ void main() {
   late CustomTablesDb db;
 
   setUp(() {
-    executor = VmDatabase.memory(logStatements: true);
+    executor = VmDatabase.memory();
     db = CustomTablesDb(executor);
   });
 
@@ -19,6 +19,11 @@ void main() {
   test('can create everything', () async {
     // Good enough if it doesn't throw, we're talking to a real database
     await db.doWhenOpened((e) => null);
+  });
+
+  test('can use nullable columns', () async {
+    await db.delete(db.config).go();
+    await expectLater(db.nullableQuery().getSingle(), completion(isNull));
   });
 
   group('views', () {

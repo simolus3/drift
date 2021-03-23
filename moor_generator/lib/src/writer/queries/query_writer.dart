@@ -24,6 +24,7 @@ class QueryWriter {
   final Scope scope;
 
   SqlSelectQuery get _select => query as SqlSelectQuery;
+
   UpdatingQuery get _update => query as UpdatingQuery;
 
   MoorOptions get options => scope.writer.options;
@@ -127,10 +128,13 @@ class QueryWriter {
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
   static String readingCode(ResultColumn column, GenerationOptions options) {
-    final readMethod = readFromMethods[column.type];
+    var rawDartType = dartTypeNames[column.type];
+    if (column.nullable && options.nnbd) {
+      rawDartType = '$rawDartType?';
+    }
 
     final dartLiteral = asDartLiteral(column.name);
-    var code = 'row.$readMethod($dartLiteral)';
+    var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
       final needsAssert = !column.nullable && options.nnbd;

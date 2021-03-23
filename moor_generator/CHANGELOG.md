@@ -1,3 +1,7 @@
+## 4.2.1
+
+- Fix generated code for nullable columns in moor files
+
 ## 4.2.0
 
 - Migrate `package:moor_generator/api/migrations.dart` to null-safety

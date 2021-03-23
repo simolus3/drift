@@ -81,20 +81,26 @@ class QueryRow {
   }
 
   /// Reads a bool from the column named [key].
+  @Deprecated('Use read<bool>(key) directly')
   bool readBool(String key) => read<bool>(key);
 
   /// Reads a string from the column named [key].
+  @Deprecated('Use read<String>(key) directly')
   String readString(String key) => read<String>(key);
 
   /// Reads a int from the column named [key].
+  @Deprecated('Use read<int>(key) directly')
   int readInt(String key) => read<int>(key);
 
   /// Reads a double from the column named [key].
+  @Deprecated('Use read<double>(key) directly')
   double readDouble(String key) => read<double>(key);
 
   /// Reads a [DateTime] from the column named [key].
+  @Deprecated('Use read<DateTime>(key) directly')
   DateTime readDateTime(String key) => read<DateTime>(key);
 
   /// Reads a [Uint8List] from the column named [key].
+  @Deprecated('Use read<Uint8List>(key) directly')
   Uint8List readBlob(String key) => read<Uint8List>(key);
 }

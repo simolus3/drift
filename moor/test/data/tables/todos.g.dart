@@ -1490,13 +1490,13 @@ abstract class _$TodoDb extends GeneratedDatabase {
         readsFrom: {categories, todosTable}).map((QueryRow row) {
       return AllTodosWithCategoryResult(
         row: row,
-        id: row.readInt('id'),
-        title: row.readString('title'),
-        content: row.readString('content'),
-        targetDate: row.readDateTime('target_date'),
-        category: row.readInt('category'),
-        catId: row.readInt('catId'),
-        catDesc: row.readString('catDesc'),
+        id: row.read<int>('id'),
+        title: row.read<String?>('title'),
+        content: row.read<String>('content'),
+        targetDate: row.read<DateTime?>('target_date'),
+        category: row.read<int?>('category'),
+        catId: row.read<int>('catId'),
+        catDesc: row.read<String>('catDesc'),
       );
     });
   }
@@ -1539,7 +1539,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
             variables: [],
             readsFrom: {tableWithoutPK})
         .map((QueryRow row) => $TableWithoutPKTable.$converter0
-            .mapToDart(row.readString('custom'))!);
+            .mapToDart(row.read<String>('custom'))!);
   }
 
   @override
