@@ -1,6 +1,6 @@
 name: moor
 description: Moor is a safe and reactive persistence library for Dart applications
-version: 4.2.0
+version: 4.2.1
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
