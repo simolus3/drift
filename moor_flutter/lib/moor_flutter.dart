@@ -32,11 +32,8 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   _SqfliteDelegate(this.inDbFolder, this.path,
       {this.singleInstance = true, this.creator});
 
-  DbVersionDelegate? _delegate;
   @override
-  DbVersionDelegate get versionDelegate {
-    return _delegate ??= _SqfliteVersionDelegate(db);
-  }
+  late final DbVersionDelegate versionDelegate = _SqfliteVersionDelegate(db);
 
   @override
   TransactionDelegate get transactionDelegate =>
@@ -49,7 +46,7 @@ class _SqfliteDelegate extends DatabaseDelegate with _SqfliteExecutor {
   Future<void> open(QueryExecutorUser user) async {
     String resolvedPath;
     if (inDbFolder) {
-      resolvedPath = join((await s.getDatabasesPath())!, path);
+      resolvedPath = join(await s.getDatabasesPath(), path);
     } else {
       resolvedPath = path;
     }

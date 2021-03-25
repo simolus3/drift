@@ -1,6 +1,6 @@
 name: moor_flutter
 description: Flutter implementation of moor, a safe and reactive persistence library for Dart applications
-version: 4.0.0-nullsafety
+version: 4.0.0
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
@@ -9,9 +9,9 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  moor: ^4.0.0-nullsafety
-  sqflite: '>=2.0.0-nullsafety <3.0.0'
-  path: '>1.8.0-nullsafety <2.0.0'
+  moor: ^4.0.0
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
   flutter:
     sdk: flutter
 

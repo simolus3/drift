@@ -1,4 +1,4 @@
-## 4.0.0-nullsafety
+## 4.0.0
 
 - Support moor version 4
 - Migrate to null-safety
