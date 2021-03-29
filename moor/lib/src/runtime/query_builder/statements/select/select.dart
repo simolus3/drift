@@ -44,16 +44,31 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   }
 
   @override
-  Future<List<D>> get() async {
+  Future<List<D>> get() {
     final ctx = constructQuery();
-    return _getWithQuery(ctx);
+    return _getRaw(ctx).then(_mapResponse);
   }
 
-  Future<List<D>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.executor!.doWhenOpened((e) async {
-      return await e.runSelect(ctx.sql, ctx.boundVariables);
+  @override
+  Stream<List<D>> watch() {
+    final query = constructQuery();
+    final fetcher = QueryStreamFetcher(
+      readsFrom: TableUpdateQuery.onAllTables(query.watchedTables),
+      fetchData: () => _getRaw(query),
+      key: StreamKey(query.sql, query.boundVariables),
+    );
+
+    return database.createStream(fetcher).map(_mapResponse);
+  }
+
+  Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {
+    return database.doWhenOpened((e) {
+      return e.runSelect(ctx.sql, ctx.boundVariables);
     });
-    return results.map(table.map).toList();
+  }
+
+  List<D> _mapResponse(List<Map<String, Object?>> rows) {
+    return rows.map(table.map).toList();
   }
 
   /// Creates a select statement that operates on more than one table by
@@ -117,18 +132,6 @@ class SimpleSelectStatement<T extends Table, D extends DataClass>
   /// ```
   void orderBy(List<OrderClauseGenerator<T>> clauses) {
     orderByExpr = OrderBy(clauses.map((t) => t(table.asDslTable)).toList());
-  }
-
-  @override
-  Stream<List<D>> watch() {
-    final query = constructQuery();
-    final fetcher = QueryStreamFetcher<List<D>>(
-      readsFrom: TableUpdateQuery.onAllTables(query.watchedTables),
-      fetchData: () => _getWithQuery(query),
-      key: StreamKey(query.sql, query.boundVariables, D),
-    );
-
-    return database.createStream(fetcher);
   }
 }
 

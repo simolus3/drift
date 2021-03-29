@@ -181,23 +181,26 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
   @override
   Stream<List<TypedResult>> watch() {
     final ctx = constructQuery();
-    final fetcher = QueryStreamFetcher<List<TypedResult>>(
+    final fetcher = QueryStreamFetcher(
       readsFrom: TableUpdateQuery.onAllTables(ctx.watchedTables),
-      fetchData: () => _getWithQuery(ctx),
-      key: StreamKey(ctx.sql, ctx.boundVariables, TypedResult),
+      fetchData: () => _getRaw(ctx),
+      key: StreamKey(ctx.sql, ctx.boundVariables),
     );
 
-    return database.createStream(fetcher);
+    return database
+        .createStream(fetcher)
+        .map((rows) => _mapResponse(ctx, rows));
   }
 
   @override
   Future<List<TypedResult>> get() async {
     final ctx = constructQuery();
-    return _getWithQuery(ctx);
+    final raw = await _getRaw(ctx);
+    return _mapResponse(ctx, raw);
   }
 
-  Future<List<TypedResult>> _getWithQuery(GenerationContext ctx) async {
-    final results = await ctx.executor!.doWhenOpened((e) async {
+  Future<List<Map<String, Object?>>> _getRaw(GenerationContext ctx) {
+    return ctx.executor!.doWhenOpened((e) async {
       try {
         return await e.runSelect(ctx.sql, ctx.boundVariables);
       } catch (e, s) {
@@ -211,8 +214,11 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
         rethrow;
       }
     });
+  }
 
-    return results.map((row) {
+  List<TypedResult> _mapResponse(
+      GenerationContext ctx, List<Map<String, Object?>> rows) {
+    return rows.map((row) {
       final readTables = <TableInfo, dynamic>{};
       final readColumns = <Expression, dynamic>{};
 
