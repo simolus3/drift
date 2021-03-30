@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import 'data.dart';
 
 void main() {
-  final engine = SqlEngine();
+  final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
   engine.registerTable(demoTable);
 
   group('CREATE TRIGGER statements', () {
@@ -158,12 +158,42 @@ INSERT INTO demo VALUES (?, ?)
     expect(result.errors, isEmpty);
   });
 
-  test('resolves RETURNING clause', () {
-    final result =
-        engine.analyze("INSERT INTO demo (content) VALUES ('hi') RETURNING *;");
-    final returning = (result.root as InsertStatement).returnedResultSet;
+  group('resolves RETURNING clause', () {
+    test('for simple inserts', () {
+      final result = engine
+          .analyze("INSERT INTO demo (content) VALUES ('hi') RETURNING *;");
+      final returning = (result.root as InsertStatement).returnedResultSet;
 
-    expect(returning, isNotNull);
-    expect(returning!.resolvedColumns!.map((e) => e.name), ['id', 'content']);
+      expect(returning, isNotNull);
+      expect(returning!.resolvedColumns!.map((e) => e.name), ['id', 'content']);
+    });
+
+    test('for custom expressions', () {
+      final result = engine.analyze("INSERT INTO demo (content) VALUES ('hi') "
+          'RETURNING content || content AS x;');
+      final returning = (result.root as InsertStatement).returnedResultSet!;
+
+      expect(returning.resolvedColumns!.map((e) => e.name), ['x']);
+    });
+
+    test('star does not include other tables', () {
+      final result = engine.analyze('''
+        UPDATE demo SET content = ''
+          FROM (SELECT * FROM demo) AS old
+          RETURNING *;
+      ''');
+      final returning = (result.root as UpdateStatement).returnedResultSet!;
+      expect(returning.resolvedColumns!.map((e) => e.name), ['id', 'content']);
+    });
+
+    test('can refer to columns from other tables', () {
+      final result = engine.analyze('''
+        UPDATE demo SET content = ''
+          FROM (SELECT * FROM demo) AS old
+          RETURNING old.id, old.content;
+      ''');
+
+      expect(result.errors, isEmpty);
+    });
   });
 }

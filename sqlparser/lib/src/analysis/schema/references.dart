@@ -48,11 +48,22 @@ class ReferenceScope {
   }
 
   set availableColumns(List<Column>? value) {
-    _availableColumns = value;
+    // guard against lists of subtype of column
+    if (value != null) {
+      _availableColumns = <Column>[...value];
+    } else {
+      _availableColumns = null;
+    }
   }
 
   ReferenceScope(this.parent,
       {this.root, this.inheritAvailableColumns = false});
+
+  void addAvailableColumn(Column column) {
+    // make sure _availableColumns is resolved and mutable
+    final ownColumns = _availableColumns ??= <Column>[...availableColumns];
+    ownColumns.add(column);
+  }
 
   ReferenceScope createChild({bool? inheritAvailableColumns}) {
     // wonder why we're creating a linked list of reference scopes instead of

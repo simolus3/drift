@@ -7,12 +7,12 @@ import 'statement.dart';
 
 class DeleteStatement extends CrudStatement
     implements StatementWithWhere, StatementReturningColumns, HasPrimarySource {
-  TableReference? from;
+  TableReference from;
   @override
   Expression? where;
 
   @override
-  TableReference? get table => from;
+  TableReference get table => from;
 
   @override
   Returning? returning;
@@ -31,7 +31,7 @@ class DeleteStatement extends CrudStatement
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
-    from = transformer.transformChild(from!, this, arg);
+    from = transformer.transformChild(from, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
     returning = transformer.transformNullableChild(returning, this, arg);
   }
@@ -39,7 +39,7 @@ class DeleteStatement extends CrudStatement
   @override
   Iterable<AstNode> get childNodes => [
         if (withClause != null) withClause!,
-        from!,
+        from,
         if (where != null) where!,
         if (returning != null) returning!,
       ];
