@@ -1,5 +1,6 @@
 import 'package:moor/ffi.dart';
 import 'package:moor/src/runtime/query_builder/query_builder.dart' hide isNull;
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
@@ -60,4 +61,25 @@ void main() {
       await expectation;
     });
   });
+
+  final sqliteVersion = sqlite3.version;
+  final hasReturning = sqliteVersion.versionNumber > 3035000;
+
+  group('returning', () {
+    test('for custom inserts', () async {
+      final result = await db.addConfig(
+          'key2', 'val', SyncType.locallyCreated, SyncType.locallyCreated);
+
+      expect(result, hasLength(1));
+      expect(
+        result.single,
+        Config(
+          configKey: 'key2',
+          configValue: 'val',
+          syncState: SyncType.locallyCreated,
+          syncStateImplicit: SyncType.locallyCreated,
+        ),
+      );
+    });
+  }, skip: hasReturning ? null : 'RETURNING not supported by current sqlite');
 }

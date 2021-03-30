@@ -6,7 +6,7 @@ import 'package:moor_generator/writer.dart';
 
 /// Writes a class holding the result of an sql query into Dart.
 class ResultSetWriter {
-  final SqlSelectQuery query;
+  final SqlQuery query;
   final Scope scope;
 
   ResultSetWriter(this.query, this.scope);

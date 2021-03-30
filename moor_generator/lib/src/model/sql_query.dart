@@ -44,10 +44,11 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
   final DeclaredStatement astNode;
-  CrudStatement get query => astNode.statement;
   ParsedMoorFile file;
 
   DeclaredMoorQuery(String name, this.astNode) : super(name);
+
+  CrudStatement get query => astNode.statement;
 
   factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
     assert(stmt.identifier is SimpleName);
@@ -68,6 +69,12 @@ abstract class SqlQuery {
   bool declaredInMoorFile = false;
 
   String get sql => fromContext.sql;
+
+  /// The result set of this statement, mapped to moor-generated classes.
+  ///
+  /// This is non-nullable for select queries. Updating queries might have a
+  /// result set if they have a `RETURNING` clause.
+  InferredResultSet /*?*/ get resultSet;
 
   /// The variables that appear in the [sql] query. We support three kinds of
   /// sql variables: The regular "?" variables, explicitly indexed "?xyz"
@@ -108,13 +115,49 @@ abstract class SqlQuery {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
   }
+
+  String get resultClassName {
+    final resultSet = this.resultSet;
+    if (resultSet == null) {
+      throw StateError('This query ($name) does not have a result set');
+    }
+
+    if (resultSet.matchingTable != null || resultSet.singleColumn) {
+      throw UnsupportedError('This result set does not introduce a class, '
+          'either because it has a matching table or because it only returns '
+          'one column.');
+    }
+
+    return resultSet.resultClassName ?? '${ReCase(name).pascalCase}Result';
+  }
+
+  /// The Dart type representing a row of this result set.
+  String resultTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    final resultSet = this.resultSet;
+    if (resultSet == null) {
+      throw StateError('This query ($name) does not have a result set');
+    }
+
+    if (resultSet.matchingTable != null) {
+      return resultSet.matchingTable.table.dartTypeName;
+    }
+
+    if (resultSet.singleColumn) {
+      return resultSet.columns.single.dartTypeCode(options);
+    }
+
+    return resultClassName;
+  }
 }
 
 class SqlSelectQuery extends SqlQuery {
   final List<MoorSchemaEntity> readsFrom;
+  @override
   final InferredResultSet resultSet;
 
   /// The name of the result class, as requested by the user.
+  // todo: Allow custom result classes for RETURNING as well?
   final String /*?*/ requestedResultClass;
 
   SqlSelectQuery(
@@ -150,42 +193,21 @@ class SqlSelectQuery extends SqlQuery {
       null,
     );
   }
-
-  String get resultClassName {
-    if (resultSet.matchingTable != null || resultSet.singleColumn) {
-      throw UnsupportedError('This result set does not introduce a class, '
-          'either because it has a matching table or because it only returns '
-          'one column.');
-    }
-
-    return resultSet.resultClassName ?? '${ReCase(name).pascalCase}Result';
-  }
-
-  /// The Dart type representing a row of this result set.
-  String resultTypeCode(
-      [GenerationOptions options = const GenerationOptions()]) {
-    if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable.table.dartTypeName;
-    }
-
-    if (resultSet.singleColumn) {
-      return resultSet.columns.single.dartTypeCode(options);
-    }
-
-    return resultClassName;
-  }
 }
 
 class UpdatingQuery extends SqlQuery {
   final List<WrittenMoorTable> updates;
   final bool isInsert;
+  @override
+  final InferredResultSet /*?*/ resultSet;
 
   bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
+
   bool get isOnlyUpdate => updates.every((w) => w.kind == UpdateKind.update);
 
   UpdatingQuery(String name, AnalysisContext fromContext,
       List<FoundElement> elements, this.updates,
-      {this.isInsert = false, bool hasMultipleTables})
+      {this.isInsert = false, bool hasMultipleTables, this.resultSet})
       : super(name, fromContext, elements,
             hasMultipleTables: hasMultipleTables);
 }

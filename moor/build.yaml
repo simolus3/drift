@@ -14,7 +14,7 @@ targets:
           named_parameters: true
           new_sql_code_generation: true
           sqlite:
-            version: "3.34"
+            version: "3.35"
             modules:
               - json1
               - fts5

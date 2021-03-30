@@ -260,6 +260,27 @@ abstract class DatabaseConnectionUser {
     );
   }
 
+  /// Runs a `INSERT`, `UPDATE` or `DELETE` statement returning rows.
+  ///
+  /// You can use the [updates] parameter so that moor knows which tables are
+  /// affected by your query. All select streams that depend on a table
+  /// specified there will then update their data. For more accurate results,
+  /// you can also set the [updateKind] parameter.
+  /// This is optional, but can improve the accuracy of query updates,
+  /// especially when using triggers.
+  Future<List<QueryRow>> customWriteReturning(
+    String query, {
+    List<Variable> variables = const [],
+    Set<TableInfo>? updates,
+    UpdateKind? updateKind,
+  }) {
+    return _customWrite(query, variables, updates, updateKind,
+        (executor, sql, vars) async {
+      final rows = await executor.runSelect(sql, vars);
+      return [for (final row in rows) QueryRow(row, attachedDatabase)];
+    });
+  }
+
   /// Common logic for [customUpdate] and [customInsert] which takes care of
   /// mapping the variables, running the query and optionally informing the
   /// stream-queries.
