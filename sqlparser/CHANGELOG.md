@@ -1,3 +1,7 @@
+## 0.15.1-dev
+
+- New analysis checks for `RETURNING`: Disallow `table.*` syntax and aggregate expressions
+
 ## 0.15.0
 
 - __Breaking__: Change `InsertStatement.upsert` to a list of upsert clauses

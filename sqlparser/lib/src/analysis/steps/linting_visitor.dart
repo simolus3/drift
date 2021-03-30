@@ -128,6 +128,29 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       }
     }
 
+    for (final column in e.columns) {
+      // Table wildcards are not currently allowed, see
+      // https://www.sqlite.org/src/info/132994c8b1063bfb
+      if (column is StarResultColumn && column.tableName != null) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          message: 'Columns in RETURNING may not use the TABLE.* syntax',
+          relevantNode: column,
+        ));
+      } else if (column is ExpressionResultColumn) {
+        // While we're at it, window expressions aren't allowed either
+        if (column.expression is AggregateExpression) {
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.illegalUseOfReturning,
+              message: 'Aggregate expressions are not allowed in RETURNING',
+              relevantNode: column.expression,
+            ),
+          );
+        }
+      }
+    }
+
     visitChildren(e, arg);
   }
 

@@ -30,4 +30,36 @@ void main() {
     expect(result.errors, hasLength(1));
     expect(result.errors.single.type, AnalysisErrorType.illegalUseOfReturning);
   });
+
+  test('does not allow star columns with an associated table', () {
+    final result = engine.analyze('''
+      UPDATE t SET id = t.id + 1
+        FROM (SELECT * FROM t) AS old
+        RETURNING old.*;
+    ''');
+
+    expect(result.errors, hasLength(1));
+    expect(
+      result.errors.single,
+      isA<AnalysisError>()
+          .having((e) => e.source!.span!.text, 'source.span.text', 'old.*')
+          .having((e) => e.message, 'message',
+              contains('RETURNING may not use the TABLE.* syntax')),
+    );
+  });
+
+  test('does not allow aggregate expressions', () {
+    final result = engine.analyze('INSERT INTO t DEFAULT VALUES RETURNING '
+        'MAX(id) OVER (PARTITION BY c2)');
+
+    expect(result.errors, hasLength(1));
+    expect(
+      result.errors.single,
+      isA<AnalysisError>()
+          .having((e) => e.source!.span!.text, 'source.span.text',
+              'MAX(id) OVER (PARTITION BY c2)')
+          .having((e) => e.message, 'message',
+              'Aggregate expressions are not allowed in RETURNING'),
+    );
+  });
 }
