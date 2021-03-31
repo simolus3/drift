@@ -22,15 +22,8 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   Future<T> _synchronized<T>(Future<T> Function() action) {
     if (isSequential) {
-      return _lock.synchronized(() async {
-        if (isInCancellationZone) {
-          // Popular sequential database implementations (especially moor/ffi)
-          // are synchronous. Wait for one event loop iteration to give
-          // cancellations time to come in.
-          await Future.delayed(Duration.zero);
-          checkIfCancelled();
-        }
-
+      return _lock.synchronized(() {
+        checkIfCancelled();
         return action();
       });
     } else {

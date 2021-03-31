@@ -122,6 +122,10 @@ class ServerImplementation implements MoorServer {
   Future<dynamic> _runQuery(StatementMethod method, String sql,
       List<Object?> args, int? transactionId) async {
     final executor = await _loadExecutor(transactionId);
+    checkIfCancelled();
+
+    // Give cancellations more time to come in
+    await Future.delayed(Duration.zero);
 
     switch (method) {
       case StatementMethod.custom:

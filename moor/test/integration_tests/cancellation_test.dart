@@ -48,6 +48,7 @@ void main() {
 
     final subscriptions = List.generate(
         4, (_) => db.customSelect(slowQuery()).watch().listen(null));
+    await pumpEventQueue();
     await Future.wait(subscriptions.map((e) => e.cancel()));
 
     final amountOfSlowQueries = await db
@@ -61,11 +62,6 @@ void main() {
   }
 
   group('stream queries are aborted on cancellations', () {
-    test('on the same isolate', () async {
-      final db = EmptyDb.connect(createConnection());
-      await runTest(db);
-    });
-
     test('on a background isolate', () async {
       final isolate = await MoorIsolate.spawn(createConnection);
       addTearDown(isolate.shutdownAll);

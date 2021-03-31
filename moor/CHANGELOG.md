@@ -1,7 +1,7 @@
 ## 4.3.0-dev
 
 - On supported platforms, cancel ongoing stream selects when the stream is disposed
-  - At the moment, `moor/ffi` and isolate databases are supported
+  - At the moment, only `moor/ffi` on a background isolate is supported
 
 ## 4.2.1
 
