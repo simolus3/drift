@@ -65,6 +65,9 @@ class CancellationException implements Exception {
   }
 }
 
+/// Returns true if we're currently in a zone that can be cancelled.
+bool get isInCancellationZone => Zone.current[_key] != null;
+
 /// Checks whether the active zone is a cancellation zone that has been
 /// cancelled. If it is, a [CancellationException] will be thrown.
 void checkIfCancelled() {

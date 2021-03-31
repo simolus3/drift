@@ -121,11 +121,6 @@ class ServerImplementation implements MoorServer {
 
   Future<dynamic> _runQuery(StatementMethod method, String sql,
       List<Object?> args, int? transactionId) async {
-    // Wait for one event loop iteration until we run the request. This helps
-    // with cancellations for synchronous database implementations like moor/ffi
-    // since we don't have a chance to react to cancellation requests otherwise.
-    await Future.delayed(Duration.zero);
-
     final executor = await _loadExecutor(transactionId);
 
     switch (method) {
