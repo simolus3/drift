@@ -19,14 +19,14 @@ class TodoAppBloc {
   final BehaviorSubject<Category> _activeCategory =
       BehaviorSubject.seeded(null);
 
-  Observable<List<EntryWithCategory>> _currentEntries;
+  Stream<List<EntryWithCategory>> _currentEntries;
 
   /// A stream of entries that should be displayed on the home screen.
-  Observable<List<EntryWithCategory>> get homeScreenEntries => _currentEntries;
+  Stream<List<EntryWithCategory>> get homeScreenEntries => _currentEntries;
 
   final BehaviorSubject<List<CategoryWithActiveInfo>> _allCategories =
       BehaviorSubject();
-  Observable<List<CategoryWithActiveInfo>> get categories => _allCategories;
+  Stream<List<CategoryWithActiveInfo>> get categories => _allCategories;
 
   TodoAppBloc() : db = Database() {
     // listen for the category to change. Then display all entries that are in
@@ -35,7 +35,7 @@ class TodoAppBloc {
 
     // also watch all categories so that they can be displayed in the navigation
     // drawer.
-    Observable.combineLatest2<List<CategoryWithCount>, Category,
+    Rx.combineLatest2<List<CategoryWithCount>, Category,
         List<CategoryWithActiveInfo>>(
       db.categoriesWithCount(),
       _activeCategory,
