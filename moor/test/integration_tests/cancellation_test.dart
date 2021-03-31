@@ -32,20 +32,7 @@ class EmptyDb extends GeneratedDatabase {
 }
 
 void main() {
-  late EmptyDb db;
-  late MoorIsolate isolate;
-
-  setUp(() async {
-    isolate = await MoorIsolate.spawn(createConnection);
-    db = EmptyDb.connect(await isolate.connect());
-
-    // Avoid delays caused by opening the database to interfere with the
-    // cancellation mechanism (we need to react to cancellations quicker if the
-    // db is already open, which is what we want to test)
-    await db.doWhenOpened((e) {});
-  });
-
-  tearDown(() => isolate.shutdownAll());
+  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   var i = 0;
   String slowQuery() => '''
@@ -53,10 +40,14 @@ void main() {
     select ${i++} from slow;
   '''; // ^ to get different `StreamKey`s
 
-  test('stream queries are aborted on cancellations', () async {
+  Future<void> runTest(EmptyDb db) async {
+    // Avoid delays caused by opening the database to interfere with the
+    // cancellation mechanism (we need to react to cancellations quicker if the
+    // db is already open, which is what we want to test)
+    await db.doWhenOpened((e) {});
+
     final subscriptions = List.generate(
         4, (_) => db.customSelect(slowQuery()).watch().listen(null));
-    await pumpEventQueue();
     await Future.wait(subscriptions.map((e) => e.cancel()));
 
     final amountOfSlowQueries = await db
@@ -67,5 +58,20 @@ void main() {
     // One slow query is ok if the cancellation wasn't quick enough, we just
     // shouldn't run all 4 of them.
     expect(amountOfSlowQueries, anyOf(0, 1));
+  }
+
+  group('stream queries are aborted on cancellations', () {
+    test('on the same isolate', () async {
+      final db = EmptyDb.connect(createConnection());
+      await runTest(db);
+    });
+
+    test('on a background isolate', () async {
+      final isolate = await MoorIsolate.spawn(createConnection);
+      addTearDown(isolate.shutdownAll);
+
+      final db = EmptyDb.connect(await isolate.connect());
+      await runTest(db);
+    });
   });
 }
