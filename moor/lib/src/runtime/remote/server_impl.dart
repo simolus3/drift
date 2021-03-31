@@ -4,6 +4,7 @@ import 'package:moor/moor.dart';
 import 'package:moor/remote.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import '../cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
@@ -18,6 +19,8 @@ class ServerImplementation implements MoorServer {
 
   final Map<int, QueryExecutor> _managedExecutors = {};
   int _currentExecutorId = 0;
+
+  final Map<int, CancellationToken> _cancellableOperations = {};
 
   /// when a transaction is active, all queries that don't operate on another
   /// query executor have to wait!
@@ -88,8 +91,13 @@ class ServerImplementation implements MoorServer {
     } else if (payload is EnsureOpen) {
       return _handleEnsureOpen(payload);
     } else if (payload is ExecuteQuery) {
-      return _runQuery(
-          payload.method, payload.sql, payload.args, payload.executorId);
+      final token = runCancellable(() => _runQuery(
+          payload.method, payload.sql, payload.args, payload.executorId));
+      _cancellableOperations[request.id] = token;
+      return token.result
+          // If we get a null response the operation was cancelled
+          .then((value) => value ?? Future.error(const CancellationException()))
+          .whenComplete(() => _cancellableOperations.remove(request.id));
     } else if (payload is ExecuteBatchedStatement) {
       return _runBatched(payload.stmts, payload.executorId);
     } else if (payload is NotifyTablesUpdated) {
@@ -98,6 +106,9 @@ class ServerImplementation implements MoorServer {
       }
     } else if (payload is RunTransactionAction) {
       return _transactionControl(payload.control, payload.executorId);
+    } else if (payload is RequestCancellation) {
+      _cancellableOperations[payload.originalRequestId]?.cancel();
+      return null;
     }
   }
 
@@ -110,6 +121,11 @@ class ServerImplementation implements MoorServer {
 
   Future<dynamic> _runQuery(StatementMethod method, String sql,
       List<Object?> args, int? transactionId) async {
+    // Wait for one event loop iteration until we run the request. This helps
+    // with cancellations for synchronous database implementations like moor/ffi
+    // since we don't have a chance to react to cancellation requests otherwise.
+    await Future.delayed(Duration.zero);
+
     final executor = await _loadExecutor(transactionId);
 
     switch (method) {

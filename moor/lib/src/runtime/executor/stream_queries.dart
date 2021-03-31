@@ -127,7 +127,8 @@ class StreamQueryStore {
     final key = stream._fetcher.key;
     _keysPendingRemoval.add(key);
 
-    final completer = Completer<void>();
+    // sync because it's only triggered after the timer
+    final completer = Completer<void>.sync();
     _pendingTimers.add(completer);
 
     // Hey there! If you're sent here because your Flutter tests fail, please

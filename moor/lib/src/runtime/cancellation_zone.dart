@@ -34,6 +34,7 @@ CancellationToken<T> runCancellable<T>(
 @internal
 class CancellationToken<T> {
   final Completer<T?> _resultCompleter = Completer.sync();
+  final List<void Function()> _cancellationCallbacks = [];
   bool _cancellationRequested = false;
 
   /// Loads the result for the cancellable operation.
@@ -42,7 +43,14 @@ class CancellationToken<T> {
   Future<T?> get result => _resultCompleter.future;
 
   /// Requests the inner asynchronous operation to be cancelled.
-  void cancel() => _cancellationRequested = true;
+  void cancel() {
+    if (_cancellationRequested) return;
+
+    for (final callback in _cancellationCallbacks) {
+      callback();
+    }
+    _cancellationRequested = true;
+  }
 }
 
 /// Thrown inside a cancellation zone when it has been cancelled.
@@ -63,5 +71,14 @@ void checkIfCancelled() {
   final token = Zone.current[_key];
   if (token is CancellationToken && token._cancellationRequested) {
     throw const CancellationException();
+  }
+}
+
+/// Requests the [callback] to be invoked when the enclosing asynchronous
+/// operation is cancelled.
+void doOnCancellation(void Function() callback) {
+  final token = Zone.current[_key];
+  if (token is CancellationToken) {
+    token._cancellationCallbacks.add(callback);
   }
 }

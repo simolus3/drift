@@ -1,3 +1,8 @@
+## 4.3.0-dev
+
+- On supported platforms, cancel ongoing stream selects when the stream is disposed
+  - At the moment, `moor/ffi` on a background isolate supports this feature
+
 ## 4.2.1
 
 - Deprecate `readBool`, `readString`, `readInt`, `readDouble`, `readDateTime`
