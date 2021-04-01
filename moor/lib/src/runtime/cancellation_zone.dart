@@ -14,15 +14,7 @@ CancellationToken<T> runCancellable<T>(
   final token = CancellationToken<T>();
   runZonedGuarded(
     () => operation().then(token._resultCompleter.complete),
-    (error, trace) {
-      final completer = token._resultCompleter;
-
-      if (error is CancellationException) {
-        completer.complete(null);
-      } else {
-        completer.completeError(error, trace);
-      }
-    },
+    token._resultCompleter.completeError,
     zoneValues: {_key: token},
   );
 
@@ -33,14 +25,15 @@ CancellationToken<T> runCancellable<T>(
 /// child zone.
 @internal
 class CancellationToken<T> {
-  final Completer<T?> _resultCompleter = Completer.sync();
+  final Completer<T> _resultCompleter = Completer();
   final List<void Function()> _cancellationCallbacks = [];
   bool _cancellationRequested = false;
 
   /// Loads the result for the cancellable operation.
   ///
-  /// When the operation is cancelled, the future might complete with `null`.
-  Future<T?> get result => _resultCompleter.future;
+  /// When a cancellation has been requested and was honored, the future will
+  /// complete with a [CancellationException].
+  Future<T> get result => _resultCompleter.future;
 
   /// Requests the inner asynchronous operation to be cancelled.
   void cancel() {
@@ -50,6 +43,27 @@ class CancellationToken<T> {
       callback();
     }
     _cancellationRequested = true;
+  }
+}
+
+/// Extensions that can be used on cancellable operations if they return a non-
+/// nullable value.
+extension NonNullableCancellationExtension<T extends Object>
+    on CancellationToken<T> {
+  /// Wait for the result, or return `null` if the operation was cancelled.
+  ///
+  /// To avoid situations where `null` could be a valid result from an async
+  /// operation, this getter is only available on non-nullable operations. This
+  /// avoids ambiguity.
+  ///
+  /// The future will still complete with an error if anything but a
+  /// [CancellationException] is thrown in [result].
+  Future<T?> get resultOrNullIfCancelled async {
+    try {
+      return await result;
+    } on CancellationException {
+      return null;
+    }
   }
 }
 

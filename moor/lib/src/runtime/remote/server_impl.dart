@@ -95,8 +95,6 @@ class ServerImplementation implements MoorServer {
           payload.method, payload.sql, payload.args, payload.executorId));
       _cancellableOperations[request.id] = token;
       return token.result
-          // If we get a null response the operation was cancelled
-          .then((value) => value ?? Future.error(const CancellationException()))
           .whenComplete(() => _cancellableOperations.remove(request.id));
     } else if (payload is ExecuteBatchedStatement) {
       return _runBatched(payload.stmts, payload.executorId);

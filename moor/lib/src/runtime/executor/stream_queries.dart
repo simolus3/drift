@@ -252,7 +252,7 @@ class QueryStream {
     _runningOperations.add(operation);
 
     try {
-      final data = await operation.result;
+      final data = await operation.resultOrNullIfCancelled;
       if (data == null) return;
 
       _lastData = data;

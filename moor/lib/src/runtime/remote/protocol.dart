@@ -300,6 +300,11 @@ class CancelledResponse extends Message {
   final int requestId;
 
   CancelledResponse(this.requestId);
+
+  @override
+  String toString() {
+    return 'Previous request $requestId was cancelled';
+  }
 }
 
 /// A request without further parameters
