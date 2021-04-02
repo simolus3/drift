@@ -2,6 +2,7 @@
 
 - New analysis checks for `RETURNING`: Disallow `table.*` syntax and aggregate expressions
 - Fix resolving columns when `RETURNING` is used in an `UPDATE FROM` statement
+- Fix aliases to rowid being reported as nullable
 
 ## 0.15.0
 
