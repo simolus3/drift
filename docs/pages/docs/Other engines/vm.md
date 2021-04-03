@@ -73,7 +73,7 @@ LazyDatabase(() async {
 ```
 
 Note: If you haven't shipped a version with `moor_flutter` to your users yet, you can drop the dependency
-on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](https://github.com/google/flutter-desktop-embedding/tree/master/plugins/flutter_plugins).
+on `sqflite`. Instead, you can use `path_provider` which [works on Desktop](https://pub.dev/packages/path_provider).
 Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a different folder than
 `path_provider` on Android. This can cause data loss if you've already shipped a version using
 `moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
