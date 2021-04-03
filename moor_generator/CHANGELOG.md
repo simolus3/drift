@@ -1,3 +1,7 @@
+## 4.2.2
+
+- Fix generated code for queries using a Dart placeholder before an array variable
+
 ## 4.2.1
 
 - Fix generated code for nullable columns in moor files

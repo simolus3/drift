@@ -1618,13 +1618,17 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2) {
+  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
+      {Expression<bool> pred = const CustomExpression('(TRUE)')}) {
     var $arrayStartIndex = 2;
+    final generatedpred = $write(pred);
+    $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
+        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ? OR sync_state_implicit IN ($expandedvar2))',
         variables: [
+          ...generatedpred.introducedVariables,
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           for (var $ in var2)
             Variable<int?>(ConfigTable.$converter1.mapToSql($))

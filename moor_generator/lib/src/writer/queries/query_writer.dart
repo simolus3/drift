@@ -349,8 +349,20 @@ class QueryWriter {
 
   void _writeExpandedDeclarations() {
     var indexCounterWasDeclared = false;
-    final needsIndexCounter = query.variables.any((v) => v.isArray);
+    var needsIndexCounter = false;
     var highestIndexBeforeArray = 0;
+
+    for (final variable in query.variables) {
+      // Variables use an explicit index, we need to know the start index at
+      // runtime (can be dynamic when placeholders or other arrays appear before
+      // this one)
+      if (variable.isArray) {
+        needsIndexCounter = true;
+        break;
+      }
+
+      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
+    }
 
     void _writeIndexCounterIfNeeded() {
       if (indexCounterWasDeclared || !needsIndexCounter) {
@@ -392,10 +404,6 @@ class QueryWriter {
 
           // increase highest index for the next expanded element
           _increaseIndexCounter('${element.dartParameterName}.length');
-        }
-
-        if (!indexCounterWasDeclared) {
-          highestIndexBeforeArray = max(highestIndexBeforeArray, element.index);
         }
       } else if (element is FoundDartPlaceholder) {
         _writeIndexCounterIfNeeded();

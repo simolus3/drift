@@ -57,7 +57,8 @@ FROM config WHERE config_key = ?;
 readMultiple: SELECT * FROM config WHERE config_key IN ? ORDER BY $clause;
 readDynamic ($predicate = TRUE): SELECT * FROM config WHERE $predicate;
 
-typeConverterVar: SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ?;
+typeConverterVar($pred = TRUE): SELECT config_key FROM config WHERE $pred AND
+        (sync_state = ? OR sync_state_implicit IN ?);
 
 tableValued AS JsonResult:
   SELECT "key", "value"
