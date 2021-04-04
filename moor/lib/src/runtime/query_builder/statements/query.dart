@@ -104,9 +104,8 @@ abstract class MultiSelectable<T> {
 /// {@template moor_single_selectable_example}
 /// ```dart
 /// // Retrieve a todo known to exist.
-/// SingleSelectable<Todo> entryById(int id) {
-///   return (select(todos)..where((t) => t.id.equals(id)));
-/// }
+/// SingleSelectable<Todo> entryById(int id) =>
+///   select(todos)..where((t) => t.id.equals(id));
 /// final idGuaranteedToExist = 10;
 /// entryById(idGuaranteedToExist).getSingle();
 /// entryById(idGuaranteedToExist).watchSingle();
@@ -161,12 +160,12 @@ abstract class SingleSelectable<T> {
 /// {@template moor_single_or_null_selectable_example}
 ///```dart
 /// // Retrieve a todo from an external link that may not be valid.
-/// SingleOrNullSelectable<Todo> todoFromExternalLink(int id) =>
+/// SingleOrNullSelectable<Todo> entryFromExternalLink(int id) =>
 ///   select(todos)..where((t) => t.id.equals(id));
 ///
 /// final idFromEmailLink = 100;
-/// todoFromExternalLink(idFromEmailLink).getSingleOrNull();
-/// todoFromExternalLink(idFromEmailLink).watchSingleOrNull();
+/// entryFromExternalLink(idFromEmailLink).getSingleOrNull();
+/// entryFromExternalLink(idFromEmailLink).watchSingleOrNull();
 /// ```
 /// {@endtemplate}
 ///

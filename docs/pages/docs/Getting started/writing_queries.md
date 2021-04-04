@@ -107,11 +107,11 @@ MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
 }
 
 // Exposes `getSingle` and `watchSingle`
-SingleSelectable<Todo> todoById(int id) =>
+SingleSelectable<Todo> entryById(int id) =>
   select(todos)..where((t) => t.id.equals(id));
 
 // Exposes `getSingleOrNull` and `watchSingleOrNull`
-SingleOrNullSelectable<Todo> todoFromExternalLink(int id) =>
+SingleOrNullSelectable<Todo> entryFromExternalLink(int id) =>
   select(todos)..where((t) => t.id.equals(id));
 ```
 These base classes don't have query-building or `map` methods, signaling to the consumer
