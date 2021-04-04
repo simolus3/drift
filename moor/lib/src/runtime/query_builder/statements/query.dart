@@ -76,8 +76,9 @@ abstract class Query<T extends Table, D extends DataClass> extends Component {
 /// {@template moor_multi_selectable_example}
 /// ```dart
 /// /// Retrieve a page of [Todo]s.
-/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) =>
-///   select(todos)..limit(pageSize, offset: page);
+/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
+///   return select(todos)..limit(pageSize, offset: page);
+/// }
 /// pageOfTodos(1).get();
 /// pageOfTodos(1).watch();
 /// ```
@@ -103,8 +104,9 @@ abstract class MultiSelectable<T> {
 /// {@template moor_single_selectable_example}
 /// ```dart
 /// // Retrieve a todo known to exist.
-/// SingleSelectable<Todo> entryById(int id) =>
-///   select(todos)..where((t) => t.id.equals(id));
+/// SingleSelectable<Todo> entryById(int id) {
+///   return select(todos)..where((t) => t.id.equals(id));
+/// }
 /// final idGuaranteedToExist = 10;
 /// entryById(idGuaranteedToExist).getSingle();
 /// entryById(idGuaranteedToExist).watchSingle();
@@ -159,9 +161,9 @@ abstract class SingleSelectable<T> {
 /// {@template moor_single_or_null_selectable_example}
 ///```dart
 /// // Retrieve a todo from an external link that may not be valid.
-/// SingleOrNullSelectable<Todo> entryFromExternalLink(int id) =>
-///   select(todos)..where((t) => t.id.equals(id));
-///
+/// SingleOrNullSelectable<Todo> entryFromExternalLink(int id) {
+///   return select(todos)..where((t) => t.id.equals(id));
+/// }
 /// final idFromEmailLink = 100;
 /// entryFromExternalLink(idFromEmailLink).getSingleOrNull();
 /// entryFromExternalLink(idFromEmailLink).watchSingleOrNull();

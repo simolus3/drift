@@ -102,16 +102,19 @@ If you want to make your query consumable as either a `Future` or a `Stream`,
 you can refine your return type using one of the `Selectable` abstract base classes;
 ```dart
 // Exposes `get` and `watch`
-MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) =>
-  select(todos)..limit(pageSize, offset: page);
+MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
+  return select(todos)..limit(pageSize, offset: page);
+}
 
 // Exposes `getSingle` and `watchSingle`
-SingleSelectable<Todo> entryById(int id) =>
-  select(todos)..where((t) => t.id.equals(id));
+SingleSelectable<Todo> entryById(int id) {
+  return select(todos)..where((t) => t.id.equals(id));
+}
 
 // Exposes `getSingleOrNull` and `watchSingleOrNull`
-SingleOrNullSelectable<Todo> entryFromExternalLink(int id) =>
-  select(todos)..where((t) => t.id.equals(id));
+SingleOrNullSelectable<Todo> entryFromExternalLink(int id) {
+  return select(todos)..where((t) => t.id.equals(id));
+}
 ```
 These base classes don't have query-building or `map` methods, signaling to the consumer
 that they are complete results.
