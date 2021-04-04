@@ -101,7 +101,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
                   title: const Text('Delete'),
                   content: Text('Really delete category $title?'),
                   actions: <Widget>[
-                    FlatButton(
+                    TextButton(
                       child: const Text('Cancel'),
                       onPressed: () {
                         Navigator.pop(context, false);

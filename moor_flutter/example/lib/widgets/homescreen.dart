@@ -21,7 +21,7 @@ class HomeScreenState extends State<HomeScreen> {
   // been added
   final TextEditingController controller = TextEditingController();
 
-  TodoAppBloc get bloc => Provider.of<TodoAppBloc>(context);
+  TodoAppBloc get bloc => Provider.of<TodoAppBloc>(context, listen: false);
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +33,8 @@ class HomeScreenState extends State<HomeScreen> {
       body: StreamBuilder<List<EntryWithCategory>>(
         stream: bloc.homeScreenEntries,
         builder: (context, snapshot) {
+          print(snapshot);
+
           if (!snapshot.hasData) {
             return const Align(
               alignment: Alignment.center,

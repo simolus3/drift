@@ -20,6 +20,7 @@ class QueryHandler {
   Set<Table> _foundTables;
   Set<View> _foundViews;
   List<FoundElement> _foundElements;
+
   Iterable<FoundVariable> get _foundVariables =>
       _foundElements.whereType<FoundVariable>();
 
@@ -56,12 +57,26 @@ class QueryHandler {
     }
   }
 
+  void _applyFoundTables(ReferencedTablesVisitor visitor) {
+    _foundTables = visitor.foundTables;
+    _foundViews = visitor.foundViews;
+  }
+
   UpdatingQuery _handleUpdate() {
     final updatedFinder = UpdatedTablesVisitor();
     context.root.acceptWithoutArg(updatedFinder);
-    _foundTables = updatedFinder.writtenTables.map((w) => w.table).toSet();
+    _applyFoundTables(updatedFinder);
 
-    final isInsert = context.root is InsertStatement;
+    final root = context.root;
+    final isInsert = root is InsertStatement;
+
+    InferredResultSet resultSet;
+    if (root is StatementReturningColumns) {
+      final columns = root.returnedResultSet?.resolvedColumns;
+      if (columns != null) {
+        resultSet = _inferResultSet(columns);
+      }
+    }
 
     return UpdatingQuery(
       name,
@@ -70,14 +85,15 @@ class QueryHandler {
       updatedFinder.writtenTables.map(mapper.writtenToMoor).toList(),
       isInsert: isInsert,
       hasMultipleTables: updatedFinder.foundTables.length > 1,
+      resultSet: resultSet,
     );
   }
 
   SqlSelectQuery _handleSelect() {
     final tableFinder = ReferencedTablesVisitor();
     _select.acceptWithoutArg(tableFinder);
-    _foundTables = tableFinder.foundTables;
-    _foundViews = tableFinder.foundViews;
+    _applyFoundTables(tableFinder);
+
     final moorTables =
         _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
     final moorViews =
@@ -95,15 +111,14 @@ class QueryHandler {
       context,
       _foundElements,
       moorEntities,
-      _inferResultSet(),
+      _inferResultSet(_select.resolvedColumns),
       requestedName,
     );
   }
 
-  InferredResultSet _inferResultSet() {
+  InferredResultSet _inferResultSet(List<Column> rawColumns) {
     final candidatesForSingleTable = Set.of(_foundTables);
     final columns = <ResultColumn>[];
-    final rawColumns = _select.resolvedColumns;
 
     // First, go through regular result columns
     for (final column in rawColumns) {
@@ -190,7 +205,7 @@ class QueryHandler {
   }
 
   List<NestedResultTable> _findNestedResultTables() {
-    final query = _select;
+    final query = context.root;
     // We don't currently support nested results for compound statements
     if (query is! SelectStatement) return const [];
 

@@ -223,9 +223,15 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       });
     });
 
-    test('delete', () {
-      testFormat(
-          'WITH foo (id) AS (SELECT * FROM bar) DELETE FROM bar WHERE x;');
+    group('delete', () {
+      test('with CTEs', () {
+        testFormat(
+            'WITH foo (id) AS (SELECT * FROM bar) DELETE FROM bar WHERE x;');
+      });
+
+      test('with returning', () {
+        testFormat('DELETE FROM foo RETURNING *');
+      });
     });
 
     group('insert', () {
@@ -234,8 +240,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             'REPLACE INTO foo DEFAULT VALUES');
       });
 
-      test('insert into select', () {
+      test('into select', () {
         testFormat('INSERT INTO foo SELECT * FROM bar');
+      });
+
+      test('with returning', () {
+        testFormat('INSERT INTO foo DEFAULT VALUES RETURNING *');
       });
 
       test('upsert - do nothing', () {
@@ -258,6 +268,10 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     group('update', () {
       test('simple', () {
         testFormat('UPDATE foo SET bar = baz WHERE 1;');
+      });
+
+      test('with returning', () {
+        testFormat('UPDATE foo SET bar = baz RETURNING *');
       });
 
       const modes = [

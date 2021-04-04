@@ -127,4 +127,14 @@ void main() {
     final table = engine.schemaReader.read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.single.type.type, BasicType.blob);
   });
+
+  test('aliases to rowid are non-nullable', () {
+    final engine = SqlEngine();
+    final stmt =
+        engine.parse('CREATE TABLE foo (id INTEGER PRIMARY KEY);').rootNode;
+
+    final table = engine.schemaReader.read(stmt as CreateTableStatement);
+    expect(table.resolvedColumns.single.type,
+        const ResolvedType(type: BasicType.int, nullable: false));
+  });
 }

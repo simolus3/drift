@@ -56,33 +56,42 @@ class MockExecutor extends Mock implements QueryExecutor {
   @override
   SqlDialect get dialect =>
       _nsm(Invocation.getter(#dialect), SqlDialect.sqlite);
+
   @override
   Future<bool> ensureOpen(QueryExecutorUser? user) =>
       _nsm(Invocation.method(#ensureOpen, [user]), Future.value(true));
+
   @override
   Future<List<Map<String, Object?>>> runSelect(
           String? statement, List<Object?>? args) =>
       _nsm(Invocation.method(#runSelect, [statement, args]),
           Future.value(<Map<String, Object?>>[]));
+
   @override
   Future<int> runInsert(String? statement, List<Object?>? args) =>
       _nsm(Invocation.method(#runInsert, [statement, args]), Future.value(0));
+
   @override
   Future<int> runUpdate(String? statement, List<Object?>? args) =>
       _nsm(Invocation.method(#runUpdate, [statement, args]), Future.value(0));
+
   @override
   Future<int> runDelete(String? statement, List<Object?>? args) =>
       _nsm(Invocation.method(#runDelete, [statement, args]), Future.value(0));
+
   @override
   Future<void> runCustom(String? statement, [List<Object?>? args]) => _nsm(
       Invocation.method(#runCustom, [statement, args]), Future.value(null));
+
   @override
   Future<void> runBatched(BatchedStatements? statements) =>
       _nsm(Invocation.method(#runBatched, [statements]), Future.value(null));
+
   @override
   TransactionExecutor beginTransaction() =>
       _nsm(Invocation.method(#beginTransaction, []), transactions) ??
       transactions;
+
   @override
   Future<void> close() =>
       _nsm(Invocation.method(#close, []), Future.value(null));
@@ -107,22 +116,28 @@ class MockTransactionExecutor extends MockExecutor
 
 class MockStreamQueries extends Mock implements StreamQueryStore {
   @override
-  Stream<T> registerStream<T>(QueryStreamFetcher<T>? fetcher) =>
-      _nsm(Invocation.method(#registerStream, [fetcher]), Stream<T>.empty());
+  Stream<List<Map<String, Object?>>> registerStream(
+          QueryStreamFetcher? fetcher) =>
+      _nsm(Invocation.method(#registerStream, [fetcher]),
+          const Stream<Never>.empty());
+
   @override
   Stream<Null?> updatesForSync(TableUpdateQuery? query) => _nsm(
       Invocation.method(#updatesForSync, [query]), const Stream<Never>.empty());
+
   @override
   void handleTableUpdates(Set<TableUpdate>? updates) =>
       super.noSuchMethod(Invocation.method(#handleTableUpdates, [updates]));
+
   @override
-  void markAsClosed(
-          QueryStream<dynamic>? stream, dynamic Function()? whenRemoved) =>
+  void markAsClosed(QueryStream? stream, dynamic Function()? whenRemoved) =>
       super.noSuchMethod(
           Invocation.method(#markAsClosed, [stream, whenRemoved]));
+
   @override
-  void markAsOpened(QueryStream<dynamic>? stream) =>
+  void markAsOpened(QueryStream? stream) =>
       super.noSuchMethod(Invocation.method(#markAsOpened, [stream]));
+
   @override
   Future<void> close() =>
       _nsm(Invocation.method(#close, []), Future.value(null));

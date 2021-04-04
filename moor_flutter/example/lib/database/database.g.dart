@@ -503,9 +503,9 @@ abstract class _$Database extends GeneratedDatabase {
         variables: [],
         readsFrom: {categories, todos}).map((QueryRow row) {
       return CategoriesWithCountResult(
-        id: row.readInt('id'),
-        desc: row.readString('desc'),
-        amount: row.readInt('amount'),
+        id: row.read<int>('id'),
+        desc: row.read<String>('desc'),
+        amount: row.read<int>('amount'),
       );
     });
   }

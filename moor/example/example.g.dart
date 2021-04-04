@@ -967,13 +967,13 @@ abstract class _$Database extends GeneratedDatabase {
       $IngredientInRecipesTable(this);
   Selectable<TotalWeightResult> totalWeight() {
     return customSelect(
-        'SELECT r.title, SUM(ir.amount)AS total_weight FROM recipes AS r INNER JOIN recipe_ingredients AS ir ON ir.recipe = r.id GROUP BY r.id',
+        'SELECT r.title, SUM(ir.amount) AS total_weight FROM recipes AS r INNER JOIN recipe_ingredients AS ir ON ir.recipe = r.id GROUP BY r.id',
         variables: [],
         readsFrom: {recipes, ingredientInRecipes}).map((QueryRow row) {
       return TotalWeightResult(
         row: row,
-        title: row.readString('title'),
-        totalWeight: row.readInt('total_weight'),
+        title: row.read<String>('title'),
+        totalWeight: row.read<int>('total_weight'),
       );
     });
   }

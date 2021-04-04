@@ -90,35 +90,57 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       if (child != e.table && child != e.from) visit(child, arg);
     }
 
-    _resolveReturningClause(e);
+    _resolveReturningClause(e, baseTable);
   }
 
-  void _addIfResolved(AstNode node, TableReference ref) {
+  ResultSet? _addIfResolved(AstNode node, TableReference ref) {
     final table = _resolveTableReference(ref);
     if (table != null) {
       node.scope.availableColumns = table.resolvedColumns;
     }
+
+    return table;
   }
 
   @override
   void visitInsertStatement(InsertStatement e, void arg) {
-    _addIfResolved(e, e.table);
+    final into = _addIfResolved(e, e.table);
     visitChildren(e, arg);
-    _resolveReturningClause(e);
+    _resolveReturningClause(e, into);
   }
 
   @override
   void visitDeleteStatement(DeleteStatement e, void arg) {
-    _addIfResolved(e, e.from!);
+    final from = _addIfResolved(e, e.from);
     visitChildren(e, arg);
-    _resolveReturningClause(e);
+    _resolveReturningClause(e, from);
   }
 
-  void _resolveReturningClause(StatementReturningColumns stmt) {
+  /// Infers the result set of a `RETURNING` clause.
+  ///
+  /// The behavior of `RETURNING` clauses is a bit weird when there are multiple
+  /// tables available (which can happen with `UPDATE FROM`). When a star column
+  /// is used, it only expands to columns from the main table:
+  /// ```sql
+  /// CREATE TABLE x (a, b);
+  /// -- here, the `*` in returning does not include columns from `old`.
+  /// UPDATE x SET a = x.a + 1 FROM (SELECT * FROM x) AS old RETURNING *;
+  /// ```
+  ///
+  /// However, individual columns from other tables are available and supported:
+  /// ```sql
+  /// UPDATE x SET a = x.a + 1 FROM (SELECT * FROM x) AS old
+  ///   RETURNING old.a, old.b;
+  /// ```
+  ///
+  /// Note that `old.*` is forbidden by sqlite and not applicable here.
+  void _resolveReturningClause(
+      StatementReturningColumns stmt, ResultSet? mainTable) {
     final clause = stmt.returning;
     if (clause == null) return;
 
-    final columns = _resolveColumns(stmt.scope, clause.columns);
+    final columns = _resolveColumns(stmt.scope, clause.columns,
+        columnsForStar: mainTable?.resolvedColumns);
     stmt.returnedResultSet = CustomResultSet(columns);
   }
 
@@ -210,10 +232,10 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     s.resolvedColumns = _resolveColumns(scope, s.columns);
   }
 
-  List<Column> _resolveColumns(
-      ReferenceScope scope, List<ResultColumn> columns) {
+  List<Column> _resolveColumns(ReferenceScope scope, List<ResultColumn> columns,
+      {List<Column>? columnsForStar}) {
     final usedColumns = <Column>[];
-    final availableColumns = scope.availableColumns;
+    final availableColumns = <Column>[...scope.availableColumns];
 
     // a select statement can include everything from its sub queries as a
     // result, but also expressions that appear as result columns
@@ -234,9 +256,9 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
           visibleColumnsForStar = tableResolver.resultSet!.resolvedColumns;
         } else {
-          // we have a * column without a table, that resolves to every columns
+          // we have a * column without a table, that resolves to every column
           // available
-          visibleColumnsForStar = availableColumns;
+          visibleColumnsForStar = columnsForStar ?? availableColumns;
         }
 
         usedColumns
@@ -262,6 +284,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           final name = resultColumn.as;
           if (!availableColumns.any((c) => c.name == name)) {
             availableColumns.add(column);
+            scope.addAvailableColumn(column);
           }
         }
       } else if (resultColumn is NestedStarResultColumn) {

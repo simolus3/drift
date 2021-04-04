@@ -182,11 +182,10 @@ void main() {
   });
 
   group('stream keys', () {
-    final keyA = StreamKey('SELECT * FROM users;', [], User);
-    final keyB = StreamKey('SELECT * FROM users;', [], User);
-    final keyCustom = StreamKey('SELECT * FROM users;', [], QueryRow);
-    final keyCustomTodos = StreamKey('SELECT * FROM todos;', [], QueryRow);
-    final keyArgs = StreamKey('SELECT * FROM users;', ['name'], User);
+    final keyA = StreamKey('SELECT * FROM users;', []);
+    final keyB = StreamKey('SELECT * FROM users;', []);
+    final keyTodos = StreamKey('SELECT * FROM todos;', []);
+    final keyArgs = StreamKey('SELECT * FROM users;', ['name']);
 
     test('are equal for same parameters', () {
       expect(keyA, equals(keyB));
@@ -194,18 +193,13 @@ void main() {
     });
 
     test('are not equal for different queries', () {
-      expect(keyCustomTodos, isNot(keyCustom));
-      expect(keyCustomTodos.hashCode, isNot(keyCustom.hashCode));
+      expect(keyA, isNot(keyTodos));
+      expect(keyA.hashCode, isNot(keyTodos.hashCode));
     });
 
     test('are not equal for different variables', () {
       expect(keyArgs, isNot(keyA));
       expect(keyArgs.hashCode, isNot(keyA.hashCode));
-    });
-
-    test('are not equal for different types', () {
-      expect(keyCustom, isNot(keyA));
-      expect(keyCustom.hashCode, isNot(keyA.hashCode));
     });
   });
 

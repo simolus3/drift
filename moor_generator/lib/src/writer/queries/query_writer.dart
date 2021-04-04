@@ -24,6 +24,7 @@ class QueryWriter {
   final Scope scope;
 
   SqlSelectQuery get _select => query as SqlSelectQuery;
+
   UpdatingQuery get _update => query as UpdatingQuery;
 
   MoorOptions get options => scope.writer.options;
@@ -37,15 +38,22 @@ class QueryWriter {
   }
 
   void write() {
+    // Note that writing queries can have a result set if they use a RETURNING
+    // clause.
+    final resultSet = query.resultSet;
+    if (resultSet?.needsOwnClass == true) {
+      final resultSetScope = scope.findScopeOfLevel(DartScope.library);
+      ResultSetWriter(query, resultSetScope).write();
+    }
+
     if (query is SqlSelectQuery) {
-      final select = query as SqlSelectQuery;
-      if (select.resultSet.needsOwnClass) {
-        final resultSetScope = scope.findScopeOfLevel(DartScope.library);
-        ResultSetWriter(select, resultSetScope).write();
-      }
       _writeSelect();
     } else if (query is UpdatingQuery) {
-      _writeUpdatingQuery();
+      if (resultSet != null) {
+        _writeUpdatingQueryWithReturning();
+      } else {
+        _writeUpdatingQuery();
+      }
     }
   }
 
@@ -67,17 +75,20 @@ class QueryWriter {
   }
 
   /// Writes the function literal that turns a "QueryRow" into the desired
-  /// custom return type of a select statement.
+  /// custom return type of a query.
   void _writeMappingLambda() {
-    if (_select.resultSet.singleColumn) {
-      final column = _select.resultSet.columns.single;
+    final resultSet = query.resultSet;
+    assert(resultSet != null);
+
+    if (resultSet.singleColumn) {
+      final column = resultSet.columns.single;
       _buffer.write('(QueryRow row) => '
           '${readingCode(column, scope.generationOptions)}');
-    } else if (_select.resultSet.matchingTable != null) {
+    } else if (resultSet.matchingTable != null) {
       // note that, even if the result set has a matching table, we can't just
       // use the mapFromRow() function of that table - the column names might
       // be different!
-      final match = _select.resultSet.matchingTable;
+      final match = resultSet.matchingTable;
       final table = match.table;
 
       if (match.effectivelyNoAlias) {
@@ -98,19 +109,19 @@ class QueryWriter {
         _buffer.write('})');
       }
     } else {
-      _buffer.write('(QueryRow row) { return ${_select.resultClassName}(');
+      _buffer.write('(QueryRow row) { return ${query.resultClassName}(');
 
       if (options.rawResultSetData) {
         _buffer.write('row: row,\n');
       }
 
-      for (final column in _select.resultSet.columns) {
-        final fieldName = _select.resultSet.dartNameFor(column);
+      for (final column in resultSet.columns) {
+        final fieldName = resultSet.dartNameFor(column);
         _buffer.write(
             '$fieldName: ${readingCode(column, scope.generationOptions)},');
       }
-      for (final nested in _select.resultSet.nestedResults) {
-        final prefix = _select.resultSet.nestedPrefixFor(nested);
+      for (final nested in resultSet.nestedResults) {
+        final prefix = resultSet.nestedPrefixFor(nested);
         if (prefix == null) continue;
 
         final fieldName = nested.dartFieldName;
@@ -127,10 +138,13 @@ class QueryWriter {
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
   static String readingCode(ResultColumn column, GenerationOptions options) {
-    final readMethod = readFromMethods[column.type];
+    var rawDartType = dartTypeNames[column.type];
+    if (column.nullable && options.nnbd) {
+      rawDartType = '$rawDartType?';
+    }
 
     final dartLiteral = asDartLiteral(column.name);
-    var code = 'row.$readMethod($dartLiteral)';
+    var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
       final needsAssert = !column.nullable && options.nnbd;
@@ -203,6 +217,20 @@ class QueryWriter {
     _buffer.write(').watch();\n}\n');
   }
 
+  void _writeUpdatingQueryWithReturning() {
+    final type = query.resultTypeCode(scope.generationOptions);
+    _buffer.write('Future<List<$type>> ${query.name}(');
+    _writeParameters();
+    _buffer.write(') {\n');
+
+    _writeExpandedDeclarations();
+    _buffer.write('return customWriteReturning(${_queryCode()},');
+    _writeCommonUpdateParameters();
+    _buffer.write(').then((rows) => rows.map(');
+    _writeMappingLambda();
+    _buffer.write(').toList());\n}');
+  }
+
   void _writeUpdatingQuery() {
     /*
       Future<int> test() {
@@ -217,18 +245,15 @@ class QueryWriter {
 
     _writeExpandedDeclarations();
     _buffer.write('return $implName(${_queryCode()},');
+    _writeCommonUpdateParameters();
+    _buffer.write(',);\n}\n');
+  }
 
+  void _writeCommonUpdateParameters() {
     _writeVariables();
     _buffer.write(',');
     _writeUpdates();
-
-    if (_update.isOnlyDelete) {
-      _buffer.write(', updateKind: UpdateKind.delete');
-    } else if (_update.isOnlyUpdate) {
-      _buffer.write(', updateKind: UpdateKind.update');
-    }
-
-    _buffer.write(',);\n}\n');
+    _writeUpdateKind();
   }
 
   void _writeParameters() {
@@ -324,8 +349,20 @@ class QueryWriter {
 
   void _writeExpandedDeclarations() {
     var indexCounterWasDeclared = false;
-    final needsIndexCounter = query.variables.any((v) => v.isArray);
+    var needsIndexCounter = false;
     var highestIndexBeforeArray = 0;
+
+    for (final variable in query.variables) {
+      // Variables use an explicit index, we need to know the start index at
+      // runtime (can be dynamic when placeholders or other arrays appear before
+      // this one)
+      if (variable.isArray) {
+        needsIndexCounter = true;
+        break;
+      }
+
+      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
+    }
 
     void _writeIndexCounterIfNeeded() {
       if (indexCounterWasDeclared || !needsIndexCounter) {
@@ -367,10 +404,6 @@ class QueryWriter {
 
           // increase highest index for the next expanded element
           _increaseIndexCounter('${element.dartParameterName}.length');
-        }
-
-        if (!indexCounterWasDeclared) {
-          highestIndexBeforeArray = max(highestIndexBeforeArray, element.index);
         }
       } else if (element is FoundDartPlaceholder) {
         _writeIndexCounterIfNeeded();
@@ -554,5 +587,13 @@ class QueryWriter {
   void _writeUpdates() {
     final from = _update.updates.map((t) => t.table.dbGetterName).join(', ');
     _buffer..write('updates: {')..write(from)..write('}');
+  }
+
+  void _writeUpdateKind() {
+    if (_update.isOnlyDelete) {
+      _buffer.write(', updateKind: UpdateKind.delete');
+    } else if (_update.isOnlyUpdate) {
+      _buffer.write(', updateKind: UpdateKind.update');
+    }
   }
 }

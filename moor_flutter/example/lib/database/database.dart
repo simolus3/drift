@@ -126,7 +126,7 @@ class Database extends _$Database {
       return rows.map((row) {
         return EntryWithCategory(
           row.readTable(todos),
-          row.readTable(categories),
+          row.readTableOrNull(categories),
         );
       }).toList();
     });

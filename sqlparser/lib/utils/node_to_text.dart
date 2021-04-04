@@ -505,6 +505,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _keyword(TokenType.delete);
     _from(e.from);
     _where(e.where);
+    visitNullable(e.returning, arg);
   }
 
   @override
@@ -649,7 +650,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _identifier(e.name);
     _symbol('(');
     visit(e.parameters, arg);
-    _symbol(')');
+    _symbol(')', spaceAfter: true);
   }
 
   @override
@@ -703,6 +704,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
         InsertMode.insertOrFail: TokenType.fail,
         InsertMode.insertOrIgnore: TokenType.ignore,
       }[mode]!);
+      visitNullable(e.returning, arg);
     }
 
     _keyword(TokenType.into);
@@ -715,7 +717,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visit(e.source, arg);
-    visitNullable(e.upsert, arg);
+    visitNullable(e.returning, arg);
   }
 
   @override
@@ -1179,6 +1181,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _join(e.set, ',');
     _from(e.from);
     _where(e.where);
+    visitNullable(e.returning, arg);
   }
 
   @override

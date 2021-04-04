@@ -1,7 +1,3 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
-part of 'custom_tables.dart';
-
 // **************************************************************************
 // MoorGenerator
 // **************************************************************************
@@ -12,11 +8,13 @@ class Config extends DataClass implements Insertable<Config> {
   final String? configValue;
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
+
   Config(
       {required this.configKey,
       this.configValue,
       this.syncState,
       this.syncStateImplicit});
+
   factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -34,6 +32,7 @@ class Config extends DataClass implements Insertable<Config> {
               data['${effectivePrefix}sync_state_implicit'])),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -79,10 +78,12 @@ class Config extends DataClass implements Insertable<Config> {
           serializer.fromJson<SyncType?>(json['sync_state_implicit']),
     );
   }
+
   factory Config.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       Config.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -107,6 +108,7 @@ class Config extends DataClass implements Insertable<Config> {
             ? syncStateImplicit.value
             : this.syncStateImplicit,
       );
+
   @override
   String toString() {
     return (StringBuffer('Config(')
@@ -123,6 +125,7 @@ class Config extends DataClass implements Insertable<Config> {
       configKey.hashCode,
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -138,18 +141,21 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   final Value<String?> configValue;
   final Value<SyncType?> syncState;
   final Value<SyncType?> syncStateImplicit;
+
   const ConfigCompanion({
     this.configKey = const Value.absent(),
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
     this.syncStateImplicit = const Value.absent(),
   });
+
   ConfigCompanion.insert({
     required String configKey,
     this.configValue = const Value.absent(),
     this.syncState = const Value.absent(),
     this.syncStateImplicit = const Value.absent(),
   }) : configKey = Value(configKey);
+
   static Insertable<Config> custom({
     Expression<String>? configKey,
     Expression<String?>? configValue,
@@ -213,9 +219,12 @@ class ConfigCompanion extends UpdateCompanion<Config> {
 class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   ConfigTable(this._db, [this._alias]);
+
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedTextColumn configKey = _constructConfigKey();
+
   GeneratedTextColumn _constructConfigKey() {
     return GeneratedTextColumn('config_key', $tableName, false,
         $customConstraints: 'not null primary key');
@@ -224,6 +233,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
   late final GeneratedTextColumn configValue = _constructConfigValue();
+
   GeneratedTextColumn _constructConfigValue() {
     return GeneratedTextColumn('config_value', $tableName, true,
         $customConstraints: '');
@@ -231,6 +241,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
   late final GeneratedIntColumn syncState = _constructSyncState();
+
   GeneratedIntColumn _constructSyncState() {
     return GeneratedIntColumn('sync_state', $tableName, true,
         $customConstraints: '');
@@ -240,6 +251,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       const VerificationMeta('syncStateImplicit');
   late final GeneratedIntColumn syncStateImplicit =
       _constructSyncStateImplicit();
+
   GeneratedIntColumn _constructSyncStateImplicit() {
     return GeneratedIntColumn('sync_state_implicit', $tableName, true,
         $customConstraints: '');
@@ -248,12 +260,15 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
+
   @override
   ConfigTable get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'config';
   @override
   final String actualTableName = 'config';
+
   @override
   VerificationContext validateIntegrity(Insertable<Config> instance,
       {bool isInserting = false}) {
@@ -278,6 +293,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {configKey};
+
   @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -292,6 +308,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
   static TypeConverter<SyncType?, int> $converter1 =
       const EnumIndexConverter<SyncType>(SyncType.values);
+
   @override
   bool get dontWriteConstraints => true;
 }
@@ -299,7 +316,9 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 class WithDefault extends DataClass implements Insertable<WithDefault> {
   final String? a;
   final int? b;
+
   WithDefault({this.a, this.b});
+
   factory WithDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -310,6 +329,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
       b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b']),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -337,11 +357,13 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
       b: serializer.fromJson<int?>(json['b']),
     );
   }
+
   factory WithDefault.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       WithDefault.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -358,6 +380,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
         a: a.present ? a.value : this.a,
         b: b.present ? b.value : this.b,
       );
+
   @override
   String toString() {
     return (StringBuffer('WithDefault(')
@@ -369,6 +392,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
 
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, b.hashCode));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -378,14 +402,17 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
 class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   final Value<String?> a;
   final Value<int?> b;
+
   const WithDefaultsCompanion({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
   });
+
   WithDefaultsCompanion.insert({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
   });
+
   static Insertable<WithDefault> custom({
     Expression<String?>? a,
     Expression<int?>? b,
@@ -428,9 +455,12 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
 class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   WithDefaults(this._db, [this._alias]);
+
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedTextColumn a = _constructA();
+
   GeneratedTextColumn _constructA() {
     return GeneratedTextColumn('a', $tableName, true,
         $customConstraints: 'DEFAULT \'something\'',
@@ -439,6 +469,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
 
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedIntColumn b = _constructB();
+
   GeneratedIntColumn _constructB() {
     return GeneratedIntColumn('b', $tableName, true,
         $customConstraints: 'UNIQUE');
@@ -446,12 +477,15 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
 
   @override
   List<GeneratedColumn> get $columns => [a, b];
+
   @override
   WithDefaults get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'with_defaults';
   @override
   final String actualTableName = 'with_defaults';
+
   @override
   VerificationContext validateIntegrity(Insertable<WithDefault> instance,
       {bool isInserting = false}) {
@@ -468,6 +502,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+
   @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -485,7 +520,9 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
 
 class NoId extends DataClass implements Insertable<NoId> {
   final Uint8List payload;
+
   NoId({required this.payload});
+
   factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -495,6 +532,7 @@ class NoId extends DataClass implements Insertable<NoId> {
           .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -515,10 +553,12 @@ class NoId extends DataClass implements Insertable<NoId> {
       payload: serializer.fromJson<Uint8List>(json['payload']),
     );
   }
+
   factory NoId.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -530,6 +570,7 @@ class NoId extends DataClass implements Insertable<NoId> {
   NoId copyWith({Uint8List? payload}) => NoId(
         payload: payload ?? this.payload,
       );
+
   @override
   String toString() {
     return (StringBuffer('NoId(')..write('payload: $payload')..write(')'))
@@ -538,6 +579,7 @@ class NoId extends DataClass implements Insertable<NoId> {
 
   @override
   int get hashCode => $mrjf(payload.hashCode);
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -546,12 +588,15 @@ class NoId extends DataClass implements Insertable<NoId> {
 
 class NoIdsCompanion extends UpdateCompanion<NoId> {
   final Value<Uint8List> payload;
+
   const NoIdsCompanion({
     this.payload = const Value.absent(),
   });
+
   NoIdsCompanion.insert({
     required Uint8List payload,
   }) : payload = Value(payload);
+
   static Insertable<NoId> custom({
     Expression<Uint8List>? payload,
   }) {
@@ -587,9 +632,12 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
 class NoIds extends Table with TableInfo<NoIds, NoId> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   NoIds(this._db, [this._alias]);
+
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedBlobColumn payload = _constructPayload();
+
   GeneratedBlobColumn _constructPayload() {
     return GeneratedBlobColumn('payload', $tableName, false,
         $customConstraints: 'NOT NULL PRIMARY KEY');
@@ -597,12 +645,15 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
 
   @override
   List<GeneratedColumn> get $columns => [payload];
+
   @override
   NoIds get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'no_ids';
   @override
   final String actualTableName = 'no_ids';
+
   @override
   VerificationContext validateIntegrity(Insertable<NoId> instance,
       {bool isInserting = false}) {
@@ -619,6 +670,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {payload};
+
   @override
   NoId map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -632,6 +684,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
 
   @override
   bool get withoutRowId => true;
+
   @override
   bool get dontWriteConstraints => true;
 }
@@ -640,7 +693,9 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   final String? a;
   final int b;
   final double? c;
+
   WithConstraint({this.a, required this.b, this.c});
+
   factory WithConstraint.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
@@ -654,6 +709,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       c: doubleType.mapFromDatabaseResponse(data['${effectivePrefix}c']),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -684,11 +740,13 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       c: serializer.fromJson<double?>(json['c']),
     );
   }
+
   factory WithConstraint.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       WithConstraint.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -708,6 +766,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
         b: b ?? this.b,
         c: c.present ? c.value : this.c,
       );
+
   @override
   String toString() {
     return (StringBuffer('WithConstraint(')
@@ -720,6 +779,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
 
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -733,16 +793,19 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
   final Value<String?> a;
   final Value<int> b;
   final Value<double?> c;
+
   const WithConstraintsCompanion({
     this.a = const Value.absent(),
     this.b = const Value.absent(),
     this.c = const Value.absent(),
   });
+
   WithConstraintsCompanion.insert({
     this.a = const Value.absent(),
     required int b,
     this.c = const Value.absent(),
   }) : b = Value(b);
+
   static Insertable<WithConstraint> custom({
     Expression<String?>? a,
     Expression<int>? b,
@@ -794,15 +857,19 @@ class WithConstraints extends Table
     with TableInfo<WithConstraints, WithConstraint> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   WithConstraints(this._db, [this._alias]);
+
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedTextColumn a = _constructA();
+
   GeneratedTextColumn _constructA() {
     return GeneratedTextColumn('a', $tableName, true, $customConstraints: '');
   }
 
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedIntColumn b = _constructB();
+
   GeneratedIntColumn _constructB() {
     return GeneratedIntColumn('b', $tableName, false,
         $customConstraints: 'NOT NULL');
@@ -810,18 +877,22 @@ class WithConstraints extends Table
 
   final VerificationMeta _cMeta = const VerificationMeta('c');
   late final GeneratedRealColumn c = _constructC();
+
   GeneratedRealColumn _constructC() {
     return GeneratedRealColumn('c', $tableName, true, $customConstraints: '');
   }
 
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
+
   @override
   WithConstraints get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'with_constraints';
   @override
   final String actualTableName = 'with_constraints';
+
   @override
   VerificationContext validateIntegrity(Insertable<WithConstraint> instance,
       {bool isInserting = false}) {
@@ -843,6 +914,7 @@ class WithConstraints extends Table
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -857,6 +929,7 @@ class WithConstraints extends Table
   @override
   List<String> get customConstraints =>
       const ['FOREIGN KEY (a, b) REFERENCES with_defaults (a, b)'];
+
   @override
   bool get dontWriteConstraints => true;
 }
@@ -866,8 +939,10 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   final String? sometext;
   final bool? isInserting;
   final DateTime? somedate;
+
   MytableData(
       {required this.someid, this.sometext, this.isInserting, this.somedate});
+
   factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -886,6 +961,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
           .mapFromDatabaseResponse(data['${effectivePrefix}somedate']),
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -927,11 +1003,13 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       somedate: serializer.fromJson<DateTime?>(json['somedate']),
     );
   }
+
   factory MytableData.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       MytableData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -954,6 +1032,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
         isInserting: isInserting.present ? isInserting.value : this.isInserting,
         somedate: somedate.present ? somedate.value : this.somedate,
       );
+
   @override
   String toString() {
     return (StringBuffer('MytableData(')
@@ -970,6 +1049,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       someid.hashCode,
       $mrjc(
           sometext.hashCode, $mrjc(isInserting.hashCode, somedate.hashCode))));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -985,18 +1065,21 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   final Value<String?> sometext;
   final Value<bool?> isInserting;
   final Value<DateTime?> somedate;
+
   const MytableCompanion({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
     this.isInserting = const Value.absent(),
     this.somedate = const Value.absent(),
   });
+
   MytableCompanion.insert({
     this.someid = const Value.absent(),
     this.sometext = const Value.absent(),
     this.isInserting = const Value.absent(),
     this.somedate = const Value.absent(),
   });
+
   static Insertable<MytableData> custom({
     Expression<int>? someid,
     Expression<String?>? sometext,
@@ -1057,9 +1140,12 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
 class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   Mytable(this._db, [this._alias]);
+
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedIntColumn someid = _constructSomeid();
+
   GeneratedIntColumn _constructSomeid() {
     return GeneratedIntColumn('someid', $tableName, false,
         $customConstraints: 'NOT NULL');
@@ -1067,6 +1153,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
   late final GeneratedTextColumn sometext = _constructSometext();
+
   GeneratedTextColumn _constructSometext() {
     return GeneratedTextColumn('sometext', $tableName, true,
         $customConstraints: '');
@@ -1075,6 +1162,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final VerificationMeta _isInsertingMeta =
       const VerificationMeta('isInserting');
   late final GeneratedBoolColumn isInserting = _constructIsInserting();
+
   GeneratedBoolColumn _constructIsInserting() {
     return GeneratedBoolColumn('is_inserting', $tableName, true,
         $customConstraints: '');
@@ -1082,6 +1170,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
   late final GeneratedDateTimeColumn somedate = _constructSomedate();
+
   GeneratedDateTimeColumn _constructSomedate() {
     return GeneratedDateTimeColumn('somedate', $tableName, true,
         $customConstraints: '');
@@ -1090,12 +1179,15 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   @override
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
+
   @override
   Mytable get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'mytable';
   @override
   final String actualTableName = 'mytable';
+
   @override
   VerificationContext validateIntegrity(Insertable<MytableData> instance,
       {bool isInserting = false}) {
@@ -1125,6 +1217,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {someid};
+
   @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -1138,6 +1231,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   @override
   List<String> get customConstraints => const ['PRIMARY KEY (someid DESC)'];
+
   @override
   bool get dontWriteConstraints => true;
 }
@@ -1146,7 +1240,9 @@ class EMail extends DataClass implements Insertable<EMail> {
   final String sender;
   final String title;
   final String body;
+
   EMail({required this.sender, required this.title, required this.body});
+
   factory EMail.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -1159,6 +1255,7 @@ class EMail extends DataClass implements Insertable<EMail> {
       body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1185,10 +1282,12 @@ class EMail extends DataClass implements Insertable<EMail> {
       body: serializer.fromJson<String>(json['body']),
     );
   }
+
   factory EMail.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       EMail.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -1204,6 +1303,7 @@ class EMail extends DataClass implements Insertable<EMail> {
         title: title ?? this.title,
         body: body ?? this.body,
       );
+
   @override
   String toString() {
     return (StringBuffer('EMail(')
@@ -1217,6 +1317,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   @override
   int get hashCode =>
       $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1230,11 +1331,13 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   final Value<String> sender;
   final Value<String> title;
   final Value<String> body;
+
   const EmailCompanion({
     this.sender = const Value.absent(),
     this.title = const Value.absent(),
     this.body = const Value.absent(),
   });
+
   EmailCompanion.insert({
     required String sender,
     required String title,
@@ -1242,6 +1345,7 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   })   : sender = Value(sender),
         title = Value(title),
         body = Value(body);
+
   static Insertable<EMail> custom({
     Expression<String>? sender,
     Expression<String>? title,
@@ -1293,9 +1397,12 @@ class Email extends Table
     with TableInfo<Email, EMail>, VirtualTableInfo<Email, EMail> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   Email(this._db, [this._alias]);
+
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedTextColumn sender = _constructSender();
+
   GeneratedTextColumn _constructSender() {
     return GeneratedTextColumn('sender', $tableName, false,
         $customConstraints: '');
@@ -1303,6 +1410,7 @@ class Email extends Table
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedTextColumn title = _constructTitle();
+
   GeneratedTextColumn _constructTitle() {
     return GeneratedTextColumn('title', $tableName, false,
         $customConstraints: '');
@@ -1310,6 +1418,7 @@ class Email extends Table
 
   final VerificationMeta _bodyMeta = const VerificationMeta('body');
   late final GeneratedTextColumn body = _constructBody();
+
   GeneratedTextColumn _constructBody() {
     return GeneratedTextColumn('body', $tableName, false,
         $customConstraints: '');
@@ -1317,12 +1426,15 @@ class Email extends Table
 
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
+
   @override
   Email get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'email';
   @override
   final String actualTableName = 'email';
+
   @override
   VerificationContext validateIntegrity(Insertable<EMail> instance,
       {bool isInserting = false}) {
@@ -1351,6 +1463,7 @@ class Email extends Table
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+
   @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -1364,6 +1477,7 @@ class Email extends Table
 
   @override
   bool get dontWriteConstraints => true;
+
   @override
   String get moduleAndArgs => 'fts5(sender, title, body)';
 }
@@ -1371,7 +1485,9 @@ class Email extends Table
 class WeirdData extends DataClass implements Insertable<WeirdData> {
   final int sqlClass;
   final String textColumn;
+
   WeirdData({required this.sqlClass, required this.textColumn});
+
   factory WeirdData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -1384,6 +1500,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
     );
   }
+
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1407,11 +1524,13 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
       textColumn: serializer.fromJson<String>(json['text']),
     );
   }
+
   factory WeirdData.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       WeirdData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
+
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
@@ -1425,6 +1544,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
         sqlClass: sqlClass ?? this.sqlClass,
         textColumn: textColumn ?? this.textColumn,
       );
+
   @override
   String toString() {
     return (StringBuffer('WeirdData(')
@@ -1436,6 +1556,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
 
   @override
   int get hashCode => $mrjf($mrjc(sqlClass.hashCode, textColumn.hashCode));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1447,15 +1568,18 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
 class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   final Value<int> sqlClass;
   final Value<String> textColumn;
+
   const WeirdTableCompanion({
     this.sqlClass = const Value.absent(),
     this.textColumn = const Value.absent(),
   });
+
   WeirdTableCompanion.insert({
     required int sqlClass,
     required String textColumn,
   })   : sqlClass = Value(sqlClass),
         textColumn = Value(textColumn);
+
   static Insertable<WeirdData> custom({
     Expression<int>? sqlClass,
     Expression<String>? textColumn,
@@ -1499,9 +1623,12 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
 class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   final GeneratedDatabase _db;
   final String? _alias;
+
   WeirdTable(this._db, [this._alias]);
+
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedIntColumn sqlClass = _constructSqlClass();
+
   GeneratedIntColumn _constructSqlClass() {
     return GeneratedIntColumn('class', $tableName, false,
         $customConstraints: 'NOT NULL');
@@ -1509,6 +1636,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
   final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
   late final GeneratedTextColumn textColumn = _constructTextColumn();
+
   GeneratedTextColumn _constructTextColumn() {
     return GeneratedTextColumn('text', $tableName, false,
         $customConstraints: 'NOT NULL');
@@ -1516,12 +1644,15 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
   @override
   List<GeneratedColumn> get $columns => [sqlClass, textColumn];
+
   @override
   WeirdTable get asDslTable => this;
+
   @override
   String get $tableName => _alias ?? 'Expression';
   @override
   final String actualTableName = 'Expression';
+
   @override
   VerificationContext validateIntegrity(Insertable<WeirdData> instance,
       {bool isInserting = false}) {
@@ -1544,6 +1675,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -1561,6 +1693,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
+
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
   late final ConfigTable config = ConfigTable(this);
   late final Index valueIdx = Index('value_idx',
@@ -1576,6 +1709,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Mytable mytable = Mytable(this);
   late final Email email = Email(this);
   late final WeirdTable weirdTable = WeirdTable(this);
+
   Selectable<Config> readConfig(String var1) {
     return customSelect(
         'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?',
@@ -1618,17 +1752,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map(config.mapFromRow);
   }
 
-  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {Expression<bool> pred = const CustomExpression('(TRUE)')}) {
+  Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2) {
     var $arrayStartIndex = 2;
-    final generatedpred = $write(pred);
-    $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ? OR sync_state_implicit IN ($expandedvar2))',
+        'SELECT config_key FROM config WHERE sync_state = ? OR sync_state_implicit IN ($expandedvar2)',
         variables: [
-          ...generatedpred.introducedVariables,
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           for (var $ in var2)
             Variable<int?>(ConfigTable.$converter1.mapToSql($))
@@ -1733,10 +1863,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map((QueryRow row) => row.read<int?>('MAX(oid)'));
   }
 
-  Future<List<Config>> addConfig(
+  Future<List<QueryRow>> addConfig(
       String var1, String? var2, SyncType? var3, SyncType? var4) {
-    return customWriteReturning(
-        'INSERT INTO config VALUES (?, ?, ?, ?) RETURNING *',
+    return customWriteReturning('INSERT INTO config VALUES (?, ?, ?, ?)',
         variables: [
           Variable<String>(var1),
           Variable<String?>(var2),
@@ -1745,7 +1874,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
         updates: {
           config
-        }).then((rows) => rows.map(config.mapFromRow).toList());
+        }).then(config.mapFromRow);
   }
 
   Future<int> writeConfig({required String key, String? value}) {
@@ -1758,6 +1887,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
+
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         config,
@@ -1773,6 +1903,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         email,
         weirdTable
       ];
+
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
@@ -1789,20 +1920,25 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
 class JsonResult extends CustomResultSet {
   final String key;
+
   final String? value;
+
   JsonResult({
     required QueryRow row,
     required this.key,
     this.value,
   }) : super(row);
+
   @override
   int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is JsonResult &&
           other.key == this.key &&
           other.value == this.value);
+
   @override
   String toString() {
     return (StringBuffer('JsonResult(')
@@ -1815,16 +1951,21 @@ class JsonResult extends CustomResultSet {
 
 class MultipleResult extends CustomResultSet {
   final String? a;
+
   final int? b;
+
   final WithConstraint? c;
+
   MultipleResult({
     required QueryRow row,
     this.a,
     this.b,
     this.c,
   }) : super(row);
+
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1832,6 +1973,7 @@ class MultipleResult extends CustomResultSet {
           other.a == this.a &&
           other.b == this.b &&
           other.c == this.c);
+
   @override
   String toString() {
     return (StringBuffer('MultipleResult(')
@@ -1845,10 +1987,15 @@ class MultipleResult extends CustomResultSet {
 
 class ReadRowIdResult extends CustomResultSet {
   final int rowid;
+
   final String configKey;
+
   final String? configValue;
+
   final SyncType? syncState;
+
   final SyncType? syncStateImplicit;
+
   ReadRowIdResult({
     required QueryRow row,
     required this.rowid,
@@ -1857,6 +2004,7 @@ class ReadRowIdResult extends CustomResultSet {
     this.syncState,
     this.syncStateImplicit,
   }) : super(row);
+
   @override
   int get hashCode => $mrjf($mrjc(
       rowid.hashCode,
@@ -1864,6 +2012,7 @@ class ReadRowIdResult extends CustomResultSet {
           configKey.hashCode,
           $mrjc(configValue.hashCode,
               $mrjc(syncState.hashCode, syncStateImplicit.hashCode)))));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1873,6 +2022,7 @@ class ReadRowIdResult extends CustomResultSet {
           other.configValue == this.configValue &&
           other.syncState == this.syncState &&
           other.syncStateImplicit == this.syncStateImplicit);
+
   @override
   String toString() {
     return (StringBuffer('ReadRowIdResult(')
@@ -1888,9 +2038,13 @@ class ReadRowIdResult extends CustomResultSet {
 
 class ReadViewResult extends CustomResultSet {
   final String configKey;
+
   final String? configValue;
+
   final SyncType? syncState;
+
   final SyncType? syncStateImplicit;
+
   ReadViewResult({
     required QueryRow row,
     required this.configKey,
@@ -1898,11 +2052,13 @@ class ReadViewResult extends CustomResultSet {
     this.syncState,
     this.syncStateImplicit,
   }) : super(row);
+
   @override
   int get hashCode => $mrjf($mrjc(
       configKey.hashCode,
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1911,6 +2067,7 @@ class ReadViewResult extends CustomResultSet {
           other.configValue == this.configValue &&
           other.syncState == this.syncState &&
           other.syncStateImplicit == this.syncStateImplicit);
+
   @override
   String toString() {
     return (StringBuffer('ReadViewResult(')

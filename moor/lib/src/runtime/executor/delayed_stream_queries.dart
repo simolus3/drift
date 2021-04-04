@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:moor/src/runtime/api/runtime_api.dart';
 
 import 'stream_queries.dart';
@@ -6,6 +7,7 @@ import 'stream_queries.dart';
 /// available delegate.
 /// This class is internal and should not be exposed to moor users. It's used
 /// through a delayed database connection.
+@internal
 class DelayedStreamQueryStore implements StreamQueryStore {
   late Future<StreamQueryStore> _delegate;
   StreamQueryStore? _resolved;
@@ -35,7 +37,8 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   }
 
   @override
-  Stream<T> registerStream<T>(QueryStreamFetcher<T> fetcher) {
+  Stream<List<Map<String, Object?>>> registerStream(
+      QueryStreamFetcher fetcher) {
     return Stream.fromFuture(_delegate)
         .asyncExpand((resolved) => resolved.registerStream(fetcher))
         .asBroadcastStream();

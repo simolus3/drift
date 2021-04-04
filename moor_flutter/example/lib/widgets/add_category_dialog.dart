@@ -50,7 +50,8 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
 
   void _addEntry() {
     if (_controller.text.isNotEmpty) {
-      Provider.of<TodoAppBloc>(context).addCategory(_controller.text);
+      Provider.of<TodoAppBloc>(context, listen: false)
+          .addCategory(_controller.text);
       Navigator.of(context).pop();
     }
   }

@@ -1,3 +1,9 @@
+## 4.2.1
+
+- Deprecate `readBool`, `readString`, `readInt`, `readDouble`, `readDateTime`
+  and `readBlob` in `QueryRow`.
+  Use `read` directly (which supports nullable types).
+
 ## 4.2.0
 
 - Fixed subqueries not affecting stream updates

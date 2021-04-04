@@ -227,6 +227,9 @@ void main() {
     await db.typeConverterVar(SyncType.locallyCreated,
         [SyncType.locallyUpdated, SyncType.synchronized]).get();
 
-    verify(mock.runSelect(any, [0, 1, 2]));
+    verify(mock.runSelect(
+        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ? '
+        'OR sync_state_implicit IN (?2, ?3))',
+        [0, 1, 2]));
   });
 }

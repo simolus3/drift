@@ -2,18 +2,20 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/src/utils/start_with_value_transformer.dart';
 import 'package:pedantic/pedantic.dart';
 
-const _listEquality = ListEquality<dynamic>();
+const _listEquality = ListEquality<Object?>();
 
 // This is an internal moor library that's never exported to users.
 // ignore_for_file: public_member_api_docs
 
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
-class QueryStreamFetcher<T> {
+@internal
+class QueryStreamFetcher {
   /// Table updates that will affect this stream.
   ///
   /// If any of these tables changes, the stream must fetch its data again.
@@ -24,7 +26,7 @@ class QueryStreamFetcher<T> {
   final StreamKey? key;
 
   /// Function that asynchronously fetches the latest set of data.
-  final Future<T> Function() fetchData;
+  final Future<List<Map<String, Object?>>> Function() fetchData;
 
   QueryStreamFetcher(
       {required this.readsFrom, this.key, required this.fetchData});
@@ -36,20 +38,16 @@ class QueryStreamFetcher<T> {
 /// As two equal statements always yield the same result when operating on the
 /// same data, this can make streams more efficient as we can return the same
 /// stream for two equivalent queries.
+@internal
 class StreamKey {
   final String sql;
   final List<dynamic> variables;
 
-  /// Used to differentiate between custom streams, which return a [QueryRow],
-  /// and regular streams, which return an instance of a generated data class.
-  final Type returnType;
-
-  StreamKey(this.sql, this.variables, this.returnType);
+  StreamKey(this.sql, this.variables);
 
   @override
   int get hashCode {
-    return (sql.hashCode * 31 + _listEquality.hash(variables)) * 31 +
-        returnType.hashCode;
+    return $mrjf($mrjc(sql.hashCode, _listEquality.hash(variables)));
   }
 
   @override
@@ -57,18 +55,19 @@ class StreamKey {
     return identical(this, other) ||
         (other is StreamKey &&
             other.sql == sql &&
-            _listEquality.equals(other.variables, variables) &&
-            other.returnType == returnType);
+            _listEquality.equals(other.variables, variables));
   }
 }
 
 /// Keeps track of active streams created from [SimpleSelectStatement]s and
 /// updates them when needed.
+@internal
 class StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey?> _keysPendingRemoval = HashSet<StreamKey?>();
 
   bool _isShuttingDown = false;
+
   // we track pending timers since Flutter throws an exception when timers
   // remain after a test run.
   final Set<Completer> _pendingTimers = {};
@@ -84,19 +83,20 @@ class StreamQueryStore {
   StreamQueryStore();
 
   /// Creates a new stream from the select statement.
-  Stream<T> registerStream<T>(QueryStreamFetcher<T> fetcher) {
+  Stream<List<Map<String, Object?>>> registerStream(
+      QueryStreamFetcher fetcher) {
     final key = fetcher.key;
 
     if (key != null) {
       final cached = _activeKeyStreams[key];
       if (cached != null) {
-        return (cached as QueryStream<T>).stream;
+        return cached.stream;
       }
     }
 
     // no cached instance found, create a new stream and register it so later
     // requests with the same key can be cached.
-    final stream = QueryStream<T>(fetcher, this);
+    final stream = QueryStream(fetcher, this);
     // todo this adds the stream to a map, where it will only be removed when
     // somebody listens to it and later calls .cancel(). Failing to do so will
     // cause a memory leak. Is there any way we can work around it? Perhaps a
@@ -180,19 +180,20 @@ class StreamQueryStore {
   }
 }
 
-class QueryStream<T> {
-  final QueryStreamFetcher<T> _fetcher;
+class QueryStream {
+  final QueryStreamFetcher _fetcher;
   final StreamQueryStore _store;
 
-  late final StreamController<T> _controller = StreamController.broadcast(
+  late final StreamController<List<Map<String, Object?>>> _controller =
+      StreamController.broadcast(
     onListen: _onListen,
     onCancel: _onCancel,
   );
   StreamSubscription? _tablesChangedSubscription;
 
-  T? _lastData;
+  List<Map<String, Object?>>? _lastData;
 
-  Stream<T> get stream {
+  Stream<List<Map<String, Object?>>> get stream {
     return _controller.stream.transform(StartWithValueTransformer(_cachedData));
   }
 
@@ -202,7 +203,7 @@ class QueryStream<T> {
 
   /// Called when we have a new listener, makes the stream query behave similar
   /// to an `BehaviorSubject` from rxdart.
-  T? _cachedData() => _lastData;
+  List<Map<String, Object?>>? _cachedData() => _lastData;
 
   void _onListen() {
     _store.markAsOpened(this);
@@ -239,7 +240,7 @@ class QueryStream<T> {
   }
 
   Future<void> fetchAndEmitData() async {
-    T data;
+    List<Map<String, Object?>> data;
 
     try {
       data = await _fetcher.fetchData();
