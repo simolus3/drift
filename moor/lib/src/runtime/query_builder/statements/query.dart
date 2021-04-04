@@ -69,6 +69,23 @@ abstract class Query<T extends Table, D extends DataClass> extends Component {
 }
 
 /// [Selectable] methods for returning multiple results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [get] or [watch] results to the consuming code.
+///
+/// {@template moor_multi_selectable_example}
+/// ```dart
+/// /// Retrieve a page of [Todo]s.
+/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
+///   return select(todos)..limit(pageSize, offset: page - 1);
+/// }
+/// pageOfTodos(1).get();
+/// pageOfTodos(1).watch();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [SingleSelectable] and [SingleOrNullSelectable] for exposing
+/// single value methods.
 abstract class MultiSelectable<T> {
   /// Executes this statement and returns the result.
   Future<List<T>> get();
@@ -80,6 +97,24 @@ abstract class MultiSelectable<T> {
 
 /// [Selectable] methods for returning or streaming single,
 /// non-nullable results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [getSingle] or [watchSingle] results to the consuming code.
+///
+/// {@template moor_single_selectable_example}
+/// ```dart
+/// // Retrieve a todo known to exist.
+/// SingleSelectable<Todo> entryById(int id) {
+///   return (select(todos)..where((t) => t.id.equals(id)));
+/// }
+/// final idGuaranteedToExist = 10;
+/// entryById(idGuaranteedToExist).getSingle();
+/// entryById(idGuaranteedToExist).watchSingle();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [MultiSelectable] for exposing multi-value methods and
+/// [SingleOrNullSelectable] for exposing nullable value methods.
 abstract class SingleSelectable<T> {
   /// Executes this statement, like [Selectable.get], but only returns one
   /// value. the query returns no or too many rows, the returned future will
@@ -118,6 +153,25 @@ abstract class SingleSelectable<T> {
 
 /// [Selectable] methods for returning or streaming single,
 /// nullable results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [getSingleOrNull] or [watchSingleOrNull] result to the
+/// consuming code.
+///
+/// {@template moor_single_or_null_selectable_example}
+///```dart
+/// // Retrieve a todo from an external link that may not be valid.
+/// SingleOrNullSelectable<Todo> todoFromExternalLink(int id) =>
+///   select(todos)..where((t) => t.id.equals(id));
+///
+/// final idFromEmailLink = 100;
+/// todoFromExternalLink(idFromEmailLink).getSingleOrNull();
+/// todoFromExternalLink(idFromEmailLink).watchSingleOrNull();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [MultiSelectable] for exposing multi-value methods and
+/// [SingleSelectable] for exposing non-nullable value methods.
 abstract class SingleOrNullSelectable<T> {
   /// Executes this statement, like [Selectable.get], but only returns one
   /// value. If the result too many values, this method will throw. If no
@@ -143,6 +197,14 @@ abstract class SingleOrNullSelectable<T> {
 
 /// Abstract class for queries which can return one-time values or a stream
 /// of values.
+///
+/// If you want to make your query consumable as either a [Future] or a
+/// [Stream], you can refine your return type using one of Selectable's
+/// base classes:
+///
+/// {@macro moor_multi_selectable_example}
+/// {@macro moor_single_selectable_example}
+/// {@macro moor_single_or_null_selectable_example}
 abstract class Selectable<T>
     implements
         MultiSelectable<T>,
