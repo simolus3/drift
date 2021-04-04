@@ -76,9 +76,8 @@ abstract class Query<T extends Table, D extends DataClass> extends Component {
 /// {@template moor_multi_selectable_example}
 /// ```dart
 /// /// Retrieve a page of [Todo]s.
-/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
-///   return select(todos)..limit(pageSize, offset: page - 1);
-/// }
+/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) =>
+///   select(todos)..limit(pageSize, offset: page);
 /// pageOfTodos(1).get();
 /// pageOfTodos(1).watch();
 /// ```
