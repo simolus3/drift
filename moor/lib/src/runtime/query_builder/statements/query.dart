@@ -68,19 +68,57 @@ abstract class Query<T extends Table, D extends DataClass> extends Component {
   }
 }
 
-/// Abstract class for queries which can return one-time values or a stream
-/// of values.
-abstract class Selectable<T> {
+/// [Selectable] methods for returning multiple results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [get] or [watch] results to the consuming code.
+///
+/// {@template moor_multi_selectable_example}
+/// ```dart
+/// /// Retrieve a page of [Todo]s.
+/// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
+///   return select(todos)..limit(pageSize, offset: page);
+/// }
+/// pageOfTodos(1).get();
+/// pageOfTodos(1).watch();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [SingleSelectable] and [SingleOrNullSelectable] for exposing
+/// single value methods.
+abstract class MultiSelectable<T> {
   /// Executes this statement and returns the result.
   Future<List<T>> get();
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
   Stream<List<T>> watch();
+}
 
-  /// Executes this statement, like [get], but only returns one value. If the
-  /// query returns no or too many rows, the returned future will complete with
-  /// an error.
+/// [Selectable] methods for returning or streaming single,
+/// non-nullable results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [getSingle] or [watchSingle] results to the consuming code.
+///
+/// {@template moor_single_selectable_example}
+/// ```dart
+/// // Retrieve a todo known to exist.
+/// SingleSelectable<Todo> entryById(int id) {
+///   return select(todos)..where((t) => t.id.equals(id));
+/// }
+/// final idGuaranteedToExist = 10;
+/// entryById(idGuaranteedToExist).getSingle();
+/// entryById(idGuaranteedToExist).watchSingle();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [MultiSelectable] for exposing multi-value methods and
+/// [SingleOrNullSelectable] for exposing nullable value methods.
+abstract class SingleSelectable<T> {
+  /// Executes this statement, like [Selectable.get], but only returns one
+  /// value. the query returns no or too many rows, the returned future will
+  /// complete with an error.
   ///
   /// {@template moor_single_query_expl}
   /// Be aware that this operation won't put a limit clause on this statement,
@@ -99,20 +137,96 @@ abstract class Selectable<T> {
   /// clause will only allow one row.
   /// {@endtemplate}
   ///
-  /// See also: [getSingleOrNull], which returns `null` instead of throwing if
-  /// the query completes with no rows.
+  /// See also: [Selectable.getSingleOrNull], which returns `null` instead of
+  /// throwing if the query completes with no rows.
+  Future<T> getSingle();
+
+  /// Creates an auto-updating stream of this statement, similar to
+  /// [Selectable.watch]. However, it is assumed that the query will only emit
+  /// one result, so instead of returning a `Stream<List<T>>`, this returns a
+  /// `Stream<T>`. If, at any point, the query emits no or more than one rows,
+  /// an error will be added to the stream instead.
+  ///
+  /// {@macro moor_single_query_expl}
+  Stream<T> watchSingle();
+}
+
+/// [Selectable] methods for returning or streaming single,
+/// nullable results.
+///
+/// Useful for refining the return type of a query, while still delegating
+/// whether to [getSingleOrNull] or [watchSingleOrNull] result to the
+/// consuming code.
+///
+/// {@template moor_single_or_null_selectable_example}
+///```dart
+/// // Retrieve a todo from an external link that may not be valid.
+/// SingleOrNullSelectable<Todo> entryFromExternalLink(int id) {
+///   return select(todos)..where((t) => t.id.equals(id));
+/// }
+/// final idFromEmailLink = 100;
+/// entryFromExternalLink(idFromEmailLink).getSingleOrNull();
+/// entryFromExternalLink(idFromEmailLink).watchSingleOrNull();
+/// ```
+/// {@endtemplate}
+///
+/// See also: [MultiSelectable] for exposing multi-value methods and
+/// [SingleSelectable] for exposing non-nullable value methods.
+abstract class SingleOrNullSelectable<T> {
+  /// Executes this statement, like [Selectable.get], but only returns one
+  /// value. If the result too many values, this method will throw. If no
+  /// row is returned, `null` will be returned instead.
+  ///
+  /// {@macro moor_single_query_expl}
+  ///
+  /// See also: [Selectable.getSingle], which can be used if the query will
+  /// always evaluate to exactly one row.
+  Future<T?> getSingleOrNull();
+
+  /// Creates an auto-updating stream of this statement, similar to
+  /// [Selectable.watch]. However, it is assumed that the query will only
+  /// emit one result, so instead of returning a `Stream<List<T>>`, this
+  /// returns a `Stream<T?>`. If the query emits more than one row at
+  /// some point, an error will be emitted to the stream instead.
+  /// If the query emits zero rows at some point, `null` will be added
+  /// to the stream instead.
+  ///
+  /// {@macro moor_single_query_expl}
+  Stream<T?> watchSingleOrNull();
+}
+
+/// Abstract class for queries which can return one-time values or a stream
+/// of values.
+///
+/// If you want to make your query consumable as either a [Future] or a
+/// [Stream], you can refine your return type using one of Selectable's
+/// base classes:
+///
+/// {@macro moor_multi_selectable_example}
+/// {@macro moor_single_selectable_example}
+/// {@macro moor_single_or_null_selectable_example}
+abstract class Selectable<T>
+    implements
+        MultiSelectable<T>,
+        SingleSelectable<T>,
+        SingleOrNullSelectable<T> {
+  @override
+  Future<List<T>> get();
+
+  @override
+  Stream<List<T>> watch();
+
+  @override
   Future<T> getSingle() async {
     return (await get()).single;
   }
 
-  /// Executes this statement, like [get], but only returns one value. If the
-  /// result too many values, this method will throw. If no row is returned,
-  /// `null` will be returned instead.
-  ///
-  /// {@macro moor_single_query_expl}
-  ///
-  /// See also: [getSingle], which can be used if the query will never evaluate
-  /// to exactly one row.
+  @override
+  Stream<T> watchSingle() {
+    return watch().transform(singleElements());
+  }
+
+  @override
   Future<T?> getSingleOrNull() async {
     final list = await get();
     final iterator = list.iterator;
@@ -128,25 +242,7 @@ abstract class Selectable<T> {
     return element;
   }
 
-  /// Creates an auto-updating stream of this statement, similar to [watch].
-  /// However, it is assumed that the query will only emit one result, so
-  /// instead of returning a `Stream<List<T>>`, this returns a `Stream<T>`. If,
-  /// at any point, the query emits no or more than one rows, an error will be
-  /// added to the stream instead.
-  ///
-  /// {@macro moor_single_query_expl}
-  Stream<T> watchSingle() {
-    return watch().transform(singleElements());
-  }
-
-  /// Creates an auto-updating stream of this statement, similar to [watch].
-  /// However, it is assumed that the query will only emit one result, so
-  /// instead of returning a `Stream<List<T>>`, this returns a `Stream<T?>`. If
-  /// the query emits more than one row at some point, an error will be emitted
-  /// to the stream instead. If the query emits zero rows at some point, `null`
-  /// will be added to the stream instead.
-  ///
-  /// {@macro moor_single_query_expl}
+  @override
   Stream<T?> watchSingleOrNull() {
     return watch().transform(singleElementsOrNull());
   }
