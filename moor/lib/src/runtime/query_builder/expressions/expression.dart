@@ -86,9 +86,47 @@ abstract class Expression<D> implements FunctionParameter {
     return _InSelectExpression(select, this, true);
   }
 
+  /// A `CASE WHEN` construct using the current expression as a base.
+  ///
+  /// The expression on which [caseMatch] is invoked will be used as a base and
+  /// compared against the keys in [when]. If an equal key is found in the map,
+  /// the expression returned evaluates to the respective value.
+  /// If no matching keys are found in [when], the [orElse] expression is
+  /// evaluated and returned. If no [orElse] expression is provided, `NULL` will
+  /// be returned instead.
+  ///
+  /// For example, consider this expression mapping numerical weekdays to their
+  /// name:
+  ///
+  /// ```dart
+  /// final weekday = myTable.createdOnWeekDay;
+  /// weekday.caseMatch<String>(
+  ///   when: {
+  ///     Constant(1): Constant('Monday'),
+  ///     Constant(2): Constant('Tuesday'),
+  ///     Constant(3): Constant('Wednesday'),
+  ///     Constant(4): Constant('Thursday'),
+  ///     Constant(5): Constant('Friday'),
+  ///     Constant(6): Constant('Saturday'),
+  ///     Constant(7): Constant('Sunday'),
+  ///   },
+  ///   orElse: Constant('(unknown)'),
+  /// );
+  /// ```
+  Expression<T?> caseMatch<T>({
+    required Map<Expression<D>, Expression<T?>> when,
+    Expression<T?>? orElse,
+  }) {
+    if (when.isEmpty) {
+      throw ArgumentError.value(when, 'when', 'Must not be empty');
+    }
+
+    return CaseWhenExpression<T>(this, when.entries.toList(), orElse);
+  }
+
   /// Writes this expression into the [GenerationContext], assuming that there's
   /// an outer expression with [precedence]. If the [Expression.precedence] of
-  /// `this` expression is lower, it will be wrapped in
+  /// `this` expression is lower, it will be wrap}ped in
   ///
   /// See also:
   ///  - [Component.writeInto], which doesn't take any precedence relation into

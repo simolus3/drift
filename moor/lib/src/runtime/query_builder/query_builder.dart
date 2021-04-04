@@ -3,6 +3,7 @@
 
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+
 // hidden because of https://github.com/dart-lang/sdk/issues/39262
 import 'package:moor/moor.dart'
     hide BooleanExpressionOperators, DateTimeExpressions, TableInfoUtils;
@@ -11,12 +12,15 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/types/sql_types.dart';
 import 'package:moor/src/utils/single_transformer.dart';
 
+// New files should not be part of this mega library, which we're trying to
+// split up.
+import 'expressions/case_when.dart';
+
 part 'components/group_by.dart';
 part 'components/join.dart';
 part 'components/limit.dart';
 part 'components/order_by.dart';
 part 'components/where.dart';
-
 part 'expressions/aggregate.dart';
 part 'expressions/algebra.dart';
 part 'expressions/bools.dart';

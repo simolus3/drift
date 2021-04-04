@@ -1,3 +1,7 @@
+## 4.3.0-dev
+
+- Add `CASE WHEN` expressions with the `caseMatch` method on `Expression`
+
 ## 4.2.1
 
 - Deprecate `readBool`, `readString`, `readInt`, `readDouble`, `readDateTime`
