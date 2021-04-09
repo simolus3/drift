@@ -1,5 +1,7 @@
 ## 4.3.0-dev
 
+- Support custom, existing classes for rows! See the `@UseRowClass` annotation
+  and [this page](https://moor.simonbinder.eu/docs/advanced-features/custom_row_classes/) for details.
 - Add `CASE WHEN` expressions with the `caseMatch` method on `Expression`
 
 ## 4.2.1
