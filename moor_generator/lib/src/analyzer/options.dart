@@ -88,6 +88,9 @@ class MoorOptions {
   @JsonKey(name: 'named_parameters', defaultValue: false)
   final bool generateNamedParameters;
 
+  @JsonKey(name: 'named_parameters_always_required', defaultValue: false)
+  final bool namedParametersAlwaysRequired;
+
   @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
   final bool newSqlCodeGeneration;
 
@@ -107,6 +110,7 @@ class MoorOptions {
     this.applyConvertersOnVariables = false,
     this.generateValuesInCopyWith = false,
     this.generateNamedParameters = false,
+    this.namedParametersAlwaysRequired = false,
     this.newSqlCodeGeneration = false,
     this.modules = const [],
     this.sqliteAnalysisOptions,
@@ -127,6 +131,7 @@ class MoorOptions {
     required this.applyConvertersOnVariables,
     required this.generateValuesInCopyWith,
     required this.generateNamedParameters,
+    required this.namedParametersAlwaysRequired,
     required this.newSqlCodeGeneration,
     required this.modules,
     required this.sqliteAnalysisOptions,
