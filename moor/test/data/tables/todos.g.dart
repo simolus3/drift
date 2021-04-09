@@ -1070,105 +1070,7 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData extends DataClass
-    implements Insertable<TableWithoutPKData> {
-  final int notReallyAnId;
-  final double someFloat;
-  final MyCustomObject custom;
-  TableWithoutPKData(
-      {required this.notReallyAnId,
-      required this.someFloat,
-      required this.custom});
-  factory TableWithoutPKData.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final doubleType = db.typeSystem.forDartType<double>();
-    final stringType = db.typeSystem.forDartType<String>();
-    return TableWithoutPKData(
-      notReallyAnId: intType
-          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
-      someFloat: doubleType
-          .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$converter0.mapToDart(stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
-    );
-  }
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['not_really_an_id'] = Variable<int>(notReallyAnId);
-    map['some_float'] = Variable<double>(someFloat);
-    {
-      final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.mapToSql(custom)!);
-    }
-    return map;
-  }
-
-  TableWithoutPKCompanion toCompanion(bool nullToAbsent) {
-    return TableWithoutPKCompanion(
-      notReallyAnId: Value(notReallyAnId),
-      someFloat: Value(someFloat),
-      custom: Value(custom),
-    );
-  }
-
-  factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return TableWithoutPKData(
-      notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
-      someFloat: serializer.fromJson<double>(json['someFloat']),
-      custom: serializer.fromJson<MyCustomObject>(json['custom']),
-    );
-  }
-  factory TableWithoutPKData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TableWithoutPKData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'notReallyAnId': serializer.toJson<int>(notReallyAnId),
-      'someFloat': serializer.toJson<double>(someFloat),
-      'custom': serializer.toJson<MyCustomObject>(custom),
-    };
-  }
-
-  TableWithoutPKData copyWith(
-          {int? notReallyAnId, double? someFloat, MyCustomObject? custom}) =>
-      TableWithoutPKData(
-        notReallyAnId: notReallyAnId ?? this.notReallyAnId,
-        someFloat: someFloat ?? this.someFloat,
-        custom: custom ?? this.custom,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('TableWithoutPKData(')
-          ..write('notReallyAnId: $notReallyAnId, ')
-          ..write('someFloat: $someFloat, ')
-          ..write('custom: $custom')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf($mrjc(
-      notReallyAnId.hashCode, $mrjc(someFloat.hashCode, custom.hashCode)));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is TableWithoutPKData &&
-          other.notReallyAnId == this.notReallyAnId &&
-          other.someFloat == this.someFloat &&
-          other.custom == this.custom);
-}
-
-class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
+class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
   final Value<MyCustomObject> custom;
@@ -1183,7 +1085,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
         someFloat = Value(someFloat);
-  static Insertable<TableWithoutPKData> createCustom({
+  static Insertable<CustomRowClass> createCustom({
     Expression<int>? notReallyAnId,
     Expression<double>? someFloat,
     Expression<MyCustomObject>? custom,
@@ -1234,7 +1136,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
-    with TableInfo<$TableWithoutPKTable, TableWithoutPKData> {
+    with TableInfo<$TableWithoutPKTable, CustomRowClass> {
   final GeneratedDatabase _db;
   final String? _alias;
   $TableWithoutPKTable(this._db, [this._alias]);
@@ -1281,7 +1183,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   final String actualTableName = 'table_without_p_k';
   @override
-  VerificationContext validateIntegrity(Insertable<TableWithoutPKData> instance,
+  VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1306,9 +1208,18 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
-  TableWithoutPKData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TableWithoutPKData.fromData(data, _db, prefix: effectivePrefix);
+    final intType = _db.typeSystem.forDartType<int>();
+    final doubleType = _db.typeSystem.forDartType<double>();
+    final stringType = _db.typeSystem.forDartType<String>();
+    return CustomRowClass(
+      intType
+          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
+      doubleType.mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$converter0.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
+    );
   }
 
   @override

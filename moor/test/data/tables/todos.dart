@@ -58,12 +58,34 @@ class SharedTodos extends Table {
 
 const _uuid = Uuid();
 
+@UseDataClass(CustomRowClass)
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
 
   TextColumn get custom =>
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
+}
+
+class CustomRowClass implements Insertable<CustomRowClass> {
+  final int notReallyAnId;
+  final double anotherName;
+  final MyCustomObject custom;
+
+  final String? notFromDb;
+
+  CustomRowClass(this.notReallyAnId, double someFloat,
+      {required this.custom, this.notFromDb})
+      : anotherName = someFloat; // ignore: prefer_initializing_formals
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    return {
+      'not_really_an_id': Variable<int>(notReallyAnId),
+      'some_float': Variable<double>(anotherName),
+      'custom': Variable<String?>(const CustomConverter().mapToSql(custom))
+    };
+  }
 }
 
 class PureDefaults extends Table {
@@ -77,11 +99,13 @@ class PureDefaults extends Table {
 // example object used for custom mapping
 class MyCustomObject {
   final String data;
+
   MyCustomObject(this.data);
 }
 
 class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
+
   @override
   MyCustomObject? mapToDart(String? fromDb) {
     return fromDb == null ? null : MyCustomObject(fromDb);
@@ -117,6 +141,7 @@ class TodoDb extends _$TodoDb {
   TodoDb([QueryExecutor? e]) : super(e ?? const NullExecutor()) {
     moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
+
   TodoDb.connect(DatabaseConnection connection) : super.connect(connection) {
     moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }

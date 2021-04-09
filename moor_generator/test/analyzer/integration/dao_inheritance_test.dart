@@ -19,7 +19,7 @@ class Products extends Table {
 @UseMoor(tables: [Products], daos: [ProductsDao])
 class MyDatabase {}
 
-abstract class BaseDao<T extends Table, D extends DataClass> 
+abstract class BaseDao<T extends Table, D > 
   extends DatabaseAccessor<MyDatabase> {
   
   final TableInfo<T, D> _table;

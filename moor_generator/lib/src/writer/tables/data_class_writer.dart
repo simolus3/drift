@@ -78,46 +78,18 @@ class DataClassWriter {
       ..write('{${scope.nullableType('String')} prefix}) { \n')
       ..write("final effectivePrefix = prefix ?? '';");
 
-    final dartTypeToResolver = <String, String>{};
-
-    final types = table.columns.map((c) => c.variableTypeName).toSet();
-    for (final usedType in types) {
-      // final intType = db.typeSystem.forDartType<int>();
-      final resolver = '${ReCase(usedType).camelCase}Type';
-      dartTypeToResolver[usedType] = resolver;
-
-      _buffer
-          .write('final $resolver = db.typeSystem.forDartType<$usedType>();\n');
-    }
+    final writer = RowMappingWriter(
+      const [],
+      {for (final column in table.columns) column: column.dartGetterName},
+      table,
+      scope.generationOptions,
+    );
+    writer.prepareVariables(_buffer);
 
     // finally, the mighty constructor invocation:
-    _buffer.write('return $dataClassName(');
-
-    for (final column in table.columns) {
-      // id: intType.mapFromDatabaseResponse(data["id])
-      final getter = column.dartGetterName;
-      final resolver = dartTypeToResolver[column.variableTypeName];
-      final columnName = "'\${effectivePrefix}${column.name.name}'";
-
-      var loadType = '$resolver.mapFromDatabaseResponse(data[$columnName])';
-
-      // run the loaded expression though the custom converter for the final
-      // result.
-      if (column.typeConverter != null) {
-        // stored as a static field
-        final converter = column.typeConverter;
-        final loaded = '${table.tableInfoName}.${converter.fieldName}';
-        loadType = '$loaded.mapToDart($loadType)';
-      }
-
-      if (!column.nullable && scope.generationOptions.nnbd) {
-        _buffer.write('$getter: $loadType!,');
-      } else {
-        _buffer.write('$getter: $loadType,');
-      }
-    }
-
-    _buffer.write(');}\n');
+    _buffer.write('return $dataClassName');
+    writer.writeArguments(_buffer);
+    _buffer.write(';}\n');
   }
 
   void _writeFromJson() {
@@ -308,5 +280,71 @@ class DataClassWriter {
     final fields = table.columns.map((c) => c.dartGetterName).toList();
     const HashCodeWriter().writeHashCode(fields, _buffer);
     _buffer.write(';');
+  }
+}
+
+/// Generates code mapping a row (represented as a `Map`) to positional and
+/// named Dart arguments.
+class RowMappingWriter {
+  final List<MoorColumn> positional;
+  final Map<MoorColumn, String> named;
+  final MoorTable table;
+  final GenerationOptions options;
+
+  final String dbName;
+
+  final Map<String, String> _dartTypeToSqlType = {};
+  Iterable<MoorColumn> get _columns => positional.followedBy(named.keys);
+
+  RowMappingWriter(this.positional, this.named, this.table, this.options,
+      {this.dbName = 'db'});
+
+  void prepareVariables(StringBuffer buffer) {
+    final types = _columns.map((e) => e.variableTypeName).toSet();
+    for (final usedType in types) {
+      // final intType = db.typeSystem.forDartType<int>();
+      final resolver = '${ReCase(usedType).camelCase}Type';
+      _dartTypeToSqlType[usedType] = resolver;
+
+      buffer.write(
+          'final $resolver = $dbName.typeSystem.forDartType<$usedType>();\n');
+    }
+  }
+
+  void writeArguments(StringBuffer buffer) {
+    String readAndMap(MoorColumn column) {
+      final resolver = _dartTypeToSqlType[column.variableTypeName];
+      final columnName = "'\${effectivePrefix}${column.name.name}'";
+
+      var loadType = '$resolver.mapFromDatabaseResponse(data[$columnName])';
+
+      // run the loaded expression though the custom converter for the final
+      // result.
+      if (column.typeConverter != null) {
+        // stored as a static field
+        final converter = column.typeConverter;
+        final loaded = '${table.tableInfoName}.${converter.fieldName}';
+        loadType = '$loaded.mapToDart($loadType)';
+      }
+
+      if (!column.nullable && options.nnbd) {
+        loadType = '$loadType!';
+      }
+
+      return loadType;
+    }
+
+    buffer.write('(');
+
+    for (final column in positional) {
+      buffer..write(readAndMap(column))..write(', ');
+    }
+
+    named.forEach((column, parameterName) {
+      final getter = column.dartGetterName;
+      buffer.write('$getter: ${readAndMap(column)}, ');
+    });
+
+    buffer.write(')');
   }
 }

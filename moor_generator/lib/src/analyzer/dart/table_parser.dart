@@ -12,14 +12,16 @@ class TableParser {
     if (sqlName == null) return null;
 
     final columns = (await _parseColumns(element)).toList();
-
     final primaryKey = await _readPrimaryKey(element, columns);
+
+    final dataClassInfo = _readDataClassInformation(columns, element);
 
     final table = MoorTable(
       fromClass: element,
       columns: columns,
       sqlName: escapeIfNeeded(sqlName),
-      dartTypeName: _readDartTypeName(element),
+      dartTypeName: dataClassInfo.enforcedName,
+      existingRowClass: dataClassInfo.existingClass,
       primaryKey: primaryKey,
       overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
@@ -42,19 +44,57 @@ class TableParser {
     return table;
   }
 
-  String _readDartTypeName(ClassElement element) {
-    final nameAnnotation = element.metadata.singleWhere(
-        (e) => e.computeConstantValue().type.element.name == 'DataClassName',
-        orElse: () => null);
+  _DataClassInformation _readDataClassInformation(
+      List<MoorColumn> columns, ClassElement element) {
+    DartObject dataClassName;
+    DartObject useDataClass;
 
-    if (nameAnnotation == null) {
-      return dataClassNameForClassName(element.name);
-    } else {
-      return nameAnnotation
-          .computeConstantValue()
-          .getField('name')
-          .toStringValue();
+    for (final annotation in element.metadata) {
+      final computed = annotation.computeConstantValue();
+      final annotationClass = computed.type.element.name;
+
+      if (annotationClass == 'DataClassName') {
+        dataClassName = computed;
+      } else if (annotationClass == 'UseDataClass') {
+        useDataClass = computed;
+      }
     }
+
+    if (dataClassName != null && useDataClass != null) {
+      base.step.reportError(ErrorInDartCode(
+        message: "A table can't be annotated with both @DataClassName and "
+            '@UseDataClass',
+        affectedElement: element,
+      ));
+    }
+
+    String name;
+    ClassElement existingClass;
+
+    if (dataClassName != null) {
+      name = dataClassName.getField('name').toStringValue();
+    } else {
+      name = dataClassNameForClassName(element.name);
+    }
+
+    if (useDataClass != null) {
+      final type = useDataClass.getField('type').toTypeValue();
+
+      if (type is InterfaceType) {
+        existingClass = type.element;
+        name = existingClass.name;
+      } else {
+        base.step.reportError(ErrorInDartCode(
+          message: 'The @UseDataClass annotation must be used with a class',
+          affectedElement: element,
+        ));
+      }
+    }
+
+    final verified = existingClass == null
+        ? null
+        : validateExistingClass(columns, existingClass, base.step.errors);
+    return _DataClassInformation(name, verified);
   }
 
   Future<String> _parseTableName(ClassElement element) async {
@@ -175,6 +215,13 @@ class TableParser {
 
     return results.where((c) => c != null);
   }
+}
+
+class _DataClassInformation {
+  final String /*?*/ enforcedName;
+  final ExistingRowClass /*?*/ existingClass;
+
+  _DataClassInformation(this.enforcedName, this.existingClass);
 }
 
 extension on Element {
