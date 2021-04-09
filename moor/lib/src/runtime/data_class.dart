@@ -8,7 +8,7 @@ import 'package:moor/moor.dart';
 /// database.
 /// [D] is the associated data class.
 @optionalTypeArgs
-abstract class Insertable<D extends DataClass> {
+abstract class Insertable<D> {
   /// Converts this object into a map of column names to expressions to insert
   /// or update.
   ///
@@ -57,7 +57,7 @@ abstract class DataClass {
 /// See also:
 /// - the explanation in the changelog for 1.5
 /// - https://github.com/simolus3/moor/issues/25
-abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
+abstract class UpdateCompanion<D> implements Insertable<D> {
   /// Constant constructor so that generated companion classes can be constant.
   const UpdateCompanion();
 
@@ -80,7 +80,7 @@ abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
 /// An [Insertable] implementation based on raw column expressions.
 ///
 /// Mostly used in generated code.
-class RawValuesInsertable<D extends DataClass> implements Insertable<D> {
+class RawValuesInsertable<D> implements Insertable<D> {
   /// A map from column names to a value that should be inserted or updated.
   ///
   /// See also:

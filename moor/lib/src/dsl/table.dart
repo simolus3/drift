@@ -123,6 +123,7 @@ abstract class Table {
 /// you might want to choose a different name, for which this annotation can be
 /// used.
 /// {@template}
+@Target({TargetKind.classType})
 class DataClassName {
   /// The overridden name to use when generating the data class for a table.
   /// {@macro moor_custom_data_class}
@@ -131,4 +132,21 @@ class DataClassName {
   /// Customize the data class name for a given table.
   /// {@macro moor_custom_data_class}
   const DataClassName(this.name);
+}
+
+/// An annotation specifying an existing class to be used as a data class.
+@Target({TargetKind.classType})
+@experimental
+class UseDataClass {
+  /// The existing class
+  ///
+  /// This type must refer to an existing class. All other types, like functions
+  /// or types with arguments, are not allowed.
+  final Type type;
+
+  /// Customize the class used by moor to hold an instance of an annotated
+  /// table.
+  ///
+  /// For details, see the overall documentation on [UseDataClass].
+  const UseDataClass(this.type);
 }

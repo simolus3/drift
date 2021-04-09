@@ -4,7 +4,7 @@ part of '../../query_builder.dart';
 // this is called JoinedSelectStatement for legacy reasons - we also use it
 // when custom expressions are used as result columns. Basically, it stores
 // queries that are more complex than SimpleSelectStatement
-class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
+class JoinedSelectStatement<FirstT extends Table, FirstD>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult>
     implements BaseSelectStatement {

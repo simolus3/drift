@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Represents an `UPDATE` statement in sql.
-class UpdateStatement<T extends Table, D extends DataClass> extends Query<T, D>
+class UpdateStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// Used internally by moor, construct an update statement
   UpdateStatement(DatabaseConnectionUser database, TableInfo<T, D> table)

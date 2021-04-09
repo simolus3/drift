@@ -3,7 +3,7 @@ part of '../query_builder.dart';
 /// Base class for generated classes. [TableDsl] is the type specified by the
 /// user that extends [Table], [D] is the type of the data class
 /// generated from the table.
-mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
+mixin TableInfo<TableDsl extends Table, D> on Table
     implements DatabaseSchemaEntity {
   /// Type system sugar. Implementations are likely to inherit from both
   /// [TableInfo] and [TableDsl] and can thus just return their instance.
@@ -95,8 +95,7 @@ mixin TableInfo<TableDsl extends Table, D extends DataClass> on Table
 
 /// Additional interface for tables in a moor file that have been created with
 /// an `CREATE VIRTUAL TABLE STATEMENT`.
-mixin VirtualTableInfo<TableDsl extends Table, D extends DataClass>
-    on TableInfo<TableDsl, D> {
+mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
   /// Returns the module name and the arguments that were used in the statement
   /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name>
   /// USING <moduleAndArgs>;` can be used to create this table in sql.
@@ -106,8 +105,7 @@ mixin VirtualTableInfo<TableDsl extends Table, D extends DataClass>
 /// Static extension members for generated table classes.
 ///
 /// Most of these are accessed internally by moor or by generated code.
-extension TableInfoUtils<TableDsl extends Table, D extends DataClass>
-    on TableInfo<TableDsl, D> {
+extension TableInfoUtils<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
   /// The table name, optionally suffixed with the alias if one exists. This
   /// can be used in select statements, as it returns something like "users u"
   /// for a table called users that has been aliased as "u".

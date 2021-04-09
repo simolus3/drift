@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// A `DELETE` statement in sql
-class DeleteStatement<T extends Table, D extends DataClass> extends Query<T, D>
+class DeleteStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
   /// This constructor should be called by [DatabaseConnectionUser.delete] for
   /// you.

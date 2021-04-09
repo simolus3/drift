@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Represents an insert statement
-class InsertStatement<T extends Table, D extends DataClass> {
+class InsertStatement<T extends Table, D> {
   /// The database to use then executing this statement
   @protected
   final DatabaseConnectionUser database;
@@ -253,7 +253,7 @@ const _insertKeywords = <InsertMode, String>{
 /// companion when the underlying companion already exists.
 ///
 /// For an example, see [InsertStatement.insert].
-class DoUpdate<T extends Table, D extends DataClass> {
+class DoUpdate<T extends Table, D> {
   final Insertable<D> Function(T old) _creator;
 
   /// An optional list of columns to serve as an "conflict target", which

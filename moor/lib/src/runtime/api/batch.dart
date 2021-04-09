@@ -36,8 +36,7 @@ class Batch {
   ///
   /// See also:
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
-  void insert<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table, Insertable<D> row,
+  void insert<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row,
       {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
@@ -58,7 +57,7 @@ class Batch {
   /// checks.
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
-  void insertAll<T extends Table, D extends DataClass>(
+  void insertAll<T extends Table, D>(
       TableInfo<T, D> table, List<Insertable<D>> rows,
       {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
     for (final row in rows) {
@@ -68,7 +67,7 @@ class Batch {
 
   /// Equivalent of [InsertStatement.insertOnConflictUpdate] for multiple rows
   /// that will be inserted in this batch.
-  void insertAllOnConflictUpdate<T extends Table, D extends DataClass>(
+  void insertAllOnConflictUpdate<T extends Table, D>(
       TableInfo<T, D> table, List<Insertable<D>> rows) {
     for (final row in rows) {
       insert<T, D>(table, row, onConflict: DoUpdate((_) => row));
@@ -80,8 +79,7 @@ class Batch {
   ///
   /// For more details on how updates work in moor, check out
   /// [UpdateStatement.write] or the [documentation with examples](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
-  void update<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table, Insertable<D> row,
+  void update<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row,
       {Expression<bool?> Function(T table)? where}) {
     _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_user, table);
@@ -98,7 +96,7 @@ class Batch {
   /// See also:
   ///  - [UpdateStatement.replace], which is what would be used outside of a
   ///    [Batch].
-  void replace<T extends Table, D extends DataClass>(
+  void replace<T extends Table, D>(
     TableInfo<T, D> table,
     Insertable<D> row,
   ) {
@@ -108,7 +106,7 @@ class Batch {
   }
 
   /// Helper that calls [replace] for all [rows].
-  void replaceAll<T extends Table, D extends DataClass>(
+  void replaceAll<T extends Table, D>(
       TableInfo<T, D> table, List<Insertable<D>> rows) {
     for (final row in rows) {
       replace(table, row);
@@ -120,8 +118,7 @@ class Batch {
   /// See also:
   /// - [DatabaseConnectionUser.delete]
   /// - [DeleteStatement.delete]
-  void delete<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table, Insertable<D> row) {
+  void delete<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row) {
     _addUpdate(table, UpdateKind.delete);
     final stmt = DeleteStatement(_user, table)..whereSamePrimaryKey(row);
     _addContext(stmt.constructQuery());
@@ -131,7 +128,7 @@ class Batch {
   ///
   /// See also:
   ///  - [DatabaseConnectionUser.delete]
-  void deleteWhere<T extends Table, D extends DataClass>(
+  void deleteWhere<T extends Table, D>(
       TableInfo<T, D> table, Expression<bool?> Function(T tbl) filter) {
     _addUpdate(table, UpdateKind.delete);
     final stmt = DeleteStatement(_user, table)..where(filter);
