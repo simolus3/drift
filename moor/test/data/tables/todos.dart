@@ -58,7 +58,7 @@ class SharedTodos extends Table {
 
 const _uuid = Uuid();
 
-@UseDataClass(CustomRowClass)
+@UseRowClass(CustomRowClass)
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();

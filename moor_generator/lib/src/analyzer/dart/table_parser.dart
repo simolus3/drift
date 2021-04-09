@@ -47,7 +47,7 @@ class TableParser {
   _DataClassInformation _readDataClassInformation(
       List<MoorColumn> columns, ClassElement element) {
     DartObject dataClassName;
-    DartObject useDataClass;
+    DartObject useRowClass;
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
@@ -55,12 +55,12 @@ class TableParser {
 
       if (annotationClass == 'DataClassName') {
         dataClassName = computed;
-      } else if (annotationClass == 'UseDataClass') {
-        useDataClass = computed;
+      } else if (annotationClass == 'UseRowClass') {
+        useRowClass = computed;
       }
     }
 
-    if (dataClassName != null && useDataClass != null) {
+    if (dataClassName != null && useRowClass != null) {
       base.step.reportError(ErrorInDartCode(
         message: "A table can't be annotated with both @DataClassName and "
             '@UseDataClass',
@@ -77,8 +77,8 @@ class TableParser {
       name = dataClassNameForClassName(element.name);
     }
 
-    if (useDataClass != null) {
-      final type = useDataClass.getField('type').toTypeValue();
+    if (useRowClass != null) {
+      final type = useRowClass.getField('type').toTypeValue();
 
       if (type is InterfaceType) {
         existingClass = type.element;

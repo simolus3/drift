@@ -137,7 +137,7 @@ class DataClassName {
 /// An annotation specifying an existing class to be used as a data class.
 @Target({TargetKind.classType})
 @experimental
-class UseDataClass {
+class UseRowClass {
   /// The existing class
   ///
   /// This type must refer to an existing class. All other types, like functions
@@ -147,6 +147,6 @@ class UseDataClass {
   /// Customize the class used by moor to hold an instance of an annotated
   /// table.
   ///
-  /// For details, see the overall documentation on [UseDataClass].
-  const UseDataClass(this.type);
+  /// For details, see the overall documentation on [UseRowClass].
+  const UseRowClass(this.type);
 }
