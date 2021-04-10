@@ -63,7 +63,7 @@ class TableParser {
     if (dataClassName != null && useRowClass != null) {
       base.step.reportError(ErrorInDartCode(
         message: "A table can't be annotated with both @DataClassName and "
-            '@UseDataClass',
+            '@UseRowClass',
         affectedElement: element,
       ));
     }
@@ -85,7 +85,7 @@ class TableParser {
         name = existingClass.name;
       } else {
         base.step.reportError(ErrorInDartCode(
-          message: 'The @UseDataClass annotation must be used with a class',
+          message: 'The @UseRowClass annotation must be used with a class',
           affectedElement: element,
         ));
       }
