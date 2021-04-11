@@ -1,4 +1,8 @@
-part of '../ast.dart';
+import '../node.dart';
+import '../statements/statement.dart';
+import '../visitor.dart';
+import 'declared_statement.dart';
+import 'import_statement.dart';
 
 /// Something that can appear as a top-level declaration inside a `.moor` file.
 abstract class PartOfMoorFile implements Statement {}

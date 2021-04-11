@@ -1,4 +1,10 @@
-part of '../ast.dart';
+import '../../reader/tokenizer/token.dart';
+import '../ast.dart' show Variable;
+import '../expressions/expressions.dart';
+import '../node.dart';
+import '../statements/statement.dart';
+import '../visitor.dart';
+import 'moor_file.dart';
 
 /// A declared statement inside a `.moor` file. It consists of an identifier,
 /// followed by a colon and the query to run.
