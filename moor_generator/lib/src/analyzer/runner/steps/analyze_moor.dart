@@ -15,6 +15,17 @@ class AnalyzeMoorStep extends AnalyzingStep {
     final transitiveImports =
         task.crawlImports(parseResult.resolvedImports.values).toList();
 
+    // Check that all imports are valid
+    parseResult.resolvedImports.forEach((node, fileRef) {
+      if (fileRef.type == FileType.other) {
+        reportError(ErrorInMoorFile(
+          span: node.span,
+          message: "Invalid import (the file exists, but couldn't be parsed). "
+              'Is it a part file?',
+        ));
+      }
+    });
+
     final availableTables = _availableTables(transitiveImports)
         .followedBy(parseResult.declaredTables)
         .toList();

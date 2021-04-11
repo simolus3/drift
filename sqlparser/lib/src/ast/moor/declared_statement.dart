@@ -94,6 +94,7 @@ class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
 /// A statement parameter, which appears between brackets after the statement
 /// identifier.
 /// In `selectString(:name AS TEXT): SELECT :name`, `:name AS TEXT` is a
+/// statement parameter.
 abstract class StatementParameter extends AstNode {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

@@ -69,7 +69,11 @@ class _TestBackendTask extends BackendTask {
   @override
   Future<LibraryElement> resolveDart(Uri path) async {
     await backend._ready;
-    return await backend._resolver.libraryFor(AssetId.resolve(path));
+    try {
+      return await backend._resolver.libraryFor(AssetId.resolve(path));
+    } on NonLibraryAssetException catch (_) {
+      throw NotALibraryException(path);
+    }
   }
 
   @override
