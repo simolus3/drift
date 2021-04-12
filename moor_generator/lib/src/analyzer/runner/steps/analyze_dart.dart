@@ -9,7 +9,7 @@ class AnalyzeDartStep extends AnalyzingStep {
     final parseResult = file.currentResult as ParsedDartFile;
 
     for (final accessor in parseResult.dbAccessors) {
-      final transitiveImports = _transitiveImports(accessor.imports);
+      final transitiveImports = task.crawlImports(accessor.imports).toList();
 
       final unsortedEntities = _availableEntities(transitiveImports).toSet();
 

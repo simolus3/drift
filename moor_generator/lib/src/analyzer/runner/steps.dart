@@ -50,13 +50,6 @@ abstract class AnalyzingStep extends Step {
   @override
   final bool isParsing = false;
 
-  List<FoundFile> _transitiveImports(Iterable<FoundFile> directImports) {
-    return task
-        .crawlImports(directImports)
-        .where((import) => import != file)
-        .toList();
-  }
-
   Iterable<MoorSchemaEntity> _availableEntities(List<FoundFile> imports) {
     return imports.expand<MoorSchemaEntity>((file) =>
         file.currentResult?.declaredEntities ?? const Iterable.empty());
