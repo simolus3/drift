@@ -29,4 +29,29 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     expect(resultSet.columns.map((c) => c.type),
         [ColumnType.text, ColumnType.boolean]);
   });
+
+  test('reads REQUIRED syntax', () async {
+    final state = TestState.withContent({
+      'foo|lib/main.moor': ''' 
+bar(REQUIRED ?1 AS TEXT OR NULL, REQUIRED :foo AS BOOLEAN): SELECT ?, :foo;
+      ''',
+    });
+
+    await state.runTask('package:foo/main.moor');
+    final file = state.file('package:foo/main.moor');
+    state.close();
+
+    expect(file.errors.errors, isEmpty);
+    final content = file.currentResult as ParsedMoorFile;
+
+    final query = content.resolvedQueries.single;
+    expect(
+      query.variables,
+      allOf(
+        hasLength(2),
+        everyElement(isA<FoundVariable>()
+            .having((e) => e.isRequired, 'isRequired', isTrue)),
+      ),
+    );
+  });
 }

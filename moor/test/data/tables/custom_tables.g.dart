@@ -1679,7 +1679,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<EMail> searchEmails({String? term}) {
+  Selectable<EMail> searchEmails({required String? term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable<String?>(term)],

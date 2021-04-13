@@ -469,6 +469,8 @@ class FoundVariable extends FoundElement implements HasType {
   /// without having to look at other variables.
   final bool isArray;
 
+  final bool isRequired;
+
   FoundVariable({
     @required this.index,
     @required this.name,
@@ -476,6 +478,7 @@ class FoundVariable extends FoundElement implements HasType {
     @required this.variable,
     this.nullable = false,
     this.isArray = false,
+    this.isRequired = false,
     this.typeConverter,
   }) : assert(variable.resolvedIndex == index);
 

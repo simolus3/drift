@@ -387,6 +387,8 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
           kind: _ParseKind.moorFile);
       testFormat('foo: SELECT * FROM bar WHERE :id < 10;',
           kind: _ParseKind.moorFile);
+      testFormat('foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
+          kind: _ParseKind.moorFile);
       testFormat(r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
           kind: _ParseKind.moorFile);
     });

@@ -852,9 +852,19 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
+      if (e.isRequired) _keyword(TokenType.required);
+
       visit(e.variable, arg);
-      _keyword(TokenType.as);
-      _symbol(e.typeName, spaceBefore: true, spaceAfter: true);
+      final typeName = e.typeName;
+      if (typeName != null) {
+        _keyword(TokenType.as);
+        _symbol(typeName, spaceBefore: true, spaceAfter: true);
+      }
+
+      if (e.orNull) {
+        _keyword(TokenType.or);
+        _keyword(TokenType.$null);
+      }
     } else if (e is DartPlaceholderDefaultValue) {
       _symbol('\$${e.variableName}', spaceAfter: true);
       _symbol('=', spaceBefore: true, spaceAfter: true);

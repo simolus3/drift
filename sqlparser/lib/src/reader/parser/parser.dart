@@ -308,13 +308,19 @@ class Parser {
 
   StatementParameter _statementParameter() {
     final first = _peek;
+    final isRequired = _matchOne(TokenType.required);
     final variable = _variableOrNull();
 
     if (variable != null) {
       // Type hint for a variable
-      final as = _consume(TokenType.as, 'Expected AS followed by a type');
-      final typeNameTokens = _typeName() ?? _error('Expected a type name here');
-      final typeName = typeNameTokens.lexeme;
+      Token? as;
+      String? typeName;
+      if (_matchOne(TokenType.as)) {
+        as = _previous;
+        final typeNameTokens =
+            _typeName() ?? _error('Expected a type name here');
+        typeName = typeNameTokens.lexeme;
+      }
 
       var orNull = false;
       if (_matchOne(TokenType.or)) {
@@ -322,7 +328,8 @@ class Parser {
         orNull = true;
       }
 
-      return VariableTypeHint(variable, typeName, orNull: orNull)
+      return VariableTypeHint(variable, typeName,
+          orNull: orNull, isRequired: isRequired)
         ..as = as
         ..setSpan(first, _previous);
     } else if (_matchOne(TokenType.dollarSignVariable)) {

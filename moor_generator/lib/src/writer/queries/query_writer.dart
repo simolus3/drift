@@ -308,8 +308,14 @@ class QueryWriter {
         final type = optional.dartTypeCode(scope.generationOptions);
 
         // No default value, this element is required if it's not nullable
-        final isNullable = optional is FoundVariable && optional.nullableInDart;
-        final isRequired = !isNullable && defaultCode == null;
+        var isMarkedAsRequired = false;
+        var isNullable = false;
+        if (optional is FoundVariable) {
+          isMarkedAsRequired = optional.isRequired;
+          isNullable = optional.nullableInDart;
+        }
+        final isRequired =
+            (!isNullable || isMarkedAsRequired) && defaultCode == null;
         if (isRequired) {
           _buffer..write(scope.required)..write(' ');
         }

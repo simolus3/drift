@@ -109,12 +109,14 @@ abstract class StatementParameter extends AstNode {
 /// cases in which the resolver doesn't yield acceptable results.
 class VariableTypeHint extends StatementParameter {
   Variable variable;
-  final String typeName;
+  final bool isRequired;
+  final String? typeName;
   final bool orNull;
 
   Token? as;
 
-  VariableTypeHint(this.variable, this.typeName, {this.orNull = false});
+  VariableTypeHint(this.variable, this.typeName,
+      {this.orNull = false, this.isRequired = false});
 
   @override
   Iterable<AstNode> get childNodes => [variable];

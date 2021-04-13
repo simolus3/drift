@@ -1,4 +1,4 @@
-## 0.15.1-dev
+## 0.16.0-dev
 
 - New analysis checks for `RETURNING`: Disallow `table.*` syntax and aggregate expressions
 - Fix resolving columns when `RETURNING` is used in an `UPDATE FROM` statement
