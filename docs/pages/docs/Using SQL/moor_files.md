@@ -97,6 +97,17 @@ In addition to the base type, you can also declare that the type is nullable:
 myQuery(:variable AS TEXT OR NULL): SELECT :variable;
 ```
 
+Finally, you can declare that a variable should be required in Dart when using
+named parameters. To do so, add a `REQUIRED` keyword:
+
+```sql
+myQuery(REQUIRED :variable AS TEXT OR NULL): SELECT :variable;
+```
+
+Note that this only has an effect when the `named_parameters`
+[build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}) is
+enabled. Further, non-nullable variables are required by default.
+
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:
