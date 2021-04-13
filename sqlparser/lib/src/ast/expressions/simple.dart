@@ -87,7 +87,7 @@ class StringComparisonExpression extends Expression {
   }
 
   @override
-  Iterable<AstNode > get childNodes =>
+  Iterable<AstNode> get childNodes =>
       [left, right, if (escape != null) escape!];
 }
 
