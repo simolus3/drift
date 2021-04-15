@@ -114,6 +114,7 @@ class _RemoteQueryExecutor extends _BaseExecutor {
       : super(client, executorId);
 
   Completer<void>? _setSchemaVersion;
+  Future<bool>? _serverIsOpen;
 
   @override
   TransactionExecutor beginTransaction() {
@@ -127,7 +128,8 @@ class _RemoteQueryExecutor extends _BaseExecutor {
       await _setSchemaVersion!.future;
       _setSchemaVersion = null;
     }
-    return client._channel
+
+    return _serverIsOpen ??= client._channel
         .request<bool>(EnsureOpen(user.schemaVersion, _executorId));
   }
 
