@@ -3,6 +3,9 @@
 - Support custom, existing classes for rows! See the `@UseRowClass` annotation
   for details.
 - Add `CASE WHEN` expressions with the `caseMatch` method on `Expression`
+- On supported platforms, cancel pending stream selects when the stream is disposed
+  - `moor_flutter` is supported
+  - `moor/ffi` is supported when used on a background isolate
 
 ## 4.2.1
 

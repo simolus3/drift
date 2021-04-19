@@ -6,6 +6,7 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/types/sql_types.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import '../cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
@@ -58,8 +59,20 @@ abstract class _BaseExecutor extends QueryExecutor {
 
   Future<T> _runRequest<T>(
       StatementMethod method, String sql, List<Object?>? args) {
-    return client._channel
-        .request<T>(ExecuteQuery(method, sql, args ?? const [], _executorId));
+    // fast path: If the operation has already been cancelled, don't bother
+    // sending a request in the first place
+    checkIfCancelled();
+
+    final id = client._channel.newRequestId();
+    // otherwise, send the request now and cancel it later, if that's desired
+    doOnCancellation(() {
+      client._channel.request(RequestCancellation(id));
+    });
+
+    return client._channel.request<T>(
+      ExecuteQuery(method, sql, args ?? const [], _executorId),
+      requestId: id,
+    );
   }
 
   @override
@@ -101,6 +114,7 @@ class _RemoteQueryExecutor extends _BaseExecutor {
       : super(client, executorId);
 
   Completer<void>? _setSchemaVersion;
+  Future<bool>? _serverIsOpen;
 
   @override
   TransactionExecutor beginTransaction() {
@@ -114,7 +128,8 @@ class _RemoteQueryExecutor extends _BaseExecutor {
       await _setSchemaVersion!.future;
       _setSchemaVersion = null;
     }
-    return client._channel
+
+    return _serverIsOpen ??= client._channel
         .request<bool>(EnsureOpen(user.schemaVersion, _executorId));
   }
 

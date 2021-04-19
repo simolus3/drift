@@ -9,6 +9,7 @@ class MoorProtocol {
   static const _tag_Request = 0;
   static const _tag_Response_success = 1;
   static const _tag_Response_error = 2;
+  static const _tag_Response_cancelled = 3;
 
   static const _tag_NoArgsRequest_getTypeSystem = 0;
   static const _tag_NoArgsRequest_terminateAll = 1;
@@ -22,6 +23,7 @@ class MoorProtocol {
   static const _tag_DefaultSqlTypeSystem = 9;
   static const _tag_DirectValue = 10;
   static const _tag_SelectResult = 11;
+  static const _tag_RequestCancellation = 12;
 
   Object? serialize(Message message) {
     if (message is Request) {
@@ -43,6 +45,8 @@ class MoorProtocol {
         message.requestId,
         encodePayload(message.response),
       ];
+    } else if (message is CancelledResponse) {
+      return [_tag_Response_cancelled, message.requestId];
     }
   }
 
@@ -59,6 +63,8 @@ class MoorProtocol {
         return ErrorResponse(id, message[2] as Object, message[3] as String);
       case _tag_Response_success:
         return SuccessResponse(id, decodePayload(message[2]));
+      case _tag_Response_cancelled:
+        return CancelledResponse(id);
     }
 
     throw const FormatException('Unknown tag');
@@ -136,6 +142,8 @@ class MoorProtocol {
         }
         return result;
       }
+    } else if (payload is RequestCancellation) {
+      return [_tag_RequestCancellation, payload.originalRequestId];
     } else {
       return [_tag_DirectValue, payload];
     }
@@ -223,6 +231,8 @@ class MoorProtocol {
           });
         }
         return SelectResult(result);
+      case _tag_RequestCancellation:
+        return RequestCancellation(readInt(1));
       case _tag_DirectValue:
         return encoded[1];
     }
@@ -286,6 +296,17 @@ class ErrorResponse extends Message {
   }
 }
 
+class CancelledResponse extends Message {
+  final int requestId;
+
+  CancelledResponse(this.requestId);
+
+  @override
+  String toString() {
+    return 'Previous request $requestId was cancelled';
+  }
+}
+
 /// A request without further parameters
 enum NoArgsRequest {
   /// Sent from the client to the server. The server will reply with the
@@ -320,6 +341,22 @@ class ExecuteQuery {
       return '$method: $sql with $args (@$executorId)';
     }
     return '$method: $sql with $args';
+  }
+}
+
+/// Requests a previous request to be cancelled.
+///
+/// Whether this is supported or not depends on the server and its internal
+/// state. This request will be immediately be acknowledged with a null
+/// response, which does not indicate whether a cancellation actually happened.
+class RequestCancellation {
+  final int originalRequestId;
+
+  RequestCancellation(this.originalRequestId);
+
+  @override
+  String toString() {
+    return 'Cancel previous request $originalRequestId';
   }
 }
 

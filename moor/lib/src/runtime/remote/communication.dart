@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
+import '../cancellation_zone.dart';
 import 'protocol.dart';
 
 /// Wrapper around a two-way communication channel to support requests and
@@ -40,6 +41,9 @@ class MoorCommunication {
   /// A stream of requests coming from the other peer.
   Stream<Request> get incomingRequests => _incomingRequests.stream;
 
+  /// Returns a new request id to be used for the next request.
+  int newRequestId() => _currentRequestId++;
+
   /// Closes the connection to the server.
   void close() {
     if (isClosed) return;
@@ -77,13 +81,19 @@ class MoorCommunication {
       _pendingRequests.remove(msg.requestId);
     } else if (msg is Request) {
       _incomingRequests.add(msg);
+    } else if (msg is CancelledResponse) {
+      final completer = _pendingRequests[msg.requestId];
+      completer?.completeError(const CancellationException());
     }
   }
 
   /// Sends a request and waits for the peer to reply with a value that is
   /// assumed to be of type [T].
-  Future<T> request<T>(Object? request) {
-    final id = _currentRequestId++;
+  ///
+  /// The [requestId] parameter can be used to set a fixed request id for the
+  /// request.
+  Future<T> request<T>(Object? request, {int? requestId}) {
+    final id = requestId ?? newRequestId();
     final completer = Completer<T>();
 
     _pendingRequests[id] = completer;
@@ -113,7 +123,11 @@ class MoorCommunication {
     // sending a message while closed will throw, so don't even try.
     if (isClosed) return;
 
-    _send(ErrorResponse(request.id, error.toString(), trace.toString()));
+    if (error is CancellationException) {
+      _send(CancelledResponse(request.id));
+    } else {
+      _send(ErrorResponse(request.id, error.toString(), trace.toString()));
+    }
   }
 
   /// Utility that listens to [incomingRequests] and invokes the [handler] on

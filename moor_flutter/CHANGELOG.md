@@ -1,3 +1,7 @@
+## 4.1.0-dev
+
+- Support query cancellations introduced in moor 4.3.0
+
 ## 4.0.0
 
 - Support moor version 4

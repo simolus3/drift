@@ -1,4 +1,3 @@
-//@dart=2.9
 @TestOn('vm')
 import 'dart:async';
 import 'dart:isolate';
@@ -83,8 +82,8 @@ void main() {
 
 void _runTests(
     FutureOr<MoorIsolate> Function() spawner, bool terminateIsolate) {
-  MoorIsolate isolate;
-  TodoDb database;
+  late MoorIsolate isolate;
+  late TodoDb database;
 
   setUp(() async {
     isolate = await spawner();
