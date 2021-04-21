@@ -1,4 +1,4 @@
-## 4.2.1
+## 4.2.2
 
 - Support latest `build_config`
 
