@@ -1,5 +1,5 @@
 import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/reader/parser/parser.dart';
+import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
