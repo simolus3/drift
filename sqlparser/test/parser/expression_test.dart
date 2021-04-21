@@ -189,6 +189,9 @@ final Map<String, Expression> _testCases = {
       NumberedVariable(QuestionMarkVariableToken(fakeSpan('?'), null)),
     ]),
   ),
+  'RAISE(IGNORE)': RaiseExpression(RaiseKind.ignore),
+  "RAISE(ROLLBACK, 'Not allowed')":
+      RaiseExpression(RaiseKind.rollback, 'Not allowed'),
 };
 
 void main() {

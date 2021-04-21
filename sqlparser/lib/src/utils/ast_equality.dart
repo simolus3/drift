@@ -350,6 +350,17 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    final current = _currentAs<RaiseExpression>(e);
+    _assert(
+      current.raiseKind == e.raiseKind &&
+          current.errorMessage == e.errorMessage,
+      e,
+    );
+    _checkChildren(e);
+  }
+
+  @override
   void visitIndexedColumn(IndexedColumn e, void arg) {
     final current = _currentAs<IndexedColumn>(e);
     _assert(current.ordering == e.ordering, e);

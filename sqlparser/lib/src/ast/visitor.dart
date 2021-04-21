@@ -1,5 +1,7 @@
 import 'ast.dart';
 
+import 'expressions/raise.dart';
+
 abstract class AstVisitor<A, R> {
   R visitSelectStatement(SelectStatement e, A arg);
   R visitCompoundSelectStatement(CompoundSelectStatement e, A arg);
@@ -79,6 +81,7 @@ abstract class AstVisitor<A, R> {
   R visitTuple(Tuple e, A arg);
   R visitParentheses(Parentheses e, A arg);
   R visitInExpression(InExpression e, A arg);
+  R visitRaiseExpression(RaiseExpression e, A arg);
 
   R visitAggregateExpression(AggregateExpression e, A arg);
   R visitWindowDefinition(WindowDefinition e, A arg);
@@ -542,6 +545,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitInExpression(InExpression e, A arg) {
+    return visitExpression(e, arg);
+  }
+
+  @override
+  R? visitRaiseExpression(RaiseExpression e, A arg) {
     return visitExpression(e, arg);
   }
 

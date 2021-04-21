@@ -277,4 +277,15 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     visitChildren(e, arg);
   }
+
+  @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    if (_isTopLevelStatement) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.raiseMisuse,
+        relevantNode: e,
+        message: 'RAISE can only be used in a trigger.',
+      ));
+    }
+  }
 }

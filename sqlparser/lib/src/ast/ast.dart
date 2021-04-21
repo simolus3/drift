@@ -13,6 +13,7 @@ import 'visitor.dart';
 export 'clauses/returning.dart';
 export 'clauses/upsert.dart';
 export 'expressions/expressions.dart';
+export 'expressions/raise.dart';
 export 'moor/declared_statement.dart';
 export 'moor/import_statement.dart';
 export 'moor/inline_dart.dart';

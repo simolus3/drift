@@ -73,5 +73,6 @@ enum AnalysisErrorType {
   rowValueMisuse,
   notSupportedInDesiredVersion,
   illegalUseOfReturning,
+  raiseMisuse,
   other,
 }

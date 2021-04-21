@@ -81,7 +81,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   void _stringLiteral(String content) {
-    _symbol("'$content'", spaceBefore: true, spaceAfter: true);
+    final escapedChars = content.replaceAll("'", "''");
+    _symbol("'$escapedChars'", spaceBefore: true, spaceAfter: true);
   }
 
   void _symbol(String lexeme,
@@ -676,6 +677,24 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _keyword(TokenType.$in);
 
     visit(e.inside, arg);
+  }
+
+  @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    _keyword(TokenType.raise);
+    _symbol('(', spaceBefore: true);
+    _keyword(const {
+      RaiseKind.ignore: TokenType.ignore,
+      RaiseKind.rollback: TokenType.rollback,
+      RaiseKind.abort: TokenType.abort,
+      RaiseKind.fail: TokenType.fail,
+    }[e.raiseKind]!);
+
+    if (e.errorMessage != null) {
+      _symbol(',', spaceAfter: true);
+      _stringLiteral(e.errorMessage!);
+    }
+    _symbol(')', spaceAfter: true);
   }
 
   @override

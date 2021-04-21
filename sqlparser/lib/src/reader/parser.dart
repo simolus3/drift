@@ -558,7 +558,7 @@ class Parser {
   }
 
   Expression _postfix() {
-    var expression = _case();
+    var expression = _prefix();
 
     // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
     // with NOT BETWEEN / NOT IN / ... expressions
@@ -598,7 +598,7 @@ class Parser {
     return expression;
   }
 
-  Expression _case() {
+  Expression _prefix() {
     if (_matchOne(TokenType.$case)) {
       final caseToken = _previous;
 
@@ -623,6 +623,36 @@ class Parser {
       _consume(TokenType.end, 'Expected END to finish the case operator');
       return CaseExpression(whens: whens, base: base, elseExpr: $else)
         ..setSpan(caseToken, _previous);
+    } else if (_matchOne(TokenType.raise)) {
+      final raiseToken = _previous;
+      _consume(TokenType.leftParen, 'Expected a left parenthesis after RAISE');
+
+      RaiseKind kind;
+      const tokenToRaiseKind = {
+        TokenType.ignore: RaiseKind.ignore,
+        TokenType.rollback: RaiseKind.rollback,
+        TokenType.abort: RaiseKind.abort,
+        TokenType.fail: RaiseKind.fail,
+      };
+      if (_match(tokenToRaiseKind.keys)) {
+        kind = tokenToRaiseKind[_previous.type]!;
+      } else {
+        _error('Expected IGNORE, ROLLBACK, ABORT or FAIL here');
+      }
+
+      String? message;
+      if (kind != RaiseKind.ignore) {
+        _consume(TokenType.comma, 'Expected a comma here');
+
+        final messageToken =
+            _consume(TokenType.stringLiteral, 'Expected an error message here')
+                as StringLiteralToken;
+        message = messageToken.value;
+      }
+
+      final end = _consume(
+          TokenType.rightParen, 'Expected a right parenthesis to finish RAISE');
+      return RaiseExpression(kind, message)..setSpan(raiseToken, end);
     }
 
     return _primary();

@@ -74,6 +74,14 @@ BEGIN
 END;
       ''');
       });
+
+      test('Using RAISE', () {
+        testFormat('''
+CREATE TRIGGER my_trigger AFTER DELETE ON t1 BEGIN
+  SELECT RAISE(ABORT, 'please don''t');
+END;
+        ''');
+      });
     });
 
     test('view', () {
