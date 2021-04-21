@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -37,10 +38,12 @@ abstract class BackendTask {
     final library = element.library;
     if (library == null) return null;
 
-    final resolvedLibrary =
-        await library.session.getResolvedLibraryByElement(library);
-
-    return resolvedLibrary.getElementDeclaration(element)?.node;
+    final info = await library.session.getResolvedLibraryByElement2(library);
+    if (info is ResolvedLibraryResult) {
+      return info.getElementDeclaration(element)?.node;
+    } else {
+      return null;
+    }
   }
 
   /// Checks whether a file at [uri] exists.
