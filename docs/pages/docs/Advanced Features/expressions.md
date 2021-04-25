@@ -63,9 +63,14 @@ String expressions define a `+` operator as well. Just like you would expect, it
 concatenation in sql.
 
 ## Nullability
-To check whether an expression returns null, you can use the top-level `isNull` function,
-which takes any expression and returns a boolean expression. The expression returned will
-resolve to `true` if the inner expression resolves to null and `false` otherwise.
+To check whether an expression evaluates to `NULL` in sql, you can use the `isNull` extension:
+
+```dart
+final withoutCategories = select(todos)..where((row) => row.category.isNull());
+```
+
+The expression returned will resolve to `true` if the inner expression resolves to null
+and `false` otherwise.
 As you would expect, `isNotNull` works the other way around.
 
 To use a fallback value when an expression evaluates to `null`, you can use the `coalesce`
