@@ -69,11 +69,11 @@ class User implements Insertable<User> {
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
-    return {
-      'id': Variable<int>(id),
-      'name': Variable<String>(name),
-      'birth_date': Variable<DateTime>(birthDate),
-    };
+    return UsersCompanion(
+      id: Value(id),
+      name: Value(name),
+      birthDate: Value(birthDate),
+    ).toColumns(nullToAbsent);
   }
 }
 ```

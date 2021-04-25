@@ -80,11 +80,11 @@ class CustomRowClass implements Insertable<CustomRowClass> {
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
-    return {
-      'not_really_an_id': Variable<int>(notReallyAnId),
-      'some_float': Variable<double>(anotherName),
-      'custom': Variable<String?>(const CustomConverter().mapToSql(custom))
-    };
+    return TableWithoutPKCompanion(
+      notReallyAnId: Value(notReallyAnId),
+      someFloat: Value(anotherName),
+      custom: Value(custom),
+    ).toColumns(nullToAbsent);
   }
 }
 
