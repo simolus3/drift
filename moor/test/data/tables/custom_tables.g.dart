@@ -20,17 +20,15 @@ class Config extends DataClass implements Insertable<Config> {
   factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
     return Config(
-      configKey: stringType
+      configKey: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
-      configValue: stringType
+      configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.mapToDart(intType
+      syncState: ConfigTable.$converter0.mapToDart(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: ConfigTable.$converter1.mapToDart(
-          intType.mapFromDatabaseResponse(
+      syncStateImplicit: ConfigTable.$converter1.mapToDart(const IntType()
+          .mapFromDatabaseResponse(
               data['${effectivePrefix}sync_state_implicit'])),
     );
   }
@@ -303,11 +301,10 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   factory WithDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
     return WithDefault(
-      a: stringType.mapFromDatabaseResponse(data['${effectivePrefix}a']),
-      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b']),
+      a: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}a']),
+      b: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}b']),
     );
   }
   @override
@@ -489,9 +486,8 @@ class NoId extends DataClass implements Insertable<NoId> {
   factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
     return NoId(
-      payload: uint8ListType
+      payload: const BlobType()
           .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
     );
   }
@@ -645,13 +641,11 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
-    final doubleType = db.typeSystem.forDartType<double>();
     return WithConstraint(
-      a: stringType.mapFromDatabaseResponse(data['${effectivePrefix}a']),
-      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b'])!,
-      c: doubleType.mapFromDatabaseResponse(data['${effectivePrefix}c']),
+      a: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}a']),
+      b: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}b'])!,
+      c: const RealType().mapFromDatabaseResponse(data['${effectivePrefix}c']),
     );
   }
   @override
@@ -871,18 +865,14 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final boolType = db.typeSystem.forDartType<bool>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return MytableData(
-      someid:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}someid'])!,
-      sometext: stringType
+      someid: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}someid'])!,
+      sometext: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
-      isInserting: boolType
+      isInserting: const BoolType()
           .mapFromDatabaseResponse(data['${effectivePrefix}is_inserting']),
-      somedate: dateTimeType
+      somedate: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}somedate']),
     );
   }
@@ -1150,13 +1140,13 @@ class EMail extends DataClass implements Insertable<EMail> {
   factory EMail.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     return EMail(
-      sender:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}sender'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
+      sender: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}sender'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      body: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
     );
   }
   @override
@@ -1375,13 +1365,11 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   factory WeirdData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return WeirdData(
-      sqlClass:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}class'])!,
-      textColumn:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
+      sqlClass: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}class'])!,
+      textColumn: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
     );
   }
   @override

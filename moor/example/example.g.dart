@@ -14,11 +14,10 @@ class Category extends DataClass implements Insertable<Category> {
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      description: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
     );
   }
@@ -215,16 +214,15 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Recipe(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      instructions: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      instructions: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}instructions'])!,
-      category:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      category: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   @override
@@ -487,13 +485,13 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Ingredient(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      caloriesPer100g:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}calories'])!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      caloriesPer100g: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}calories'])!,
     );
   }
   @override
@@ -723,14 +721,13 @@ class IngredientInRecipe extends DataClass
       Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return IngredientInRecipe(
-      recipe:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe'])!,
-      ingredient: intType
+      recipe: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}recipe'])!,
+      ingredient: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}ingredient'])!,
-      amountInGrams:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}amount'])!,
+      amountInGrams: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}amount'])!,
     );
   }
   @override

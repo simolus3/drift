@@ -3,7 +3,6 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
-import 'package:recase/recase.dart';
 
 class DataClassWriter {
   final MoorTable table;
@@ -84,7 +83,6 @@ class DataClassWriter {
       table,
       scope.generationOptions,
     );
-    writer.prepareVariables(_buffer);
 
     // finally, the mighty constructor invocation:
     _buffer.write('return $dataClassName');
@@ -293,30 +291,14 @@ class RowMappingWriter {
 
   final String dbName;
 
-  final Map<String, String> _dartTypeToSqlType = {};
-  Iterable<MoorColumn> get _columns => positional.followedBy(named.keys);
-
   RowMappingWriter(this.positional, this.named, this.table, this.options,
       {this.dbName = 'db'});
 
-  void prepareVariables(StringBuffer buffer) {
-    final types = _columns.map((e) => e.variableTypeName).toSet();
-    for (final usedType in types) {
-      // final intType = db.typeSystem.forDartType<int>();
-      final resolver = '${ReCase(usedType).camelCase}Type';
-      _dartTypeToSqlType[usedType] = resolver;
-
-      buffer.write(
-          'final $resolver = $dbName.typeSystem.forDartType<$usedType>();\n');
-    }
-  }
-
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {
-      final resolver = _dartTypeToSqlType[column.variableTypeName];
-      final columnName = "'\${effectivePrefix}${column.name.name}'";
-
-      var loadType = '$resolver.mapFromDatabaseResponse(data[$columnName])';
+      final rawData = "data['\${effectivePrefix}${column.name.name}']";
+      final sqlType = 'const ${sqlTypes[column.type]}()';
+      var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
 
       // run the loaded expression though the custom converter for the final
       // result.

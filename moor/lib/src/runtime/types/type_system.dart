@@ -31,6 +31,7 @@ class SqlTypeSystem {
 
   /// Returns the appropriate sql type for the dart type provided as the
   /// generic parameter.
+  @Deprecated('Use mapToVariable or a mapFromSql method instead')
   SqlType<T> forDartType<T>() {
     return types.singleWhere((t) => t is SqlType<T>) as SqlType<T>;
   }
@@ -45,5 +46,28 @@ class SqlTypeSystem {
     if (dart is bool) return const BoolType().mapToSqlVariable(dart);
 
     return dart;
+  }
+
+  /// Maps a Dart object to a SQL constant representing the same value.
+  static String mapToSqlConstant(Object? dart) {
+    if (dart == null) return 'NULL';
+
+    // todo: Inline and remove types in the next major moor version
+    if (dart is bool) {
+      return const BoolType().mapToSqlConstant(dart);
+    } else if (dart is String) {
+      return const StringType().mapToSqlConstant(dart);
+    } else if (dart is int) {
+      return const IntType().mapToSqlConstant(dart);
+    } else if (dart is DateTime) {
+      return const DateTimeType().mapToSqlConstant(dart);
+    } else if (dart is Uint8List) {
+      return const BlobType().mapToSqlConstant(dart);
+    } else if (dart is double) {
+      return const RealType().mapToSqlConstant(dart);
+    }
+
+    throw ArgumentError.value(dart, 'dart',
+        'Must be null, bool, String, int, DateTime, Uint8List or double');
   }
 }

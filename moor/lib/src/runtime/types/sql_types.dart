@@ -1,14 +1,18 @@
 import 'dart:typed_data';
 
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:convert/convert.dart';
 import 'package:moor/moor.dart';
 
 part 'custom_type.dart';
 part 'type_system.dart';
 
+const _deprecated =
+    Deprecated('Types will be removed in moor 5, use the methods on '
+        'SqlTypeSystem instead.');
+
 /// A type that can be mapped from Dart to sql. The generic type parameter [T]
 /// denotes the resolved dart type.
+@_deprecated
 abstract class SqlType<T> {
   /// Constant constructor so that subclasses can be constant
   const SqlType();
@@ -30,6 +34,7 @@ abstract class SqlType<T> {
 
 /// A mapper for boolean values in sql. Booleans are represented as integers,
 /// where 0 means false and any other value means true.
+@_deprecated
 class BoolType extends SqlType<bool> {
   /// Constant constructor used by the type system
   const BoolType();
@@ -63,6 +68,7 @@ class BoolType extends SqlType<bool> {
 }
 
 /// Mapper for string values in sql.
+@_deprecated
 class StringType extends SqlType<String> {
   /// Constant constructor used by the type system
   const StringType();
@@ -91,6 +97,7 @@ class StringType extends SqlType<String> {
 }
 
 /// Maps [int] values from and to sql
+@_deprecated
 class IntType extends SqlType<int> {
   /// Constant constructor used by the type system
   const IntType();
@@ -114,6 +121,7 @@ class IntType extends SqlType<int> {
 }
 
 /// Maps [DateTime] values from and to sql
+@_deprecated
 class DateTimeType extends SqlType<DateTime> {
   /// Constant constructor used by the type system
   const DateTimeType();
@@ -147,6 +155,7 @@ class DateTimeType extends SqlType<DateTime> {
 }
 
 /// Maps [Uint8List] values from and to sql
+@_deprecated
 class BlobType extends SqlType<Uint8List> {
   /// Constant constructor used by the type system
   const BlobType();
@@ -172,6 +181,7 @@ class BlobType extends SqlType<Uint8List> {
 }
 
 /// Maps [double] values from and to sql
+@_deprecated
 class RealType extends SqlType<double> {
   /// Constant constructor used by the type system
   const RealType();

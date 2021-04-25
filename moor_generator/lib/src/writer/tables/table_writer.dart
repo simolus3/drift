@@ -149,7 +149,6 @@ class TableWriter {
         scope.generationOptions,
         dbName: '_db',
       );
-      writer.prepareVariables(_buffer);
 
       final classElement = info.targetClass;
       final ctor = info.constructor;

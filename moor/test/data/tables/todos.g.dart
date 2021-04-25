@@ -22,19 +22,17 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
-      content: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title']),
+      content: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}content'])!,
-      targetDate: dateTimeType
+      targetDate: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
-      category:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      category: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   @override
@@ -342,14 +340,13 @@ class Category extends DataClass implements Insertable<Category> {
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      description:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converter0.mapToDart(
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
+      priority: $CategoriesTable.$converter0.mapToDart(const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
     );
   }
   @override
@@ -577,19 +574,16 @@ class User extends DataClass implements Insertable<User> {
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final boolType = db.typeSystem.forDartType<bool>();
-    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      isAwesome: boolType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      isAwesome: const BoolType()
           .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome'])!,
-      profilePicture: uint8ListType
+      profilePicture: const BlobType()
           .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture'])!,
-      creationTime: dateTimeType
+      creationTime: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time'])!,
     );
   }
@@ -884,10 +878,11 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return SharedTodo(
-      todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo'])!,
-      user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user'])!,
+      todo: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}todo'])!,
+      user: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}user'])!,
     );
   }
   @override
@@ -1210,14 +1205,12 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    final intType = _db.typeSystem.forDartType<int>();
-    final doubleType = _db.typeSystem.forDartType<double>();
-    final stringType = _db.typeSystem.forDartType<String>();
     return CustomRowClass(
-      intType
+      const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
-      doubleType.mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$converter0.mapToDart(stringType
+      const RealType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
     );
   }
@@ -1237,9 +1230,9 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   factory PureDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     return PureDefault(
-      txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}insert']),
+      txt: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}insert']),
     );
   }
   @override
