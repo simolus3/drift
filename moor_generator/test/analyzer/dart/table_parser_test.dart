@@ -93,7 +93,17 @@ void main() {
         @override
         Set<Column> get primaryKey => {other};
       }
-      '''
+      ''',
+      AssetId.parse('test_lib|lib/invalid_reference.dart'): '''
+      import 'package:moor/moor.dart';
+
+      class Foo extends Table {
+        IntColumn get id => integer().autoIncrement()();
+      }
+
+      @UseMoor(tables: [Foo, DoesNotExist])
+      class Database {}
+      ''',
     });
   });
   tearDownAll(() {
@@ -279,6 +289,29 @@ void main() {
           allOf(
             contains('use autoIncrement()'),
             contains('and also override primaryKey'),
+          ),
+        ),
+      ),
+    );
+  });
+
+  test('reports errors for unknown classes in UseMoor', () async {
+    final session = MoorSession(backend);
+    final uri = Uri.parse('package:test_lib/invalid_reference.dart');
+    final backendTask = backend.startTask(uri);
+    final task = session.startTask(backendTask);
+    await task.runTask();
+
+    final file = session.registerFile(uri);
+    expect(
+      file.errors.errors,
+      contains(
+        isA<ErrorInDartCode>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('Could not read tables from @UseMoor annotation!'),
+            contains('Please make sure that all table classes exist.'),
           ),
         ),
       ),
