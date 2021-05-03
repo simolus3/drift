@@ -100,8 +100,10 @@ class TableParser {
   Future<String> _parseTableName(ClassElement element) async {
     // todo allow override via a field (final String tableName = '') as well
 
-    final tableNameGetter = element.getGetter('tableName');
-    if (tableNameGetter == null) {
+    final tableNameGetter = element.lookUpGetter('tableName', element.library);
+    if (tableNameGetter == null ||
+        tableNameGetter.isFromDefaultTable ||
+        tableNameGetter.isAbstract) {
       // class does not override tableName. So just use the dart class name
       // instead. Will use placed_orders for a class called PlacedOrders
       return ReCase(element.name).snakeCase;
