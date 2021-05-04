@@ -134,7 +134,7 @@ class QueryHandler {
       }
 
       columns.add(ResultColumn(column.name, moorType, type?.nullable ?? true,
-          typeConverter: converter));
+          typeConverter: converter, sqlParserColumn: column));
 
       final table = _tableOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != table);

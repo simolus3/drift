@@ -1710,15 +1710,15 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<int> cfeTest() {
     return customSelect(
-        'WITH RECURSIVE cnt(x)AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+        'WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
   }
 
   Selectable<int?> nullableQuery() {
-    return customSelect('SELECT MAX(oid) FROM config',
+    return customSelect('SELECT MAX(oid) AS _c0 FROM config',
         variables: [],
-        readsFrom: {config}).map((QueryRow row) => row.read<int?>('MAX(oid)'));
+        readsFrom: {config}).map((QueryRow row) => row.read<int?>('_c0'));
   }
 
   Future<List<Config>> addConfig(

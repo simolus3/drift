@@ -3,6 +3,7 @@ import 'dart:math' show max;
 
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/explicit_alias_transformer.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
@@ -23,8 +24,9 @@ class QueryWriter {
   final SqlQuery query;
   final Scope scope;
 
-  SqlSelectQuery get _select => query as SqlSelectQuery;
+  ExplicitAliasTransformer _transformer;
 
+  SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
   MoorOptions get options => scope.writer.options;
@@ -44,6 +46,18 @@ class QueryWriter {
     if (resultSet?.needsOwnClass == true) {
       final resultSetScope = scope.findScopeOfLevel(DartScope.library);
       ResultSetWriter(query, resultSetScope).write();
+    }
+
+    // The new sql code generation generates query code from the parsed AST,
+    // which eliminates unnecessary whitespace and comments. These can sometimes
+    // have a semantic meaning though, for instance when they're used in
+    // columns. So, we transform the query to add an explicit alias to every
+    // column!
+    // We do this transformation so late because it shouldn't have an impact on
+    // analysis, Dart getter names stay the same.
+    if (resultSet != null && options.newSqlCodeGeneration) {
+      _transformer = ExplicitAliasTransformer();
+      _transformer.rewrite(query.fromContext.root);
     }
 
     if (query is SqlSelectQuery) {
@@ -137,17 +151,22 @@ class QueryWriter {
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  static String readingCode(ResultColumn column, GenerationOptions options) {
+  String readingCode(ResultColumn column, GenerationOptions generationOptions) {
     var rawDartType = dartTypeNames[column.type];
-    if (column.nullable && options.nnbd) {
+    if (column.nullable && generationOptions.nnbd) {
       rawDartType = '$rawDartType?';
     }
 
-    final dartLiteral = asDartLiteral(column.name);
+    String specialName;
+    if (options.newSqlCodeGeneration) {
+      specialName = _transformer.newNameFor(column.sqlParserColumn);
+    }
+
+    final dartLiteral = asDartLiteral(specialName ?? column.name);
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
-      final needsAssert = !column.nullable && options.nnbd;
+      final needsAssert = !column.nullable && generationOptions.nnbd;
 
       final converter = column.typeConverter;
       code = '${_converter(converter)}.mapToDart($code)';

@@ -540,7 +540,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitParentheses(Parentheses e, A arg) {
-    return e.expression.accept(this, arg);
+    return visitExpression(e, arg);
   }
 
   @override
@@ -641,11 +641,12 @@ extension TransformerUtils<A> on Transformer<A> {
     return transformed as T;
   }
 
-  void transformChildren(List<AstNode?> children, AstNode parent, A arg) {
-    final newChildren = <AstNode>[];
+  void transformChildren<T extends AstNode?>(
+      List<T> children, AstNode parent, A arg) {
+    final newChildren = <T>[];
 
     for (final child in children) {
-      final transformed = transform(child!, arg);
+      final transformed = transform(child as AstNode, arg) as T?;
       if (transformed != null) {
         newChildren.add(transformed..parent = parent);
       }

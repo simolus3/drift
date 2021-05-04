@@ -352,7 +352,11 @@ class ResultColumn implements HasType {
   @override
   final UsedTypeConverter typeConverter;
 
-  ResultColumn(this.name, this.type, this.nullable, {this.typeConverter});
+  /// The analyzed column from the `sqlparser` package.
+  final Column sqlParserColumn;
+
+  ResultColumn(this.name, this.type, this.nullable,
+      {this.typeConverter, this.sqlParserColumn});
 
   /// Hash-code that matching [compatibleTo], so that two compatible columns
   /// will have the same [compatibilityHashCode].

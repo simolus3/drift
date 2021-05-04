@@ -1091,7 +1091,10 @@ class Parser {
         mode = CompoundSelectMode.unionAll;
       }
 
-      final select = _selectNoCompound()!;
+      final select = _selectNoCompound();
+      if (select == null) {
+        _error('Expected a select statement here!');
+      }
 
       return CompoundSelectPart(
         mode: mode!,

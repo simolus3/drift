@@ -309,7 +309,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     _identifier(e.cteTableName);
     if (e.columnNames != null) {
-      _symbol('(${e.columnNames!.join(', ')})');
+      _symbol('(${e.columnNames!.join(', ')})', spaceAfter: true);
     }
 
     _keyword(TokenType.as);
@@ -1038,9 +1038,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitSelectStatementAsSource(SelectStatementAsSource e, void arg) {
-    _symbol('(');
+    _symbol('(', spaceBefore: true);
     visit(e.statement, arg);
-    _symbol(')');
+    _symbol(')', spaceAfter: true);
 
     if (e.as != null) {
       _keyword(TokenType.as);
