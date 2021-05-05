@@ -12,7 +12,7 @@ abstract class PartOfMoorFile implements Statement {}
 /// A moor file consists of [ImportStatement], followed by ddl statements,
 /// followed by [DeclaredStatement]s.
 class MoorFile extends AstNode {
-  final List<PartOfMoorFile> statements;
+  List<PartOfMoorFile> statements;
 
   MoorFile(this.statements);
 
@@ -23,7 +23,7 @@ class MoorFile extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(statements, this, arg);
+    statements = transformer.transformChildren(statements, this, arg);
   }
 
   @override

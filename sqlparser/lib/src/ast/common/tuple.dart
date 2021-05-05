@@ -5,7 +5,7 @@ part of '../ast.dart';
 /// In sqlite, this is also called a "row value".
 class Tuple extends Expression {
   /// The expressions appearing in this tuple.
-  final List<Expression> expressions;
+  List<Expression> expressions;
 
   /// Whether this tuple is used as an expression, e.g. a [row value][r v].
   ///
@@ -23,7 +23,7 @@ class Tuple extends Expression {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(expressions, this, arg);
+    expressions = transformer.transformChildren(expressions, this, arg);
   }
 
   @override

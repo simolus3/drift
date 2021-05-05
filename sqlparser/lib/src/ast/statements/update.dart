@@ -31,7 +31,7 @@ class UpdateStatement extends CrudStatement
   final FailureMode? or;
   @override
   TableReference table;
-  final List<SetComponent> set;
+  List<SetComponent> set;
   @override
   Queryable? from;
   @override
@@ -61,7 +61,7 @@ class UpdateStatement extends CrudStatement
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
     table = transformer.transformChild(table, this, arg);
-    transformer.transformChildren(set, this, arg);
+    set = transformer.transformChildren(set, this, arg);
     from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformChild(where!, this, arg);
     returning = transformer.transformNullableChild(returning, this, arg);

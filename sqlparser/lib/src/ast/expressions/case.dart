@@ -2,7 +2,7 @@ part of '../ast.dart';
 
 class CaseExpression extends Expression {
   Expression? base;
-  final List<WhenComponent> whens;
+  List<WhenComponent> whens;
   Expression? elseExpr;
 
   CaseExpression({this.base, required this.whens, this.elseExpr});
@@ -15,7 +15,7 @@ class CaseExpression extends Expression {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     base = transformer.transformNullableChild(base, this, arg);
-    transformer.transformChildren(whens, this, arg);
+    whens = transformer.transformChildren(whens, this, arg);
     elseExpr = transformer.transformNullableChild(elseExpr, this, arg);
   }
 

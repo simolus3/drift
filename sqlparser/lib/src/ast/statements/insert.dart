@@ -22,7 +22,7 @@ class InsertStatement extends CrudStatement
   final InsertMode mode;
   @override
   TableReference table;
-  final List<Reference> targetColumns;
+  List<Reference> targetColumns;
   InsertSource source;
   UpsertClause? upsert;
 
@@ -59,7 +59,7 @@ class InsertStatement extends CrudStatement
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
     table = transformer.transformChild(table, this, arg);
-    transformer.transformChildren(targetColumns, this, arg);
+    targetColumns = transformer.transformChildren(targetColumns, this, arg);
     returning = transformer.transformNullableChild(returning, this, arg);
   }
 
@@ -93,7 +93,7 @@ abstract class InsertSource extends AstNode {
 
 /// Uses a list of values for an insert statement (`VALUES (a, b, c)`).
 class ValuesSource extends InsertSource {
-  final List<Tuple> values;
+  List<Tuple> values;
 
   ValuesSource(this.values);
 
@@ -107,7 +107,7 @@ class ValuesSource extends InsertSource {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(values, this, arg);
+    values = transformer.transformChildren(values, this, arg);
   }
 }
 

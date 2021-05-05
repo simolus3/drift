@@ -7,7 +7,7 @@ import 'statement.dart';
 class Block extends AstNode {
   Token? begin;
   Token? end;
-  final List<CrudStatement> statements;
+  List<CrudStatement> statements;
 
   Block(this.statements);
 
@@ -18,7 +18,7 @@ class Block extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(statements, this, arg);
+    statements = transformer.transformChildren(statements, this, arg);
   }
 
   @override

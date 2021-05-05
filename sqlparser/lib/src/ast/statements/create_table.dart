@@ -26,8 +26,8 @@ abstract class TableInducingStatement extends Statement
 /// A "CREATE TABLE" statement, see https://www.sqlite.org/lang_createtable.html
 /// for the individual components.
 class CreateTableStatement extends TableInducingStatement {
-  final List<ColumnDefinition> columns;
-  final List<TableConstraint> tableConstraints;
+  List<ColumnDefinition> columns;
+  List<TableConstraint> tableConstraints;
   final bool withoutRowId;
 
   Token? openingBracket;
@@ -49,8 +49,9 @@ class CreateTableStatement extends TableInducingStatement {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(columns, this, arg);
-    transformer.transformChildren(tableConstraints, this, arg);
+    columns = transformer.transformChildren(columns, this, arg);
+    tableConstraints =
+        transformer.transformChildren(tableConstraints, this, arg);
   }
 
   @override

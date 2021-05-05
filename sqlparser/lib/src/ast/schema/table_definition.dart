@@ -4,7 +4,7 @@ enum ReferenceAction { setNull, setDefault, cascade, restrict, noAction }
 
 class ForeignKeyClause extends AstNode {
   TableReference foreignTable;
-  final List<Reference> columnNames;
+  List<Reference> columnNames;
   final ReferenceAction? onDelete;
   final ReferenceAction? onUpdate;
   DeferrableClause? deferrable;
@@ -25,7 +25,7 @@ class ForeignKeyClause extends AstNode {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     foreignTable = transformer.transformChild(foreignTable, this, arg);
-    transformer.transformChildren(columnNames, this, arg);
+    columnNames = transformer.transformChildren(columnNames, this, arg);
     deferrable = transformer.transformChild(deferrable!, this, arg);
   }
 
@@ -84,7 +84,7 @@ abstract class TableConstraint extends AstNode {
 
 class KeyClause extends TableConstraint {
   final bool isPrimaryKey;
-  final List<IndexedColumn> columns;
+  List<IndexedColumn> columns;
   final ConflictClause? onConflict;
 
   bool get isUnique => !isPrimaryKey;
@@ -108,7 +108,7 @@ class KeyClause extends TableConstraint {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(columns, this, arg);
+    columns = transformer.transformChildren(columns, this, arg);
   }
 
   @override
@@ -133,7 +133,7 @@ class CheckTable extends TableConstraint {
 }
 
 class ForeignKeyTableConstraint extends TableConstraint {
-  final List<Reference> columns;
+  List<Reference> columns;
   ForeignKeyClause clause;
 
   ForeignKeyTableConstraint(String? name,
@@ -145,7 +145,7 @@ class ForeignKeyTableConstraint extends TableConstraint {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(columns, this, arg);
+    columns = transformer.transformChildren(columns, this, arg);
     clause = transformer.transformChild(clause, this, arg);
   }
 

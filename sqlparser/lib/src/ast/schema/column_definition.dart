@@ -4,7 +4,7 @@ part of '../ast.dart';
 class ColumnDefinition extends AstNode {
   final String columnName;
   final String? typeName;
-  final List<ColumnConstraint> constraints;
+  List<ColumnConstraint> constraints;
 
   /// The tokens there were involved in defining the type of this column.
   List<Token>? typeNames;
@@ -22,7 +22,7 @@ class ColumnDefinition extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(constraints, this, arg);
+    constraints = transformer.transformChildren(constraints, this, arg);
   }
 
   @override

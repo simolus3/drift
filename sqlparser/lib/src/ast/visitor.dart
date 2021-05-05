@@ -641,19 +641,18 @@ extension TransformerUtils<A> on Transformer<A> {
     return transformed as T;
   }
 
-  void transformChildren<T extends AstNode?>(
+  List<T> transformChildren<T extends AstNode>(
       List<T> children, AstNode parent, A arg) {
     final newChildren = <T>[];
 
     for (final child in children) {
+      // ignore: unnecessary_cast, it's a frontend bug in Dart 2.12
       final transformed = transform(child as AstNode, arg) as T?;
       if (transformed != null) {
         newChildren.add(transformed..parent = parent);
       }
     }
 
-    children
-      ..clear()
-      ..addAll(newChildren);
+    return newChildren;
   }
 }

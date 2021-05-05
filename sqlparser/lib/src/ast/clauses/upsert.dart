@@ -3,7 +3,7 @@ import '../node.dart';
 import '../statements/create_index.dart' show IndexedColumn;
 
 class UpsertClause extends AstNode {
-  final List<UpsertClauseEntry> entries;
+  List<UpsertClauseEntry> entries;
 
   UpsertClause(this.entries);
 
@@ -17,12 +17,12 @@ class UpsertClause extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(entries, this, arg);
+    entries = transformer.transformChildren(entries, this, arg);
   }
 }
 
 class UpsertClauseEntry extends AstNode implements HasWhereClause {
-  final List<IndexedColumn>? onColumns;
+  List<IndexedColumn>? onColumns;
   @override
   Expression? where;
 
@@ -37,7 +37,9 @@ class UpsertClauseEntry extends AstNode implements HasWhereClause {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(onColumns!, this, arg);
+    if (onColumns != null) {
+      onColumns = transformer.transformChildren(onColumns!, this, arg);
+    }
     where = transformer.transformNullableChild(where, this, arg);
     action = transformer.transformChild(action, this, arg);
   }
@@ -68,7 +70,7 @@ class DoNothing extends UpsertAction {
 }
 
 class DoUpdate extends UpsertAction implements HasWhereClause {
-  final List<SetComponent> set;
+  List<SetComponent> set;
   @override
   Expression? where;
 
@@ -81,7 +83,7 @@ class DoUpdate extends UpsertAction implements HasWhereClause {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(set, this, arg);
+    set = transformer.transformChildren(set, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
   }
 

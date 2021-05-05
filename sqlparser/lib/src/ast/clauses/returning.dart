@@ -8,7 +8,7 @@ import '../visitor.dart';
 class Returning extends AstNode {
   /// The `RETURNING` token as found in the source.
   Token? returning;
-  final List<ResultColumn> columns;
+  List<ResultColumn> columns;
 
   Returning(this.columns);
 
@@ -22,6 +22,6 @@ class Returning extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(columns, this, arg);
+    columns = transformer.transformChildren(columns, this, arg);
   }
 }

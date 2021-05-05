@@ -66,7 +66,7 @@ class StarFunctionParameter extends FunctionParameters {
 
 class ExprFunctionParameters extends FunctionParameters {
   final bool distinct;
-  final List<Expression> parameters;
+  List<Expression> parameters;
 
   ExprFunctionParameters({this.parameters = const [], this.distinct = false});
 
@@ -77,7 +77,7 @@ class ExprFunctionParameters extends FunctionParameters {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(parameters, this, arg);
+    parameters = transformer.transformChildren(parameters, this, arg);
   }
 
   @override

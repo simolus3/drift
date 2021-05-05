@@ -36,7 +36,7 @@ class ExplicitAliasTransformer extends Transformer<bool> {
     // select statements.
     e.withClause = transformNullableChild(e.withClause, e, arg);
     e.base = transformChild(e.base, e, arg);
-    transformChildren(e.additional, e, false);
+    e.additional = transformChildren(e.additional, e, false);
     return e;
   }
 

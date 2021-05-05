@@ -11,7 +11,7 @@ import 'moor_file.dart';
 class DeclaredStatement extends Statement implements PartOfMoorFile {
   final DeclaredStatementIdentifier identifier;
   CrudStatement statement;
-  final List<StatementParameter> parameters;
+  List<StatementParameter> parameters;
 
   /// The desired result class name, if set.
   final String? as;
@@ -34,7 +34,7 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     statement = transformer.transformChild(statement, this, arg);
-    transformer.transformChildren(parameters, this, arg);
+    parameters = transformer.transformChildren(parameters, this, arg);
   }
 
   @override
