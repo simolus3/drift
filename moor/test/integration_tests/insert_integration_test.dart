@@ -1,12 +1,15 @@
 @TestOn('vm')
 import 'package:moor/moor.dart';
 import 'package:moor/ffi.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 
 void main() {
   late TodoDb db;
+
+  final supportsReturning = sqlite3.version.versionNumber > 3035000;
 
   setUp(() {
     db = TodoDb(VmDatabase.memory());
@@ -24,4 +27,18 @@ void main() {
     row = await db.select(db.categories).getSingle();
     expect(row.description, 'changed description');
   });
+
+  test('returning', () async {
+    final entry = await db.into(db.categories).insertReturning(
+        CategoriesCompanion.insert(description: 'Description'));
+
+    expect(
+      entry,
+      Category(
+        id: 1,
+        description: 'Description',
+        priority: CategoryPriority.low,
+      ),
+    );
+  }, skip: supportsReturning ? null : 'RETURNING is not supported');
 }

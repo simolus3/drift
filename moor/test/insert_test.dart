@@ -222,4 +222,26 @@ void main() {
       ['description', 1],
     ));
   });
+
+  test('generates RETURNING clauses', () async {
+    when(executor.runSelect(any, any)).thenAnswer(
+      (_) => Future.value([
+        {
+          'id': 1,
+          'desc': 'description',
+          'priority': 1,
+        },
+      ]),
+    );
+
+    await db.into(db.categories).insertReturning(CategoriesCompanion.insert(
+          description: 'description',
+          priority: const Value(CategoryPriority.medium),
+        ));
+
+    verify(executor.runSelect(
+      'INSERT INTO categories ("desc", priority) VALUES (?, ?) RETURNING *',
+      ['description', 1],
+    ));
+  });
 }

@@ -74,6 +74,23 @@ class InsertStatement<T extends Table, D> {
     });
   }
 
+  /// Inserts a row into the table, and returns a generated instance.
+  ///
+  /// __Note__: This uses the `RETURNING` syntax added in sqlite3 version 3.35,
+  /// which is not available on most operating systems by default. When using
+  /// this method, make sure that you have a recent sqlite3 version available.
+  /// This is the case with `sqlite3_flutter_libs`.
+  Future<D> insertReturning(Insertable<D> entity,
+      {InsertMode? mode, DoUpdate<T, D>? onConflict}) async {
+    final ctx = createContext(entity, mode ?? InsertMode.insert,
+        onConflict: onConflict, returning: true);
+
+    return database.doWhenOpened((e) async {
+      final result = await e.runSelect(ctx.sql, ctx.boundVariables);
+      return table.map(result.single);
+    });
+  }
+
   /// Attempts to [insert] [entity] into the database. If the insert would
   /// violate a primary key or uniqueness constraint, updates the columns that
   /// are present on [entity].
@@ -94,7 +111,7 @@ class InsertStatement<T extends Table, D> {
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
-      {DoUpdate<T, D>? onConflict}) {
+      {DoUpdate<T, D>? onConflict, bool returning = false}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -191,6 +208,10 @@ class InsertStatement<T extends Table, D> {
 
         first = false;
       }
+    }
+
+    if (returning) {
+      ctx.buffer.write(' RETURNING *');
     }
 
     return ctx;
