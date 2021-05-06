@@ -1655,14 +1655,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple({required Expression<bool> predicate}) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
-        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints AS c INNER JOIN with_defaults AS d ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
+        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
+        readsFrom: {withDefaults, withConstraints}).map((QueryRow row) {
       return MultipleResult(
         row: row,
         a: row.read<String?>('a'),
         b: row.read<int?>('b'),
-        c: withConstraints.mapFromRow(row, tablePrefix: 'nested_0'),
+        c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
       );
     });
   }
@@ -1804,12 +1804,12 @@ class JsonResult extends CustomResultSet {
 class MultipleResult extends CustomResultSet {
   final String? a;
   final int? b;
-  final WithConstraint c;
+  final WithConstraint? c;
   MultipleResult({
     required QueryRow row,
     this.a,
     this.b,
-    required this.c,
+    this.c,
   }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));

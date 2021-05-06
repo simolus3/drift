@@ -70,8 +70,8 @@ another AS JsonResult: SELECT 'one' AS "key", NULLIF('two', 'another') AS "value
 
 @create: INSERT INTO config (config_key, config_value) VALUES ('key', 'values');
 
-multiple: SELECT d.*, c.** FROM with_constraints c
- INNER JOIN with_defaults d
+multiple: SELECT d.*, c.** FROM with_defaults d
+ LEFT OUTER JOIN with_constraints c
    ON d.a = c.a AND d.b = c.b
  WHERE $predicate;
 
