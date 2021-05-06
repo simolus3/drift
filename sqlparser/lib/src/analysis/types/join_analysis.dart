@@ -1,5 +1,5 @@
-import 'package:sqlparser/src/analysis/analysis.dart';
-import 'package:sqlparser/src/ast/ast.dart';
+import '../../ast/ast.dart';
+import '../analysis.dart';
 
 /// Tracks table references that must be non-nullable in a query row.
 ///
@@ -59,8 +59,14 @@ class JoinModel {
     final resultSet = column.containingSet;
     if (resultSet == null) return false;
 
+    return isNullableTable(resultSet);
+  }
+
+  /// Checks whether the result set is nullable in the surrounding select
+  /// statement.
+  bool isNullableTable(ResultSet resultSet) {
     return nonNullable.every((nonNullableRef) {
-      return nonNullableRef.resultSet != column.containingSet;
+      return nonNullableRef.resultSet != resultSet;
     });
   }
 }

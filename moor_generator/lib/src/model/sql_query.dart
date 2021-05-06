@@ -404,11 +404,12 @@ class ResultColumn implements HasType {
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
 class NestedResultTable {
+  final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
   final MoorTable table;
 
-  NestedResultTable(this.from, this.name, this.table);
+  NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 
   String get dartFieldName => ReCase(name).camelCase;
 
@@ -420,7 +421,9 @@ class NestedResultTable {
   /// Checks whether this is compatible to the [other] nested result, which is
   /// the case iff they have the same and read from the same table.
   bool isCompatibleTo(NestedResultTable other) {
-    return other.name == name && other.table == table;
+    return other.name == name &&
+        other.table == table &&
+        other.isNullable == isNullable;
   }
 }
 

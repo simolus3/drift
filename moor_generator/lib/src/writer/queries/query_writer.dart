@@ -141,7 +141,10 @@ class QueryWriter {
         final fieldName = nested.dartFieldName;
         final tableGetter = nested.table.dbGetterName;
 
-        _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
+        final mappingMethod =
+            nested.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
+
+        _buffer.write('$fieldName: $tableGetter.$mappingMethod(row, '
             'tablePrefix: ${asDartLiteral(prefix)}),');
       }
       _buffer.write(');\n}');

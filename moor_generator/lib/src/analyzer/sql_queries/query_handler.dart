@@ -214,6 +214,7 @@ class QueryHandler {
     if (query is! SelectStatement) return const [];
 
     final nestedTables = <NestedResultTable>[];
+    final analysis = JoinModel.of(query);
 
     for (final column in (query as SelectStatement).columns) {
       if (column is NestedStarResultColumn) {
@@ -221,8 +222,9 @@ class QueryHandler {
         if (result is! Table) continue;
 
         final moorTable = mapper.tableToMoor(result as Table);
-        nestedTables
-            .add(NestedResultTable(column, column.tableName, moorTable));
+        final isNullable = analysis == null || analysis.isNullableTable(result);
+        nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
+            isNullable: isNullable));
       }
     }
 

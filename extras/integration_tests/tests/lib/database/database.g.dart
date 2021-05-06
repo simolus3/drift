@@ -620,7 +620,7 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {friendships, users}).map((QueryRow row) {
       return FriendshipsOfResult(
         reallyGoodFriends: row.read<bool>('really_good_friends'),
-        user: users.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+        user: users.mapFromRow(row, tablePrefix: 'nested_0'),
       );
     });
   }
@@ -655,10 +655,10 @@ abstract class _$Database extends GeneratedDatabase {
 
 class FriendshipsOfResult {
   final bool reallyGoodFriends;
-  final User? user;
+  final User user;
   FriendshipsOfResult({
     required this.reallyGoodFriends,
-    this.user,
+    required this.user,
   });
   @override
   int get hashCode => $mrjf($mrjc(reallyGoodFriends.hashCode, user.hashCode));

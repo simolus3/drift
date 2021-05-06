@@ -2,6 +2,7 @@
 library sqlparser;
 
 export 'src/analysis/analysis.dart';
+export 'src/analysis/types/join_analysis.dart';
 export 'src/ast/ast.dart';
 export 'src/engine/module/fts5.dart' show Fts5Extension;
 export 'src/engine/module/json1.dart' show Json1Extension;

@@ -1662,7 +1662,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         row: row,
         a: row.read<String?>('a'),
         b: row.read<int?>('b'),
-        c: withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+        c: withConstraints.mapFromRow(row, tablePrefix: 'nested_0'),
       );
     });
   }
@@ -1804,12 +1804,12 @@ class JsonResult extends CustomResultSet {
 class MultipleResult extends CustomResultSet {
   final String? a;
   final int? b;
-  final WithConstraint? c;
+  final WithConstraint c;
   MultipleResult({
     required QueryRow row,
     this.a,
     this.b,
-    this.c,
+    required this.c,
   }) : super(row);
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));

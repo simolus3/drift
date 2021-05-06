@@ -1,3 +1,7 @@
+## 4.3.0
+
+- Generate non-nullable nested result classes when possible
+
 ## 4.2.2
 
 - Fix generated code for queries using a Dart placeholder before an array variable
