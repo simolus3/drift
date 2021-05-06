@@ -4,11 +4,11 @@ description: An absolute bare-bones web app.
 #homepage: https://www.example.com
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  js: ^0.6.3-nullsafety
-  stream_channel: ^2.1.0-nullsafety.3
+  js: ^0.6.3
+  stream_channel: ^2.1.0
   moor:
   moor_generator:
 
@@ -24,5 +24,3 @@ dependency_overrides:
     path: ../../moor_generator
   sqlparser:
     path: ../../sqlparser
-  convert: ^3.0.0-nullsafety.0
-  typed_data: ^1.3.0-nullsafety.5

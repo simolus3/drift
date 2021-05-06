@@ -69,4 +69,11 @@ void main() {
           'SELECT x FROM foo',
     );
   });
+
+  test('rewrites RETURNING clauses', () {
+    _test(
+      'INSERT INTO a VALUES (1), (2) RETURNING id * 3',
+      'INSERT INTO a VALUES (1), (2) RETURNING id * 3 AS _c0',
+    );
+  });
 }
