@@ -21,6 +21,18 @@ void crudTests(TestExecutor executor) {
     await db.close();
   });
 
+  test('supports RETURNING', () async {
+    final db = Database(executor.createConnection());
+    final result = await db.returning(1, 2, true);
+    expect(result,
+        [Friendship(firstUser: 1, secondUser: 2, reallyGoodFriends: true)]);
+
+    await db.close();
+  },
+      skip: executor.supportsReturning
+          ? null
+          : 'Runner does not support RETURNING');
+
   test('IN ? expressions can be expanded', () async {
     // regression test for https://github.com/simolus3/moor/issues/156
     final db = Database(executor.createConnection());

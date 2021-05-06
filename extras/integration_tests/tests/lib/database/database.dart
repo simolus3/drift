@@ -87,6 +87,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
     'usersById': 'SELECT * FROM users WHERE id IN ?',
+    'returning': 'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
   },
 )
 class Database extends _$Database {

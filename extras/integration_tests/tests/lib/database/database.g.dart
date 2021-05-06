@@ -647,6 +647,19 @@ abstract class _$Database extends GeneratedDatabase {
         readsFrom: {users}).map(users.mapFromRow);
   }
 
+  Future<List<Friendship>> returning(int var1, int var2, bool var3) {
+    return customWriteReturning(
+        'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+        variables: [
+          Variable<int>(var1),
+          Variable<int>(var2),
+          Variable<bool>(var3)
+        ],
+        updates: {
+          friendships
+        }).then((rows) => rows.map(friendships.mapFromRow).toList());
+  }
+
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

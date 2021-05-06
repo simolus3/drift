@@ -9,6 +9,8 @@ import 'migrations.dart';
 abstract class TestExecutor {
   DatabaseConnection createConnection();
 
+  bool get supportsReturning => false;
+
   /// Delete the data that would be written by the executor.
   Future deleteData();
 }
