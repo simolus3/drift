@@ -262,6 +262,8 @@ This feature works for
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
+- insertables for insert statements: `INSERT INTO todos $row` generates an `Insertable<TodoEntry> row` 
+  parameter
 
 When used as expression, you can also supply a default value in your query:
 
