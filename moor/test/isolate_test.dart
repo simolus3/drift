@@ -227,6 +227,17 @@ void _runTests(
 
     await database.close();
   });
+
+  test('supports single quotes in text', () async {
+    // Regression test for https://github.com/simolus3/moor/issues/1179
+    await database.customStatement('CREATE TABLE sample(title TEXT)');
+    await database.customStatement('INSERT INTO sample VALUES '
+        "('O''Connor'), ('Tomeo''s');");
+
+    final result =
+        await database.customSelect('SELECT title FROM sample').get();
+    expect(result.map((f) => f.read<String>('title')), ["O'Connor", "Tomeo's"]);
+  });
 }
 
 DatabaseConnection _backgroundConnection() {
