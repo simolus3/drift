@@ -13,7 +13,7 @@ void customObjectTests(TestExecutor executor) {
     await db.updateSettings(1, Preferences(true));
     preferences = await db.settingsFor(1).getSingle();
 
-    expect(preferences.receiveEmails, true);
+    expect(preferences?.receiveEmails, true);
 
     await db.close();
   });

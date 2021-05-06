@@ -52,7 +52,7 @@ class Preferences {
 class PreferenceConverter extends TypeConverter<Preferences, String> {
   const PreferenceConverter();
   @override
-  Preferences mapToDart(String fromDb) {
+  Preferences? mapToDart(String? fromDb) {
     if (fromDb == null) {
       return null;
     }
@@ -60,7 +60,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
   }
 
   @override
-  String mapToSql(Preferences value) {
+  String? mapToSql(Preferences? value) {
     if (value == null) {
       return null;
     }
@@ -100,12 +100,12 @@ class Database extends _$Database {
       : this(DatabaseConnection.fromExecutor(db));
 
   /// It will be set in the onUpgrade callback. Null if no migration occurred
-  int schemaVersionChangedFrom;
+  int? schemaVersionChangedFrom;
 
   /// It will be set in the onUpgrade callback. Null if no migration occurred
-  int schemaVersionChangedTo;
+  int? schemaVersionChangedTo;
 
-  MigrationStrategy overrideMigration;
+  MigrationStrategy? overrideMigration;
 
   @override
   MigrationStrategy get migration {
@@ -169,9 +169,9 @@ class Database extends _$Database {
     return into(users).insert(user);
   }
 
-  Selectable<User> friendsOf(int id) => friendshipsOf(id).map((r) => r.user);
+  Selectable<User> friendsOf(int id) => friendshipsOf(id).map((r) => r.user!);
 
-  Future<void> makeFriends(User a, User b, {bool goodFriends}) async {
+  Future<void> makeFriends(User a, User b, {bool? goodFriends}) async {
     var friendsValue = const Value<bool>.absent();
     if (goodFriends != null) {
       friendsValue = Value(goodFriends);
