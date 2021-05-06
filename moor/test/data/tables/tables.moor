@@ -91,4 +91,4 @@ cfeTest: WITH RECURSIVE
   SELECT x FROM cnt;
 
 nullableQuery: SELECT MAX(oid) FROM config;
-addConfig: INSERT INTO config VALUES (?, ?, ?, ?) RETURNING *;
+addConfig: INSERT INTO config $value RETURNING *;

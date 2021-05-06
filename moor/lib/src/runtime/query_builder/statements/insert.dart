@@ -143,25 +143,7 @@ class InsertStatement<T extends Table, D> {
     if (map.isEmpty) {
       ctx.buffer.write('DEFAULT VALUES');
     } else {
-      final columns = map.keys.map(escapeIfNeeded);
-
-      ctx.buffer
-        ..write('(')
-        ..write(columns.join(', '))
-        ..write(') ')
-        ..write('VALUES (');
-
-      var first = true;
-      for (final variable in map.values) {
-        if (!first) {
-          ctx.buffer.write(', ');
-        }
-        first = false;
-
-        variable.writeInto(ctx);
-      }
-
-      ctx.buffer.write(')');
+      writeInsertable(ctx, map);
     }
 
     if (onConflict != null) {
@@ -224,6 +206,30 @@ class InsertStatement<T extends Table, D> {
     }
 
     table.validateIntegrity(d, isInserting: true).throwIfInvalid(d);
+  }
+
+  /// Writes column names and values from the [map].
+  @internal
+  void writeInsertable(GenerationContext ctx, Map<String, Expression> map) {
+    final columns = map.keys.map(escapeIfNeeded);
+
+    ctx.buffer
+      ..write('(')
+      ..write(columns.join(', '))
+      ..write(') ')
+      ..write('VALUES (');
+
+    var first = true;
+    for (final variable in map.values) {
+      if (!first) {
+        ctx.buffer.write(', ');
+      }
+      first = false;
+
+      variable.writeInto(ctx);
+    }
+
+    ctx.buffer.write(')');
   }
 }
 

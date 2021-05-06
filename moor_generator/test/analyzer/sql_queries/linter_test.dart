@@ -66,6 +66,31 @@ all ($limit = 3): SELECT * FROM foo LIMIT $limit;
     );
   });
 
+  test('warns when placeholder are used in insert with columns', () async {
+    final state = TestState.withContent({
+      'foo|lib/a.moor': r'''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY,
+  content VARCHAR
+);
+
+in: INSERT INTO foo (id) $placeholder;
+      ''',
+    });
+
+    final result = await state.analyze('package:foo/a.moor');
+    state.close();
+
+    expect(
+      result.errors.errors,
+      contains(isA<MoorError>().having(
+        (e) => e.message,
+        'message',
+        contains("Dart placeholders can't be used here"),
+      )),
+    );
+  });
+
   group('warns about wrong types in subexpressions', () {
     test('strings in arithmetic', () {
       final result = engine.analyze("SELECT 'foo' + 3;");

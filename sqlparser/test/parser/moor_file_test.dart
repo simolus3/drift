@@ -18,6 +18,7 @@ all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 typeHints(REQUIRED :foo AS TEXT OR NULL, $predicate = TRUE):
   SELECT :foo WHERE $predicate;
 nested AS MyResultSet: SELECT foo.** FROM tbl foo;
+add: INSERT INTO tbl $row RETURNING *;
 ''';
 
 void main() {
@@ -74,13 +75,16 @@ void main() {
         ),
         DeclaredStatement(
           SimpleName('typeHints'),
-          SelectStatement(columns: [
-            ExpressionResultColumn(
-              expression: ColonNamedVariable(
-                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+          SelectStatement(
+            columns: [
+              ExpressionResultColumn(
+                expression: ColonNamedVariable(
+                  ColonVariableToken(fakeSpan(':foo'), ':foo'),
+                ),
               ),
-            ),
-          ]),
+            ],
+            where: DartExpressionPlaceholder(name: 'predicate'),
+          ),
           parameters: [
             VariableTypeHint(
               ColonNamedVariable(
@@ -104,6 +108,17 @@ void main() {
           ),
           as: 'MyResultSet',
         ),
+        DeclaredStatement(
+          SimpleName('add'),
+          InsertStatement(
+            table: TableReference('tbl'),
+            source: DartInsertablePlaceholder(name: 'row'),
+            targetColumns: const [],
+            returning: Returning([
+              StarResultColumn(),
+            ]),
+          ),
+        )
       ]),
     );
   });

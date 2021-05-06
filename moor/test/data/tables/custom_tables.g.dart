@@ -1721,19 +1721,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {config}).map((QueryRow row) => row.read<int?>('_c0'));
   }
 
-  Future<List<Config>> addConfig(
-      String var1, String? var2, SyncType? var3, SyncType? var4) {
+  Future<List<Config>> addConfig({required Insertable<Config> value}) {
+    final generatedvalue = $writeInsertable(this.config, value);
     return customWriteReturning(
-        'INSERT INTO config VALUES (?, ?, ?, ?) RETURNING *',
-        variables: [
-          Variable<String>(var1),
-          Variable<String?>(var2),
-          Variable<int?>(ConfigTable.$converter0.mapToSql(var3)),
-          Variable<int?>(ConfigTable.$converter1.mapToSql(var4))
-        ],
-        updates: {
-          config
-        }).then((rows) => rows.map(config.mapFromRow).toList());
+        'INSERT INTO config ${generatedvalue.sql} RETURNING *',
+        variables: [...generatedvalue.introducedVariables],
+        updates: {config}).then((rows) => rows.map(config.mapFromRow).toList());
   }
 
   Future<int> writeConfig({required String key, String? value}) {

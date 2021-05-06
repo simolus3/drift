@@ -97,8 +97,9 @@ class ProgrammingLanguages extends Table {
     expect(importQuery.hasMultipleTables, isFalse);
     expect(
         importQuery.placeholders,
-        contains(equals(
-            FoundDartPlaceholder(DartPlaceholderType.orderBy, null, 'o'))));
+        contains(equals(FoundDartPlaceholder(
+            SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
+            'o'))));
 
     final librariesQuery = database.queries
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;

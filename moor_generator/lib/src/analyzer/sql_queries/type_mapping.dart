@@ -248,28 +248,37 @@ class TypeMapper {
 
   FoundDartPlaceholder _extractPlaceholder(
       AnalysisContext context, DartPlaceholder placeholder) {
-    ColumnType columnType;
-    Expression defaultValue;
     final name = placeholder.name;
 
     final type = placeholder.when(
       isExpression: (e) {
         final foundType = context.typeOf(e);
+        ColumnType columnType;
         if (foundType.type != null) {
           columnType = resolvedToMoor(foundType.type);
         }
 
-        defaultValue = context.stmtOptions.defaultValuesForPlaceholder[name];
-        return DartPlaceholderType.expression;
+        final defaultValue =
+            context.stmtOptions.defaultValuesForPlaceholder[name];
+
+        return ExpressionDartPlaceholderType(columnType, defaultValue);
       },
-      isLimit: (_) => DartPlaceholderType.limit,
-      isOrderBy: (_) => DartPlaceholderType.orderBy,
-      isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
+      isLimit: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.limit),
+      isOrderBy: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
+      isOrderingTerm: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderByTerm),
+      isInsertable: (_) {
+        final insert = placeholder.parents.whereType<InsertStatement>().first;
+        final table = insert.table.resultSet;
+
+        return InsertableDartPlaceholderType(
+            table is Table ? tableToMoor(table) : null);
+      },
     );
 
-    return FoundDartPlaceholder(type, columnType, name,
-        defaultValue: defaultValue)
-      ..astNode = placeholder;
+    return FoundDartPlaceholder(type, name)..astNode = placeholder;
   }
 
   MoorTable tableToMoor(Table table) {

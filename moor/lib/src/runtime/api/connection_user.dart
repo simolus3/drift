@@ -462,4 +462,18 @@ abstract class DatabaseConnectionUser {
 
     return context;
   }
+
+  /// Writes column names and `VALUES` for an insert statement.
+  ///
+  /// Used by generated code.
+  @protected
+  GenerationContext $writeInsertable(TableInfo table, Insertable insertable) {
+    final context = GenerationContext.fromDb(this);
+
+    table.validateIntegrity(insertable, isInserting: true);
+    InsertStatement(this, table)
+        .writeInsertable(context, insertable.toColumns(true));
+
+    return context;
+  }
 }

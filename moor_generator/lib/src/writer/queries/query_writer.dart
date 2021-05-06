@@ -286,9 +286,8 @@ class QueryWriter {
       // Placeholders with a default value generate optional (and thus, named)
       // parameters. Since moor 4, we have an option to also generate named
       // parameters for named variables.
-      final isNamed =
-          (element is FoundDartPlaceholder && element.defaultValue != null) ||
-              (element.hasSqlName && options.generateNamedParameters);
+      final isNamed = (element is FoundDartPlaceholder && element.hasDefault) ||
+          (element.hasSqlName && options.generateNamedParameters);
 
       if (isNamed) {
         namedElements.add(element);
@@ -315,14 +314,15 @@ class QueryWriter {
 
         if (optional is FoundDartPlaceholder) {
           final kind = optional.type;
-          if (kind == DartPlaceholderType.expression &&
-              optional.defaultValue != null) {
+          if (kind is ExpressionDartPlaceholderType &&
+              kind.defaultValue != null) {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
             final defaultSql =
-                "'(${escapeForDart(optional.defaultValue.toSql())})'";
+                "'(${escapeForDart(kind.defaultValue.toSql())})'";
             defaultCode = 'const CustomExpression($defaultSql)';
-          } else if (kind == DartPlaceholderType.orderBy) {
+          } else if (kind is SimpleDartPlaceholderType &&
+              kind.kind == SimpleDartPlaceholderKind.orderBy) {
             defaultCode = 'const OrderBy.nothing()';
           }
         }
@@ -439,15 +439,26 @@ class QueryWriter {
         _buffer
           ..write('final ')
           ..write(placeholderContextName(element))
-          ..write(' = ')
-          ..write(r'$write(')
-          ..write(element.dartParameterName);
+          ..write(' = ');
 
-        if (query.hasMultipleTables) {
-          _buffer.write(', hasMultipleTables: true');
+        final type = element.type;
+        if (type is InsertableDartPlaceholderType) {
+          final table = type.table;
+
+          _buffer
+            ..write(r'$writeInsertable(this.')
+            ..write(table?.dbGetterName)
+            ..write(', ')
+            ..write(element.dartParameterName)
+            ..write(');\n');
+        } else {
+          _buffer..write(r'$write(')..write(element.dartParameterName);
+          if (query.hasMultipleTables) {
+            _buffer.write(', hasMultipleTables: true');
+          }
+
+          _buffer.write(');\n');
         }
-
-        _buffer.write(');\n');
 
         // similar to the case for expanded array variables, we need to
         // increase the index

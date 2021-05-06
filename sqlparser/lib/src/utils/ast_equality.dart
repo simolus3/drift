@@ -39,12 +39,18 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     final currentChildren = _current.childNodes.iterator;
     final otherChildren = other.childNodes.iterator;
 
-    // always move both iterators
-    while (currentChildren.moveNext() & otherChildren.moveNext()) {
-      _check(currentChildren.current, otherChildren.current);
+    while (currentChildren.moveNext()) {
+      if (otherChildren.moveNext()) {
+        _check(currentChildren.current, otherChildren.current);
+      } else {
+        // Current has more elements than other
+        throw NotEqualException(
+            "$_current and $other don't have an equal amount of children");
+      }
     }
 
-    if (currentChildren.moveNext() || otherChildren.moveNext()) {
+    if (otherChildren.moveNext()) {
+      // Other has more elements than current
       throw NotEqualException(
           "$_current and $other don't have an equal amount of children");
     }

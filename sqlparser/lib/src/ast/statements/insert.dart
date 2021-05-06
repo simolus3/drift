@@ -74,22 +74,9 @@ class InsertStatement extends CrudStatement
       ];
 }
 
-abstract class InsertSource extends AstNode {
-  T? when<T>(
-      {T Function(ValuesSource)? isValues,
-      T Function(SelectInsertSource)? isSelect,
-      T Function(DefaultValues)? isDefaults}) {
-    if (this is ValuesSource) {
-      return isValues?.call(this as ValuesSource);
-    } else if (this is SelectInsertSource) {
-      return isSelect?.call(this as SelectInsertSource);
-    } else if (this is DefaultValues) {
-      return isDefaults?.call(this as DefaultValues);
-    } else {
-      throw StateError('Did not expect $runtimeType as InsertSource');
-    }
-  }
-}
+/// Marker interface for AST nodes that can be used as data sources in insert
+/// statements.
+abstract class InsertSource extends AstNode {}
 
 /// Uses a list of values for an insert statement (`VALUES (a, b, c)`).
 class ValuesSource extends InsertSource {

@@ -1568,6 +1568,12 @@ class Parser {
       final first = _previous;
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return DefaultValues()..setSpan(first, _previous);
+    } else if (enableMoorExtensions &&
+        _matchOne(TokenType.dollarSignVariable)) {
+      final token = _previous as DollarSignVariableToken;
+      return DartInsertablePlaceholder(name: token.name)
+        ..token = token
+        ..setSpan(token, token);
     } else {
       final first = _previous;
       return SelectInsertSource(

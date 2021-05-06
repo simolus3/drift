@@ -736,6 +736,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visit(e.source, arg);
+    visitNullable(e.upsert, arg);
     visitNullable(e.returning, arg);
   }
 

@@ -157,31 +157,40 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     if (targeted == null) return;
 
     // First, check that the amount of values matches the declaration.
-    e.source.when(
-      isValues: (values) {
-        for (final tuple in values.values) {
-          if (tuple.expressions.length != targeted.length) {
-            linter.lints.add(AnalysisError(
-              type: AnalysisErrorType.other,
-              message: 'Expected tuple to have ${targeted.length} values',
-              relevantNode: tuple,
-            ));
-          }
-        }
-      },
-      isSelect: (select) {
-        final columns = select.stmt.resolvedColumns;
-
-        if (columns.length != targeted.length) {
+    final source = e.source;
+    if (source is ValuesSource) {
+      for (final tuple in source.values) {
+        if (tuple.expressions.length != targeted.length) {
           linter.lints.add(AnalysisError(
             type: AnalysisErrorType.other,
-            message: 'This select statement should return ${targeted.length} '
-                'columns, but actually returns ${columns.length}',
-            relevantNode: select.stmt,
+            message: 'Expected tuple to have ${targeted.length} values',
+            relevantNode: tuple,
           ));
         }
-      },
-    );
+      }
+    } else if (source is SelectInsertSource) {
+      final columns = source.stmt.resolvedColumns;
+
+      if (columns.length != targeted.length) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'This select statement should return ${targeted.length} '
+              'columns, but actually returns ${columns.length}',
+          relevantNode: source.stmt,
+        ));
+      }
+    } else if (source is DartInsertablePlaceholder) {
+      // Insertables always cover a full table, so we can't have target columns
+      if (e.targetColumns.isNotEmpty) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: "Dart placeholders can't be used here, because this insert "
+              'statement explicitly defines the columns to set. Try removing '
+              'the columns on the left.',
+          relevantNode: source,
+        ));
+      }
+    }
 
     // second, check that no required columns are left out
     final resolved = e.table.resolved;

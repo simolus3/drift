@@ -1,5 +1,5 @@
 import 'package:moor/ffi.dart';
-import 'package:moor/src/runtime/query_builder/query_builder.dart' hide isNull;
+import 'package:moor/moor.dart' hide isNull;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
@@ -68,7 +68,12 @@ void main() {
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(
-          'key2', 'val', SyncType.locallyCreated, SyncType.locallyCreated);
+          value: ConfigCompanion.insert(
+        configKey: 'key2',
+        configValue: const Value('val'),
+        syncState: const Value(SyncType.locallyCreated),
+        syncStateImplicit: const Value(SyncType.locallyCreated),
+      ));
 
       expect(result, hasLength(1));
       expect(

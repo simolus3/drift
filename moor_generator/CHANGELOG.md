@@ -1,6 +1,7 @@
 ## 4.3.0
 
 - Generate non-nullable nested result classes when possible
+- Support Dart placeholders for insert statements
 
 ## 4.2.2
 

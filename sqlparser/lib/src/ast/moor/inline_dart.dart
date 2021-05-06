@@ -34,11 +34,13 @@ abstract class DartPlaceholder extends AstNode {
     return visitor.visitDartPlaceholder(this, arg);
   }
 
-  T? when<T>(
-      {T Function(DartExpressionPlaceholder)? isExpression,
-      T Function(DartLimitPlaceholder)? isLimit,
-      T Function(DartOrderingTermPlaceholder)? isOrderingTerm,
-      T Function(DartOrderByPlaceholder)? isOrderBy}) {
+  T? when<T>({
+    T Function(DartExpressionPlaceholder)? isExpression,
+    T Function(DartLimitPlaceholder)? isLimit,
+    T Function(DartOrderingTermPlaceholder)? isOrderingTerm,
+    T Function(DartOrderByPlaceholder)? isOrderBy,
+    T Function(DartInsertablePlaceholder)? isInsertable,
+  }) {
     if (this is DartExpressionPlaceholder) {
       return isExpression?.call(this as DartExpressionPlaceholder);
     } else if (this is DartLimitPlaceholder) {
@@ -47,6 +49,8 @@ abstract class DartPlaceholder extends AstNode {
       return isOrderingTerm?.call(this as DartOrderingTermPlaceholder);
     } else if (this is DartOrderByPlaceholder) {
       return isOrderBy?.call(this as DartOrderByPlaceholder);
+    } else if (this is DartInsertablePlaceholder) {
+      return isInsertable?.call(this as DartInsertablePlaceholder);
     }
 
     throw AssertionError('Invalid placeholder: $runtimeType');
@@ -68,4 +72,9 @@ class DartOrderingTermPlaceholder extends DartPlaceholder
 
 class DartOrderByPlaceholder extends DartPlaceholder implements OrderByBase {
   DartOrderByPlaceholder({required String name}) : super._(name);
+}
+
+class DartInsertablePlaceholder extends DartPlaceholder
+    implements InsertSource {
+  DartInsertablePlaceholder({required String name}) : super._(name);
 }
