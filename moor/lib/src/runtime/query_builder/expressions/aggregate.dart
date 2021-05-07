@@ -80,6 +80,22 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   Expression<double?> total() => _AggregateExpression('TOTAL', this);
 }
 
+/// Provides aggregate functions that are available on date time expressions.
+extension DateTimeAggregate on Expression<DateTime?> {
+  /// Return the average of all non-null values in this group.
+  Expression<DateTime> avg() => secondsSinceEpoch.avg().roundToInt().dartCast();
+
+  /// Return the maximum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  Expression<DateTime> max() => _AggregateExpression('MAX', this);
+
+  /// Return the minimum of all non-null values in this group.
+  ///
+  /// If there are no non-null values in the group, returns null.
+  Expression<DateTime> min() => _AggregateExpression('MIN', this);
+}
+
 class _AggregateExpression<D> extends Expression<D> {
   final String functionName;
   final bool distinct;
