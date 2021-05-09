@@ -19,6 +19,16 @@ class RowClass {
 @UseRowClass(RowClass)
 class TableClass extends Table {}
       ''',
+      'a|lib/invalid_no_named_constructor.dart': '''
+import 'package:moor/moor.dart';
+
+class RowClass {
+  RowClass();
+  RowClass.create();
+}
+@UseRowClass(RowClass, constructor: 'create2')
+class TableClass extends Table {}
+      ''',
       'a|lib/mismatching_type.dart': '''
 import 'package:moor/moor.dart';
 
@@ -76,6 +86,16 @@ class TableClass extends Table {
         file.errors.errors,
         contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
             contains('must have an unnamed constructor'))),
+      );
+    });
+
+    test('when no constructor with the right name exists', () async {
+      final file =
+          await state.analyze('package:a/invalid_no_named_constructor.dart');
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
+            contains('does not have a constructor named create2'))),
       );
     });
 

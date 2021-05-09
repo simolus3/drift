@@ -4,14 +4,17 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 
-ExistingRowClass /*?*/ validateExistingClass(
-    List<MoorColumn> columns, ClassElement desiredClass, ErrorSink errors) {
-  final ctor = desiredClass.unnamedConstructor;
+ExistingRowClass /*?*/ validateExistingClass(List<MoorColumn> columns,
+    ClassElement desiredClass, String constructor, ErrorSink errors) {
+  final ctor = desiredClass.getNamedConstructor(constructor);
+
   if (ctor == null) {
-    errors.report(ErrorInDartCode(
-      affectedElement: desiredClass,
-      message: 'The desired data class must have an unnamed constructor',
-    ));
+    final msg = constructor == ''
+        ? 'The desired data class must have an unnamed constructor'
+        : 'The desired data class does not have a constructor named '
+            '$constructor';
+
+    errors.report(ErrorInDartCode(affectedElement: desiredClass, message: msg));
     return null;
   }
 

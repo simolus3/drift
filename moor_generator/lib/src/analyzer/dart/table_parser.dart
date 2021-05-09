@@ -70,6 +70,7 @@ class TableParser {
 
     String name;
     ClassElement existingClass;
+    String constructorInExistingClass;
 
     if (dataClassName != null) {
       name = dataClassName.getField('name').toStringValue();
@@ -79,6 +80,8 @@ class TableParser {
 
     if (useRowClass != null) {
       final type = useRowClass.getField('type').toTypeValue();
+      constructorInExistingClass =
+          useRowClass.getField('constructor').toStringValue();
 
       if (type is InterfaceType) {
         existingClass = type.element;
@@ -93,7 +96,8 @@ class TableParser {
 
     final verified = existingClass == null
         ? null
-        : validateExistingClass(columns, existingClass, base.step.errors);
+        : validateExistingClass(columns, existingClass,
+            constructorInExistingClass, base.step.errors);
     return _DataClassInformation(name, verified);
   }
 

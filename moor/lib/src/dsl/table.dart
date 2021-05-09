@@ -144,9 +144,15 @@ class UseRowClass {
   /// or types with arguments, are not allowed.
   final Type type;
 
+  /// The name of the constructor to use.
+  ///
+  /// When this option is not set, the default (unnamed) constructor will be
+  /// used to map database rows to the desired row class.
+  final String constructor;
+
   /// Customize the class used by moor to hold an instance of an annotated
   /// table.
   ///
   /// For details, see the overall documentation on [UseRowClass].
-  const UseRowClass(this.type);
+  const UseRowClass(this.type, {this.constructor = ''});
 }

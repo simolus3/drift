@@ -1205,7 +1205,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return CustomRowClass(
+    return CustomRowClass.map(
       const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
       const RealType()
