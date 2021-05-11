@@ -2,13 +2,16 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/features.dart';
 import 'package:args/command_runner.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/cli/cli.dart';
 import 'package:moor_generator/src/services/schema/schema_files.dart';
 import 'package:moor_generator/writer.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 class GenerateUtilsCommand extends Command {
   final MoorCli cli;
@@ -16,7 +19,7 @@ class GenerateUtilsCommand extends Command {
   GenerateUtilsCommand(this.cli) {
     argParser.addFlag(
       'null-safety',
-      defaultsTo: false,
+      defaultsTo: null,
       help: 'Whether to generate null-safe test code.',
     );
   }
@@ -36,7 +39,8 @@ class GenerateUtilsCommand extends Command {
 
   @override
   Future<void> run() async {
-    final isNnbd = argResults['null-safety'] as bool;
+    final isNnbd = (argResults['null-safety'] as bool) ??
+        await _isCurrentPackageNullSafe();
 
     final rest = argResults.rest;
     if (rest.length != 2) {
@@ -65,6 +69,30 @@ class GenerateUtilsCommand extends Command {
     await _writeLibraryFile(outputDir, schema.keys, isNnbd);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
+  }
+
+  Future<bool> _isCurrentPackageNullSafe() async {
+    PackageConfig config;
+    try {
+      config = await findPackageConfig(Directory.current);
+    } on Object {
+      stderr.write('Could not determine whether to use null-safety. Please '
+          'run this command in a Dart project, or try running `pub get` first');
+      return false;
+    }
+
+    // Just use any file in the current package, the file doesn't have to exist.
+    final ownPackage =
+        config.packageOf(Uri.file(File('pubspec.yaml').absolute.path));
+    if (ownPackage == null) return false;
+
+    final version = ownPackage.languageVersion;
+    final featureSet = FeatureSet.fromEnableFlags2(
+      sdkLanguageVersion: Version(version.major, version.minor, 0),
+      flags: const [],
+    );
+
+    return featureSet.isEnabled(Feature.non_nullable);
   }
 
   Future<Map<int, List<MoorSchemaEntity>>> _parseSchema(
