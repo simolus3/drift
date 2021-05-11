@@ -16,6 +16,8 @@ import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../custom_row_class.dart';
+
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
   final TableInducingStatement stmt;
@@ -164,10 +166,24 @@ class CreateTableReader {
 
     final tableName = table.name;
     String dartTableName, dataClassName;
+    ExistingRowClass existingRowClass;
 
     final overriddenNames = stmt.overriddenDataClassName;
     if (overriddenNames != null) {
-      if (overriddenNames.contains('/')) {
+      if (stmt.useExistingDataClass) {
+        final clazz = await _findDartClass(overriddenNames);
+        if (clazz == null) {
+          step.reportError(ErrorInMoorFile(
+            span: stmt.tableNameToken.span,
+            message: 'Existing Dart class $overriddenNames was not found, are '
+                'you missing an import?',
+          ));
+        } else {
+          existingRowClass = validateExistingClass(
+              foundColumns.values, clazz, '', step.errors);
+          dataClassName = existingRowClass?.targetClass?.name;
+        }
+      } else if (overriddenNames.contains('/')) {
         // Feature to also specify the generated table class. This is extremely
         // rarely used if there's a conflicting class from moor. See #932
         final names = overriddenNames.split('/');
@@ -207,6 +223,7 @@ class CreateTableReader {
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
       declaration: MoorTableDeclaration(stmt, step.file),
+      existingRowClass: existingRowClass,
     )..parserTable = table;
   }
 
@@ -243,6 +260,15 @@ class CreateTableReader {
   }
 
   Future<DartType> _readDartType(String typeIdentifier) async {
+    final foundClass = await _findDartClass(typeIdentifier);
+
+    return foundClass?.instantiate(
+      typeArguments: const [],
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+  }
+
+  Future<ClassElement> _findDartClass(String identifier) async {
     final dartImports = imports
         .map((import) => import.importedFile)
         .where((importUri) => importUri.endsWith('.dart'));
@@ -256,12 +282,9 @@ class CreateTableReader {
         continue;
       }
 
-      final foundElement = library.exportNamespace.get(typeIdentifier);
+      final foundElement = library.exportNamespace.get(identifier);
       if (foundElement is ClassElement) {
-        return foundElement.instantiate(
-          typeArguments: const [],
-          nullabilitySuffix: NullabilitySuffix.none,
-        );
+        return foundElement;
       }
     }
 

@@ -480,67 +480,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   bool get dontWriteConstraints => true;
 }
 
-class NoId extends DataClass implements Insertable<NoId> {
-  final Uint8List payload;
-  NoId({required this.payload});
-  factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    return NoId(
-      payload: const BlobType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
-    );
-  }
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['payload'] = Variable<Uint8List>(payload);
-    return map;
-  }
-
-  NoIdsCompanion toCompanion(bool nullToAbsent) {
-    return NoIdsCompanion(
-      payload: Value(payload),
-    );
-  }
-
-  factory NoId.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return NoId(
-      payload: serializer.fromJson<Uint8List>(json['payload']),
-    );
-  }
-  factory NoId.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'payload': serializer.toJson<Uint8List>(payload),
-    };
-  }
-
-  NoId copyWith({Uint8List? payload}) => NoId(
-        payload: payload ?? this.payload,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('NoId(')..write('payload: $payload')..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf(payload.hashCode);
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is NoId && other.payload == this.payload);
-}
-
-class NoIdsCompanion extends UpdateCompanion<NoId> {
+class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
   final Value<Uint8List> payload;
   const NoIdsCompanion({
     this.payload = const Value.absent(),
@@ -548,7 +488,7 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   NoIdsCompanion.insert({
     required Uint8List payload,
   }) : payload = Value(payload);
-  static Insertable<NoId> custom({
+  static Insertable<NoIdRow> custom({
     Expression<Uint8List>? payload,
   }) {
     return RawValuesInsertable({
@@ -580,7 +520,7 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   }
 }
 
-class NoIds extends Table with TableInfo<NoIds, NoId> {
+class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final GeneratedDatabase _db;
   final String? _alias;
   NoIds(this._db, [this._alias]);
@@ -600,7 +540,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   @override
   final String actualTableName = 'no_ids';
   @override
-  VerificationContext validateIntegrity(Insertable<NoId> instance,
+  VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -616,9 +556,12 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   @override
   Set<GeneratedColumn> get $primaryKey => {payload};
   @override
-  NoId map(Map<String, dynamic> data, {String? tablePrefix}) {
+  NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return NoId.fromData(data, _db, prefix: effectivePrefix);
+    return NoIdRow(
+      const BlobType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
+    );
   }
 
   @override

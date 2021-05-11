@@ -1,10 +1,12 @@
 // @dart=2.9
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 
-ExistingRowClass /*?*/ validateExistingClass(List<MoorColumn> columns,
+ExistingRowClass /*?*/ validateExistingClass(Iterable<MoorColumn> columns,
     ClassElement desiredClass, String constructor, ErrorSink errors) {
   final ctor = desiredClass.getNamedConstructor(constructor);
 
@@ -44,6 +46,7 @@ ExistingRowClass /*?*/ validateExistingClass(List<MoorColumn> columns,
 void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
   final type = element.type;
   final typesystem = element.library.typeSystem;
+  final provider = element.library.typeProvider;
 
   void error(String message) {
     errors.report(ErrorInDartCode(
@@ -60,36 +63,37 @@ void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
     return;
   }
 
-  // If there's a type converter, ensure the type matches
+  DartType expectedDartType;
+
   if (column.typeConverter != null) {
-    final mappedType = column.typeConverter.mappedType;
-    if (!typesystem.isAssignableTo(mappedType, type)) {
-      error('Parameter must accept '
-          '${mappedType.getDisplayString(withNullability: true)}');
-    }
+    expectedDartType = column.typeConverter.mappedType;
   } else {
-    // No type converter, check raw column type
-    if (!type.matches(column.type)) {
-      error('Invalid type, expected ${dartTypeNames[column.type]}');
-    }
+    expectedDartType = provider.typeFor(column.type);
+  }
+
+  if (!typesystem.isAssignableTo(expectedDartType, type)) {
+    error('Parameter must accept '
+        '${expectedDartType.getDisplayString(withNullability: true)}');
   }
 }
 
-extension on DartType {
-  bool matches(ColumnType type) {
+extension on TypeProvider {
+  DartType typeFor(ColumnType type) {
     switch (type) {
       case ColumnType.integer:
-        return isDartCoreInt;
+        return intType;
       case ColumnType.text:
-        return isDartCoreString;
+        return stringType;
       case ColumnType.boolean:
-        return isDartCoreBool;
-      case ColumnType.real:
-        return isDartCoreDouble;
+        return boolType;
       case ColumnType.datetime:
-        return element.name == 'DateTime' && element.library.isDartCore;
+        return intElement.library.getType('DateTime').instantiate(
+            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.blob:
-        return isDartCoreList;
+        // todo: We should return Uint8List, but how?
+        return listType(intType);
+      case ColumnType.real:
+        return doubleType;
     }
 
     throw AssertionError('Unhandled moor type');

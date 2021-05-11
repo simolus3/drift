@@ -1887,7 +1887,8 @@ class Parser {
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
-      overriddenDataClassName: overriddenName,
+      overriddenDataClassName: overriddenName?.name,
+      useExistingDartClass: overriddenName?.useExisting,
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
@@ -1958,17 +1959,22 @@ class Parser {
       tableName: nameToken.identifier,
       moduleName: moduleName.identifier,
       arguments: args,
-      overriddenDataClassName: moorDataClassName,
+      overriddenDataClassName: moorDataClassName?.name,
+      useExistingDartClass: moorDataClassName?.useExisting,
     )
       ..setSpan(first, _previous)
       ..tableNameToken = nameToken
       ..moduleNameToken = moduleName;
   }
 
-  String? _overriddenDataClassName() {
-    if (enableMoorExtensions && _matchOne(TokenType.as)) {
-      return _consumeIdentifier('Expected the name for the data class')
-          .identifier;
+  _OverriddenDataClassName? _overriddenDataClassName() {
+    if (enableMoorExtensions &&
+        (_match(const [TokenType.as, TokenType.$with]))) {
+      final useExisting = _previous.type == TokenType.$with;
+      final name =
+          _consumeIdentifier('Expected the name for the data class').identifier;
+
+      return _OverriddenDataClassName(name, useExisting);
     }
     return null;
   }
@@ -2505,6 +2511,13 @@ class Parser {
 
     return columnNames;
   }
+}
+
+class _OverriddenDataClassName {
+  final String name;
+  final bool useExisting;
+
+  _OverriddenDataClassName(this.name, this.useExisting);
 }
 
 extension on List<Token> {
