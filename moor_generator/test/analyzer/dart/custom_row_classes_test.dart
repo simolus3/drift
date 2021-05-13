@@ -104,7 +104,7 @@ class TableClass extends Table {
       expect(
         file.errors.errors,
         contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
-            contains('Invalid type, expected String'))),
+            contains('Parameter must accept String'))),
       );
     });
 
