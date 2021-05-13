@@ -52,4 +52,20 @@ void main() {
         throwsA(isArgumentError.having((e) => e.message, 'message',
             contains('Must return exactly one column'))));
   });
+
+  test('does not count columns with useColumns: false', () {
+    // Regression test for https://github.com/simolus3/moor/issues/1189
+    final db = TodoDb();
+
+    expect(
+      subqueryExpression<String>(db.selectOnly(db.users)
+        ..addColumns([db.users.name])
+        ..join([
+          innerJoin(db.categories, db.categories.id.equalsExp(db.users.id),
+              useColumns: false)
+        ])),
+      generates('(SELECT users.name AS "users.name" FROM users '
+          'INNER JOIN categories ON categories.id = users.id)'),
+    );
+  });
 }

@@ -42,8 +42,12 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
 
   @override
   int get _returnedColumnCount {
-    return _joins.fold(_selectedColumns.length,
-        (prev, join) => prev + join.table.$columns.length);
+    return _joins.fold(_selectedColumns.length, (prev, join) {
+      if (join.includeInResult) {
+        return prev + join.table.$columns.length;
+      }
+      return prev;
+    });
   }
 
   /// Lists all tables this query reads from.
