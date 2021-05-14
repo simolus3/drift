@@ -141,7 +141,7 @@ class User extends DataClass implements Insertable<User> {
           $mrjc(birthDate.hashCode,
               $mrjc(profilePicture.hashCode, preferences.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
@@ -430,7 +430,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   int get hashCode => $mrjf($mrjc(firstUser.hashCode,
       $mrjc(secondUser.hashCode, reallyGoodFriends.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Friendship &&
           other.firstUser == this.firstUser &&
@@ -676,7 +676,7 @@ class FriendshipsOfResult {
   @override
   int get hashCode => $mrjf($mrjc(reallyGoodFriends.hashCode, user.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FriendshipsOfResult &&
           other.reallyGoodFriends == this.reallyGoodFriends &&

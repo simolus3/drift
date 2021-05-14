@@ -80,7 +80,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -299,7 +299,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Recipe &&
           other.id == this.id &&
@@ -555,7 +555,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   int get hashCode =>
       $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Ingredient &&
           other.id == this.id &&
@@ -792,7 +792,7 @@ class IngredientInRecipe extends DataClass
   int get hashCode => $mrjf($mrjc(
       recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is IngredientInRecipe &&
           other.recipe == this.recipe &&
@@ -993,7 +993,7 @@ class TotalWeightResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TotalWeightResult &&
           other.title == this.title &&

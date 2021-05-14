@@ -128,7 +128,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           $mrjc(content.hashCode,
               $mrjc(targetDate.hashCode, category.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == this.id &&
@@ -414,7 +414,7 @@ class Category extends DataClass implements Insertable<Category> {
   int get hashCode =>
       $mrjf($mrjc(id.hashCode, $mrjc(description.hashCode, priority.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -668,7 +668,7 @@ class User extends DataClass implements Insertable<User> {
           $mrjc(isAwesome.hashCode,
               $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
@@ -938,7 +938,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SharedTodo &&
           other.todo == this.todo &&
@@ -1283,7 +1283,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   int get hashCode => $mrjf(txt.hashCode);
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) || (other is PureDefault && other.txt == this.txt);
 }
 
@@ -1489,7 +1489,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
                   $mrjc(category.hashCode,
                       $mrjc(catId.hashCode, catDesc.hashCode)))))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AllTodosWithCategoryResult &&
           other.id == this.id &&

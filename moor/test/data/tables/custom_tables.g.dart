@@ -122,7 +122,7 @@ class Config extends DataClass implements Insertable<Config> {
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Config &&
           other.configKey == this.configKey &&
@@ -367,7 +367,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, b.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WithDefault && other.a == this.a && other.b == this.b);
 }
@@ -658,7 +658,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WithConstraint &&
           other.a == this.a &&
@@ -904,7 +904,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       $mrjc(
           sometext.hashCode, $mrjc(isInserting.hashCode, somedate.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MytableData &&
           other.someid == this.someid &&
@@ -1151,7 +1151,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   int get hashCode =>
       $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EMail &&
           other.sender == this.sender &&
@@ -1368,7 +1368,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   @override
   int get hashCode => $mrjf($mrjc(sqlClass.hashCode, textColumn.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WeirdData &&
           other.sqlClass == this.sqlClass &&
@@ -1722,7 +1722,7 @@ class JsonResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is JsonResult &&
           other.key == this.key &&
@@ -1750,7 +1750,7 @@ class MultipleResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MultipleResult &&
           other.a == this.a &&
@@ -1789,7 +1789,7 @@ class ReadRowIdResult extends CustomResultSet {
           $mrjc(configValue.hashCode,
               $mrjc(syncState.hashCode, syncStateImplicit.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReadRowIdResult &&
           other.rowid == this.rowid &&
@@ -1828,7 +1828,7 @@ class ReadViewResult extends CustomResultSet {
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReadViewResult &&
           other.configKey == this.configKey &&

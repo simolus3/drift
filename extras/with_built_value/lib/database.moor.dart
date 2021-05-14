@@ -72,7 +72,7 @@ class User extends DataClass implements Insertable<User> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, name.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User && other.id == this.id && other.name == this.name);
 }

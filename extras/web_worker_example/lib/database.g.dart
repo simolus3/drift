@@ -69,7 +69,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, value.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Entrie && other.id == this.id && other.value == this.value);
 }
