@@ -259,10 +259,13 @@ class SchemaReader {
       };
     }
 
+    final pascalCase = ReCase(sqlName).pascalCase;
+
     return MoorTable(
       sqlName: sqlName,
-      overriddenName: '_${ReCase(sqlName).pascalCase}',
+      overriddenName: pascalCase,
       columns: columns,
+      dartTypeName: '${pascalCase}Data',
       primaryKey: explicitPk,
       overrideTableConstraints: tableConstraints,
       overrideDontWriteConstraints: content['was_declared_in_moor'] as bool,

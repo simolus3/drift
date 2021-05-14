@@ -22,6 +22,16 @@ class GenerateUtilsCommand extends Command {
       defaultsTo: null,
       help: 'Whether to generate null-safe test code.',
     );
+    argParser.addFlag(
+      'data-classes',
+      defaultsTo: false,
+      help: 'Whether to generate data classes for each schema version.',
+    );
+    argParser.addFlag(
+      'companions',
+      defaultsTo: false,
+      help: 'Whether to generate companions for each schema version.',
+    );
   }
 
   @override
@@ -63,7 +73,8 @@ class GenerateUtilsCommand extends Command {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
 
-      await _writeSchemaFile(outputDir, version, entities, isNnbd);
+      await _writeSchemaFile(outputDir, version, entities, isNnbd,
+          argResults['data-classes'] as bool, argResults['companions'] as bool);
     }
 
     await _writeLibraryFile(outputDir, schema.keys, isNnbd);
@@ -116,10 +127,22 @@ class GenerateUtilsCommand extends Command {
     return results;
   }
 
-  Future<void> _writeSchemaFile(Directory output, int version,
-      List<MoorSchemaEntity> entities, bool nnbd) {
-    final writer = Writer(cli.project.moorOptions,
-        generationOptions: GenerationOptions(forSchema: version, nnbd: nnbd));
+  Future<void> _writeSchemaFile(
+      Directory output,
+      int version,
+      List<MoorSchemaEntity> entities,
+      bool nnbd,
+      bool dataClasses,
+      bool companions) {
+    final writer = Writer(
+      cli.project.moorOptions,
+      generationOptions: GenerationOptions(
+        forSchema: version,
+        nnbd: nnbd,
+        writeCompanions: dataClasses,
+        writeDataClasses: companions,
+      ),
+    );
     final file = File(p.join(output.path, _filenameForVersion(version)));
 
     writer.leaf()

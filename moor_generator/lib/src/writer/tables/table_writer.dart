@@ -18,15 +18,19 @@ class TableWriter {
       scope.generationOptions.isGeneratingForSchema;
 
   void writeInto() {
-    if (!scope.generationOptions.isGeneratingForSchema) writeDataClass();
+    writeDataClass();
     writeTableInfoClass();
   }
 
   void writeDataClass() {
-    if (!table.hasExistingRowClass) {
+    if (!table.hasExistingRowClass &&
+        scope.generationOptions.writeDataClasses) {
       DataClassWriter(table, scope.child()).write();
     }
-    UpdateCompanionWriter(table, scope.child()).write();
+
+    if (scope.generationOptions.writeCompanions) {
+      UpdateCompanionWriter(table, scope.child()).write();
+    }
   }
 
   void writeTableInfoClass() {
@@ -104,7 +108,7 @@ class TableWriter {
   }
 
   void _writeMappingMethod() {
-    if (scope.generationOptions.isGeneratingForSchema) {
+    if (!scope.generationOptions.writeDataClasses) {
       final nullableString = scope.nullableType('String');
       _buffer.writeln('''
         @override

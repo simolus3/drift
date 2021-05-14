@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:moor/moor.dart';
 
 import 'package:moor_generator/src/services/schema/verifier_impl.dart';
@@ -108,11 +109,59 @@ class InitializedSchema {
   /// if you're attaching a database later.
   final Database rawDatabase;
 
+  final DatabaseConnection Function() _createConnection;
+
   /// A database connection with a prepared schema.
   ///
   /// You can connect your database classes to this as a starting point for
   /// migration tests.
-  final DatabaseConnection connection;
+  @Deprecated('Use newConnection instead, and store the result')
+  late final DatabaseConnection connection = _createConnection();
 
-  InitializedSchema(this.rawDatabase, this.connection);
+  @internal
+  InitializedSchema(this.rawDatabase, this._createConnection);
+
+  /// Creates a new database connection.
+  ///
+  /// All connections returned by this method point to the [rawDatabase].
+  /// However, each call to [newConnection] returns an independent connection
+  /// that is considered closed from moor's point of view. This means that the
+  /// [rawDatabase] can be used by multiple generated database classes that
+  /// can independently be opened and closed, albeit not simultaneously.
+  ///
+  /// ## Example
+  ///
+  /// When generating the schema helpers with the `--data-classes` and the
+  /// `--companions` command-line flags, this method can be used to create moor
+  /// databases inserting data at specific versions:
+  ///
+  /// ```dart
+  /// import 'generated/schema.dart';
+  /// import 'generated/schema_v1.dart' as v1;
+  /// import 'generated/schema_v2.dart' as v2;
+  ///
+  /// test('data integrity from v1 to v2', () async {
+  ///   final verifier = SchemaVerifier(GeneratedHelper());
+  ///   final schema = await verifier.schemaAt(1);
+  ///
+  ///   // Insert some data from the view of the old database on an independent
+  ///   // connection!
+  ///   final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+  ///   await oldDb.into(oldDb.users).insert(v1.UsersCompanion(id: Value(1)));
+  ///   await oldDb.close();
+  ///
+  ///   // Run the migration on the real database class from your app
+  ///   final dbForMigration = Database(schema.newConnection());
+  ///   await verifier.migrateAndValidate(dbForMigration, 2);
+  ///   await dbForMigration.close();
+  ///
+  ///   // Make sure the user is still here with a new database at v2
+  ///   final checkDb = v2.DatabaseAtV2.connect(schema.newConnection());
+  ///   final user = await checkDb.select(checkDb.users).getSingle();
+  ///   expect(user.id, 1);
+  ///   expect(user.name, 'default name from migration');
+  ///   await checkDb.close();
+  /// });
+  /// ```
+  DatabaseConnection newConnection() => _createConnection();
 }

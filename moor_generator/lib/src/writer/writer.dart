@@ -108,7 +108,18 @@ class GenerationOptions {
   /// Whether to generate Dart code that supports non-nullable types.
   final bool nnbd;
 
-  const GenerationOptions({this.forSchema, this.nnbd = false});
+  /// Whether data classes should be generated.
+  final bool writeDataClasses;
+
+  /// Whether companions should be generated.
+  final bool writeCompanions;
+
+  const GenerationOptions({
+    this.forSchema,
+    this.nnbd = false,
+    this.writeDataClasses = true,
+    this.writeCompanions = true,
+  });
 
   /// Whether, instead of generating the full database code, we're only
   /// generating a subset needed for schema verification.
