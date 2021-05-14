@@ -52,6 +52,43 @@ On the other hand, note that:
 - A table can have additional columns not reflected in a custom data class.
   Moor will simply not load those columns when mapping a row.
 
+### Using another constructor
+
+By default, moor will use the default, unnamed constructor to map a row to the class.
+If you want to use another constructor, set the `constructor` parameter on the
+`@UseRowClass` annotation:
+
+```dart
+@UseRowClass(User, constructor: 'fromDb')
+class Users extends Table {
+  // ...
+}
+
+class User {
+  final int id;
+  final String name;
+  final DateTime birthDate;
+
+  User.fromDb({required this.id, required this.name, required this.birthDate});
+}
+```
+
+### Existing row classes in moor files
+
+To use existing row classes in moor files, use the `WITH` keyword at the end of the
+table declaration. Also, don't forget to import the Dart file declaring the row
+class into the moor file.
+
+```sql
+import 'user.dart'; -- or what the Dart file is called
+
+CREATE TABLE users(
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  birth_date DATETIME NOT NULL
+) WITH User;
+```
+
 ## Inserts and updates with custom classes
 
 In most cases, generated companion classes are the right tool for updates and inserts.
@@ -78,10 +115,7 @@ class User implements Insertable<User> {
 }
 ```
 
-In a future moor version, the generator might be able to help you write the `toColumns` implementation -
-follow [#1134](https://github.com/simolus3/moor/issues/1134) for updates.
-
-### When custom classes make sense
+## When custom classes make sense
 
 The default moor-generated classes are a good default for most applications.
 In some advanced use-cases, custom classes can be a better alternative though:
@@ -101,9 +135,6 @@ These restrictions will be gradually lifted in upcoming moor versions. Follow [#
 
 For now, this feature is subject to the following limitations:
 
-- Only tables defined in Dart can use custom data classes, tables from moor files are not supported yet
-- At the moment, moor only recognizes the unnamed constructor to map rows back to your class
+- In moor files, you can only use the default unnamed constructor
 - Custom row classes can only be used for tables, not for custom result sets of compiled queries
-- Implementing `toColumns` can be error-prone for unexpected column names or when using type converters.
-  A future moor version could help you implement `toColumns` - until then, the recommendation is to always
-  use moor-generated companions.
+
