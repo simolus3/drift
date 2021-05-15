@@ -5,6 +5,7 @@
 
 ## 4.2.2
 
+- Support latest `build_config`
 - Fix generated code for queries using a Dart placeholder before an array variable
 
 ## 4.2.1
