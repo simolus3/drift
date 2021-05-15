@@ -1,4 +1,4 @@
-## 4.3.0-dev
+## 4.3.0
 
 - Support custom, existing classes for rows! See the `@UseRowClass` annotation
   for details.

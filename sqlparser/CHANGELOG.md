@@ -1,4 +1,4 @@
-## 0.16.0-dev
+## 0.16.0
 
 - New analysis checks for `RETURNING`: Disallow `table.*` syntax and aggregate expressions
 - Support `RAISE` expressions in triggers
