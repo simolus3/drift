@@ -122,7 +122,7 @@ class MockStreamQueries extends Mock implements StreamQueryStore {
           const Stream<Never>.empty());
 
   @override
-  Stream<Null?> updatesForSync(TableUpdateQuery? query) => _nsm(
+  Stream<Null> updatesForSync(TableUpdateQuery? query) => _nsm(
       Invocation.method(#updatesForSync, [query]), const Stream<Never>.empty());
 
   @override

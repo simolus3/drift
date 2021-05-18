@@ -955,7 +955,7 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   SharedTodosCompanion.insert({
     required int todo,
     required int user,
-  })   : todo = Value(todo),
+  })  : todo = Value(todo),
         user = Value(user);
   static Insertable<SharedTodo> custom({
     Expression<int>? todo,

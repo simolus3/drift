@@ -7,12 +7,12 @@ import 'package:ffi/ffi.dart';
 
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
-typedef sqlite3_keyword_count_native = Int32 Function();
-typedef sqlite3_keyword_count = int Function();
+typedef SqliteKeywordCountNative = Int32 Function();
+typedef SqliteKeywordCount = int Function();
 
-typedef sqlite3_keyword_name_native = Int32 Function(
+typedef SqliteKeywordNameNative = Int32 Function(
     Int32, Pointer<Pointer<Uint8>>, Pointer<Int32>);
-typedef sqlite3_keyword_name = int Function(
+typedef SqliteKeywordName = int Function(
     int, Pointer<Pointer<Uint8>>, Pointer<Int32>);
 
 void main() {
@@ -31,10 +31,12 @@ void main() {
   test(
     'recognizes all sqlite tokens',
     () {
-      final keywordCount = library.lookupFunction<sqlite3_keyword_count_native,
-          sqlite3_keyword_count>('sqlite3_keyword_count')();
-      final nameFunction = library.lookupFunction<sqlite3_keyword_name_native,
-          sqlite3_keyword_name>('sqlite3_keyword_name');
+      final keywordCount =
+          library.lookupFunction<SqliteKeywordCountNative, SqliteKeywordCount>(
+              'sqlite3_keyword_count')();
+      final nameFunction =
+          library.lookupFunction<SqliteKeywordNameNative, SqliteKeywordName>(
+              'sqlite3_keyword_name');
 
       final charOut = malloc<Pointer<Uint8>>();
       final lengthOut = malloc<Int32>();

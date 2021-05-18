@@ -1172,7 +1172,7 @@ class EmailCompanion extends UpdateCompanion<EMail> {
     required String sender,
     required String title,
     required String body,
-  })   : sender = Value(sender),
+  })  : sender = Value(sender),
         title = Value(title),
         body = Value(body);
   static Insertable<EMail> custom({
@@ -1385,7 +1385,7 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   WeirdTableCompanion.insert({
     required int sqlClass,
     required String textColumn,
-  })   : sqlClass = Value(sqlClass),
+  })  : sqlClass = Value(sqlClass),
         textColumn = Value(textColumn);
   static Insertable<WeirdData> custom({
     Expression<int>? sqlClass,

@@ -576,7 +576,7 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.id = const Value.absent(),
     required String name,
     required int caloriesPer100g,
-  })   : name = Value(name),
+  })  : name = Value(name),
         caloriesPer100g = Value(caloriesPer100g);
   static Insertable<Ingredient> custom({
     Expression<int>? id,
@@ -813,7 +813,7 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     required int recipe,
     required int ingredient,
     required int amountInGrams,
-  })   : recipe = Value(recipe),
+  })  : recipe = Value(recipe),
         ingredient = Value(ingredient),
         amountInGrams = Value(amountInGrams);
   static Insertable<IngredientInRecipe> custom({
