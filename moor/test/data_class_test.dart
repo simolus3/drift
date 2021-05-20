@@ -102,6 +102,7 @@ void main() {
         throwsA(isA<AssertionError>()));
 
     expect(const Value<int>.ofNullable(null).present, isFalse);
+    expect(const Value<int?>.ofNullable(12).present, isTrue);
     expect(const Value<int>.ofNullable(23).present, isTrue);
   });
 

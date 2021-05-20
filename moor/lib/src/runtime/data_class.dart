@@ -156,8 +156,11 @@ class Value<T> {
   /// nullable, there wouldn't be a clear interpretation for a `null` [value].
   /// See the overall documentation on [Value] for details.
   const Value.ofNullable(T? value)
-      : assert(null is! T,
-            "Value.absentIfNull can't be used for a nullable type T"),
+      : assert(
+          value != null || null is! T,
+          "Value.absentIfNull(null) can't be used for a nullable T, since the "
+          'null value could be both absent and present.',
+        ),
         _value = value,
         present = value != null;
 
