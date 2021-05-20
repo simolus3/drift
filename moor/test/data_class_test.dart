@@ -95,6 +95,16 @@ void main() {
     expect(entry.toCompanion(true), const PureDefaultsCompanion());
   });
 
+  test('nullable values cannot be used with nullOrAbsent', () {
+    expect(
+        // ignore: prefer_const_constructors
+        () => Value<int?>.ofNullable(null),
+        throwsA(isA<AssertionError>()));
+
+    expect(const Value<int>.ofNullable(null).present, isFalse);
+    expect(const Value<int>.ofNullable(23).present, isTrue);
+  });
+
   test('companions support hash and equals', () {
     const first = CategoriesCompanion(description: Value('foo'));
     final equalToFirst = CategoriesCompanion.insert(description: 'foo');

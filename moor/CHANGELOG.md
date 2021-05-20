@@ -1,3 +1,7 @@
+## 4.4.0-dev
+
+- Add `Value.ofNullable` constructor to easily wrap nullable values
+
 ## 4.3.0
 
 - Support custom, existing classes for rows! See the `@UseRowClass` annotation
