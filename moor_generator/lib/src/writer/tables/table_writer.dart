@@ -121,13 +121,13 @@ class TableWriter {
 
     final dataClassName = table.dartTypeName;
 
-    _buffer
-      ..write('@override\n$dataClassName map(Map<String, dynamic> data, '
-          '{${scope.nullableType('String')} tablePrefix}) {\n')
-      ..write('final effectivePrefix = '
-          "tablePrefix != null ? '\$tablePrefix.' : null;");
+    _buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
+        '{${scope.nullableType('String')} tablePrefix}) {\n');
 
     if (table.hasExistingRowClass) {
+      _buffer.write('final effectivePrefix = '
+          "tablePrefix != null ? '\$tablePrefix.' : '';");
+
       final info = table.existingRowClass;
       final positionalToIndex = <MoorColumn, int>{};
       final named = <MoorColumn, String>{};
@@ -165,8 +165,8 @@ class TableWriter {
       _buffer.write(';\n');
     } else {
       // Use default .fromData constructor in the moor-generated data class
-      _buffer.write('return $dataClassName.fromData'
-          '(data, _db, prefix: effectivePrefix);\n');
+      _buffer.write('return $dataClassName.fromData(data, _db, '
+          "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
     }
 
     _buffer.write('}\n');

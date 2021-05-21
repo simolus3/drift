@@ -191,8 +191,8 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Category.fromData(data, _db, prefix: effectivePrefix);
+    return Category.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -466,8 +466,8 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Recipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Recipe.fromData(data, _db, prefix: effectivePrefix);
+    return Recipe.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -698,8 +698,8 @@ class $IngredientsTable extends Ingredients
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Ingredient map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Ingredient.fromData(data, _db, prefix: effectivePrefix);
+    return Ingredient.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -944,8 +944,8 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override
   IngredientInRecipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return IngredientInRecipe.fromData(data, _db, prefix: effectivePrefix);
+    return IngredientInRecipe.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

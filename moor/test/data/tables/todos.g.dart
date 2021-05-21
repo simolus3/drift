@@ -321,8 +321,8 @@ class $TodosTableTable extends TodosTable
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TodoEntry.fromData(data, _db, prefix: effectivePrefix);
+    return TodoEntry.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -546,8 +546,8 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Category.fromData(data, _db, prefix: effectivePrefix);
+    return Category.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -861,8 +861,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return User.fromData(data, _db, prefix: effectivePrefix);
+    return User.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1055,8 +1055,8 @@ class $SharedTodosTable extends SharedTodos
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return SharedTodo.fromData(data, _db, prefix: effectivePrefix);
+    return SharedTodo.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1204,7 +1204,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return CustomRowClass.map(
       const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
@@ -1367,8 +1367,8 @@ class $PureDefaultsTable extends PureDefaults
   Set<GeneratedColumn> get $primaryKey => {txt};
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return PureDefault.fromData(data, _db, prefix: effectivePrefix);
+    return PureDefault.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
