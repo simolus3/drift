@@ -27,6 +27,14 @@ void main() {
     await expectLater(db.nullableQuery().getSingle(), completion(isNull));
   });
 
+  test('can select to existing data classes', () async {
+    await db
+        .into(db.noIds)
+        .insert(NoIdsCompanion.insert(payload: Uint8List(12)));
+    final result = await db.select(db.noIds).getSingle();
+    expect(result.payload, hasLength(12));
+  });
+
   group('views', () {
     test('can be selected from', () {
       return expectLater(db.readView().get(), completion(isEmpty));

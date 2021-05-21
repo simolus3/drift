@@ -278,8 +278,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Config.fromData(data, _db, prefix: effectivePrefix);
+    return Config.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -467,8 +467,8 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WithDefault.fromData(data, _db, prefix: effectivePrefix);
+    return WithDefault.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -557,7 +557,7 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   Set<GeneratedColumn> get $primaryKey => {payload};
   @override
   NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return NoIdRow(
       const BlobType()
           .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
@@ -782,8 +782,8 @@ class WithConstraints extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WithConstraint.fromData(data, _db, prefix: effectivePrefix);
+    return WithConstraint.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1060,8 +1060,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   Set<GeneratedColumn> get $primaryKey => {someid};
   @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return MytableData.fromData(data, _db, prefix: effectivePrefix);
+    return MytableData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1286,8 +1286,8 @@ class Email extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return EMail.fromData(data, _db, prefix: effectivePrefix);
+    return EMail.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1477,8 +1477,8 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WeirdData.fromData(data, _db, prefix: effectivePrefix);
+    return WeirdData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
