@@ -238,6 +238,13 @@ void _runTests(
         await database.customSelect('SELECT title FROM sample').get();
     expect(result.map((f) => f.read<String>('title')), ["O'Connor", "Tomeo's"]);
   });
+
+  test('can dispatch table updates', () async {
+    await database.customStatement('SELECT 1');
+    expect(database.tableUpdates(TableUpdateQuery.onTable(database.users)),
+        emitsInOrder([null]));
+    database.markTablesUpdated({database.users});
+  });
 }
 
 DatabaseConnection _backgroundConnection() {

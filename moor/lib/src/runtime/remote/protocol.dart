@@ -205,9 +205,11 @@ class MoorProtocol {
         final updates = <TableUpdate>[];
         for (var i = 1; i < fullMessage!.length; i++) {
           final encodedUpdate = fullMessage[i] as List;
+          final kindIndex = encodedUpdate[1] as int?;
+
           updates.add(
             TableUpdate(encodedUpdate[0] as String,
-                kind: UpdateKind.values[encodedUpdate[1] as int]),
+                kind: kindIndex == null ? null : UpdateKind.values[kindIndex]),
           );
         }
         return NotifyTablesUpdated(updates);
