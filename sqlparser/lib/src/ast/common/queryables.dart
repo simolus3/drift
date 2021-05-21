@@ -26,7 +26,10 @@ abstract class Queryable extends AstNode {
 
 /// https://www.sqlite.org/syntax/table-or-subquery.html
 /// Marker interface
-abstract class TableOrSubquery extends Queryable {}
+abstract class TableOrSubquery extends Queryable {
+  /// The result set that this node made available, if any
+  ResultSetAvailableInStatement? availableResultSet;
+}
 
 /// A table. The first path in https://www.sqlite.org/syntax/table-or-subquery.html
 ///
@@ -202,4 +205,7 @@ class TableValuedFunction extends Queryable
 
   @override
   bool get visibleToChildren => false;
+
+  @override
+  ResultSetAvailableInStatement? availableResultSet;
 }

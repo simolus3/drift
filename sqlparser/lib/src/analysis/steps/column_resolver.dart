@@ -57,7 +57,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     if (table != null) {
       // add "excluded" table qualifier that referring to the row that would
       // have been inserted had the uniqueness constraint not been violated.
-      e.scope.register('excluded', TableAlias(table, 'excluded'));
+      e.scope.registerUsableAlias(e, table, 'excluded');
     }
 
     visitChildren(e, arg);
@@ -75,11 +75,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     final availableColumns = <Column>[];
 
     // Add columns from the main table, if it was resolved
-    final baseTable = _resolveTableReference(e.table);
-    if (baseTable != null) {
-      availableColumns.addAll(baseTable.resolvedColumns ?? const []);
-    }
-
+    _handle(e.table, availableColumns);
     // Also add columns from a FROM clause, if one is present
     final from = e.from;
     if (from != null) _handle(from, availableColumns);
@@ -90,7 +86,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
       if (child != e.table && child != e.from) visit(child, arg);
     }
 
-    _resolveReturningClause(e, baseTable);
+    _resolveReturningClause(e, e.table.resultSet);
   }
 
   ResultSet? _addIfResolved(AstNode node, TableReference ref) {
@@ -159,23 +155,37 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
     scope.availableColumns = table.resolvedColumns;
 
     if (e.target.introducesNew) {
-      scope.register('new', TableAlias(table, 'new'));
+      scope.registerUsableAlias(e, table, 'new');
     }
     if (e.target.introducesOld) {
-      scope.register('old', TableAlias(table, 'old'));
+      scope.registerUsableAlias(e, table, 'old');
     }
 
     visitChildren(e, arg);
   }
 
   void _handle(Queryable queryable, List<Column> availableColumns) {
+    void addColumns(Iterable<Column> columns) {
+      ResultSetAvailableInStatement? available;
+      if (queryable is TableOrSubquery) {
+        available = queryable.availableResultSet;
+      }
+
+      if (available != null) {
+        availableColumns.addAll(
+            [for (final column in columns) AvailableColumn(column, available)]);
+      } else {
+        availableColumns.addAll(columns);
+      }
+    }
+
     queryable.when(
       isTable: (table) {
         final resolved = _resolveTableReference(table);
         if (resolved != null) {
           // an error will be logged when resolved is null, so the != null check
           // is fine and avoids crashes
-          availableColumns.addAll(table.resultSet!.resolvedColumns!);
+          addColumns(table.resultSet!.resolvedColumns!);
         }
       },
       isSelect: (select) {
@@ -193,7 +203,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           throw AssertionError('Unknown type of select statement: $stmt');
         }
 
-        availableColumns.addAll(stmt.resolvedColumns!);
+        addColumns(stmt.resolvedColumns!);
       },
       isJoin: (join) {
         _handle(join.primary, availableColumns);
@@ -214,7 +224,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           ));
         } else {
           function.resultSet = resolved;
-          availableColumns.addAll(resolved.resolvedColumns!);
+          addColumns(resolved.resolvedColumns!);
         }
       },
     );
@@ -244,7 +254,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         Iterable<Column>? visibleColumnsForStar;
 
         if (resultColumn.tableName != null) {
-          final tableResolver = scope.resolve<ResolvesToResultSet>(
+          final tableResolver = scope.resolve<ResultSetAvailableInStatement>(
               resultColumn.tableName!, orElse: () {
             context.reportError(AnalysisError(
               type: AnalysisErrorType.referencedUnknownTable,
@@ -254,7 +264,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           });
           if (tableResolver == null) continue;
 
-          visibleColumnsForStar = tableResolver.resultSet!.resolvedColumns;
+          visibleColumnsForStar =
+              tableResolver.resultSet.resultSet?.resolvedColumns;
         } else {
           // we have a * column without a table, that resolves to every column
           // available
@@ -288,8 +299,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           }
         }
       } else if (resultColumn is NestedStarResultColumn) {
-        final target = scope
-            .resolve<ResolvesToResultSet>(resultColumn.tableName, orElse: () {
+        final target = scope.resolve<ResultSetAvailableInStatement>(
+            resultColumn.tableName, orElse: () {
           context.reportError(AnalysisError(
             type: AnalysisErrorType.referencedUnknownTable,
             message: 'Unknown table: ${resultColumn.tableName}',
@@ -297,7 +308,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           ));
         });
 
-        if (target != null) resultColumn.resultSet = target.resultSet;
+        if (target != null) resultColumn.resultSet = target.resultSet.resultSet;
       }
     }
 
@@ -383,10 +394,36 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
 
   ResultSet? _resolveTableReference(TableReference r) {
     final scope = r.scope;
-    final resolvedTable = scope.resolve<ResultSet>(r.tableName, orElse: () {
-      final available = scope.allOf<ResultSet>().map((t) {
-        if (t is HumanReadable) {
-          return (t as HumanReadable).humanReadableDescription();
+
+    // Try resolving to a top-level table in the schema and to a result set that
+    // may have been added to the table
+    final resolvedInSchema = scope.resolve<ResultSet>(r.tableName);
+    final resolvedInQuery =
+        scope.resolve<ResultSetAvailableInStatement>(r.tableName);
+    final createdName = r.as;
+
+    // Prefer using a table that has already been added if this isn't the
+    // definition of the added table reference
+    if (resolvedInQuery != null && resolvedInQuery.origin != r) {
+      final resolved = resolvedInQuery.resultSet.resultSet;
+      if (resolved != null) {
+        return r.resolved =
+            createdName != null ? TableAlias(resolved, createdName) : resolved;
+      }
+    } else if (resolvedInSchema != null) {
+      return r.resolved = createdName != null
+          ? TableAlias(resolvedInSchema, createdName)
+          : resolvedInSchema;
+    } else {
+      final available = scope
+          .allOf<ResolvesToResultSet>()
+          .followedBy(scope
+              .allOf<ResultSetAvailableInStatement>()
+              .map((added) => added.resultSet))
+          .map((t) {
+        final resultSet = t.resultSet;
+        if (resultSet is HumanReadable) {
+          return (resultSet as HumanReadable).humanReadableDescription();
         }
 
         return t.toString();
@@ -398,7 +435,6 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         reference: r.tableName,
         available: available,
       ));
-    });
-    return r.resolved = resolvedTable;
+    }
   }
 }

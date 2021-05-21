@@ -86,6 +86,14 @@ class ReferenceScope {
     _references.putIfAbsent(identifier.toUpperCase(), () => []).add(ref);
   }
 
+  /// Registers both a [TableAlias] and a [ResultSetAvailableInStatement] so
+  /// that the alias can be used in expressions without being selected.
+  void registerUsableAlias(AstNode origin, ResultSet resultSet, String alias) {
+    final createdAlias = TableAlias(resultSet, alias);
+    register(alias, createdAlias);
+    register(alias, ResultSetAvailableInStatement(origin, createdAlias));
+  }
+
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
   /// If the reference couldn't be found, null is returned and [orElse] will be
   /// called.

@@ -46,6 +46,29 @@ abstract class NamedResultSet extends ResultSet {
   }
 }
 
+/// Information about a result set that is available in a statement.
+///
+/// Regular result sets include tables or views that are available globally.
+/// However, columns from those result sets can't be used in statements unless
+/// the result set appears in a `FROM` clause or a similar construct.
+///
+/// This class stores information about added result sets and the syntactic
+/// construct that added them.
+class ResultSetAvailableInStatement with Referencable {
+  /// The node responsible for adding the [resultSet].
+  ///
+  /// This may typically be a [TableOrSubquery] appearing a `FROM` clause.
+  final AstNode origin;
+
+  /// The added result set.
+  final ResolvesToResultSet resultSet;
+
+  @override
+  bool get visibleToChildren => true;
+
+  ResultSetAvailableInStatement(this.origin, this.resultSet);
+}
+
 extension UnaliasResultSet on ResultSet {
   ResultSet unalias() {
     var $this = this;

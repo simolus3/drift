@@ -7,6 +7,29 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
   ReferenceResolver(this.context);
 
   @override
+  void visitAggregateExpression(AggregateExpression e, void arg) {
+    if (e.windowName != null && e.resolved == null) {
+      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
+      e.resolved = resolved;
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitInsertStatement(InsertStatement e, void arg) {
+    final table = e.table.resultSet;
+    if (table != null) {
+      // Resolve columns in the main table
+      for (final column in e.targetColumns) {
+        _resolveReferenceInTable(column, table);
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitForeignKeyClause(ForeignKeyClause e, void arg) {
     final table = e.foreignTable.resultSet;
     if (table == null) {
@@ -16,15 +39,6 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
 
     for (final columnName in e.columnNames) {
       _resolveReferenceInTable(columnName, table);
-    }
-  }
-
-  void _resolveReferenceInTable(Reference ref, ResultSet resultSet) {
-    final column = resultSet.findColumn(ref.columnName);
-    if (column == null) {
-      _reportUnknownColumnError(ref, columns: resultSet.resolvedColumns);
-    } else {
-      ref.resolved = column;
     }
   }
 
@@ -39,8 +53,9 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     if (e.entityName != null) {
       // first find the referenced table or view,
       // then use the column on that table or view.
-      final entityResolver = scope.resolve<ResolvesToResultSet>(e.entityName!);
-      final resultSet = entityResolver?.resultSet;
+      final entityResolver =
+          scope.resolve<ResultSetAvailableInStatement>(e.entityName!);
+      final resultSet = entityResolver?.resultSet.resultSet;
 
       if (resultSet == null) {
         context.reportError(AnalysisError(
@@ -87,6 +102,19 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
+  @override
+  void visitUpdateStatement(UpdateStatement e, void arg) {
+    final table = e.table.resultSet;
+    if (table != null) {
+      // Resolve the set components against the primary table
+      for (final set in e.set) {
+        _resolveReferenceInTable(set.column, table);
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
   void _reportUnknownColumnError(Reference e, {Iterable<Column>? columns}) {
     columns ??= e.scope.availableColumns;
     final columnNames = e.scope.availableColumns
@@ -98,6 +126,15 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       relevantNode: e,
       message: 'Unknown column. These columns are available: $columnNames',
     ));
+  }
+
+  void _resolveReferenceInTable(Reference ref, ResultSet resultSet) {
+    final column = resultSet.findColumn(ref.columnName);
+    if (column == null) {
+      _reportUnknownColumnError(ref, columns: resultSet.resolvedColumns);
+    } else {
+      ref.resolved = column;
+    }
   }
 
   Column? _resolveRowIdAlias(Reference e) {
@@ -112,20 +149,10 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
       return null;
     }
 
-    final table = from.resolved as Table?;
-    if (table == null) return null;
+    final resolved = from.resultSet?.unalias();
+    if (resolved is! Table) return null;
 
     // table.findColumn contains logic to resolve row id aliases
-    return table.findColumn(e.columnName);
-  }
-
-  @override
-  void visitAggregateExpression(AggregateExpression e, void arg) {
-    if (e.windowName != null && e.resolved == null) {
-      final resolved = e.scope.resolve<NamedWindowDeclaration>(e.windowName!);
-      e.resolved = resolved;
-    }
-
-    visitChildren(e, arg);
+    return resolved.findColumn(e.columnName);
   }
 }

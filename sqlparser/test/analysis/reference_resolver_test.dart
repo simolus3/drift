@@ -33,9 +33,10 @@ void main() {
     final secondColumn = select.columns[1] as ExpressionResultColumn;
     final from = select.from as TableReference;
 
-    expect((firstColumn.expression as Reference).resolved, id);
-    expect((secondColumn.expression as Reference).resolved, content);
-    expect(from.resolved, demoTable);
+    expect((firstColumn.expression as Reference).resolvedColumn?.source, id);
+    expect(
+        (secondColumn.expression as Reference).resolvedColumn?.source, content);
+    expect(from.resultSet?.unalias(), demoTable);
 
     final where = select.where as BinaryExpression;
     expect((where.left as Reference).resolved, id);
@@ -177,5 +178,32 @@ SELECT row_number() OVER wnd FROM demo
         ),
       ),
     );
+  });
+
+  test('warns about ambigious references', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context =
+        engine.analyze('SELECT id FROM demo, (SELECT id FROM demo) AS a');
+    expect(context.errors, hasLength(1));
+    expect(
+      context.errors.single,
+      isA<AnalysisError>()
+          .having((e) => e.type, 'type', AnalysisErrorType.ambiguousReference)
+          .having((e) => e.span?.text, 'span.text', 'id'),
+    );
+  });
+
+  test("does not allow columns from tables that haven't been aded", () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    final context = engine.analyze('SELECT demo.id;');
+    expect(context.errors, hasLength(1));
+    expect(
+        context.errors.single,
+        isA<AnalysisError>()
+            .having(
+                (e) => e.type, 'type', AnalysisErrorType.referencedUnknownTable)
+            .having((e) => e.span?.text, 'span.text', 'demo.id'));
   });
 }

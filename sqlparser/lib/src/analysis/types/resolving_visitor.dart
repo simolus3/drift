@@ -428,8 +428,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     if (resolved == null) return;
 
     _handleColumn(resolved);
-
-    final isNullable = JoinModel.of(e)?.isFromNullableTable(resolved) ?? false;
+    final isNullable = JoinModel.of(e)?.referenceIsNullable(e) ?? false;
     _lazyCopy(e, resolved, makeNullable: isNullable);
   }
 

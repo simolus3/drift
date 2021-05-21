@@ -64,7 +64,8 @@ class _PatchReferences extends Transformer<void> {
 
   @override
   AstNode? visitReference(Reference e, void arg) {
-    final resolved = e.resolvedColumn;
+    final resolved = e.resolvedColumn?.source;
+
     if (resolved != null) {
       final name = _transformer.newNameFor(resolved);
       if (name != null) {
