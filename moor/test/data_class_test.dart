@@ -18,54 +18,62 @@ void main() {
     expect(deserialized, equals(deserialized));
   });
 
-  test('can deserialize ints as doubles', () {
+  group('default serializer', () {
     const serializer = ValueSerializer.defaults();
+    test('can deserialize ints as doubles', () {
+      expect(serializer.fromJson<double>(3), 3.0);
+    });
 
-    expect(serializer.fromJson<double>(3), 3.0);
-  });
+    test('can deserialize non-null values with nullable types', () {
+      expect(serializer.fromJson<double?>(3), 3.0);
+      expect(serializer.fromJson<DateTime?>(0),
+          DateTime.fromMillisecondsSinceEpoch(0));
+      expect(serializer.fromJson<Uint8List?>([0, 1]), [0, 1]);
+    });
 
-  test('default serializer can be overridden globally', () {
-    final old = moorRuntimeOptions.defaultSerializer;
-    moorRuntimeOptions.defaultSerializer = _MySerializer();
+    test('can be overridden globally', () {
+      final old = moorRuntimeOptions.defaultSerializer;
+      moorRuntimeOptions.defaultSerializer = _MySerializer();
 
-    final entry = TodoEntry(
-      id: 13,
-      title: 'Title',
-      content: 'Content',
-      category: 3,
-      targetDate: DateTime.now(),
-    );
-    expect(
-      entry.toJson(),
-      {
-        'id': 'foo',
-        'title': 'foo',
-        'content': 'foo',
-        'category': 'foo',
-        'target_date': 'foo',
-      },
-    );
+      final entry = TodoEntry(
+        id: 13,
+        title: 'Title',
+        content: 'Content',
+        category: 3,
+        targetDate: DateTime.now(),
+      );
+      expect(
+        entry.toJson(),
+        {
+          'id': 'foo',
+          'title': 'foo',
+          'content': 'foo',
+          'category': 'foo',
+          'target_date': 'foo',
+        },
+      );
 
-    moorRuntimeOptions.defaultSerializer = old;
-  });
+      moorRuntimeOptions.defaultSerializer = old;
+    });
 
-  test('can serialize and deserialize blob columns', () {
-    final user = User(
-      id: 3,
-      name: 'Username',
-      isAwesome: true,
-      profilePicture: Uint8List.fromList([1, 2, 3, 4]),
-      creationTime: DateTime.now(),
-    );
+    test('can serialize and deserialize blob columns', () {
+      final user = User(
+        id: 3,
+        name: 'Username',
+        isAwesome: true,
+        profilePicture: Uint8List.fromList([1, 2, 3, 4]),
+        creationTime: DateTime.now(),
+      );
 
-    final recovered = User.fromJsonString(user.toJsonString());
+      final recovered = User.fromJsonString(user.toJsonString());
 
-    // Note: Some precision is lost when serializing DateTimes, so we're using
-    // custom expects instead of expect(recovered, user)
-    expect(recovered.id, user.id);
-    expect(recovered.name, user.name);
-    expect(recovered.isAwesome, user.isAwesome);
-    expect(recovered.profilePicture, user.profilePicture);
+      // Note: Some precision is lost when serializing DateTimes, so we're using
+      // custom expects instead of expect(recovered, user)
+      expect(recovered.id, user.id);
+      expect(recovered.name, user.name);
+      expect(recovered.isAwesome, user.isAwesome);
+      expect(recovered.profilePicture, user.profilePicture);
+    });
   });
 
   test('generated data classes can be converted to companions', () {
