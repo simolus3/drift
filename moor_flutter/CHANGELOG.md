@@ -36,7 +36,6 @@ to make debugging easier.
 - New `backends` api, making it easier to write database drivers that work with moor. Apart from
 `moor_flutter`, new experimental backends can be checked out from git:
   1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/moor/tree/develop/extras/encryption
-  2. `moor_mysql`: Work in progress mysql backend for moor. https://github.com/simolus3/moor/tree/develop/extras/mysql
 - The compiled sql feature is no longer experimental and will stay stable until a major version bump
 - New, experimental support for `.moor` files! Instead of declaring your tables in Dart, you can
   choose to declare them with sql by writing the `CREATE TABLE` statement in a `.moor` file.
