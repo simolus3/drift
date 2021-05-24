@@ -65,7 +65,7 @@ an exception will be thrown. When using sql, moor also warns about that at compi
 If you do want to make a column nullable, just use `nullable()`:
 ```dart
 class Items {
-    IntColumn get category => integer().nullable();
+    IntColumn get category => integer().nullable()();
     // ...
 }
 ```
