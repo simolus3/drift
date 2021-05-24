@@ -196,4 +196,17 @@ INSERT INTO demo VALUES (?, ?)
       expect(result.errors, isEmpty);
     });
   });
+
+  test('reports error when using star wihout tables', () {
+    final result = engine.analyze('SELECT 1, 2, *;');
+
+    expect(result.errors, hasLength(1));
+    expect(
+      result.errors.single,
+      isA<AnalysisError>()
+          .having(
+              (e) => e.type, 'type', AnalysisErrorType.starColumnWithoutTable)
+          .having((e) => e.source?.span?.text, 'source.span?.text', '*'),
+    );
+  });
 }

@@ -270,6 +270,16 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           // we have a * column without a table, that resolves to every column
           // available
           visibleColumnsForStar = columnsForStar ?? availableColumns;
+
+          // Star columns can't be used without a table (e.g. `SELECT *` is
+          // not allowed)
+          if (scope.allOf<ResultSetAvailableInStatement>().isEmpty) {
+            context.reportError(AnalysisError(
+              type: AnalysisErrorType.starColumnWithoutTable,
+              message: "Can't use * when no tables have been added",
+              relevantNode: resultColumn,
+            ));
+          }
         }
 
         usedColumns
