@@ -1,3 +1,8 @@
+## 4.3.1
+
+- Fix encoding table updates without a kind over isolates
+- Fix deserializing some nullable types in the default value serializer
+
 ## 4.3.0
 
 - Support custom, existing classes for rows! See the `@UseRowClass` annotation
