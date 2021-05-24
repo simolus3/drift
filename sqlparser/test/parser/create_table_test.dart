@@ -198,8 +198,7 @@ void main() {
             typeName: 'INTEGER',
           ),
         ],
-        overriddenDataClassName: 'MyExistingClass',
-        useExistingDartClass: true,
+        moorTableName: MoorTableName('MyExistingClass', true),
       ),
       moorMode: true,
     );
@@ -217,7 +216,7 @@ void main() {
           fakeSpan('b()'),
           fakeSpan('c'),
         ],
-        overriddenDataClassName: 'moor',
+        moorTableName: MoorTableName('moor', false),
       ),
       moorMode: true,
     );

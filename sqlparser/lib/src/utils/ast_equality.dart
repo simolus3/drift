@@ -206,9 +206,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _assert(
         current.ifNotExists == e.ifNotExists &&
             current.tableName == e.tableName &&
-            current.withoutRowId == e.withoutRowId &&
-            current.overriddenDataClassName == e.overriddenDataClassName &&
-            current.useExistingDataClass == e.useExistingDataClass,
+            current.withoutRowId == e.withoutRowId,
         e);
     _checkChildren(e);
   }
@@ -487,6 +485,15 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     }
 
     _checkChildren(e);
+  }
+
+  @override
+  void visitMoorTableName(MoorTableName e, void arg) {
+    final current = _currentAs<MoorTableName>(e);
+    _assert(
+        current.overriddenDataClassName == e.overriddenDataClassName &&
+            current.useExistingDartClass == e.useExistingDartClass,
+        e);
   }
 
   @override

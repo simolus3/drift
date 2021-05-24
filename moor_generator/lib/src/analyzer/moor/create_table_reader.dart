@@ -168,9 +168,11 @@ class CreateTableReader {
     String dartTableName, dataClassName;
     ExistingRowClass existingRowClass;
 
-    final overriddenNames = stmt.overriddenDataClassName;
-    if (overriddenNames != null) {
-      if (stmt.useExistingDataClass) {
+    final moorTableInfo = stmt.moorTableName;
+    if (moorTableInfo != null) {
+      final overriddenNames = moorTableInfo.overriddenDataClassName;
+
+      if (moorTableInfo.useExistingDartClass) {
         final clazz = await _findDartClass(overriddenNames);
         if (clazz == null) {
           step.reportError(ErrorInMoorFile(

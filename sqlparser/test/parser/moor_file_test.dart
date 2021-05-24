@@ -56,7 +56,7 @@ void main() {
               ],
             ),
           ],
-          overriddenDataClassName: 'RowName',
+          moorTableName: MoorTableName('RowName', false),
         ),
         DeclaredStatement(
           SimpleName('all'),

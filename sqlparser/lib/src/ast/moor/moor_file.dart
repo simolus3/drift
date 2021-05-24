@@ -33,3 +33,21 @@ class MoorFile extends AstNode {
   Iterable<ImportStatement> get imports =>
       childNodes.whereType<ImportStatement>();
 }
+
+class MoorTableName extends AstNode {
+  final String overriddenDataClassName;
+  final bool useExistingDartClass;
+
+  MoorTableName(this.overriddenDataClassName, this.useExistingDartClass);
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorTableName(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const Iterable.empty();
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}

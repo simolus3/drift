@@ -98,6 +98,7 @@ abstract class AstVisitor<A, R> {
   R visitMoorDeclaredStatement(DeclaredStatement e, A arg);
   R visitMoorStatementParameter(StatementParameter e, A arg);
   R visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg);
+  R visitMoorTableName(MoorTableName e, A arg);
   R visitDartPlaceholder(DartPlaceholder e, A arg);
 }
 
@@ -209,6 +210,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg) {
     return visitResultColumn(e, arg);
+  }
+
+  @override
+  R? visitMoorTableName(MoorTableName e, A arg) {
+    return defaultNode(e, arg);
   }
 
   @override

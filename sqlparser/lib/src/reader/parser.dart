@@ -1879,7 +1879,7 @@ class Parser {
       withoutRowId = true;
     }
 
-    final overriddenName = _overriddenDataClassName();
+    final overriddenName = _moorTableName();
 
     return CreateTableStatement(
       ifNotExists: ifNotExists,
@@ -1887,13 +1887,12 @@ class Parser {
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
-      overriddenDataClassName: overriddenName?.name,
-      useExistingDartClass: overriddenName?.useExisting,
+      moorTableName: overriddenName,
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
-      ..closingBracket = rightParen
-      ..tableNameToken = tableIdentifier;
+      ..tableNameToken = tableIdentifier
+      ..closingBracket = rightParen;
   }
 
   /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
@@ -1953,28 +1952,28 @@ class Parser {
       }
     }
 
-    final moorDataClassName = _overriddenDataClassName();
+    final moorDataClassName = _moorTableName();
     return CreateVirtualTableStatement(
       ifNotExists: ifNotExists,
       tableName: nameToken.identifier,
       moduleName: moduleName.identifier,
       arguments: args,
-      overriddenDataClassName: moorDataClassName?.name,
-      useExistingDartClass: moorDataClassName?.useExisting,
+      moorTableName: moorDataClassName,
     )
       ..setSpan(first, _previous)
       ..tableNameToken = nameToken
       ..moduleNameToken = moduleName;
   }
 
-  _OverriddenDataClassName? _overriddenDataClassName() {
+  MoorTableName? _moorTableName() {
     if (enableMoorExtensions &&
         (_match(const [TokenType.as, TokenType.$with]))) {
+      final first = _previous;
       final useExisting = _previous.type == TokenType.$with;
       final name =
           _consumeIdentifier('Expected the name for the data class').identifier;
 
-      return _OverriddenDataClassName(name, useExisting);
+      return MoorTableName(name, useExisting)..setSpan(first, _previous);
     }
     return null;
   }
@@ -2511,13 +2510,6 @@ class Parser {
 
     return columnNames;
   }
-}
-
-class _OverriddenDataClassName {
-  final String name;
-  final bool useExisting;
-
-  _OverriddenDataClassName(this.name, this.useExisting);
 }
 
 extension on List<Token> {

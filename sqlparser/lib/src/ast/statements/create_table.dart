@@ -9,17 +9,15 @@ abstract class TableInducingStatement extends Statement
   final bool ifNotExists;
   final String tableName;
 
-  /// Specific to moor. Overrides the name of the data class used to hold a
-  /// result for of this table. Will be null when the moor extensions are not
-  /// enabled or if no name has been set.
-  final String? overriddenDataClassName;
-  final bool useExistingDataClass;
-
+  /// Moor-specific information about the desired name of a Dart class for this
+  /// table.
+  ///
+  /// This will always be `null` when moor extensions are not enabled.
+  MoorTableName? moorTableName;
   Token? tableNameToken;
 
   TableInducingStatement._(this.ifNotExists, this.tableName,
-      [this.overriddenDataClassName, bool? useExistingDataClass])
-      : useExistingDataClass = useExistingDataClass ?? false;
+      [this.moorTableName]);
 
   @override
   String get createdName => tableName;
@@ -35,16 +33,14 @@ class CreateTableStatement extends TableInducingStatement {
   Token? openingBracket;
   Token? closingBracket;
 
-  CreateTableStatement(
-      {bool ifNotExists = false,
-      required String tableName,
-      this.columns = const [],
-      this.tableConstraints = const [],
-      this.withoutRowId = false,
-      String? overriddenDataClassName,
-      bool? useExistingDartClass})
-      : super._(ifNotExists, tableName, overriddenDataClassName,
-            useExistingDartClass);
+  CreateTableStatement({
+    bool ifNotExists = false,
+    required String tableName,
+    this.columns = const [],
+    this.tableConstraints = const [],
+    this.withoutRowId = false,
+    MoorTableName? moorTableName,
+  }) : super._(ifNotExists, tableName, moorTableName);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -56,10 +52,16 @@ class CreateTableStatement extends TableInducingStatement {
     columns = transformer.transformChildren(columns, this, arg);
     tableConstraints =
         transformer.transformChildren(tableConstraints, this, arg);
+    moorTableName =
+        transformer.transformNullableChild(moorTableName, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes => [...columns, ...tableConstraints];
+  Iterable<AstNode> get childNodes => [
+        ...columns,
+        ...tableConstraints,
+        if (moorTableName != null) moorTableName!,
+      ];
 }
 
 class CreateVirtualTableStatement extends TableInducingStatement {
@@ -82,10 +84,8 @@ class CreateVirtualTableStatement extends TableInducingStatement {
     required String tableName,
     required this.moduleName,
     this.arguments = const [],
-    String? overriddenDataClassName,
-    bool? useExistingDartClass,
-  }) : super._(ifNotExists, tableName, overriddenDataClassName,
-            useExistingDartClass);
+    MoorTableName? moorTableName,
+  }) : super._(ifNotExists, tableName, moorTableName);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -93,8 +93,12 @@ class CreateVirtualTableStatement extends TableInducingStatement {
   }
 
   @override
-  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    moorTableName =
+        transformer.transformNullableChild(moorTableName, this, arg);
+  }
 
   @override
-  Iterable<AstNode> get childNodes => const [];
+  Iterable<AstNode> get childNodes =>
+      [if (moorTableName != null) moorTableName!];
 }

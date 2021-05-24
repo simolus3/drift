@@ -895,6 +895,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitMoorTableName(MoorTableName e, void arg) {
+    _keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
+    _identifier(e.overriddenDataClassName);
+  }
+
+  @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
     // Note: The name already starts with the colon
     _symbol(e.name, spaceBefore: true, spaceAfter: true);
