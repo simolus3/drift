@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
+import 'skips.dart';
 
 void main() {
   late TodoDb db;
@@ -68,6 +69,17 @@ void main() {
     verify(streamQueries.handleTableUpdates(
         {const TableUpdate('users', kind: UpdateKind.insert)}));
   });
+
+  test('notifies stream queries on insertReturning', () async {
+    await db.into(db.users).insertReturning(UsersCompanion(
+          name: const Value('User McUserface'),
+          isAwesome: const Value(true),
+          profilePicture: Value(Uint8List(0)),
+        ));
+
+    verify(streamQueries.handleTableUpdates(
+        {const TableUpdate('users', kind: UpdateKind.insert)}));
+  }, skip: onNoReturningSupport());
 
   group('enforces integrity', () {
     test('for regular inserts', () async {
