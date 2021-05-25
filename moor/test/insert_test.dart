@@ -71,7 +71,19 @@ void main() {
   });
 
   test('notifies stream queries on insertReturning', () async {
-    await db.into(db.users).insertReturning(UsersCompanion(
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {
+          'id': 5,
+          'name': 'User McUserface',
+          'is_awesome': true,
+          'profile_picture': Uint8List(0),
+          'creation_time': DateTime.now().millisecondsSinceEpoch,
+        }
+      ]);
+    });
+
+    final user = await db.into(db.users).insertReturning(UsersCompanion(
           name: const Value('User McUserface'),
           isAwesome: const Value(true),
           profilePicture: Value(Uint8List(0)),
@@ -79,6 +91,8 @@ void main() {
 
     verify(streamQueries.handleTableUpdates(
         {const TableUpdate('users', kind: UpdateKind.insert)}));
+
+    expect(user.id, 5);
   }, skip: onNoReturningSupport());
 
   group('enforces integrity', () {
