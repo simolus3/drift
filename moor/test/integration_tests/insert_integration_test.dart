@@ -1,15 +1,13 @@
+import 'package:moor/ffi.dart';
 @TestOn('vm')
 import 'package:moor/moor.dart';
-import 'package:moor/ffi.dart';
-import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
+import '../skips.dart';
 
 void main() {
   late TodoDb db;
-
-  final supportsReturning = sqlite3.version.versionNumber > 3035000;
 
   setUp(() {
     db = TodoDb(VmDatabase.memory());
@@ -40,5 +38,5 @@ void main() {
         priority: CategoryPriority.low,
       ),
     );
-  }, skip: supportsReturning ? null : 'RETURNING is not supported');
+  }, skip: onNoReturningSupport());
 }

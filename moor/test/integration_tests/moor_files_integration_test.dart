@@ -1,10 +1,10 @@
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart' hide isNull;
-import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
+import '../skips.dart';
 
 void main() {
   late VmDatabase executor;
@@ -70,9 +70,6 @@ void main() {
     });
   });
 
-  final sqliteVersion = sqlite3.version;
-  final hasReturning = sqliteVersion.versionNumber > 3035000;
-
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(
@@ -94,5 +91,5 @@ void main() {
         ),
       );
     });
-  }, skip: hasReturning ? null : 'RETURNING not supported by current sqlite');
+  }, skip: onNoReturningSupport());
 }
