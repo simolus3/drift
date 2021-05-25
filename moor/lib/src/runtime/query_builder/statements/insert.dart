@@ -87,6 +87,8 @@ class InsertStatement<T extends Table, D> {
 
     return database.doWhenOpened((e) async {
       final result = await e.runSelect(ctx.sql, ctx.boundVariables);
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
       return table.map(result.single);
     });
   }
