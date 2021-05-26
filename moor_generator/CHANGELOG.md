@@ -1,3 +1,7 @@
+## 4.3.2
+
+- Support the latest analyzer version
+
 ## 4.3.1
 
 - Fix code generation for custom data classes
