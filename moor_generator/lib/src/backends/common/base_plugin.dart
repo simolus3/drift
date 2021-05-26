@@ -53,7 +53,7 @@ abstract class BaseMoorPlugin extends ServerPlugin {
       pathContext: resourceProvider.pathContext,
     )..optionsFilePath = contextRoot.optionsFile;
 
-    final builder = ContextBuilder(resourceProvider, sdkManager, null)
+    final builder = ContextBuilder(resourceProvider, sdkManager)
       ..analysisDriverScheduler = dartScheduler
       ..byteStore = byteStore
       ..performanceLog = performanceLog;
