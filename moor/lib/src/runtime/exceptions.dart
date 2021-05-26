@@ -1,10 +1,15 @@
+import 'data_verification.dart';
+
 /// Thrown when one attempts to insert or update invalid data into a table.
 class InvalidDataException implements Exception {
   /// A message explaining why the data couldn't be inserted into the database.
   final String message;
 
+  /// All errors that were found in this [InvalidDataException].
+  final Map<VerificationMeta, VerificationResult> errors;
+
   /// Construct a new [InvalidDataException] from the [message].
-  InvalidDataException(this.message);
+  InvalidDataException(this.message, [this.errors = const {}]);
 
   @override
   String toString() {
