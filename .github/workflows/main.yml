@@ -54,18 +54,16 @@ jobs:
       # setup
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
-      - name: Install sqlite3 for tests
+      - name: Download sqlite3
+        uses: actions/download-artifact@v2
+        with:
+          name: sqlite3
+          path: /tmp/sqlite/out/
+      - name: Use downloaded sqlite3
         run: |
-          mkdir sqlite
-          cd sqlite
-          curl https://sqlite.org/2021/sqlite-autoconf-3350500.tar.gz --output sqlite.tar.gz
-          tar zxvf sqlite.tar.gz
-          cd sqlite-autoconf-3350500
-          ./configure
-          make
-          sudo make install
-          echo "/usr/local/lib" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=`pwd`/.libs" >> $GITHUB_ENV
+          chmod a+x /tmp/sqlite/out/sqlite3
+          echo "/tmp/sqlite/out" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - name: Check sqlite3 version
         run: sqlite3 --version
       - run: dart pub upgrade
@@ -101,6 +99,7 @@ jobs:
 
   sqlparser:
     runs-on: ubuntu-20.04
+    needs: [compile_sqlite3]
     defaults:
       run:
         working-directory: sqlparser
