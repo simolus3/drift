@@ -8,11 +8,13 @@ class Lock {
   /// then calls [block] before further [synchronized] calls are allowed.
   Future<T> synchronized<T>(FutureOr<T> Function() block) {
     final previous = _last;
-    // We can use synchronous futures for _last since we always complete through
-    // callBlockAndComplete(), which is asynchronous.
-    final blockCompleted = Completer<void>.sync();
+    // This controller may not be sync: It must complete just after
+    // callBlockAndComplete completes.
+    final blockCompleted = Completer<void>();
     _last = blockCompleted.future;
 
+    // Note: We can't use async/await here because this future must complete
+    // just before the blockCompleted completer.
     Future<T> callBlockAndComplete() async {
       try {
         return await block();
