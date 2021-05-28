@@ -39,27 +39,22 @@ Some extra steps may have to be taken in your project so that SQLCipher works co
 
 ## Encrypted version of `moor/ffi`
 
-You can also use the new `moor/ffi` library with an encrypted executor. To do so, replace your dependency on `sqlite3_flutter_libs`
-with `sqlcipher_flutter_libs`:
+You can also use the new `moor/ffi` library with an encrypted executor.
+This allows you to use an encrypted moor database on more platforms, which is particularly
+interesting for Desktop applications.
+
+### Setup
+
+To use `sqlcipher`, add a dependency on `sqlcipher_flutter_libs`:
 
 ```yaml
 dependencies:
-  sqlcipher_flutter_libs:
-    git:
-      url: https://github.com/simolus3/sqlite3.dart.git
-      path: sqlcipher_flutter_libs
+  sqlcipher_flutter_libs: ^0.5.0
 ```
 
-You can continue to use a `VmDatabase`, but you need to use the `setup` parameter to decrypt the database:
-
-```dart
-VmDatabase(
-  File(...),
-  setup: (rawDb) {
-    rawDb.execute("PRAGMA key = 'passphrase';");
-  }
-);
-```
+If you already have a dependency on `sqlite3_flutter_libs`, __drop that dependency__.
+`sqlite3_flutter_libs` and `sqlcipher_flutter_libs` are not compatible
+as they both provide a (different) set of `sqlite3` native apis.
 
 On Android, you also need to adapt the opening behavior of the `sqlite3` package to use the encrypted library instead
 of the regular `libsqlite3.so`:
@@ -68,8 +63,37 @@ of the regular `libsqlite3.so`:
 import 'package:sqlite3/open.dart';
 
 // call this method before using moor
-void setupSqlcipher() {
+void setupSqlCipher() {
   open.overrideFor(
       OperatingSystem.android, () => DynamicLibrary.open('libsqlcipher.so'));
 }
+```
+
+When using moor on a background database, you need to call `setupSqlCipher` on the background isolate
+as well.
+
+On iOS and macOS, no additional setup is necessary - simply depend on `sqlcipher_flutter_libs`.
+
+On Windows and Linux, you currently have to include a version of SQLCipher manually when you distribute
+your app.
+For more information on this, you can use the documentation [here]({{ '../platforms.md#bundling-sqlite-with-your-app' | pageUrl }}).
+Instead of including `sqlite3.dll` or `libsqlite3.so`, you'd include the respective versions
+of SQLCipher.
+
+### Using
+
+SQLCipher implements sqlite3's C api, which means that you can continue to use the `sqlite3` package
+or `moor/ffi` without changes. They're both fully compatible with `sqlcipher_flutter_libs`.
+
+To actually encrypt a database, you must set an encryption key before using it.
+A good place to do that in moor is the `setup` parameter of `VmDatabase`, which runs before moor
+is using the database in any way:
+
+```dart
+VmDatabase(
+  File(...),
+  setup: (rawDb) {
+    rawDb.execute("PRAGMA key = 'passphrase';");
+  }
+);
 ```
