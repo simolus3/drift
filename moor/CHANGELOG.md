@@ -2,6 +2,17 @@
 
 - Add `Value.ofNullable` constructor to easily wrap nullable values
 
+## 4.3.2
+
+- Fix `insertReturning` not updating streams
+- Fix streams emitting stale data if a new subscriber attaches immediately
+  after an update.
+
+## 4.3.1
+
+- Fix encoding table updates without a kind over isolates
+- Fix deserializing some nullable types in the default value serializer
+
 ## 4.3.0
 
 - Support custom, existing classes for rows! See the `@UseRowClass` annotation
