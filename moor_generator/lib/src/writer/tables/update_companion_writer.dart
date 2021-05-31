@@ -25,7 +25,7 @@ class UpdateCompanionWriter {
 
     _writeCopyWith();
     _writeToColumnsOverride();
-    if (table.hasExistingRowClass) {
+    if (table.generateReverseMapping && table.hasExistingRowClass) {
       _writeFromRowClass();
     }
     _writeToString();
@@ -207,7 +207,7 @@ class UpdateCompanionWriter {
     final dataClassName = table.dartTypeName;
 
     _buffer
-      ..write("factory ${table.getNameForCompanionClass(scope.options)}.")
+      ..write('factory ${table.getNameForCompanionClass(scope.options)}.')
       ..write('fromRowClass($dataClassName object,')
       ..write('{bool nullToAbsent = false}) {\n');
 
@@ -226,12 +226,13 @@ class UpdateCompanionWriter {
     });
 
     for (final field in named.values) {
-      final column = table.columns.firstWhere((element) => 
-        element.name.name == field, orElse: () => null);
+      final column = table.columns.firstWhere(
+          (element) => element.name.name == field,
+          orElse: () => null);
 
-        if (column == null) {
-          break;
-        }
+      if (column == null) {
+        break;
+      }
 
       final dartName = column.dartGetterName;
       _buffer..write(dartName)..write(': ');
@@ -239,7 +240,7 @@ class UpdateCompanionWriter {
       final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
       if (needsNullCheck) {
         _buffer
-          ..write("object.$dartName")
+          ..write('object.$dartName')
           ..write(' == null && nullToAbsent ? const Value.absent() : ');
         // We'll write the non-null case afterwards
       }
@@ -247,16 +248,17 @@ class UpdateCompanionWriter {
       _buffer..write('Value (')..write("object.$dartName")..write('),');
     }
 
-    _buffer.writeln(');\n}');
+    _buffer.writeln(');\n}\n');
 
     _buffer
-      ..write("static Map<String, Expression> ")
+      ..write('static Map<String, Expression> ')
       ..write('fromRowClassToColumns($dataClassName object,')
       ..write('{bool nullToAbsent = false}) {\n')
-      ..write("return ${table.getNameForCompanionClass(scope.options)}.")
-      ..write('fromRowClass(object, nullToAbsent: nullToAbsent).toColumns(nullToAbsent);');
+      ..write('return ${table.getNameForCompanionClass(scope.options)}.')
+      ..write('fromRowClass(object, nullToAbsent: nullToAbsent)')
+      ..write('.toColumns(nullToAbsent);');
 
-      _buffer.writeln('\n}');
+    _buffer.writeln('\n}');
   }
 
   void _writeToString() {

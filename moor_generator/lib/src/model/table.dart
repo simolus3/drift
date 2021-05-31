@@ -50,6 +50,9 @@ class MoorTable implements MoorSchemaEntity {
   /// The name for the data class associated with this table
   final String dartTypeName;
 
+  /// Generate reverse mapping for data class
+  final bool generateReverseMapping;
+
   /// The getter name used for this table in a generated database or dao class.
   @override
   String get dbGetterName => dbFieldName(_baseName);
@@ -131,6 +134,7 @@ class MoorTable implements MoorSchemaEntity {
     this.columns = const [],
     this.sqlName,
     this.dartTypeName,
+    this.generateReverseMapping,
     this.primaryKey,
     String overriddenName,
     this.overrideWithoutRowId,

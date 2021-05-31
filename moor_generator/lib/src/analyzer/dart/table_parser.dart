@@ -22,6 +22,7 @@ class TableParser {
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
+      generateReverseMapping: dataClassInfo.generateReverseMapping,
       primaryKey: primaryKey,
       overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
@@ -71,6 +72,7 @@ class TableParser {
     String name;
     ClassElement existingClass;
     String constructorInExistingClass;
+    bool generateReverseMapping;
 
     if (dataClassName != null) {
       name = dataClassName.getField('name').toStringValue();
@@ -82,6 +84,8 @@ class TableParser {
       final type = useRowClass.getField('type').toTypeValue();
       constructorInExistingClass =
           useRowClass.getField('constructor').toStringValue();
+      generateReverseMapping =
+          useRowClass.getField('generateReverseMapping').toBoolValue();
 
       if (type is InterfaceType) {
         existingClass = type.element;
@@ -98,7 +102,7 @@ class TableParser {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass, base.step.errors);
-    return _DataClassInformation(name, verified);
+    return _DataClassInformation(name, verified, generateReverseMapping);
   }
 
   Future<String> _parseTableName(ClassElement element) async {
@@ -226,8 +230,10 @@ class TableParser {
 class _DataClassInformation {
   final String /*?*/ enforcedName;
   final ExistingRowClass /*?*/ existingClass;
+  final bool /*?*/ generateReverseMapping;
 
-  _DataClassInformation(this.enforcedName, this.existingClass);
+  _DataClassInformation(
+      this.enforcedName, this.existingClass, this.generateReverseMapping);
 }
 
 extension on Element {

@@ -150,9 +150,16 @@ class UseRowClass {
   /// used to map database rows to the desired row class.
   final String constructor;
 
+  /// Enables reverse mapping generation
+  ///
+  /// When this option is set, moor generates custom row class to companion
+  /// class mapping
+  final bool generateReverseMapping;
+
   /// Customize the class used by moor to hold an instance of an annotated
   /// table.
   ///
   /// For details, see the overall documentation on [UseRowClass].
-  const UseRowClass(this.type, {this.constructor = ''});
+  const UseRowClass(this.type,
+      {this.constructor = '', this.generateReverseMapping = false});
 }
