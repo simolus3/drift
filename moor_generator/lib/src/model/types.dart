@@ -42,14 +42,17 @@ extension OperationOnTypes on HasType {
   /// This is the same as [dartTypeCode] but without custom types.
   String variableTypeCode(
       [GenerationOptions options = const GenerationOptions()]) {
-    final innerHasSuffix = nullable && options.nnbd;
-    final result = innerHasSuffix ? '$variableTypeName?' : variableTypeName;
-
     if (isArray) {
-      return 'List<$result>';
+      return 'List<${variableTypeCodeWithoutArray(options)}>';
     } else {
-      return result;
+      return variableTypeCodeWithoutArray(options);
     }
+  }
+
+  String variableTypeCodeWithoutArray(
+      [GenerationOptions options = const GenerationOptions()]) {
+    final innerHasSuffix = nullable && options.nnbd;
+    return innerHasSuffix ? '$variableTypeName?' : variableTypeName;
   }
 
   /// The dart type that matches the values of this column. For instance, if a
@@ -61,7 +64,8 @@ extension OperationOnTypes on HasType {
           options.nnbd && nullable && !typeConverter.hasNullableDartType;
       final baseType = typeConverter.mappedType.codeString(options);
 
-      return needsSuffix ? '$baseType?' : baseType;
+      final inner = needsSuffix ? '$baseType?' : baseType;
+      return isArray ? 'List<$inner>' : inner;
     }
 
     return variableTypeCode(options);

@@ -485,7 +485,9 @@ class QueryWriter {
         // Finally, if we're dealing with a list, we use a collection for to
         // write all the variables sequentially.
         String constructVar(String dartExpr) {
-          final type = element.variableTypeCode(scope.generationOptions);
+          // No longer an array here, we apply a for loop if necessary
+          final type =
+              element.variableTypeCodeWithoutArray(scope.generationOptions);
           final buffer = StringBuffer('Variable<$type>(');
 
           if (element.typeConverter != null) {
