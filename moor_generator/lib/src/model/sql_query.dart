@@ -358,6 +358,9 @@ class ResultColumn implements HasType {
   ResultColumn(this.name, this.type, this.nullable,
       {this.typeConverter, this.sqlParserColumn});
 
+  @override
+  bool get isArray => false;
+
   /// Hash-code that matching [compatibleTo], so that two compatible columns
   /// will have the same [compatibilityHashCode].
   int get compatibilityHashCode {
@@ -474,6 +477,7 @@ class FoundVariable extends FoundElement implements HasType {
   /// variables at runtime. We only accept queries where no explicitly numbered
   /// vars appear after an array. This means that we can expand array variables
   /// without having to look at other variables.
+  @override
   final bool isArray;
 
   final bool isRequired;
@@ -500,8 +504,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   @override
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    final withoutArray = OperationOnTypes(this).dartTypeCode(options);
-    return isArray ? 'List<$withoutArray>' : withoutArray;
+    return OperationOnTypes(this).dartTypeCode(options);
   }
 }
 

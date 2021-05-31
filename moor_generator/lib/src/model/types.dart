@@ -10,6 +10,12 @@ abstract class HasType {
   /// Whether the type is nullable in Dart.
   bool get nullable;
 
+  /// Whether this type is an array in sql.
+  ///
+  /// In this case, [nullable] refers to the inner type as arrays are always
+  /// non-nullable.
+  bool get isArray;
+
   /// The associated sql type.
   ColumnType get type;
 
@@ -20,7 +26,7 @@ abstract class HasType {
 extension OperationOnTypes on HasType {
   /// Whether this type is nullable in Dart
   bool get nullableInDart {
-    return nullable || typeConverter?.hasNullableDartType == true;
+    return (nullable && !isArray) || typeConverter?.hasNullableDartType == true;
   }
 
   /// the Dart type of this column that can be handled by moors type mapping.
@@ -36,8 +42,14 @@ extension OperationOnTypes on HasType {
   /// This is the same as [dartTypeCode] but without custom types.
   String variableTypeCode(
       [GenerationOptions options = const GenerationOptions()]) {
-    final hasSuffix = nullableInDart && options.nnbd;
-    return hasSuffix ? '$variableTypeName?' : variableTypeName;
+    final innerHasSuffix = nullable && options.nnbd;
+    final result = innerHasSuffix ? '$variableTypeName?' : variableTypeName;
+
+    if (isArray) {
+      return 'List<$result>';
+    } else {
+      return result;
+    }
   }
 
   /// The dart type that matches the values of this column. For instance, if a
