@@ -240,7 +240,7 @@ class UpdateCompanionWriter {
     final dataClassName = table.dartTypeName;
     if (table.hasExistingRowClass) {
       _buffer
-        ..write('@override\nMap<String, Expression> rowClassToColumns'
+        ..write('Map<String, Expression> rowClassToColumns'
             '($dataClassName object, bool nullToAbsent) {\n')
         ..write('final map = <String, Expression> {};');
 
