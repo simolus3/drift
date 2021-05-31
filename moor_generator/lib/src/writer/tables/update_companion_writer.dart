@@ -25,7 +25,7 @@ class UpdateCompanionWriter {
 
     _writeCopyWith();
     _writeToColumnsOverride();
-    if (table.generateReverseMapping && table.hasExistingRowClass) {
+    if ((table.generateReverseMapping ?? false) && table.hasExistingRowClass) {
       _writeFromRowClass();
     }
     _writeToString();
@@ -245,7 +245,7 @@ class UpdateCompanionWriter {
         // We'll write the non-null case afterwards
       }
 
-      _buffer..write('Value (')..write("object.$dartName")..write('),');
+      _buffer..write('Value (')..write('object.$dartName')..write('),');
     }
 
     _buffer.writeln(');\n}\n');
