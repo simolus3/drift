@@ -25,6 +25,8 @@ class UpdateCompanionWriter {
 
     _writeCopyWith();
     _writeToColumnsOverride();
+    _writeFromRowClass();
+    _writeRowClassToColumns();
     _writeToString();
 
     _buffer.write('}\n');
@@ -198,6 +200,94 @@ class UpdateCompanionWriter {
     }
 
     _buffer.write('return map; \n}\n');
+  }
+
+  void _writeFromRowClass() {
+    final dataClassName = table.dartTypeName;
+
+    _buffer
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write(' fromRowClass($dataClassName object, bool nullToAbsent) {\n');
+
+    _buffer
+      ..write('return ')
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write('(');
+
+    for (final column in table.columns) {
+      final dartName = column.dartGetterName;
+      _buffer..write(dartName)..write(': ');
+
+      if (column.mapRowClass) {
+        final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+        if (needsNullCheck) {
+          _buffer
+            ..write("object.$dartName")
+            ..write(' == null && nullToAbsent ? const Value.absent() : ');
+          // We'll write the non-null case afterwards
+        }
+
+        _buffer..write('Value (')..write("object.$dartName")..write('),');
+      } else {
+        _buffer..write('Value.absent(),');
+      }
+    }
+
+    _buffer.writeln(');\n}');
+  }
+
+  void _writeRowClassToColumns() {
+    final dataClassName = table.dartTypeName;
+    if (table.hasExistingRowClass) {
+      _buffer
+        ..write('@override\nMap<String, Expression> rowClassToColumns'
+            '($dataClassName object, bool nullToAbsent) {\n')
+        ..write('final map = <String, Expression> {};');
+
+      for (final column in table.columns) {
+        if (column.mapRowClass) {
+          // We include all columns that are not null. If nullToAbsent is false, we
+          // also include null columns. When generating NNBD code, we can include
+          // non-nullable columns without an additional null check.
+          final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+          final needsScope = needsNullCheck || column.typeConverter != null;
+          if (needsNullCheck) {
+            _buffer.write('if (!nullToAbsent || ${column.dartGetterName} != null)');
+          }
+          if (needsScope) _buffer.write('{');
+
+          final typeName = column.variableTypeCode(scope.generationOptions);
+          final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
+              'Variable<$typeName>';
+
+          if (column.typeConverter != null) {
+            // apply type converter before writing the variable
+            final converter = column.typeConverter;
+            final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+            final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
+
+            _buffer
+              ..write('final converter = $fieldName;\n')
+              ..write(mapSetter)
+              ..write('(converter.mapToSql(object.${column.dartGetterName})');
+            if (assertNotNull) _buffer.write('!');
+            _buffer.write(');');
+          } else {
+            // no type converter. Write variable directly
+            _buffer
+              ..write(mapSetter)
+              ..write('(object.')
+              ..write(column.dartGetterName)
+              ..write(');');
+          }
+
+          // This one closes the optional if from before.
+          if (needsScope) _buffer.write('}');
+        }
+      }
+
+      _buffer.write('return map; \n}\n');
+    }
   }
 
   void _writeToString() {

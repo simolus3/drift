@@ -24,6 +24,7 @@ const String _methodReferences = 'references';
 const String _methodAutoIncrement = 'autoIncrement';
 const String _methodWithLength = 'withLength';
 const String _methodNullable = 'nullable';
+const String _methodMapRowClass = 'mapRowClass';
 const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
@@ -73,6 +74,7 @@ class ColumnParser {
     Expression createdTypeConverter;
     DartType typeConverterRuntime;
     var nullable = false;
+    var mapRowClass = false;
 
     final foundFeatures = <ColumnFeature>[];
 
@@ -130,6 +132,9 @@ class ColumnParser {
           break;
         case _methodNullable:
           nullable = true;
+          break;
+        case _methodMapRowClass:
+          mapRowClass = true;
           break;
         case _methodCustomConstraint:
           foundCustomConstraint = base.readStringLiteral(
@@ -232,6 +237,7 @@ class ColumnParser {
       overriddenJsonName: _readJsonKey(element),
       customConstraints: foundCustomConstraint,
       nullable: nullable,
+      mapRowClass: mapRowClass,
       features: foundFeatures,
       defaultArgument: foundDefaultExpression?.toSource(),
       clientDefaultCode: clientDefaultExpression?.toSource(),

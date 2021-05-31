@@ -51,6 +51,9 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
   /// primary key. Columns are non-null by default.
   Builder nullable() => _isGenerated();
 
+  /// Include this column in row class mapping.
+  Builder mapRowClass() => _isGenerated();
+
   /// Tells moor to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
   ///

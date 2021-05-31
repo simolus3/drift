@@ -76,6 +76,10 @@ class MoorColumn implements HasDeclaration, HasType {
   @override
   final bool nullable;
 
+  /// Include this column in fromRowClass mapping, the
+  /// default is false
+  final bool mapRowClass;
+
   /// Whether this column has auto increment.
   bool get hasAI => features.any((f) => f is AutoIncrement);
 
@@ -133,6 +137,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.overriddenJsonName,
     this.customConstraints,
     this.nullable = false,
+    this.mapRowClass = false,
     this.features = const [],
     this.defaultArgument,
     this.clientDefaultCode,
