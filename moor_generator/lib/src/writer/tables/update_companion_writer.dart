@@ -25,6 +25,9 @@ class UpdateCompanionWriter {
 
     _writeCopyWith();
     _writeToColumnsOverride();
+    if (table.hasExistingRowClass) {
+      _writeFromRowClass();
+    }
     _writeToString();
 
     _buffer.write('}\n');
@@ -198,6 +201,62 @@ class UpdateCompanionWriter {
     }
 
     _buffer.write('return map; \n}\n');
+  }
+
+  void _writeFromRowClass() {
+    final dataClassName = table.dartTypeName;
+
+    _buffer
+      ..write("factory ${table.getNameForCompanionClass(scope.options)}.")
+      ..write('fromRowClass($dataClassName object,')
+      ..write('{bool nullToAbsent = false}) {\n');
+
+    _buffer
+      ..write('return ')
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write('(');
+
+    final info = table.existingRowClass;
+    final named = <MoorColumn, String>{};
+
+    info.mapping.forEach((column, parameter) {
+      if (parameter.isNamed) {
+        named[column] = parameter.name;
+      }
+    });
+
+    for (final field in named.values) {
+      final column = table.columns.firstWhere((element) => 
+        element.name.name == field, orElse: () => null);
+
+        if (column == null) {
+          break;
+        }
+
+      final dartName = column.dartGetterName;
+      _buffer..write(dartName)..write(': ');
+
+      final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
+      if (needsNullCheck) {
+        _buffer
+          ..write("object.$dartName")
+          ..write(' == null && nullToAbsent ? const Value.absent() : ');
+        // We'll write the non-null case afterwards
+      }
+
+      _buffer..write('Value (')..write("object.$dartName")..write('),');
+    }
+
+    _buffer.writeln(');\n}');
+
+    _buffer
+      ..write("static Map<String, Expression> ")
+      ..write('fromRowClassToColumns($dataClassName object,')
+      ..write('{bool nullToAbsent = false}) {\n')
+      ..write("return ${table.getNameForCompanionClass(scope.options)}.")
+      ..write('fromRowClass(object, nullToAbsent: nullToAbsent).toColumns(nullToAbsent);');
+
+      _buffer.writeln('\n}');
   }
 
   void _writeToString() {
