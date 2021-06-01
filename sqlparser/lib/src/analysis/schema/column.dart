@@ -210,6 +210,9 @@ mixin DelegatedColumn on Column {
 
   @override
   String get name => innerColumn!.name;
+
+  @override
+  bool get includedInResults => innerColumn?.includedInResults ?? true;
 }
 
 /// The result column of a [CompoundSelectStatement].
@@ -250,4 +253,35 @@ class ValuesSelectColumn extends Column {
 
   ValuesSelectColumn(this.name, this.expressions)
       : assert(expressions.isNotEmpty);
+}
+
+/// A column that is available in the scope of a statement.
+///
+/// In addition to the [innerColumn], this provides the [source] which brought
+/// this column into scope. This can be used to determine nullability.
+class AvailableColumn extends Column with DelegatedColumn {
+  @override
+  final Column innerColumn;
+  final ResultSetAvailableInStatement source;
+
+  AvailableColumn(this.innerColumn, this.source);
+}
+
+extension UnaliasColumn on Column {
+  /// Attempts to resolve the source of this column, if this is an
+  /// [AvailableColumn] or a [CommonTableExpressionColumn] that refers to
+  /// another column.
+  Column get source {
+    var current = this;
+    while (current is DelegatedColumn) {
+      final inner = current.innerColumn;
+      if (inner != null) {
+        current = inner;
+      } else {
+        return current;
+      }
+    }
+
+    return current;
+  }
 }

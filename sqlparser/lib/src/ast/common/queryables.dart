@@ -26,7 +26,10 @@ abstract class Queryable extends AstNode {
 
 /// https://www.sqlite.org/syntax/table-or-subquery.html
 /// Marker interface
-abstract class TableOrSubquery extends Queryable {}
+abstract class TableOrSubquery extends Queryable {
+  /// The result set that this node made available, if any
+  ResultSetAvailableInStatement? availableResultSet;
+}
 
 /// A table. The first path in https://www.sqlite.org/syntax/table-or-subquery.html
 ///
@@ -93,7 +96,7 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
 /// https://www.sqlite.org/syntax/join-clause.html
 class JoinClause extends Queryable {
   TableOrSubquery primary;
-  final List<Join> joins;
+  List<Join> joins;
 
   JoinClause({required this.primary, required this.joins});
 
@@ -105,7 +108,7 @@ class JoinClause extends Queryable {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     primary = transformer.transformChild(primary, this, arg);
-    transformer.transformChildren(joins, this, arg);
+    joins = transformer.transformChildren(joins, this, arg);
   }
 
   @override
@@ -202,4 +205,7 @@ class TableValuedFunction extends Queryable
 
   @override
   bool get visibleToChildren => false;
+
+  @override
+  ResultSetAvailableInStatement? availableResultSet;
 }

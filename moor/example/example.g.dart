@@ -14,11 +14,10 @@ class Category extends DataClass implements Insertable<Category> {
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      description: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
     );
   }
@@ -81,7 +80,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -192,8 +191,8 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Category.fromData(data, _db, prefix: effectivePrefix);
+    return Category.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -215,16 +214,15 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   factory Recipe.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Recipe(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      instructions: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      instructions: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}instructions'])!,
-      category:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      category: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   @override
@@ -301,7 +299,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Recipe &&
           other.id == this.id &&
@@ -468,8 +466,8 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Recipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Recipe.fromData(data, _db, prefix: effectivePrefix);
+    return Recipe.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -487,13 +485,13 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   factory Ingredient.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Ingredient(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      caloriesPer100g:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}calories'])!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      caloriesPer100g: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}calories'])!,
     );
   }
   @override
@@ -557,7 +555,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   int get hashCode =>
       $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Ingredient &&
           other.id == this.id &&
@@ -578,7 +576,7 @@ class IngredientsCompanion extends UpdateCompanion<Ingredient> {
     this.id = const Value.absent(),
     required String name,
     required int caloriesPer100g,
-  })   : name = Value(name),
+  })  : name = Value(name),
         caloriesPer100g = Value(caloriesPer100g);
   static Insertable<Ingredient> custom({
     Expression<int>? id,
@@ -700,8 +698,8 @@ class $IngredientsTable extends Ingredients
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Ingredient map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Ingredient.fromData(data, _db, prefix: effectivePrefix);
+    return Ingredient.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -723,14 +721,13 @@ class IngredientInRecipe extends DataClass
       Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return IngredientInRecipe(
-      recipe:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}recipe'])!,
-      ingredient: intType
+      recipe: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}recipe'])!,
+      ingredient: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}ingredient'])!,
-      amountInGrams:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}amount'])!,
+      amountInGrams: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}amount'])!,
     );
   }
   @override
@@ -795,7 +792,7 @@ class IngredientInRecipe extends DataClass
   int get hashCode => $mrjf($mrjc(
       recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is IngredientInRecipe &&
           other.recipe == this.recipe &&
@@ -816,7 +813,7 @@ class IngredientInRecipesCompanion extends UpdateCompanion<IngredientInRecipe> {
     required int recipe,
     required int ingredient,
     required int amountInGrams,
-  })   : recipe = Value(recipe),
+  })  : recipe = Value(recipe),
         ingredient = Value(ingredient),
         amountInGrams = Value(amountInGrams);
   static Insertable<IngredientInRecipe> custom({
@@ -947,8 +944,8 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   Set<GeneratedColumn> get $primaryKey => {recipe, ingredient};
   @override
   IngredientInRecipe map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return IngredientInRecipe.fromData(data, _db, prefix: effectivePrefix);
+    return IngredientInRecipe.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -996,7 +993,7 @@ class TotalWeightResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TotalWeightResult &&
           other.title == this.title &&

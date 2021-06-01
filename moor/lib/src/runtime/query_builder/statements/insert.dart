@@ -1,7 +1,7 @@
 part of '../query_builder.dart';
 
 /// Represents an insert statement
-class InsertStatement<T extends Table, D extends DataClass> {
+class InsertStatement<T extends Table, D> {
   /// The database to use then executing this statement
   @protected
   final DatabaseConnectionUser database;
@@ -74,6 +74,25 @@ class InsertStatement<T extends Table, D extends DataClass> {
     });
   }
 
+  /// Inserts a row into the table, and returns a generated instance.
+  ///
+  /// __Note__: This uses the `RETURNING` syntax added in sqlite3 version 3.35,
+  /// which is not available on most operating systems by default. When using
+  /// this method, make sure that you have a recent sqlite3 version available.
+  /// This is the case with `sqlite3_flutter_libs`.
+  Future<D> insertReturning(Insertable<D> entity,
+      {InsertMode? mode, DoUpdate<T, D>? onConflict}) async {
+    final ctx = createContext(entity, mode ?? InsertMode.insert,
+        onConflict: onConflict, returning: true);
+
+    return database.doWhenOpened((e) async {
+      final result = await e.runSelect(ctx.sql, ctx.boundVariables);
+      database
+          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.insert)});
+      return table.map(result.single);
+    });
+  }
+
   /// Attempts to [insert] [entity] into the database. If the insert would
   /// violate a primary key or uniqueness constraint, updates the columns that
   /// are present on [entity].
@@ -94,7 +113,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
-      {DoUpdate<T, D>? onConflict}) {
+      {DoUpdate<T, D>? onConflict, bool returning = false}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -126,25 +145,7 @@ class InsertStatement<T extends Table, D extends DataClass> {
     if (map.isEmpty) {
       ctx.buffer.write('DEFAULT VALUES');
     } else {
-      final columns = map.keys.map(escapeIfNeeded);
-
-      ctx.buffer
-        ..write('(')
-        ..write(columns.join(', '))
-        ..write(') ')
-        ..write('VALUES (');
-
-      var first = true;
-      for (final variable in map.values) {
-        if (!first) {
-          ctx.buffer.write(', ');
-        }
-        first = false;
-
-        variable.writeInto(ctx);
-      }
-
-      ctx.buffer.write(')');
+      writeInsertable(ctx, map);
     }
 
     if (onConflict != null) {
@@ -193,6 +194,10 @@ class InsertStatement<T extends Table, D extends DataClass> {
       }
     }
 
+    if (returning) {
+      ctx.buffer.write(' RETURNING *');
+    }
+
     return ctx;
   }
 
@@ -203,6 +208,30 @@ class InsertStatement<T extends Table, D extends DataClass> {
     }
 
     table.validateIntegrity(d, isInserting: true).throwIfInvalid(d);
+  }
+
+  /// Writes column names and values from the [map].
+  @internal
+  void writeInsertable(GenerationContext ctx, Map<String, Expression> map) {
+    final columns = map.keys.map(escapeIfNeeded);
+
+    ctx.buffer
+      ..write('(')
+      ..write(columns.join(', '))
+      ..write(') ')
+      ..write('VALUES (');
+
+    var first = true;
+    for (final variable in map.values) {
+      if (!first) {
+        ctx.buffer.write(', ');
+      }
+      first = false;
+
+      variable.writeInto(ctx);
+    }
+
+    ctx.buffer.write(')');
   }
 }
 
@@ -253,7 +282,7 @@ const _insertKeywords = <InsertMode, String>{
 /// companion when the underlying companion already exists.
 ///
 /// For an example, see [InsertStatement.insert].
-class DoUpdate<T extends Table, D extends DataClass> {
+class DoUpdate<T extends Table, D> {
   final Insertable<D> Function(T old) _creator;
 
   /// An optional list of columns to serve as an "conflict target", which

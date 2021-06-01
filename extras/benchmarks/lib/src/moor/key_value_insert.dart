@@ -10,7 +10,7 @@ const int _size = 1000;
 
 class KeyValueInsertBatch extends AsyncBenchmarkBase {
   final _db = Database();
-  final Uuid uuid = Uuid();
+  static const Uuid uuid = Uuid();
 
   KeyValueInsertBatch(ScoreEmitter emitter)
       : super('Inserting $_size entries (batch)', emitter);
@@ -33,7 +33,7 @@ class KeyValueInsertBatch extends AsyncBenchmarkBase {
 
 class KeyValueInsertSerial extends AsyncBenchmarkBase {
   final _db = Database();
-  final Uuid uuid = Uuid();
+  static const Uuid uuid = Uuid();
 
   KeyValueInsertSerial(ScoreEmitter emitter)
       : super('Inserting $_size entries (serial)', emitter);

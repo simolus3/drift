@@ -5,3 +5,5 @@ targets:
         options:
           generate_connect_constructor: true
           override_hash_and_equals_in_result_sets: true
+          sqlite:
+            version: "3.35"

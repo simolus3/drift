@@ -187,6 +187,23 @@ void main() {
     );
   });
 
+  test('parses CREATE TABLE WITH in moor more', () {
+    testStatement(
+      'CREATE TABLE a (b INTEGER) WITH MyExistingClass',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(
+            columnName: 'b',
+            typeName: 'INTEGER',
+          ),
+        ],
+        moorTableName: MoorTableName('MyExistingClass', true),
+      ),
+      moorMode: true,
+    );
+  });
+
   test('parses CREATE VIRTUAL TABLE statement', () {
     testStatement(
       'CREATE VIRTUAL TABLE IF NOT EXISTS foo USING bar(a, b(), c) AS moor',
@@ -199,7 +216,7 @@ void main() {
           fakeSpan('b()'),
           fakeSpan('c'),
         ],
-        overriddenDataClassName: 'moor',
+        moorTableName: MoorTableName('moor', false),
       ),
       moorMode: true,
     );

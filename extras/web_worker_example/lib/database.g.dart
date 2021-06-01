@@ -8,33 +8,30 @@ part of 'database.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class Entrie extends DataClass implements Insertable<Entrie> {
-  final int? id;
+  final int id;
   final String value;
-  Entrie({this.id, required this.value});
+  Entrie({required this.id, required this.value});
   factory Entrie.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Entrie(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      value:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      value: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int?>(id);
-    }
+    map['id'] = Variable<int>(id);
     map['text'] = Variable<String>(value);
     return map;
   }
 
   EntriesCompanion toCompanion(bool nullToAbsent) {
     return EntriesCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      id: Value(id),
       value: Value(value),
     );
   }
@@ -43,7 +40,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
       {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Entrie(
-      id: serializer.fromJson<int?>(json['id']),
+      id: serializer.fromJson<int>(json['id']),
       value: serializer.fromJson<String>(json['text']),
     );
   }
@@ -51,14 +48,13 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int?>(id),
+      'id': serializer.toJson<int>(id),
       'text': serializer.toJson<String>(value),
     };
   }
 
-  Entrie copyWith({Value<int?> id = const Value.absent(), String? value}) =>
-      Entrie(
-        id: id.present ? id.value : this.id,
+  Entrie copyWith({int? id, String? value}) => Entrie(
+        id: id ?? this.id,
         value: value ?? this.value,
       );
   @override
@@ -73,13 +69,13 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, value.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Entrie && other.id == this.id && other.value == this.value);
 }
 
 class EntriesCompanion extends UpdateCompanion<Entrie> {
-  final Value<int?> id;
+  final Value<int> id;
   final Value<String> value;
   const EntriesCompanion({
     this.id = const Value.absent(),
@@ -90,7 +86,7 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
     required String value,
   }) : value = Value(value);
   static Insertable<Entrie> custom({
-    Expression<int?>? id,
+    Expression<int>? id,
     Expression<String>? value,
   }) {
     return RawValuesInsertable({
@@ -99,7 +95,7 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
     });
   }
 
-  EntriesCompanion copyWith({Value<int?>? id, Value<String>? value}) {
+  EntriesCompanion copyWith({Value<int>? id, Value<String>? value}) {
     return EntriesCompanion(
       id: id ?? this.id,
       value: value ?? this.value,
@@ -110,7 +106,7 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int?>(id.value);
+      map['id'] = Variable<int>(id.value);
     }
     if (value.present) {
       map['text'] = Variable<String>(value.value);
@@ -135,7 +131,7 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, true,
+    return GeneratedIntColumn('id', $tableName, false,
         declaredAsPrimaryKey: true, $customConstraints: 'PRIMARY KEY');
   }
 

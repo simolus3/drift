@@ -3,6 +3,7 @@ import 'dart:math' show max;
 
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
+import 'package:moor_generator/src/analyzer/sql_queries/explicit_alias_transformer.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/writer.dart';
@@ -23,8 +24,9 @@ class QueryWriter {
   final SqlQuery query;
   final Scope scope;
 
-  SqlSelectQuery get _select => query as SqlSelectQuery;
+  ExplicitAliasTransformer _transformer;
 
+  SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
   MoorOptions get options => scope.writer.options;
@@ -44,6 +46,18 @@ class QueryWriter {
     if (resultSet?.needsOwnClass == true) {
       final resultSetScope = scope.findScopeOfLevel(DartScope.library);
       ResultSetWriter(query, resultSetScope).write();
+    }
+
+    // The new sql code generation generates query code from the parsed AST,
+    // which eliminates unnecessary whitespace and comments. These can sometimes
+    // have a semantic meaning though, for instance when they're used in
+    // columns. So, we transform the query to add an explicit alias to every
+    // column!
+    // We do this transformation so late because it shouldn't have an impact on
+    // analysis, Dart getter names stay the same.
+    if (resultSet != null && options.newSqlCodeGeneration) {
+      _transformer = ExplicitAliasTransformer();
+      _transformer.rewrite(query.fromContext.root);
     }
 
     if (query is SqlSelectQuery) {
@@ -127,7 +141,10 @@ class QueryWriter {
         final fieldName = nested.dartFieldName;
         final tableGetter = nested.table.dbGetterName;
 
-        _buffer.write('$fieldName: $tableGetter.mapFromRowOrNull(row, '
+        final mappingMethod =
+            nested.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
+
+        _buffer.write('$fieldName: $tableGetter.$mappingMethod(row, '
             'tablePrefix: ${asDartLiteral(prefix)}),');
       }
       _buffer.write(');\n}');
@@ -137,17 +154,22 @@ class QueryWriter {
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  static String readingCode(ResultColumn column, GenerationOptions options) {
+  String readingCode(ResultColumn column, GenerationOptions generationOptions) {
     var rawDartType = dartTypeNames[column.type];
-    if (column.nullable && options.nnbd) {
+    if (column.nullable && generationOptions.nnbd) {
       rawDartType = '$rawDartType?';
     }
 
-    final dartLiteral = asDartLiteral(column.name);
+    String specialName;
+    if (options.newSqlCodeGeneration) {
+      specialName = _transformer.newNameFor(column.sqlParserColumn);
+    }
+
+    final dartLiteral = asDartLiteral(specialName ?? column.name);
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
-      final needsAssert = !column.nullable && options.nnbd;
+      final needsAssert = !column.nullable && generationOptions.nnbd;
 
       final converter = column.typeConverter;
       code = '${_converter(converter)}.mapToDart($code)';
@@ -264,9 +286,8 @@ class QueryWriter {
       // Placeholders with a default value generate optional (and thus, named)
       // parameters. Since moor 4, we have an option to also generate named
       // parameters for named variables.
-      final isNamed =
-          (element is FoundDartPlaceholder && element.defaultValue != null) ||
-              (element.hasSqlName && options.generateNamedParameters);
+      final isNamed = (element is FoundDartPlaceholder && element.hasDefault) ||
+          (element.hasSqlName && options.generateNamedParameters);
 
       if (isNamed) {
         namedElements.add(element);
@@ -293,14 +314,15 @@ class QueryWriter {
 
         if (optional is FoundDartPlaceholder) {
           final kind = optional.type;
-          if (kind == DartPlaceholderType.expression &&
-              optional.defaultValue != null) {
+          if (kind is ExpressionDartPlaceholderType &&
+              kind.defaultValue != null) {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
             final defaultSql =
-                "'(${escapeForDart(optional.defaultValue.toSql())})'";
+                "'(${escapeForDart(kind.defaultValue.toSql())})'";
             defaultCode = 'const CustomExpression($defaultSql)';
-          } else if (kind == DartPlaceholderType.orderBy) {
+          } else if (kind is SimpleDartPlaceholderType &&
+              kind.kind == SimpleDartPlaceholderKind.orderBy) {
             defaultCode = 'const OrderBy.nothing()';
           }
         }
@@ -308,9 +330,15 @@ class QueryWriter {
         final type = optional.dartTypeCode(scope.generationOptions);
 
         // No default value, this element is required if it's not nullable
-        final isNullable = optional is FoundVariable && optional.nullableInDart;
-        final isRequired = !isNullable && defaultCode == null ||
-            options.namedParametersAlwaysRequired;
+        var isMarkedAsRequired = false;
+        var isNullable = false;
+        if (optional is FoundVariable) {
+          isMarkedAsRequired = optional.isRequired;
+          isNullable = optional.nullableInDart;
+        }
+        final isRequired =
+            (!isNullable || isMarkedAsRequired) && defaultCode == null ||
+                options.namedParametersAlwaysRequired;
         if (isRequired) {
           _buffer..write(scope.required)..write(' ');
         }
@@ -412,15 +440,26 @@ class QueryWriter {
         _buffer
           ..write('final ')
           ..write(placeholderContextName(element))
-          ..write(' = ')
-          ..write(r'$write(')
-          ..write(element.dartParameterName);
+          ..write(' = ');
 
-        if (query.hasMultipleTables) {
-          _buffer.write(', hasMultipleTables: true');
+        final type = element.type;
+        if (type is InsertableDartPlaceholderType) {
+          final table = type.table;
+
+          _buffer
+            ..write(r'$writeInsertable(this.')
+            ..write(table?.dbGetterName)
+            ..write(', ')
+            ..write(element.dartParameterName)
+            ..write(');\n');
+        } else {
+          _buffer..write(r'$write(')..write(element.dartParameterName);
+          if (query.hasMultipleTables) {
+            _buffer.write(', hasMultipleTables: true');
+          }
+
+          _buffer.write(');\n');
         }
-
-        _buffer.write(');\n');
 
         // similar to the case for expanded array variables, we need to
         // increase the index
@@ -447,7 +486,9 @@ class QueryWriter {
         // Finally, if we're dealing with a list, we use a collection for to
         // write all the variables sequentially.
         String constructVar(String dartExpr) {
-          final type = element.variableTypeCode(scope.generationOptions);
+          // No longer an array here, we apply a for loop if necessary
+          final type =
+              element.variableTypeCodeWithoutArray(scope.generationOptions);
           final buffer = StringBuffer('Variable<$type>(');
 
           if (element.typeConverter != null) {

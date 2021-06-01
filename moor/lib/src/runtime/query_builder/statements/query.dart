@@ -2,7 +2,7 @@ part of '../query_builder.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
-abstract class Query<T extends Table, D extends DataClass> extends Component {
+abstract class Query<T extends Table, D> extends Component {
   /// The database this statement should be sent to.
   @protected
   DatabaseConnectionUser database;
@@ -276,8 +276,7 @@ class _MappedSelectable<S, T> extends Selectable<T> {
 }
 
 /// Mixin for a [Query] that operates on a single primary table only.
-mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
-    on Query<T, D> {
+mixin SingleTableQueryMixin<T extends Table, D> on Query<T, D> {
   /// Makes this statement only include rows that match the [filter].
   ///
   /// For instance, if you have a table users with an id column, you could
@@ -356,7 +355,7 @@ mixin SingleTableQueryMixin<T extends Table, D extends DataClass>
 }
 
 /// Mixin to provide the high-level [limit] methods for users.
-mixin LimitContainerMixin<T extends Table, D extends DataClass> on Query<T, D> {
+mixin LimitContainerMixin<T extends Table, D> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.

@@ -126,6 +126,9 @@ class MoorColumn implements HasDeclaration, HasType {
         ColumnType.real: 'GeneratedRealColumn',
       }[type];
 
+  @override
+  bool get isArray => false;
+
   MoorColumn({
     this.type,
     this.dartGetterName,

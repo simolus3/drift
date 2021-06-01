@@ -15,9 +15,10 @@ CREATE TABLE tbl (
 
 all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
-typeHints(:foo AS TEXT OR NULL, $predicate = TRUE):
+typeHints(REQUIRED :foo AS TEXT OR NULL, $predicate = TRUE):
   SELECT :foo WHERE $predicate;
 nested AS MyResultSet: SELECT foo.** FROM tbl foo;
+add: INSERT INTO tbl $row RETURNING *;
 ''';
 
 void main() {
@@ -55,7 +56,7 @@ void main() {
               ],
             ),
           ],
-          overriddenDataClassName: 'RowName',
+          moorTableName: MoorTableName('RowName', false),
         ),
         DeclaredStatement(
           SimpleName('all'),
@@ -74,13 +75,16 @@ void main() {
         ),
         DeclaredStatement(
           SimpleName('typeHints'),
-          SelectStatement(columns: [
-            ExpressionResultColumn(
-              expression: ColonNamedVariable(
-                ColonVariableToken(fakeSpan(':foo'), ':foo'),
+          SelectStatement(
+            columns: [
+              ExpressionResultColumn(
+                expression: ColonNamedVariable(
+                  ColonVariableToken(fakeSpan(':foo'), ':foo'),
+                ),
               ),
-            ),
-          ]),
+            ],
+            where: DartExpressionPlaceholder(name: 'predicate'),
+          ),
           parameters: [
             VariableTypeHint(
               ColonNamedVariable(
@@ -88,6 +92,7 @@ void main() {
               ),
               'TEXT',
               orNull: true,
+              isRequired: true,
             ),
             DartPlaceholderDefaultValue(
               'predicate',
@@ -103,6 +108,17 @@ void main() {
           ),
           as: 'MyResultSet',
         ),
+        DeclaredStatement(
+          SimpleName('add'),
+          InsertStatement(
+            table: TableReference('tbl'),
+            source: DartInsertablePlaceholder(name: 'row'),
+            targetColumns: const [],
+            returning: Returning([
+              StarResultColumn(),
+            ]),
+          ),
+        )
       ]),
     );
   });

@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
+import 'skips.dart';
 
 void main() {
   late TodoDb db;
@@ -30,10 +31,8 @@ void main() {
 
   test('can insert floating point values', () async {
     // regression test for https://github.com/simolus3/moor/issues/30
-    await db.into(db.tableWithoutPK).insert(TableWithoutPKData(
-        notReallyAnId: 42,
-        someFloat: 3.1415,
-        custom: MyCustomObject('custom')));
+    await db.into(db.tableWithoutPK).insert(
+        CustomRowClass.map(42, 3.1415, custom: MyCustomObject('custom')));
 
     verify(executor.runInsert(
         'INSERT INTO table_without_p_k '
@@ -70,6 +69,31 @@ void main() {
     verify(streamQueries.handleTableUpdates(
         {const TableUpdate('users', kind: UpdateKind.insert)}));
   });
+
+  test('notifies stream queries on insertReturning', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) {
+      return Future.value([
+        {
+          'id': 5,
+          'name': 'User McUserface',
+          'is_awesome': true,
+          'profile_picture': Uint8List(0),
+          'creation_time': DateTime.now().millisecondsSinceEpoch,
+        }
+      ]);
+    });
+
+    final user = await db.into(db.users).insertReturning(UsersCompanion(
+          name: const Value('User McUserface'),
+          isAwesome: const Value(true),
+          profilePicture: Value(Uint8List(0)),
+        ));
+
+    verify(streamQueries.handleTableUpdates(
+        {const TableUpdate('users', kind: UpdateKind.insert)}));
+
+    expect(user.id, 5);
+  }, skip: onNoReturningSupport());
 
   group('enforces integrity', () {
     test('for regular inserts', () async {
@@ -220,6 +244,28 @@ void main() {
 
     verify(executor.runInsert(
       'INSERT INTO categories ("desc", priority) VALUES (?, ?)',
+      ['description', 1],
+    ));
+  });
+
+  test('generates RETURNING clauses', () async {
+    when(executor.runSelect(any, any)).thenAnswer(
+      (_) => Future.value([
+        {
+          'id': 1,
+          'desc': 'description',
+          'priority': 1,
+        },
+      ]),
+    );
+
+    await db.into(db.categories).insertReturning(CategoriesCompanion.insert(
+          description: 'description',
+          priority: const Value(CategoryPriority.medium),
+        ));
+
+    verify(executor.runSelect(
+      'INSERT INTO categories ("desc", priority) VALUES (?, ?) RETURNING *',
       ['description', 1],
     ));
   });

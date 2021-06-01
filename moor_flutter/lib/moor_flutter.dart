@@ -206,4 +206,11 @@ class FlutterQueryExecutor extends DelegatedDatabase {
     final sqfliteDelegate = delegate as _SqfliteDelegate;
     return sqfliteDelegate.isOpen ? sqfliteDelegate.db : null;
   }
+
+  @override
+  // We're not really required to be sequential since sqflite has an internal
+  // lock to bring statements into a sequential order.
+  // Setting isSequential here helps with moor cancellations in stream queries
+  // though.
+  bool get isSequential => true;
 }

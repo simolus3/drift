@@ -1,5 +1,19 @@
+## 4.3.2
+
+- Support the latest analyzer version
+
+## 4.3.1
+
+- Fix code generation for custom data classes
+
+## 4.3.0
+
+- Generate non-nullable nested result classes when possible
+- Support Dart placeholders for insert statements
+
 ## 4.2.2
 
+- Support latest `build_config`
 - Fix generated code for queries using a Dart placeholder before an array variable
 
 ## 4.2.1

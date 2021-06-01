@@ -8,6 +8,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import 'lints/linter.dart';
+import 'required_variables.dart';
 
 /// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
 /// generator package by determining its type, return columns, variables and so
@@ -16,6 +17,7 @@ class QueryHandler {
   final DeclaredQuery source;
   final AnalysisContext context;
   final TypeMapper mapper;
+  final RequiredVariables requiredVariables;
 
   Set<Table> _foundTables;
   Set<View> _foundViews;
@@ -26,12 +28,14 @@ class QueryHandler {
 
   BaseSelectStatement get _select => context.root as BaseSelectStatement;
 
-  QueryHandler(this.source, this.context, this.mapper);
+  QueryHandler(this.source, this.context, this.mapper,
+      {this.requiredVariables = RequiredVariables.empty});
 
   String get name => source.name;
 
   SqlQuery handle() {
-    _foundElements = mapper.extractElements(context);
+    _foundElements =
+        mapper.extractElements(context, required: requiredVariables);
 
     _verifyNoSkippedIndexes();
     final query = _mapToMoor();
@@ -130,7 +134,7 @@ class QueryHandler {
       }
 
       columns.add(ResultColumn(column.name, moorType, type?.nullable ?? true,
-          typeConverter: converter));
+          typeConverter: converter, sqlParserColumn: column));
 
       final table = _tableOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != table);
@@ -210,15 +214,19 @@ class QueryHandler {
     if (query is! SelectStatement) return const [];
 
     final nestedTables = <NestedResultTable>[];
+    final analysis = JoinModel.of(query);
 
     for (final column in (query as SelectStatement).columns) {
       if (column is NestedStarResultColumn) {
-        final result = column.resultSet;
+        final originalResult = column.resultSet;
+        final result = originalResult.unalias();
         if (result is! Table) continue;
 
         final moorTable = mapper.tableToMoor(result as Table);
-        nestedTables
-            .add(NestedResultTable(column, column.tableName, moorTable));
+        final isNullable =
+            analysis == null || analysis.isNullableTable(originalResult);
+        nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
+            isNullable: isNullable));
       }
     }
 

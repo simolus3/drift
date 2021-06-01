@@ -39,12 +39,18 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     final currentChildren = _current.childNodes.iterator;
     final otherChildren = other.childNodes.iterator;
 
-    // always move both iterators
-    while (currentChildren.moveNext() & otherChildren.moveNext()) {
-      _check(currentChildren.current, otherChildren.current);
+    while (currentChildren.moveNext()) {
+      if (otherChildren.moveNext()) {
+        _check(currentChildren.current, otherChildren.current);
+      } else {
+        // Current has more elements than other
+        throw NotEqualException(
+            "$_current and $other don't have an equal amount of children");
+      }
     }
 
-    if (currentChildren.moveNext() || otherChildren.moveNext()) {
+    if (otherChildren.moveNext()) {
+      // Other has more elements than current
       throw NotEqualException(
           "$_current and $other don't have an equal amount of children");
     }
@@ -200,8 +206,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _assert(
         current.ifNotExists == e.ifNotExists &&
             current.tableName == e.tableName &&
-            current.withoutRowId == e.withoutRowId &&
-            current.overriddenDataClassName == e.overriddenDataClassName,
+            current.withoutRowId == e.withoutRowId,
         e);
     _checkChildren(e);
   }
@@ -350,6 +355,17 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    final current = _currentAs<RaiseExpression>(e);
+    _assert(
+      current.raiseKind == e.raiseKind &&
+          current.errorMessage == e.errorMessage,
+      e,
+    );
+    _checkChildren(e);
+  }
+
+  @override
   void visitIndexedColumn(IndexedColumn e, void arg) {
     final current = _currentAs<IndexedColumn>(e);
     _assert(current.ordering == e.ordering, e);
@@ -458,13 +474,26 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
       final current = _currentAs<VariableTypeHint>(e);
-      _assert(current.typeName == e.typeName && current.orNull == e.orNull, e);
+      _assert(
+          current.typeName == e.typeName &&
+              current.orNull == e.orNull &&
+              current.isRequired == e.isRequired,
+          e);
     } else if (e is DartPlaceholderDefaultValue) {
       final current = _currentAs<DartPlaceholderDefaultValue>(e);
       _assert(current.variableName == e.variableName, e);
     }
 
     _checkChildren(e);
+  }
+
+  @override
+  void visitMoorTableName(MoorTableName e, void arg) {
+    final current = _currentAs<MoorTableName>(e);
+    _assert(
+        current.overriddenDataClassName == e.overriddenDataClassName &&
+            current.useExistingDartClass == e.useExistingDartClass,
+        e);
   }
 
   @override

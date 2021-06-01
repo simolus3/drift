@@ -259,10 +259,13 @@ class SchemaReader {
       };
     }
 
+    final pascalCase = ReCase(sqlName).pascalCase;
+
     return MoorTable(
       sqlName: sqlName,
-      overriddenName: '_${ReCase(sqlName).pascalCase}',
+      overriddenName: pascalCase,
       columns: columns,
+      dartTypeName: '${pascalCase}Data',
       primaryKey: explicitPk,
       overrideTableConstraints: tableConstraints,
       overrideDontWriteConstraints: content['was_declared_in_moor'] as bool,
@@ -282,13 +285,14 @@ class SchemaReader {
         _columnFeature(feature)
     ];
 
+    // Note: Not including client default code because that usually depends on
+    // imports from the database.
     return MoorColumn(
       name: ColumnName.explicitly(name),
       dartGetterName: ReCase(name).camelCase,
       type: moorType,
       nullable: nullable,
       defaultArgument: data['default_dart'] as String,
-      clientDefaultCode: data['default_client_dart'] as String,
       customConstraints: customConstraints,
       features: dslFeatures,
     );

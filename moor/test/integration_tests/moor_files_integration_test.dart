@@ -1,10 +1,10 @@
 import 'package:moor/ffi.dart';
-import 'package:moor/src/runtime/query_builder/query_builder.dart' hide isNull;
-import 'package:sqlite3/sqlite3.dart';
+import 'package:moor/moor.dart' hide isNull;
 import 'package:test/test.dart';
 
 import '../data/tables/converter.dart';
 import '../data/tables/custom_tables.dart';
+import '../skips.dart';
 
 void main() {
   late VmDatabase executor;
@@ -25,6 +25,14 @@ void main() {
   test('can use nullable columns', () async {
     await db.delete(db.config).go();
     await expectLater(db.nullableQuery().getSingle(), completion(isNull));
+  });
+
+  test('can select to existing data classes', () async {
+    await db
+        .into(db.noIds)
+        .insert(NoIdsCompanion.insert(payload: Uint8List(12)));
+    final result = await db.select(db.noIds).getSingle();
+    expect(result.payload, hasLength(12));
   });
 
   group('views', () {
@@ -62,13 +70,15 @@ void main() {
     });
   });
 
-  final sqliteVersion = sqlite3.version;
-  final hasReturning = sqliteVersion.versionNumber > 3035000;
-
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(
-          'key2', 'val', SyncType.locallyCreated, SyncType.locallyCreated);
+          value: ConfigCompanion.insert(
+        configKey: 'key2',
+        configValue: const Value('val'),
+        syncState: const Value(SyncType.locallyCreated),
+        syncStateImplicit: const Value(SyncType.locallyCreated),
+      ));
 
       expect(result, hasLength(1));
       expect(
@@ -81,5 +91,5 @@ void main() {
         ),
       );
     });
-  }, skip: hasReturning ? null : 'RETURNING not supported by current sqlite');
+  }, skip: onNoReturningSupport());
 }

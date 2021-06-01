@@ -22,19 +22,17 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title']),
-      content: stringType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title']),
+      content: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}content'])!,
-      targetDate: dateTimeType
+      targetDate: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
-      category:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      category: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   @override
@@ -130,7 +128,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           $mrjc(content.hashCode,
               $mrjc(targetDate.hashCode, category.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == this.id &&
@@ -323,8 +321,8 @@ class $TodosTableTable extends TodosTable
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TodoEntry.fromData(data, _db, prefix: effectivePrefix);
+    return TodoEntry.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -342,14 +340,13 @@ class Category extends DataClass implements Insertable<Category> {
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      description:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
-      priority: $CategoriesTable.$converter0.mapToDart(
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
+      priority: $CategoriesTable.$converter0.mapToDart(const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
     );
   }
   @override
@@ -417,7 +414,7 @@ class Category extends DataClass implements Insertable<Category> {
   int get hashCode =>
       $mrjf($mrjc(id.hashCode, $mrjc(description.hashCode, priority.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -549,8 +546,8 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Category.fromData(data, _db, prefix: effectivePrefix);
+    return Category.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -577,19 +574,16 @@ class User extends DataClass implements Insertable<User> {
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final boolType = db.typeSystem.forDartType<bool>();
-    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
-      isAwesome: boolType
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      isAwesome: const BoolType()
           .mapFromDatabaseResponse(data['${effectivePrefix}is_awesome'])!,
-      profilePicture: uint8ListType
+      profilePicture: const BlobType()
           .mapFromDatabaseResponse(data['${effectivePrefix}profile_picture'])!,
-      creationTime: dateTimeType
+      creationTime: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time'])!,
     );
   }
@@ -674,7 +668,7 @@ class User extends DataClass implements Insertable<User> {
           $mrjc(isAwesome.hashCode,
               $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
@@ -867,8 +861,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return User.fromData(data, _db, prefix: effectivePrefix);
+    return User.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -884,10 +878,11 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return SharedTodo(
-      todo: intType.mapFromDatabaseResponse(data['${effectivePrefix}todo'])!,
-      user: intType.mapFromDatabaseResponse(data['${effectivePrefix}user'])!,
+      todo: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}todo'])!,
+      user: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}user'])!,
     );
   }
   @override
@@ -943,7 +938,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   @override
   int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SharedTodo &&
           other.todo == this.todo &&
@@ -960,7 +955,7 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   SharedTodosCompanion.insert({
     required int todo,
     required int user,
-  })   : todo = Value(todo),
+  })  : todo = Value(todo),
         user = Value(user);
   static Insertable<SharedTodo> custom({
     Expression<int>? todo,
@@ -1060,8 +1055,8 @@ class $SharedTodosTable extends SharedTodos
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return SharedTodo.fromData(data, _db, prefix: effectivePrefix);
+    return SharedTodo.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1070,105 +1065,7 @@ class $SharedTodosTable extends SharedTodos
   }
 }
 
-class TableWithoutPKData extends DataClass
-    implements Insertable<TableWithoutPKData> {
-  final int notReallyAnId;
-  final double someFloat;
-  final MyCustomObject custom;
-  TableWithoutPKData(
-      {required this.notReallyAnId,
-      required this.someFloat,
-      required this.custom});
-  factory TableWithoutPKData.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final doubleType = db.typeSystem.forDartType<double>();
-    final stringType = db.typeSystem.forDartType<String>();
-    return TableWithoutPKData(
-      notReallyAnId: intType
-          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
-      someFloat: doubleType
-          .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
-      custom: $TableWithoutPKTable.$converter0.mapToDart(stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
-    );
-  }
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['not_really_an_id'] = Variable<int>(notReallyAnId);
-    map['some_float'] = Variable<double>(someFloat);
-    {
-      final converter = $TableWithoutPKTable.$converter0;
-      map['custom'] = Variable<String>(converter.mapToSql(custom)!);
-    }
-    return map;
-  }
-
-  TableWithoutPKCompanion toCompanion(bool nullToAbsent) {
-    return TableWithoutPKCompanion(
-      notReallyAnId: Value(notReallyAnId),
-      someFloat: Value(someFloat),
-      custom: Value(custom),
-    );
-  }
-
-  factory TableWithoutPKData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return TableWithoutPKData(
-      notReallyAnId: serializer.fromJson<int>(json['notReallyAnId']),
-      someFloat: serializer.fromJson<double>(json['someFloat']),
-      custom: serializer.fromJson<MyCustomObject>(json['custom']),
-    );
-  }
-  factory TableWithoutPKData.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      TableWithoutPKData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'notReallyAnId': serializer.toJson<int>(notReallyAnId),
-      'someFloat': serializer.toJson<double>(someFloat),
-      'custom': serializer.toJson<MyCustomObject>(custom),
-    };
-  }
-
-  TableWithoutPKData copyWith(
-          {int? notReallyAnId, double? someFloat, MyCustomObject? custom}) =>
-      TableWithoutPKData(
-        notReallyAnId: notReallyAnId ?? this.notReallyAnId,
-        someFloat: someFloat ?? this.someFloat,
-        custom: custom ?? this.custom,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('TableWithoutPKData(')
-          ..write('notReallyAnId: $notReallyAnId, ')
-          ..write('someFloat: $someFloat, ')
-          ..write('custom: $custom')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf($mrjc(
-      notReallyAnId.hashCode, $mrjc(someFloat.hashCode, custom.hashCode)));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is TableWithoutPKData &&
-          other.notReallyAnId == this.notReallyAnId &&
-          other.someFloat == this.someFloat &&
-          other.custom == this.custom);
-}
-
-class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
+class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   final Value<int> notReallyAnId;
   final Value<double> someFloat;
   final Value<MyCustomObject> custom;
@@ -1183,7 +1080,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
     this.custom = const Value.absent(),
   })  : notReallyAnId = Value(notReallyAnId),
         someFloat = Value(someFloat);
-  static Insertable<TableWithoutPKData> createCustom({
+  static Insertable<CustomRowClass> createCustom({
     Expression<int>? notReallyAnId,
     Expression<double>? someFloat,
     Expression<MyCustomObject>? custom,
@@ -1234,7 +1131,7 @@ class TableWithoutPKCompanion extends UpdateCompanion<TableWithoutPKData> {
 }
 
 class $TableWithoutPKTable extends TableWithoutPK
-    with TableInfo<$TableWithoutPKTable, TableWithoutPKData> {
+    with TableInfo<$TableWithoutPKTable, CustomRowClass> {
   final GeneratedDatabase _db;
   final String? _alias;
   $TableWithoutPKTable(this._db, [this._alias]);
@@ -1281,7 +1178,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   final String actualTableName = 'table_without_p_k';
   @override
-  VerificationContext validateIntegrity(Insertable<TableWithoutPKData> instance,
+  VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1306,9 +1203,16 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
-  TableWithoutPKData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TableWithoutPKData.fromData(data, _db, prefix: effectivePrefix);
+  CustomRowClass map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomRowClass.map(
+      const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}not_really_an_id'])!,
+      const RealType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
+      custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
+    );
   }
 
   @override
@@ -1326,9 +1230,9 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   factory PureDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     return PureDefault(
-      txt: stringType.mapFromDatabaseResponse(data['${effectivePrefix}insert']),
+      txt: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}insert']),
     );
   }
   @override
@@ -1379,7 +1283,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   @override
   int get hashCode => $mrjf(txt.hashCode);
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) || (other is PureDefault && other.txt == this.txt);
 }
 
@@ -1463,8 +1367,8 @@ class $PureDefaultsTable extends PureDefaults
   Set<GeneratedColumn> get $primaryKey => {txt};
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return PureDefault.fromData(data, _db, prefix: effectivePrefix);
+    return PureDefault.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1585,7 +1489,7 @@ class AllTodosWithCategoryResult extends CustomResultSet {
                   $mrjc(category.hashCode,
                       $mrjc(catId.hashCode, catDesc.hashCode)))))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AllTodosWithCategoryResult &&
           other.id == this.id &&

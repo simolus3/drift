@@ -2,14 +2,15 @@
 // ignore_for_file: implementation_imports
 import 'dart:async';
 
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/src/dart/analysis/driver.dart';
-import 'package:analyzer/src/generated/source.dart' show SourceKind;
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/backends/backend.dart';
 import 'package:moor_generator/src/services/ide/moor_ide.dart';
 import 'package:moor_generator/src/utils/options_reader.dart' as options;
 
@@ -131,12 +132,20 @@ class MoorDriver implements AnalysisDriverGeneric {
   }
 
   Future<LibraryElement> resolveDart(String path) async {
-    final result = await dartDriver.currentSession.getResolvedLibrary(path);
-    return result.element;
+    final result = await dartDriver.currentSession.getResolvedLibrary2(path);
+    if (result is ResolvedLibraryResult) {
+      return result.element;
+    }
+
+    throw NotALibraryException(Uri.parse(path));
   }
 
   Future<bool> isDartLibrary(String path) async {
-    return await dartDriver.getSourceKind(path) == SourceKind.LIBRARY;
+    final info = dartDriver.getFileSync2(path);
+    if (info is FileResult) {
+      return !info.isPart;
+    }
+    return false;
   }
 
   bool doesFileExist(String path) {

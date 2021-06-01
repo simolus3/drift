@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
@@ -13,6 +14,8 @@ import 'package:moor_generator/src/utils/names.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
+
+import '../custom_row_class.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';

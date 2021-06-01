@@ -14,11 +14,10 @@ class User extends DataClass implements Insertable<User> {
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name']),
     );
   }
   @override
@@ -73,7 +72,7 @@ class User extends DataClass implements Insertable<User> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, name.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User && other.id == this.id && other.name == this.name);
 }

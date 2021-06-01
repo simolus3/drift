@@ -4,7 +4,7 @@ part of '../../query_builder.dart';
 // this is called JoinedSelectStatement for legacy reasons - we also use it
 // when custom expressions are used as result columns. Basically, it stores
 // queries that are more complex than SimpleSelectStatement
-class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
+class JoinedSelectStatement<FirstT extends Table, FirstD>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult>
     implements BaseSelectStatement {
@@ -42,8 +42,12 @@ class JoinedSelectStatement<FirstT extends Table, FirstD extends DataClass>
 
   @override
   int get _returnedColumnCount {
-    return _joins.fold(_selectedColumns.length,
-        (prev, join) => prev + join.table.$columns.length);
+    return _joins.fold(_selectedColumns.length, (prev, join) {
+      if (join.includeInResult) {
+        return prev + join.table.$columns.length;
+      }
+      return prev;
+    });
   }
 
   /// Lists all tables this query reads from.

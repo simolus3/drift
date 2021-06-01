@@ -71,6 +71,6 @@ class VerificationContext {
       messageBuilder.write('• ${meta.dartGetterName}: ${result.message}\n');
     });
 
-    throw InvalidDataException(messageBuilder.toString());
+    throw InvalidDataException(messageBuilder.toString(), _errors);
   }
 }

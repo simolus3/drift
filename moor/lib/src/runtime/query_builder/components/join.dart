@@ -22,7 +22,7 @@ const Map<_JoinType, String> _joinKeywords = {
 ///
 /// You should use [innerJoin], [leftOuterJoin] or [crossJoin] to obtain a
 /// [Join] instance.
-class Join<T extends Table, D extends DataClass> extends Component {
+class Join<T extends Table, D> extends Component {
   /// The [_JoinType] of this join.
   final _JoinType type;
 
@@ -70,8 +70,7 @@ class Join<T extends Table, D extends DataClass> extends Component {
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin<T extends Table, D extends DataClass>(
-    TableInfo<T, D> other, Expression<bool?> on,
+Join innerJoin<T extends Table, D>(TableInfo<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
@@ -84,7 +83,7 @@ Join innerJoin<T extends Table, D extends DataClass>(
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin<T extends Table, D extends DataClass>(
+Join leftOuterJoin<T extends Table, D>(
     TableInfo<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);

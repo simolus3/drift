@@ -10,7 +10,7 @@ abstract class OrderByBase extends AstNode {}
 abstract class OrderingTermBase extends AstNode {}
 
 class OrderBy extends AstNode implements OrderByBase {
-  final List<OrderingTermBase> terms;
+  List<OrderingTermBase> terms;
 
   OrderBy({this.terms = const []});
 
@@ -21,7 +21,7 @@ class OrderBy extends AstNode implements OrderByBase {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(terms, this, arg);
+    terms = transformer.transformChildren(terms, this, arg);
   }
 
   @override

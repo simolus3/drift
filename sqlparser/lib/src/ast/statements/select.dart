@@ -25,7 +25,7 @@ class SelectStatement extends BaseSelectStatement
         HasPrimarySource,
         HasFrom {
   final bool distinct;
-  final List<ResultColumn> columns;
+  List<ResultColumn> columns;
   @override
   Queryable? from;
 
@@ -60,7 +60,7 @@ class SelectStatement extends BaseSelectStatement
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
-    transformer.transformChildren(columns, this, arg);
+    columns = transformer.transformChildren(columns, this, arg);
     from = transformer.transformNullableChild(from, this, arg);
     where = transformer.transformNullableChild(where, this, arg);
     groupBy = transformer.transformNullableChild(groupBy, this, arg);
@@ -86,7 +86,7 @@ class SelectStatement extends BaseSelectStatement
 
 class CompoundSelectStatement extends BaseSelectStatement {
   SelectStatementNoCompound base;
-  final List<CompoundSelectPart> additional;
+  List<CompoundSelectPart> additional;
 
   // the grammar under https://www.sqlite.org/syntax/compound-select-stmt.html
   // defines an order by and limit clause on this node, but we parse them as
@@ -112,14 +112,14 @@ class CompoundSelectStatement extends BaseSelectStatement {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     withClause = transformer.transformNullableChild(withClause, this, arg);
     base = transformer.transformChild(base, this, arg);
-    transformer.transformChildren(additional, this, arg);
+    additional = transformer.transformChildren(additional, this, arg);
   }
 }
 
 /// A select statement of the form `VALUES (expr-list), ..., (expr-list-N)`.
 class ValuesSelectStatement extends BaseSelectStatement
     implements SelectStatementNoCompound {
-  final List<Tuple> values;
+  List<Tuple> values;
 
   ValuesSelectStatement(this.values, {WithClause? withClause})
       : super._(withClause);
@@ -131,7 +131,7 @@ class ValuesSelectStatement extends BaseSelectStatement
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(values, this, arg);
+    values = transformer.transformChildren(values, this, arg);
   }
 
   @override
@@ -186,7 +186,7 @@ class ExpressionResultColumn extends ResultColumn
 
 class GroupBy extends AstNode {
   /// The list of expressions that form the partition
-  final List<Expression> by;
+  List<Expression> by;
   Expression? having;
 
   GroupBy({required this.by, this.having});
@@ -198,7 +198,7 @@ class GroupBy extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(by, this, arg);
+    by = transformer.transformChildren(by, this, arg);
     having = transformer.transformNullableChild(having, this, arg);
   }
 

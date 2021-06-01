@@ -225,7 +225,7 @@ on how that can be achieved.
 
 ## Verifying migrations
 
-Since version 3.4, moor contains **experimental** support to verify the integrity of your migrations.
+Since version 3.4, moor contains **experimental** support to verify the integrity of your migrations in unit tests.
 
 To support this feature, moor can help you generate
 
@@ -233,6 +233,12 @@ To support this feature, moor can help you generate
 - test databases operating on an older schema version
 
 By using those test databases, moor can help you test migrations from and to any schema version.
+
+{% block "blocks/alert" title="Complex topic ahead" %}
+> Writing schema tests is an advanced topic that requires a fairly complex setup described here.
+  If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/moor/discussions).
+  Also, there's a working example [in the moor repository](https://github.com/simolus3/moor/tree/master/extras/migrations_example).
+{% endblock %}
 
 ### Setup
 
@@ -359,24 +365,44 @@ For this, check the `to` parameter of the `onUpgrade` callback to run a differen
 In addition to the changes made in your table structure, its useful to ensure that data that was present before a migration
 is still there after it ran.
 You can use `schemaAt` to obtain a raw `Database` from the `sqlite3` package in addition to a connection.
-This can be used to insert data before a migration. Note that you can't use your database class for this, since the generated
-code always expects the latest schema. In general, you shouldn't use your database at all before calling `migrateAndValidate`.
-After a migration, you're free to use that database to ensure the data you inserted earlier is still there:
+This can be used to insert data before a migration. After the migration ran, you can then check that the data is still there.
+
+Note that you can't use the regular database class from you app for this, since its data classes always expect the latest
+schema. However, you can instruct moor to generate older snapshots of your data classes and companions for this purpose.
+To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `moor_generator schema generate`
+command.
+
+Then, you can import the generated classes with an alias:
 
 ```dart
-test('upgrade from v1 to v2', () async {
-  final schema = await verifier.schemaAt(1);
+import 'generated/schema_v1.dart' as v1;
+import 'generated/schema_v2.dart' as v2;
+```
 
-  // Insert some custom data
-  final rawDb = schema.rawDatabase;
-  rawDb.execute("INSERT INTO users (name) VALUES ('Test user');");
+This can then be used to manually create and verify data at a specific version:
 
-  final db = MyDatabase.connect(schema.connection);
+```dart
+void main() {
+  // ...
+  test('upgrade from v1 to v2', () async {
+    final schema = await verifier.schemaAt(1);
 
-  // Verify that the migration correctly updates the schema
-  await verifier.migrateAndValidate(db, 2);
-  
-  // Use your own logic to verify that the data is still there. For example:
-  expect(db.select(db.users).get(), completion(isNotEmpty));
-});
+    // Add some data to the users table, which only has an id column at v1
+    final oldDb = v1.DatabaseAtV1.connect(schema.newConnection());
+    await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
+    await oldDb.close();
+
+    // Run the migration and verify that it adds the name column.
+    final db = Database(schema.newConnection());
+    await verifier.migrateAndValidate(db, 2);
+    await db.close();
+
+    // Make sure the user is still here
+    final migratedDb = v2.DatabaseAtV2.connect(schema.newConnection());
+    final user = await migratedDb.select(migratedDb.users).getSingle();
+    expect(user.id, 1);
+    expect(user.name, 'no name'); // default from the migration
+    await migratedDb.close();
+  });
+}
 ```

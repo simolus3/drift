@@ -31,7 +31,7 @@ is still maintained and suppported.
 
 ### using `moor/ffi`
 
-The new `package:moor/ffi.dart` implementation uses `dart:ffi` to bind to sqlite3 on Android and iOS.
+The new `package:moor/ffi.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
 This is the recommended approach for newer projects as described in the [getting started]({{ "Getting started/index.md" | pageUrl }}) guide.
 
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
@@ -93,6 +93,8 @@ necessary.
 
 If you need a custom sqlite3 library, or want to make sure that your app will always use a
 specific sqlite3 version, you can also ship that version with your app.
+When depending on `sqlite3_flutter_libs`, moor will automatically use that version which is
+usually more recent than the `sqlite3` version that comes with macOS.
 
 ### Bundling sqlite with your app
 
@@ -125,3 +127,6 @@ DynamicLibrary _openOnLinux() {
 ```
 
 Be sure to use moor _after_ you set the platform-specific overrides.
+When you use moor in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
+you'll also need to apply the opening overrides on that background isolate.
+You can call them in the isolate's entrypoint before using any moor apis.

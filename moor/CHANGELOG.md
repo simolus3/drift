@@ -1,6 +1,28 @@
-## 4.3.0-dev
+## 4.4.0-dev
 
+- Add `Value.ofNullable` constructor to easily wrap nullable values
+
+## 4.3.2
+
+- Fix `insertReturning` not updating streams
+- Fix streams emitting stale data if a new subscriber attaches immediately
+  after an update.
+
+## 4.3.1
+
+- Fix encoding table updates without a kind over isolates
+- Fix deserializing some nullable types in the default value serializer
+
+## 4.3.0
+
+- Support custom, existing classes for rows! See the `@UseRowClass` annotation
+  for details.
 - Add `CASE WHEN` expressions with the `caseMatch` method on `Expression`
+- Add `insertReturning` which returns the generated row after an insert
+- Add `min`, `max` and `avg` functions for `DateTime` expressions
+- On supported platforms, cancel pending stream selects when the stream is disposed
+  - `moor_flutter` is supported
+  - `moor/ffi` is supported when used on a background isolate
 
 ## 4.2.1
 
@@ -370,7 +392,6 @@ than `moor_flutter`. It you want to try it out, read the docs [here](https://moo
 - New `backends` api, making it easier to write database drivers that work with moor. Apart from
   `moor_flutter`, new experimental backends can be checked out from git:
     1. `encrypted_moor`: An encrypted moor database: https://github.com/simolus3/moor/tree/develop/extras/encryption
-    2. `moor_mysql`: Work in progress mysql backend for moor. https://github.com/simolus3/moor/tree/develop/extras/mysql
 - The compiled sql feature is no longer experimental and will stay stable until a major version bump
 - New, experimental support for `.moor` files! Instead of declaring your tables in Dart, you can choose to declare them
   with sql by writing the `CREATE TABLE` statement in a `.moor` file. You can then use these tables in the database and

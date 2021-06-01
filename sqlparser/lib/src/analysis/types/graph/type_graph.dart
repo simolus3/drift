@@ -149,16 +149,16 @@ class TypeGraph {
   }
 
   ResolvedType? _encapsulate(Iterable<ResolvedType?> targets) {
-    return targets
-        .map((e) => e!.withoutNullabilityInfo)
-        .fold<ResolvedType?>(null, (previous, element) {
+    return targets.fold<ResolvedType?>(null, (previous, element) {
       if (previous == null) return element;
 
       final previousType = previous.type;
-      final elementType = element.type;
+      final elementType = element!.type;
+      final eitherNullable =
+          previous.nullable == true || element.nullable == true;
 
       if (previousType == elementType || elementType == BasicType.nullType) {
-        return previous;
+        return previous.withNullable(eitherNullable);
       }
       if (previousType == BasicType.nullType) return element;
 
@@ -168,7 +168,7 @@ class TypeGraph {
 
       // encapsulate two different numeric types to real
       if (isIntOrNumeric(previousType) && isIntOrNumeric(elementType)) {
-        return const ResolvedType(type: BasicType.real);
+        return ResolvedType(type: BasicType.real, nullable: eitherNullable);
       }
 
       // fallback to text if everything else fails

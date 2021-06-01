@@ -74,6 +74,14 @@ BEGIN
 END;
       ''');
       });
+
+      test('Using RAISE', () {
+        testFormat('''
+CREATE TRIGGER my_trigger AFTER DELETE ON t1 BEGIN
+  SELECT RAISE(ABORT, 'please don''t');
+END;
+        ''');
+      });
     });
 
     test('view', () {
@@ -386,6 +394,8 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('foo (?1 AS INT): SELECT * FROM bar WHERE ? < 10;',
           kind: _ParseKind.moorFile);
       testFormat('foo: SELECT * FROM bar WHERE :id < 10;',
+          kind: _ParseKind.moorFile);
+      testFormat('foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
           kind: _ParseKind.moorFile);
       testFormat(r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
           kind: _ParseKind.moorFile);

@@ -1,6 +1,15 @@
-## 0.15.1-dev
+## 0.17.0
+
+- Refactor how tables and columns are resolved in statements
+ - The new `ResultSetAvailableInStatement` class describes a result set that
+   has been added to a statement, for instance through a from clause
+ - A `TableOrSubquery` with an alias now introduces a `TableAlias` instead of
+   the original table
+
+## 0.16.0
 
 - New analysis checks for `RETURNING`: Disallow `table.*` syntax and aggregate expressions
+- Support `RAISE` expressions in triggers
 - Fix resolving columns when `RETURNING` is used in an `UPDATE FROM` statement
 - Fix aliases to rowid being reported as nullable
 

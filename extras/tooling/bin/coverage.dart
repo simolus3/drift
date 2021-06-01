@@ -56,17 +56,17 @@ List<File> filesToProcess(String moorSubproject) {
 }
 
 class MoorResolver extends Resolver {
-  final String projectRoot;
+  final String? projectRoot;
 
-  MoorResolver({this.projectRoot, String packagesPath})
+  MoorResolver({this.projectRoot, String? packagesPath})
       : super(packagesPath: packagesPath);
 
   @override
-  String resolveSymbolicLinks(String path) {
+  String? resolveSymbolicLinks(String path) {
     if (p.isAbsolute(path)) {
       return super.resolveSymbolicLinks(path);
     } else {
-      return super.resolveSymbolicLinks(p.join(projectRoot, path));
+      return super.resolveSymbolicLinks(p.join(projectRoot!, path));
     }
   }
 }

@@ -9,6 +9,7 @@ part of 'runtime_api.dart';
 class DatabaseConnection {
   /// The type system to use with this database. The type system is responsible
   /// for mapping Dart objects into sql expressions and vice-versa.
+  @Deprecated('Only the default type system is supported')
   final SqlTypeSystem typeSystem;
 
   /// The executor to use when queries are executed.

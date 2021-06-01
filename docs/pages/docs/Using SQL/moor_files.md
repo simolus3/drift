@@ -97,6 +97,17 @@ In addition to the base type, you can also declare that the type is nullable:
 myQuery(:variable AS TEXT OR NULL): SELECT :variable;
 ```
 
+Finally, you can declare that a variable should be required in Dart when using
+named parameters. To do so, add a `REQUIRED` keyword:
+
+```sql
+myQuery(REQUIRED :variable AS TEXT OR NULL): SELECT :variable;
+```
+
+Note that this only has an effect when the `named_parameters`
+[build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}) is
+enabled. Further, non-nullable variables are required by default.
+
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:
@@ -251,6 +262,8 @@ This feature works for
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
+- insertables for insert statements: `INSERT INTO todos $row` generates an `Insertable<TodoEntry> row` 
+  parameter
 
 When used as expression, you can also supply a default value in your query:
 
@@ -296,12 +309,44 @@ CREATE TABLE users (
 );
 ```
 
+
 More details on type converts in moor files are available
 [here]({{ "../Advanced Features/type_converters.md#using-converters-in-moor" | pageUrl }}).
 
 When using type converters, we recommend the [`apply_converters_on_variables`]({{ "../Advanced Features/builder_options.md" | pageUrl }})
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
+
+
+### Existing row classes
+
+Starting from moor 4.3, you can use custom row classes instead of having moor generate one for you.
+
+For instance, let's say you had a Dart class defined as
+
+```dart
+class User {
+ final int id;
+ final String name;
+ 
+ User(this.id, this.name);
+}
+```
+
+Then, you can instruct moor to use that class as a row class as follows:
+
+```sql
+import 'row_class.dart'; --import for where the row class is defined
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+) WITH User; -- This tells moor to use the existing Dart class
+```
+
+When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
+the database.
+For more general information on this feature, please check [this page]({{ '../Advanced Features/custom_row_classes.md' | pageUrl }}).
 
 ## Result class names
 

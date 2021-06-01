@@ -44,7 +44,7 @@ a `TypeConverter` for that:
 class PreferenceConverter extends TypeConverter<Preferences, String> {
   const PreferenceConverter();
   @override
-  Preferences mapToDart(String fromDb) {
+  Preferences? mapToDart(String? fromDb) {
     if (fromDb == null) {
       return null;
     }
@@ -52,7 +52,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
   }
 
   @override
-  String mapToSql(Preferences value) {
+  String? mapToSql(Preferences? value) {
     if (value == null) {
       return null;
     }

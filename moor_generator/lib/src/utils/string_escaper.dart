@@ -5,6 +5,7 @@ String asDartLiteral(String value) {
 
 String escapeForDart(String value) {
   return value
+      .replaceAll('\\', '\\\\')
       .replaceAll("'", "\\'")
       .replaceAll('\$', '\\\$')
       .replaceAll('\r', '\\r')

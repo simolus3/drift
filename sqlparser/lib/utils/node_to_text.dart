@@ -81,7 +81,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   void _stringLiteral(String content) {
-    _symbol("'$content'", spaceBefore: true, spaceAfter: true);
+    final escapedChars = content.replaceAll("'", "''");
+    _symbol("'$escapedChars'", spaceBefore: true, spaceAfter: true);
   }
 
   void _symbol(String lexeme,
@@ -308,7 +309,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     _identifier(e.cteTableName);
     if (e.columnNames != null) {
-      _symbol('(${e.columnNames!.join(', ')})');
+      _symbol('(${e.columnNames!.join(', ')})', spaceAfter: true);
     }
 
     _keyword(TokenType.as);
@@ -679,6 +680,24 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    _keyword(TokenType.raise);
+    _symbol('(', spaceBefore: true);
+    _keyword(const {
+      RaiseKind.ignore: TokenType.ignore,
+      RaiseKind.rollback: TokenType.rollback,
+      RaiseKind.abort: TokenType.abort,
+      RaiseKind.fail: TokenType.fail,
+    }[e.raiseKind]!);
+
+    if (e.errorMessage != null) {
+      _symbol(',', spaceAfter: true);
+      _stringLiteral(e.errorMessage!);
+    }
+    _symbol(')', spaceAfter: true);
+  }
+
+  @override
   void visitIndexedColumn(IndexedColumn e, void arg) {
     visit(e.expression, arg);
     _orderingMode(e.ordering);
@@ -717,6 +736,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visit(e.source, arg);
+    visitNullable(e.upsert, arg);
     visitNullable(e.returning, arg);
   }
 
@@ -852,9 +872,19 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
+      if (e.isRequired) _keyword(TokenType.required);
+
       visit(e.variable, arg);
-      _keyword(TokenType.as);
-      _symbol(e.typeName, spaceBefore: true, spaceAfter: true);
+      final typeName = e.typeName;
+      if (typeName != null) {
+        _keyword(TokenType.as);
+        _symbol(typeName, spaceBefore: true, spaceAfter: true);
+      }
+
+      if (e.orNull) {
+        _keyword(TokenType.or);
+        _keyword(TokenType.$null);
+      }
     } else if (e is DartPlaceholderDefaultValue) {
       _symbol('\$${e.variableName}', spaceAfter: true);
       _symbol('=', spaceBefore: true, spaceAfter: true);
@@ -862,6 +892,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else {
       throw AssertionError('Unknown StatementParameter: $e');
     }
+  }
+
+  @override
+  void visitMoorTableName(MoorTableName e, void arg) {
+    _keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
+    _identifier(e.overriddenDataClassName);
   }
 
   @override
@@ -1009,9 +1045,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitSelectStatementAsSource(SelectStatementAsSource e, void arg) {
-    _symbol('(');
+    _symbol('(', spaceBefore: true);
     visit(e.statement, arg);
-    _symbol(')');
+    _symbol(')', spaceAfter: true);
 
     if (e.as != null) {
       _keyword(TokenType.as);

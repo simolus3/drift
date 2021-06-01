@@ -1,6 +1,7 @@
 import 'dart:typed_data' show Uint8List;
 
 import 'package:meta/meta.dart';
+import 'package:meta/meta_meta.dart';
 import 'package:moor/moor.dart';
 
 part 'columns.dart';

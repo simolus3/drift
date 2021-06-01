@@ -12,6 +12,9 @@ class Reference extends Expression with ReferenceOwner {
   final String? entityName;
   final String columnName;
 
+  /// The resolved result set from the [entityName].
+  ResultSetAvailableInStatement? resultEntity;
+
   Column? get resolvedColumn => resolved as Column?;
 
   Reference({this.entityName, required this.columnName});

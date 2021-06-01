@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/analysis/types/types.dart';
 import 'package:sqlparser/src/engine/options.dart';
-import 'package:sqlparser/src/reader/parser/parser.dart';
+import 'package:sqlparser/src/reader/parser.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 

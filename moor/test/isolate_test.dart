@@ -1,4 +1,3 @@
-//@dart=2.9
 @TestOn('vm')
 import 'dart:async';
 import 'dart:isolate';
@@ -83,8 +82,8 @@ void main() {
 
 void _runTests(
     FutureOr<MoorIsolate> Function() spawner, bool terminateIsolate) {
-  MoorIsolate isolate;
-  TodoDb database;
+  late MoorIsolate isolate;
+  late TodoDb database;
 
   setUp(() async {
     isolate = await spawner();
@@ -227,6 +226,24 @@ void _runTests(
     expect(result, isEmpty);
 
     await database.close();
+  });
+
+  test('supports single quotes in text', () async {
+    // Regression test for https://github.com/simolus3/moor/issues/1179
+    await database.customStatement('CREATE TABLE sample(title TEXT)');
+    await database.customStatement('INSERT INTO sample VALUES '
+        "('O''Connor'), ('Tomeo''s');");
+
+    final result =
+        await database.customSelect('SELECT title FROM sample').get();
+    expect(result.map((f) => f.read<String>('title')), ["O'Connor", "Tomeo's"]);
+  });
+
+  test('can dispatch table updates', () async {
+    await database.customStatement('SELECT 1');
+    expect(database.tableUpdates(TableUpdateQuery.onTable(database.users)),
+        emitsInOrder([null]));
+    database.markTablesUpdated({database.users});
   });
 }
 

@@ -195,6 +195,7 @@ enum TokenType {
   inlineDart,
   import,
   json,
+  required,
 
   /// A `**` token. This is only scanned when scanning for moor tokens.
   doubleStar,
@@ -363,6 +364,7 @@ const Map<String, TokenType> moorKeywords = {
   'IMPORT': TokenType.import,
   'JSON': TokenType.json,
   'MAPPED': TokenType.mapped,
+  'REQUIRED': TokenType.required,
 };
 
 /// A set of [TokenType]s that can be parsed as an identifier.

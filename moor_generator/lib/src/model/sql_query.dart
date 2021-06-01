@@ -97,7 +97,7 @@ abstract class SqlQuery {
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
-  /// [DartPlaceholderType.expression] and [ColumnType.boolean]. We will
+  /// [ExpressionDartPlaceholderType] and [ColumnType.boolean]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
   List<FoundDartPlaceholder> placeholders;
 
@@ -352,7 +352,14 @@ class ResultColumn implements HasType {
   @override
   final UsedTypeConverter typeConverter;
 
-  ResultColumn(this.name, this.type, this.nullable, {this.typeConverter});
+  /// The analyzed column from the `sqlparser` package.
+  final Column sqlParserColumn;
+
+  ResultColumn(this.name, this.type, this.nullable,
+      {this.typeConverter, this.sqlParserColumn});
+
+  @override
+  bool get isArray => false;
 
   /// Hash-code that matching [compatibleTo], so that two compatible columns
   /// will have the same [compatibilityHashCode].
@@ -400,11 +407,12 @@ class ResultColumn implements HasType {
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
 class NestedResultTable {
+  final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
   final MoorTable table;
 
-  NestedResultTable(this.from, this.name, this.table);
+  NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 
   String get dartFieldName => ReCase(name).camelCase;
 
@@ -416,7 +424,9 @@ class NestedResultTable {
   /// Checks whether this is compatible to the [other] nested result, which is
   /// the case iff they have the same and read from the same table.
   bool isCompatibleTo(NestedResultTable other) {
-    return other.name == name && other.table == table;
+    return other.name == name &&
+        other.table == table &&
+        other.isNullable == isNullable;
   }
 }
 
@@ -467,7 +477,10 @@ class FoundVariable extends FoundElement implements HasType {
   /// variables at runtime. We only accept queries where no explicitly numbered
   /// vars appear after an array. This means that we can expand array variables
   /// without having to look at other variables.
+  @override
   final bool isArray;
+
+  final bool isRequired;
 
   FoundVariable({
     @required this.index,
@@ -476,6 +489,7 @@ class FoundVariable extends FoundElement implements HasType {
     @required this.variable,
     this.nullable = false,
     this.isArray = false,
+    this.isRequired = false,
     this.typeConverter,
   }) : assert(variable.resolvedIndex == index);
 
@@ -490,68 +504,132 @@ class FoundVariable extends FoundElement implements HasType {
 
   @override
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    final withoutArray = OperationOnTypes(this).dartTypeCode(options);
-    return isArray ? 'List<$withoutArray>' : withoutArray;
+    return OperationOnTypes(this).dartTypeCode(options);
   }
 }
 
-enum DartPlaceholderType {
-  expression,
+abstract class DartPlaceholderType {
+  String parameterTypeCode(
+      [GenerationOptions options = const GenerationOptions()]);
+}
+
+enum SimpleDartPlaceholderKind {
   limit,
   orderByTerm,
   orderBy,
+}
+
+class SimpleDartPlaceholderType extends DartPlaceholderType {
+  final SimpleDartPlaceholderKind kind;
+
+  SimpleDartPlaceholderType(this.kind);
+
+  @override
+  int get hashCode => kind.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is SimpleDartPlaceholderType && other.kind == kind;
+  }
+
+  @override
+  String parameterTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    switch (kind) {
+      case SimpleDartPlaceholderKind.limit:
+        return 'Limit';
+      case SimpleDartPlaceholderKind.orderByTerm:
+        return 'OrderingTerm';
+      case SimpleDartPlaceholderKind.orderBy:
+        return 'OrderBy';
+    }
+
+    throw AssertionError('cant happen, all branches covered');
+  }
+}
+
+class ExpressionDartPlaceholderType extends DartPlaceholderType {
+  /// The sql type of this expression.
+  final ColumnType /*?*/ columnType;
+  final Expression /*?*/ defaultValue;
+
+  ExpressionDartPlaceholderType(this.columnType, this.defaultValue);
+
+  @override
+  int get hashCode => hashAll([columnType, defaultValue]);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ExpressionDartPlaceholderType &&
+        other.columnType == columnType &&
+        other.defaultValue == defaultValue;
+  }
+
+  @override
+  String parameterTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    if (columnType == null) return 'Expression';
+
+    final dartType = dartTypeNames[columnType];
+    return 'Expression<$dartType>';
+  }
+}
+
+class InsertableDartPlaceholderType extends DartPlaceholderType {
+  final MoorTable /*?*/ table;
+
+  InsertableDartPlaceholderType(this.table);
+
+  @override
+  int get hashCode => table.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is InsertableDartPlaceholderType && other.table == table;
+  }
+
+  @override
+  String parameterTypeCode(
+      [GenerationOptions options = const GenerationOptions()]) {
+    if (table == null) {
+      return 'Insertable';
+    } else {
+      return 'Insertable<${table.dartTypeName}>';
+    }
+  }
 }
 
 /// A Dart placeholder that will be bound at runtime.
 class FoundDartPlaceholder extends FoundElement {
   final DartPlaceholderType type;
 
-  /// If [type] is [DartPlaceholderType.expression] and the expression could be
-  /// resolved, this is the type of that expression.
-  final ColumnType columnType;
-
-  final Expression /*?*/ defaultValue;
-
   @override
   final String name;
   DartPlaceholder astNode;
 
-  FoundDartPlaceholder(this.type, this.columnType, this.name,
-      {this.defaultValue});
+  bool get hasDefault =>
+      type is ExpressionDartPlaceholderType &&
+      (type as ExpressionDartPlaceholderType).defaultValue != null;
+
+  FoundDartPlaceholder(this.type, this.name);
 
   @override
   String get dartParameterName => name;
 
   @override
-  int get hashCode => hashAll([type, columnType, name]);
+  int get hashCode => hashAll([type, name]);
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         other is FoundDartPlaceholder &&
             other.type == type &&
-            other.columnType == columnType &&
             other.name == name;
   }
 
   @override
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    switch (type) {
-      case DartPlaceholderType.expression:
-        if (columnType == null) return 'Expression';
-
-        final dartType = dartTypeNames[columnType];
-        return 'Expression<$dartType>';
-        break;
-      case DartPlaceholderType.limit:
-        return 'Limit';
-      case DartPlaceholderType.orderByTerm:
-        return 'OrderingTerm';
-      case DartPlaceholderType.orderBy:
-        return 'OrderBy';
-    }
-
-    throw AssertionError('cant happen, all branches covered');
+    return type.parameterTypeCode(options);
   }
 }
 

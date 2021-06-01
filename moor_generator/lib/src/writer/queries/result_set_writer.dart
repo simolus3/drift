@@ -40,16 +40,17 @@ class ResultSetWriter {
     }
 
     for (final nested in resultSet.nestedResults) {
-      final typeName = nested.table.dartTypeName;
+      var typeName = nested.table.dartTypeName;
       final fieldName = nested.dartFieldName;
 
-      if (scope.generationOptions.nnbd) {
-        into.write('$modifier $typeName? $fieldName;\n');
-      } else {
-        into.write('$modifier $typeName $fieldName;\n');
+      if (nested.isNullable) {
+        typeName = scope.nullableType(typeName);
       }
 
+      into.write('$modifier $typeName $fieldName;\n');
+
       fieldNames.add(fieldName);
+      if (!nested.isNullable) nonNullableFields.add(fieldName);
     }
 
     // write the constructor

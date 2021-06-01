@@ -7,6 +7,8 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/utils/start_with_value_transformer.dart';
 import 'package:pedantic/pedantic.dart';
 
+import '../cancellation_zone.dart';
+
 const _listEquality = ListEquality<Object?>();
 
 // This is an internal moor library that's never exported to users.
@@ -125,7 +127,8 @@ class StreamQueryStore {
     final key = stream._fetcher.key;
     _keysPendingRemoval.add(key);
 
-    final completer = Completer<void>();
+    // sync because it's only triggered after the timer
+    final completer = Completer<void>.sync();
     _pendingTimers.add(completer);
 
     // Hey there! If you're sent here because your Flutter tests fail, please
@@ -192,6 +195,7 @@ class QueryStream {
   StreamSubscription? _tablesChangedSubscription;
 
   List<Map<String, Object?>>? _lastData;
+  final List<CancellationToken> _runningOperations = [];
 
   Stream<List<Map<String, Object?>>> get stream {
     return _controller.stream.transform(StartWithValueTransformer(_cachedData));
@@ -236,14 +240,21 @@ class QueryStream {
       // case
       _lastData = null;
       _tablesChangedSubscription = null;
+
+      for (final op in _runningOperations) {
+        op.cancel();
+      }
     });
   }
 
   Future<void> fetchAndEmitData() async {
-    List<Map<String, Object?>> data;
+    final operation = runCancellable(_fetcher.fetchData);
+    _runningOperations.add(operation);
 
     try {
-      data = await _fetcher.fetchData();
+      final data = await operation.resultOrNullIfCancelled;
+      if (data == null) return;
+
       _lastData = data;
       if (!_controller.isClosed) {
         _controller.add(data);
@@ -252,6 +263,8 @@ class QueryStream {
       if (!_controller.isClosed) {
         _controller.addError(e, s);
       }
+    } finally {
+      _runningOperations.remove(operation);
     }
   }
 

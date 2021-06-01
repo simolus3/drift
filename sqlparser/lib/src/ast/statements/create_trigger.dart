@@ -109,7 +109,7 @@ class InsertTarget extends TriggerTarget {
 
 class UpdateTarget extends TriggerTarget {
   Token? updateToken;
-  final List<Reference> columnNames;
+  List<Reference> columnNames;
 
   UpdateTarget(this.columnNames);
 
@@ -128,6 +128,6 @@ class UpdateTarget extends TriggerTarget {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(columnNames, this, arg);
+    columnNames = transformer.transformChildren(columnNames, this, arg);
   }
 }

@@ -1,6 +1,9 @@
 import 'package:moor/moor.dart';
 
 import 'converter.dart';
+import 'data_classes.dart';
+
+export 'data_classes.dart';
 
 part 'custom_tables.g.dart';
 

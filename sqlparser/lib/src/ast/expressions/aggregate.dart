@@ -77,7 +77,7 @@ class NamedWindowDeclaration with Referencable {
 
 class WindowDefinition extends AstNode {
   final String? baseWindowName;
-  final List<Expression> partitionBy;
+  List<Expression> partitionBy;
   OrderByBase? orderBy;
   FrameSpec frameSpec;
 
@@ -94,7 +94,7 @@ class WindowDefinition extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(partitionBy, this, arg);
+    partitionBy = transformer.transformChildren(partitionBy, this, arg);
     orderBy = transformer.transformNullableChild(orderBy, this, arg);
     frameSpec = transformer.transformChild(frameSpec, this, arg);
   }

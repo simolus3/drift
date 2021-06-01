@@ -308,13 +308,19 @@ class Parser {
 
   StatementParameter _statementParameter() {
     final first = _peek;
+    final isRequired = _matchOne(TokenType.required);
     final variable = _variableOrNull();
 
     if (variable != null) {
       // Type hint for a variable
-      final as = _consume(TokenType.as, 'Expected AS followed by a type');
-      final typeNameTokens = _typeName() ?? _error('Expected a type name here');
-      final typeName = typeNameTokens.lexeme;
+      Token? as;
+      String? typeName;
+      if (_matchOne(TokenType.as)) {
+        as = _previous;
+        final typeNameTokens =
+            _typeName() ?? _error('Expected a type name here');
+        typeName = typeNameTokens.lexeme;
+      }
 
       var orNull = false;
       if (_matchOne(TokenType.or)) {
@@ -322,7 +328,8 @@ class Parser {
         orNull = true;
       }
 
-      return VariableTypeHint(variable, typeName, orNull: orNull)
+      return VariableTypeHint(variable, typeName,
+          orNull: orNull, isRequired: isRequired)
         ..as = as
         ..setSpan(first, _previous);
     } else if (_matchOne(TokenType.dollarSignVariable)) {
@@ -551,7 +558,7 @@ class Parser {
   }
 
   Expression _postfix() {
-    var expression = _case();
+    var expression = _prefix();
 
     // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
     // with NOT BETWEEN / NOT IN / ... expressions
@@ -591,7 +598,7 @@ class Parser {
     return expression;
   }
 
-  Expression _case() {
+  Expression _prefix() {
     if (_matchOne(TokenType.$case)) {
       final caseToken = _previous;
 
@@ -616,6 +623,36 @@ class Parser {
       _consume(TokenType.end, 'Expected END to finish the case operator');
       return CaseExpression(whens: whens, base: base, elseExpr: $else)
         ..setSpan(caseToken, _previous);
+    } else if (_matchOne(TokenType.raise)) {
+      final raiseToken = _previous;
+      _consume(TokenType.leftParen, 'Expected a left parenthesis after RAISE');
+
+      RaiseKind kind;
+      const tokenToRaiseKind = {
+        TokenType.ignore: RaiseKind.ignore,
+        TokenType.rollback: RaiseKind.rollback,
+        TokenType.abort: RaiseKind.abort,
+        TokenType.fail: RaiseKind.fail,
+      };
+      if (_match(tokenToRaiseKind.keys)) {
+        kind = tokenToRaiseKind[_previous.type]!;
+      } else {
+        _error('Expected IGNORE, ROLLBACK, ABORT or FAIL here');
+      }
+
+      String? message;
+      if (kind != RaiseKind.ignore) {
+        _consume(TokenType.comma, 'Expected a comma here');
+
+        final messageToken =
+            _consume(TokenType.stringLiteral, 'Expected an error message here')
+                as StringLiteralToken;
+        message = messageToken.value;
+      }
+
+      final end = _consume(
+          TokenType.rightParen, 'Expected a right parenthesis to finish RAISE');
+      return RaiseExpression(kind, message)..setSpan(raiseToken, end);
     }
 
     return _primary();
@@ -1054,7 +1091,10 @@ class Parser {
         mode = CompoundSelectMode.unionAll;
       }
 
-      final select = _selectNoCompound()!;
+      final select = _selectNoCompound();
+      if (select == null) {
+        _error('Expected a select statement here!');
+      }
 
       return CompoundSelectPart(
         mode: mode!,
@@ -1528,6 +1568,12 @@ class Parser {
       final first = _previous;
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return DefaultValues()..setSpan(first, _previous);
+    } else if (enableMoorExtensions &&
+        _matchOne(TokenType.dollarSignVariable)) {
+      final token = _previous as DollarSignVariableToken;
+      return DartInsertablePlaceholder(name: token.name)
+        ..token = token
+        ..setSpan(token, token);
     } else {
       final first = _previous;
       return SelectInsertSource(
@@ -1833,7 +1879,7 @@ class Parser {
       withoutRowId = true;
     }
 
-    final overriddenName = _overriddenDataClassName();
+    final overriddenName = _moorTableName();
 
     return CreateTableStatement(
       ifNotExists: ifNotExists,
@@ -1841,12 +1887,12 @@ class Parser {
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
-      overriddenDataClassName: overriddenName,
+      moorTableName: overriddenName,
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
-      ..closingBracket = rightParen
-      ..tableNameToken = tableIdentifier;
+      ..tableNameToken = tableIdentifier
+      ..closingBracket = rightParen;
   }
 
   /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
@@ -1906,23 +1952,28 @@ class Parser {
       }
     }
 
-    final moorDataClassName = _overriddenDataClassName();
+    final moorDataClassName = _moorTableName();
     return CreateVirtualTableStatement(
       ifNotExists: ifNotExists,
       tableName: nameToken.identifier,
       moduleName: moduleName.identifier,
       arguments: args,
-      overriddenDataClassName: moorDataClassName,
+      moorTableName: moorDataClassName,
     )
       ..setSpan(first, _previous)
       ..tableNameToken = nameToken
       ..moduleNameToken = moduleName;
   }
 
-  String? _overriddenDataClassName() {
-    if (enableMoorExtensions && _matchOne(TokenType.as)) {
-      return _consumeIdentifier('Expected the name for the data class')
-          .identifier;
+  MoorTableName? _moorTableName() {
+    if (enableMoorExtensions &&
+        (_match(const [TokenType.as, TokenType.$with]))) {
+      final first = _previous;
+      final useExisting = _previous.type == TokenType.$with;
+      final name =
+          _consumeIdentifier('Expected the name for the data class').identifier;
+
+      return MoorTableName(name, useExisting)..setSpan(first, _previous);
     }
     return null;
   }

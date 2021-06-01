@@ -1,5 +1,7 @@
 import 'ast.dart';
 
+import 'expressions/raise.dart';
+
 abstract class AstVisitor<A, R> {
   R visitSelectStatement(SelectStatement e, A arg);
   R visitCompoundSelectStatement(CompoundSelectStatement e, A arg);
@@ -79,6 +81,7 @@ abstract class AstVisitor<A, R> {
   R visitTuple(Tuple e, A arg);
   R visitParentheses(Parentheses e, A arg);
   R visitInExpression(InExpression e, A arg);
+  R visitRaiseExpression(RaiseExpression e, A arg);
 
   R visitAggregateExpression(AggregateExpression e, A arg);
   R visitWindowDefinition(WindowDefinition e, A arg);
@@ -95,6 +98,7 @@ abstract class AstVisitor<A, R> {
   R visitMoorDeclaredStatement(DeclaredStatement e, A arg);
   R visitMoorStatementParameter(StatementParameter e, A arg);
   R visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg);
+  R visitMoorTableName(MoorTableName e, A arg);
   R visitDartPlaceholder(DartPlaceholder e, A arg);
 }
 
@@ -206,6 +210,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg) {
     return visitResultColumn(e, arg);
+  }
+
+  @override
+  R? visitMoorTableName(MoorTableName e, A arg) {
+    return defaultNode(e, arg);
   }
 
   @override
@@ -537,11 +546,16 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitParentheses(Parentheses e, A arg) {
-    return e.expression.accept(this, arg);
+    return visitExpression(e, arg);
   }
 
   @override
   R? visitInExpression(InExpression e, A arg) {
+    return visitExpression(e, arg);
+  }
+
+  @override
+  R? visitRaiseExpression(RaiseExpression e, A arg) {
     return visitExpression(e, arg);
   }
 
@@ -633,18 +647,18 @@ extension TransformerUtils<A> on Transformer<A> {
     return transformed as T;
   }
 
-  void transformChildren(List<AstNode?> children, AstNode parent, A arg) {
-    final newChildren = <AstNode>[];
+  List<T> transformChildren<T extends AstNode>(
+      List<T> children, AstNode parent, A arg) {
+    final newChildren = <T>[];
 
     for (final child in children) {
-      final transformed = transform(child!, arg);
+      // ignore: unnecessary_cast, it's a frontend bug in Dart 2.12
+      final transformed = transform(child as AstNode, arg) as T?;
       if (transformed != null) {
         newChildren.add(transformed..parent = parent);
       }
     }
 
-    children
-      ..clear()
-      ..addAll(newChildren);
+    return newChildren;
   }
 }

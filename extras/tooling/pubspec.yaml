@@ -3,11 +3,11 @@ publish_to: none
 description: Tools used during development or in CI runs
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  coverage: '^0.14.0'
-  path: ^1.6.4
+  coverage: ^1.0.2
+  path: ^1.8.0
   simons_pub_uploader:
     hosted:
       url: https://simonbinder.eu

@@ -83,25 +83,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       return const NoTypeExpectation();
     }).toList();
 
-    e.source.when(
-      isSelect: (select) {
-        visit(select.stmt, SelectTypeExpectation(expectations));
-      },
-      isValues: (values) {
-        // todo: It would be nice to remove this special case. Can we generalize
-        // the SelectTypeExpectation so that it works for tuples and just visit
-        // e.source?
-        for (final tuple in values.values) {
-          for (var i = 0; i < tuple.expressions.length; i++) {
-            final expectation = i < expectations.length
-                ? expectations[i]
-                : const NoTypeExpectation();
-            visit(tuple.expressions[i], expectation);
-          }
-        }
-      },
-    );
-
+    visit(e.source, SelectTypeExpectation(expectations));
     visitNullable(e.upsert, const NoTypeExpectation());
   }
 
@@ -255,12 +237,25 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitTuple(Tuple e, TypeExpectation arg) {
-    final expectationForChildren = arg.clearArray();
-    visitChildren(e, expectationForChildren);
+    if (arg is SelectTypeExpectation) {
+      // We have a specific type requirement for each entry, let's use that
+      final expectations = arg.columnExpectations;
+      for (var i = 0; i < e.expressions.length; i++) {
+        final expectation = i < expectations.length
+            ? expectations[i]
+            : const NoTypeExpectation();
+        visit(e.expressions[i], expectation);
+      }
+    } else {
+      // Assume that this tuple forms an array, and clear the array expectation
+      // for children.
+      final expectationForChildren = arg.clearArray();
+      visitChildren(e, expectationForChildren);
 
-    // make children non-arrays
-    for (final child in e.childNodes) {
-      session._addRelation(CopyTypeFrom(child, e, array: false));
+      // make children non-arrays
+      for (final child in e.childNodes) {
+        session._addRelation(CopyTypeFrom(child, e, array: false));
+      }
     }
   }
 
@@ -433,8 +428,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     if (resolved == null) return;
 
     _handleColumn(resolved);
-
-    final isNullable = JoinModel.of(e)?.isFromNullableTable(resolved) ?? false;
+    final isNullable = JoinModel.of(e)?.referenceIsNullable(e) ?? false;
     _lazyCopy(e, resolved, makeNullable: isNullable);
   }
 

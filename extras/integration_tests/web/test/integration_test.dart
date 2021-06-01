@@ -9,6 +9,9 @@ class WebExecutor extends TestExecutor {
   final String name = 'db';
 
   @override
+  bool get supportsReturning => true;
+
+  @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(WebDatabase(name));
   }
@@ -21,6 +24,9 @@ class WebExecutor extends TestExecutor {
 }
 
 class WebExecutorIndexedDb extends TestExecutor {
+  @override
+  bool get supportsReturning => true;
+
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(

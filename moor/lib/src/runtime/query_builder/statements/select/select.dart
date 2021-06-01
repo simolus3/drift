@@ -13,8 +13,7 @@ abstract class BaseSelectStatement extends Component {
 }
 
 /// A select statement that doesn't use joins
-class SimpleSelectStatement<T extends Table, D extends DataClass>
-    extends Query<T, D>
+class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D>
     implements BaseSelectStatement {
   /// Whether duplicate rows should be eliminated from the result (this is a
@@ -156,7 +155,7 @@ class TypedResult {
   ///
   /// If this row does not contain non-null columns of the [table], this method
   /// will throw an [ArgumentError]. Use [readTableOrNull] for nullable tables.
-  D readTable<T extends Table, D extends DataClass>(TableInfo<T, D> table) {
+  D readTable<T extends Table, D>(TableInfo<T, D> table) {
     if (!_parsedData.containsKey(table)) {
       throw ArgumentError(
           'Invalid table passed to readTable: ${table.tableName}. This row '
@@ -173,8 +172,7 @@ class TypedResult {
   /// [table].
   ///
   /// See also: [readTable], which throws instead of returning `null`.
-  D? readTableOrNull<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table) {
+  D? readTableOrNull<T extends Table, D>(TableInfo<T, D> table) {
     return _parsedData[table] as D?;
   }
 

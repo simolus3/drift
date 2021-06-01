@@ -92,7 +92,7 @@ FROM routes r
   INNER JOIN points "from" ON "from".id = routes.from
   INNER JOIN points "to" ON "to".id = routes."to";
       ''',
-    });
+    }, enableAnalyzer: false);
 
     final file = await state.analyze('package:foo/main.moor');
     final result = file.currentResult as ParsedMoorFile;
@@ -108,5 +108,44 @@ FROM routes r
     expect(resultSet.nestedResults.map((e) => e.name), ['from', 'to']);
     expect(resultSet.nestedResults.map((e) => e.table.sqlName),
         ['points', 'points']);
+  });
+
+  test('resolves nullability of aliases in nested result sets', () async {
+    final state = TestState.withContent({
+      'foo|lib/main.moor': r'''
+CREATE TABLE tableA1 (id INTEGER);
+CREATE TABLE tableB1 (id INTEGER);
+
+query: SELECT
+  tableA1.**,
+  tableA2.**, 
+  tableB1.**, 
+  tableB2.**
+FROM tableA1 -- not nullable
+
+LEFT JOIN tableA1 AS tableA2 -- nullable
+  ON FALSE
+
+INNER JOIN tableB1 -- not nullable
+  ON TRUE
+
+LEFT JOIN tableB1 AS tableB2 -- nullable
+   ON FALSE;
+      ''',
+    }, enableAnalyzer: false);
+
+    final file = await state.analyze('package:foo/main.moor');
+    final result = file.currentResult as ParsedMoorFile;
+    state.close();
+
+    expect(file.errors.errors, isEmpty);
+
+    final query = result.resolvedQueries.single;
+    final resultSet = (query as SqlSelectQuery).resultSet;
+
+    final nested = resultSet.nestedResults;
+    expect(nested.map((e) => e.name),
+        ['tableA1', 'tableA2', 'tableB1', 'tableB2']);
+    expect(nested.map((e) => e.isNullable), [false, true, false, true]);
   });
 }

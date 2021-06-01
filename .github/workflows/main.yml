@@ -6,30 +6,74 @@ env:
   PUB_ENVIRONMENT: bot.github
 
 jobs:
+  # Compile the latest sqlite3 library, which will be used to run tests in moor
+  # and sqlparser
+  compile_sqlite3:
+    name: "Compile sqlite3 for tests"
+    runs-on: ubuntu-20.04
+    env:
+      SQLITE_VERSION: "3350500"
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        id: cache_build
+        with:
+          path: /tmp/sqlite/out/
+          key: ${{ runner.os }}-${{ env.SQLITE_VERSION }}
+      - name: Compile sqlite3
+        if: steps.cache_build.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp/
+          mkdir sqlite
+          cd sqlite
+          curl https://sqlite.org/2021/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.tar.gz
+          tar zxvf sqlite.tar.gz
+          cd sqlite-autoconf-$SQLITE_VERSION
+          ./configure
+          make
+          mkdir ../out
+          cp sqlite3 ../out
+          cp .libs/libsqlite3.so ../out
+      - name: Upload built sqlite3 binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: sqlite3
+          path: /tmp/sqlite/out/
+          if-no-files-found: error
+          retention-days: 1
+
   moor:
     name: "moor package"
+    needs: [compile_sqlite3]
     runs-on: ubuntu-20.04
-
+    defaults:
+      run:
+        working-directory: moor
     steps:
       # setup
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
+      - name: Download sqlite3
+        uses: actions/download-artifact@v2
         with:
-          release-channel: beta
-      - run: sudo apt-get install -y libsqlite3-dev
-        name: Install sqlite3 for tests
+          name: sqlite3
+          path: /tmp/sqlite/out/
+      - name: Use downloaded sqlite3
+        run: |
+          chmod a+x /tmp/sqlite/out/sqlite3
+          echo "/tmp/sqlite/out" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
+      - name: Check sqlite3 version
+        run: sqlite3 --version
       - run: dart pub upgrade
-        working-directory: moor
       # analysis
-      - run: dart format -o none --set-exit-if-changed moor/
+      - run: dart format -o none --set-exit-if-changed .
         name: dartfmt
       - run: dart analyze --fatal-infos --fatal-warnings
-        working-directory: moor/
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
-        working-directory: moor
       - run: dart test #-x background_isolate --coverage=coverage
-        working-directory: moor
 #      - uses: actions/upload-artifact@v2
 #        with:
 #          name: moor-coverage-data
@@ -40,40 +84,46 @@ jobs:
 
   moor_generator:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: moor_generator
     steps:
     # setup
     - uses: actions/checkout@v2
     - uses: cedx/setup-dart@v2
-      with:
-        release-channel: beta
     - run: dart pub upgrade
-      working-directory: moor_generator
     # analysis
-    - run: dart format -o none --set-exit-if-changed moor_generator/
+    - run: dart format -o none --set-exit-if-changed .
       name: dartfmt
     - run: dart analyze --fatal-infos --fatal-warnings
-      working-directory: moor_generator/
 
   sqlparser:
     runs-on: ubuntu-20.04
+    needs: [compile_sqlite3]
+    defaults:
+      run:
+        working-directory: sqlparser
     steps:
       # setup
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
+      - name: Download sqlite3
+        uses: actions/download-artifact@v2
         with:
-          release-channel: beta
-      - run: sudo apt-get install -y libsqlite3-dev
-        name: Install sqlite3 for tests
+          name: sqlite3
+          path: /tmp/sqlite/out/
+      - name: Use downloaded sqlite3
+        run: |
+          chmod a+x /tmp/sqlite/out/sqlite3
+          echo "/tmp/sqlite/out" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - run: dart pub upgrade
-        working-directory: sqlparser
       # analysis
-      - run: dart format -o none --set-exit-if-changed sqlparser/
+      - run: dart format -o none --set-exit-if-changed .
         name: dartfmt
       - run: dart analyze --fatal-infos --fatal-warnings
-        working-directory: sqlparser/
       # tests and coverage
       - run: dart test #--coverage=coverage
-        working-directory: sqlparser
 #      - uses: actions/upload-artifact@v2
 #        with:
 #          name: sqlparser-coverage-data
@@ -84,14 +134,23 @@ jobs:
 
   misc_integration_tests:
     name: "Integration tests"
+    needs: [compile_sqlite3]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
         with:
           release-channel: beta
-      - run: sudo apt-get install -y libsqlite3-dev
-        name: Install sqlite3 for tests
+      - name: Download sqlite3
+        uses: actions/download-artifact@v2
+        with:
+          name: sqlite3
+          path: /tmp/sqlite/out/
+      - name: Use downloaded sqlite3
+        run: |
+          chmod a+x /tmp/sqlite/out/sqlite3
+          echo "/tmp/sqlite/out" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
       - run: tool/misc_integration_test.sh
 
 #  upload_coverage:

@@ -20,6 +20,13 @@ and Android Studio. You can use it to inspect a moor database right from your ID
 - The [IntelliJ plugin](https://plugins.jetbrains.com/plugin/15364-moor-inspector)
 - The [project on GitHub](https://github.com/Chimerapps/moor_inspector)
 
+## moor_db_viewer
+
+[moor_db_viewer](https://pub.dev/packages/moor_db_viewer) by [Koen Van Looveren](https://github.com/vanlooverenkoen)
+is a package to view a moor database in your Flutter app directly.
+It includes a graphical user interface showing you all rows for each table. You can also filter
+rows by columns that you've added to moor.
+
 ## moor2csv
 
 [Dhiman Seal](https://github.com/Dhi13man) wrote a package to export moor databases as csv files.

@@ -1,13 +1,14 @@
+import 'data_classes.dart';
 import 'converter.dart';
 
 CREATE TABLE no_ids (
     payload BLOB NOT NULL PRIMARY KEY
-) WITHOUT ROWID;
+) WITHOUT ROWID WITH NoIdRow;
 
 CREATE TABLE with_defaults (
     a TEXT DEFAULT 'something',
     b INT UNIQUE
-);
+) ;
 
 CREATE TABLE with_constraints (
     a TEXT,
@@ -70,12 +71,12 @@ another AS JsonResult: SELECT 'one' AS "key", NULLIF('two', 'another') AS "value
 
 @create: INSERT INTO config (config_key, config_value) VALUES ('key', 'values');
 
-multiple: SELECT d.*, c.** FROM with_constraints c
- INNER JOIN with_defaults d
+multiple: SELECT d.*, c.** FROM with_defaults d
+ LEFT OUTER JOIN with_constraints c
    ON d.a = c.a AND d.b = c.b
  WHERE $predicate;
 
-searchEmails(:term AS TEXT OR NULL): SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
+searchEmails(REQUIRED :term AS TEXT OR NULL): SELECT * FROM email WHERE email MATCH :term ORDER BY rank;
 
 readRowId: SELECT oid, * FROM config WHERE _rowid_ = $expr;
 
@@ -91,4 +92,4 @@ cfeTest: WITH RECURSIVE
   SELECT x FROM cnt;
 
 nullableQuery: SELECT MAX(oid) FROM config;
-addConfig: INSERT INTO config VALUES (?, ?, ?, ?) RETURNING *;
+addConfig: INSERT INTO config $value RETURNING *;

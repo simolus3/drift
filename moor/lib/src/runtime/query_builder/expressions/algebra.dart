@@ -35,4 +35,9 @@ extension ArithmeticExpr<DT extends num?> on Expression<DT> {
   Expression<DT> abs() {
     return FunctionCallExpression('abs', [this]);
   }
+
+  /// Rounds this expression to the nearest integer.
+  Expression<int?> roundToInt() {
+    return FunctionCallExpression('round', [this]).cast<int>();
+  }
 }

@@ -281,3 +281,25 @@ Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
 be available on older Android devices when using `moor_flutter`. `moor_ffi`
 includes the latest sqlite on Android, so consider using it if you want to
 support upserts.
+
+Also note that the returned rowid may not be accurate when an upsert took place.
+
+### Returning
+
+Starting from moor version 4.3, you can use `insertReturning` to insert a row
+or companion and immediately get the row it inserts.
+The returned row contains all the default values and incrementing ids that were
+generated.
+
+For instance, consider this snippet using the tables from the [getting started guide]({{ 'index.md' | pageUrl }}):
+
+```dart
+final row = await into(todos).insertReturning(TodosCompanion.insert(
+  title: 'A todo entry',
+  content: 'A description',
+));
+``` 
+
+The `row` returned has the proper `id` set. If a table has furher default
+values, including dynamic values like `CURRENT_TIME`, then those would also be
+set in a row returned by `insertReturning`.

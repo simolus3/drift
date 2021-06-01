@@ -6,7 +6,7 @@ class WithClause extends AstNode {
   final bool recursive;
   Token? recursiveToken;
 
-  final List<CommonTableExpression> ctes;
+  List<CommonTableExpression> ctes;
 
   WithClause({required this.recursive, required this.ctes});
 
@@ -17,7 +17,7 @@ class WithClause extends AstNode {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    transformer.transformChildren(ctes, this, arg);
+    ctes = transformer.transformChildren(ctes, this, arg);
   }
 
   @override

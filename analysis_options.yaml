@@ -12,7 +12,6 @@ analyzer:
     - "**/*.g.dart"
     # Will be analyzed anyway, nobody knows why ¯\_(ツ)_/¯. We're only analyzing lib/ and test/ as a workaround
     - ".dart_tool/build/entrypoint/build.dart"
-    - "tool/**"
     - "**/*.mocks.dart"
 
 # this should always include all rules. Those we don't use are commented out

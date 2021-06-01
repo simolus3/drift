@@ -11,9 +11,17 @@ class UseMoorParser {
   Future<Database> parseDatabase(
       ClassElement element, ConstantReader annotation) async {
     // the types declared in UseMoor.tables
-    final tableTypes =
-        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
-            [];
+    final tablesOrNull =
+        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue());
+    if (tablesOrNull == null) {
+      step.reportError(ErrorInDartCode(
+        message: 'Could not read tables from @UseMoor annotation! \n'
+            'Please make sure that all table classes exist.',
+        affectedElement: element,
+      ));
+    }
+
+    final tableTypes = tablesOrNull ?? [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
     final includes = annotation
             .read('include')

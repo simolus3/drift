@@ -1,10 +1,9 @@
-//@dart=2.9
 /// Writes a operator == override for a class consisting of the [fields] into
 /// the buffer provided by [into].
 void overrideEquals(
     Iterable<String> fields, String className, StringBuffer into) {
   into
-    ..write('@override\nbool operator ==(dynamic other) => ')
+    ..write('@override\nbool operator ==(Object other) => ')
     ..write('identical(this, other) || (other is $className');
 
   if (fields.isNotEmpty) {

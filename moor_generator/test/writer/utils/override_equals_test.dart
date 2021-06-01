@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/writer/utils/override_equals.dart';
 import 'package:test/test.dart';
 
@@ -9,7 +8,7 @@ void main() {
 
     expect(
         buffer.toString(),
-        '@override\nbool operator ==(dynamic other) => '
+        '@override\nbool operator ==(Object other) => '
         'identical(this, other) || (other is Foo);\n');
   });
 
@@ -19,7 +18,7 @@ void main() {
 
     expect(
         buffer.toString(),
-        '@override\nbool operator ==(dynamic other) => '
+        '@override\nbool operator ==(Object other) => '
         'identical(this, other) || (other is Foo && '
         'other.a == this.a && other.b == this.b && other.c == this.c);\n');
   });

@@ -4,25 +4,31 @@ import 'package:moor/moor.dart';
 import 'package:moor/src/utils/synchronized.dart';
 import 'package:pedantic/pedantic.dart';
 
+import '../../cancellation_zone.dart';
 import 'delegates.dart';
 
 mixin _ExecutorWithQueryDelegate on QueryExecutor {
+  final Lock _lock = Lock();
+
   QueryDelegate get impl;
 
   bool get isSequential => false;
+
   bool get logStatements => false;
-  final Lock _lock = Lock();
 
   /// Used to provide better error messages when calling operations without
   /// calling [ensureOpen] before.
   bool _ensureOpenCalled = false;
 
-  Future<T> _synchronized<T>(FutureOr<T> Function() action) async {
+  Future<T> _synchronized<T>(Future<T> Function() action) {
     if (isSequential) {
-      return await _lock.synchronized(action);
+      return _lock.synchronized(() {
+        checkIfCancelled();
+        return action();
+      });
     } else {
       // support multiple operations in parallel, so just run right away
-      return await action();
+      return action();
     }
   }
 

@@ -1,4 +1,7 @@
-part of '../ast.dart';
+import '../../analysis/analysis.dart';
+import '../ast.dart' show StarResultColumn, ResultColumn;
+import '../node.dart';
+import '../visitor.dart';
 
 /// A nested star result column, denoted by `**` in user queries.
 ///

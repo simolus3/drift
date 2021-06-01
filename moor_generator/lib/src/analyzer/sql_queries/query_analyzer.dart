@@ -13,6 +13,8 @@ import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
+import 'required_variables.dart';
+
 abstract class BaseAnalyzer {
   final List<MoorTable> tables;
   final List<MoorView> views;
@@ -102,16 +104,20 @@ class SqlAnalyzer extends BaseAnalyzer {
       var declaredInMoor = false;
 
       AnalysisContext context;
+      var requiredVariables = RequiredVariables.empty;
 
       try {
         if (query is DeclaredDartQuery) {
           final sql = query.sql;
           context = engine.analyze(sql);
         } else if (query is DeclaredMoorQuery) {
+          final options = _createOptionsAndVars(query.astNode);
+          requiredVariables = options.variables;
+
           context = engine.analyzeNode(
             query.query,
             query.file.parseResult.sql,
-            stmtOptions: _createOptions(query.astNode),
+            stmtOptions: options.options,
           );
           declaredInMoor = true;
         }
@@ -129,8 +135,10 @@ class SqlAnalyzer extends BaseAnalyzer {
       }
 
       try {
-        final handled = QueryHandler(query, context, mapper).handle()
-          ..declaredInMoorFile = declaredInMoor;
+        final handled = QueryHandler(query, context, mapper,
+                requiredVariables: requiredVariables)
+            .handle()
+              ..declaredInMoorFile = declaredInMoor;
         foundQueries.add(handled);
       } catch (e, s) {
         // todo remove dependency on build package here
@@ -144,33 +152,56 @@ class SqlAnalyzer extends BaseAnalyzer {
     }
   }
 
-  AnalyzeStatementOptions _createOptions(DeclaredStatement stmt) {
+  _OptionsAndRequiredVariables _createOptionsAndVars(DeclaredStatement stmt) {
     final reader = engine.schemaReader;
     final indexedHints = <int, ResolvedType>{};
     final namedHints = <String, ResolvedType>{};
     final defaultValues = <String, Expression>{};
+    final requiredIndex = <int>{};
+    final requiredName = <String>{};
 
     for (final parameter in stmt.parameters) {
       if (parameter is VariableTypeHint) {
         final variable = parameter.variable;
-        final type = reader
-            .resolveColumnType(parameter.typeName)
-            .withNullable(parameter.orNull);
 
-        if (variable is ColonNamedVariable) {
-          namedHints[variable.name] = type;
-        } else if (variable is NumberedVariable) {
-          indexedHints[variable.resolvedIndex] = type;
+        if (parameter.isRequired) {
+          if (variable is ColonNamedVariable) {
+            requiredName.add(variable.name);
+          } else if (variable is NumberedVariable) {
+            requiredIndex.add(variable.resolvedIndex);
+          }
+        }
+
+        if (parameter.typeName != null) {
+          final type = reader
+              .resolveColumnType(parameter.typeName)
+              .withNullable(parameter.orNull);
+
+          if (variable is ColonNamedVariable) {
+            namedHints[variable.name] = type;
+          } else if (variable is NumberedVariable) {
+            indexedHints[variable.resolvedIndex] = type;
+          }
         }
       } else if (parameter is DartPlaceholderDefaultValue) {
         defaultValues[parameter.variableName] = parameter.defaultValue;
       }
     }
 
-    return AnalyzeStatementOptions(
-      indexedVariableTypes: indexedHints,
-      namedVariableTypes: namedHints,
-      defaultValuesForPlaceholder: defaultValues,
+    return _OptionsAndRequiredVariables(
+      AnalyzeStatementOptions(
+        indexedVariableTypes: indexedHints,
+        namedVariableTypes: namedHints,
+        defaultValuesForPlaceholder: defaultValues,
+      ),
+      RequiredVariables(requiredIndex, requiredName),
     );
   }
+}
+
+class _OptionsAndRequiredVariables {
+  final AnalyzeStatementOptions options;
+  final RequiredVariables variables;
+
+  _OptionsAndRequiredVariables(this.options, this.variables);
 }

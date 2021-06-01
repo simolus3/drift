@@ -7,6 +7,8 @@ import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
+import 'required_variables.dart';
+
 /// Converts tables and types between the moor_generator and the sqlparser
 /// library.
 class TypeMapper {
@@ -121,7 +123,8 @@ class TypeMapper {
   ///    a Dart placeholder, its indexed is LOWER than that element. This means
   ///    that elements can be expanded into multiple variables without breaking
   ///    variables that appear after them.
-  List<FoundElement> extractElements(AnalysisContext ctx) {
+  List<FoundElement> extractElements(AnalysisContext ctx,
+      {RequiredVariables required = RequiredVariables.empty}) {
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
@@ -153,6 +156,8 @@ class TypeMapper {
         final internalType = ctx.typeOf(used);
         final type = resolvedToMoor(internalType.type);
         final isArray = internalType.type?.isArray ?? false;
+        final isRequired = required.requiredNamedVariables.contains(name) ||
+            required.requiredNumberedVariables.contains(used.resolvedIndex);
 
         if (explicitIndex != null && currentIndex >= maxIndex) {
           throw ArgumentError(
@@ -177,6 +182,7 @@ class TypeMapper {
           variable: used,
           isArray: isArray,
           typeConverter: converter,
+          isRequired: isRequired,
         ));
 
         // arrays cannot be indexed explicitly because they're expanded into
@@ -242,28 +248,37 @@ class TypeMapper {
 
   FoundDartPlaceholder _extractPlaceholder(
       AnalysisContext context, DartPlaceholder placeholder) {
-    ColumnType columnType;
-    Expression defaultValue;
     final name = placeholder.name;
 
     final type = placeholder.when(
       isExpression: (e) {
         final foundType = context.typeOf(e);
+        ColumnType columnType;
         if (foundType.type != null) {
           columnType = resolvedToMoor(foundType.type);
         }
 
-        defaultValue = context.stmtOptions.defaultValuesForPlaceholder[name];
-        return DartPlaceholderType.expression;
+        final defaultValue =
+            context.stmtOptions.defaultValuesForPlaceholder[name];
+
+        return ExpressionDartPlaceholderType(columnType, defaultValue);
       },
-      isLimit: (_) => DartPlaceholderType.limit,
-      isOrderBy: (_) => DartPlaceholderType.orderBy,
-      isOrderingTerm: (_) => DartPlaceholderType.orderByTerm,
+      isLimit: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.limit),
+      isOrderBy: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
+      isOrderingTerm: (_) =>
+          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderByTerm),
+      isInsertable: (_) {
+        final insert = placeholder.parents.whereType<InsertStatement>().first;
+        final table = insert.table.resultSet;
+
+        return InsertableDartPlaceholderType(
+            table is Table ? tableToMoor(table) : null);
+      },
     );
 
-    return FoundDartPlaceholder(type, columnType, name,
-        defaultValue: defaultValue)
-      ..astNode = placeholder;
+    return FoundDartPlaceholder(type, name)..astNode = placeholder;
   }
 
   MoorTable tableToMoor(Table table) {

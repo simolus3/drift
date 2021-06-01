@@ -45,6 +45,30 @@ void main() {
     expect(eval(asDate), completion('2020-09-04'));
   });
 
+  test('aggregate expressions for datetimes', () async {
+    final firstTime = DateTime(2021, 5, 7);
+    final secondTime = DateTime(2021, 5, 14);
+
+    await db.delete(db.users).go();
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+              name: 'User name',
+              profilePicture: Uint8List(0),
+              creationTime: Value(firstTime)),
+        );
+    await db.into(db.users).insert(
+          UsersCompanion.insert(
+              name: 'User name',
+              profilePicture: Uint8List(0),
+              creationTime: Value(secondTime)),
+        );
+
+    expect(eval(db.users.creationTime.min()), completion(firstTime));
+    expect(eval(db.users.creationTime.max()), completion(secondTime));
+    expect(eval(db.users.creationTime.avg()),
+        completion(DateTime(2021, 5, 10, 12)));
+  });
+
   group('text', () {
     test('contains', () {
       const stringLiteral = Constant('Some sql string literal');

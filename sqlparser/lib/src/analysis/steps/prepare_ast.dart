@@ -122,8 +122,13 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   @override
   void defaultQueryable(Queryable e, void arg) {
     final scope = e.scope;
+
     e.when(
       isTable: (table) {
+        final added = ResultSetAvailableInStatement(table, table);
+        scope.register(table.tableName, added);
+        table.availableResultSet = added;
+
         // we're looking at something like FROM table (AS alias). The alias
         // acts like a table for expressions in the same scope, so let's
         // register it.
@@ -132,12 +137,14 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
           // package and moor_generator might depend on this being a table
           // directly (e.g. nested result sets in moor).
           // Same for nested selects, joins and table-valued functions below.
-          scope.register(table.as!, table);
+          scope.register(table.as!, added);
         }
       },
       isSelect: (select) {
         if (select.as != null) {
-          scope.register(select.as!, select.statement);
+          final added = ResultSetAvailableInStatement(select, select.statement);
+          select.availableResultSet = added;
+          scope.register(select.as!, added);
         }
       },
       isJoin: (join) {
@@ -146,10 +153,12 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
         // dont't need to do anything here.
       },
       isTableFunction: (function) {
+        final added = ResultSetAvailableInStatement(function, function);
+        function.availableResultSet = added;
         if (function.as != null) {
-          scope.register(function.as!, function);
+          scope.register(function.as!, added);
         }
-        scope.register(function.name, function);
+        scope.register(function.name, added);
       },
     );
 

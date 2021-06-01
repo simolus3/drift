@@ -23,7 +23,7 @@ class Database extends _$Database {
   int get schemaVersion => 1;
 }
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
 QueryExecutor _obtainExecutor() {
   final file =

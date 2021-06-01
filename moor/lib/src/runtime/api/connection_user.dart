@@ -69,8 +69,7 @@ abstract class DatabaseConnectionUser {
   ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
   /// ]);
   /// ```
-  T alias<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table, String alias) {
+  T alias<T extends Table, D>(TableInfo<T, D> table, String alias) {
     return table.createAlias(alias).asDslTable;
   }
 
@@ -127,15 +126,14 @@ abstract class DatabaseConnectionUser {
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
-  InsertStatement<T, D> into<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table) {
+  InsertStatement<T, D> into<T extends Table, D>(TableInfo<T, D> table) {
     return InsertStatement<T, D>(_resolvedEngine, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where
   /// clause on that table and then use [UpdateStatement.write].
-  UpdateStatement<Tbl, R> update<Tbl extends Table, R extends DataClass>(
+  UpdateStatement<Tbl, R> update<Tbl extends Table, R>(
           TableInfo<Tbl, R> table) =>
       UpdateStatement(_resolvedEngine, table);
 
@@ -163,8 +161,7 @@ abstract class DatabaseConnectionUser {
   ///
   /// For more information on queries, see the
   /// [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/).
-  SimpleSelectStatement<T, R> select<T extends Table, R extends DataClass>(
-      TableInfo<T, R> table,
+  SimpleSelectStatement<T, R> select<T extends Table, R>(TableInfo<T, R> table,
       {bool distinct = false}) {
     return SimpleSelectStatement<T, R>(_resolvedEngine, table,
         distinct: distinct);
@@ -200,7 +197,7 @@ abstract class DatabaseConnectionUser {
   /// See also:
   ///  - the documentation on [aggregate expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://moor.simonbinder.eu/docs/advanced-features/joins/#group-by)
-  JoinedSelectStatement<T, R> selectOnly<T extends Table, R extends DataClass>(
+  JoinedSelectStatement<T, R> selectOnly<T extends Table, R>(
     TableInfo<T, R> table, {
     bool distinct = false,
   }) {
@@ -212,8 +209,7 @@ abstract class DatabaseConnectionUser {
   ///
   /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   /// for more details and example on how delete statements work.
-  DeleteStatement<T, D> delete<T extends Table, D extends DataClass>(
-      TableInfo<T, D> table) {
+  DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
     return DeleteStatement<T, D>(_resolvedEngine, table);
   }
 
@@ -463,6 +459,20 @@ abstract class DatabaseConnectionUser {
       context.hasMultipleTables = hasMultipleTables;
     }
     component.writeInto(context);
+
+    return context;
+  }
+
+  /// Writes column names and `VALUES` for an insert statement.
+  ///
+  /// Used by generated code.
+  @protected
+  GenerationContext $writeInsertable(TableInfo table, Insertable insertable) {
+    final context = GenerationContext.fromDb(this);
+
+    table.validateIntegrity(insertable, isInserting: true);
+    InsertStatement(this, table)
+        .writeInsertable(context, insertable.toColumns(true));
 
     return context;
   }

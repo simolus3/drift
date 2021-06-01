@@ -8,7 +8,7 @@ import 'package:moor/moor.dart';
 /// database.
 /// [D] is the associated data class.
 @optionalTypeArgs
-abstract class Insertable<D extends DataClass> {
+abstract class Insertable<D> {
   /// Converts this object into a map of column names to expressions to insert
   /// or update.
   ///
@@ -57,7 +57,7 @@ abstract class DataClass {
 /// See also:
 /// - the explanation in the changelog for 1.5
 /// - https://github.com/simolus3/moor/issues/25
-abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
+abstract class UpdateCompanion<D> implements Insertable<D> {
   /// Constant constructor so that generated companion classes can be constant.
   const UpdateCompanion();
 
@@ -80,7 +80,7 @@ abstract class UpdateCompanion<D extends DataClass> implements Insertable<D> {
 /// An [Insertable] implementation based on raw column expressions.
 ///
 /// Mostly used in generated code.
-class RawValuesInsertable<D extends DataClass> implements Insertable<D> {
+class RawValuesInsertable<D> implements Insertable<D> {
   /// A map from column names to a value that should be inserted or updated.
   ///
   /// See also:
@@ -100,8 +100,31 @@ class RawValuesInsertable<D extends DataClass> implements Insertable<D> {
 }
 
 /// A wrapper around arbitrary data [T] to indicate presence or absence
-/// explicitly. We can use [Value]s in companions to distinguish between null
-/// and absent values.
+/// explicitly.
+///
+/// [Value]s are commonly used in companions to distringuish between `null` and
+/// absent values.
+/// For instance, consider a table with a nullable column with a non-nullable
+/// default value:
+///
+/// ```sql
+/// CREATE TABLE orders (
+///   priority INT DEFAULT 1 -- may be null if there's no assigned priority
+/// );
+///
+/// For inserts in Dart, there are three different scenarios for the `priority`
+/// column:
+///
+/// - It may be set to `null`, overriding the default value
+/// - It may be absent, meaning that the default value should be used
+/// - It may be set to an `int` to override the default value
+/// ```
+///
+/// As you can see, a simple `int?` does not provide enough information to
+/// distinguish between the three cases. A `null` value could mean that the
+/// column is absent, or that it should explicitly be set to `null`.
+/// For this reason, moor introduces the [Value] wrapper to make the distinction
+/// explicit.
 class Value<T> {
   /// Whether this [Value] wrapper contains a present [value] that should be
   /// inserted or updated.
@@ -122,6 +145,24 @@ class Value<T> {
   const Value.absent()
       : _value = null,
         present = false;
+
+  /// Create a value that is absent if [value] is `null` and [present] if it's
+  /// not.
+  ///
+  /// The functionality is equiavalent to the following:
+  /// `x != null ? Value(x) : Value.absent()`.
+  ///
+  /// This constructor should only be used when [T] is not nullable. If [T] were
+  /// nullable, there wouldn't be a clear interpretation for a `null` [value].
+  /// See the overall documentation on [Value] for details.
+  const Value.ofNullable(T? value)
+      : assert(
+          value != null || null is! T,
+          "Value.absentIfNull(null) can't be used for a nullable T, since the "
+          'null value could be both absent and present.',
+        ),
+        _value = value,
+        present = value != null;
 
   @override
   String toString() => present ? 'Value($value)' : 'Value.absent()';
@@ -173,13 +214,13 @@ class _DefaultValueSerializer extends ValueSerializer {
       return DateTime.fromMillisecondsSinceEpoch(json as int) as T;
     }
 
-    if (_typeList is List<double> && json is int) {
+    if (_typeList is List<double?> && json is int) {
       return json.toDouble() as T;
     }
 
     // blobs are encoded as a regular json array, so we manually convert that to
     // a Uint8List
-    if (_typeList is List<Uint8List> && json is! Uint8List) {
+    if (_typeList is List<Uint8List?> && json is! Uint8List) {
       final asList = (json as List).cast<int>();
       return Uint8List.fromList(asList) as T;
     }

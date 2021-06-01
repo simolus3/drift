@@ -66,6 +66,7 @@ enum AnalysisErrorType {
   ambiguousReference,
   synctactic,
   unknownFunction,
+  starColumnWithoutTable,
   compoundColumnCountMismatch,
   cteColumnCountMismatch,
   valuesSelectCountMismatch,
@@ -73,5 +74,6 @@ enum AnalysisErrorType {
   rowValueMisuse,
   notSupportedInDesiredVersion,
   illegalUseOfReturning,
+  raiseMisuse,
   other,
 }

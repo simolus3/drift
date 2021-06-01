@@ -1,11 +1,13 @@
 //@dart=2.9
 import 'dart:async';
 
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
+import 'package:moor_generator/src/backends/backend.dart';
 import 'package:source_gen/source_gen.dart';
 
 /// A serialized version of a [DartType].
@@ -121,7 +123,12 @@ class TypeDeserializer {
       // ignore: literal_only_boolean_expressions
       while (true) {
         try {
-          return session.getLibraryByUri(uri.toString());
+          final info = await session.getLibraryByUri2(uri.toString());
+          if (info is LibraryElementResult) {
+            return info.element;
+          } else {
+            throw NotALibraryException(uri);
+          }
         } on InconsistentAnalysisException {
           _lastSession = null; // Invalidate session, then try again
           session = await _obtainSession();

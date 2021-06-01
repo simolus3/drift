@@ -95,8 +95,7 @@ class Constant<T> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    final type = context.typeSystem.forDartType<T>();
-    context.buffer.write(type.mapToSqlConstant(value));
+    context.buffer.write(SqlTypeSystem.mapToSqlConstant(value));
   }
 
   @override

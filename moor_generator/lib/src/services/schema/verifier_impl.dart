@@ -67,9 +67,10 @@ class VerifierImplementation implements SchemaVerifier {
     await executor.runCustom('PRAGMA schema_version = $version;');
     await db.close();
 
-    final connection =
-        DatabaseConnection.fromExecutor(VmDatabase.opened(dbForUse));
-    return InitializedSchema(dbForUse, connection);
+    return InitializedSchema(dbForUse, () {
+      final db = sqlite3.open(uri, uri: true);
+      return DatabaseConnection.fromExecutor(VmDatabase.opened(db));
+    });
   }
 
   @override

@@ -20,17 +20,15 @@ class Config extends DataClass implements Insertable<Config> {
   factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
     return Config(
-      configKey: stringType
+      configKey: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
-      configValue: stringType
+      configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: ConfigTable.$converter0.mapToDart(intType
+      syncState: ConfigTable.$converter0.mapToDart(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
-      syncStateImplicit: ConfigTable.$converter1.mapToDart(
-          intType.mapFromDatabaseResponse(
+      syncStateImplicit: ConfigTable.$converter1.mapToDart(const IntType()
+          .mapFromDatabaseResponse(
               data['${effectivePrefix}sync_state_implicit'])),
     );
   }
@@ -124,7 +122,7 @@ class Config extends DataClass implements Insertable<Config> {
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Config &&
           other.configKey == this.configKey &&
@@ -280,8 +278,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Config.fromData(data, _db, prefix: effectivePrefix);
+    return Config.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -303,11 +301,10 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   factory WithDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
     return WithDefault(
-      a: stringType.mapFromDatabaseResponse(data['${effectivePrefix}a']),
-      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b']),
+      a: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}a']),
+      b: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}b']),
     );
   }
   @override
@@ -370,7 +367,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, b.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WithDefault && other.a == this.a && other.b == this.b);
 }
@@ -470,8 +467,8 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WithDefault.fromData(data, _db, prefix: effectivePrefix);
+    return WithDefault.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -483,68 +480,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   bool get dontWriteConstraints => true;
 }
 
-class NoId extends DataClass implements Insertable<NoId> {
-  final Uint8List payload;
-  NoId({required this.payload});
-  factory NoId.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final uint8ListType = db.typeSystem.forDartType<Uint8List>();
-    return NoId(
-      payload: uint8ListType
-          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
-    );
-  }
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['payload'] = Variable<Uint8List>(payload);
-    return map;
-  }
-
-  NoIdsCompanion toCompanion(bool nullToAbsent) {
-    return NoIdsCompanion(
-      payload: Value(payload),
-    );
-  }
-
-  factory NoId.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return NoId(
-      payload: serializer.fromJson<Uint8List>(json['payload']),
-    );
-  }
-  factory NoId.fromJsonString(String encodedJson,
-          {ValueSerializer? serializer}) =>
-      NoId.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
-          serializer: serializer);
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'payload': serializer.toJson<Uint8List>(payload),
-    };
-  }
-
-  NoId copyWith({Uint8List? payload}) => NoId(
-        payload: payload ?? this.payload,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('NoId(')..write('payload: $payload')..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf(payload.hashCode);
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is NoId && other.payload == this.payload);
-}
-
-class NoIdsCompanion extends UpdateCompanion<NoId> {
+class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
   final Value<Uint8List> payload;
   const NoIdsCompanion({
     this.payload = const Value.absent(),
@@ -552,7 +488,7 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   NoIdsCompanion.insert({
     required Uint8List payload,
   }) : payload = Value(payload);
-  static Insertable<NoId> custom({
+  static Insertable<NoIdRow> custom({
     Expression<Uint8List>? payload,
   }) {
     return RawValuesInsertable({
@@ -584,7 +520,7 @@ class NoIdsCompanion extends UpdateCompanion<NoId> {
   }
 }
 
-class NoIds extends Table with TableInfo<NoIds, NoId> {
+class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final GeneratedDatabase _db;
   final String? _alias;
   NoIds(this._db, [this._alias]);
@@ -604,7 +540,7 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   @override
   final String actualTableName = 'no_ids';
   @override
-  VerificationContext validateIntegrity(Insertable<NoId> instance,
+  VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -620,9 +556,12 @@ class NoIds extends Table with TableInfo<NoIds, NoId> {
   @override
   Set<GeneratedColumn> get $primaryKey => {payload};
   @override
-  NoId map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return NoId.fromData(data, _db, prefix: effectivePrefix);
+  NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NoIdRow(
+      const BlobType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
+    );
   }
 
   @override
@@ -645,13 +584,11 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
       Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
-    final intType = db.typeSystem.forDartType<int>();
-    final doubleType = db.typeSystem.forDartType<double>();
     return WithConstraint(
-      a: stringType.mapFromDatabaseResponse(data['${effectivePrefix}a']),
-      b: intType.mapFromDatabaseResponse(data['${effectivePrefix}b'])!,
-      c: doubleType.mapFromDatabaseResponse(data['${effectivePrefix}c']),
+      a: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}a']),
+      b: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}b'])!,
+      c: const RealType().mapFromDatabaseResponse(data['${effectivePrefix}c']),
     );
   }
   @override
@@ -721,7 +658,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WithConstraint &&
           other.a == this.a &&
@@ -845,8 +782,8 @@ class WithConstraints extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WithConstraint.fromData(data, _db, prefix: effectivePrefix);
+    return WithConstraint.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -871,18 +808,14 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final boolType = db.typeSystem.forDartType<bool>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return MytableData(
-      someid:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}someid'])!,
-      sometext: stringType
+      someid: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}someid'])!,
+      sometext: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}sometext']),
-      isInserting: boolType
+      isInserting: const BoolType()
           .mapFromDatabaseResponse(data['${effectivePrefix}is_inserting']),
-      somedate: dateTimeType
+      somedate: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}somedate']),
     );
   }
@@ -971,7 +904,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
       $mrjc(
           sometext.hashCode, $mrjc(isInserting.hashCode, somedate.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MytableData &&
           other.someid == this.someid &&
@@ -1127,8 +1060,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   Set<GeneratedColumn> get $primaryKey => {someid};
   @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return MytableData.fromData(data, _db, prefix: effectivePrefix);
+    return MytableData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1150,13 +1083,13 @@ class EMail extends DataClass implements Insertable<EMail> {
   factory EMail.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     return EMail(
-      sender:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}sender'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      body: stringType.mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
+      sender: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}sender'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      body: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}body'])!,
     );
   }
   @override
@@ -1218,7 +1151,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   int get hashCode =>
       $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EMail &&
           other.sender == this.sender &&
@@ -1239,7 +1172,7 @@ class EmailCompanion extends UpdateCompanion<EMail> {
     required String sender,
     required String title,
     required String body,
-  })   : sender = Value(sender),
+  })  : sender = Value(sender),
         title = Value(title),
         body = Value(body);
   static Insertable<EMail> custom({
@@ -1353,8 +1286,8 @@ class Email extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return EMail.fromData(data, _db, prefix: effectivePrefix);
+    return EMail.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1375,13 +1308,11 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   factory WeirdData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return WeirdData(
-      sqlClass:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}class'])!,
-      textColumn:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
+      sqlClass: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}class'])!,
+      textColumn: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}text'])!,
     );
   }
   @override
@@ -1437,7 +1368,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   @override
   int get hashCode => $mrjf($mrjc(sqlClass.hashCode, textColumn.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WeirdData &&
           other.sqlClass == this.sqlClass &&
@@ -1454,7 +1385,7 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   WeirdTableCompanion.insert({
     required int sqlClass,
     required String textColumn,
-  })   : sqlClass = Value(sqlClass),
+  })  : sqlClass = Value(sqlClass),
         textColumn = Value(textColumn);
   static Insertable<WeirdData> custom({
     Expression<int>? sqlClass,
@@ -1546,8 +1477,8 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return WeirdData.fromData(data, _db, prefix: effectivePrefix);
+    return WeirdData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -1667,9 +1598,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple({required Expression<bool> predicate}) {
     final generatedpredicate = $write(predicate, hasMultipleTables: true);
     return customSelect(
-        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_constraints AS c INNER JOIN with_defaults AS d ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
+        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {withConstraints, withDefaults}).map((QueryRow row) {
+        readsFrom: {withDefaults, withConstraints}).map((QueryRow row) {
       return MultipleResult(
         row: row,
         a: row.read<String?>('a'),
@@ -1679,7 +1610,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<EMail> searchEmails({String? term}) {
+  Selectable<EMail> searchEmails({required String? term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
         variables: [Variable<String?>(term)],
@@ -1722,30 +1653,23 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<int> cfeTest() {
     return customSelect(
-        'WITH RECURSIVE cnt(x)AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+        'WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
   }
 
   Selectable<int?> nullableQuery() {
-    return customSelect('SELECT MAX(oid) FROM config',
+    return customSelect('SELECT MAX(oid) AS _c0 FROM config',
         variables: [],
-        readsFrom: {config}).map((QueryRow row) => row.read<int?>('MAX(oid)'));
+        readsFrom: {config}).map((QueryRow row) => row.read<int?>('_c0'));
   }
 
-  Future<List<Config>> addConfig(
-      String var1, String? var2, SyncType? var3, SyncType? var4) {
+  Future<List<Config>> addConfig({required Insertable<Config> value}) {
+    final generatedvalue = $writeInsertable(this.config, value);
     return customWriteReturning(
-        'INSERT INTO config VALUES (?, ?, ?, ?) RETURNING *',
-        variables: [
-          Variable<String>(var1),
-          Variable<String?>(var2),
-          Variable<int?>(ConfigTable.$converter0.mapToSql(var3)),
-          Variable<int?>(ConfigTable.$converter1.mapToSql(var4))
-        ],
-        updates: {
-          config
-        }).then((rows) => rows.map(config.mapFromRow).toList());
+        'INSERT INTO config ${generatedvalue.sql} RETURNING *',
+        variables: [...generatedvalue.introducedVariables],
+        updates: {config}).then((rows) => rows.map(config.mapFromRow).toList());
   }
 
   Future<int> writeConfig({required String key, String? value}) {
@@ -1798,7 +1722,7 @@ class JsonResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is JsonResult &&
           other.key == this.key &&
@@ -1826,7 +1750,7 @@ class MultipleResult extends CustomResultSet {
   @override
   int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MultipleResult &&
           other.a == this.a &&
@@ -1865,7 +1789,7 @@ class ReadRowIdResult extends CustomResultSet {
           $mrjc(configValue.hashCode,
               $mrjc(syncState.hashCode, syncStateImplicit.hashCode)))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReadRowIdResult &&
           other.rowid == this.rowid &&
@@ -1904,7 +1828,7 @@ class ReadViewResult extends CustomResultSet {
       $mrjc(configValue.hashCode,
           $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReadViewResult &&
           other.configKey == this.configKey &&

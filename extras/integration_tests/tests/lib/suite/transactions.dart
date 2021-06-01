@@ -42,7 +42,6 @@ void transactionTests(TestExecutor executor) {
         await db.makeFriends(dash, florian, goodFriends: true);
         throw Exception('nope i made a mistake please rollback thank you');
       });
-      fail('the transaction should have thrown!');
     } on Exception catch (_) {}
 
     final countResult = await db.userCount().getSingle();
