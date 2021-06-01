@@ -2,6 +2,8 @@
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/utils/names.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import 'base_entity.dart';
@@ -28,14 +30,16 @@ class MoorView extends MoorEntityWithResultSet {
   List<MoorColumn> columns;
 
   @override
-  String get dartTypeName => 'ViewData$name'; // todo: Names
+  final String dartTypeName;
 
   @override
-  String get entityInfoName => '_View$name';
+  final String entityInfoName;
 
   MoorView({
     this.declaration,
     this.name,
+    this.dartTypeName,
+    this.entityInfoName,
   });
 
   /// Obtains all tables transitively referenced by the declaration of this
@@ -54,9 +58,14 @@ class MoorView extends MoorEntityWithResultSet {
   }
 
   factory MoorView.fromMoor(CreateViewStatement stmt, FoundFile file) {
+    final entityInfoName = ReCase(stmt.viewName).pascalCase;
+    final dataClassName = dataClassNameForClassName(entityInfoName);
+
     return MoorView(
       declaration: MoorViewDeclaration(stmt, file),
       name: stmt.viewName,
+      dartTypeName: dataClassName,
+      entityInfoName: entityInfoName,
     );
   }
 

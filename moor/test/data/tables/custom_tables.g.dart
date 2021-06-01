@@ -1476,20 +1476,19 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   bool get dontWriteConstraints => true;
 }
 
-class ViewDatamy_view extends DataClass {
+class MyViewData extends DataClass {
   final String configKey;
   final String? configValue;
   final int? syncState;
   final int? syncStateImplicit;
-  ViewDatamy_view(
+  MyViewData(
       {required this.configKey,
       this.configValue,
       this.syncState,
       this.syncStateImplicit});
-  factory ViewDatamy_view.fromData(Map<String, dynamic> data,
-      {String? prefix}) {
+  factory MyViewData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    return ViewDatamy_view(
+    return MyViewData(
       configKey: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
@@ -1500,19 +1499,19 @@ class ViewDatamy_view extends DataClass {
           data['${effectivePrefix}sync_state_implicit']),
     );
   }
-  factory ViewDatamy_view.fromJson(Map<String, dynamic> json,
+  factory MyViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
-    return ViewDatamy_view(
+    return MyViewData(
       configKey: serializer.fromJson<String>(json['configKey']),
       configValue: serializer.fromJson<String?>(json['configValue']),
       syncState: serializer.fromJson<int?>(json['syncState']),
       syncStateImplicit: serializer.fromJson<int?>(json['syncStateImplicit']),
     );
   }
-  factory ViewDatamy_view.fromJsonString(String encodedJson,
+  factory MyViewData.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
-      ViewDatamy_view.fromJson(
+      MyViewData.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
@@ -1526,12 +1525,12 @@ class ViewDatamy_view extends DataClass {
     };
   }
 
-  ViewDatamy_view copyWith(
+  MyViewData copyWith(
           {String? configKey,
           Value<String?> configValue = const Value.absent(),
           Value<int?> syncState = const Value.absent(),
           Value<int?> syncStateImplicit = const Value.absent()}) =>
-      ViewDatamy_view(
+      MyViewData(
         configKey: configKey ?? this.configKey,
         configValue: configValue.present ? configValue.value : this.configValue,
         syncState: syncState.present ? syncState.value : this.syncState,
@@ -1541,7 +1540,7 @@ class ViewDatamy_view extends DataClass {
       );
   @override
   String toString() {
-    return (StringBuffer('ViewDatamy_view(')
+    return (StringBuffer('MyViewData(')
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')
@@ -1558,25 +1557,25 @@ class ViewDatamy_view extends DataClass {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is ViewDatamy_view &&
+      (other is MyViewData &&
           other.configKey == this.configKey &&
           other.configValue == this.configValue &&
           other.syncState == this.syncState &&
           other.syncStateImplicit == this.syncStateImplicit);
 }
 
-class _Viewmy_view extends View<_Viewmy_view, ViewDatamy_view> {
-  _Viewmy_view()
+class MyView extends View<MyView, MyViewData> {
+  MyView()
       : super('my_view',
             'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
   @override
-  _Viewmy_view get asDslTable => this;
+  MyView get asDslTable => this;
   @override
-  ViewDatamy_view map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return ViewDatamy_view.fromData(data,
+  MyViewData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return MyViewData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -1628,7 +1627,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Trigger myTrigger = Trigger(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
-  late final _Viewmy_view myView = _Viewmy_view();
+  late final MyView myView = MyView();
   late final NoIds noIds = NoIds(this);
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);
