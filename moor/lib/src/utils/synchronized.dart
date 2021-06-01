@@ -13,8 +13,6 @@ class Lock {
     final blockCompleted = Completer<void>();
     _last = blockCompleted.future;
 
-    // Note: We can't use async/await here because this future must complete
-    // just before the blockCompleted completer.
     Future<T> callBlockAndComplete() async {
       try {
         return await block();

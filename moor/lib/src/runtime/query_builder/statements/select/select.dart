@@ -12,8 +12,10 @@ abstract class BaseSelectStatement extends Component {
   int get _returnedColumnCount;
 }
 
-/// A select statement that doesn't use joins
-class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
+/// A select statement that doesn't use joins.
+///
+/// For more information, see [DatabaseConnectionUser.select].
+class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D>
     implements BaseSelectStatement {
   /// Whether duplicate rows should be eliminated from the result (this is a
@@ -22,14 +24,15 @@ class SimpleSelectStatement<T extends Table, D> extends Query<T, D>
 
   /// Used internally by moor, users will want to call
   /// [DatabaseConnectionUser.select] instead.
-  SimpleSelectStatement(DatabaseConnectionUser database, TableInfo<T, D> table,
+  SimpleSelectStatement(
+      DatabaseConnectionUser database, ResultSetImplementation<T, D> table,
       {this.distinct = false})
       : super(database, table);
 
   /// The tables this select statement reads from.
   @visibleForOverriding
   @Deprecated('Use watchedTables on the GenerationContext')
-  Set<TableInfo> get watchedTables => {table};
+  Set<ResultSetImplementation> get watchedTables => {table};
 
   @override
   int get _returnedColumnCount => table.$columns.length;
@@ -145,7 +148,7 @@ class TypedResult {
   TypedResult(this._parsedData, this.rawData,
       [this._parsedExpressions = const {}]);
 
-  final Map<TableInfo, dynamic> _parsedData;
+  final Map<ResultSetImplementation, dynamic> _parsedData;
   final Map<Expression, dynamic> _parsedExpressions;
 
   /// The raw data contained in this row.
@@ -155,10 +158,10 @@ class TypedResult {
   ///
   /// If this row does not contain non-null columns of the [table], this method
   /// will throw an [ArgumentError]. Use [readTableOrNull] for nullable tables.
-  D readTable<T extends Table, D>(TableInfo<T, D> table) {
+  D readTable<T extends HasResultSet, D>(ResultSetImplementation<T, D> table) {
     if (!_parsedData.containsKey(table)) {
       throw ArgumentError(
-          'Invalid table passed to readTable: ${table.tableName}. This row '
+          'Invalid table passed to readTable: ${table.aliasedName}. This row '
           'does not contain values for that table. \n'
           'In moor version 4, you have to use readTableNull for outer joins.');
     }

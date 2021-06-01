@@ -9,6 +9,8 @@ import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 
+import 'tables/view_writer.dart';
+
 /// Generates the Dart code put into a `.g.dart` file when running the
 /// generator.
 class DatabaseWriter {
@@ -26,9 +28,12 @@ class DatabaseWriter {
   }
 
   void write() {
-    // Write referenced tables
+    // Write referenced tables and views
     for (final table in db.tables) {
       TableWriter(table, scope.child()).writeInto();
+    }
+    for (final view in db.views) {
+      ViewWriter(view, scope.child()).write();
     }
 
     // Write the database class
@@ -59,7 +64,7 @@ class DatabaseWriter {
       }
 
       if (entity is MoorTable) {
-        final tableClassName = entity.tableInfoName;
+        final tableClassName = entity.entityInfoName;
 
         writeMemoizedGetter(
           buffer: dbScope.leaf(),
@@ -90,9 +95,8 @@ class DatabaseWriter {
         writeMemoizedGetter(
           buffer: dbScope.leaf(),
           getterName: entity.dbGetterName,
-          returnType: 'View',
-          code: 'View(${asDartLiteral(entity.displayName)}, '
-              '${asDartLiteral(entity.createSql(scope.options))})',
+          returnType: entity.entityInfoName,
+          code: '${entity.entityInfoName}()',
           options: scope.generationOptions,
         );
       }

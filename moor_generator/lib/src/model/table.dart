@@ -12,7 +12,7 @@ import 'declarations/declaration.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class MoorTable implements MoorSchemaEntity {
+class MoorTable implements MoorEntityWithResultSet {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
@@ -42,19 +42,22 @@ class MoorTable implements MoorSchemaEntity {
   String get _baseName => _overriddenName ?? fromClass.name;
 
   /// The columns declared in this table.
+  @override
   final List<MoorColumn> columns;
 
   /// The name of this table when stored in the database
   final String sqlName;
 
   /// The name for the data class associated with this table
+  @override
   final String dartTypeName;
 
   /// The getter name used for this table in a generated database or dao class.
   @override
   String get dbGetterName => dbFieldName(_baseName);
 
-  String get tableInfoName {
+  @override
+  String get entityInfoName {
     // if this table was parsed from sql, a user might want to refer to it
     // directly because there is no user defined parent class.
     // So, turn CREATE TABLE users into something called "Users" instead of

@@ -38,6 +38,9 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// and all tables that are reachable through includes.
   Iterable<MoorTable> get tables => entities.whereType();
 
+  /// All views for this database accesssor.
+  Iterable<MoorView> get views => entities.whereType();
+
   /// All resolved queries.
   ///
   /// This includes the resolve result for queries that were declared in the

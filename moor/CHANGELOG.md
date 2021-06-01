@@ -1,6 +1,8 @@
 ## 4.4.0-dev
 
 - Add `Value.ofNullable` constructor to easily wrap nullable values
+- Support selecting views declared in a moor file in Dart (with `select`,
+  `join` and similar methods)
 
 ## 4.3.2
 

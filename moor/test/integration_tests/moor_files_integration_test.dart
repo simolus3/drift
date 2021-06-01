@@ -40,6 +40,17 @@ void main() {
       return expectLater(db.readView().get(), completion(isEmpty));
     });
 
+    test('can be selected from dart', () async {
+      await db.update(db.config).write(
+          const ConfigCompanion(syncState: Value(SyncType.synchronized)));
+      await db
+          .into(db.config)
+          .insert(ConfigCompanion.insert(configKey: 'not_in_view'));
+
+      final row = await db.select(db.myView).getSingle();
+      expect(row.configKey, 'key');
+    });
+
     test('can be used in a query stream', () async {
       final stream = db.readView().watch();
       final entry = Config(

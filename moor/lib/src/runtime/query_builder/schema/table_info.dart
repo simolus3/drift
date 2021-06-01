@@ -4,10 +4,9 @@ part of '../query_builder.dart';
 /// user that extends [Table], [D] is the type of the data class
 /// generated from the table.
 mixin TableInfo<TableDsl extends Table, D> on Table
-    implements DatabaseSchemaEntity {
-  /// Type system sugar. Implementations are likely to inherit from both
-  /// [TableInfo] and [TableDsl] and can thus just return their instance.
-  TableDsl get asDslTable;
+    implements DatabaseSchemaEntity, ResultSetImplementation<TableDsl, D> {
+  @override
+  TableDsl get asDslTable => this as TableDsl;
 
   /// The primary key of this table. Can be empty if no custom primary key has
   /// been specified.
@@ -23,7 +22,11 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 
   /// The table name in the sql table. This can be an alias for the actual table
   /// name. See [actualTableName] for a table name that is not aliased.
-  String get $tableName;
+  @Deprecated('Use aliasedName instead')
+  String get $tableName => aliasedName;
+
+  @override
+  String get aliasedName => entityName;
 
   /// The name of the table in the database. Unless [$tableName], this can not
   /// be aliased.
@@ -31,9 +34,6 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 
   @override
   String get entityName => actualTableName;
-
-  /// All columns defined in this table.
-  List<GeneratedColumn> get $columns;
 
   Map<String, GeneratedColumn>? _columnsByName;
 
@@ -52,9 +52,6 @@ mixin TableInfo<TableDsl extends Table, D> on Table
     // option)
     return const VerificationContext.notEnabled();
   }
-
-  /// Maps the given row returned by the database into the fitting data class.
-  D map(Map<String, dynamic> data, {String? tablePrefix});
 
   /// Converts a [companion] to the real model class, [D].
   ///
@@ -76,8 +73,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
     return map(rawValues);
   }
 
-  /// Creates an alias of this table that will write the name [alias] when used
-  /// in a query.
+  @override
   TableInfo<TableDsl, D> createAlias(String alias);
 
   @override
@@ -106,17 +102,6 @@ mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 ///
 /// Most of these are accessed internally by moor or by generated code.
 extension TableInfoUtils<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
-  /// The table name, optionally suffixed with the alias if one exists. This
-  /// can be used in select statements, as it returns something like "users u"
-  /// for a table called users that has been aliased as "u".
-  String get tableWithAlias {
-    if ($tableName == actualTableName) {
-      return actualTableName;
-    } else {
-      return '$actualTableName ${$tableName}';
-    }
-  }
-
   /// Like [map], but from a [row] instead of the low-level map.
   D mapFromRow(QueryRow row, {String? tablePrefix}) {
     return map(row.data, tablePrefix: tablePrefix);

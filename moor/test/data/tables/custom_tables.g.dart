@@ -215,7 +215,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedTextColumn configKey = _constructConfigKey();
   GeneratedTextColumn _constructConfigKey() {
-    return GeneratedTextColumn('config_key', $tableName, false,
+    return GeneratedTextColumn('config_key', aliasedName, false,
         $customConstraints: 'not null primary key');
   }
 
@@ -223,14 +223,14 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       const VerificationMeta('configValue');
   late final GeneratedTextColumn configValue = _constructConfigValue();
   GeneratedTextColumn _constructConfigValue() {
-    return GeneratedTextColumn('config_value', $tableName, true,
+    return GeneratedTextColumn('config_value', aliasedName, true,
         $customConstraints: '');
   }
 
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
   late final GeneratedIntColumn syncState = _constructSyncState();
   GeneratedIntColumn _constructSyncState() {
-    return GeneratedIntColumn('sync_state', $tableName, true,
+    return GeneratedIntColumn('sync_state', aliasedName, true,
         $customConstraints: '');
   }
 
@@ -239,7 +239,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   late final GeneratedIntColumn syncStateImplicit =
       _constructSyncStateImplicit();
   GeneratedIntColumn _constructSyncStateImplicit() {
-    return GeneratedIntColumn('sync_state_implicit', $tableName, true,
+    return GeneratedIntColumn('sync_state_implicit', aliasedName, true,
         $customConstraints: '');
   }
 
@@ -247,11 +247,9 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
   @override
-  ConfigTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'config';
   @override
-  String get $tableName => _alias ?? 'config';
-  @override
-  final String actualTableName = 'config';
+  String get actualTableName => 'config';
   @override
   VerificationContext validateIntegrity(Insertable<Config> instance,
       {bool isInserting = false}) {
@@ -429,7 +427,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedTextColumn a = _constructA();
   GeneratedTextColumn _constructA() {
-    return GeneratedTextColumn('a', $tableName, true,
+    return GeneratedTextColumn('a', aliasedName, true,
         $customConstraints: 'DEFAULT \'something\'',
         defaultValue: const CustomExpression<String>('\'something\''));
   }
@@ -437,18 +435,16 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedIntColumn b = _constructB();
   GeneratedIntColumn _constructB() {
-    return GeneratedIntColumn('b', $tableName, true,
+    return GeneratedIntColumn('b', aliasedName, true,
         $customConstraints: 'UNIQUE');
   }
 
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override
-  WithDefaults get asDslTable => this;
+  String get aliasedName => _alias ?? 'with_defaults';
   @override
-  String get $tableName => _alias ?? 'with_defaults';
-  @override
-  final String actualTableName = 'with_defaults';
+  String get actualTableName => 'with_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<WithDefault> instance,
       {bool isInserting = false}) {
@@ -527,18 +523,16 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedBlobColumn payload = _constructPayload();
   GeneratedBlobColumn _constructPayload() {
-    return GeneratedBlobColumn('payload', $tableName, false,
+    return GeneratedBlobColumn('payload', aliasedName, false,
         $customConstraints: 'NOT NULL PRIMARY KEY');
   }
 
   @override
   List<GeneratedColumn> get $columns => [payload];
   @override
-  NoIds get asDslTable => this;
+  String get aliasedName => _alias ?? 'no_ids';
   @override
-  String get $tableName => _alias ?? 'no_ids';
-  @override
-  final String actualTableName = 'no_ids';
+  String get actualTableName => 'no_ids';
   @override
   VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
       {bool isInserting = false}) {
@@ -735,30 +729,28 @@ class WithConstraints extends Table
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedTextColumn a = _constructA();
   GeneratedTextColumn _constructA() {
-    return GeneratedTextColumn('a', $tableName, true, $customConstraints: '');
+    return GeneratedTextColumn('a', aliasedName, true, $customConstraints: '');
   }
 
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedIntColumn b = _constructB();
   GeneratedIntColumn _constructB() {
-    return GeneratedIntColumn('b', $tableName, false,
+    return GeneratedIntColumn('b', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _cMeta = const VerificationMeta('c');
   late final GeneratedRealColumn c = _constructC();
   GeneratedRealColumn _constructC() {
-    return GeneratedRealColumn('c', $tableName, true, $customConstraints: '');
+    return GeneratedRealColumn('c', aliasedName, true, $customConstraints: '');
   }
 
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
   @override
-  WithConstraints get asDslTable => this;
+  String get aliasedName => _alias ?? 'with_constraints';
   @override
-  String get $tableName => _alias ?? 'with_constraints';
-  @override
-  final String actualTableName = 'with_constraints';
+  String get actualTableName => 'with_constraints';
   @override
   VerificationContext validateIntegrity(Insertable<WithConstraint> instance,
       {bool isInserting = false}) {
@@ -994,14 +986,14 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedIntColumn someid = _constructSomeid();
   GeneratedIntColumn _constructSomeid() {
-    return GeneratedIntColumn('someid', $tableName, false,
+    return GeneratedIntColumn('someid', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
   late final GeneratedTextColumn sometext = _constructSometext();
   GeneratedTextColumn _constructSometext() {
-    return GeneratedTextColumn('sometext', $tableName, true,
+    return GeneratedTextColumn('sometext', aliasedName, true,
         $customConstraints: '');
   }
 
@@ -1009,14 +1001,14 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
       const VerificationMeta('isInserting');
   late final GeneratedBoolColumn isInserting = _constructIsInserting();
   GeneratedBoolColumn _constructIsInserting() {
-    return GeneratedBoolColumn('is_inserting', $tableName, true,
+    return GeneratedBoolColumn('is_inserting', aliasedName, true,
         $customConstraints: '');
   }
 
   final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
   late final GeneratedDateTimeColumn somedate = _constructSomedate();
   GeneratedDateTimeColumn _constructSomedate() {
-    return GeneratedDateTimeColumn('somedate', $tableName, true,
+    return GeneratedDateTimeColumn('somedate', aliasedName, true,
         $customConstraints: '');
   }
 
@@ -1024,11 +1016,9 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
   @override
-  Mytable get asDslTable => this;
+  String get aliasedName => _alias ?? 'mytable';
   @override
-  String get $tableName => _alias ?? 'mytable';
-  @override
-  final String actualTableName = 'mytable';
+  String get actualTableName => 'mytable';
   @override
   VerificationContext validateIntegrity(Insertable<MytableData> instance,
       {bool isInserting = false}) {
@@ -1230,32 +1220,30 @@ class Email extends Table
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedTextColumn sender = _constructSender();
   GeneratedTextColumn _constructSender() {
-    return GeneratedTextColumn('sender', $tableName, false,
+    return GeneratedTextColumn('sender', aliasedName, false,
         $customConstraints: '');
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, false,
+    return GeneratedTextColumn('title', aliasedName, false,
         $customConstraints: '');
   }
 
   final VerificationMeta _bodyMeta = const VerificationMeta('body');
   late final GeneratedTextColumn body = _constructBody();
   GeneratedTextColumn _constructBody() {
-    return GeneratedTextColumn('body', $tableName, false,
+    return GeneratedTextColumn('body', aliasedName, false,
         $customConstraints: '');
   }
 
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
   @override
-  Email get asDslTable => this;
+  String get aliasedName => _alias ?? 'email';
   @override
-  String get $tableName => _alias ?? 'email';
-  @override
-  final String actualTableName = 'email';
+  String get actualTableName => 'email';
   @override
   VerificationContext validateIntegrity(Insertable<EMail> instance,
       {bool isInserting = false}) {
@@ -1434,25 +1422,23 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedIntColumn sqlClass = _constructSqlClass();
   GeneratedIntColumn _constructSqlClass() {
-    return GeneratedIntColumn('class', $tableName, false,
+    return GeneratedIntColumn('class', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
   late final GeneratedTextColumn textColumn = _constructTextColumn();
   GeneratedTextColumn _constructTextColumn() {
-    return GeneratedTextColumn('text', $tableName, false,
+    return GeneratedTextColumn('text', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   @override
   List<GeneratedColumn> get $columns => [sqlClass, textColumn];
   @override
-  WeirdTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'Expression';
   @override
-  String get $tableName => _alias ?? 'Expression';
-  @override
-  final String actualTableName = 'Expression';
+  String get actualTableName => 'Expression';
   @override
   VerificationContext validateIntegrity(Insertable<WeirdData> instance,
       {bool isInserting = false}) {
@@ -1490,6 +1476,148 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   bool get dontWriteConstraints => true;
 }
 
+class ViewDatamy_view extends DataClass {
+  final String configKey;
+  final String? configValue;
+  final int? syncState;
+  final int? syncStateImplicit;
+  ViewDatamy_view(
+      {required this.configKey,
+      this.configValue,
+      this.syncState,
+      this.syncStateImplicit});
+  factory ViewDatamy_view.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return ViewDatamy_view(
+      configKey: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
+      configValue: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
+      syncState: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}sync_state']),
+      syncStateImplicit: const IntType().mapFromDatabaseResponse(
+          data['${effectivePrefix}sync_state_implicit']),
+    );
+  }
+  factory ViewDatamy_view.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return ViewDatamy_view(
+      configKey: serializer.fromJson<String>(json['configKey']),
+      configValue: serializer.fromJson<String?>(json['configValue']),
+      syncState: serializer.fromJson<int?>(json['syncState']),
+      syncStateImplicit: serializer.fromJson<int?>(json['syncStateImplicit']),
+    );
+  }
+  factory ViewDatamy_view.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      ViewDatamy_view.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'configKey': serializer.toJson<String>(configKey),
+      'configValue': serializer.toJson<String?>(configValue),
+      'syncState': serializer.toJson<int?>(syncState),
+      'syncStateImplicit': serializer.toJson<int?>(syncStateImplicit),
+    };
+  }
+
+  ViewDatamy_view copyWith(
+          {String? configKey,
+          Value<String?> configValue = const Value.absent(),
+          Value<int?> syncState = const Value.absent(),
+          Value<int?> syncStateImplicit = const Value.absent()}) =>
+      ViewDatamy_view(
+        configKey: configKey ?? this.configKey,
+        configValue: configValue.present ? configValue.value : this.configValue,
+        syncState: syncState.present ? syncState.value : this.syncState,
+        syncStateImplicit: syncStateImplicit.present
+            ? syncStateImplicit.value
+            : this.syncStateImplicit,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('ViewDatamy_view(')
+          ..write('configKey: $configKey, ')
+          ..write('configValue: $configValue, ')
+          ..write('syncState: $syncState, ')
+          ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(
+      configKey.hashCode,
+      $mrjc(configValue.hashCode,
+          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ViewDatamy_view &&
+          other.configKey == this.configKey &&
+          other.configValue == this.configValue &&
+          other.syncState == this.syncState &&
+          other.syncStateImplicit == this.syncStateImplicit);
+}
+
+class _Viewmy_view extends View<_Viewmy_view, ViewDatamy_view> {
+  _Viewmy_view()
+      : super('my_view',
+            'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
+  @override
+  List<GeneratedColumn> get $columns =>
+      [configKey, configValue, syncState, syncStateImplicit];
+  @override
+  _Viewmy_view get asDslTable => this;
+  @override
+  ViewDatamy_view map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return ViewDatamy_view.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedTextColumn configKey = _constructConfigKey();
+  GeneratedTextColumn _constructConfigKey() {
+    return GeneratedTextColumn(
+      'config_key',
+      aliasedName,
+      false,
+    );
+  }
+
+  late final GeneratedTextColumn configValue = _constructConfigValue();
+  GeneratedTextColumn _constructConfigValue() {
+    return GeneratedTextColumn(
+      'config_value',
+      aliasedName,
+      true,
+    );
+  }
+
+  late final GeneratedIntColumn syncState = _constructSyncState();
+  GeneratedIntColumn _constructSyncState() {
+    return GeneratedIntColumn(
+      'sync_state',
+      aliasedName,
+      true,
+    );
+  }
+
+  late final GeneratedIntColumn syncStateImplicit =
+      _constructSyncStateImplicit();
+  GeneratedIntColumn _constructSyncStateImplicit() {
+    return GeneratedIntColumn(
+      'sync_state_implicit',
+      aliasedName,
+      true,
+    );
+  }
+}
+
 abstract class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$CustomTablesDb.connect(DatabaseConnection c) : super.connect(c);
@@ -1500,8 +1628,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Trigger myTrigger = Trigger(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
-  late final View myView = View('my_view',
-      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
+  late final _Viewmy_view myView = _Viewmy_view();
   late final NoIds noIds = NoIds(this);
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);

@@ -26,7 +26,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
           'DatabaseAccessor<$dbTypeName> {\n');
 
       for (final table in dao.tables) {
-        final infoType = table.tableInfoName;
+        final infoType = table.entityInfoName;
         final getterName = table.dbGetterName;
         classScope.leaf().write(
             '$infoType get $getterName => attachedDatabase.$getterName;\n');

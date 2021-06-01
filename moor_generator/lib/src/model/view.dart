@@ -9,7 +9,7 @@ import 'declarations/declaration.dart';
 import 'model.dart';
 
 /// A parsed view
-class MoorView extends MoorSchemaEntity {
+class MoorView extends MoorEntityWithResultSet {
   @override
   final MoorViewDeclaration declaration;
 
@@ -23,6 +23,15 @@ class MoorView extends MoorSchemaEntity {
 
   @override
   List<MoorSchemaEntity> references = [];
+
+  @override
+  List<MoorColumn> columns;
+
+  @override
+  String get dartTypeName => 'ViewData$name'; // todo: Names
+
+  @override
+  String get entityInfoName => '_View$name';
 
   MoorView({
     this.declaration,

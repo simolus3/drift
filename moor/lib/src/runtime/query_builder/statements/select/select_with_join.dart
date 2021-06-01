@@ -4,14 +4,14 @@ part of '../../query_builder.dart';
 // this is called JoinedSelectStatement for legacy reasons - we also use it
 // when custom expressions are used as result columns. Basically, it stores
 // queries that are more complex than SimpleSelectStatement
-class JoinedSelectStatement<FirstT extends Table, FirstD>
+class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult>
     implements BaseSelectStatement {
   /// Used internally by moor, users should use [SimpleSelectStatement.join]
   /// instead.
   JoinedSelectStatement(DatabaseConnectionUser database,
-      TableInfo<FirstT, FirstD> table, this._joins,
+      ResultSetImplementation<FirstT, FirstD> table, this._joins,
       [this.distinct = false, this._includeMainTableInResult = true])
       : super(database, table);
 
@@ -38,7 +38,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
   /// The tables this select statement reads from
   @visibleForOverriding
   @Deprecated('Use watchedTables on the generated context')
-  Set<TableInfo> get watchedTables => _queriedTables().toSet();
+  Set<ResultSetImplementation> get watchedTables => _queriedTables().toSet();
 
   @override
   int get _returnedColumnCount {
@@ -54,7 +54,8 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
   ///
   /// If [onlyResults] (defaults to false) is set, only tables that are included
   /// in the result set are returned.
-  Iterable<TableInfo> _queriedTables([bool onlyResults = false]) sync* {
+  Iterable<ResultSetImplementation> _queriedTables(
+      [bool onlyResults = false]) sync* {
     if (!onlyResults || _includeMainTableInResult) {
       yield table;
     }
@@ -210,7 +211,7 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
       } catch (e, s) {
         final foundTables = <String>{};
         for (final table in _queriedTables()) {
-          if (!foundTables.add(table.$tableName)) {
+          if (!foundTables.add(table.entityName)) {
             _warnAboutDuplicate(e, s, table);
           }
         }
@@ -223,14 +224,14 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
   List<TypedResult> _mapResponse(
       GenerationContext ctx, List<Map<String, Object?>> rows) {
     return rows.map((row) {
-      final readTables = <TableInfo, dynamic>{};
+      final readTables = <ResultSetImplementation, dynamic>{};
       final readColumns = <Expression, dynamic>{};
 
       for (final table in _queriedTables(true)) {
-        final prefix = '${table.$tableName}.';
+        final prefix = '${table.aliasedName}.';
         // if all columns of this table are null, skip the table
         if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
-          readTables[table] = table.map(row, tablePrefix: table.$tableName);
+          readTables[table] = table.map(row, tablePrefix: table.aliasedName);
         }
       }
 
@@ -247,10 +248,10 @@ class JoinedSelectStatement<FirstT extends Table, FirstD>
   }
 
   @alwaysThrows
-  void _warnAboutDuplicate(dynamic cause, StackTrace trace, TableInfo table) {
+  void _warnAboutDuplicate(
+      dynamic cause, StackTrace trace, ResultSetImplementation table) {
     throw MoorWrappedException(
-      message:
-          'This query contained the table ${table.actualTableName} more than '
+      message: 'This query contained the table ${table.entityName} more than '
           'once. Is this a typo? \n'
           'If you need a join that includes the same table more than once, you '
           'need to alias() at least one table. See https://moor.simonbinder.eu/queries/joins#aliases '

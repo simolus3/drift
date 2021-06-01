@@ -180,7 +180,7 @@ class QueryWriter {
 
   /// Returns code to load an instance of the [converter] at runtime.
   static String _converter(UsedTypeConverter converter) {
-    final infoName = converter.table.tableInfoName;
+    final infoName = converter.table.entityInfoName;
     final field = '$infoName.${converter.fieldName}';
 
     return field;
