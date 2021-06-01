@@ -150,8 +150,8 @@ class Users extends Table with TableInfo {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return UsersData.fromData(data, _db, prefix: effectivePrefix);
+    return UsersData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

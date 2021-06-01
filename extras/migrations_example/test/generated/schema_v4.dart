@@ -147,8 +147,8 @@ class Users extends Table with TableInfo {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return UsersData.fromData(data, _db, prefix: effectivePrefix);
+    return UsersData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -275,7 +275,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
     required String title,
     this.deleted = const Value.absent(),
     required int owner,
-  })   : title = Value(title),
+  })  : title = Value(title),
         owner = Value(owner);
   static Insertable<GroupsData> custom({
     Expression<int>? id,
@@ -375,8 +375,8 @@ class Groups extends Table with TableInfo {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   GroupsData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return GroupsData.fromData(data, _db, prefix: effectivePrefix);
+    return GroupsData.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
