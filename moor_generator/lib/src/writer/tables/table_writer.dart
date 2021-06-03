@@ -365,7 +365,8 @@ class TableWriter extends TableOrViewWriter {
 
       buffer
         ..write('@override\n')
-        ..write('List<String> get customConstraints => const [$value];\n');
+        ..write('List<String> get customConstraints => super.customConstraints'
+            ' + const [$value];\n');
     }
 
     if (table.overrideDontWriteConstraints != null) {

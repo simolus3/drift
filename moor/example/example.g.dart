@@ -470,6 +470,13 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   $RecipesTable createAlias(String alias) {
     return $RecipesTable(_db, alias);
   }
+
+  @override
+  List<String> get customConstraints =>
+      super.customConstraints +
+      const [
+        'FOREIGN KEY (category) REFERENCES categories(id) ON DELETE RESTRICT ON UPDATE CASCADE'
+      ];
 }
 
 class Ingredient extends DataClass implements Insertable<Ingredient> {

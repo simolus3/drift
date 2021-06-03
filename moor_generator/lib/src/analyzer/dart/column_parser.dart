@@ -28,6 +28,7 @@ const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
+const String _methodForeignKey = 'foreignKey';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -49,6 +50,22 @@ class ColumnParser {
   final MoorDartParser base;
 
   ColumnParser(this.base);
+
+  String _parseKeyAction(String enumValue) {
+    switch (enumValue) {
+      case 'noAction':
+        return 'NO ACTION';
+      case 'cascade':
+        return 'CASCADE';
+      case 'restrict':
+        return 'RESTRICT';
+      case 'setNull':
+        return 'SET NULL';
+      case 'setDefault':
+        return 'SET DEFAULT';
+    }
+    return '';
+  }
 
   MoorColumn parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
@@ -72,6 +89,10 @@ class ColumnParser {
     Expression clientDefaultExpression;
     Expression createdTypeConverter;
     DartType typeConverterRuntime;
+    DartType fkType;
+    String fkUpdateAction;
+    String fkDeleteAction;
+    String fkColumn = 'id';
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -164,6 +185,52 @@ class ColumnParser {
           createdTypeConverter = expression;
           typeConverterRuntime = type;
           break;
+        case _methodForeignKey:
+          fkType =
+              ((remainingExpr.argumentList.arguments[0] as SimpleIdentifier)
+                      .staticElement as ClassElement)
+                  .thisType;
+
+          final updateArg = remainingExpr.argumentList.arguments.firstWhere(
+              (arg) =>
+                  arg is NamedExpression &&
+                  arg.name.label.token.toString() == 'onUpdate',
+              orElse: () => null);
+
+          if (updateArg != null) {
+            fkUpdateAction = _parseKeyAction(((updateArg as NamedExpression)
+                    .expression as PrefixedIdentifier)
+                .identifier
+                .token
+                .toString());
+          }
+
+          final deleteArg = remainingExpr.argumentList.arguments.firstWhere(
+              (arg) =>
+                  arg is NamedExpression &&
+                  arg.name.label.token.toString() == 'onDelete',
+              orElse: () => null);
+
+          if (deleteArg != null) {
+            fkDeleteAction = _parseKeyAction(((deleteArg as NamedExpression)
+                    .expression as PrefixedIdentifier)
+                .identifier
+                .token
+                .toString());
+          }
+
+          final columnArg = remainingExpr.argumentList.arguments.firstWhere(
+              (arg) =>
+                  arg is NamedExpression &&
+                  arg.name.label.token.toString() == 'column',
+              orElse: () => null);
+
+          if (columnArg != null) {
+            fkColumn = ((columnArg as NamedExpression).expression
+                    as SimpleStringLiteral)
+                .value;
+          }
+          break;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -238,6 +305,10 @@ class ColumnParser {
       typeConverter: converter,
       declaration: DartColumnDeclaration(element, base.step.file),
       documentationComment: docString,
+      fkType: fkType,
+      fkUpdateAction: fkUpdateAction,
+      fkDeleteAction: fkDeleteAction,
+      fkColumn: fkColumn,
     );
   }
 

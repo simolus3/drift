@@ -1,4 +1,5 @@
 //@dart=2.9
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 
 import 'declarations/declaration.dart';
@@ -102,6 +103,18 @@ class MoorColumn implements HasDeclaration, HasType {
   /// Stored as a multi line string with leading triple-slashes `///` for every line
   final String documentationComment;
 
+  ///
+  final DartType fkType;
+
+  ///
+  final String fkUpdateAction;
+
+  ///
+  final String fkDeleteAction;
+
+  ///
+  final String fkColumn;
+
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
@@ -129,20 +142,23 @@ class MoorColumn implements HasDeclaration, HasType {
   @override
   bool get isArray => false;
 
-  MoorColumn({
-    this.type,
-    this.dartGetterName,
-    this.name,
-    this.overriddenJsonName,
-    this.customConstraints,
-    this.nullable = false,
-    this.features = const [],
-    this.defaultArgument,
-    this.clientDefaultCode,
-    this.typeConverter,
-    this.declaration,
-    this.documentationComment,
-  });
+  MoorColumn(
+      {this.type,
+      this.dartGetterName,
+      this.name,
+      this.overriddenJsonName,
+      this.customConstraints,
+      this.nullable = false,
+      this.features = const [],
+      this.defaultArgument,
+      this.clientDefaultCode,
+      this.typeConverter,
+      this.declaration,
+      this.documentationComment,
+      this.fkType,
+      this.fkUpdateAction,
+      this.fkDeleteAction,
+      this.fkColumn});
 }
 
 abstract class ColumnFeature {

@@ -27,6 +27,9 @@ abstract class BlobColumn extends Column<Uint8List?> {}
 /// A column that stores floating point numeric values.
 abstract class RealColumn extends Column<double?> {}
 
+///
+enum KeyAction { noAction, cascade, restrict, setNull, setDefault }
+
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, moor_generator will take a look at your
@@ -164,6 +167,15 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
   /// The generated row class will then use a `MyFancyClass` instead of a
   /// `String`, which would usually be used for [Table.text] columns.
   Builder map<T>(TypeConverter<T, ResultDartType> converter) => _isGenerated();
+
+  ///
+  Builder foreignKey(
+    Type references, {
+    KeyAction onUpdate = KeyAction.noAction,
+    KeyAction onDelete = KeyAction.noAction,
+    String column = 'id',
+  }) =>
+      _isGenerated();
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, moor_generator will take a look at your

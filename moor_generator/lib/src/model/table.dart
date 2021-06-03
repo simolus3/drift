@@ -105,7 +105,7 @@ class MoorTable implements MoorEntityWithResultSet {
 
   /// When non-null, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
-  final List<String> overrideTableConstraints;
+  List<String> overrideTableConstraints;
 
   @override
   final Set<MoorTable> references = {};

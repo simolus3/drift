@@ -33,6 +33,37 @@ class UseMoorParser {
 
     final parsedTables = await step.parseTables(tableTypes, element);
 
+    for (final table in parsedTables) {
+      final fkColumns = table.columns
+          .where((col) => col.fkType != null)
+          .toList(growable: false);
+
+      for (final col in fkColumns) {
+        final referencedTable = parsedTables.firstWhere(
+            (table) => table.fromClass.thisType == col.fkType,
+            orElse: () => null);
+
+        if (referencedTable != null) {
+          table.overrideTableConstraints ??= [];
+
+          var onUpdate = '';
+          var onDelete = '';
+
+          if (col.fkUpdateAction != null) {
+            onUpdate = ' ON UPDATE ${col.fkUpdateAction}';
+          }
+
+          if (col.fkDeleteAction != null) {
+            onDelete = ' ON DELETE ${col.fkDeleteAction}';
+          }
+
+          table.overrideTableConstraints.add('FOREIGN KEY (${col.name.name}) '
+              'REFERENCES ${referencedTable.sqlName}(${col.fkColumn})'
+              '$onDelete$onUpdate');
+        }
+      }
+    }
+
     final parsedQueries = step.readDeclaredQueries(queryStrings);
     final daoTypes = _readDaoTypes(annotation);
 

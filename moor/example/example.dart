@@ -14,7 +14,12 @@ class Recipes extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(max: 16)();
   TextColumn get instructions => text()();
-  IntColumn get category => integer().nullable()();
+
+  IntColumn get category => integer().nullable().foreignKey(
+        Categories,
+        onDelete: KeyAction.restrict,
+        onUpdate: KeyAction.cascade,
+      )();
 }
 
 class Ingredients extends Table {
