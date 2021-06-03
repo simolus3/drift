@@ -32,7 +32,7 @@ class ViewAnalyzer extends BaseAnalyzer {
           MoorColumn(
             type: mapper.resolvedToMoor(column.type),
             name: ColumnName.explicitly(column.name),
-            nullable: column.type.nullable,
+            nullable: column.type?.nullable == true,
             dartGetterName: ReCase(column.name).camelCase,
           )
       ];
