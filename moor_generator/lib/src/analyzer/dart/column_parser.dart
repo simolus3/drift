@@ -226,9 +226,10 @@ class ColumnParser {
               orElse: () => null);
 
           if (columnArg != null) {
-            fkColumn = ((columnArg as NamedExpression).expression
-                    as SimpleStringLiteral)
-                .value;
+            fkColumn =
+                ((columnArg as NamedExpression).expression as SymbolLiteral)
+                    .components[0]
+                    .toString();
           }
           break;
       }

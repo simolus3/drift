@@ -15,8 +15,9 @@ class Recipes extends Table {
   TextColumn get title => text().withLength(max: 16)();
   TextColumn get instructions => text()();
 
-  IntColumn get category => integer().nullable().foreignKey(
+  IntColumn get category => integer().nullable().references(
         Categories,
+        #id,
         onDelete: KeyAction.restrict,
         onUpdate: KeyAction.cascade,
       )();

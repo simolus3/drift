@@ -169,11 +169,11 @@ class ColumnBuilder<Builder, ResultColumn extends Column<ResultDartType>,
   Builder map<T>(TypeConverter<T, ResultDartType> converter) => _isGenerated();
 
   ///
-  Builder foreignKey(
-    Type references, {
+  Builder references(
+    Type table,
+    Symbol column, {
     KeyAction onUpdate = KeyAction.noAction,
     KeyAction onDelete = KeyAction.noAction,
-    String column = 'id',
   }) =>
       _isGenerated();
 
