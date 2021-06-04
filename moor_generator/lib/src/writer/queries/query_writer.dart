@@ -362,6 +362,7 @@ class QueryWriter {
               if (i != 0) buffer.write(', ');
 
               buffer..write(arg.argumentType)..write(' ')..write('_' * (i + 1));
+              i++;
             }
             buffer..write(') => ')..write(defaultCode)..write(';');
 

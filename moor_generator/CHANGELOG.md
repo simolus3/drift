@@ -1,3 +1,9 @@
+## 4.4.0
+
+- Support the `scoped_dart_components` build option
+- Improve nullability analysis for SQL result sets
+- Generate data classes for views
+
 ## 4.3.2
 
 - Support the latest analyzer version

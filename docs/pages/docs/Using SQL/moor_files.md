@@ -294,6 +294,17 @@ Future<List<Route>> routesByStart(int startPointId) {
   return findRoutes(start.id.equals(startPointId));
 }
 ```
+
+Since moor 4.4, you can enable the `scoped_dart_components` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }})
+and let the generator help you here.
+When the option is enabled, moor would generate a `Expression<bool> Function(Routes r, Points start, Points end)` as a parameter, which
+makes this a lot easier:
+
+```dart
+Future<List<Route>> routesByStart(int startPointId) {
+  return findRoutes((r, start, end) => start.id.equals(startPointId));
+}
+```
 {% endblock %}
 
 ### Type converters
