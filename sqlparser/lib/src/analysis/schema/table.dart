@@ -79,11 +79,14 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   }
 }
 
-class TableAlias implements ResultSet, HumanReadable {
+class TableAlias extends NamedResultSet implements HumanReadable {
   final ResultSet delegate;
   final String alias;
 
   TableAlias(this.delegate, this.alias);
+
+  @override
+  String get name => alias;
 
   @override
   List<Column> get resolvedColumns => delegate.resolvedColumns!;

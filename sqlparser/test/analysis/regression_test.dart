@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'data.dart';
+
 void main() {
   test('regression test for #917', () {
     // Test for https://github.com/simolus3/moor/issues/917
@@ -111,11 +113,4 @@ void main() {
     expect(columns.map((e) => result.typeOf(e).nullable),
         [false, false, true, true]);
   });
-}
-
-extension on SqlEngine {
-  void registerTableFromSql(String createTable) {
-    final stmt = parse(createTable).rootNode as CreateTableStatement;
-    registerTable(schemaReader.read(stmt));
-  }
 }
