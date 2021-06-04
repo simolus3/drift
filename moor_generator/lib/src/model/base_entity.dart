@@ -36,4 +36,9 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   /// The name of the Dart class storing additional properties like type
   /// converters.
   String get entityInfoName;
+
+  /// The name of the Dart class storing the right column getters for this type.
+  ///
+  /// This class is equal to, or a superclass of, [entityInfoName].
+  String get dslName => entityInfoName;
 }

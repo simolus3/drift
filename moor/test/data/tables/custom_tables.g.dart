@@ -1650,11 +1650,11 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readMultiple(List<String> var1,
-      {OrderBy clause = const OrderBy.nothing()}) {
+      {OrderBy Function(ConfigTable config) clause = _$moor$default$0}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    final generatedclause = $write(clause);
+    final generatedclause = $write(clause(this.config));
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
@@ -1668,17 +1668,18 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readDynamic(
-      {Expression<bool> predicate = const CustomExpression('(TRUE)')}) {
-    final generatedpredicate = $write(predicate);
+      {Expression<bool> Function(ConfigTable config) predicate =
+          _$moor$default$1}) {
+    final generatedpredicate = $write(predicate(this.config));
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
         readsFrom: {config}).map(config.mapFromRow);
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {Expression<bool> pred = const CustomExpression('(TRUE)')}) {
+      {Expression<bool> Function(ConfigTable config) pred = _$moor$default$2}) {
     var $arrayStartIndex = 2;
-    final generatedpred = $write(pred);
+    final generatedpred = $write(pred(this.config));
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
@@ -1721,8 +1722,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<MultipleResult> multiple({required Expression<bool> predicate}) {
-    final generatedpredicate = $write(predicate, hasMultipleTables: true);
+  Selectable<MultipleResult> multiple(
+      {required Expression<bool> Function(WithDefaults d, WithConstraints c)
+          predicate}) {
+    final generatedpredicate = $write(
+        predicate(
+            alias(this.withDefaults, 'd'), alias(this.withConstraints, 'c')),
+        hasMultipleTables: true);
     return customSelect(
         'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [...generatedpredicate.introducedVariables],
@@ -1743,8 +1749,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {email}).map(email.mapFromRow);
   }
 
-  Selectable<ReadRowIdResult> readRowId({required Expression<int> expr}) {
-    final generatedexpr = $write(expr);
+  Selectable<ReadRowIdResult> readRowId(
+      {required Expression<int> Function(ConfigTable config) expr}) {
+    final generatedexpr = $write(expr(this.config));
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [...generatedexpr.introducedVariables],
@@ -1836,6 +1843,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ],
       );
 }
+
+OrderBy _$moor$default$0(ConfigTable _) => const OrderBy.nothing();
+Expression<bool> _$moor$default$1(ConfigTable _) =>
+    const CustomExpression('(TRUE)');
+Expression<bool> _$moor$default$2(ConfigTable _) =>
+    const CustomExpression('(TRUE)');
 
 class JsonResult extends CustomResultSet {
   final String key;

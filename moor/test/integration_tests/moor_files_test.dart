@@ -103,7 +103,8 @@ void main() {
 
   test('runs queries with arrays and Dart templates', () async {
     await db.readMultiple(['a', 'b'],
-        clause: OrderBy([OrderingTerm(expression: db.config.configKey)])).get();
+        clause: (config) =>
+            OrderBy([OrderingTerm(expression: config.configKey)])).get();
 
     verify(mock.runSelect(
       'SELECT * FROM config WHERE config_key IN (?1, ?2) '
@@ -118,7 +119,7 @@ void main() {
         .thenAnswer((_) => Future.value([mockResponse]));
 
     final parsed = await db
-        .readDynamic(predicate: db.config.configKey.equals('key'))
+        .readDynamic(predicate: (config) => config.configKey.equals('key'))
         .getSingle();
 
     verify(
@@ -133,9 +134,9 @@ void main() {
   });
 
   test('columns use table names in queries with multiple tables', () async {
-    await db.multiple(predicate: db.withDefaults.a.equals('foo')).get();
+    await db.multiple(predicate: (d, c) => d.a.equals('foo')).get();
 
-    verify(mock.runSelect(argThat(contains('with_defaults.a')), any));
+    verify(mock.runSelect(argThat(contains('d.a = ?')), any));
   });
 
   test('order by-params are ignored by default', () async {
@@ -156,8 +157,9 @@ void main() {
       return Future.value([row]);
     });
 
-    final result =
-        await db.multiple(predicate: const Constant(true)).getSingle();
+    final result = await db
+        .multiple(predicate: (_, __) => const Constant(true))
+        .getSingle();
 
     expect(
       result,
@@ -183,8 +185,9 @@ void main() {
       return Future.value([row]);
     });
 
-    final result =
-        await db.multiple(predicate: const Constant(true)).getSingle();
+    final result = await db
+        .multiple(predicate: (_, __) => const Constant(true))
+        .getSingle();
 
     expect(
       result,

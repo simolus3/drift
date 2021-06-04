@@ -281,6 +281,22 @@ class QueryWriter {
   void _writeParameters() {
     final namedElements = <FoundElement>[];
 
+    String typeFor(FoundElement element) {
+      var type = element.dartTypeCode(scope.generationOptions);
+
+      if (element is FoundDartPlaceholder &&
+          element.writeAsScopedFunction(options)) {
+        // Generate a function providing result sets that are in scope as args
+
+        final args = element.availableResultSets
+            .map((e) => '${e.argumentType} ${e.name}')
+            .join(', ');
+        type = '$type Function($args)';
+      }
+
+      return type;
+    }
+
     var needsComma = false;
     for (final element in query.elements) {
       // Placeholders with a default value generate optional (and thus, named)
@@ -294,7 +310,7 @@ class QueryWriter {
       } else {
         if (needsComma) _buffer.write(', ');
 
-        final type = element.dartTypeCode(scope.generationOptions);
+        final type = typeFor(element);
         _buffer.write('$type ${element.dartParameterName}');
         needsComma = true;
       }
@@ -325,9 +341,37 @@ class QueryWriter {
               kind.kind == SimpleDartPlaceholderKind.orderBy) {
             defaultCode = 'const OrderBy.nothing()';
           }
+
+          // If the parameter is converted to a scoped function, we also need to
+          // generate a scoped function as a default value. Since defaults have
+          // to be constants, we generate a top-level function which is then
+          // used as a tear-off.
+          if (optional.writeAsScopedFunction(options) && defaultCode != null) {
+            final root = scope.root;
+            final counter = root.counter++;
+            // ignore: prefer_interpolation_to_compose_strings
+            final functionName = r'_$moor$default$' + counter.toString();
+
+            final buffer = root.leaf()
+              ..write(optional.dartTypeCode(scope.generationOptions))
+              ..write(' ')
+              ..write(functionName)
+              ..write('(');
+            var i = 0;
+            for (final arg in optional.availableResultSets) {
+              if (i != 0) buffer.write(', ');
+
+              buffer..write(arg.argumentType)..write(' ')..write('_' * (i + 1));
+            }
+            buffer..write(') => ')..write(defaultCode)..write(';');
+
+            // With the function being written, the default code is just a tear-
+            // off of that function
+            defaultCode = functionName;
+          }
         }
 
-        final type = optional.dartTypeCode(scope.generationOptions);
+        final type = typeFor(optional);
 
         // No default value, this element is required if it's not nullable
         var isMarkedAsRequired = false;
@@ -436,6 +480,26 @@ class QueryWriter {
       } else if (element is FoundDartPlaceholder) {
         _writeIndexCounterIfNeeded();
 
+        String useExpression() {
+          if (element.writeAsScopedFunction(scope.options)) {
+            // The parameter is a function type that needs to be evaluated first
+            final args = element.availableResultSets.map((e) {
+              final table = 'this.${e.entity.dbGetterName}';
+              final needsAlias = e.name != e.entity.displayName;
+
+              if (needsAlias) {
+                return 'alias($table, ${asDartLiteral(e.name)})';
+              } else {
+                return table;
+              }
+            }).join(', ');
+            return '${element.dartParameterName}($args)';
+          } else {
+            // We can just use the parameter directly
+            return element.dartParameterName;
+          }
+        }
+
         _buffer
           ..write('final ')
           ..write(placeholderContextName(element))
@@ -449,10 +513,10 @@ class QueryWriter {
             ..write(r'$writeInsertable(this.')
             ..write(table?.dbGetterName)
             ..write(', ')
-            ..write(element.dartParameterName)
+            ..write(useExpression())
             ..write(');\n');
         } else {
-          _buffer..write(r'$write(')..write(element.dartParameterName);
+          _buffer..write(r'$write(')..write(useExpression());
           if (query.hasMultipleTables) {
             _buffer.write(', hasMultipleTables: true');
           }

@@ -88,7 +88,7 @@ CREATE TABLE routes (
 );
 
 allRoutes: SELECT routes.*, "from".**, "to".**
-FROM routes r
+FROM routes
   INNER JOIN points "from" ON "from".id = routes.from
   INNER JOIN points "to" ON "to".id = routes."to";
       ''',

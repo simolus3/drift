@@ -41,6 +41,9 @@ class MoorTable implements MoorEntityWithResultSet {
 
   String get _baseName => _overriddenName ?? fromClass.name;
 
+  @override
+  String get dslName => fromClass?.name ?? entityInfoName;
+
   /// The columns declared in this table.
   @override
   final List<MoorColumn> columns;
