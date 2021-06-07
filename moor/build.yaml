@@ -13,6 +13,7 @@ targets:
           generate_values_in_copy_with: true
           named_parameters: true
           new_sql_code_generation: true
+          scoped_dart_components: true
           sqlite:
             version: "3.35"
             modules:

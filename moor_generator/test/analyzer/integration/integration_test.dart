@@ -96,10 +96,23 @@ class ProgrammingLanguages extends Table {
     expect(importQuery.declaredInMoorFile, isFalse);
     expect(importQuery.hasMultipleTables, isFalse);
     expect(
-        importQuery.placeholders,
-        contains(equals(FoundDartPlaceholder(
+      importQuery.placeholders,
+      contains(
+        equals(
+          FoundDartPlaceholder(
             SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
-            'o'))));
+            'o',
+            [
+              AvailableMoorResultSet(
+                'programming_languages',
+                database.tables
+                    .firstWhere((e) => e.sqlName == 'programming_languages'),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
 
     final librariesQuery = database.queries
         .singleWhere((q) => q.name == 'findLibraries') as SqlSelectQuery;

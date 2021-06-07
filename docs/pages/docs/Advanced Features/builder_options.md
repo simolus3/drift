@@ -8,9 +8,13 @@ aliases:
  - "options/"
 ---
 
-The `moor_generator` package has some options that control how the 
-code is generated. Note that, in most cases, the default settings
-should be sufficient. See the section on recommended settings below.
+The `moor_generator` package supports a range of options that control how code
+is generated.
+In most cases, the default settings should be sufficient. But if you want to
+try out new features faster or configure how moor-generated code looks like,
+you can use the available options listed below.
+You can also see the section on [recommended options](#recommended-options) for
+advice on which options to use.
 
 To use the options, create a `build.yaml` file in the root of your project (e.g. next
 to your `pubspec.yaml`):
@@ -76,6 +80,9 @@ At the moment, moor supports these options:
 * `new_sql_code_generation`: Generates SQL statements from the parsed AST instead of replacing substrings. This will also remove
   unecessary whitespace and comments. 
   If enabling this option breaks your queries, please file an issue!
+* `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/moor_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
+  The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
+  Dart placeholders.
 
 ## Assumed sqlite environment
 
@@ -140,6 +147,7 @@ At the moment, they're opt-in to not break existing users. These options are:
 - `apply_converters_on_variables`
 - `generate_values_in_copy_with`
 - `new_sql_code_generation`
+- `scoped_dart_components`
 
 We recommend enabling these options.
 

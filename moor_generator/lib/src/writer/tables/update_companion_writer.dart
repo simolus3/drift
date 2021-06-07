@@ -175,7 +175,7 @@ class UpdateCompanionWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        final fieldName = '${table.entityInfoName}.${converter.fieldName}';
         _buffer
           ..write('final converter = $fieldName;\n')
           ..write(mapSetter)

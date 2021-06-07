@@ -9,7 +9,7 @@ class GenerationContext {
   bool hasMultipleTables = false;
 
   /// All tables that the generated query reads from.
-  final List<TableInfo> watchedTables = [];
+  final List<ResultSetImplementation> watchedTables = [];
 
   /// The [SqlTypeSystem] to use when mapping variables to values that the
   /// underlying database understands.

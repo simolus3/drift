@@ -74,7 +74,9 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitList(e.targetColumns, const NoTypeExpectation());
 
     final targets = e.resolvedTargetColumns ?? const [];
-    targets.forEach(_handleColumn);
+    for (final column in targets) {
+      _handleColumn(column, e);
+    }
 
     final expectations = targets.map((r) {
       if (session.graph.knowsType(r)) {
@@ -427,9 +429,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final resolved = e.resolvedColumn;
     if (resolved == null) return;
 
-    _handleColumn(resolved);
-    final isNullable = JoinModel.of(e)?.referenceIsNullable(e) ?? false;
-    _lazyCopy(e, resolved, makeNullable: isNullable);
+    _handleColumn(resolved, e);
+    _lazyCopy(e, resolved);
   }
 
   @override
@@ -611,7 +612,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     visitExcept(e, e.where, arg);
   }
 
-  void _handleColumn(Column? column) {
+  void _handleColumn(Column? column, [AstNode? context]) {
     if (session.graph.knowsType(column) || _handledColumns.contains(column)) {
       return;
     }
@@ -628,7 +629,17 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       session._addRelation(CopyEncapsulating(column, column.expressions));
     } else if (column is DelegatedColumn && column.innerColumn != null) {
       _handleColumn(column.innerColumn);
-      _lazyCopy(column, column.innerColumn);
+
+      if (column is AvailableColumn) {
+        // The nullability depends on whether the column was introduced in an
+        // outer join.
+        final model = context != null ? JoinModel.of(context) : null;
+        final isNullable =
+            model == null || model.availableColumnIsNullable(column);
+        _lazyCopy(column, column.innerColumn, makeNullable: isNullable);
+      } else {
+        _lazyCopy(column, column.innerColumn);
+      }
     }
   }
 
@@ -667,7 +678,9 @@ class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitBaseSelectStatement(BaseSelectStatement stmt, void arg) {
     if (stmt.resolvedColumns != null) {
-      stmt.resolvedColumns!.forEach(resolver._handleColumn);
+      for (final column in stmt.resolvedColumns!) {
+        resolver._handleColumn(column, stmt);
+      }
     }
 
     visitChildren(stmt, arg);

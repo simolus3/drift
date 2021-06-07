@@ -136,16 +136,17 @@ abstract class TableUpdateQuery {
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
-  factory TableUpdateQuery.onTable(TableInfo table,
+  factory TableUpdateQuery.onTable(ResultSetImplementation table,
       {UpdateKind? limitUpdateKind}) {
     return TableUpdateQuery.onTableName(
-      table.actualTableName,
+      table.entityName,
       limitUpdateKind: limitUpdateKind,
     );
   }
 
   /// A query that listens for any change on any table in [tables].
-  factory TableUpdateQuery.onAllTables(Iterable<TableInfo> tables) {
+  factory TableUpdateQuery.onAllTables(
+      Iterable<ResultSetImplementation> tables) {
     return TableUpdateQuery.allOf(
       [for (final table in tables) TableUpdateQuery.onTable(table)],
     );

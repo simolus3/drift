@@ -22,12 +22,12 @@ const Map<_JoinType, String> _joinKeywords = {
 ///
 /// You should use [innerJoin], [leftOuterJoin] or [crossJoin] to obtain a
 /// [Join] instance.
-class Join<T extends Table, D> extends Component {
+class Join<T extends HasResultSet, D> extends Component {
   /// The [_JoinType] of this join.
   final _JoinType type;
 
   /// The [TableInfo] that will be added to the query
-  final TableInfo<T, D> table;
+  final ResultSetImplementation<T, D> table;
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
@@ -70,7 +70,8 @@ class Join<T extends Table, D> extends Component {
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin<T extends Table, D>(TableInfo<T, D> other, Expression<bool?> on,
+Join innerJoin<T extends HasResultSet, D>(
+    ResultSetImplementation<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
@@ -83,8 +84,8 @@ Join innerJoin<T extends Table, D>(TableInfo<T, D> other, Expression<bool?> on,
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin<T extends Table, D>(
-    TableInfo<T, D> other, Expression<bool?> on,
+Join leftOuterJoin<T extends HasResultSet, D>(
+    ResultSetImplementation<T, D> other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
@@ -97,6 +98,7 @@ Join leftOuterJoin<T extends Table, D>(
 /// See also:
 ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin<T, D>(TableInfo other, {bool? useColumns}) {
+Join crossJoin<T extends HasResultSet, D>(ResultSetImplementation<T, D> other,
+    {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }

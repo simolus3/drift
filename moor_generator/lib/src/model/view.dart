@@ -2,6 +2,8 @@
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/utils/names.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import 'base_entity.dart';
@@ -9,7 +11,7 @@ import 'declarations/declaration.dart';
 import 'model.dart';
 
 /// A parsed view
-class MoorView extends MoorSchemaEntity {
+class MoorView extends MoorEntityWithResultSet {
   @override
   final MoorViewDeclaration declaration;
 
@@ -24,9 +26,20 @@ class MoorView extends MoorSchemaEntity {
   @override
   List<MoorSchemaEntity> references = [];
 
+  @override
+  List<MoorColumn> columns;
+
+  @override
+  final String dartTypeName;
+
+  @override
+  final String entityInfoName;
+
   MoorView({
     this.declaration,
     this.name,
+    this.dartTypeName,
+    this.entityInfoName,
   });
 
   /// Obtains all tables transitively referenced by the declaration of this
@@ -45,9 +58,14 @@ class MoorView extends MoorSchemaEntity {
   }
 
   factory MoorView.fromMoor(CreateViewStatement stmt, FoundFile file) {
+    final entityInfoName = ReCase(stmt.viewName).pascalCase;
+    final dataClassName = dataClassNameForClassName(entityInfoName);
+
     return MoorView(
       declaration: MoorViewDeclaration(stmt, file),
       name: stmt.viewName,
+      dartTypeName: dataClassName,
+      entityInfoName: entityInfoName,
     );
   }
 

@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'data.dart';
+
 void main() {
   test('regression test for #917', () {
     // Test for https://github.com/simolus3/moor/issues/917
@@ -80,11 +82,35 @@ void main() {
     expect(columns.map((e) => result.typeOf(e).nullable),
         [false, false, true, true]);
   });
-}
 
-extension on SqlEngine {
-  void registerTableFromSql(String createTable) {
-    final stmt = parse(createTable).rootNode as CreateTableStatement;
-    registerTable(schemaReader.read(stmt));
-  }
+  test('regression test for #1234', () {
+    // https://github.com/simolus3/moor/issues/1234#issuecomment-853270925
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+      ..registerTableFromSql('''
+        CREATE TABLE inboxes (
+          id TEXT PRIMARY KEY NOT NULL,
+          group_id TEXT NOT NULL
+        );
+      ''')
+      ..registerTableFromSql('''
+        CREATE TABLE assignable_users (
+          user_id TEXT NOT NULL,
+          inbox_id TEXT NOT NULL
+        );
+      ''');
+
+    final result = engine.analyze('''
+      SELECT * FROM inboxes as i
+        LEFT JOIN assignable_users as au ON au.inbox_id = i.id
+      WHERE group_id = :group_id;
+    ''');
+
+    final select = result.root as SelectStatement;
+    final columns = select.resolvedColumns!;
+
+    expect(
+        columns.map((e) => e.name), ['id', 'group_id', 'user_id', 'inbox_id']);
+    expect(columns.map((e) => result.typeOf(e).nullable),
+        [false, false, true, true]);
+  });
 }

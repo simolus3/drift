@@ -54,10 +54,16 @@ class JoinModel {
     return created;
   }
 
+  /// Computes whether the element the [reference] is pointing to is nullable
+  /// from the perspective of this join model.
+  ///
+  /// This does not include the computed nullability of what the reference is
+  /// referring to, just whether the reference points to a table that may not
+  /// be present because it comes from an outer join.
   bool? referenceIsNullable(Reference reference) {
     final resolved = reference.resolvedColumn;
     if (resolved is AvailableColumn) {
-      return !nonNullable.contains(resolved.source);
+      return availableColumnIsNullable(resolved);
     }
 
     final resultSet = reference.resultEntity;
@@ -65,6 +71,12 @@ class JoinModel {
     if (resultSet == null) return null;
 
     return !nonNullable.contains(resultSet);
+  }
+
+  /// Returns whether an [AvailableColumn] is nullable from the perspective of
+  /// this join model by checking whether it comes from an outer join.
+  bool availableColumnIsNullable(AvailableColumn column) {
+    return !nonNullable.contains(column.source);
   }
 
   /// Checks whether the result set is nullable in the surrounding select

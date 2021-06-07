@@ -2,6 +2,7 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
+import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/model/base_entity.dart';
 import 'package:moor_generator/src/utils/hash.dart';
@@ -599,9 +600,40 @@ class InsertableDartPlaceholderType extends DartPlaceholderType {
   }
 }
 
-/// A Dart placeholder that will be bound at runtime.
+/// A Dart placeholder that will be bound to a dynamically-generated SQL node
+/// at runtime.
+///
+/// Moor supports injecting expressions, order by terms and clauses and limit
+/// clauses as placeholders. For insert statements, companions can be used
+/// as a Dart placeholder too.
 class FoundDartPlaceholder extends FoundElement {
   final DartPlaceholderType type;
+
+  /// All result sets that are available for this Dart placeholder.
+  ///
+  /// When queries are operating on multiple tables, especially if some of those
+  /// tables have aliases, it may be hard to reflect the name of those tables
+  /// at runtime.
+  /// For instance, consider this query:
+  ///
+  /// ```sql
+  ///  myQuery: SELECT a.**, b.** FROM users a
+  ///    INNER JOIN friends f ON f.a_id = a.id
+  ///    INNER JOIN users b ON b.id = f.b_id
+  ///  WHERE $expression;
+  /// ```
+  ///
+  /// Here `$expression` is a Dart-defined expression evaluating to an sql
+  /// boolean.
+  /// Moor uses to add a `Expression<bool>` parameter to the generated query
+  /// method. Unfortunately, this puts the burden of picking the right table
+  /// name on the user. For instance, they may have to use
+  /// `alias('a', users).someColumn` to avoid getting an runtime exception.
+  /// With a new build option, moor instead generates a
+  /// `Expression<bool> Function(Users a, Users b, Friends f)` function as a
+  /// parameter. This allows users to access the right aliases right away,
+  /// reducing potential for misuse.
+  final List<AvailableMoorResultSet> availableResultSets;
 
   @override
   final String name;
@@ -611,25 +643,66 @@ class FoundDartPlaceholder extends FoundElement {
       type is ExpressionDartPlaceholderType &&
       (type as ExpressionDartPlaceholderType).defaultValue != null;
 
-  FoundDartPlaceholder(this.type, this.name);
+  FoundDartPlaceholder(this.type, this.name, this.availableResultSets);
 
   @override
   String get dartParameterName => name;
 
   @override
-  int get hashCode => hashAll([type, name]);
+  int get hashCode => hashAll([type, name, ...availableResultSets]);
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         other is FoundDartPlaceholder &&
             other.type == type &&
-            other.name == name;
+            other.name == name &&
+            const ListEquality()
+                .equals(other.availableResultSets, availableResultSets);
   }
 
   @override
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     return type.parameterTypeCode(options);
+  }
+
+  /// Whether we should write this parameter as a function having available
+  /// result sets as parameters.
+  bool writeAsScopedFunction(MoorOptions options) {
+    return options.scopedDartComponents &&
+        availableResultSets.isNotEmpty &&
+        // Don't generate scoped functions for insertables, where the Dart type
+        // already defines which fields are available
+        type is! InsertableDartPlaceholderType;
+  }
+}
+
+/// A table or view that is available in the position of a
+/// [FoundDartPlaceholder].
+///
+/// For more information, see [FoundDartPlaceholder.availableResultSets].
+class AvailableMoorResultSet {
+  /// The (potentially aliased) name of this result set.
+  final String name;
+
+  /// The table or view that is available.
+  final MoorEntityWithResultSet entity;
+
+  final ResultSetAvailableInStatement source;
+
+  AvailableMoorResultSet(this.name, this.entity, [this.source]);
+
+  /// The argument type of this result set when used in a scoped function.
+  String get argumentType => entity.dslName;
+
+  @override
+  int get hashCode => hashAll([name, entity]);
+
+  @override
+  bool operator ==(Object other) {
+    return other is AvailableMoorResultSet &&
+        other.name == name &&
+        other.entity == entity;
   }
 }
 

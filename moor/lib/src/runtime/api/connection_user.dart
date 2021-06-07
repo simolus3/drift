@@ -161,7 +161,8 @@ abstract class DatabaseConnectionUser {
   ///
   /// For more information on queries, see the
   /// [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/).
-  SimpleSelectStatement<T, R> select<T extends Table, R>(TableInfo<T, R> table,
+  SimpleSelectStatement<T, R> select<T extends HasResultSet, R>(
+      ResultSetImplementation<T, R> table,
       {bool distinct = false}) {
     return SimpleSelectStatement<T, R>(_resolvedEngine, table,
         distinct: distinct);
@@ -197,8 +198,8 @@ abstract class DatabaseConnectionUser {
   /// See also:
   ///  - the documentation on [aggregate expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://moor.simonbinder.eu/docs/advanced-features/joins/#group-by)
-  JoinedSelectStatement<T, R> selectOnly<T extends Table, R>(
-    TableInfo<T, R> table, {
+  JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
+    ResultSetImplementation<T, R> table, {
     bool distinct = false,
   }) {
     return JoinedSelectStatement<T, R>(

@@ -158,4 +158,28 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
         isA<ParsingError>()
             .having((e) => e.token.lexeme, 'token.lexeme', 'WHERE'));
   });
+
+  test('parses REQUIRED without type hint', () {
+    final variable = ColonVariableToken(fakeSpan(':category'), ':category');
+    testMoorFile(
+      'test(REQUIRED :category): SELECT :category;',
+      MoorFile([
+        DeclaredStatement(
+          SimpleName('test'),
+          SelectStatement(columns: [
+            ExpressionResultColumn(
+              expression: ColonNamedVariable(variable),
+            ),
+          ]),
+          parameters: [
+            VariableTypeHint(
+              ColonNamedVariable(variable),
+              null,
+              isRequired: true,
+            ),
+          ],
+        ),
+      ]),
+    );
+  });
 }

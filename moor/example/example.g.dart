@@ -146,7 +146,7 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -157,7 +157,7 @@ class $CategoriesTable extends Categories
   GeneratedTextColumn _constructDescription() {
     return GeneratedTextColumn(
       'description',
-      $tableName,
+      aliasedName,
       true,
     );
   }
@@ -165,11 +165,9 @@ class $CategoriesTable extends Categories
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
-  $CategoriesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'categories';
   @override
-  String get $tableName => _alias ?? 'categories';
-  @override
-  final String actualTableName = 'categories';
+  String get actualTableName => 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -391,7 +389,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -399,7 +397,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, false, maxTextLength: 16);
+    return GeneratedTextColumn('title', aliasedName, false, maxTextLength: 16);
   }
 
   final VerificationMeta _instructionsMeta =
@@ -409,7 +407,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   GeneratedTextColumn _constructInstructions() {
     return GeneratedTextColumn(
       'instructions',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -420,7 +418,7 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   GeneratedIntColumn _constructCategory() {
     return GeneratedIntColumn(
       'category',
-      $tableName,
+      aliasedName,
       true,
     );
   }
@@ -428,11 +426,9 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   @override
   List<GeneratedColumn> get $columns => [id, title, instructions, category];
   @override
-  $RecipesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'recipes';
   @override
-  String get $tableName => _alias ?? 'recipes';
-  @override
-  final String actualTableName = 'recipes';
+  String get actualTableName => 'recipes';
   @override
   VerificationContext validateIntegrity(Insertable<Recipe> instance,
       {bool isInserting = false}) {
@@ -634,7 +630,7 @@ class $IngredientsTable extends Ingredients
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -644,7 +640,7 @@ class $IngredientsTable extends Ingredients
   GeneratedTextColumn _constructName() {
     return GeneratedTextColumn(
       'name',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -656,7 +652,7 @@ class $IngredientsTable extends Ingredients
   GeneratedIntColumn _constructCaloriesPer100g() {
     return GeneratedIntColumn(
       'calories',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -664,11 +660,9 @@ class $IngredientsTable extends Ingredients
   @override
   List<GeneratedColumn> get $columns => [id, name, caloriesPer100g];
   @override
-  $IngredientsTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'ingredients';
   @override
-  String get $tableName => _alias ?? 'ingredients';
-  @override
-  final String actualTableName = 'ingredients';
+  String get actualTableName => 'ingredients';
   @override
   VerificationContext validateIntegrity(Insertable<Ingredient> instance,
       {bool isInserting = false}) {
@@ -874,7 +868,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   GeneratedIntColumn _constructRecipe() {
     return GeneratedIntColumn(
       'recipe',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -885,7 +879,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   GeneratedIntColumn _constructIngredient() {
     return GeneratedIntColumn(
       'ingredient',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -897,7 +891,7 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   GeneratedIntColumn _constructAmountInGrams() {
     return GeneratedIntColumn(
       'amount',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -905,11 +899,9 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   @override
   List<GeneratedColumn> get $columns => [recipe, ingredient, amountInGrams];
   @override
-  $IngredientInRecipesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'recipe_ingredients';
   @override
-  String get $tableName => _alias ?? 'recipe_ingredients';
-  @override
-  final String actualTableName = 'recipe_ingredients';
+  String get actualTableName => 'recipe_ingredients';
   @override
   VerificationContext validateIntegrity(Insertable<IngredientInRecipe> instance,
       {bool isInserting = false}) {

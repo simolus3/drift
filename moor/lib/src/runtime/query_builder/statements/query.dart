@@ -2,13 +2,13 @@ part of '../query_builder.dart';
 
 /// Statement that operates with data that already exists (select, delete,
 /// update).
-abstract class Query<T extends Table, D> extends Component {
+abstract class Query<T extends HasResultSet, D> extends Component {
   /// The database this statement should be sent to.
   @protected
   DatabaseConnectionUser database;
 
-  /// The (main) table this query operates on.
-  TableInfo<T, D> table;
+  /// The (main) table or view that this query operates on.
+  ResultSetImplementation<T, D> table;
 
   /// Used internally by moor. Users should use the appropriate methods on
   /// [DatabaseConnectionUser] instead.
@@ -276,7 +276,7 @@ class _MappedSelectable<S, T> extends Selectable<T> {
 }
 
 /// Mixin for a [Query] that operates on a single primary table only.
-mixin SingleTableQueryMixin<T extends Table, D> on Query<T, D> {
+mixin SingleTableQueryMixin<T extends HasResultSet, D> on Query<T, D> {
   /// Makes this statement only include rows that match the [filter].
   ///
   /// For instance, if you have a table users with an id column, you could
@@ -308,12 +308,22 @@ mixin SingleTableQueryMixin<T extends Table, D> on Query<T, D> {
       whereExpr = Where(whereExpr!.predicate & predicate);
     }
   }
+}
+
+/// Extension for statements on a table.
+///
+/// This adds the [whereSamePrimaryKey] method as an extension. The query could
+/// run on a view, for which [whereSamePrimaryKey] is not defined.
+extension QueryTableExtensions<T extends Table, D>
+    on SingleTableQueryMixin<T, D> {
+  TableInfo<T, D> get _sourceTable => table as TableInfo<T, D>;
 
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
   void whereSamePrimaryKey(Insertable<D> d) {
+    final source = _sourceTable;
     assert(
-        table.$primaryKey.isNotEmpty,
+        source.$primaryKey.isNotEmpty,
         'When using Query.whereSamePrimaryKey, which is also called from '
         'DeleteStatement.delete and UpdateStatement.replace, the affected table'
         'must have a primary key. You can either specify a primary implicitly '
@@ -325,7 +335,7 @@ mixin SingleTableQueryMixin<T extends Table, D> on Query<T, D> {
         'UpdateStatement.write respectively. In that case, you need to use a '
         'custom where statement.');
 
-    final primaryKeyColumns = Map.fromEntries(table.$primaryKey.map((column) {
+    final primaryKeyColumns = Map.fromEntries(source.$primaryKey.map((column) {
       return MapEntry(column.$name, column);
     }));
 
@@ -355,7 +365,7 @@ mixin SingleTableQueryMixin<T extends Table, D> on Query<T, D> {
 }
 
 /// Mixin to provide the high-level [limit] methods for users.
-mixin LimitContainerMixin<T extends Table, D> on Query<T, D> {
+mixin LimitContainerMixin<T extends HasResultSet, D> on Query<T, D> {
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.

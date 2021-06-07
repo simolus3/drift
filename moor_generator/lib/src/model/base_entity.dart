@@ -25,3 +25,20 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   /// Returns null for entities that shouldn't have a getter.
   String get dbGetterName;
 }
+
+abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
+  /// The columns declared in this table or view.
+  List<MoorColumn> get columns;
+
+  /// The name of the Dart row class for this result set.
+  String get dartTypeName;
+
+  /// The name of the Dart class storing additional properties like type
+  /// converters.
+  String get entityInfoName;
+
+  /// The name of the Dart class storing the right column getters for this type.
+  ///
+  /// This class is equal to, or a superclass of, [entityInfoName].
+  String get dslName => entityInfoName;
+}

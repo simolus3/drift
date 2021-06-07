@@ -54,6 +54,11 @@ class Scope extends _Node {
   final DartScope scope;
   final Writer writer;
 
+  /// An arbitrary counter.
+  ///
+  /// This can be used to generated methods which must have a unique name-
+  int counter = 0;
+
   Scope({@required Scope parent, Writer writer})
       : scope = parent?.scope?.nextLevel ?? DartScope.library,
         writer = writer ?? parent?.writer,

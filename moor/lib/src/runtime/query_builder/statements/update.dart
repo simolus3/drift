@@ -13,7 +13,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   void writeStartPart(GenerationContext ctx) {
     // TODO support the OR (ROLLBACK / ABORT / REPLACE / FAIL / IGNORE...) thing
 
-    ctx.buffer.write('UPDATE ${table.$tableName} SET ');
+    ctx.buffer.write('UPDATE ${table.tableWithAlias} SET ');
 
     var first = true;
     _updatedFields.forEach((columnName, variable) {
@@ -36,8 +36,8 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     });
 
     if (rows > 0) {
-      database
-          .notifyUpdates({TableUpdate.onTable(table, kind: UpdateKind.update)});
+      database.notifyUpdates(
+          {TableUpdate.onTable(_sourceTable, kind: UpdateKind.update)});
     }
 
     return rows;
@@ -60,7 +60,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(Insertable<D> entity, {bool dontExecute = false}) async {
-    table.validateIntegrity(entity).throwIfInvalid(entity);
+    _sourceTable.validateIntegrity(entity).throwIfInvalid(entity);
 
     _updatedFields = entity.toColumns(true)
       ..remove((_, value) => value == null);
@@ -100,7 +100,9 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
     final columns = entity.toColumns(false);
-    table.validateIntegrity(entity, isInserting: true).throwIfInvalid(entity);
+    _sourceTable
+        .validateIntegrity(entity, isInserting: true)
+        .throwIfInvalid(entity);
     assert(
         whereExpr == null,
         'When using replace on an update statement, you may not use where(...)'
@@ -115,7 +117,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
         ? Map<String, Expression>.of(columns)
         : columns;
 
-    final primaryKeys = table.$primaryKey.map((c) => c.$name);
+    final primaryKeys = _sourceTable.$primaryKey.map((c) => c.$name);
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here

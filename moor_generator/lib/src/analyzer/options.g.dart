@@ -26,7 +26,8 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
       'generate_values_in_copy_with',
       'named_parameters',
       'named_parameters_always_required',
-      'new_sql_code_generation'
+      'new_sql_code_generation',
+      'scoped_dart_components'
     ]);
     final val = MoorOptions(
       generateFromJsonStringConstructor: $checkedConvert(
@@ -77,6 +78,9 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
       newSqlCodeGeneration:
           $checkedConvert(json, 'new_sql_code_generation', (v) => v as bool?) ??
               false,
+      scopedDartComponents:
+          $checkedConvert(json, 'scoped_dart_components', (v) => v as bool?) ??
+              false,
       modules: $checkedConvert(
               json,
               'sqlite_modules',
@@ -107,6 +111,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
     'generateNamedParameters': 'named_parameters',
     'namedParametersAlwaysRequired': 'named_parameters_always_required',
     'newSqlCodeGeneration': 'new_sql_code_generation',
+    'scopedDartComponents': 'scoped_dart_components',
     'modules': 'sqlite_modules',
     'sqliteAnalysisOptions': 'sqlite'
   });

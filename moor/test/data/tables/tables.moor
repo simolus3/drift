@@ -8,7 +8,7 @@ CREATE TABLE no_ids (
 CREATE TABLE with_defaults (
     a TEXT DEFAULT 'something',
     b INT UNIQUE
-) ;
+);
 
 CREATE TABLE with_constraints (
     a TEXT,

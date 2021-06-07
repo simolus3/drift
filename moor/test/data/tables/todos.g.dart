@@ -232,7 +232,7 @@ class $TodosTableTable extends TodosTable
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -240,7 +240,7 @@ class $TodosTableTable extends TodosTable
   @override
   late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, true,
+    return GeneratedTextColumn('title', aliasedName, true,
         minTextLength: 4, maxTextLength: 16);
   }
 
@@ -250,7 +250,7 @@ class $TodosTableTable extends TodosTable
   GeneratedTextColumn _constructContent() {
     return GeneratedTextColumn(
       'content',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -261,7 +261,7 @@ class $TodosTableTable extends TodosTable
   GeneratedDateTimeColumn _constructTargetDate() {
     return GeneratedDateTimeColumn(
       'target_date',
-      $tableName,
+      aliasedName,
       true,
     );
   }
@@ -272,7 +272,7 @@ class $TodosTableTable extends TodosTable
   GeneratedIntColumn _constructCategory() {
     return GeneratedIntColumn(
       'category',
-      $tableName,
+      aliasedName,
       true,
     );
   }
@@ -281,11 +281,9 @@ class $TodosTableTable extends TodosTable
   List<GeneratedColumn> get $columns =>
       [id, title, content, targetDate, category];
   @override
-  $TodosTableTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'todos';
   @override
-  String get $tableName => _alias ?? 'todos';
-  @override
-  final String actualTableName = 'todos';
+  String get actualTableName => 'todos';
   @override
   VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
@@ -495,7 +493,7 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -504,7 +502,7 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedTextColumn description = _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    return GeneratedTextColumn('desc', $tableName, false,
+    return GeneratedTextColumn('desc', aliasedName, false,
         $customConstraints: 'NOT NULL UNIQUE');
   }
 
@@ -512,18 +510,16 @@ class $CategoriesTable extends Categories
   @override
   late final GeneratedIntColumn priority = _constructPriority();
   GeneratedIntColumn _constructPriority() {
-    return GeneratedIntColumn('priority', $tableName, false,
+    return GeneratedIntColumn('priority', aliasedName, false,
         defaultValue: const Constant(0));
   }
 
   @override
   List<GeneratedColumn> get $columns => [id, description, priority];
   @override
-  $CategoriesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'categories';
   @override
-  String get $tableName => _alias ?? 'categories';
-  @override
-  final String actualTableName = 'categories';
+  String get actualTableName => 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -772,7 +768,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -780,7 +776,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', $tableName, false,
+    return GeneratedTextColumn('name', aliasedName, false,
         minTextLength: 6, maxTextLength: 32);
   }
 
@@ -788,7 +784,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedBoolColumn isAwesome = _constructIsAwesome();
   GeneratedBoolColumn _constructIsAwesome() {
-    return GeneratedBoolColumn('is_awesome', $tableName, false,
+    return GeneratedBoolColumn('is_awesome', aliasedName, false,
         defaultValue: const Constant(true));
   }
 
@@ -799,7 +795,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   GeneratedBlobColumn _constructProfilePicture() {
     return GeneratedBlobColumn(
       'profile_picture',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -809,7 +805,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedDateTimeColumn creationTime = _constructCreationTime();
   GeneratedDateTimeColumn _constructCreationTime() {
-    return GeneratedDateTimeColumn('creation_time', $tableName, false,
+    return GeneratedDateTimeColumn('creation_time', aliasedName, false,
         defaultValue: currentDateAndTime);
   }
 
@@ -817,11 +813,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   List<GeneratedColumn> get $columns =>
       [id, name, isAwesome, profilePicture, creationTime];
   @override
-  $UsersTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -1007,7 +1001,7 @@ class $SharedTodosTable extends SharedTodos
   GeneratedIntColumn _constructTodo() {
     return GeneratedIntColumn(
       'todo',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -1018,7 +1012,7 @@ class $SharedTodosTable extends SharedTodos
   GeneratedIntColumn _constructUser() {
     return GeneratedIntColumn(
       'user',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -1026,11 +1020,9 @@ class $SharedTodosTable extends SharedTodos
   @override
   List<GeneratedColumn> get $columns => [todo, user];
   @override
-  $SharedTodosTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'shared_todos';
   @override
-  String get $tableName => _alias ?? 'shared_todos';
-  @override
-  final String actualTableName = 'shared_todos';
+  String get actualTableName => 'shared_todos';
   @override
   VerificationContext validateIntegrity(Insertable<SharedTodo> instance,
       {bool isInserting = false}) {
@@ -1142,7 +1134,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   GeneratedIntColumn _constructNotReallyAnId() {
     return GeneratedIntColumn(
       'not_really_an_id',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -1153,7 +1145,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   GeneratedRealColumn _constructSomeFloat() {
     return GeneratedRealColumn(
       'some_float',
-      $tableName,
+      aliasedName,
       false,
     );
   }
@@ -1164,7 +1156,7 @@ class $TableWithoutPKTable extends TableWithoutPK
   GeneratedTextColumn _constructCustom() {
     return GeneratedTextColumn(
       'custom',
-      $tableName,
+      aliasedName,
       false,
     )..clientDefault = _uuid.v4;
   }
@@ -1172,11 +1164,9 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   List<GeneratedColumn> get $columns => [notReallyAnId, someFloat, custom];
   @override
-  $TableWithoutPKTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'table_without_p_k';
   @override
-  String get $tableName => _alias ?? 'table_without_p_k';
-  @override
-  final String actualTableName = 'table_without_p_k';
+  String get actualTableName => 'table_without_p_k';
   @override
   VerificationContext validateIntegrity(Insertable<CustomRowClass> instance,
       {bool isInserting = false}) {
@@ -1338,7 +1328,7 @@ class $PureDefaultsTable extends PureDefaults
   GeneratedTextColumn _constructTxt() {
     return GeneratedTextColumn(
       'insert',
-      $tableName,
+      aliasedName,
       true,
     );
   }
@@ -1346,11 +1336,9 @@ class $PureDefaultsTable extends PureDefaults
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override
-  $PureDefaultsTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'pure_defaults';
   @override
-  String get $tableName => _alias ?? 'pure_defaults';
-  @override
-  final String actualTableName = 'pure_defaults';
+  String get actualTableName => 'pure_defaults';
   @override
   VerificationContext validateIntegrity(Insertable<PureDefault> instance,
       {bool isInserting = false}) {

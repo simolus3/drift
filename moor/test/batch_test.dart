@@ -175,4 +175,20 @@ void main() {
       }),
     );
   });
+
+  test('does not start a new transaction when running in a transaction',
+      () async {
+    await db.transaction(() async {
+      await db.batch((batch) {});
+      await db.batch((batch) {});
+    });
+
+    verify(executor.beginTransaction()).called(1);
+  });
+
+  test('starts a new transaction when not running in a transaction', () async {
+    await db.batch((batch) {});
+
+    verify(executor.beginTransaction()).called(1);
+  });
 }

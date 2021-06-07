@@ -34,7 +34,7 @@ totalDurationByArtist:
   FROM artists a
     INNER JOIN albums ON albums.artist = a.id
     INNER JOIN tracks ON tracks.album = albums.id
-  GROUP BY artists.id;
+  GROUP BY a.id;
     '''
     }, options: const MoorOptions.defaults());
 

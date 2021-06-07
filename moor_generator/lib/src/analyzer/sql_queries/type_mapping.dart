@@ -278,7 +278,38 @@ class TypeMapper {
       },
     );
 
-    return FoundDartPlaceholder(type, name)..astNode = placeholder;
+    final availableResults =
+        placeholder.scope.allOf<ResultSetAvailableInStatement>();
+    final availableMoorResults = <AvailableMoorResultSet>[];
+    for (final available in availableResults) {
+      final aliasedResultSet = available.resultSet.resultSet;
+      final resultSet = aliasedResultSet?.unalias();
+      String name;
+      if (aliasedResultSet is NamedResultSet) {
+        name = aliasedResultSet.name;
+      } else {
+        // If we don't have a name we can't include this result set.
+        continue;
+      }
+
+      MoorEntityWithResultSet moorEntity;
+
+      if (resultSet is Table) {
+        moorEntity = tableToMoor(resultSet);
+      } else if (resultSet is View) {
+        moorEntity = viewToMoor(resultSet);
+      } else {
+        // If this result set is an inner select statement or anything else we
+        // can't represent it in Dart.
+        continue;
+      }
+
+      availableMoorResults
+          .add(AvailableMoorResultSet(name, moorEntity, available));
+    }
+
+    return FoundDartPlaceholder(type, name, availableMoorResults)
+      ..astNode = placeholder;
   }
 
   MoorTable tableToMoor(Table table) {

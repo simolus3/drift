@@ -1,6 +1,11 @@
 ## 4.4.0-dev
 
 - Add `Value.ofNullable` constructor to easily wrap nullable values
+- Support selecting views declared in a moor file in Dart (with `select`,
+  `join` and similar methods)
+- Add the `scoped_dart_components` builder option to generate a function for
+  [Dart components in SQL](https://moor.simonbinder.eu/docs/using-sql/moor_files/#dart-components-in-sql).
+  The function's parameters reflect tables that are in scope.
 
 ## 4.3.2
 

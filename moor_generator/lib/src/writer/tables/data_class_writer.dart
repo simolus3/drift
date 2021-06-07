@@ -5,8 +5,10 @@ import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
 
 class DataClassWriter {
-  final MoorTable table;
+  final MoorEntityWithResultSet table;
   final Scope scope;
+
+  bool get isInsertable => table is MoorTable;
 
   StringBuffer _buffer;
 
@@ -17,8 +19,14 @@ class DataClassWriter {
   String get serializerType => scope.nullableType('ValueSerializer');
 
   void write() {
-    _buffer.write('class ${table.dartTypeName} extends DataClass '
-        'implements Insertable<${table.dartTypeName}> {\n');
+    _buffer.write('class ${table.dartTypeName} extends DataClass ');
+    if (isInsertable) {
+      // The data class is only an insertable if we can actually insert rows
+      // into the target entity.
+      _buffer.writeln('implements Insertable<${table.dartTypeName}> {');
+    } else {
+      _buffer.writeln('{');
+    }
 
     // write individual fields
     for (final column in table.columns) {
@@ -46,9 +54,11 @@ class DataClassWriter {
     // Also write parsing factory
     _writeMappingConstructor();
 
-    _writeToColumnsOverride();
-    if (scope.options.dataClassToCompanions) {
-      _writeToCompanion();
+    if (isInsertable) {
+      _writeToColumnsOverride();
+      if (scope.options.dataClassToCompanions) {
+        _writeToCompanion();
+      }
     }
 
     // And a serializer and deserializer method
@@ -70,10 +80,14 @@ class DataClassWriter {
 
   void _writeMappingConstructor() {
     final dataClassName = table.dartTypeName;
+    // The GeneratedDatabase db parameter is not actually used, but we need to
+    // keep it on tables for backwards compatibility.
+    final includeUnusedDbColumn = table is MoorTable;
 
     _buffer
       ..write('factory $dataClassName.fromData')
-      ..write('(Map<String, dynamic> data, GeneratedDatabase db, ')
+      ..write('(Map<String, dynamic> data, ')
+      ..write(includeUnusedDbColumn ? ' GeneratedDatabase db,' : '')
       ..write('{${scope.nullableType('String')} prefix}) { \n')
       ..write("final effectivePrefix = prefix ?? '';");
 
@@ -211,7 +225,7 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = '${table.tableInfoName}.${converter.fieldName}';
+        final fieldName = '${table.entityInfoName}.${converter.fieldName}';
         final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
 
         _buffer
@@ -237,13 +251,15 @@ class DataClassWriter {
   }
 
   void _writeToCompanion() {
+    final asTable = table as MoorTable;
+
     _buffer
-      ..write(table.getNameForCompanionClass(scope.options))
+      ..write(asTable.getNameForCompanionClass(scope.options))
       ..write(' toCompanion(bool nullToAbsent) {\n');
 
     _buffer
       ..write('return ')
-      ..write(table.getNameForCompanionClass(scope.options))
+      ..write(asTable.getNameForCompanionClass(scope.options))
       ..write('(');
 
     for (final column in table.columns) {
@@ -286,7 +302,7 @@ class DataClassWriter {
 class RowMappingWriter {
   final List<MoorColumn> positional;
   final Map<MoorColumn, String> named;
-  final MoorTable table;
+  final MoorEntityWithResultSet table;
   final GenerationOptions options;
 
   final String dbName;
@@ -305,7 +321,7 @@ class RowMappingWriter {
       if (column.typeConverter != null) {
         // stored as a static field
         final converter = column.typeConverter;
-        final loaded = '${table.tableInfoName}.${converter.fieldName}';
+        final loaded = '${table.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
       }
 

@@ -10,7 +10,7 @@ class DeleteStatement<T extends Table, D> extends Query<T, D>
 
   @override
   void writeStartPart(GenerationContext ctx) {
-    ctx.buffer.write('DELETE FROM ${table.$tableName}');
+    ctx.buffer.write('DELETE FROM ${table.tableWithAlias}');
   }
 
   /// Deletes just this entity. May not be used together with [where].
@@ -42,7 +42,7 @@ class DeleteStatement<T extends Table, D> extends Query<T, D>
 
       if (rows > 0) {
         database.notifyUpdates(
-            {TableUpdate.onTable(table, kind: UpdateKind.delete)});
+            {TableUpdate.onTable(_sourceTable, kind: UpdateKind.delete)});
       }
       return rows;
     });
