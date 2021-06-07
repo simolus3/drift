@@ -177,4 +177,35 @@ void main() {
       verify(transactionDelegate.startTransaction(any));
     });
   });
+
+  group('open and close', () {
+    test('throws when being used before ensureOpen is complete', () async {
+      final db = DelegatedDatabase(delegate);
+      expect(db.runSelect('', []), throwsA(isA<AssertionError>()));
+    });
+
+    test('does not do anything when closing before opening', () async {
+      final db = DelegatedDatabase(delegate);
+      await db.close();
+
+      verifyNever(delegate.close());
+    });
+
+    test('throws when opening after closing', () async {
+      final db = DelegatedDatabase(delegate);
+      await db.ensureOpen(_FakeExecutorUser());
+      await db.close();
+
+      expect(db.ensureOpen(_FakeExecutorUser()), throwsStateError);
+    });
+
+    test('does not close more than once', () async {
+      final db = DelegatedDatabase(delegate);
+      await db.ensureOpen(_FakeExecutorUser());
+      await db.close();
+      await db.close();
+
+      verify(delegate.close()).called(1);
+    });
+  });
 }

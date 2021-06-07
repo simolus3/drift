@@ -241,6 +241,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   SqlDialect get dialect => delegate.dialect;
 
   final Lock _openingLock = Lock();
+  bool _closed = false;
 
   /// Constructs a delegated database by providing the [delegate].
   DelegatedDatabase(this.delegate,
@@ -249,15 +250,22 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
-    _ensureOpenCalled = true;
     return _openingLock.synchronized(() async {
+      if (_closed) {
+        return Future.error(StateError(
+            "Can't re-open a database after closing it. Please create a new "
+            'database connection and open that instead.'));
+      }
+
       final alreadyOpen = await delegate.isOpen;
       if (alreadyOpen) {
+        _ensureOpenCalled = true;
         return true;
       }
 
       await delegate.open(user);
       await _runMigrations(user);
+      _ensureOpenCalled = true;
       return true;
     });
   }
@@ -306,12 +314,19 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 
   @override
   Future<void> close() {
-    if (_ensureOpenCalled) {
-      return delegate.close();
-    } else {
-      // User never attempted to open the database, so this is a no-op.
-      return Future.value();
-    }
+    return _openingLock.synchronized(() {
+      if (_ensureOpenCalled && !_closed) {
+        _closed = true;
+
+        // Make sure the other methods throw an exception when used after
+        // close()
+        _ensureOpenCalled = false;
+        return delegate.close();
+      } else {
+        // User never attempted to open the database, so this is a no-op.
+        return Future.value();
+      }
+    });
   }
 }
 
