@@ -6,6 +6,5 @@ analyzer:
     deprecated_member_use_from_same_package: ignore
   exclude:
     - "example_web/**"
-    - "example/**"
     - "**/*.g.dart"
     - "**/*.mocks.dart"

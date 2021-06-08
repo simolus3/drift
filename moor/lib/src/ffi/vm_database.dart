@@ -47,13 +47,18 @@ class VmDatabase extends DelegatedDatabase {
   /// Creates a moor executor for an opened [database] from the `sqlite3`
   /// package.
   ///
-  /// Closing the returned [VmDatabase] will also dispose the database passed to
-  /// this factory.
+  /// When the [closeUnderlyingOnClose] argument is set (which is the default),
+  /// calling [QueryExecutor.close] on the returned [VmDatabase] will also
+  /// [Database.dispose] the [database] passed to this constructor.
   ///
   /// {@macro moor_vm_database_factory}
   factory VmDatabase.opened(Database database,
-      {bool logStatements = false, DatabaseSetup? setup}) {
-    return VmDatabase._(_VmDelegate._opened(database, setup), logStatements);
+      {bool logStatements = false,
+      DatabaseSetup? setup,
+      bool closeUnderlyingOnClose = true}) {
+    return VmDatabase._(
+        _VmDelegate._opened(database, setup, closeUnderlyingOnClose),
+        logStatements);
   }
 
   /// Disposes resources allocated by all `VmDatabase` instances of this
@@ -114,10 +119,11 @@ class _VmDelegate extends DatabaseDelegate {
 
   final File? file;
   final DatabaseSetup? setup;
+  final bool closeUnderlyingWhenClosed;
 
-  _VmDelegate(this.file, this.setup);
+  _VmDelegate(this.file, this.setup) : closeUnderlyingWhenClosed = true;
 
-  _VmDelegate._opened(this._db, this.setup)
+  _VmDelegate._opened(this._db, this.setup, this.closeUnderlyingWhenClosed)
       : file = null,
         _hasCreatedDatabase = true {
     _initializeDatabase();
@@ -226,8 +232,10 @@ class _VmDelegate extends DatabaseDelegate {
 
   @override
   Future<void> close() async {
-    _db.dispose();
-    tracker.markClosed(_db);
+    if (closeUnderlyingWhenClosed) {
+      _db.dispose();
+      tracker.markClosed(_db);
+    }
   }
 }
 
