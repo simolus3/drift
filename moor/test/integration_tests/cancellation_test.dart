@@ -113,6 +113,6 @@ void main() {
         .map((row) => row.read<String>('r'))
         .getSingle();
 
-    expect(values, '0,3');
+    expect(values, anyOf('0,3', '3'));
   });
 }
