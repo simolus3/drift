@@ -25,6 +25,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
       'apply_converters_on_variables',
       'generate_values_in_copy_with',
       'named_parameters',
+      'named_parameters_always_required',
       'new_sql_code_generation',
       'scoped_dart_components'
     ]);
@@ -71,6 +72,9 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
           false,
       generateNamedParameters:
           $checkedConvert(json, 'named_parameters', (v) => v as bool?) ?? false,
+      namedParametersAlwaysRequired: $checkedConvert(
+              json, 'named_parameters_always_required', (v) => v as bool?) ??
+          false,
       newSqlCodeGeneration:
           $checkedConvert(json, 'new_sql_code_generation', (v) => v as bool?) ??
               false,
@@ -105,6 +109,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) {
     'applyConvertersOnVariables': 'apply_converters_on_variables',
     'generateValuesInCopyWith': 'generate_values_in_copy_with',
     'generateNamedParameters': 'named_parameters',
+    'namedParametersAlwaysRequired': 'named_parameters_always_required',
     'newSqlCodeGeneration': 'new_sql_code_generation',
     'scopedDartComponents': 'scoped_dart_components',
     'modules': 'sqlite_modules',

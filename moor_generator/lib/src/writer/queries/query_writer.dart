@@ -382,7 +382,8 @@ class QueryWriter {
           isNullable = optional.nullableInDart;
         }
         final isRequired =
-            (!isNullable || isMarkedAsRequired) && defaultCode == null;
+            (!isNullable || isMarkedAsRequired) && defaultCode == null ||
+                options.namedParametersAlwaysRequired;
         if (isRequired) {
           _buffer..write(scope.required)..write(' ');
         }

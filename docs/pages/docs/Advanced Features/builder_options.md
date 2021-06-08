@@ -76,6 +76,7 @@ At the moment, moor supports these options:
   columns back to null (by using `Value(null)`). Passing `null` was ignored before, making it impossible to set columns
   to `null`.
 * `named_parameters`: Generates named parameters for named variables in SQL queries.
+* `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
 * `new_sql_code_generation`: Generates SQL statements from the parsed AST instead of replacing substrings. This will also remove
   unecessary whitespace and comments. 
   If enabling this option breaks your queries, please file an issue!
