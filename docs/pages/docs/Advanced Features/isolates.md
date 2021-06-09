@@ -135,6 +135,9 @@ class _IsolateStartRequest {
 }
 ```
 
+Here, you can use `DatabaseConnection.delayed(_createMoorIsolate())` to obtain a
+`DatabaseConnection` to use in your database.
+
 ### Shutting down the isolate
 
 Since multiple `DatabaseConnection`s can exist to a specific `MoorIsolate`, simply calling
