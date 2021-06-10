@@ -108,7 +108,7 @@ Future<MoorIsolate> _createMoorIsolate() async {
   );
 
   // _startBackground will send the MoorIsolate to this ReceivePort
-  return (await receivePort.first as MoorIsolate);
+  return await receivePort.first as MoorIsolate;
 }
 
 void _startBackground(_IsolateStartRequest request) {
@@ -135,8 +135,17 @@ class _IsolateStartRequest {
 }
 ```
 
-Here, you can use `DatabaseConnection.delayed(_createMoorIsolate())` to obtain a
-`DatabaseConnection` to use in your database.
+Once again, you can use a `DatabaseConnection.delayed()` to obtain a database
+connection for your database class:
+
+```dart
+DatabaseConnection _createMoorIsolateAndConnect() {
+  return DatabaseConnection.delayed(() async {
+    final isolate = await _createMoorIsolate();
+    return await isolate.connect();
+  }());
+}
+```
 
 ### Shutting down the isolate
 
