@@ -1,5 +1,4 @@
 //@dart=2.9
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
@@ -17,6 +16,7 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../custom_row_class.dart';
+import 'find_dart_class.dart';
 
 class CreateTableReader {
   /// The AST of this `CREATE TABLE` statement.
@@ -173,7 +173,7 @@ class CreateTableReader {
       final overriddenNames = moorTableInfo.overriddenDataClassName;
 
       if (moorTableInfo.useExistingDartClass) {
-        final clazz = await _findDartClass(overriddenNames);
+        final clazz = await findDartClass(step, imports, overriddenNames);
         if (clazz == null) {
           step.reportError(ErrorInMoorFile(
             span: stmt.tableNameToken.span,
@@ -262,34 +262,11 @@ class CreateTableReader {
   }
 
   Future<DartType> _readDartType(String typeIdentifier) async {
-    final foundClass = await _findDartClass(typeIdentifier);
+    final foundClass = await findDartClass(step, imports, typeIdentifier);
 
     return foundClass?.instantiate(
       typeArguments: const [],
       nullabilitySuffix: NullabilitySuffix.none,
     );
-  }
-
-  Future<ClassElement> _findDartClass(String identifier) async {
-    final dartImports = imports
-        .map((import) => import.importedFile)
-        .where((importUri) => importUri.endsWith('.dart'));
-
-    for (final import in dartImports) {
-      final resolved = step.task.session.resolve(step.file, import);
-      LibraryElement library;
-      try {
-        library = await step.task.backend.resolveDart(resolved.uri);
-      } on NotALibraryException {
-        continue;
-      }
-
-      final foundElement = library.exportNamespace.get(identifier);
-      if (foundElement is ClassElement) {
-        return foundElement;
-      }
-    }
-
-    return null;
   }
 }

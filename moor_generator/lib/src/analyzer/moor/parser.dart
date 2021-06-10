@@ -34,6 +34,8 @@ class MoorParser {
         // the table will be resolved in the analysis step
         createdEntities.add(MoorTrigger.fromMoor(parsedStmt, step.file));
       } else if (parsedStmt is CreateViewStatement) {
+        // The view's columns and other data will be analyzed later, in
+        // ViewAnalyzer.
         createdEntities.add(MoorView.fromMoor(parsedStmt, step.file));
       } else if (parsedStmt is CreateIndexStatement) {
         createdEntities.add(MoorIndex.fromMoor(parsedStmt, step.file));

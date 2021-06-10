@@ -2071,6 +2071,7 @@ class Parser {
 
     final ifNotExists = _ifNotExists();
     final name = _consumeIdentifier('Expected a name for this view');
+    final moorTableName = _moorTableName();
 
     List<String>? columnNames;
     if (_matchOne(TokenType.leftParen)) {
@@ -2080,13 +2081,17 @@ class Parser {
 
     _consume(TokenType.as, 'Expected AS SELECT');
 
-    final query = _fullSelect()!;
+    final query = _fullSelect();
+    if (query == null) {
+      _error('Expected a SELECT statement here');
+    }
 
     return CreateViewStatement(
       ifNotExists: ifNotExists,
       viewName: name.identifier,
       columns: columnNames,
       query: query,
+      moorTableName: moorTableName,
     )
       ..viewNameToken = name
       ..setSpan(create, _previous);

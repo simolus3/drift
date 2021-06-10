@@ -221,7 +221,8 @@ class Task {
         step = AnalyzeDartStep(this, file)..analyze();
         break;
       case FileType.moor:
-        step = AnalyzeMoorStep(this, file)..analyze();
+        final analyzeMoor = step = AnalyzeMoorStep(this, file);
+        await analyzeMoor.analyze();
         break;
       default:
         break;

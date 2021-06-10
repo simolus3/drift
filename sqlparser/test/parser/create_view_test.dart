@@ -18,6 +18,24 @@ void main() {
     );
   });
 
+  test('parses a CREATE VIEW statement with an existing Dart class', () {
+    testStatement(
+      'CREATE VIEW my_view AS SELECT 1 WITH ExistingDartClass',
+      CreateViewStatement(
+        viewName: 'my_view',
+        query: SelectStatement(
+          columns: [
+            ExpressionResultColumn(
+              expression: NumericLiteral(1, token(TokenType.numberLiteral)),
+            ),
+          ],
+        ),
+        moorTableName: MoorTableName('ExistingDartClass', true),
+      ),
+      moorMode: true,
+    );
+  });
+
   test('parses a complex CREATE View statement', () {
     testStatement(
       'CREATE VIEW IF NOT EXISTS my_complex_view (ids, name, count, type) AS '

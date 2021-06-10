@@ -12,7 +12,7 @@ import 'declarations/declaration.dart';
 
 /// A parsed table, declared in code by extending `Table` and referencing that
 /// table in `@UseMoor` or `@UseDao`.
-class MoorTable implements MoorEntityWithResultSet {
+class MoorTable extends MoorEntityWithResultSet {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
   final ClassElement fromClass;
@@ -24,7 +24,7 @@ class MoorTable implements MoorEntityWithResultSet {
   /// sql queries. Note that this field is set lazily.
   Table parserTable;
 
-  /// The existing class designed to hold a row, if there is any.
+  @override
   final ExistingRowClass /*?*/ existingRowClass;
 
   /// If [fromClass] is null, another source to use when determining the name
@@ -34,10 +34,6 @@ class MoorTable implements MoorEntityWithResultSet {
   /// Whether this table was created from an `CREATE TABLE` statement instead of
   /// a Dart class.
   bool get isFromSql => _overriddenName != null;
-
-  /// Whether this table has an existing row class, meaning that moor doesn't
-  /// have to generate one on its own.
-  bool get hasExistingRowClass => existingRowClass != null;
 
   String get _baseName => _overriddenName ?? fromClass.name;
 
@@ -205,16 +201,6 @@ class WrittenMoorTable {
   final UpdateKind kind;
 
   WrittenMoorTable(this.table, this.kind);
-}
-
-/// Information used by the generator to generate code for a custom data class
-/// written by users.
-class ExistingRowClass {
-  final ClassElement targetClass;
-  final ConstructorElement constructor;
-  final Map<MoorColumn, ParameterElement> mapping;
-
-  ExistingRowClass(this.targetClass, this.constructor, this.mapping);
 }
 
 String dbFieldName(String className) => ReCase(className).camelCase;

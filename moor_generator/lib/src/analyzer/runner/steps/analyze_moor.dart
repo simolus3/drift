@@ -4,7 +4,7 @@ part of '../steps.dart';
 class AnalyzeMoorStep extends AnalyzingStep {
   AnalyzeMoorStep(Task task, FoundFile file) : super(task, file);
 
-  void analyze() {
+  Future<void> analyze() async {
     if (file.currentResult == null) {
       // Error during parsing, ignore.
       return;
@@ -36,7 +36,9 @@ class AnalyzeMoorStep extends AnalyzingStep {
 
     EntityHandler(this, parseResult, availableTables).handle();
 
-    ViewAnalyzer(this, availableTables, availableViews).resolve();
+    await ViewAnalyzer(
+            this, availableTables, availableViews, parseResult.imports)
+        .resolve();
 
     final parser =
         SqlAnalyzer(this, availableTables, availableViews, parseResult.queries)

@@ -1,4 +1,5 @@
 //@dart=2.9
+import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/moor_generator.dart';
 
 /// Some schema entity found.
@@ -37,8 +38,25 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   /// converters.
   String get entityInfoName;
 
+  /// The existing class designed to hold a row, if there is any.
+  ExistingRowClass /*?*/ get existingRowClass;
+
   /// The name of the Dart class storing the right column getters for this type.
   ///
   /// This class is equal to, or a superclass of, [entityInfoName].
   String get dslName => entityInfoName;
+
+  /// Whether this table has an existing row class, meaning that moor doesn't
+  /// have to generate one on its own.
+  bool get hasExistingRowClass => existingRowClass != null;
+}
+
+/// Information used by the generator to generate code for a custom data class
+/// written by users.
+class ExistingRowClass {
+  final ClassElement targetClass;
+  final ConstructorElement constructor;
+  final Map<MoorColumn, ParameterElement> mapping;
+
+  ExistingRowClass(this.targetClass, this.constructor, this.mapping);
 }

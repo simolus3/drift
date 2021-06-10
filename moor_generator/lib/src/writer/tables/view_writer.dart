@@ -19,7 +19,8 @@ class ViewWriter extends TableOrViewWriter {
   ViewWriter(this.view, this.scope);
 
   void write() {
-    if (scope.generationOptions.writeDataClasses) {
+    if (scope.generationOptions.writeDataClasses &&
+        tableOrView.hasExistingRowClass) {
       DataClassWriter(view, scope).write();
     }
 
@@ -45,38 +46,12 @@ class ViewWriter extends TableOrViewWriter {
 
     writeGetColumnsOverride();
     writeAsDslTable();
-    _writeMappingMethod();
+    writeMappingMethod(scope);
 
     for (final column in view.columns) {
       writeColumnGetter(column, scope.generationOptions, false);
     }
 
     buffer.writeln('}');
-  }
-
-  // After we support custom row classes for views, we can move this into the
-  // shared writer
-  void _writeMappingMethod() {
-    if (!scope.generationOptions.writeDataClasses) {
-      final nullableString = scope.nullableType('String');
-      buffer.writeln('''
-        @override
-        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
-          throw UnsupportedError('TableInfo.map in schema verification code');
-        }
-      ''');
-      return;
-    }
-
-    final dataClassName = view.dartTypeName;
-
-    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
-        '{${scope.nullableType('String')} tablePrefix}) {\n');
-
-    // Use default .fromData constructor in the moor-generated data class
-    buffer.write('return $dataClassName.fromData(data, '
-        "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
-
-    buffer.write('}\n');
   }
 }

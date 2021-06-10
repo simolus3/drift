@@ -78,6 +78,71 @@ abstract class TableOrViewWriter {
     );
   }
 
+  void writeMappingMethod(Scope scope) {
+    if (!scope.generationOptions.writeDataClasses) {
+      final nullableString = scope.nullableType('String');
+      buffer.writeln('''
+        @override
+        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
+          throw UnsupportedError('TableInfo.map in schema verification code');
+        }
+      ''');
+      return;
+    }
+
+    final dataClassName = tableOrView.dartTypeName;
+
+    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
+        '{${scope.nullableType('String')} tablePrefix}) {\n');
+
+    if (tableOrView.hasExistingRowClass) {
+      buffer.write('final effectivePrefix = '
+          "tablePrefix != null ? '\$tablePrefix.' : '';");
+
+      final info = tableOrView.existingRowClass;
+      final positionalToIndex = <MoorColumn, int>{};
+      final named = <MoorColumn, String>{};
+
+      final parameters = info.constructor.parameters;
+      info.mapping.forEach((column, parameter) {
+        if (parameter.isNamed) {
+          named[column] = parameter.name;
+        } else {
+          positionalToIndex[column] = parameters.indexOf(parameter);
+        }
+      });
+
+      // Sort positional columns by the position of their respective parameter
+      // in the constructor.
+      final positional = positionalToIndex.keys.toList()
+        ..sort((a, b) => positionalToIndex[a].compareTo(positionalToIndex[b]));
+
+      final writer = RowMappingWriter(
+        positional,
+        named,
+        tableOrView,
+        scope.generationOptions,
+        dbName: '_db',
+      );
+
+      final classElement = info.targetClass;
+      final ctor = info.constructor;
+      buffer..write('return ')..write(classElement.name);
+      if (ctor.name != null && ctor.name.isNotEmpty) {
+        buffer..write('.')..write(ctor.name);
+      }
+
+      writer.writeArguments(buffer);
+      buffer.write(';\n');
+    } else {
+      // Use default .fromData constructor in the moor-generated data class
+      buffer.write('return $dataClassName.fromData(data, _db, '
+          "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
+    }
+
+    buffer.write('}\n');
+  }
+
   void writeGetColumnsOverride() {
     final columnsWithGetters =
         tableOrView.columns.map((c) => c.dartGetterName).join(', ');
@@ -174,7 +239,7 @@ class TableWriter extends TableOrViewWriter {
     _writeValidityCheckMethod();
     _writePrimaryKeyOverride();
 
-    _writeMappingMethod();
+    writeMappingMethod(scope);
     // _writeReverseMappingMethod();
 
     _writeAliasGenerator();
@@ -192,71 +257,6 @@ class TableWriter extends TableOrViewWriter {
       final code = converter.expression;
       buffer.write('static $typeName ${converter.fieldName} = $code;');
     }
-  }
-
-  void _writeMappingMethod() {
-    if (!scope.generationOptions.writeDataClasses) {
-      final nullableString = scope.nullableType('String');
-      buffer.writeln('''
-        @override
-        Never map(Map<String, dynamic> data, {$nullableString tablePrefix}) {
-          throw UnsupportedError('TableInfo.map in schema verification code');
-        }
-      ''');
-      return;
-    }
-
-    final dataClassName = table.dartTypeName;
-
-    buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
-        '{${scope.nullableType('String')} tablePrefix}) {\n');
-
-    if (table.hasExistingRowClass) {
-      buffer.write('final effectivePrefix = '
-          "tablePrefix != null ? '\$tablePrefix.' : '';");
-
-      final info = table.existingRowClass;
-      final positionalToIndex = <MoorColumn, int>{};
-      final named = <MoorColumn, String>{};
-
-      final parameters = info.constructor.parameters;
-      info.mapping.forEach((column, parameter) {
-        if (parameter.isNamed) {
-          named[column] = parameter.name;
-        } else {
-          positionalToIndex[column] = parameters.indexOf(parameter);
-        }
-      });
-
-      // Sort positional columns by the position of their respective parameter
-      // in the constructor.
-      final positional = positionalToIndex.keys.toList()
-        ..sort((a, b) => positionalToIndex[a].compareTo(positionalToIndex[b]));
-
-      final writer = RowMappingWriter(
-        positional,
-        named,
-        table,
-        scope.generationOptions,
-        dbName: '_db',
-      );
-
-      final classElement = info.targetClass;
-      final ctor = info.constructor;
-      buffer..write('return ')..write(classElement.name);
-      if (ctor.name != null && ctor.name.isNotEmpty) {
-        buffer..write('.')..write(ctor.name);
-      }
-
-      writer.writeArguments(buffer);
-      buffer.write(';\n');
-    } else {
-      // Use default .fromData constructor in the moor-generated data class
-      buffer.write('return $dataClassName.fromData(data, _db, '
-          "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
-    }
-
-    buffer.write('}\n');
   }
 
   void _writeColumnVerificationMeta(MoorColumn column) {

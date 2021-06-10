@@ -30,16 +30,20 @@ class MoorView extends MoorEntityWithResultSet {
   List<MoorColumn> columns;
 
   @override
-  final String dartTypeName;
+  String dartTypeName;
 
   @override
-  final String entityInfoName;
+  String entityInfoName;
+
+  @override
+  ExistingRowClass /*?*/ existingRowClass;
 
   MoorView({
     this.declaration,
     this.name,
     this.dartTypeName,
     this.entityInfoName,
+    this.existingRowClass,
   });
 
   /// Obtains all tables transitively referenced by the declaration of this
