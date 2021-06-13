@@ -8,6 +8,7 @@
   The function's parameters reflect tables that are in scope.
 - Add the `closeUnderlyingOnClose` argument to `VmDatabase.opened` as an option
   to keep the underlying instance opened when closing the `VmDatabase`.
+- The `tableUpdates` stream now emits the relevant updates instead of `null`.
  
 ## 4.3.2
 

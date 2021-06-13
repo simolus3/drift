@@ -313,6 +313,16 @@ void main() {
       await pumpEventQueue(times: 1);
       expect(counter, 1);
     });
+
+    test('filters relevant updates from single event', () async {
+      final stream = db.tableUpdates(TableUpdateQuery.onTable(db.users));
+      expect(stream, emits({TableUpdate.onTable(db.users)}));
+
+      db.notifyUpdates({
+        TableUpdate.onTable(db.todosTable),
+        TableUpdate.onTable(db.users),
+      });
+    });
   });
 
   test('stream queries are broadcasts', () {

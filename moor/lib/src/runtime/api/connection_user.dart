@@ -98,21 +98,30 @@ abstract class DatabaseConnectionUser {
     _resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
   }
 
-  /// Creates a stream that emits `null` each time a table that would affect
-  /// [query] is changed.
+  /// Listen for table updates reported through [notifyUpdates].
+  ///
+  /// By default, this listens to every table update. Table updates are reported
+  /// as a set of individual updates that happened atomically.
+  /// An optional filter can be provided in the [query] parameter. When set,
+  /// only updates matching the query will be reported in the stream.
   ///
   /// When called inside a transaction, the stream will close when the
   /// transaction completes or is rolled back. Otherwise, the stream will
   /// complete as the database is closed.
-  Stream<Null> tableUpdates(
+  Stream<Set<TableUpdate>> tableUpdates(
       [TableUpdateQuery query = const TableUpdateQuery.any()]) {
-    return _resolvedEngine.streamQueries
-        .updatesForSync(query)
-        .asyncMap((event) async {
-      // streamQueries.updatesForSync is a synchronous stream - make it
-      // asynchronous by awaiting null for each event.
-      return await null;
-    });
+    // The stream should refer to the transaction active when tableUpdates was
+    // called, not the one when a listener attaches.
+    final engine = _resolvedEngine;
+
+    // We're wrapping updatesForSync in a stream controller to make it async.
+    return Stream.multi(
+      (controller) {
+        final source = engine.streamQueries.updatesForSync(query);
+        source.pipe(controller);
+      },
+      isBroadcast: true,
+    );
   }
 
   /// Performs the async [fn] after this executor is ready, or directly if it's

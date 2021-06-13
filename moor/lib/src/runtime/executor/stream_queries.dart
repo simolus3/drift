@@ -108,10 +108,10 @@ class StreamQueryStore {
     return stream.stream;
   }
 
-  Stream<Null> updatesForSync(TableUpdateQuery query) {
+  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
     return _tableUpdates.stream
-        .where((e) => e.any(query.matches))
-        .map((_) => null);
+        .map((e) => e.where(query.matches).toSet())
+        .where((e) => e.isNotEmpty);
   }
 
   /// Handles updates on a given table by re-executing all queries that read

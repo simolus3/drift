@@ -45,7 +45,7 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   }
 
   @override
-  Stream<Null> updatesForSync(TableUpdateQuery query) {
+  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
     return Stream.fromFuture(_delegate)
         .asyncExpand((resolved) => resolved.updatesForSync(query))
         .asBroadcastStream();
