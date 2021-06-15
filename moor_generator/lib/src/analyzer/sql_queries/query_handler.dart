@@ -121,7 +121,7 @@ class QueryHandler {
   }
 
   InferredResultSet _inferResultSet(List<Column> rawColumns) {
-    final candidatesForSingleTable = Set.of(_foundTables);
+    final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
     // First, go through regular result columns
@@ -136,8 +136,8 @@ class QueryHandler {
       columns.add(ResultColumn(column.name, moorType, type?.nullable ?? true,
           typeConverter: converter, sqlParserColumn: column));
 
-      final table = _tableOfColumn(column);
-      candidatesForSingleTable.removeWhere((t) => t != table);
+      final resultSet = _resultSetOfColumn(column);
+      candidatesForSingleTable.removeWhere((t) => t != resultSet);
     }
 
     final nestedResults = _findNestedResultTables();
@@ -147,18 +147,12 @@ class QueryHandler {
       candidatesForSingleTable.clear();
     }
 
-    if (_foundViews.isNotEmpty) {
-      // For now we're not using the single table optimization when selecting
-      // from views since we don't have view data classes yet.
-      candidatesForSingleTable.clear();
-    }
-
     // if all columns read from the same table, and all columns in that table
     // are present in the result set, we can use the data class we generate for
     // that table instead of generating another class just for this result set.
     if (candidatesForSingleTable.length == 1) {
       final table = candidatesForSingleTable.single;
-      final moorTable = mapper.tableToMoor(table);
+      final moorTable = mapper.viewOrTableToMoor(table);
 
       if (moorTable == null) {
         // References a table not declared in any moor api (dart or moor file).
@@ -173,9 +167,8 @@ class QueryHandler {
       // go trough all columns of the table in question
       for (final column in moorTable.columns) {
         // check if this column from the table is present in the result set
-        final tableColumn = table.findColumn(column.name.name);
-        final inResultSet =
-            rawColumns.where((t) => _toTableColumn(t) == tableColumn);
+        final inResultSet = rawColumns.where(
+            (t) => t.name.toLowerCase() == column.name.name.toLowerCase());
 
         if (inResultSet.length == 1) {
           // it is! Remember the correct getter name from the data class for
@@ -220,9 +213,9 @@ class QueryHandler {
       if (column is NestedStarResultColumn) {
         final originalResult = column.resultSet;
         final result = originalResult.unalias();
-        if (result is! Table) continue;
+        if (result is! Table && result is! View) continue;
 
-        final moorTable = mapper.tableToMoor(result as Table);
+        final moorTable = mapper.viewOrTableToMoor(result);
         final isNullable =
             analysis == null || analysis.isNullableTable(originalResult);
         nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
@@ -233,27 +226,30 @@ class QueryHandler {
     return nestedTables;
   }
 
-  /// The table a given result column is from, or null if this column doesn't
-  /// read from a table directly.
-  Table _tableOfColumn(Column c) {
-    return _toTableColumn(c)?.table;
-  }
-
-  TableColumn _toTableColumn(Column c) {
-    if (c is TableColumn) {
-      return c;
-    } else if (c is ExpressionColumn) {
-      final expression = c.expression;
-      if (expression is Reference) {
-        final resolved = expression.resolved;
-        if (resolved is Column) {
-          return _toTableColumn(resolved);
+  ResultSet _resultSetOfColumn(Column c) {
+    // ignore: literal_only_boolean_expressions
+    while (true) {
+      if (c is TableColumn) {
+        return c.table;
+      } else if (c is ViewColumn) {
+        return c.view;
+      } else if (c is ExpressionColumn) {
+        final expression = (c as ExpressionColumn).expression;
+        if (expression is Reference) {
+          final resolved = expression.resolved;
+          if (resolved is Column) {
+            c = resolved;
+            continue;
+          }
         }
+        // Not a refernece to a column
+        return null;
+      } else if (c is DelegatedColumn) {
+        c = (c as DelegatedColumn).innerColumn;
+      } else {
+        return null;
       }
-    } else if (c is DelegatedColumn) {
-      return _toTableColumn(c.innerColumn);
     }
-    return null;
   }
 
   /// We verify that no variable numbers are skipped in the query. For instance,

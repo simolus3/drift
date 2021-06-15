@@ -430,6 +430,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           .followedBy(scope
               .allOf<ResultSetAvailableInStatement>()
               .map((added) => added.resultSet))
+          .where((e) => e.resultSet != null)
           .map((t) {
         final resultSet = t.resultSet;
         if (resultSet is HumanReadable) {

@@ -328,7 +328,7 @@ class InferredResultSet {
 ///
 /// We still need to handle column aliases.
 class MatchingMoorTable {
-  final MoorTable table;
+  final MoorEntityWithResultSet table;
   final Map<String, MoorColumn> aliasToColumn;
 
   MatchingMoorTable(this.table, this.aliasToColumn);
@@ -411,7 +411,7 @@ class NestedResultTable {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
-  final MoorTable table;
+  final MoorEntityWithResultSet table;
 
   NestedResultTable(this.from, this.name, this.table, {this.isNullable = true});
 

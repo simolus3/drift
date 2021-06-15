@@ -1965,9 +1965,11 @@ class Parser {
       ..moduleNameToken = moduleName;
   }
 
-  MoorTableName? _moorTableName() {
-    if (enableMoorExtensions &&
-        (_match(const [TokenType.as, TokenType.$with]))) {
+  MoorTableName? _moorTableName([bool supportAs = true]) {
+    final types =
+        supportAs ? const [TokenType.as, TokenType.$with] : [TokenType.$with];
+
+    if (enableMoorExtensions && (_match(types))) {
       final first = _previous;
       final useExisting = _previous.type == TokenType.$with;
       final name =
@@ -2071,7 +2073,10 @@ class Parser {
 
     final ifNotExists = _ifNotExists();
     final name = _consumeIdentifier('Expected a name for this view');
-    final moorTableName = _moorTableName();
+
+    // Don't allow the "AS ClassName" syntax for views since it causes an
+    // ambiguity with the regular view syntax.
+    final moorTableName = _moorTableName(false);
 
     List<String>? columnNames;
     if (_matchOne(TokenType.leftParen)) {

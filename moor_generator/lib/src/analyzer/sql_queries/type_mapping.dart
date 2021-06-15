@@ -320,6 +320,16 @@ class TypeMapper {
     return _engineViewsToSpecified[view];
   }
 
+  MoorEntityWithResultSet viewOrTableToMoor(dynamic entity) {
+    if (entity is Table) {
+      return tableToMoor(entity);
+    } else if (entity is View) {
+      return viewToMoor(entity);
+    } else {
+      throw ArgumentError.value(entity, 'entity', 'Must be a view or a table!');
+    }
+  }
+
   WrittenMoorTable writtenToMoor(s.TableWrite table) {
     final moorKind = const {
       s.UpdateKind.insert: m.UpdateKind.insert,

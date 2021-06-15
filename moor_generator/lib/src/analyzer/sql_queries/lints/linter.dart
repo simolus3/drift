@@ -139,7 +139,8 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       }
 
       // check that it actually refers to a table
-      if (e.resultSet?.unalias() is! Table) {
+      final result = e.resultSet?.unalias();
+      if (result is! Table && result is! View) {
         linter.lints.add(AnalysisError(
           type: AnalysisErrorType.other,
           message: 'Nested star columns must refer to a table directly. They '

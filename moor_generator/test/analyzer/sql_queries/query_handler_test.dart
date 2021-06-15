@@ -106,7 +106,7 @@ FROM routes
     expect(resultSet.columns.map((e) => e.name), ['id', 'from', 'to']);
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.nestedResults.map((e) => e.name), ['from', 'to']);
-    expect(resultSet.nestedResults.map((e) => e.table.sqlName),
+    expect(resultSet.nestedResults.map((e) => e.table.displayName),
         ['points', 'points']);
   });
 
@@ -147,5 +147,50 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
     expect(nested.map((e) => e.name),
         ['tableA1', 'tableA2', 'tableB1', 'tableB2']);
     expect(nested.map((e) => e.isNullable), [false, true, false, true]);
+  });
+
+  test('infers result set for views', () async {
+    final state = TestState.withContent({
+      'foo|lib/main.moor': r'''
+CREATE VIEW my_view AS SELECT 'foo', 2;
+
+query: SELECT * FROM my_view;
+      ''',
+    }, enableAnalyzer: false);
+
+    final file = await state.analyze('package:foo/main.moor');
+    expect(file.errors.errors, isEmpty);
+
+    final result = file.currentResult as ParsedMoorFile;
+
+    final query = result.resolvedQueries.single;
+    expect(
+        query.resultSet.matchingTable,
+        isA<MatchingMoorTable>()
+            .having((e) => e.table, 'table',
+                isA<MoorView>().having((e) => e.name, 'name', 'my_view'))
+            .having((e) => e.effectivelyNoAlias, 'effectivelyNoAlias', isTrue));
+  });
+
+  test('infers nested result set for views', () async {
+    final state = TestState.withContent({
+      'foo|lib/main.moor': r'''
+CREATE VIEW my_view AS SELECT 'foo', 2;
+
+query: SELECT foo.**, bar.** FROM my_view foo, my_view bar;
+      ''',
+    }, enableAnalyzer: false);
+
+    final file = await state.analyze('package:foo/main.moor');
+    expect(file.errors.errors, isEmpty);
+
+    final result = file.currentResult as ParsedMoorFile;
+    final query = result.resolvedQueries.single;
+
+    expect(query.resultSet.nestedResults, hasLength(2));
+    expect(
+        query.resultSet.nestedResults,
+        everyElement(isA<NestedResultTable>().having(
+            (e) => e.table.displayName, 'table.displayName', 'my_view')));
   });
 }
