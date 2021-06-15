@@ -1769,19 +1769,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     });
   }
 
-  Selectable<ReadViewResult> readView() {
+  Selectable<MyViewData> readView() {
     return customSelect('SELECT * FROM my_view',
-        variables: [], readsFrom: {config}).map((QueryRow row) {
-      return ReadViewResult(
-        row: row,
-        configKey: row.read<String>('config_key'),
-        configValue: row.read<String?>('config_value'),
-        syncState:
-            ConfigTable.$converter0.mapToDart(row.read<int?>('sync_state')),
-        syncStateImplicit: ConfigTable.$converter1
-            .mapToDart(row.read<int?>('sync_state_implicit')),
-      );
-    });
+        variables: [], readsFrom: {config}).map(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
@@ -1940,43 +1930,6 @@ class ReadRowIdResult extends CustomResultSet {
   String toString() {
     return (StringBuffer('ReadRowIdResult(')
           ..write('rowid: $rowid, ')
-          ..write('configKey: $configKey, ')
-          ..write('configValue: $configValue, ')
-          ..write('syncState: $syncState, ')
-          ..write('syncStateImplicit: $syncStateImplicit')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class ReadViewResult extends CustomResultSet {
-  final String configKey;
-  final String? configValue;
-  final SyncType? syncState;
-  final SyncType? syncStateImplicit;
-  ReadViewResult({
-    required QueryRow row,
-    required this.configKey,
-    this.configValue,
-    this.syncState,
-    this.syncStateImplicit,
-  }) : super(row);
-  @override
-  int get hashCode => $mrjf($mrjc(
-      configKey.hashCode,
-      $mrjc(configValue.hashCode,
-          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ReadViewResult &&
-          other.configKey == this.configKey &&
-          other.configValue == this.configValue &&
-          other.syncState == this.syncState &&
-          other.syncStateImplicit == this.syncStateImplicit);
-  @override
-  String toString() {
-    return (StringBuffer('ReadViewResult(')
           ..write('configKey: $configKey, ')
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')

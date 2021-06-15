@@ -101,7 +101,7 @@ mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 /// Static extension members for generated table classes.
 ///
 /// Most of these are accessed internally by moor or by generated code.
-extension TableInfoUtils<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
+extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// Like [map], but from a [row] instead of the low-level map.
   D mapFromRow(QueryRow row, {String? tablePrefix}) {
     return map(row.data, tablePrefix: tablePrefix);

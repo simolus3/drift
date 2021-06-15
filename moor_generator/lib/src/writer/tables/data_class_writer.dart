@@ -305,10 +305,7 @@ class RowMappingWriter {
   final MoorEntityWithResultSet table;
   final GenerationOptions options;
 
-  final String dbName;
-
-  RowMappingWriter(this.positional, this.named, this.table, this.options,
-      {this.dbName = 'db'});
+  RowMappingWriter(this.positional, this.named, this.table, this.options);
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {

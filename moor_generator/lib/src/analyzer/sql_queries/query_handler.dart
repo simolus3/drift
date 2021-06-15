@@ -167,8 +167,9 @@ class QueryHandler {
       // go trough all columns of the table in question
       for (final column in moorTable.columns) {
         // check if this column from the table is present in the result set
-        final inResultSet = rawColumns.where(
-            (t) => t.name.toLowerCase() == column.name.name.toLowerCase());
+        final tableColumn = table.findColumn(column.name.name);
+        final inResultSet =
+            rawColumns.where((t) => _toTableOrViewColumn(t) == tableColumn);
 
         if (inResultSet.length == 1) {
           // it is! Remember the correct getter name from the data class for
@@ -226,13 +227,11 @@ class QueryHandler {
     return nestedTables;
   }
 
-  ResultSet _resultSetOfColumn(Column c) {
+  Column _toTableOrViewColumn(Column c) {
     // ignore: literal_only_boolean_expressions
     while (true) {
-      if (c is TableColumn) {
-        return c.table;
-      } else if (c is ViewColumn) {
-        return c.view;
+      if (c is TableColumn || c is ViewColumn) {
+        return c;
       } else if (c is ExpressionColumn) {
         final expression = (c as ExpressionColumn).expression;
         if (expression is Reference) {
@@ -249,6 +248,17 @@ class QueryHandler {
       } else {
         return null;
       }
+    }
+  }
+
+  ResultSet _resultSetOfColumn(Column c) {
+    final mapped = _toTableOrViewColumn(c);
+    if (mapped == null) return null;
+
+    if (mapped is ViewColumn) {
+      return mapped.view;
+    } else {
+      return (mapped as TableColumn).table;
     }
   }
 

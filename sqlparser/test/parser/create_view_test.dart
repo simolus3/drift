@@ -20,7 +20,7 @@ void main() {
 
   test('parses a CREATE VIEW statement with an existing Dart class', () {
     testStatement(
-      'CREATE VIEW my_view AS SELECT 1 WITH ExistingDartClass',
+      'CREATE VIEW my_view WITH ExistingDartClass AS SELECT 1',
       CreateViewStatement(
         viewName: 'my_view',
         query: SelectStatement(

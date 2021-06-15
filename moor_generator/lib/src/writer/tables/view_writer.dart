@@ -20,7 +20,7 @@ class ViewWriter extends TableOrViewWriter {
 
   void write() {
     if (scope.generationOptions.writeDataClasses &&
-        tableOrView.hasExistingRowClass) {
+        !tableOrView.hasExistingRowClass) {
       DataClassWriter(view, scope).write();
     }
 

@@ -17,9 +17,6 @@ CREATE TABLE custom_name (
   foo TEXT
 ) AS MyCustomClass;
 
-CREATE VIEW custom_name_view AS CustomViewClass (foo, bar)
-  AS SELECT 1, 2;
-
 CREATE TABLE existing (
   id INTEGER NOT NULL PRIMARY KEY,
   foo TEXT
@@ -48,16 +45,11 @@ class ExistingForView {
         .singleWhere((e) => e.displayName == 'custom_name') as MoorTable;
     final existing = result.declaredEntities
         .singleWhere((e) => e.displayName == 'existing') as MoorTable;
-    final customNameView = result.declaredEntities
-        .singleWhere((e) => e.displayName == 'custom_name_view') as MoorView;
     final existingView = result.declaredEntities
         .singleWhere((e) => e.displayName == 'existing_view') as MoorView;
 
     expect(customName.dartTypeName, 'MyCustomClass');
     expect(customName.existingRowClass, isNull);
-
-    expect(customNameView.dartTypeName, 'CustomViewClass');
-    expect(customNameView.existingRowClass, isNull);
 
     expect(existing.dartTypeName, 'ExistingRowClass');
     expect(existing.existingRowClass.targetClass.name, 'ExistingRowClass');

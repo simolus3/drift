@@ -65,12 +65,11 @@ void main() {
         emitsInOrder([
           isEmpty,
           [
-            ReadViewResult(
-              row: QueryRow(entry.toColumns(false), db),
+            MyViewData(
               configKey: entry.configKey,
               configValue: entry.configValue,
-              syncState: entry.syncState,
-              syncStateImplicit: entry.syncStateImplicit,
+              syncState: entry.syncState?.index,
+              syncStateImplicit: entry.syncStateImplicit?.index,
             ),
           ],
         ]),

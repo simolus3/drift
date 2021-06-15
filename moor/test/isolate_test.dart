@@ -242,7 +242,7 @@ void _runTests(
   test('can dispatch table updates', () async {
     await database.customStatement('SELECT 1');
     expect(database.tableUpdates(TableUpdateQuery.onTable(database.users)),
-        emitsInOrder([null]));
+        emitsInOrder([anything]));
     database.markTablesUpdated({database.users});
   });
 }
