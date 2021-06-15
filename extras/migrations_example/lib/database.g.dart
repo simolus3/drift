@@ -14,11 +14,11 @@ class User extends DataClass implements Insertable<User> {
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return User(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
     );
   }
   @override
@@ -69,7 +69,7 @@ class User extends DataClass implements Insertable<User> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, name.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User && other.id == this.id && other.name == this.name);
 }
@@ -132,7 +132,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
@@ -140,18 +140,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', $tableName, false,
+    return GeneratedTextColumn('name', aliasedName, false,
         defaultValue: const Constant('name'));
   }
 
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  $UsersTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -171,8 +169,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return User.fromData(data, _db, prefix: effectivePrefix);
+    return User.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -194,16 +192,15 @@ class Group extends DataClass implements Insertable<Group> {
   factory Group.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final boolType = db.typeSystem.forDartType<bool>();
     return Group(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
-      title:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
-      deleted:
-          boolType.mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
-      owner: intType.mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+      deleted: const BoolType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}deleted']),
+      owner: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}owner'])!,
     );
   }
   @override
@@ -271,7 +268,7 @@ class Group extends DataClass implements Insertable<Group> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(title.hashCode, $mrjc(deleted.hashCode, owner.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Group &&
           other.id == this.id &&
@@ -296,7 +293,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     required String title,
     this.deleted = const Value.absent(),
     required int owner,
-  })   : title = Value(title),
+  })  : title = Value(title),
         owner = Value(owner);
   static Insertable<Group> custom({
     Expression<int>? id,
@@ -362,21 +359,21 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
+    return GeneratedIntColumn('id', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedTextColumn title = _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, false,
+    return GeneratedTextColumn('title', aliasedName, false,
         $customConstraints: 'NOT NULL');
   }
 
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
   late final GeneratedBoolColumn deleted = _constructDeleted();
   GeneratedBoolColumn _constructDeleted() {
-    return GeneratedBoolColumn('deleted', $tableName, true,
+    return GeneratedBoolColumn('deleted', aliasedName, true,
         $customConstraints: 'DEFAULT FALSE',
         defaultValue: const CustomExpression<bool>('FALSE'));
   }
@@ -384,18 +381,16 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedIntColumn owner = _constructOwner();
   GeneratedIntColumn _constructOwner() {
-    return GeneratedIntColumn('owner', $tableName, false,
+    return GeneratedIntColumn('owner', aliasedName, false,
         $customConstraints: 'NOT NULL REFERENCES users (id)');
   }
 
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  Groups get asDslTable => this;
+  String get aliasedName => _alias ?? 'groups';
   @override
-  String get $tableName => _alias ?? 'groups';
-  @override
-  final String actualTableName = 'groups';
+  String get actualTableName => 'groups';
   @override
   VerificationContext validateIntegrity(Insertable<Group> instance,
       {bool isInserting = false}) {
@@ -427,8 +422,8 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Group.fromData(data, _db, prefix: effectivePrefix);
+    return Group.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
