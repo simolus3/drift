@@ -98,7 +98,6 @@ class DataClassWriter {
       scope.generationOptions,
     );
 
-    // finally, the mighty constructor invocation:
     _buffer.write('return $dataClassName');
     writer.writeArguments(_buffer);
     _buffer.write(';}\n');
@@ -225,7 +224,8 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = '${table.entityInfoName}.${converter.fieldName}';
+        final fieldName =
+            '${converter.table.entityInfoName}.${converter.fieldName}';
         final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
 
         _buffer
@@ -318,7 +318,8 @@ class RowMappingWriter {
       if (column.typeConverter != null) {
         // stored as a static field
         final converter = column.typeConverter;
-        final loaded = '${table.entityInfoName}.${converter.fieldName}';
+        final loaded =
+            '${converter.table.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
       }
 

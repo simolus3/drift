@@ -1479,8 +1479,8 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 class MyViewData extends DataClass {
   final String configKey;
   final String? configValue;
-  final int? syncState;
-  final int? syncStateImplicit;
+  final SyncType? syncState;
+  final SyncType? syncStateImplicit;
   MyViewData(
       {required this.configKey,
       this.configValue,
@@ -1493,10 +1493,11 @@ class MyViewData extends DataClass {
           .mapFromDatabaseResponse(data['${effectivePrefix}config_key'])!,
       configValue: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}config_value']),
-      syncState: const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}sync_state']),
-      syncStateImplicit: const IntType().mapFromDatabaseResponse(
-          data['${effectivePrefix}sync_state_implicit']),
+      syncState: ConfigTable.$converter0.mapToDart(const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}sync_state'])),
+      syncStateImplicit: ConfigTable.$converter1.mapToDart(const IntType()
+          .mapFromDatabaseResponse(
+              data['${effectivePrefix}sync_state_implicit'])),
     );
   }
   factory MyViewData.fromJson(Map<String, dynamic> json,
@@ -1505,8 +1506,9 @@ class MyViewData extends DataClass {
     return MyViewData(
       configKey: serializer.fromJson<String>(json['configKey']),
       configValue: serializer.fromJson<String?>(json['configValue']),
-      syncState: serializer.fromJson<int?>(json['syncState']),
-      syncStateImplicit: serializer.fromJson<int?>(json['syncStateImplicit']),
+      syncState: serializer.fromJson<SyncType?>(json['syncState']),
+      syncStateImplicit:
+          serializer.fromJson<SyncType?>(json['syncStateImplicit']),
     );
   }
   factory MyViewData.fromJsonString(String encodedJson,
@@ -1520,16 +1522,16 @@ class MyViewData extends DataClass {
     return <String, dynamic>{
       'configKey': serializer.toJson<String>(configKey),
       'configValue': serializer.toJson<String?>(configValue),
-      'syncState': serializer.toJson<int?>(syncState),
-      'syncStateImplicit': serializer.toJson<int?>(syncStateImplicit),
+      'syncState': serializer.toJson<SyncType?>(syncState),
+      'syncStateImplicit': serializer.toJson<SyncType?>(syncStateImplicit),
     };
   }
 
   MyViewData copyWith(
           {String? configKey,
           Value<String?> configValue = const Value.absent(),
-          Value<int?> syncState = const Value.absent(),
-          Value<int?> syncStateImplicit = const Value.absent()}) =>
+          Value<SyncType?> syncState = const Value.absent(),
+          Value<SyncType?> syncStateImplicit = const Value.absent()}) =>
       MyViewData(
         configKey: configKey ?? this.configKey,
         configValue: configValue.present ? configValue.value : this.configValue,

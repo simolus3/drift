@@ -6,6 +6,7 @@ import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:moor_generator/src/model/table.dart';
 import 'package:moor_generator/src/model/view.dart';
+import 'package:moor_generator/src/utils/type_converter_hint.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -34,15 +35,24 @@ class ViewAnalyzer extends BaseAnalyzer {
           const SchemaFromCreateTable(moorExtensions: true)
               .readView(ctx, declaration);
 
-      final columns = [
-        for (final column in parserView.resolvedColumns)
-          MoorColumn(
-            type: mapper.resolvedToMoor(column.type),
-            name: ColumnName.explicitly(column.name),
-            nullable: column.type?.nullable == true,
-            dartGetterName: ReCase(column.name).camelCase,
-          )
-      ];
+      final columns = <MoorColumn>[];
+      for (final column in parserView.resolvedColumns) {
+        final type = column.type;
+        UsedTypeConverter converter;
+        if (type != null && type.hint is TypeConverterHint) {
+          converter = (type.hint as TypeConverterHint).converter;
+        }
+
+        final moorColumn = MoorColumn(
+          type: mapper.resolvedToMoor(type),
+          name: ColumnName.explicitly(column.name),
+          nullable: type?.nullable == true,
+          dartGetterName: ReCase(column.name).camelCase,
+          typeConverter: converter,
+        );
+        columns.add(moorColumn);
+      }
+
       view.columns = columns;
 
       final desiredNames = declaration.moorTableName;

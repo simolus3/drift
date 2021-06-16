@@ -68,8 +68,8 @@ void main() {
             MyViewData(
               configKey: entry.configKey,
               configValue: entry.configValue,
-              syncState: entry.syncState?.index,
-              syncStateImplicit: entry.syncStateImplicit?.index,
+              syncState: entry.syncState,
+              syncStateImplicit: entry.syncStateImplicit,
             ),
           ],
         ]),
