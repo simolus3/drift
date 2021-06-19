@@ -244,68 +244,36 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedTextColumn name = _constructName();
-  GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _birthDateMeta = const VerificationMeta('birthDate');
-  @override
-  late final GeneratedDateTimeColumn birthDate = _constructBirthDate();
-  GeneratedDateTimeColumn _constructBirthDate() {
-    return GeneratedDateTimeColumn(
-      'birth_date',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<DateTime?> birthDate = GeneratedColumn<DateTime?>(
+      'birth_date', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
-  @override
-  late final GeneratedBlobColumn profilePicture = _constructProfilePicture();
-  GeneratedBlobColumn _constructProfilePicture() {
-    return GeneratedBlobColumn(
-      'profile_picture',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<Uint8List?> profilePicture =
+      GeneratedColumn<Uint8List?>('profile_picture', aliasedName, true,
+          typeName: 'BLOB', requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
-  @override
-  late final GeneratedTextColumn preferences = _constructPreferences();
-  GeneratedTextColumn _constructPreferences() {
-    return GeneratedTextColumn(
-      'preferences',
-      $tableName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> preferences = GeneratedColumn<String?>(
+      'preferences', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
   @override
-  $UsersTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -340,8 +308,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return User.fromData(data, _db, prefix: effectivePrefix);
+    return User.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -508,46 +476,28 @@ class $FriendshipsTable extends Friendships
   final String? _alias;
   $FriendshipsTable(this._db, [this._alias]);
   final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
-  @override
-  late final GeneratedIntColumn firstUser = _constructFirstUser();
-  GeneratedIntColumn _constructFirstUser() {
-    return GeneratedIntColumn(
-      'first_user',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> firstUser = GeneratedColumn<int?>(
+      'first_user', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _secondUserMeta = const VerificationMeta('secondUser');
-  @override
-  late final GeneratedIntColumn secondUser = _constructSecondUser();
-  GeneratedIntColumn _constructSecondUser() {
-    return GeneratedIntColumn(
-      'second_user',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> secondUser = GeneratedColumn<int?>(
+      'second_user', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
-  @override
-  late final GeneratedBoolColumn reallyGoodFriends =
-      _constructReallyGoodFriends();
-  GeneratedBoolColumn _constructReallyGoodFriends() {
-    return GeneratedBoolColumn('really_good_friends', $tableName, false,
-        defaultValue: const Constant(false));
-  }
-
+  late final GeneratedColumn<bool?> reallyGoodFriends = GeneratedColumn<bool?>(
+      'really_good_friends', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'CHECK (really_good_friends IN (0, 1))',
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
       [firstUser, secondUser, reallyGoodFriends];
   @override
-  $FriendshipsTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'friendships';
   @override
-  String get $tableName => _alias ?? 'friendships';
-  @override
-  final String actualTableName = 'friendships';
+  String get actualTableName => 'friendships';
   @override
   VerificationContext validateIntegrity(Insertable<Friendship> instance,
       {bool isInserting = false}) {
@@ -580,8 +530,8 @@ class $FriendshipsTable extends Friendships
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Friendship.fromData(data, _db, prefix: effectivePrefix);
+    return Friendship.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

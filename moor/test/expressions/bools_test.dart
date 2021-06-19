@@ -5,8 +5,8 @@ import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final a = GeneratedBoolColumn('a', 'tbl', false);
-  final b = GeneratedBoolColumn('b', 'tbl', false);
+  const a = CustomExpression<bool>('a', precedence: Precedence.primary);
+  const b = CustomExpression<bool>('b', precedence: Precedence.primary);
 
   test('boolean expressions via operators', () {
     expect(a | b, generates('a OR b'));

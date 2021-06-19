@@ -132,31 +132,25 @@ class Users extends Table with TableInfo<Users, User> {
   final String _alias;
   Users(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        declaredAsPrimaryKey: true,
-        hasAutoIncrement: true,
-        $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
-  }
-
+  GeneratedColumn<int> _id;
+  GeneratedColumn<int> get id =>
+      _id ??= GeneratedColumn<int>('id', aliasedName, false,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  GeneratedTextColumn _name;
-  GeneratedTextColumn get name => _name ??= _constructName();
-  GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', $tableName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  GeneratedColumn<String> _name;
+  GeneratedColumn<String> get name =>
+      _name ??= GeneratedColumn<String>('name', aliasedName, false,
+          typeName: 'TEXT',
+          requiredDuringInsert: true,
+          $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  Users get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -178,8 +172,8 @@ class Users extends Table with TableInfo<Users, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return User.fromData(data, _db, prefix: effectivePrefix);
+    return User.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

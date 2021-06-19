@@ -2,8 +2,10 @@ import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final nullable = GeneratedDateTimeColumn('name', 'table', true);
-  final nonNull = GeneratedDateTimeColumn('name', 'table', false);
+  final nullable =
+      GeneratedColumn<DateTime>('name', 'table', true, typeName: 'INTEGER');
+  final nonNull =
+      GeneratedColumn<DateTime>('name', 'table', false, typeName: 'INTEGER');
 
   test('should write column definition', () {
     final nonNullQuery = GenerationContext.fromDb(null);

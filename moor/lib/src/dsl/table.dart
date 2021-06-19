@@ -67,7 +67,7 @@ abstract class Table extends HasResultSet {
   /// IntColumn get id => integer().autoIncrement()();
   /// ```
   @protected
-  IntColumnBuilder integer() => _isGenerated();
+  ColumnBuilder<int> integer() => _isGenerated();
 
   /// Creates a column to store an `enum` class [T].
   ///
@@ -75,7 +75,7 @@ abstract class Table extends HasResultSet {
   /// corresponding to the enum's index. Note that this can invalidate your data
   /// if you add another value to the enum class.
   @protected
-  IntColumnBuilder intEnum<T>() => _isGenerated();
+  ColumnBuilder<int> intEnum<T>() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds strings.
   /// Example (inside the body of a table class):
@@ -83,7 +83,7 @@ abstract class Table extends HasResultSet {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  TextColumnBuilder text() => _isGenerated();
+  ColumnBuilder<String> text() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds bools.
   /// Example (inside the body of a table class):
@@ -91,7 +91,7 @@ abstract class Table extends HasResultSet {
   /// BoolColumn get isAwesome => boolean()();
   /// ```
   @protected
-  BoolColumnBuilder boolean() => _isGenerated();
+  ColumnBuilder<bool> boolean() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds date and
   /// time. Note that [DateTime] values are stored on a second-accuracy.
@@ -100,7 +100,7 @@ abstract class Table extends HasResultSet {
   /// DateTimeColumn get accountCreatedAt => dateTime()();
   /// ```
   @protected
-  DateTimeColumnBuilder dateTime() => _isGenerated();
+  ColumnBuilder<DateTime> dateTime() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds arbitrary
   /// data blobs, stored as an [Uint8List]. Example:
@@ -108,7 +108,7 @@ abstract class Table extends HasResultSet {
   /// BlobColumn get payload => blob()();
   /// ```
   @protected
-  BlobColumnBuilder blob() => _isGenerated();
+  ColumnBuilder<Uint8List> blob() => _isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds floating
   /// point numbers. Example
@@ -116,7 +116,7 @@ abstract class Table extends HasResultSet {
   /// RealColumn get averageSpeed => real()();
   /// ```
   @protected
-  RealColumnBuilder real() => _isGenerated();
+  ColumnBuilder<double> real() => _isGenerated();
 }
 
 /// A class to be used as an annotation on [Table] classes to customize the

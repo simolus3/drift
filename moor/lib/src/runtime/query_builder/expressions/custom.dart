@@ -19,8 +19,12 @@ class CustomExpression<D> extends Expression<D> {
   /// mainly used for subqueries used as expressions.
   final Iterable<TableInfo> watchedTables;
 
+  @override
+  final Precedence precedence;
+
   /// Constructs a custom expression by providing the raw sql [content].
-  const CustomExpression(this.content, {this.watchedTables = const []});
+  const CustomExpression(this.content,
+      {this.watchedTables = const [], this.precedence = Precedence.unknown});
 
   @override
   void writeInto(GenerationContext context) {

@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final foo = GeneratedIntColumn('foo', 'bar', false);
+  const foo = CustomExpression<int>('foo', precedence: Precedence.primary);
 
   group('count', () {
     test('all', () {

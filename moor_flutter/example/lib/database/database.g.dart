@@ -20,17 +20,14 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return TodoEntry(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      content:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}content']),
-      targetDate: dateTimeType
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      content: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}content']),
+      targetDate: const DateTimeType()
           .mapFromDatabaseResponse(data['${effectivePrefix}target_date']),
-      category:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      category: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}category']),
     );
   }
   @override
@@ -110,7 +107,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   int get hashCode => $mrjf($mrjc(id.hashCode,
       $mrjc(content.hashCode, $mrjc(targetDate.hashCode, category.hashCode))));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TodoEntry &&
           other.id == this.id &&
@@ -198,56 +195,39 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   final String _alias;
   $TodosTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
+  GeneratedColumn<int> _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  GeneratedColumn<int> get id =>
+      _id ??= GeneratedColumn<int>('id', aliasedName, false,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _contentMeta = const VerificationMeta('content');
-  GeneratedTextColumn _content;
+  GeneratedColumn<String> _content;
   @override
-  GeneratedTextColumn get content => _content ??= _constructContent();
-  GeneratedTextColumn _constructContent() {
-    return GeneratedTextColumn(
-      'content',
-      $tableName,
-      false,
-    );
-  }
-
+  GeneratedColumn<String> get content =>
+      _content ??= GeneratedColumn<String>('content', aliasedName, false,
+          typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
-  GeneratedDateTimeColumn _targetDate;
+  GeneratedColumn<DateTime> _targetDate;
   @override
-  GeneratedDateTimeColumn get targetDate =>
-      _targetDate ??= _constructTargetDate();
-  GeneratedDateTimeColumn _constructTargetDate() {
-    return GeneratedDateTimeColumn(
-      'target_date',
-      $tableName,
-      true,
-    );
-  }
-
+  GeneratedColumn<DateTime> get targetDate => _targetDate ??=
+      GeneratedColumn<DateTime>('target_date', aliasedName, true,
+          typeName: 'INTEGER', requiredDuringInsert: false);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
-  GeneratedIntColumn _category;
+  GeneratedColumn<int> _category;
   @override
-  GeneratedIntColumn get category => _category ??= _constructCategory();
-  GeneratedIntColumn _constructCategory() {
-    return GeneratedIntColumn('category', $tableName, true,
-        $customConstraints: 'NULLABLE REFERENCES categories(id)');
-  }
-
+  GeneratedColumn<int> get category =>
+      _category ??= GeneratedColumn<int>('category', aliasedName, true,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          $customConstraints: 'NULLABLE REFERENCES categories(id)');
   @override
   List<GeneratedColumn> get $columns => [id, content, targetDate, category];
   @override
-  $TodosTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'todos';
   @override
-  String get $tableName => _alias ?? 'todos';
-  @override
-  final String actualTableName = 'todos';
+  String get actualTableName => 'todos';
   @override
   VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
       {bool isInserting = false}) {
@@ -279,8 +259,8 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoEntry> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return TodoEntry.fromData(data, _db, prefix: effectivePrefix);
+    return TodoEntry.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -296,12 +276,10 @@ class Category extends DataClass implements Insertable<Category> {
   factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final stringType = db.typeSystem.forDartType<String>();
     return Category(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      description:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}desc']),
     );
   }
   @override
@@ -358,7 +336,7 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
@@ -421,36 +399,26 @@ class $CategoriesTable extends Categories
   final String _alias;
   $CategoriesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
+  GeneratedColumn<int> _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  GeneratedColumn<int> get id =>
+      _id ??= GeneratedColumn<int>('id', aliasedName, false,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
-  GeneratedTextColumn _description;
+  GeneratedColumn<String> _description;
   @override
-  GeneratedTextColumn get description =>
-      _description ??= _constructDescription();
-  GeneratedTextColumn _constructDescription() {
-    return GeneratedTextColumn(
-      'desc',
-      $tableName,
-      false,
-    );
-  }
-
+  GeneratedColumn<String> get description =>
+      _description ??= GeneratedColumn<String>('desc', aliasedName, false,
+          typeName: 'TEXT', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
-  $CategoriesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'categories';
   @override
-  String get $tableName => _alias ?? 'categories';
-  @override
-  final String actualTableName = 'categories';
+  String get actualTableName => 'categories';
   @override
   VerificationContext validateIntegrity(Insertable<Category> instance,
       {bool isInserting = false}) {
@@ -472,8 +440,8 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Category.fromData(data, _db, prefix: effectivePrefix);
+    return Category.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -521,8 +489,8 @@ class CategoriesWithCountResult {
   final String desc;
   final int amount;
   CategoriesWithCountResult({
-    @required this.id,
-    @required this.desc,
+    this.id,
+    this.desc,
     @required this.amount,
   });
 }

@@ -143,25 +143,16 @@ class $CategoriesTable extends Categories
   final String? _alias;
   $CategoriesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', aliasedName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
-  @override
-  late final GeneratedTextColumn description = _constructDescription();
-  GeneratedTextColumn _constructDescription() {
-    return GeneratedTextColumn(
-      'description',
-      aliasedName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+      'description', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, description];
   @override
@@ -386,43 +377,26 @@ class $RecipesTable extends Recipes with TableInfo<$RecipesTable, Recipe> {
   final String? _alias;
   $RecipesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', aliasedName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  @override
-  late final GeneratedTextColumn title = _constructTitle();
-  GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', aliasedName, false, maxTextLength: 16);
-  }
-
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 16),
+      typeName: 'TEXT',
+      requiredDuringInsert: true);
   final VerificationMeta _instructionsMeta =
       const VerificationMeta('instructions');
-  @override
-  late final GeneratedTextColumn instructions = _constructInstructions();
-  GeneratedTextColumn _constructInstructions() {
-    return GeneratedTextColumn(
-      'instructions',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> instructions = GeneratedColumn<String?>(
+      'instructions', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
-  @override
-  late final GeneratedIntColumn category = _constructCategory();
-  GeneratedIntColumn _constructCategory() {
-    return GeneratedIntColumn(
-      'category',
-      aliasedName,
-      true,
-    );
-  }
-
+  late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
+      'category', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, title, instructions, category];
   @override
@@ -627,36 +601,20 @@ class $IngredientsTable extends Ingredients
   final String? _alias;
   $IngredientsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', aliasedName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedTextColumn name = _constructName();
-  GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _caloriesPer100gMeta =
       const VerificationMeta('caloriesPer100g');
-  @override
-  late final GeneratedIntColumn caloriesPer100g = _constructCaloriesPer100g();
-  GeneratedIntColumn _constructCaloriesPer100g() {
-    return GeneratedIntColumn(
-      'calories',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> caloriesPer100g = GeneratedColumn<int?>(
+      'calories', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name, caloriesPer100g];
   @override
@@ -863,39 +821,18 @@ class $IngredientInRecipesTable extends IngredientInRecipes
   final String? _alias;
   $IngredientInRecipesTable(this._db, [this._alias]);
   final VerificationMeta _recipeMeta = const VerificationMeta('recipe');
-  @override
-  late final GeneratedIntColumn recipe = _constructRecipe();
-  GeneratedIntColumn _constructRecipe() {
-    return GeneratedIntColumn(
-      'recipe',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> recipe = GeneratedColumn<int?>(
+      'recipe', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _ingredientMeta = const VerificationMeta('ingredient');
-  @override
-  late final GeneratedIntColumn ingredient = _constructIngredient();
-  GeneratedIntColumn _constructIngredient() {
-    return GeneratedIntColumn(
-      'ingredient',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> ingredient = GeneratedColumn<int?>(
+      'ingredient', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   final VerificationMeta _amountInGramsMeta =
       const VerificationMeta('amountInGrams');
-  @override
-  late final GeneratedIntColumn amountInGrams = _constructAmountInGrams();
-  GeneratedIntColumn _constructAmountInGrams() {
-    return GeneratedIntColumn(
-      'amount',
-      aliasedName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> amountInGrams = GeneratedColumn<int?>(
+      'amount', aliasedName, false,
+      typeName: 'INTEGER', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [recipe, ingredient, amountInGrams];
   @override

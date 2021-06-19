@@ -8,8 +8,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final a = GeneratedRealColumn('a', 'table', false);
-  final b = GeneratedRealColumn('b', 'table', false);
+  const a = CustomExpression<double>('a');
+  const b = CustomExpression<double>('b');
 
   test('pow', () {
     expect(sqlPow(a, b), generates('pow(a, b)'));
@@ -24,7 +24,7 @@ void main() {
   test('atan', () => expect(sqlAtan(a), generates('atan(a)')));
 
   test('containsCase', () {
-    final c = GeneratedTextColumn('a', 'table', false);
+    const c = CustomExpression<String>('a');
 
     expect(c.containsCase('foo'), generates('moor_contains(a, ?, 0)', ['foo']));
     expect(

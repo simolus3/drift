@@ -7,7 +7,8 @@ import '../data/utils/expect_generated.dart';
 void main() {
   final db = TodoDb();
 
-  final innerExpression = GeneratedTextColumn('name', 'table', true);
+  const innerExpression =
+      CustomExpression<String>('name', precedence: Precedence.primary);
   group('values', () {
     test('in expressions are generated', () {
       final isInExpression = innerExpression.isIn(['Max', 'Tobias']);

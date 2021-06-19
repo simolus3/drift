@@ -25,7 +25,7 @@ void main() {
   });
 
   test('generates cast expressions', () {
-    final expr = GeneratedIntColumn('c', 'tbl', false);
+    const expr = CustomExpression<int>('c');
 
     expect(expr.cast<String>(), generates('CAST(c AS TEXT)'));
     expect(expr.cast<int>(), generates('CAST(c AS INTEGER)'));

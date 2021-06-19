@@ -37,7 +37,7 @@ void main() {
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           'name TEXT NOT NULL, '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
+          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));",
@@ -70,7 +70,7 @@ void main() {
           'CREATE TABLE IF NOT EXISTS users '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           'name TEXT NOT NULL, '
-          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome in (0, 1)), '
+          'is_awesome INTEGER NOT NULL DEFAULT 1 CHECK (is_awesome IN (0, 1)), '
           'profile_picture BLOB NOT NULL, '
           'creation_time INTEGER NOT NULL '
           "DEFAULT (strftime('%s', CURRENT_TIMESTAMP)));",
@@ -100,7 +100,7 @@ void main() {
 
       verify(mockExecutor.runCustom('ALTER TABLE users ADD COLUMN '
           'is_awesome INTEGER NOT NULL DEFAULT 1 '
-          'CHECK (is_awesome in (0, 1));'));
+          'CHECK (is_awesome IN (0, 1));'));
     });
 
     test('renames columns', () async {

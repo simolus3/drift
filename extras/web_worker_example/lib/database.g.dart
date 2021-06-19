@@ -129,27 +129,23 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   final String? _alias;
   Entries(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        declaredAsPrimaryKey: true, $customConstraints: 'PRIMARY KEY');
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'PRIMARY KEY');
   final VerificationMeta _valueMeta = const VerificationMeta('value');
-  late final GeneratedTextColumn value = _constructValue();
-  GeneratedTextColumn _constructValue() {
-    return GeneratedTextColumn('text', $tableName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
+      'text', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [id, value];
   @override
-  Entries get asDslTable => this;
+  String get aliasedName => _alias ?? 'entries';
   @override
-  String get $tableName => _alias ?? 'entries';
-  @override
-  final String actualTableName = 'entries';
+  String get actualTableName => 'entries';
   @override
   VerificationContext validateIntegrity(Insertable<Entrie> instance,
       {bool isInserting = false}) {
@@ -171,8 +167,8 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Entrie.fromData(data, _db, prefix: effectivePrefix);
+    return Entrie.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

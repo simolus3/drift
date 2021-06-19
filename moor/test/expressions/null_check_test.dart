@@ -6,7 +6,8 @@ import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final innerExpression = GeneratedTextColumn('name', 'table', true);
+  const innerExpression =
+      CustomExpression<int>('name', precedence: Precedence.primary);
 
   test('IS NULL expressions are generated', () {
     final oldFunction = moor.isNull(innerExpression);

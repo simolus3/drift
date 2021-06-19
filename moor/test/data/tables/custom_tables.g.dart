@@ -213,36 +213,25 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final String? _alias;
   ConfigTable(this._db, [this._alias]);
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
-  late final GeneratedTextColumn configKey = _constructConfigKey();
-  GeneratedTextColumn _constructConfigKey() {
-    return GeneratedTextColumn('config_key', aliasedName, false,
-        $customConstraints: 'not null primary key');
-  }
-
+  late final GeneratedColumn<String?> configKey = GeneratedColumn<String?>(
+      'config_key', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'not null primary key');
   final VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
-  late final GeneratedTextColumn configValue = _constructConfigValue();
-  GeneratedTextColumn _constructConfigValue() {
-    return GeneratedTextColumn('config_value', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
+      'config_value', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
-  late final GeneratedIntColumn syncState = _constructSyncState();
-  GeneratedIntColumn _constructSyncState() {
-    return GeneratedIntColumn('sync_state', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<int?> syncState = GeneratedColumn<int?>(
+      'sync_state', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
-  late final GeneratedIntColumn syncStateImplicit =
-      _constructSyncStateImplicit();
-  GeneratedIntColumn _constructSyncStateImplicit() {
-    return GeneratedIntColumn('sync_state_implicit', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<int?> syncStateImplicit = GeneratedColumn<int?>(
+      'sync_state_implicit', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
@@ -425,20 +414,18 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final String? _alias;
   WithDefaults(this._db, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
-  late final GeneratedTextColumn a = _constructA();
-  GeneratedTextColumn _constructA() {
-    return GeneratedTextColumn('a', aliasedName, true,
-        $customConstraints: 'DEFAULT \'something\'',
-        defaultValue: const CustomExpression<String>('\'something\''));
-  }
-
+  late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
+      'a', aliasedName, true,
+      typeName: 'TEXT',
+      requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT \'something\'',
+      defaultValue: const CustomExpression<String>('\'something\''));
   final VerificationMeta _bMeta = const VerificationMeta('b');
-  late final GeneratedIntColumn b = _constructB();
-  GeneratedIntColumn _constructB() {
-    return GeneratedIntColumn('b', aliasedName, true,
-        $customConstraints: 'UNIQUE');
-  }
-
+  late final GeneratedColumn<int?> b = GeneratedColumn<int?>(
+      'b', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'UNIQUE');
   @override
   List<GeneratedColumn> get $columns => [a, b];
   @override
@@ -521,12 +508,11 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final String? _alias;
   NoIds(this._db, [this._alias]);
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
-  late final GeneratedBlobColumn payload = _constructPayload();
-  GeneratedBlobColumn _constructPayload() {
-    return GeneratedBlobColumn('payload', aliasedName, false,
-        $customConstraints: 'NOT NULL PRIMARY KEY');
-  }
-
+  late final GeneratedColumn<Uint8List?> payload = GeneratedColumn<Uint8List?>(
+      'payload', aliasedName, false,
+      typeName: 'BLOB',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL PRIMARY KEY');
   @override
   List<GeneratedColumn> get $columns => [payload];
   @override
@@ -727,24 +713,19 @@ class WithConstraints extends Table
   final String? _alias;
   WithConstraints(this._db, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
-  late final GeneratedTextColumn a = _constructA();
-  GeneratedTextColumn _constructA() {
-    return GeneratedTextColumn('a', aliasedName, true, $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
+      'a', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _bMeta = const VerificationMeta('b');
-  late final GeneratedIntColumn b = _constructB();
-  GeneratedIntColumn _constructB() {
-    return GeneratedIntColumn('b', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<int?> b = GeneratedColumn<int?>(
+      'b', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _cMeta = const VerificationMeta('c');
-  late final GeneratedRealColumn c = _constructC();
-  GeneratedRealColumn _constructC() {
-    return GeneratedRealColumn('c', aliasedName, true, $customConstraints: '');
-  }
-
+  late final GeneratedColumn<double?> c = GeneratedColumn<double?>(
+      'c', aliasedName, true,
+      typeName: 'REAL', requiredDuringInsert: false, $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
   @override
@@ -984,34 +965,24 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final String? _alias;
   Mytable(this._db, [this._alias]);
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
-  late final GeneratedIntColumn someid = _constructSomeid();
-  GeneratedIntColumn _constructSomeid() {
-    return GeneratedIntColumn('someid', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<int?> someid = GeneratedColumn<int?>(
+      'someid', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
-  late final GeneratedTextColumn sometext = _constructSometext();
-  GeneratedTextColumn _constructSometext() {
-    return GeneratedTextColumn('sometext', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> sometext = GeneratedColumn<String?>(
+      'sometext', aliasedName, true,
+      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _isInsertingMeta =
       const VerificationMeta('isInserting');
-  late final GeneratedBoolColumn isInserting = _constructIsInserting();
-  GeneratedBoolColumn _constructIsInserting() {
-    return GeneratedBoolColumn('is_inserting', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<bool?> isInserting = GeneratedColumn<bool?>(
+      'is_inserting', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
-  late final GeneratedDateTimeColumn somedate = _constructSomedate();
-  GeneratedDateTimeColumn _constructSomedate() {
-    return GeneratedDateTimeColumn('somedate', aliasedName, true,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<DateTime?> somedate = GeneratedColumn<DateTime?>(
+      'somedate', aliasedName, true,
+      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
@@ -1218,26 +1189,17 @@ class Email extends Table
   final String? _alias;
   Email(this._db, [this._alias]);
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
-  late final GeneratedTextColumn sender = _constructSender();
-  GeneratedTextColumn _constructSender() {
-    return GeneratedTextColumn('sender', aliasedName, false,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> sender = GeneratedColumn<String?>(
+      'sender', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedTextColumn title = _constructTitle();
-  GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', aliasedName, false,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
   final VerificationMeta _bodyMeta = const VerificationMeta('body');
-  late final GeneratedTextColumn body = _constructBody();
-  GeneratedTextColumn _constructBody() {
-    return GeneratedTextColumn('body', aliasedName, false,
-        $customConstraints: '');
-  }
-
+  late final GeneratedColumn<String?> body = GeneratedColumn<String?>(
+      'body', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
   @override
@@ -1420,19 +1382,17 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   final String? _alias;
   WeirdTable(this._db, [this._alias]);
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
-  late final GeneratedIntColumn sqlClass = _constructSqlClass();
-  GeneratedIntColumn _constructSqlClass() {
-    return GeneratedIntColumn('class', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<int?> sqlClass = GeneratedColumn<int?>(
+      'class', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
-  late final GeneratedTextColumn textColumn = _constructTextColumn();
-  GeneratedTextColumn _constructTextColumn() {
-    return GeneratedTextColumn('text', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<String?> textColumn = GeneratedColumn<String?>(
+      'text', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   @override
   List<GeneratedColumn> get $columns => [sqlClass, textColumn];
   @override
@@ -1581,42 +1541,18 @@ class MyView extends View<MyView, MyViewData> {
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
-  late final GeneratedTextColumn configKey = _constructConfigKey();
-  GeneratedTextColumn _constructConfigKey() {
-    return GeneratedTextColumn(
-      'config_key',
-      aliasedName,
-      false,
-    );
-  }
-
-  late final GeneratedTextColumn configValue = _constructConfigValue();
-  GeneratedTextColumn _constructConfigValue() {
-    return GeneratedTextColumn(
-      'config_value',
-      aliasedName,
-      true,
-    );
-  }
-
-  late final GeneratedIntColumn syncState = _constructSyncState();
-  GeneratedIntColumn _constructSyncState() {
-    return GeneratedIntColumn(
-      'sync_state',
-      aliasedName,
-      true,
-    );
-  }
-
-  late final GeneratedIntColumn syncStateImplicit =
-      _constructSyncStateImplicit();
-  GeneratedIntColumn _constructSyncStateImplicit() {
-    return GeneratedIntColumn(
-      'sync_state_implicit',
-      aliasedName,
-      true,
-    );
-  }
+  late final GeneratedColumn<String?> configKey = GeneratedColumn<String?>(
+      'config_key', aliasedName, false,
+      typeName: 'TEXT');
+  late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
+      'config_value', aliasedName, true,
+      typeName: 'TEXT');
+  late final GeneratedColumn<int?> syncState = GeneratedColumn<int?>(
+      'sync_state', aliasedName, true,
+      typeName: 'INTEGER');
+  late final GeneratedColumn<int?> syncStateImplicit = GeneratedColumn<int?>(
+      'sync_state_implicit', aliasedName, true,
+      typeName: 'INTEGER');
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
@@ -1670,7 +1606,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<Config> readDynamic(
-      {Expression<bool> Function(ConfigTable config) predicate =
+      {Expression<bool?> Function(ConfigTable config) predicate =
           _$moor$default$1}) {
     final generatedpredicate = $write(predicate(this.config));
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
@@ -1679,7 +1615,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
-      {Expression<bool> Function(ConfigTable config) pred = _$moor$default$2}) {
+      {Expression<bool?> Function(ConfigTable config) pred =
+          _$moor$default$2}) {
     var $arrayStartIndex = 2;
     final generatedpred = $write(pred(this.config));
     $arrayStartIndex += generatedpred.amountOfVariables;
@@ -1725,7 +1662,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<MultipleResult> multiple(
-      {required Expression<bool> Function(WithDefaults d, WithConstraints c)
+      {required Expression<bool?> Function(WithDefaults d, WithConstraints c)
           predicate}) {
     final generatedpredicate = $write(
         predicate(
@@ -1752,7 +1689,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<ReadRowIdResult> readRowId(
-      {required Expression<int> Function(ConfigTable config) expr}) {
+      {required Expression<int?> Function(ConfigTable config) expr}) {
     final generatedexpr = $write(expr(this.config));
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
@@ -1837,9 +1774,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 }
 
 OrderBy _$moor$default$0(ConfigTable _) => const OrderBy.nothing();
-Expression<bool> _$moor$default$1(ConfigTable _) =>
+Expression<bool?> _$moor$default$1(ConfigTable _) =>
     const CustomExpression('(TRUE)');
-Expression<bool> _$moor$default$2(ConfigTable _) =>
+Expression<bool?> _$moor$default$2(ConfigTable _) =>
     const CustomExpression('(TRUE)');
 
 class JsonResult extends CustomResultSet {

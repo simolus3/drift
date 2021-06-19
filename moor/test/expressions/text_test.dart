@@ -5,7 +5,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final expression = GeneratedTextColumn('col', 'table', false);
+  const expression =
+      CustomExpression<String>('col', precedence: Precedence.primary);
   final db = TodoDb();
 
   test('generates like expressions', () {

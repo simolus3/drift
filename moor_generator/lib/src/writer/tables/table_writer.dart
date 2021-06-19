@@ -1,4 +1,5 @@
 //@dart=2.9
+import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
@@ -18,35 +19,68 @@ abstract class TableOrViewWriter {
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
 
+    final defaultConstraints = <String>[];
+    var wrotePkConstraint = false;
+
     for (final feature in column.features) {
-      if (feature is AutoIncrement) {
-        additionalParams['hasAutoIncrement'] = 'true';
-      } else if (feature is LimitingTextLength) {
+      if (feature is PrimaryKey) {
+        if (!wrotePkConstraint) {
+          defaultConstraints.add(feature is AutoIncrement
+              ? 'PRIMARY KEY AUTOINCREMENT'
+              : 'PRIMARY KEY');
+
+          wrotePkConstraint = true;
+        }
+      }
+
+      if (feature is LimitingTextLength) {
+        final buffer = StringBuffer('GeneratedColumn.checkTextLength(');
+
         if (feature.minLength != null) {
-          additionalParams['minTextLength'] = feature.minLength.toString();
+          buffer.write('minTextLength: ${feature.minLength},');
         }
         if (feature.maxLength != null) {
-          additionalParams['maxTextLength'] = feature.maxLength.toString();
+          buffer.write('maxTextLength: ${feature.maxLength}');
         }
-      } else if (feature is PrimaryKey && column.type == ColumnType.integer) {
-        // this field is only relevant for integer columns because an INTEGER
-        // PRIMARY KEY is an alias for the rowid which should allow absent
-        // values during insert, even without the `AUTOINCREMENT` clause.
-        additionalParams['declaredAsPrimaryKey'] = 'true';
+        buffer.write(')');
+
+        additionalParams['additionalChecks'] = buffer.toString();
       }
+    }
+
+    if (column.type == ColumnType.boolean) {
+      final name = escapeIfNeeded(column.name.name);
+      defaultConstraints.add('CHECK ($name IN (0, 1))');
+    }
+    additionalParams['typeName'] = asDartLiteral(column.sqlTypeName());
+
+    if (tableOrView is MoorTable) {
+      additionalParams['requiredDuringInsert'] = (tableOrView as MoorTable)
+          .isColumnRequiredForInsert(column)
+          .toString();
     }
 
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
           asDartLiteral(column.customConstraints);
+    } else if (defaultConstraints.isNotEmpty) {
+      // Use the default constraints supported by moor
+      additionalParams['defaultConstraints'] =
+          asDartLiteral(defaultConstraints.join(' '));
     }
 
     if (column.defaultArgument != null) {
       additionalParams['defaultValue'] = column.defaultArgument;
     }
 
+    if (column.clientDefaultCode != null) {
+      additionalParams['clientDefault'] = column.clientDefaultCode;
+    }
+
+    final innerType = column.innerColumnType(options);
+    final type = 'GeneratedColumn<$innerType>';
     expressionBuffer
-      ..write('return ${column.implColumnTypeName}')
+      ..write(type)
       ..write("('${column.name.name}', aliasedName, $isNullable, ");
 
     var first = true;
@@ -62,19 +96,13 @@ abstract class TableOrViewWriter {
 
     expressionBuffer.write(')');
 
-    if (column.clientDefaultCode != null) {
-      expressionBuffer.write('..clientDefault = ${column.clientDefaultCode}');
-    }
-
-    expressionBuffer.write(';');
-
-    writeMemoizedGetterWithBody(
+    writeMemoizedGetter(
       buffer: buffer,
       getterName: column.dartGetterName,
-      returnType: column.implColumnTypeName,
+      returnType: type,
       code: expressionBuffer.toString(),
-      hasOverride: isOverride,
       options: options,
+      hasOverride: isOverride,
     );
   }
 

@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:moor_generator/src/analyzer/options.dart';
+import 'package:moor_generator/writer.dart';
 
 import 'declarations/declaration.dart';
 import 'types.dart';
@@ -105,6 +106,7 @@ class MoorColumn implements HasDeclaration, HasType {
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
+  @Deprecated('Use Column<innerColumnType()> instead')
   String get dslColumnTypeName => const {
         ColumnType.boolean: 'BoolColumn',
         ColumnType.text: 'TextColumn',
@@ -114,17 +116,52 @@ class MoorColumn implements HasDeclaration, HasType {
         ColumnType.real: 'RealColumn',
       }[type];
 
-  /// The `GeneratedColumn` class that implements the [dslColumnTypeName].
-  /// For instance, if a table has declared an `IntColumn`, the matching
-  /// implementation name would be an `GeneratedIntColumn`.
-  String get implColumnTypeName => const {
-        ColumnType.boolean: 'GeneratedBoolColumn',
-        ColumnType.text: 'GeneratedTextColumn',
-        ColumnType.integer: 'GeneratedIntColumn',
-        ColumnType.datetime: 'GeneratedDateTimeColumn',
-        ColumnType.blob: 'GeneratedBlobColumn',
-        ColumnType.real: 'GeneratedRealColumn',
-      }[type];
+  String innerColumnType(
+      [GenerationOptions options = const GenerationOptions()]) {
+    String code;
+
+    switch (type) {
+      case ColumnType.integer:
+        code = 'int';
+        break;
+      case ColumnType.text:
+        code = 'String';
+        break;
+      case ColumnType.boolean:
+        code = 'bool';
+        break;
+      case ColumnType.datetime:
+        code = 'DateTime';
+        break;
+      case ColumnType.blob:
+        code = 'Uint8List';
+        break;
+      case ColumnType.real:
+        code = 'double';
+        break;
+    }
+
+    // We currently use nullable columns everywhere because it's not clear how
+    // to express nullability in joins otherwise.
+    return options.nnbd ? '$code?' : code;
+  }
+
+  String sqlTypeName() {
+    switch (type) {
+      case ColumnType.integer:
+      case ColumnType.boolean:
+      case ColumnType.datetime:
+        return 'INTEGER';
+      case ColumnType.text:
+        return 'TEXT';
+      case ColumnType.blob:
+        return 'BLOB';
+      case ColumnType.real:
+        return 'REAL';
+    }
+
+    throw AssertionError("Can't happen");
+  }
 
   @override
   bool get isArray => false;

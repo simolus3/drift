@@ -5,7 +5,8 @@ import '../data/tables/todos.dart';
 import '../data/utils/expect_equality.dart';
 
 void main() {
-  final expression = GeneratedIntColumn('col', 'table', false);
+  const expression =
+      CustomExpression<int>('col', precedence: Precedence.primary);
   final db = TodoDb();
 
   final comparisons = {
@@ -23,7 +24,8 @@ void main() {
   };
 
   group('can compare with other expressions', () {
-    final compare = GeneratedIntColumn('compare', 'table', false);
+    const compare =
+        CustomExpression<int>('compare', precedence: Precedence.primary);
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
@@ -53,8 +55,9 @@ void main() {
 
   group('between', () {
     test('other expressions', () {
-      final low = GeneratedIntColumn('low', 'table', false);
-      final high = GeneratedIntColumn('high', 'table', false);
+      const low = CustomExpression<int>('low', precedence: Precedence.primary);
+      const high =
+          CustomExpression<int>('high', precedence: Precedence.primary);
 
       final ctx = GenerationContext.fromDb(db);
       expression.isBetween(low, high).writeInto(ctx);

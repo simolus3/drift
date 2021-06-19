@@ -129,21 +129,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', aliasedName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedTextColumn name = _constructName();
-  GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', aliasedName, false,
-        defaultValue: const Constant('name'));
-  }
-
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: false,
+      defaultValue: const Constant('name'));
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -357,34 +353,30 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final String? _alias;
   Groups(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
-  late final GeneratedTextColumn title = _constructTitle();
-  GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', aliasedName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
-  late final GeneratedBoolColumn deleted = _constructDeleted();
-  GeneratedBoolColumn _constructDeleted() {
-    return GeneratedBoolColumn('deleted', aliasedName, true,
-        $customConstraints: 'DEFAULT FALSE',
-        defaultValue: const CustomExpression<bool>('FALSE'));
-  }
-
+  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+      'deleted', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT FALSE',
+      defaultValue: const CustomExpression<bool>('FALSE'));
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
-  late final GeneratedIntColumn owner = _constructOwner();
-  GeneratedIntColumn _constructOwner() {
-    return GeneratedIntColumn('owner', aliasedName, false,
-        $customConstraints: 'NOT NULL REFERENCES users (id)');
-  }
-
+  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+      'owner', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override

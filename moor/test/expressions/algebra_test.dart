@@ -5,10 +5,10 @@ import '../data/utils/expect_equality.dart';
 import '../data/utils/expect_generated.dart';
 
 void main() {
-  final i1 = GeneratedIntColumn('i1', 'tbl', true);
-  final i2 = GeneratedIntColumn('i2', 'tbl', true);
-  final s1 = GeneratedTextColumn('s1', 'tbl', true);
-  final s2 = GeneratedTextColumn('s2', 'tbl', true);
+  const i1 = CustomExpression<int>('i1', precedence: Precedence.primary);
+  const i2 = CustomExpression<int>('i2', precedence: Precedence.primary);
+  const s1 = CustomExpression<String>('s1', precedence: Precedence.primary);
+  const s2 = CustomExpression<String>('s2', precedence: Precedence.primary);
 
   test('arithmetic test', () {
     expect(i1 + i2 * i1, generates('i1 + i2 * i1'));

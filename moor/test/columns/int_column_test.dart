@@ -5,12 +5,12 @@ import '../data/tables/todos.dart';
 
 void main() {
   test('int column writes AUTOINCREMENT constraint', () {
-    final column = GeneratedIntColumn(
+    final column = GeneratedColumn<int>(
       'foo',
       'tbl',
       false,
-      declaredAsPrimaryKey: true,
-      hasAutoIncrement: true,
+      typeName: 'INTEGER',
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
     );
 
     final context = GenerationContext.fromDb(TodoDb());
@@ -21,13 +21,8 @@ void main() {
   });
 
   test('int column writes PRIMARY KEY constraint', () {
-    final column = GeneratedIntColumn(
-      'foo',
-      'tbl',
-      false,
-      declaredAsPrimaryKey: true,
-      hasAutoIncrement: false,
-    );
+    final column = GeneratedColumn<int>('foo', 'tbl', false,
+        typeName: 'INTEGER', $customConstraints: 'NOT NULL PRIMARY KEY');
 
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);

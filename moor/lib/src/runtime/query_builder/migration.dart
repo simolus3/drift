@@ -237,8 +237,7 @@ class Migrator {
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {
       final column = table.$columns[i];
-
-      if (column is GeneratedIntColumn && column.hasAutoIncrement) {
+      if (column.hasAutoIncrement) {
         hasAutoIncrement = true;
       }
 
@@ -492,7 +491,8 @@ class TableMigration {
       // isRequired returns false if the column has a client default value that
       // would be used for inserts. We can't apply the client default here
       // though, so it doesn't count as a default value.
-      final isRequired = column.isRequired || column.clientDefault != null;
+      final isRequired =
+          column.requiredDuringInsert || column.clientDefault != null;
       if (isRequired && !columnTransformer.containsKey(column)) {
         problematicNewColumns.add(column.$name);
       }
