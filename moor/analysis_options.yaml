@@ -8,3 +8,8 @@ analyzer:
     - "example_web/**"
     - "**/*.g.dart"
     - "**/*.mocks.dart"
+
+linter:
+  rules:
+    # todo: Re-enable after https://dart-review.googlesource.com/c/sdk/+/204040 lands on beta
+    comment_references: false

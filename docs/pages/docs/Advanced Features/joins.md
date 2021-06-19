@@ -151,6 +151,27 @@ FROM routes
     INNER JOIN geo_points d ON d.id = routes.destination
 ```
 
+## `ORDER BY` and `WHERE` on joins
+
+Similar to queries on a single table, `orderBy` and `where` can be used on joins too.
+The initial example from above is expanded to only include todo entries with a specified
+filter and to order results based on the category's id:
+
+```dart
+Stream<List<EntryWithCategory>> entriesWithCategory(String entryFilter) {
+  final query = select(todos).join([
+    leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
+  ]);
+  query.where(todos.content.like(entryFilter));
+  query.orderBy([OrderingTerm.asc(categories.id)]);
+  // ...
+}
+```
+
+As a join can have more than one table, all tables in `where` and `orderBy` have to
+be specified directly (unlike the callback on single-table queries that gets called
+with the right table by default).
+
 ## Group by
 
 Sometimes, you need to run queries that _aggregate_ data, meaning that data you're interested in
