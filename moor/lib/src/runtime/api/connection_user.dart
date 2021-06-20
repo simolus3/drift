@@ -326,7 +326,7 @@ abstract class DatabaseConnectionUser {
   /// bound to the [variables] you specify on this query.
   Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
-      Set<TableInfo> readsFrom = const {}}) {
+      Set<ResultSetImplementation> readsFrom = const {}}) {
     return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
   }
 
@@ -342,7 +342,7 @@ abstract class DatabaseConnectionUser {
   @Deprecated('Renamed to customSelect')
   Selectable<QueryRow> customSelectQuery(String query,
       {List<Variable> variables = const [],
-      Set<TableInfo> readsFrom = const {}}) {
+      Set<ResultSetImplementation> readsFrom = const {}}) {
     return customSelect(query, variables: variables, readsFrom: readsFrom);
   }
 

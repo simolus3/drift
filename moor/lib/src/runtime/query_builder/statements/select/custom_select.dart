@@ -6,7 +6,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
   /// Tables this select statement reads from. When turning this select query
   /// into an auto-updating stream, that stream will emit new items whenever
   /// any of these tables changes.
-  final Set<TableInfo> tables;
+  final Set<ResultSetImplementation> tables;
 
   /// The sql query string for this statement.
   final String query;
