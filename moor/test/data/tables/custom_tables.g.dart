@@ -1578,7 +1578,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           Variable<String>(var1)
         ],
         readsFrom: {
-          config
+          config,
         }).map((QueryRow row) => config.mapFromRowWithAlias(row, const {
           'ck': 'config_key',
           'cf': 'config_value',
@@ -1601,7 +1601,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           ...generatedclause.introducedVariables
         ],
         readsFrom: {
-          config
+          config,
+          ...generatedclause.watchedTables,
         }).map(config.mapFromRow);
   }
 
@@ -1610,8 +1611,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           _$moor$default$1}) {
     final generatedpredicate = $write(predicate(this.config));
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
-        variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {config}).map(config.mapFromRow);
+        variables: [
+          ...generatedpredicate.introducedVariables
+        ],
+        readsFrom: {
+          config,
+          ...generatedpredicate.watchedTables,
+        }).map(config.mapFromRow);
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
@@ -1631,7 +1637,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
             Variable<int?>(ConfigTable.$converter1.mapToSql($))
         ],
         readsFrom: {
-          config
+          config,
+          ...generatedpred.watchedTables,
         }).map((QueryRow row) => row.read<String>('config_key'));
   }
 
@@ -1639,7 +1646,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
         'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
         variables: [],
-        readsFrom: {config}).map((QueryRow row) {
+        readsFrom: {
+          config,
+        }).map((QueryRow row) {
       return JsonResult(
         row: row,
         key: row.read<String>('key'),
@@ -1670,8 +1679,14 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         hasMultipleTables: true);
     return customSelect(
         'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
-        variables: [...generatedpredicate.introducedVariables],
-        readsFrom: {withDefaults, withConstraints}).map((QueryRow row) {
+        variables: [
+          ...generatedpredicate.introducedVariables
+        ],
+        readsFrom: {
+          withDefaults,
+          withConstraints,
+          ...generatedpredicate.watchedTables,
+        }).map((QueryRow row) {
       return MultipleResult(
         row: row,
         a: row.read<String?>('a'),
@@ -1684,8 +1699,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<EMail> searchEmails({required String? term}) {
     return customSelect(
         'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
-        variables: [Variable<String?>(term)],
-        readsFrom: {email}).map(email.mapFromRow);
+        variables: [
+          Variable<String?>(term)
+        ],
+        readsFrom: {
+          email,
+        }).map(email.mapFromRow);
   }
 
   Selectable<ReadRowIdResult> readRowId(
@@ -1693,8 +1712,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final generatedexpr = $write(expr(this.config));
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
-        variables: [...generatedexpr.introducedVariables],
-        readsFrom: {config}).map((QueryRow row) {
+        variables: [
+          ...generatedexpr.introducedVariables
+        ],
+        readsFrom: {
+          config,
+          ...generatedexpr.watchedTables,
+        }).map((QueryRow row) {
       return ReadRowIdResult(
         row: row,
         rowid: row.read<int>('rowid'),
@@ -1709,8 +1733,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<MyViewData> readView() {
-    return customSelect('SELECT * FROM my_view',
-        variables: [], readsFrom: {config}).map(myView.mapFromRow);
+    return customSelect('SELECT * FROM my_view', variables: [], readsFrom: {
+      config,
+    }).map(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
@@ -1723,7 +1748,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<int?> nullableQuery() {
     return customSelect('SELECT MAX(oid) AS _c0 FROM config',
         variables: [],
-        readsFrom: {config}).map((QueryRow row) => row.read<int?>('_c0'));
+        readsFrom: {
+          config,
+        }).map((QueryRow row) => row.read<int?>('_c0'));
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {

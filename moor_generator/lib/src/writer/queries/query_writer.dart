@@ -687,8 +687,17 @@ class QueryWriter {
   }
 
   void _writeReadsFrom() {
-    final from = _select.readsFromTables.map((t) => t.dbGetterName).join(', ');
-    _buffer..write('readsFrom: {')..write(from)..write('}');
+    _buffer.write('readsFrom: {');
+
+    for (final table in _select.readsFromTables) {
+      _buffer.write('${table.dbGetterName},');
+    }
+
+    for (final element in query.elements.whereType<FoundDartPlaceholder>()) {
+      _buffer.write('...${placeholderContextName(element)}.watchedTables,');
+    }
+
+    _buffer.write('}');
   }
 
   void _writeUpdates() {

@@ -895,7 +895,10 @@ abstract class _$Database extends GeneratedDatabase {
     return customSelect(
         'SELECT r.title, SUM(ir.amount) AS total_weight FROM recipes AS r INNER JOIN recipe_ingredients AS ir ON ir.recipe = r.id GROUP BY r.id',
         variables: [],
-        readsFrom: {recipes, ingredientInRecipes}).map((QueryRow row) {
+        readsFrom: {
+          recipes,
+          ingredientInRecipes,
+        }).map((QueryRow row) {
       return TotalWeightResult(
         row: row,
         title: row.read<String>('title'),
