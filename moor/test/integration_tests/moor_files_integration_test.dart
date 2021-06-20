@@ -35,6 +35,23 @@ void main() {
     expect(result.payload, hasLength(12));
   });
 
+  test('updates for tables introduced in Dart subquery', () async {
+    await db
+        .into(db.config)
+        .insert(ConfigCompanion.insert(configKey: 'my_key'));
+
+    final inner = db.selectOnly(db.mytable)..addColumns([db.mytable.sometext]);
+    final stream = db
+        .readDynamic(predicate: (config) => config.configKey.isInQuery(inner))
+        .watch();
+
+    expect(stream, emitsInOrder([isEmpty, hasLength(1)]));
+
+    await db
+        .into(db.mytable)
+        .insert(MytableCompanion.insert(sometext: const Value('my_key')));
+  });
+
   group('views', () {
     test('can be selected from', () {
       return expectLater(db.readView().get(), completion(isEmpty));

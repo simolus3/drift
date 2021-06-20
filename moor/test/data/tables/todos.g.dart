@@ -1294,7 +1294,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return customSelect(
         'SELECT t.*, c.id AS catId, c."desc" AS catDesc FROM todos AS t INNER JOIN categories AS c ON c.id = t.category',
         variables: [],
-        readsFrom: {categories, todosTable}).map((QueryRow row) {
+        readsFrom: {
+          categories,
+          todosTable,
+        }).map((QueryRow row) {
       return AllTodosWithCategoryResult(
         row: row,
         id: row.read<int>('id'),
@@ -1329,24 +1332,29 @@ abstract class _$TodoDb extends GeneratedDatabase {
           for (var $ in var3) Variable<int>($)
         ],
         readsFrom: {
-          todosTable
+          todosTable,
         }).map(todosTable.mapFromRow);
   }
 
   Selectable<TodoEntry> search({required int id}) {
     return customSelect(
         'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
-        variables: [Variable<int>(id)],
-        readsFrom: {todosTable}).map(todosTable.mapFromRow);
+        variables: [
+          Variable<int>(id)
+        ],
+        readsFrom: {
+          todosTable,
+        }).map(todosTable.mapFromRow);
   }
 
   Selectable<MyCustomObject> findCustom() {
     return customSelect(
-            'SELECT custom FROM table_without_p_k WHERE some_float < 10',
-            variables: [],
-            readsFrom: {tableWithoutPK})
-        .map((QueryRow row) => $TableWithoutPKTable.$converter0
-            .mapToDart(row.read<String>('custom'))!);
+        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
+        variables: [],
+        readsFrom: {
+          tableWithoutPK,
+        }).map((QueryRow row) => $TableWithoutPKTable.$converter0
+        .mapToDart(row.read<String>('custom'))!);
   }
 
   @override
@@ -1428,7 +1436,13 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
         'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = :user',
-        variables: [Variable<int>(user)],
-        readsFrom: {todosTable, sharedTodos, users}).map(todosTable.mapFromRow);
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          todosTable,
+          sharedTodos,
+          users,
+        }).map(todosTable.mapFromRow);
   }
 }
