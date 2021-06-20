@@ -30,6 +30,10 @@ void main() {
 
       expect(isInExpression,
           generates('name IN (SELECT users.name AS "users.name" FROM users)'));
+
+      final ctx = GenerationContext(SqlTypeSystem.defaultInstance, null);
+      isInExpression.writeInto(ctx);
+      expect(ctx.watchedTables, contains(db.users));
     });
 
     test('not in expressions are generated', () {
