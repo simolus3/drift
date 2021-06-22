@@ -13,17 +13,14 @@ import 'package:sqlparser/sqlparser.dart';
 import '../custom_row_class.dart';
 
 class ViewAnalyzer extends BaseAnalyzer {
-  final List<MoorView> viewsToAnalyze;
   final List<ImportStatement> imports;
 
   ViewAnalyzer(
-      Step step, List<MoorTable> tables, this.viewsToAnalyze, this.imports)
-      : // We're about to analyze views and add them to the engine, but don't
-        // add the unfinished views right away
-        super(tables, const [], step);
+      Step step, List<MoorTable> tables, List<MoorView> views, this.imports)
+      : super(tables, views, step);
 
   /// Resolves all the views in topological order.
-  Future<void> resolve() async {
+  Future<void> resolve(Iterable<MoorView> viewsToAnalyze) async {
     // Going through the topologically sorted list and analyzing each view.
     for (final view in viewsToAnalyze) {
       final ctx =
