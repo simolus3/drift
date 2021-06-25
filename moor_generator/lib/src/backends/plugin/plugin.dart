@@ -5,15 +5,16 @@ import 'package:analyzer_plugin_fork/plugin/completion_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/folding_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/navigation_mixin.dart';
 import 'package:analyzer_plugin_fork/plugin/outline_mixin.dart';
+import 'package:analyzer_plugin_fork/plugin/plugin.dart';
 import 'package:analyzer_plugin_fork/protocol/protocol.dart';
 import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart'
     as plugin;
+import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
 import 'package:analyzer_plugin_fork/utilities/completion/completion_core.dart';
 import 'package:analyzer_plugin_fork/utilities/folding/folding.dart';
 import 'package:analyzer_plugin_fork/utilities/navigation/navigation.dart';
 import 'package:analyzer_plugin_fork/utilities/outline/outline.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
-import 'package:moor_generator/src/backends/common/base_plugin.dart';
 import 'package:moor_generator/src/backends/common/driver.dart';
 import 'package:moor_generator/src/backends/plugin/services/autocomplete.dart';
 import 'package:moor_generator/src/backends/plugin/services/errors.dart';
@@ -24,8 +25,12 @@ import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 
 import 'logger.dart';
 
-class MoorPlugin extends BaseMoorPlugin
+class MoorPlugin extends ServerPlugin
     with OutlineMixin, FoldingMixin, CompletionMixin, NavigationMixin {
+  final Map<ContextRoot, MoorDriver> drivers = {};
+
+  ErrorService errorService;
+
   MoorPlugin(ResourceProvider provider) : super(provider) {
     setupLogger(this);
     errorService = ErrorService(this);
@@ -35,9 +40,18 @@ class MoorPlugin extends BaseMoorPlugin
     return MoorPlugin(PhysicalResourceProvider.INSTANCE);
   }
 
-  ErrorService errorService;
-
   @override
+  List<String> get fileGlobsToAnalyze => const ['*.moor'];
+  @override
+  String get name => 'Moor plugin';
+  @override
+  // docs say that this should a version of _this_ plugin, but they lie. this
+  // version will be used to determine compatibility with the analyzer
+  String get version => '2.0.0-alpha.0';
+  @override
+  String get contactInfo =>
+      'Create an issue at https://github.com/simolus3/moor/';
+
   void didCreateDriver(MoorDriver driver) {
     driver.tryToLoadOptions();
     driver.session
@@ -50,12 +64,47 @@ class MoorPlugin extends BaseMoorPlugin
   }
 
   @override
+  Null createAnalysisDriver(plugin.ContextRoot contextRoot) {
+    throw UnsupportedError('Using custom driver management');
+  }
+
+  MoorDriver moorDriverForPath(String path) {
+    for (final driver in drivers.values) {
+      if (driver.context.contextRoot.isAnalyzed(path)) return driver;
+    }
+
+    return null;
+  }
+
+  @override
   void contentChanged(String path) {
-    driverForPath(path)?.handleFileChanged(path);
+    moorDriverForPath(path)?.handleFileChanged(path);
+  }
+
+  @override
+  Future<AnalysisSetContextRootsResult> handleAnalysisSetContextRoots(
+      AnalysisSetContextRootsParams parameters) {
+    final roots = parameters.roots;
+    final oldRoots = drivers.keys.toList();
+
+    for (final contextRoot in roots) {
+      if (!oldRoots.remove(contextRoot)) {
+        // The context is new!
+        final driver = MoorDriver(resourceProvider, null, contextRoot.root);
+        drivers[contextRoot] = driver;
+      }
+    }
+
+    // All remaining contexts have been removed
+    for (final removed in oldRoots) {
+      drivers.remove(removed).dispose();
+    }
+
+    return Future.value(plugin.AnalysisSetContextRootsResult());
   }
 
   Future<FoundFile> _waitParsed(String path) async {
-    final driver = driverForPath(path);
+    final driver = moorDriverForPath(path);
     if (driver == null) {
       throw RequestFailure(plugin.RequestError(
           plugin.RequestErrorCode.INVALID_PARAMETER,
@@ -99,7 +148,7 @@ class MoorPlugin extends BaseMoorPlugin
 
   @override
   Future<void> sendHighlightsNotification(String path) async {
-    final driver = driverForPath(path);
+    final driver = moorDriverForPath(path);
     final highlights = await driver.ide.highlight(path);
 
     channel.sendNotification(
@@ -134,7 +183,7 @@ class MoorPlugin extends BaseMoorPlugin
   @override
   Future<plugin.EditGetAssistsResult> handleEditGetAssists(
       plugin.EditGetAssistsParams parameters) async {
-    final driver = driverForPath(parameters.file);
+    final driver = moorDriverForPath(parameters.file);
     final results = await driver.ide
         .assists(parameters.file, parameters.offset, parameters.length);
 

@@ -1,55 +1,81 @@
-//@dart=2.9
-import 'dart:io';
+// @dart=2.9
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:logging/logging.dart';
 
-import 'package:analyzer/file_system/file_system.dart';
-import 'package:analyzer/file_system/memory_file_system.dart';
-import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
-import 'package:cli_util/cli_util.dart';
-import 'package:moor_generator/src/analyzer/options.dart';
-import 'package:moor_generator/src/backends/common/base_plugin.dart';
-import 'package:moor_generator/src/backends/common/driver.dart';
-import 'package:path/path.dart' as p;
+import 'backend.dart';
 
-class StandaloneMoorAnalyzer {
-  // the analyzer plugin package is wrapping a lot of unstable analyzer apis
-  // for us. It's also managed by the Dart team, so creating a fake plugin to
-  // create Dart analysis drivers seems like the most stable approach.
-  final BaseMoorPlugin _fakePlugin;
+class StandaloneBackend extends Backend {
+  final AnalysisContext context;
 
-  ResourceProvider get resources => _fakePlugin.resourceProvider;
+  StandaloneBackend(this.context);
 
-  StandaloneMoorAnalyzer(ResourceProvider provider)
-      : _fakePlugin = _FakePlugin(provider);
+  String pathOfUri(Uri uri) {
+    final currentSession = context.currentSession;
+    final path = currentSession.uriConverter.uriToPath(uri);
 
-  factory StandaloneMoorAnalyzer.inMemory() {
-    return StandaloneMoorAnalyzer(MemoryResourceProvider());
+    return path;
   }
 
-  Future<void> init({String sdkPath}) async {
-    final tempDir = p.join(Directory.systemTemp.path, 'moor_generator');
-    sdkPath ??= getSdkPath();
+  @override
+  Uri resolve(Uri base, String import) {
+    final resolved = base.resolve(import);
+    final uriConverter = context.currentSession.uriConverter;
 
-    final result = await _fakePlugin.handlePluginVersionCheck(
-      PluginVersionCheckParams(
-        tempDir,
-        sdkPath,
-        _fakePlugin.version,
-      ),
-    );
+    // Try to make uris consistent by going to path and back
+    final path = uriConverter.uriToPath(resolved);
+    if (path == null) return resolved;
 
-    if (!result.isCompatible) {
-      throw StateError('Fake plugin is incompatible with itself?');
-    }
+    return uriConverter.pathToUri(path) ?? resolved;
   }
 
-  MoorDriver createAnalysisDriver(String path, {MoorOptions options}) {
-    return _fakePlugin.createAnalysisDriver(
-      ContextRoot(path, []),
-      options: options,
-    );
-  }
+  BackendTask newTask(Uri entrypoint) =>
+      _StandaloneBackendTask(this, entrypoint);
 }
 
-class _FakePlugin extends BaseMoorPlugin {
-  _FakePlugin(ResourceProvider provider) : super(provider);
+class _StandaloneBackendTask extends BackendTask {
+  final StandaloneBackend backend;
+  @override
+  final Uri entrypoint;
+
+  _StandaloneBackendTask(this.backend, this.entrypoint);
+
+  @override
+  Future<bool> exists(Uri uri) {
+    final path = backend.pathOfUri(uri);
+    return Future.value(
+        backend.context.currentSession.resourceProvider.getFile(path).exists);
+  }
+
+  @override
+  Logger get log => Logger.root;
+
+  @override
+  Future<String> readMoor(Uri uri) {
+    final path = backend.pathOfUri(uri);
+    if (path == null) return Future.error('Uri $uri could not be resolved');
+    final resourceProvider = backend.context.currentSession.resourceProvider;
+
+    return Future.value(resourceProvider.getFile(path).readAsStringSync());
+  }
+
+  @override
+  Future<LibraryElement> resolveDart(Uri uri) async {
+    final result =
+        await backend.context.currentSession.getLibraryByUri2(uri.toString());
+    if (result is LibraryElementResult) {
+      return result.element;
+    }
+
+    throw NotALibraryException(uri);
+  }
+
+  @override
+  Future<DartType> resolveTypeOf(Uri context, String dartExpression) async {
+    final element = await resolveDart(context);
+    // todo: Override so that we don't throw. We should support this properly.
+    return element.typeProvider.dynamicType;
+  }
 }
