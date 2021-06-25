@@ -1,5 +1,5 @@
 //@dart=2.9
-import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
+import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:source_gen/source_gen.dart' show spanForElement;
@@ -18,6 +18,8 @@ Location _locationForSpan(SourceSpan span, FoundFile file) {
     last.offset - first.offset,
     first.line + 1,
     first.column + 1,
+    last.line + 1,
+    last.column + 1,
   );
 }
 

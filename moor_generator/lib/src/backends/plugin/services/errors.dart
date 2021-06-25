@@ -1,6 +1,6 @@
 //@dart=2.9
-import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
-import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
+import 'package:analyzer_plugin/protocol/protocol_common.dart';
+import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/backends/plugin/plugin.dart';
@@ -44,10 +44,11 @@ class ErrorService {
     if (error is ErrorInMoorFile) {
       final span = error.span;
       final start = span.start;
-      return Location(
-          path, start.offset, span.length, start.line + 1, start.column + 1);
+      final end = span.end;
+      return Location(path, start.offset, span.length, start.line + 1,
+          start.column + 1, end.line + 1, end.column + 1);
     }
 
-    return Location(path, 0, 0, 0, 0);
+    return Location(path, 0, 0, 0, 0, 0, 0);
   }
 }

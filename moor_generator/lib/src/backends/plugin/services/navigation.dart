@@ -1,6 +1,6 @@
 //@dart=2.9
-import 'package:analyzer_plugin_fork/protocol/protocol_common.dart';
-import 'package:analyzer_plugin_fork/utilities/navigation/navigation.dart';
+import 'package:analyzer_plugin/protocol/protocol_common.dart';
+import 'package:analyzer_plugin/utilities/navigation/navigation.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
 import 'package:moor_generator/src/backends/plugin/utils/ast_to_location.dart';
@@ -49,8 +49,8 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
 
       if (resolved != null) {
         final span = e.importString.span;
-        _reportForSpan(
-            span, ElementKind.FILE, Location(resolved.uri.path, 0, 0, 1, 1));
+        _reportForSpan(span, ElementKind.FILE,
+            Location(resolved.uri.path, 0, 0, 1, 1, 1, 1));
       }
     }
 

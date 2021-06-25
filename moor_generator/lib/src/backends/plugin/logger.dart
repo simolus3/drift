@@ -1,5 +1,5 @@
 //@dart=2.9
-import 'package:analyzer_plugin_fork/protocol/protocol_generated.dart';
+import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/backends/plugin/plugin.dart';
 
