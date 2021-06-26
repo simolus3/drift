@@ -5,6 +5,8 @@ const _zoneRootUserKey = #DatabaseConnectionUser;
 typedef _CustomWriter<T> = Future<T> Function(
     QueryExecutor e, String sql, List<dynamic> vars);
 
+typedef _BatchRunner = dynamic Function(Batch batch);
+
 /// Manages a [DatabaseConnection] to send queries to the database.
 abstract class DatabaseConnectionUser {
   /// The database connection used by this [DatabaseConnectionUser].
@@ -440,7 +442,7 @@ abstract class DatabaseConnectionUser {
   ///    );
   ///  });
   /// ```
-  Future<void> batch(Function(Batch) runInBatch) {
+  Future<void> batch(_BatchRunner runInBatch) {
     final engine = _resolvedEngine;
 
     final batch = Batch._(engine, engine is! Transaction);
