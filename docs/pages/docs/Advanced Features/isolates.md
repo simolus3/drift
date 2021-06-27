@@ -147,6 +147,19 @@ DatabaseConnection _createMoorIsolateAndConnect() {
 }
 ```
 
+{% block "blocks/alert" title="Initializations and background isolates" color="warning" %}
+As the name implies, Dart isolates don't share memory. This means that global variables
+and values accessible in one isolate may not be visible in a background isolate.
+
+For instance, if you're using `open.overrideFor` from `package:sqlite3`, you need to do that
+on the isolate where you're actually opening the database!
+With a background isolate as shown here, the right place to call `open.overrideFor` is in the
+`_startBackground` function, before you're using `MoorIsolate.inCurrent`.
+Other global fields that you might be relying on when constructing the database (service
+locators like `get_it` come to mind) may also need to be initialized seperately on the background
+isolate.
+{% endblock %}
+
 ### Shutting down the isolate
 
 Since multiple `DatabaseConnection`s can exist to a specific `MoorIsolate`, simply calling
