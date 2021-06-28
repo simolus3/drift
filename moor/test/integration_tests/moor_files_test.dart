@@ -235,4 +235,13 @@ void main() {
         'OR sync_state_implicit IN (?2, ?3))',
         [0, 1, 2]));
   });
+
+  test('can pass unconverted type to generated columns', () async {
+    await (db.select(db.config)
+          ..where((tbl) => tbl.syncState.equalsValue(SyncType.synchronized)))
+        .getSingleOrNull();
+
+    verify(mock.runSelect('SELECT * FROM config WHERE sync_state = ?;',
+        [ConfigTable.$converter0.mapToSql(SyncType.synchronized)]));
+  });
 }

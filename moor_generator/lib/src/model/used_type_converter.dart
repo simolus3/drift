@@ -32,6 +32,9 @@ class UsedTypeConverter {
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
 
+  /// A Dart expression resolving to this converter.
+  String get tableAndField => '${table.entityInfoName}.$fieldName';
+
   UsedTypeConverter({
     @required this.expression,
     @required this.mappedType,

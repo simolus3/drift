@@ -479,11 +479,12 @@ class $CategoriesTable extends Categories
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL UNIQUE');
   final VerificationMeta _priorityMeta = const VerificationMeta('priority');
-  late final GeneratedColumn<int?> priority = GeneratedColumn<int?>(
-      'priority', aliasedName, false,
-      typeName: 'INTEGER',
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+  late final GeneratedColumnWithTypeConverter<CategoryPriority, int?> priority =
+      GeneratedColumn<int?>('priority', aliasedName, false,
+              typeName: 'INTEGER',
+              requiredDuringInsert: false,
+              defaultValue: const Constant(0))
+          .withConverter<CategoryPriority>($CategoriesTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [id, description, priority];
   @override
@@ -1080,9 +1081,12 @@ class $TableWithoutPKTable extends TableWithoutPK
       'some_float', aliasedName, false,
       typeName: 'REAL', requiredDuringInsert: true);
   final VerificationMeta _customMeta = const VerificationMeta('custom');
-  late final GeneratedColumn<String?> custom = GeneratedColumn<String?>(
-      'custom', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: false, clientDefault: _uuid.v4);
+  late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> custom =
+      GeneratedColumn<String?>('custom', aliasedName, false,
+              typeName: 'TEXT',
+              requiredDuringInsert: false,
+              clientDefault: _uuid.v4)
+          .withConverter<MyCustomObject>($TableWithoutPKTable.$converter0);
   @override
   List<GeneratedColumn> get $columns => [notReallyAnId, someFloat, custom];
   @override

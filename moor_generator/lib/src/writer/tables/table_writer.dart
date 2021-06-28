@@ -3,6 +3,7 @@ import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/declarations/declaration.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
+import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -78,7 +79,7 @@ abstract class TableOrViewWriter {
     }
 
     final innerType = column.innerColumnType(options);
-    final type = 'GeneratedColumn<$innerType>';
+    var type = 'GeneratedColumn<$innerType>';
     expressionBuffer
       ..write(type)
       ..write("('${column.name.name}', aliasedName, $isNullable, ");
@@ -95,6 +96,20 @@ abstract class TableOrViewWriter {
     });
 
     expressionBuffer.write(')');
+
+    final converter = column.typeConverter;
+    if (converter != null) {
+      // Generate a GeneratedColumnWithTypeConverter instance, as it has
+      // additional methods to check for equality against a mapped value.
+      final mappedType = converter.mappedType.codeString(options);
+      type = 'GeneratedColumnWithTypeConverter<$mappedType, $innerType>';
+      expressionBuffer
+        ..write('.withConverter<')
+        ..write(mappedType)
+        ..write('>(')
+        ..write(converter.tableAndField)
+        ..write(')');
+    }
 
     writeMemoizedGetter(
       buffer: buffer,

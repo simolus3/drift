@@ -69,6 +69,26 @@ class GeneratedColumn<T> extends Column<T> {
     this.requiredDuringInsert = false,
   }) : _defaultConstraints = defaultConstraints;
 
+  /// Applies a type converter to this column.
+  ///
+  /// This is mainly used by the generator.
+  GeneratedColumnWithTypeConverter<D, T> withConverter<D>(
+      TypeConverter<D, T> converter) {
+    return GeneratedColumnWithTypeConverter._(
+      converter,
+      $name,
+      tableName,
+      $nullable,
+      clientDefault,
+      typeName,
+      _defaultConstraints,
+      $customConstraints,
+      defaultValue,
+      additionalChecks,
+      requiredDuringInsert,
+    );
+  }
+
   /// Writes the definition of this column, as defined
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
@@ -178,5 +198,46 @@ class GeneratedColumn<T> extends Column<T> {
 
       return const VerificationResult.success();
     };
+  }
+}
+
+/// A [GeneratedColumn] with a type converter attached to it.
+///
+/// This provides the [equalsValue] method, which can be used to compare this
+/// column against a value mapped through a type converter.
+class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
+  /// The type converted used on this column.
+  final TypeConverter<D, S> converter;
+
+  GeneratedColumnWithTypeConverter._(
+    this.converter,
+    String name,
+    String tableName,
+    bool nullable,
+    S Function()? clientDefault,
+    String typeName,
+    String? defaultConstraints,
+    String? customConstraints,
+    Expression<S>? defaultValue,
+    VerificationResult Function(S, VerificationMeta)? additionalChecks,
+    bool requiredDuringInsert,
+  ) : super(
+          name,
+          tableName,
+          nullable,
+          clientDefault: clientDefault,
+          typeName: typeName,
+          defaultConstraints: defaultConstraints,
+          $customConstraints: customConstraints,
+          defaultValue: defaultValue,
+          additionalChecks: additionalChecks,
+          requiredDuringInsert: requiredDuringInsert,
+        );
+
+  /// Compares this column against the mapped [dartValue].
+  ///
+  /// The value will be mapped using the [converter] applied to this column.
+  Expression<bool> equalsValue(D? dartValue) {
+    return equals(converter.mapToSql(dartValue) as S);
   }
 }

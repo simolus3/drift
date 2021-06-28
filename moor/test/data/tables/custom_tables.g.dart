@@ -224,14 +224,21 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
       'config_value', aliasedName, true,
       typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
-  late final GeneratedColumn<int?> syncState = GeneratedColumn<int?>(
-      'sync_state', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
+  late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
+      GeneratedColumn<int?>('sync_state', aliasedName, true,
+              typeName: 'INTEGER',
+              requiredDuringInsert: false,
+              $customConstraints: '')
+          .withConverter<SyncType>(ConfigTable.$converter0);
   final VerificationMeta _syncStateImplicitMeta =
       const VerificationMeta('syncStateImplicit');
-  late final GeneratedColumn<int?> syncStateImplicit = GeneratedColumn<int?>(
-      'sync_state_implicit', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
+  late final GeneratedColumnWithTypeConverter<SyncType?, int?>
+      syncStateImplicit = GeneratedColumn<int?>(
+              'sync_state_implicit', aliasedName, true,
+              typeName: 'INTEGER',
+              requiredDuringInsert: false,
+              $customConstraints: '')
+          .withConverter<SyncType?>(ConfigTable.$converter1);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
@@ -1547,12 +1554,15 @@ class MyView extends View<MyView, MyViewData> {
   late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
       'config_value', aliasedName, true,
       typeName: 'TEXT');
-  late final GeneratedColumn<int?> syncState = GeneratedColumn<int?>(
-      'sync_state', aliasedName, true,
-      typeName: 'INTEGER');
-  late final GeneratedColumn<int?> syncStateImplicit = GeneratedColumn<int?>(
-      'sync_state_implicit', aliasedName, true,
-      typeName: 'INTEGER');
+  late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
+      GeneratedColumn<int?>('sync_state', aliasedName, true,
+              typeName: 'INTEGER')
+          .withConverter<SyncType>(ConfigTable.$converter0);
+  late final GeneratedColumnWithTypeConverter<SyncType?, int?>
+      syncStateImplicit = GeneratedColumn<int?>(
+              'sync_state_implicit', aliasedName, true,
+              typeName: 'INTEGER')
+          .withConverter<SyncType?>(ConfigTable.$converter1);
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {

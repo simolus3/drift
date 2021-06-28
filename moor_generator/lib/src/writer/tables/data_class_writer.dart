@@ -224,8 +224,7 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName =
-            '${converter.table.entityInfoName}.${converter.fieldName}';
+        final fieldName = converter.tableAndField;
         final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
 
         _buffer
