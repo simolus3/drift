@@ -5,7 +5,7 @@ const _zoneRootUserKey = #DatabaseConnectionUser;
 typedef _CustomWriter<T> = Future<T> Function(
     QueryExecutor e, String sql, List<dynamic> vars);
 
-typedef _BatchRunner = dynamic Function(Batch batch);
+typedef _BatchRunner = FutureOr<void> Function(Batch batch);
 
 /// Manages a [DatabaseConnection] to send queries to the database.
 abstract class DatabaseConnectionUser {
