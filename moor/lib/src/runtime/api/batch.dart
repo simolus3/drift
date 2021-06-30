@@ -37,7 +37,7 @@ class Batch {
   /// See also:
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
   void insert<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row,
-      {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     _addUpdate(table, UpdateKind.insert);
     final actualMode = mode ?? InsertMode.insert;
     final context = InsertStatement<Table, D>(_user, table)
@@ -59,7 +59,7 @@ class Batch {
   /// support it. For details and examples, see [InsertStatement.insert].
   void insertAll<T extends Table, D>(
       TableInfo<T, D> table, List<Insertable<D>> rows,
-      {InsertMode? mode, DoUpdate<T, D>? onConflict}) {
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     for (final row in rows) {
       insert<T, D>(table, row, mode: mode, onConflict: onConflict);
     }

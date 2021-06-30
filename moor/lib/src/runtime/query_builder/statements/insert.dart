@@ -61,7 +61,7 @@ class InsertStatement<T extends Table, D> {
   Future<int> insert(
     Insertable<D> entity, {
     InsertMode? mode,
-    DoUpdate<T, D>? onConflict,
+    UpsertClause<T, D>? onConflict,
   }) async {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict);
@@ -81,7 +81,7 @@ class InsertStatement<T extends Table, D> {
   /// this method, make sure that you have a recent sqlite3 version available.
   /// This is the case with `sqlite3_flutter_libs`.
   Future<D> insertReturning(Insertable<D> entity,
-      {InsertMode? mode, DoUpdate<T, D>? onConflict}) async {
+      {InsertMode? mode, UpsertClause<T, D>? onConflict}) async {
     final ctx = createContext(entity, mode ?? InsertMode.insert,
         onConflict: onConflict, returning: true);
 
@@ -113,7 +113,7 @@ class InsertStatement<T extends Table, D> {
   ///
   /// This method is used internally by moor. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
-      {DoUpdate<T, D>? onConflict, bool returning = false}) {
+      {UpsertClause<T, D>? onConflict, bool returning = false}) {
     _validateIntegrity(entry);
 
     final rawValues = entry.toColumns(true);
@@ -148,7 +148,7 @@ class InsertStatement<T extends Table, D> {
       writeInsertable(ctx, map);
     }
 
-    if (onConflict != null) {
+    void writeDoUpdate(DoUpdate<T, D> onConflict) {
       final upsertInsertable = onConflict._createInsertable(table.asDslTable);
 
       if (!identical(entry, upsertInsertable)) {
@@ -192,6 +192,12 @@ class InsertStatement<T extends Table, D> {
 
         first = false;
       }
+    }
+
+    if (onConflict is DoUpdate<T, D>) {
+      writeDoUpdate(onConflict);
+    } else if (onConflict is UpsertMultiple<T, D>) {
+      onConflict.clauses.forEach(writeDoUpdate);
     }
 
     if (returning) {
@@ -278,11 +284,17 @@ const _insertKeywords = <InsertMode, String>{
   InsertMode.insertOrIgnore: 'INSERT OR IGNORE',
 };
 
+/// A upsert clause controls how to behave when a uniqueness constraint is
+/// violated during an insert.
+///
+/// Typically, one would use [DoUpdate] to run an update instead in this case.
+abstract class UpsertClause<T extends Table, D> {}
+
 /// A [DoUpdate] upsert clause can be used to insert or update a custom
 /// companion when the underlying companion already exists.
 ///
 /// For an example, see [InsertStatement.insert].
-class DoUpdate<T extends Table, D> {
+class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   final Insertable<D> Function(T old) _creator;
 
   /// An optional list of columns to serve as an "conflict target", which
@@ -298,4 +310,20 @@ class DoUpdate<T extends Table, D> {
   Insertable<D> _createInsertable(T table) {
     return _creator(table);
   }
+}
+
+/// Upsert clause that consists of multiple [clauses].
+///
+/// The first [DoUpdate.target] matched by this upsert will be run.
+class UpsertMultiple<T extends Table, D> extends UpsertClause<T, D> {
+  /// All [DoUpdate] clauses that are part of this upsert.
+  ///
+  /// The first clause with a matching [DoUpdate.target] will be considered.
+  final List<DoUpdate<T, D>> clauses;
+
+  /// Creates an upsert consisting of multiple [DoUpdate] clauses.
+  ///
+  /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
+  /// 03-12).
+  UpsertMultiple(this.clauses);
 }

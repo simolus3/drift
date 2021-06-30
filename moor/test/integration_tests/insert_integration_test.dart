@@ -38,5 +38,5 @@ void main() {
         priority: CategoryPriority.low,
       ),
     );
-  }, skip: onNoReturningSupport());
+  }, skip: ifOlderThanSqlite335());
 }

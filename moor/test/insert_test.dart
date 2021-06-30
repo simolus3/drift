@@ -4,7 +4,6 @@ import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
 import 'data/utils/mocks.dart';
-import 'skips.dart';
 
 void main() {
   late TodoDb db;
@@ -93,7 +92,7 @@ void main() {
         {const TableUpdate('users', kind: UpdateKind.insert)}));
 
     expect(user.id, 5);
-  }, skip: onNoReturningSupport());
+  });
 
   group('enforces integrity', () {
     test('for regular inserts', () async {
@@ -205,6 +204,37 @@ void main() {
       argThat(equals(['my content', 'important: '])),
     ));
   });
+
+  test(
+    'can use multiple upsert targets',
+    () async {
+      await db
+          .into(db.todosTable)
+          .insert(TodosTableCompanion.insert(content: 'my content'),
+              onConflict: UpsertMultiple([
+                DoUpdate(
+                  (old) {
+                    return TodosTableCompanion.custom(
+                        content: const Variable('important: ') + old.content);
+                  },
+                ),
+                DoUpdate(
+                  (old) {
+                    return TodosTableCompanion.custom(
+                        content: const Variable('second: ') + old.content);
+                  },
+                  target: [db.todosTable.content],
+                ),
+              ]));
+
+      verify(executor.runInsert(
+        'INSERT INTO todos (content) VALUES (?) '
+        'ON CONFLICT(id) DO UPDATE SET content = ? || content '
+        'ON CONFLICT(content) DO UPDATE SET content = ? || content',
+        argThat(equals(['my content', 'important: ', 'second: '])),
+      ));
+    },
+  );
 
   test('can use a custom conflict clause', () async {
     await db.into(db.todosTable).insert(

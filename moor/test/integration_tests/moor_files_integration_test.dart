@@ -118,5 +118,5 @@ void main() {
         ),
       );
     });
-  }, skip: onNoReturningSupport());
+  }, skip: ifOlderThanSqlite335());
 }
