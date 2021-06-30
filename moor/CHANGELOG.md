@@ -6,6 +6,8 @@
 - Add the `scoped_dart_components` builder option to generate a function for
   [Dart components in SQL](https://moor.simonbinder.eu/docs/using-sql/moor_files/#dart-components-in-sql).
   The function's parameters reflect tables that are in scope.
+- Add the `UpsertMultiple` class to run multiple upsert clauses in an insert.
+  This requires sqlite3 version 3.35 or later.
 - Add the `closeUnderlyingOnClose` argument to `VmDatabase.opened` as an option
   to keep the underlying instance opened when closing the `VmDatabase`.
 - The `tableUpdates` stream now emits the relevant updates instead of `null`.

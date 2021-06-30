@@ -73,7 +73,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_35;
+  static const SqliteVersion current = SqliteVersion.v3(36);
 
   /// The major version of sqlite.
   ///
