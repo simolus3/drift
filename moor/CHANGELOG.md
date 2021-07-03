@@ -1,6 +1,6 @@
-## 4.4.0-dev
+## 4.4.0
 
-- Add `Value.ofNullable` constructor to easily wrap nullable values
+- Add `Value.ofNullable` constructor to easily wrap nullable values.
 - Support selecting views declared in a moor file in Dart (with `select`,
   `join` and similar methods)
 - Add the `scoped_dart_components` builder option to generate a function for
@@ -11,6 +11,11 @@
 - Add the `closeUnderlyingOnClose` argument to `VmDatabase.opened` as an option
   to keep the underlying instance opened when closing the `VmDatabase`.
 - The `tableUpdates` stream now emits the relevant updates instead of `null`.
+- Reflect type converters in generated columns. The `equalsValue` method can be used
+  as an equals with a value mapped by a type converter.
+- Improve nullability analysis for SQL queries.
+- __Note__: You have to re-generate sources with `moor_generator` version 4.4.0 after
+  upgrading to this version. Apologies for the inconvenience.
  
 ## 4.3.2
 

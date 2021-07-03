@@ -112,6 +112,7 @@ class UpdateCompanionWriter {
       ..write('({');
 
     for (final column in table.columns) {
+      // todo (breaking change): This should not consider type converters.
       final typeName = column.dartTypeCode(scope.generationOptions);
       final type = scope.nullableType('Expression<$typeName>');
       _buffer.write('$type ${column.dartGetterName}, \n');
