@@ -5,6 +5,8 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:logging/logging.dart';
+// ignore: implementation_imports
+import 'package:moor/src/utils/synchronized.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
@@ -17,6 +19,7 @@ class MoorDriver {
   MoorIde ide;
 
   final ResourceProvider _resourceProvider;
+  final Lock lock = Lock();
 
   /* late final */ MoorSession session;
   StandaloneBackend backend;
@@ -67,6 +70,9 @@ class MoorDriver {
   void handleFileChanged(String path) {
     if (_ownsFile(path)) {
       session.notifyFileChanged(pathToFoundFile(path));
+
+      // Also trigger analysis for this path
+      waitFileParsed(path);
     }
   }
 
@@ -97,19 +103,24 @@ class MoorDriver {
     }
 
     final found = pathToFoundFile(path);
-    _potentiallyNewFile(found);
 
     if (found.isParsed) {
       return Future.value(found);
     } else {
-      final backendTask = backend.newTask(Uri.file(path));
-      final task = session.startTask(backendTask);
-      task.runTask();
+      _runTask(path);
 
       return session
           .completedFiles()
           .firstWhere((file) => file == found && file.isParsed);
     }
+  }
+
+  Future<Object> _runTask(String path) {
+    return lock.synchronized(() {
+      final backendTask = backend.newTask(Uri.file(path));
+      final task = session.startTask(backendTask);
+      return task.runTask();
+    });
   }
 }
 

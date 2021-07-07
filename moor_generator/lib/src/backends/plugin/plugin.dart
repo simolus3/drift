@@ -46,12 +46,12 @@ class MoorPlugin extends ServerPlugin
   @override
   // docs say that this should a version of _this_ plugin, but they lie. this
   // version will be used to determine compatibility with the analyzer
-  String get version => '2.0.0-alpha.0';
+  String get version => '4.4.1';
   @override
   String get contactInfo =>
       'Create an issue at https://github.com/simolus3/moor/';
 
-  void didCreateDriver(MoorDriver driver) {
+  void _didCreateDriver(MoorDriver driver) {
     driver.tryToLoadOptions();
     driver.session
         .completedFiles()
@@ -75,6 +75,16 @@ class MoorPlugin extends ServerPlugin
     return null;
   }
 
+  MoorDriver _moorDriverOrFail(String path) {
+    final driver = moorDriverForPath(path);
+    if (driver == null) {
+      throw RequestFailure(plugin.RequestError(
+          plugin.RequestErrorCode.INVALID_PARAMETER,
+          "Path isn't covered by plugin: $path"));
+    }
+    return driver;
+  }
+
   @override
   void contentChanged(String path) {
     moorDriverForPath(path)?.handleFileChanged(path);
@@ -90,6 +100,7 @@ class MoorPlugin extends ServerPlugin
       if (!oldRoots.remove(contextRoot)) {
         // The context is new!
         final driver = MoorDriver(resourceProvider, null, contextRoot.root);
+        _didCreateDriver(driver);
         drivers[contextRoot] = driver;
       }
     }
@@ -103,12 +114,7 @@ class MoorPlugin extends ServerPlugin
   }
 
   Future<FoundFile> _waitParsed(String path) async {
-    final driver = moorDriverForPath(path);
-    if (driver == null) {
-      throw RequestFailure(plugin.RequestError(
-          plugin.RequestErrorCode.INVALID_PARAMETER,
-          "Path isn't covered by plugin: $path"));
-    }
+    final driver = _moorDriverOrFail(path);
 
     final file = await driver.waitFileParsed(path);
     if (file == null) {
@@ -148,6 +154,12 @@ class MoorPlugin extends ServerPlugin
   @override
   Future<void> sendHighlightsNotification(String path) async {
     final driver = moorDriverForPath(path);
+    if (driver == null) {
+      channel.sendNotification(
+          plugin.AnalysisHighlightsParams(path, []).toNotification());
+      return;
+    }
+
     final highlights = await driver.ide.highlight(path);
 
     channel.sendNotification(

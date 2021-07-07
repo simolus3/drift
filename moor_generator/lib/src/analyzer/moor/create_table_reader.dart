@@ -213,7 +213,7 @@ class CreateTableReader {
       }
     }
 
-    return MoorTable(
+    final moorTable = MoorTable(
       fromClass: null,
       columns: foundColumns.values.toList(),
       sqlName: table.name,
@@ -227,6 +227,12 @@ class CreateTableReader {
       declaration: MoorTableDeclaration(stmt, step.file),
       existingRowClass: existingRowClass,
     )..parserTable = table;
+
+    // Having a mapping from parser table to moor tables helps with IDE features
+    // like "go to definition"
+    table.setMeta<MoorTable>(moorTable);
+
+    return moorTable;
   }
 
   Future<UsedTypeConverter> _readTypeConverter(
