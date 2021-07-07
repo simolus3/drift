@@ -265,7 +265,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
           if (tableResolver == null) continue;
 
           visibleColumnsForStar =
-              tableResolver.resultSet.resultSet?.resolvedColumns;
+              tableResolver.resultSet.resultSet?.resolvedColumns?.map(
+                  (tableColumn) => AvailableColumn(tableColumn, tableResolver));
         } else {
           // we have a * column without a table, that resolves to every column
           // available

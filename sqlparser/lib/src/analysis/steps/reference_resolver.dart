@@ -64,7 +64,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
           relevantNode: e,
         ));
       } else {
-        _resolveReferenceInTable(e, resultSet);
+        _resolveReferenceInTable(e, resultSet, source: entityResolver);
       }
     } else if (aliasesForRowId.contains(e.columnName.toLowerCase())) {
       // special case for aliases to a rowid
@@ -128,11 +128,15 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
     ));
   }
 
-  void _resolveReferenceInTable(Reference ref, ResultSet resultSet) {
-    final column = resultSet.findColumn(ref.columnName);
+  void _resolveReferenceInTable(Reference ref, ResultSet resultSet,
+      {ResultSetAvailableInStatement? source}) {
+    var column = resultSet.findColumn(ref.columnName);
     if (column == null) {
       _reportUnknownColumnError(ref, columns: resultSet.resolvedColumns);
     } else {
+      if (source != null) {
+        column = AvailableColumn(column, source);
+      }
       ref.resolved = column;
     }
   }

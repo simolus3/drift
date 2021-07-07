@@ -194,7 +194,7 @@ SELECT row_number() OVER wnd FROM demo
     );
   });
 
-  test("does not allow columns from tables that haven't been aded", () {
+  test("does not allow columns from tables that haven't been added", () {
     final engine = SqlEngine()..registerTable(demoTable);
 
     final context = engine.analyze('SELECT demo.id;');
@@ -205,5 +205,58 @@ SELECT row_number() OVER wnd FROM demo
             .having(
                 (e) => e.type, 'type', AnalysisErrorType.referencedUnknownTable)
             .having((e) => e.span?.text, 'span.text', 'demo.id'));
+  });
+
+  group('nullability for references from outer join', () {
+    final engine = SqlEngine()..registerTableFromSql('''
+      CREATE TABLE users (
+        id INTEGER NOT NULL PRIMARY KEY
+      );
+    ''')..registerTableFromSql('''
+      CREATE TABLE messages (
+        sender INTEGER NOT NULL
+      );
+    ''');
+
+    void testWith(String sql) {
+      final context = engine.analyze(sql);
+
+      expect(context.errors, isEmpty);
+      final columns = (context.root as SelectStatement).resolvedColumns!;
+
+      expect(columns.map((e) => e.name), ['sender', 'id']);
+      expect(context.typeOf(columns[0]).nullable, isFalse);
+      expect(context.typeOf(columns[1]).nullable, isTrue);
+    }
+
+    test('unaliased columns, unaliased tables', () {
+      testWith('SELECT sender, id FROM messages '
+          'LEFT JOIN users ON id = sender');
+    });
+
+    test('unaliased columns, aliased tables', () {
+      testWith('SELECT sender, id FROM messages m '
+          'LEFT JOIN users u ON id = sender');
+    });
+
+    test('aliased columns, unaliased tables', () {
+      testWith('SELECT messages.sender, users.id FROM messages '
+          'LEFT JOIN users ON id = sender');
+    });
+
+    test('aliased columns, aliased tables', () {
+      testWith('SELECT m.*, u.* FROM messages m '
+          'LEFT JOIN users u ON u.id = m.sender');
+    });
+
+    test('single star, aliased tables', () {
+      testWith('SELECT * FROM messages m '
+          'LEFT JOIN users u ON u.id = m.sender');
+    });
+
+    test('single star, unaliased tables', () {
+      testWith('SELECT * FROM messages '
+          'LEFT JOIN users ON id = sender');
+    });
   });
 }

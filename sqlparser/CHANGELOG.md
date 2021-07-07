@@ -1,3 +1,7 @@
+## 0.17.1
+
+- Fix nullability analysis of references and star columns
+
 ## 0.17.0
 
 - Refactor how tables and columns are resolved in statements
