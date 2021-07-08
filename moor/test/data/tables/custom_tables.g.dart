@@ -1583,7 +1583,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final WeirdTable weirdTable = WeirdTable(this);
   Selectable<Config> readConfig(String var1) {
     return customSelect(
-        'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?',
+        'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
         variables: [
           Variable<String>(var1)
         ],
@@ -1639,7 +1639,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ? OR sync_state_implicit IN ($expandedvar2))',
+        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           ...generatedpred.introducedVariables,
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
@@ -1708,7 +1708,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<EMail> searchEmails({required String? term}) {
     return customSelect(
-        'SELECT * FROM email WHERE email MATCH :term ORDER BY rank',
+        'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
         variables: [
           Variable<String?>(term)
         ],
@@ -1773,7 +1773,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Future<int> writeConfig({required String key, String? value}) {
     return customInsert(
-      'REPLACE INTO config (config_key, config_value) VALUES (:key, :value)',
+      'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [Variable<String>(key), Variable<String?>(value)],
       updates: {config},
     );

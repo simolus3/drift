@@ -1317,7 +1317,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Future<int> deleteTodoById(int var1) {
     return customUpdate(
-      'DELETE FROM todos WHERE id = ?',
+      'DELETE FROM todos WHERE id = ?1',
       variables: [Variable<int>(var1)],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
@@ -1342,7 +1342,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Selectable<TodoEntry> search({required int id}) {
     return customSelect(
-        'SELECT * FROM todos WHERE CASE WHEN -1 = :id THEN 1 ELSE id = :id END',
+        'SELECT * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
         variables: [
           Variable<int>(id)
         ],
@@ -1439,7 +1439,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
-        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = :user',
+        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
         variables: [
           Variable<int>(user)
         ],

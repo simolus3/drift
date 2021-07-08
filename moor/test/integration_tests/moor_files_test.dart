@@ -231,7 +231,7 @@ void main() {
         [SyncType.locallyUpdated, SyncType.synchronized]).get();
 
     verify(mock.runSelect(
-        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ? '
+        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ?1 '
         'OR sync_state_implicit IN (?2, ?3))',
         [0, 1, 2]));
   });

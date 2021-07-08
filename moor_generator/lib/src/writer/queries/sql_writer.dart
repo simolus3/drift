@@ -59,10 +59,12 @@ class SqlWriter extends NodeSqlBuilder {
     );
   }
 
-  void _writeArrayVariable(FoundVariable moorVar) {
-    assert(moorVar.isArray);
-
-    _writeRawInSpaces('(\$${expandedName(moorVar)})');
+  void _writeMoorVariable(FoundVariable variable) {
+    if (variable.isArray) {
+      _writeRawInSpaces('(\$${expandedName(variable)})');
+    } else {
+      _writeRawInSpaces('?${variable.index}');
+    }
   }
 
   void _writeRawInSpaces(String str) {
@@ -82,8 +84,8 @@ class SqlWriter extends NodeSqlBuilder {
   @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
     final moor = _findMoorVar(e);
-    if (moor != null && moor.isArray) {
-      _writeArrayVariable(moor);
+    if (moor != null) {
+      _writeMoorVariable(moor);
     } else {
       super.visitNamedVariable(e, arg);
     }
@@ -92,8 +94,8 @@ class SqlWriter extends NodeSqlBuilder {
   @override
   void visitNumberedVariable(NumberedVariable e, void arg) {
     final moor = _findMoorVar(e);
-    if (moor != null && moor.isArray) {
-      _writeArrayVariable(moor);
+    if (moor != null) {
+      _writeMoorVariable(moor);
     } else {
       super.visitNumberedVariable(e, arg);
     }
