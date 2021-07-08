@@ -76,7 +76,7 @@ class Users extends Table {
 The generated `User` class will then have a `preferences` column of type 
 `Preferences`. Moor will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
-also works with [compiled custom queries]({{ "/queries/custom" | absURL }}).
+also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
 
 {% block "blocks/alert" title="Caution with equality" color="warning" %}
 > If your converter returns an object that is not comparable by value, the generated dataclass will not

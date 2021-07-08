@@ -1,0 +1,2 @@
+contributes:
+  sass: 'lib/_style.scss'

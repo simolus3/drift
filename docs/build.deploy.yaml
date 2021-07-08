@@ -1,19 +1,6 @@
 targets:
-  # Preprocess css first, so that we can read generated assets in the main target (for subresource integrity)
-  css:
-    auto_apply_builders: false
-    builders:
-      sass_builder:
-        enabled: true
-    sources:
-      - "web/main.scss"
-      - "web/main.css"
-
   $default:
-    dependencies: [":css"]
     builders:
-      sass_builder:
-        enabled: false
       build_web_compilers|entrypoint:
         release_options:
           # Turn of null assertions for release builds, it looks like this
@@ -29,4 +16,5 @@ targets:
       - "web/**"
       - "$package$"
       - "pubspec.yaml"
+      - "theme.yaml"
       - "website.yaml"

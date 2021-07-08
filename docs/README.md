@@ -8,7 +8,7 @@ We use a static site generator based on `build_runner` to build the documentatio
 For a fast edit-refresh cycle, run
 
 ```
-dart run webdev serve --auto refresh pages:9999 web:8080
+dart pub global run webdev serve --auto refresh pages:9999 web:8080
 ```
 
 You can ignore the `pages:9999` (or use any other port), it's just required
