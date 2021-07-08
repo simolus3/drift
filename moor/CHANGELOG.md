@@ -1,3 +1,7 @@
+## 4.4.1
+
+- Include latest generator in analyzer plugin
+
 ## 4.4.0
 
 - Add `Value.ofNullable` constructor to easily wrap nullable values.

@@ -6,7 +6,7 @@ environment:
   sdk: '>=2.9.0 <3.0.0'
 
 dependencies:
- moor_generator: ^4.4.0
+ moor_generator: ^4.4.1
  web_socket_channel: ^1.0.15
 
 # These overrides are only needed when working on the plugin with useDebuggingVariant = false (not recommended)

@@ -1,3 +1,8 @@
+## 4.4.1
+
+- Fix analyzer plugin
+- Always generate indexed variables with the `new_sql_code_generation` option
+
 ## 4.4.0
 
 - Support the `scoped_dart_components` build option
