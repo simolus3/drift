@@ -50,6 +50,22 @@ class ColumnParser {
 
   ColumnParser(this.base);
 
+  String _parseKeyAction(String enumValue) {
+    switch (enumValue) {
+      case 'noAction':
+        return 'NO ACTION';
+      case 'cascade':
+        return 'CASCADE';
+      case 'restrict':
+        return 'RESTRICT';
+      case 'setNull':
+        return 'SET NULL';
+      case 'setDefault':
+        return 'SET DEFAULT';
+    }
+    return '';
+  }
+
   MoorColumn parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
@@ -263,5 +279,177 @@ class ColumnParser {
     if (object == null) return null;
 
     return object.computeConstantValue().getField('key').toStringValue();
+  }
+
+  /// ORM
+  Future<MoorColumn> parseOrm(DbColumnField field) async {
+    final foundFeatures = <ColumnFeature>[];
+
+    final limits = _readDbTextLimit(field.field);
+    if (limits != null) {
+      foundFeatures.add(LimitingTextLength(
+        minLength: limits.getField('min').toIntValue(),
+        maxLength: limits.getField('max').toIntValue(),
+      ));
+    }
+
+    if (_readDbAutoIncrement(field.field)) {
+      foundFeatures.add(AutoIncrement());
+      foundFeatures.add(const PrimaryKey());
+    }
+
+    final instance = reflect(field.annotationElement);
+    final annotation = instance
+        .getField(const Symbol('annotationAst'))
+        .reflectee as Annotation;
+
+    final foundExplicitName =
+        field.annotation.getField('name')?.toStringValue();
+    ColumnName name;
+    if (foundExplicitName != null) {
+      name = ColumnName.explicitly(foundExplicitName);
+    } else {
+      var suffix = '';
+      if (field.isForeignKey) {
+        suffix = '_id';
+      }
+      name = ColumnName.implicitly(ReCase(field.field.name).snakeCase + suffix);
+    }
+
+    final cr = ConstantReader(field.annotation);
+    final crt = cr.peek('type').objectValue;
+    ColumnType columnType;
+    if (field.isEnum) {
+      columnType = ColumnType.integer;
+    } else {
+      columnType = ColumnType.values
+          .firstWhere((e) => crt.getField(e.toString().substring(11)) != null);
+    }
+
+    final sqlDefault = annotation.arguments.arguments.firstWhere(
+        (element) =>
+            element is NamedExpression &&
+            element.name.label.token.toString() == 'sqlDefault',
+        orElse: () => null);
+
+    final clientDefault = annotation.arguments.arguments.firstWhere(
+        (element) =>
+            element is NamedExpression &&
+            element.name.label.token.toString() == 'clientDefault',
+        orElse: () => null);
+
+    final nullableArg = annotation.arguments.arguments.firstWhere(
+        (element) =>
+            element is NamedExpression &&
+            element.name.label.token.toString() == 'nullable',
+        orElse: () => null) as NamedExpression;
+    final nullable = nullableArg?.expression?.toString() == 'true';
+
+    UsedTypeConverter usedConverter;
+    if (field.isEnum) {
+      final enumType = field.field.type;
+      try {
+        usedConverter = UsedTypeConverter.forEnumColumn(enumType, nullable);
+      } on InvalidTypeForEnumConverterException catch (e) {
+        base.step.errors.report(ErrorInDartCode(
+          message: e.errorDescription,
+          affectedElement: field.field,
+          severity: Severity.error,
+        ));
+      }
+    } else {
+      // ignore: avoid_bool_literals_in_conditional_expressions
+      final converter = annotation.arguments.arguments.firstWhere(
+          (element) =>
+              element is NamedExpression &&
+              element.name.label.token.toString() == 'converter',
+          orElse: () => null) as NamedExpression;
+
+      if (converter != null) {
+        usedConverter = UsedTypeConverter(
+            expression: converter.expression.toSource(),
+            mappedType: field.field.type,
+            sqlType: columnType);
+      }
+    }
+
+    KeyAction onUpdate;
+    final onUpdateField = field.annotation.getField('onUpdate');
+    if (onUpdateField != null) {
+      onUpdate = KeyAction.values.firstWhere(
+          (e) => onUpdateField.getField(e.toString().substring(10)) != null,
+          orElse: () => null);
+    }
+
+    KeyAction onDelete;
+    final onDeleteField = field.annotation.getField('onDelete');
+    if (onDeleteField != null) {
+      onDelete = KeyAction.values.firstWhere(
+          (e) => onDeleteField.getField(e.toString().substring(10)) != null,
+          orElse: () => null);
+    }
+
+    String onDeleteString;
+    String onUpdateString;
+    if (onDelete != null) {
+      onDeleteString = _parseKeyAction(onDelete.toString().substring(10));
+    }
+
+    if (onUpdate != null) {
+      onUpdateString = _parseKeyAction(onUpdate.toString().substring(10));
+    }
+
+    final isPrimaryKey = _readDbPrimaryKey(field.field);
+
+    return MoorColumn(
+      type: columnType,
+      dartGetterName: field.field.name,
+      name: name,
+      overriddenJsonName: _readJsonKey(field.field),
+      customConstraints:
+          field.annotation.getField('customConstraints')?.toStringValue(),
+      nullable: isPrimaryKey || nullable,
+      isPrimaryKey: isPrimaryKey,
+      isForeignKey: field.isForeignKey,
+      features: foundFeatures,
+      defaultArgument: (sqlDefault as NamedExpression)?.expression?.toSource(),
+      clientDefaultCode:
+          (clientDefault as NamedExpression)?.expression?.toSource(),
+      typeConverter: usedConverter,
+      declaration: DartColumnDeclaration(field.field, base.step.file),
+      documentationComment: field.field.documentationComment,
+      fkReferences: field.annotation.getField('references')?.toTypeValue(),
+      fkColumn: field.annotation.getField('column')?.toStringValue(),
+      fkOnUpdate: onUpdateString,
+      fkOnDelete: onDeleteString,
+    );
+  }
+
+  bool _readDbPrimaryKey(Element getter) {
+    final annotations = getter.metadata;
+    return annotations.any((e) {
+      final value = e.computeConstantValue();
+      return value.type.element.name == 'PrimaryKeyColumn';
+    });
+  }
+
+  bool _readDbAutoIncrement(Element getter) {
+    final annotations = getter.metadata;
+    return annotations.any((e) {
+      final value = e.computeConstantValue();
+      return value.type.element.name == 'AutoIncrement';
+    });
+  }
+
+  DartObject _readDbTextLimit(Element getter) {
+    final annotations = getter.metadata;
+    final object = annotations.singleWhere((e) {
+      final value = e.computeConstantValue();
+      return value.type.element.name == 'TextLimit';
+    }, orElse: () => null);
+
+    if (object == null) return null;
+
+    return object.computeConstantValue();
   }
 }

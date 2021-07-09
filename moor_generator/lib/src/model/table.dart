@@ -51,6 +51,9 @@ class MoorTable extends MoorEntityWithResultSet {
   @override
   final String dartTypeName;
 
+  /// ORM
+  final bool isOrmTable;
+
   /// The getter name used for this table in a generated database or dao class.
   @override
   String get dbGetterName => dbFieldName(_baseName);
@@ -140,6 +143,7 @@ class MoorTable extends MoorEntityWithResultSet {
     this.overrideDontWriteConstraints,
     this.declaration,
     this.existingRowClass,
+    this.isOrmTable = false,
   }) : _overriddenName = overriddenName {
     _attachToConverters();
   }

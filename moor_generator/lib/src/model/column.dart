@@ -1,4 +1,5 @@
 //@dart=2.9
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/writer.dart';
 
@@ -8,6 +9,9 @@ import 'used_type_converter.dart';
 
 /// The column types in sql.
 enum ColumnType { integer, text, boolean, datetime, blob, real }
+
+/// ORM key action
+enum KeyAction { noAction, cascade, restrict, setNull, setDefault }
 
 /// Name of a column. Contains additional info on whether the name was chosen
 /// implicitly (based on the dart getter name) or explicitly (via an named())
@@ -96,12 +100,20 @@ class MoorColumn implements HasDeclaration, HasType {
 
   /// The [UsedTypeConverter], if one has been set on this column.
   @override
-  final UsedTypeConverter typeConverter;
+  UsedTypeConverter typeConverter;
 
   /// The documentation comment associated with this column
   ///
   /// Stored as a multi line string with leading triple-slashes `///` for every line
   final String documentationComment;
+
+  /// ORM
+  final bool isPrimaryKey;
+  final bool isForeignKey;
+  final DartType fkReferences;
+  final String fkColumn;
+  final String fkOnUpdate;
+  final String fkOnDelete;
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
@@ -179,6 +191,12 @@ class MoorColumn implements HasDeclaration, HasType {
     this.typeConverter,
     this.declaration,
     this.documentationComment,
+    this.isPrimaryKey = false,
+    this.isForeignKey = false,
+    this.fkColumn,
+    this.fkOnDelete,
+    this.fkOnUpdate,
+    this.fkReferences,
   });
 }
 

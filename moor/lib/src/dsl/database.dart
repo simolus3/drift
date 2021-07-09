@@ -51,6 +51,11 @@ class UseMoor {
   /// {@endtemplate}
   final Set<String> include;
 
+  /// ORM
+  final Map<Type, TypeConverter> converters;
+  final ForeignKeyConverter? foreignKeyConverter;
+  final ForeignKeyConverter? nullableForeignKeyConverter;
+
   /// Use this class as an annotation to inform moor_generator that a database
   /// class should be generated using the specified [UseMoor.tables].
   const UseMoor({
@@ -58,6 +63,9 @@ class UseMoor {
     this.daos = const [],
     this.queries = const {},
     this.include = const {},
+    this.converters = const {},
+    this.foreignKeyConverter,
+    this.nullableForeignKeyConverter,
   });
 }
 

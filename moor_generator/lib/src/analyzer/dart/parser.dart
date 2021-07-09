@@ -1,4 +1,6 @@
 //@dart=2.9
+import 'dart:mirrors';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -44,6 +46,10 @@ class MoorDartParser {
   Future<MoorColumn /*?*/ > parseColumn(
       MethodDeclaration declaration, Element element) {
     return Future.value(_columnParser.parse(declaration, element));
+  }
+
+  Future<MoorColumn /*?*/ > parseOrmColumn(DbColumnField element) {
+    return _columnParser.parseOrm(element);
   }
 
   @visibleForTesting

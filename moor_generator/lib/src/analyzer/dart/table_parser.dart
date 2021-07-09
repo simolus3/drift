@@ -8,13 +8,41 @@ class TableParser {
   TableParser(this.base);
 
   Future<MoorTable> parseTable(ClassElement element) async {
-    final sqlName = await _parseTableName(element);
+    final dbTable = ORMTableParser.getDbTableAnnotation(element);
+
+    String sqlName;
+    if (dbTable == null) {
+      sqlName = await _parseTableName(element);
+    } else {
+      sqlName = dbTable.getField('name').toStringValue() ??
+          ReCase(element.name).snakeCase;
+    }
     if (sqlName == null) return null;
 
-    final columns = (await _parseColumns(element)).toList();
-    final primaryKey = await _readPrimaryKey(element, columns);
+    List<String> overrideTableConstraints;
+    List<MoorColumn> columns;
+    Set<MoorColumn> primaryKey;
+    _DataClassInformation dataClassInfo;
+    bool overrideWithoutRowId;
 
-    final dataClassInfo = _readDataClassInformation(columns, element);
+    if (dbTable == null) {
+      columns = (await _parseColumns(element)).toList();
+      primaryKey = await _readPrimaryKey(element, columns);
+      dataClassInfo = _readDataClassInformation(columns, element);
+      overrideWithoutRowId = await _overrideWithoutRowId(element);
+    } else {
+      final dbColumns = ORMTableParser.getDbColumns(element);
+      columns = (await ORMTableParser.parseDbColumns(dbColumns, base)).toList();
+      primaryKey = await ORMTableParser.readDbPrimaryKey(columns);
+      dataClassInfo = ORMTableParser.readDbDataClassInformation(
+          columns, element, dbTable, base);
+      overrideTableConstraints = dbTable
+          .getField('customConstraints')
+          .toListValue()
+          ?.map((e) => e.toString())
+          ?.toList(growable: true);
+      overrideWithoutRowId = dbTable.getField('withoutRowId').toBoolValue();
+    }
 
     final table = MoorTable(
       fromClass: element,
@@ -23,8 +51,10 @@ class TableParser {
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       primaryKey: primaryKey,
-      overrideWithoutRowId: await _overrideWithoutRowId(element),
+      overrideWithoutRowId: overrideWithoutRowId,
       declaration: DartTableDeclaration(element, base.step.file),
+      isOrmTable: dbTable != null,
+      overrideTableConstraints: overrideTableConstraints,
     );
 
     if (primaryKey != null && columns.any((element) => element.hasAI)) {
@@ -237,5 +267,103 @@ extension on Element {
     return parent is ClassElement &&
         parent.name == 'Table' &&
         isFromMoor(parent.thisType);
+  }
+}
+
+/// ORM
+class DbColumnField {
+  final FieldElement field;
+  final DartObject annotation;
+  final ElementAnnotation annotationElement;
+  final bool isForeignKey;
+  final bool isEnum;
+
+  const DbColumnField(
+    this.field,
+    this.annotation,
+    this.annotationElement,
+    this.isForeignKey,
+    this.isEnum,
+  );
+}
+
+class ORMTableParser {
+  static DartObject getDbTableAnnotation(ClassElement element) {
+    for (final annotation in element.metadata) {
+      final computed = annotation.computeConstantValue();
+      final annotationClass = computed.type.element.name;
+
+      if (annotationClass == 'OrmTable') {
+        return computed;
+      }
+    }
+
+    return null;
+  }
+
+  static DbColumnField getDbColumnAnnotation(FieldElement element) {
+    DartObject dbAnnotation;
+    ElementAnnotation dbAnnotationElement;
+
+    var isForeignKey = false;
+    var isEnumColumn = false;
+    for (final annotation in element.metadata) {
+      final computed = annotation.computeConstantValue();
+      final annotationClass = computed.type.element.name;
+
+      isForeignKey = annotationClass == 'ForeignKeyColumn';
+      isEnumColumn = annotationClass == 'EnumColumn';
+      if (annotationClass == 'ColumnDef' || isForeignKey || isEnumColumn) {
+        dbAnnotation = computed;
+        dbAnnotationElement = annotation;
+      }
+    }
+
+    return dbAnnotation == null
+        ? null
+        : DbColumnField(
+            element,
+            dbAnnotation,
+            dbAnnotationElement,
+            isForeignKey,
+            isEnumColumn,
+          );
+  }
+
+  static _DataClassInformation readDbDataClassInformation(
+      List<MoorColumn> columns,
+      ClassElement element,
+      DartObject annotation,
+      MoorDartParser base) {
+    final constructorInExistingClass =
+        annotation.getField('dbConstructor').toStringValue() ?? '';
+    final existingClass = element.thisType.element;
+    final name = existingClass.name;
+
+    final verified = validateExistingClass(
+        columns, existingClass, constructorInExistingClass, base.step.errors);
+    return _DataClassInformation(name, verified);
+  }
+
+  static Future<Set<MoorColumn>> readDbPrimaryKey(
+      List<MoorColumn> columns) async {
+    final primaryKeys = columns.where((element) => element.isPrimaryKey);
+    return primaryKeys.isEmpty ? null : primaryKeys.toSet();
+  }
+
+  static Iterable<DbColumnField> getDbColumns(ClassElement element) {
+    return element.fields
+        .map(getDbColumnAnnotation)
+        .where((field) => field != null)
+        .toSet();
+  }
+
+  static Future<Iterable<MoorColumn>> parseDbColumns(
+      Iterable<DbColumnField> fields, MoorDartParser base) async {
+    final results = await Future.wait(fields.map((field) async {
+      return await base.parseOrmColumn(field);
+    }));
+
+    return results.where((c) => c != null);
   }
 }

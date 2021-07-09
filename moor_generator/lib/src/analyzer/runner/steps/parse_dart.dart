@@ -107,7 +107,11 @@ class ParseDartStep extends Step {
   Future<List<MoorTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
-      if (!_tableTypeChecker.isAssignableFrom(type.element)) {
+      if (type.element is! ClassElement ||
+          (!_tableTypeChecker.isAssignableFrom(type.element) &&
+              ORMTableParser.getDbTableAnnotation(
+                      type.element as ClassElement) ==
+                  null)) {
         reportError(ErrorInDartCode(
           severity: Severity.criticalError,
           message: 'The type $type is not a moor table',

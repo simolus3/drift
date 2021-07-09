@@ -39,3 +39,14 @@ class EnumIndexConverter<T> extends TypeConverter<T, int> {
     return (value as dynamic)?.index as int;
   }
 }
+
+/// ORM
+abstract class ForeignKeyConverter<T> extends TypeConverter<T, int> {
+  /// ForeignKeyConverter
+  const ForeignKeyConverter();
+
+  @override
+  int? mapToSql(T? value);
+  @override
+  T? mapToDart(int? fromDb);
+}

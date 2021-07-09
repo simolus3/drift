@@ -1,4 +1,6 @@
 //@dart=2.9
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
@@ -322,7 +324,12 @@ class RowMappingWriter {
         loadType = '$loaded.mapToDart($loadType)';
       }
 
-      if (!column.nullable && options.nnbd) {
+      final nullField = ((column.declaration as DartColumnDeclaration).element
+              as FieldElement)
+          .type
+          .nullabilitySuffix;
+
+      if (nullField == NullabilitySuffix.none && options.nnbd) {
         loadType = '$loadType!';
       }
 

@@ -249,7 +249,13 @@ class TableWriter extends TableOrViewWriter {
     } else {
       // Regular generation, write full table class
       final dataClass = table.dartTypeName;
-      final tableDslName = table.fromClass?.name ?? 'Table';
+      String tableDslName;
+
+      if (table.isOrmTable) {
+        tableDslName = 'Table';
+      } else {
+        tableDslName = table.fromClass?.name ?? 'Table';
+      }
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
       final typeArgs = '<${table.entityInfoName}, $dataClass>';

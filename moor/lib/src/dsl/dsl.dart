@@ -7,6 +7,8 @@ import 'package:moor/moor.dart';
 part 'columns.dart';
 part 'database.dart';
 part 'table.dart';
+part 'orm_columns.dart';
+part 'orm_table.dart';
 
 /// Implementation for dsl methods that aren't called at runtime but only exist
 /// for the generator to pick up. For instance, in

@@ -221,7 +221,7 @@ class CreateTableReader {
       overriddenName: dartTableName,
       primaryKey: primaryKeyFromTableConstraint,
       overrideWithoutRowId: table.withoutRowId ? true : null,
-      overrideTableConstraints: constraints.isNotEmpty ? constraints : null,
+      overrideTableConstraints: constraints.isNotEmpty ? constraints : [],
       // we take care of writing the primary key ourselves
       overrideDontWriteConstraints: true,
       declaration: MoorTableDeclaration(stmt, step.file),
