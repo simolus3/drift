@@ -58,8 +58,7 @@ abstract class NullAwareTypeConverter<D, S> extends TypeConverter<D, S> {
     return fromDb == null ? null : requireMapToDart(fromDb);
   }
 
-  /// Map a non-null value from an object in Dart into something that will be
-  /// understood by the database.
+  /// Maps a non-null column from the database back to Dart.
   D requireMapToDart(S fromDb);
 
   @override
@@ -67,6 +66,7 @@ abstract class NullAwareTypeConverter<D, S> extends TypeConverter<D, S> {
     return value == null ? null : requireMapToSql(value);
   }
 
-  /// Maps a non-null column from the database back to Dart.
+  /// Map a non-null value from an object in Dart into something that will be
+  /// understood by the database.
   S requireMapToSql(D value);
 }
