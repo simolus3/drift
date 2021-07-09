@@ -39,3 +39,34 @@ class EnumIndexConverter<T> extends TypeConverter<T, int> {
     return (value as dynamic)?.index as int;
   }
 }
+
+/// A type converter automatically mapping `null` values to `null` in both
+/// directions.
+///
+/// Instead of overriding  [mapToDart] and [mapToSql], subclasses of this
+/// converter should implement [requireMapToDart] and [requireMapToSql], which
+/// are used to map non-null values to and from sql values, respectively.
+///
+/// Apart from the implementation changes, subclasses of this converter can be
+/// used just like all other type converters.
+abstract class NullAwareTypeConverter<D, S> extends TypeConverter<D, S> {
+  /// Constant default constructor.
+  const NullAwareTypeConverter();
+
+  @override
+  D? mapToDart(S? fromDb) {
+    return fromDb == null ? null : requireMapToDart(fromDb);
+  }
+
+  /// Map a non-null value from an object in Dart into something that will be
+  /// understood by the database.
+  D requireMapToDart(S fromDb);
+
+  @override
+  S? mapToSql(D? value) {
+    return value == null ? null : requireMapToSql(value);
+  }
+
+  /// Maps a non-null column from the database back to Dart.
+  S requireMapToSql(D value);
+}
