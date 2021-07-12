@@ -22,7 +22,7 @@ abstract class TypeConverter<D, S> {
 
 /// Implementation for an enum to int converter that uses the index of the enum
 /// as the value stored in the database.
-class EnumIndexConverter<T> extends TypeConverter<T, int> {
+class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
   /// All values of the enum.
   final List<T> values;
 
@@ -30,13 +30,15 @@ class EnumIndexConverter<T> extends TypeConverter<T, int> {
   const EnumIndexConverter(this.values);
 
   @override
-  T? mapToDart(int? fromDb) {
-    return fromDb == null ? null : values[fromDb];
+  T requireMapToDart(int fromDb) {
+    return values[fromDb];
   }
 
   @override
-  int? mapToSql(T? value) {
-    return (value as dynamic)?.index as int;
+  int requireMapToSql(T value) {
+    // In Dart 2.14: Cast to Enum instead of dynamic. Also add Enum as an upper
+    // bound for T.
+    return (value as dynamic).index as int;
   }
 }
 
