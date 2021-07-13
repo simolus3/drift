@@ -154,7 +154,7 @@ class _LikeOperator extends Expression<bool?> {
       $mrjf($mrjc(target.hashCode, $mrjc(regex.hashCode, operator.hashCode)));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _LikeOperator &&
         other.target == target &&
         other.regex == regex &&
@@ -208,7 +208,7 @@ class _CollateOperator extends Expression<String> {
   int get hashCode => $mrjf($mrjc(inner.hashCode, collate.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _CollateOperator &&
         other.inner == inner &&
         other.collate == collate;

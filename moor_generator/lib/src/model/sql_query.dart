@@ -652,7 +652,7 @@ class FoundDartPlaceholder extends FoundElement {
   int get hashCode => hashAll([type, name, ...availableResultSets]);
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         other is FoundDartPlaceholder &&
             other.type == type &&

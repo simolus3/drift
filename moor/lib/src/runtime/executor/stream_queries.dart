@@ -53,7 +53,7 @@ class StreamKey {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other is StreamKey &&
             other.sql == sql &&
@@ -311,7 +311,7 @@ class SpecificUpdateQuery extends TableUpdateQuery {
   int get hashCode => $mrjf($mrjc(limitUpdateKind.hashCode, table.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is SpecificUpdateQuery &&
         other.limitUpdateKind == limitUpdateKind &&
         other.table == table;

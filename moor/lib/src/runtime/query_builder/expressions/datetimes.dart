@@ -85,7 +85,7 @@ class _StrftimeSingleFieldExpression extends Expression<int?> {
   int get hashCode => $mrjf($mrjc(format.hashCode, date.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _StrftimeSingleFieldExpression &&
         other.format == format &&
         other.date == date;

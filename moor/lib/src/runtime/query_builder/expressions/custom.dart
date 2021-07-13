@@ -36,7 +36,7 @@ class CustomExpression<D> extends Expression<D> {
   int get hashCode => content.hashCode * 3;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other.runtimeType == runtimeType &&
         // ignore: test_types_in_equals
         (other as CustomExpression).content == content;

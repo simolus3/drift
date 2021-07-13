@@ -72,7 +72,7 @@ class Variable<T> extends Expression<T> {
   String toString() => 'Variable($value)';
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is Variable && other.value == value;
   }
 }
@@ -102,7 +102,7 @@ class Constant<T> extends Expression<T> {
   int get hashCode => value.hashCode;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other.runtimeType == runtimeType &&
         // ignore: test_types_in_equals
         (other as Constant<T>).value == value;
