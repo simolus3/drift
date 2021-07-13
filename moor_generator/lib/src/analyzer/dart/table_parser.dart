@@ -276,14 +276,14 @@ class DbColumnField {
   final DartObject annotation;
   final ElementAnnotation annotationElement;
   final bool isForeignKey;
-  final bool isEnum;
+  final bool isEnumField;
 
   const DbColumnField(
     this.field,
     this.annotation,
     this.annotationElement,
     this.isForeignKey,
-    this.isEnum,
+    this.isEnumField,
   );
 }
 

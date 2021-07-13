@@ -319,7 +319,7 @@ class ColumnParser {
     final cr = ConstantReader(field.annotation);
     final crt = cr.peek('type').objectValue;
     ColumnType columnType;
-    if (field.isEnum) {
+    if (field.isEnumField) {
       columnType = ColumnType.integer;
     } else {
       columnType = ColumnType.values
@@ -332,12 +332,6 @@ class ColumnParser {
             element.name.label.token.toString() == 'sqlDefault',
         orElse: () => null);
 
-    final clientDefault = annotation.arguments.arguments.firstWhere(
-        (element) =>
-            element is NamedExpression &&
-            element.name.label.token.toString() == 'clientDefault',
-        orElse: () => null);
-
     final nullableArg = annotation.arguments.arguments.firstWhere(
         (element) =>
             element is NamedExpression &&
@@ -346,16 +340,18 @@ class ColumnParser {
     final nullable = nullableArg?.expression?.toString() == 'true';
 
     UsedTypeConverter usedConverter;
-    if (field.isEnum) {
-      final enumType = field.field.type;
-      try {
-        usedConverter = UsedTypeConverter.forEnumColumn(enumType, nullable);
-      } on InvalidTypeForEnumConverterException catch (e) {
-        base.step.errors.report(ErrorInDartCode(
-          message: e.errorDescription,
-          affectedElement: field.field,
-          severity: Severity.error,
-        ));
+    if (field.isEnumField) {
+      final enumType = field.field.type as InterfaceType;
+      if (enumType.typeArguments.isEmpty) {
+        try {
+          usedConverter = UsedTypeConverter.forEnumColumn(enumType, nullable);
+        } on InvalidTypeForEnumConverterException catch (e) {
+          base.step.errors.report(ErrorInDartCode(
+            message: e.errorDescription,
+            affectedElement: field.field,
+            severity: Severity.error,
+          ));
+        }
       }
     } else {
       // ignore: avoid_bool_literals_in_conditional_expressions
@@ -411,10 +407,10 @@ class ColumnParser {
       nullable: isPrimaryKey || nullable,
       isPrimaryKey: isPrimaryKey,
       isForeignKey: field.isForeignKey,
+      isEnum: field.isEnumField,
       features: foundFeatures,
       defaultArgument: (sqlDefault as NamedExpression)?.expression?.toSource(),
-      clientDefaultCode:
-          (clientDefault as NamedExpression)?.expression?.toSource(),
+      clientDefaultCode: null,
       typeConverter: usedConverter,
       declaration: DartColumnDeclaration(field.field, base.step.file),
       documentationComment: field.field.documentationComment,

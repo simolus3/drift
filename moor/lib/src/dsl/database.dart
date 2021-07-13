@@ -53,7 +53,17 @@ class UseMoor {
 
   /// ORM
   final Map<Type, TypeConverter> converters;
+
+  ///
+  final Map<Type, TypeConverter> enumConverters;
+
+  ///
+  final Map<Type, TypeConverter> genericConverters;
+
+  ///
   final ForeignKeyConverter? foreignKeyConverter;
+
+  ///
   final ForeignKeyConverter? nullableForeignKeyConverter;
 
   /// Use this class as an annotation to inform moor_generator that a database
@@ -64,6 +74,8 @@ class UseMoor {
     this.queries = const {},
     this.include = const {},
     this.converters = const {},
+    this.enumConverters = const {},
+    this.genericConverters = const {},
     this.foreignKeyConverter,
     this.nullableForeignKeyConverter,
   });

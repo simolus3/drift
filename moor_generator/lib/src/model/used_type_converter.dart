@@ -50,14 +50,11 @@ class UsedTypeConverter {
     }
 
     final creatingClass = enumType.element as ClassElement;
-    if (!creatingClass.isEnum) {
-      throw InvalidTypeForEnumConverterException('Not an enum', enumType);
-    }
 
     final className = creatingClass.name;
 
     return UsedTypeConverter(
-      expression: 'const EnumIndexConverter<$className>($className.values)',
+      expression: 'EnumIndexConverter<$className>($className.values)',
       mappedType: creatingClass.instantiate(
           typeArguments: const [],
           nullabilitySuffix:

@@ -10,7 +10,6 @@ class ColumnDef {
   final ColumnType type;
   final String? customConstraints;
   final Expression<dynamic>? sqlDefault;
-  final dynamic Function()? clientDefault;
   final TypeConverter? converter;
   const ColumnDef(
     this.type, {
@@ -18,7 +17,6 @@ class ColumnDef {
     this.name,
     this.customConstraints,
     this.sqlDefault,
-    this.clientDefault,
     this.converter,
   });
 }
@@ -39,7 +37,6 @@ class ForeignKeyColumn extends ColumnDef {
     String? name,
     String? customConstraints,
     Expression<dynamic>? sqlDefault,
-    dynamic Function()? clientDefault,
     this.column = 'id',
     this.onUpdate = KeyAction.cascade,
     this.onDelete = KeyAction.restrict,
@@ -49,8 +46,23 @@ class ForeignKeyColumn extends ColumnDef {
           name: name,
           customConstraints: customConstraints,
           sqlDefault: sqlDefault,
-          clientDefault: clientDefault,
           converter: converter,
+        );
+}
+
+@Target({TargetKind.field})
+class EnumColumn extends ColumnDef {
+  const EnumColumn({
+    bool nullable = false,
+    String? name,
+    String? customConstraints,
+    Expression<dynamic>? sqlDefault,
+  }) : super(
+          ColumnType.integer,
+          nullable: nullable,
+          name: name,
+          customConstraints: customConstraints,
+          sqlDefault: sqlDefault,
         );
 }
 

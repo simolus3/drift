@@ -90,6 +90,15 @@ class UseMoorParser {
     final converters = converterList
         .map((key, value) => MapEntry(key.toTypeValue(), '${value.type}()'));
 
+    final enumConverterList = annotation.peek('enumConverters')?.mapValue ?? {};
+    final enumConverters = enumConverterList.map((key, value) =>
+        MapEntry(key.toTypeValue(), '${value.type.element.name}'));
+
+    final genericConverterList =
+        annotation.peek('genericConverters')?.mapValue ?? {};
+    final genericConverters = genericConverterList.map((key, value) =>
+        MapEntry(key.toTypeValue(), '${value.type.element.name}'));
+
     final foreignKeyConverter = annotation
         .peek('foreignKeyConverter')
         ?.objectValue
@@ -107,7 +116,7 @@ class UseMoorParser {
     for (final table in parsedTables) {
       var startIndex = table.converters.length;
       for (final c in table.columns) {
-        if (c.typeConverter == null) {
+        if (c.typeConverter == null || c.isEnum) {
           final columnDeclaration = c.declaration as DartColumnDeclaration;
           if (columnDeclaration.element is FieldElement) {
             final fieldElement = columnDeclaration.element as FieldElement;
@@ -115,17 +124,46 @@ class UseMoorParser {
 
             String converter;
             if (c.isForeignKey && !c.nullable && foreignKeyConverter != null) {
-              converter = '$foreignKeyConverter<$type>()';
+              final typeName = (type as InterfaceType).typeArguments[0];
+              converter = '$foreignKeyConverter<$typeName>()';
             } else if (c.isForeignKey &&
                 c.nullable &&
                 nullableForeignKeyConverter != null) {
-              converter = '$nullableForeignKeyConverter<$type>()';
+              final typeName = (type as InterfaceType).typeArguments[0];
+              converter = '$nullableForeignKeyConverter<$typeName>()';
+            } else if (c.isEnum) {
+              final convType = enumConverters.keys.firstWhere(
+                  (element) => _genericTypeEquals(
+                      type as InterfaceType, element as InterfaceType),
+                  orElse: () => null);
+              converter = enumConverters[convType];
+
+              if (convType != null) {
+                final typeName = (type as InterfaceType).typeArguments[0];
+                converter = '${enumConverters[convType]}'
+                    "${"<$typeName>($typeName.values)"}";
+              }
             } else {
               final convType = converters.keys.firstWhere(
                   (element) => _typeEquals(
                       type as InterfaceType, element as InterfaceType),
                   orElse: () => null);
-              converter = converters[convType];
+
+              if (convType != null) {
+                converter = converters[convType];
+              } else {
+                final convType = genericConverters.keys.firstWhere(
+                    (element) => _genericTypeEquals(
+                        type as InterfaceType, element as InterfaceType),
+                    orElse: () => null);
+                converter = genericConverters[convType];
+
+                if (convType != null) {
+                  final typeName = (type as InterfaceType).typeArguments[0];
+                  converter = '${genericConverters[convType]}'
+                      "${"<$typeName, ${c.innerColumnType()}>()"}";
+                }
+              }
             }
 
             if (converter != null) {
@@ -155,5 +193,9 @@ class UseMoorParser {
   bool _typeEquals(InterfaceType type1, InterfaceType type2) {
     return type1.element == type2.element &&
         _equalArrays(type1.typeArguments, type2.typeArguments);
+  }
+
+  bool _genericTypeEquals(InterfaceType type1, InterfaceType type2) {
+    return type1.element == type2.element;
   }
 }
