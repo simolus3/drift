@@ -67,7 +67,7 @@ class MoorPlugin extends ServerPlugin
     throw UnsupportedError('Using custom driver management');
   }
 
-  MoorDriver moorDriverForPath(String path) {
+  MoorDriver _moorDriverForPath(String path) {
     for (final driver in drivers.values) {
       if (driver.context.contextRoot.isAnalyzed(path)) return driver;
     }
@@ -76,7 +76,7 @@ class MoorPlugin extends ServerPlugin
   }
 
   MoorDriver _moorDriverOrFail(String path) {
-    final driver = moorDriverForPath(path);
+    final driver = _moorDriverForPath(path);
     if (driver == null) {
       throw RequestFailure(plugin.RequestError(
           plugin.RequestErrorCode.INVALID_PARAMETER,
@@ -87,7 +87,7 @@ class MoorPlugin extends ServerPlugin
 
   @override
   void contentChanged(String path) {
-    moorDriverForPath(path)?.handleFileChanged(path);
+    _moorDriverForPath(path)?.handleFileChanged(path);
   }
 
   @override
@@ -98,8 +98,12 @@ class MoorPlugin extends ServerPlugin
 
     for (final contextRoot in roots) {
       if (!oldRoots.remove(contextRoot)) {
-        // The context is new!
-        final driver = MoorDriver(resourceProvider, null, contextRoot.root);
+        // The context is new! Create a driver for it
+        final driver = MoorDriver(
+          resourceProvider,
+          contextRoot: contextRoot.root,
+          sdkPath: sdkManager.defaultSdkDirectory,
+        );
         _didCreateDriver(driver);
         drivers[contextRoot] = driver;
       }
@@ -153,7 +157,7 @@ class MoorPlugin extends ServerPlugin
 
   @override
   Future<void> sendHighlightsNotification(String path) async {
-    final driver = moorDriverForPath(path);
+    final driver = _moorDriverForPath(path);
     if (driver == null) {
       channel.sendNotification(
           plugin.AnalysisHighlightsParams(path, []).toNotification());
@@ -194,7 +198,7 @@ class MoorPlugin extends ServerPlugin
   @override
   Future<plugin.EditGetAssistsResult> handleEditGetAssists(
       plugin.EditGetAssistsParams parameters) async {
-    final driver = moorDriverForPath(parameters.file);
+    final driver = _moorDriverOrFail(parameters.file);
     final results = await driver.ide
         .assists(parameters.file, parameters.offset, parameters.length);
 

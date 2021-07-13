@@ -52,8 +52,8 @@ class MoorCli {
   }
 
   Future<MoorDriver> createMoorDriver() async {
-    return MoorDriver(PhysicalResourceProvider.INSTANCE, project.moorOptions,
-        project.directory.path);
+    return MoorDriver(PhysicalResourceProvider.INSTANCE,
+        options: project.moorOptions, contextRoot: project.directory.path);
   }
 
   Future<void> run(Iterable<String> args) async {

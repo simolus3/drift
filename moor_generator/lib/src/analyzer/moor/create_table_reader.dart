@@ -241,7 +241,12 @@ class CreateTableReader {
 
     DartType type;
     try {
-      type = await step.task.backend.resolveTypeOf(step.file.uri, code);
+      type = await step.task.backend.resolveTypeOf(
+          step.file.uri,
+          code,
+          imports
+              .map((e) => e.importString.value)
+              .where((e) => e.endsWith('.dart')));
     } on CannotLoadTypeException catch (e) {
       step.reportError(ErrorInMoorFile(span: mapper.span, message: e.msg));
       return null;

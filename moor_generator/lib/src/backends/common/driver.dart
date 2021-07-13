@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:logging/logging.dart';
 // ignore: implementation_imports
 import 'package:moor/src/utils/synchronized.dart';
@@ -29,14 +30,19 @@ class MoorDriver {
   StreamSubscription _taskCompleteSubscription;
 
   MoorDriver(this._resourceProvider,
-      [MoorOptions options, String contextRoot]) {
+      {String contextRoot,
+      String sdkPath,
+      MoorOptions options = const MoorOptions.defaults()}) {
+    final overlayed = OverlayResourceProvider(_resourceProvider);
     final collection = AnalysisContextCollection(
-        includedPaths: [contextRoot], resourceProvider: _resourceProvider);
+        includedPaths: [contextRoot],
+        resourceProvider: overlayed,
+        sdkPath: sdkPath);
     context = collection.contextFor(contextRoot);
-    backend = StandaloneBackend(context);
+    backend = StandaloneBackend(context, overlayed);
 
-    session =
-        MoorSession(backend, options: options ?? const MoorOptions.defaults());
+    // Options will be loaded later.
+    session = MoorSession(backend, options: options);
     ide = MoorIde(session, _DriverBasedFileManagement(this));
   }
 

@@ -3,6 +3,7 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:logging/logging.dart';
 
 import 'backend.dart';
@@ -10,7 +11,13 @@ import 'backend.dart';
 class StandaloneBackend extends Backend {
   final AnalysisContext context;
 
-  StandaloneBackend(this.context);
+  /// An overlay resource provider, which must also be used by the [context].
+  ///
+  /// This will be used to create artificial files used to resolve the type of
+  /// Dart expressions.
+  final OverlayResourceProvider provider;
+
+  StandaloneBackend(this.context, this.provider);
 
   String pathOfUri(Uri uri) {
     final currentSession = context.currentSession;
@@ -73,9 +80,45 @@ class _StandaloneBackendTask extends BackendTask {
   }
 
   @override
-  Future<DartType> resolveTypeOf(Uri context, String dartExpression) async {
-    final element = await resolveDart(context);
-    // todo: Override so that we don't throw. We should support this properly.
-    return element.typeProvider.dynamicType;
+  Future<DartType> resolveTypeOf(
+      Uri context, String dartExpression, Iterable<String> imports) async {
+    // Create a fake file next to the content
+    final provider = backend.provider;
+    final path = backend.pathOfUri(context);
+    final pathContext = provider.pathContext;
+    final pathForTemp = pathContext.join(
+        pathContext.dirname(path), 'moor_temp_${dartExpression.hashCode}.dart');
+
+    final content = StringBuffer();
+    for (final import in imports) {
+      content.writeln('import "$import";');
+    }
+    content.writeln('var e = $dartExpression;');
+
+    provider.setOverlay(
+      pathForTemp,
+      content: content.toString(),
+      modificationStamp: DateTime.now().millisecondsSinceEpoch,
+    );
+
+    try {
+      final result =
+          await backend.context.currentSession.getResolvedLibrary2(pathForTemp);
+
+      if (result is! ResolvedLibraryResult) {
+        throw CannotLoadTypeException(
+            'Could not resolve temporary helper file');
+      }
+
+      final field = (result as ResolvedLibraryResult)
+          .element
+          .units
+          .first
+          .topLevelVariables
+          .first;
+      return field.type;
+    } finally {
+      provider.removeOverlay(pathForTemp);
+    }
   }
 }
