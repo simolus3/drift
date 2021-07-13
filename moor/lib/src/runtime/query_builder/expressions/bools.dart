@@ -35,7 +35,7 @@ class _NotExpression extends Expression<bool?> {
   int get hashCode => inner.hashCode << 1;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _NotExpression && other.inner == inner;
   }
 }

@@ -69,7 +69,7 @@ abstract class UpdateCompanion<D> implements Insertable<D> {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! UpdateCompanion<D>) return false;
 

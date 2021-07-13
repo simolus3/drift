@@ -166,7 +166,7 @@ class GeneratedColumn<T> extends Column<T> {
   int get hashCode => $mrjf($mrjc(tableName.hashCode, $name.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
 
     // ignore: test_types_in_equals

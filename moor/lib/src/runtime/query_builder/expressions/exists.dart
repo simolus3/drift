@@ -36,7 +36,7 @@ class _ExistsExpression<T> extends Expression<bool> {
   int get hashCode => $mrjf($mrjc(_select.hashCode, _not.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _ExistsExpression &&
         other._select == _select &&
         other._not == _not;

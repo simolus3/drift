@@ -136,7 +136,7 @@ class _AggregateExpression<D> extends Expression<D> {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (!identical(this, other) && other.runtimeType != runtimeType) {
       return false;
     }
