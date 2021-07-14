@@ -408,6 +408,7 @@ class ColumnParser {
       isPrimaryKey: isPrimaryKey,
       isForeignKey: field.isForeignKey,
       isEnum: field.isEnumField,
+      isORM: true,
       features: foundFeatures,
       defaultArgument: (sqlDefault as NamedExpression)?.expression?.toSource(),
       clientDefaultCode: null,

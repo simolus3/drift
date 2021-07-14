@@ -111,6 +111,7 @@ class MoorColumn implements HasDeclaration, HasType {
   final bool isPrimaryKey;
   final bool isForeignKey;
   final bool isEnum;
+  final bool isORM;
   final DartType fkReferences;
   final String fkColumn;
   final String fkOnUpdate;
@@ -195,6 +196,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.isPrimaryKey = false,
     this.isForeignKey = false,
     this.isEnum = false,
+    this.isORM = false,
     this.fkColumn,
     this.fkOnDelete,
     this.fkOnUpdate,

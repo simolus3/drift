@@ -30,7 +30,9 @@ ExistingRowClass /*?*/ validateExistingClass(Iterable<MoorColumn> columns,
     final column = unmatchedColumnsByName.remove(parameter.name);
     if (column != null) {
       columnsToParameter[column] = parameter;
-      _checkType(parameter, column, errors);
+      if (!column.isORM) {
+        _checkType(parameter, column, errors);
+      }
     } else if (!parameter.isOptional) {
       errors.report(ErrorInDartCode(
         affectedElement: parameter,
