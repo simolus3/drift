@@ -24,11 +24,7 @@ dependencies:
   cli_util: '>=0.2.0 <0.4.0'
 
   # Moor-specific analysis and apis
-  moor:
-    git:
-      url: https://github.com/westito/moor_orm.git
-      ref: v4.4.1
-      path: moor
+  moor: any
   sqlite3: '>=0.1.6 <2.0.0'
   sqlparser: ^0.17.0
 
