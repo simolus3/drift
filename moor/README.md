@@ -1,3 +1,270 @@
+# ORM
+You can define model and table declarations in one class!
+
+### Additional features:
+- Wrapper class for fields
+- Custom enum class
+- Global converters
+
+```
+@UseMoor(
+   tables: [
+      Address,
+   ],
+   converters: {
+       Decimal2: Decimal2Converter(),
+       Decimal3: Decimal3Converter(),
+   },
+   foreignKeyConverter: RefConverter(),
+   nullableForeignKeyConverter: NullRefConverter(),
+   genericConverters: { 
+      Val: ValConverter(),
+   },
+   enumConverters: {
+      EnumVal: EnumValConverter<BaseEnum>([]),
+   },
+)
+
+class AppDatabase extends _$AppDatabase {
+    ///....
+}
+
+@OrmTable(name: 'countries')
+class Country {
+  @PrimaryKeyColumn()
+  @ColumnDef(ColumnType.integer)
+  int? id;
+
+  @ColumnDef(ColumnType.text)
+  final String name;
+
+  Country({
+    this.id,
+    required this.name,
+  });
+}
+
+@OrmTable(name: 'addresses')
+class Address {
+  @PrimaryKeyColumn()
+  @ColumnDef(ColumnType.integer)
+  int? id;
+  
+  /// ForeignKeyColumn automatically generate constraints
+  @ForeignKeyColumn(Country, onUpdate: KeyAction.cascade, onDelete: KeyAction.restrict)
+  final Ref<Country> country;
+}
+```
+
+### Converters
+```
+/// Generic converter for wrapped types. 
+/// Default types (String, int) does not need to catch (-> else)
+/// Generic converters require two and only two type argument.
+
+class ValConverter<T extends Object?, D extends Object> extends TypeConverter<Val<T>, D> {
+  static final _decimal2Converter = Decimal2Converter();
+  static final _decimal3Converter = Decimal3Converter();
+
+  const ValConverter();
+
+  @override
+  Val<T>? mapToDart(D? fromDb) {
+    final value = (null is T) ? fromDb : fromDb!;
+    if (T is Decimal2) {
+      return Val<T>(_decimal2Converter.mapToDart(value as int) as T);
+    } else if (T is Decimal3) {
+      return Val<T>(_decimal3Converter.mapToDart(fromDb as int) as T);
+    } else {
+      return Val<T>(value as T);
+    }
+  }
+
+  @override
+  D? mapToSql(Val<T>? value) {
+    if (T is Decimal2) {
+      return _decimal2Converter.mapToSql(value!.value as Decimal2) as D;
+    } else if (T is Decimal3) {
+      return _decimal3Converter.mapToSql(value!.value as Decimal3) as D;
+    } else {
+      return value!.value as D;
+    }
+  }
+}
+
+/// For custom enum classes
+class EnumValConverter<T extends BaseEnum> extends ForeignKeyConverter<EnumVal<T>> {
+  final List<T> _values;
+
+  const EnumValConverter(this._values);
+
+  @override
+  EnumVal<T>? mapToDart(int? fromDb) {
+    if (null is T) {
+      return EnumVal<T>((fromDb == null ? null : _values[fromDb]) as T);
+    } else {
+      return EnumVal<T>(_values[fromDb!]);
+    }
+  }
+
+  @override
+  int? mapToSql(EnumVal<T>? value) {
+    return value!.id;
+  }
+}
+
+/// You have to define nullable and non-nullable reference wrapper. 
+/// NullRef and Ref can't be merged for a strict null checking
+class NullRefConverter<T extends BaseModel?> extends ForeignKeyConverter<NullRef<T>> {
+  const NullRefConverter();
+
+  @override
+  NullRef<T>? mapToDart(int? fromDb) {
+    return NullRef(fromDb);
+  }
+
+  @override
+  int? mapToSql(NullRef<T>? value) {
+    return (null is T) ? value!.id! : value!.id;
+  }
+}
+
+class RefConverter<T extends BaseModel> extends ForeignKeyConverter<Ref<T>> {
+  const RefConverter();
+
+  @override
+  Ref<T>? mapToDart(int? fromDb) {
+    return Ref(fromDb!);
+  }
+
+  @override
+  int? mapToSql(Ref<T>? value) {
+    return value!.id;
+  }
+}
+```
+
+### Custom wrapper types
+```
+/// These are sample implementations, not part of the package
+
+class Ref<T extends BaseModel> with ValChangeNotifier implements Val<T> {
+  T? _value;
+  int _id;
+
+  Ref(this._id, {T? value}) : _value = value;
+
+  Ref.withValue(T value) : this(value.id!, value: value);
+
+  int get id => _id;
+
+  @override
+  T get value => _value ?? (throw Exception('Foreign key value not loaded'));
+
+  @override
+  set value(T value) {
+    if (value != _value) {
+      _id = value.id!;
+      _value = value;
+      notifyListeners();
+    }
+  }
+
+  @override
+  String toString() {
+    return value.toString();
+  }
+}
+
+class NullRef<T extends BaseModel?> with ValChangeNotifier implements Val<T?> {
+  T? _value;
+  int? _id;
+
+  NullRef(this._id, {T? value}) : _value = value;
+
+  NullRef.withValue(T? value) : this(value?.id, value: value);
+
+  int? get id => _id;
+
+  @override
+  T? get value => _value;
+
+  @override
+  set value(T? value) {
+    if (value != _value) {
+      _id = value?.id;
+      _value = value;
+      notifyListeners();
+    }
+  }
+
+  @override
+  String toString() {
+    return value.toString();
+  }
+}
+
+/// Generic value wrapper
+class Val<T extends Object?> with ValChangeNotifier {
+  T _value;
+
+  Val(this._value);
+
+  T get value => _value;
+
+  set value(T value) {
+    if (value != _value) {
+      _value = value;
+      notifyListeners();
+    }
+  }
+
+  @override
+  String toString() {
+    return value.toString();
+  }
+}
+
+/// Custom enum classes. Enum class requires a "values" static array field
+
+abstract class BaseEnum {
+  final int id;
+  final String value;
+
+  const BaseEnum(this.id, this.value);
+
+  @override
+  String toString() {
+    return value;
+  }
+}
+
+class Language extends BaseEnum {
+  static const hungarian = Language(0, 'hungarian');
+  static const english = Language(1, 'english');
+
+  static const values = [hungarian, english];
+
+  const Language(int id, String value) : super(id, value);
+}
+```
+
+## Sample query
+```
+/// Foreign keys can be loaded easily
+
+final query = select(db.address).join([
+  leftOuterJoin(db.country, db.country.id.equalsExp(db.address.country)),
+]);
+
+query.map((row) {
+  final address = row.readTable(db.address);
+  final country = row.readTable(db.country);
+  address.country.value = country;
+  return address;
+});
+```
+
 # Moor
 Moor is a reactive persistence library for Flutter and Dart, built ontop of
 sqlite. 
