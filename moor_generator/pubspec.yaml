@@ -4,6 +4,7 @@ version: 4.4.1
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
+publish_to: none
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -23,7 +24,11 @@ dependencies:
   cli_util: '>=0.2.0 <0.4.0'
 
   # Moor-specific analysis and apis
-  moor: ^4.4.0
+  moor:
+    git:
+      url: https://github.com/westito/moor_orm.git
+      ref: v4.4.1
+      path: moor
   sqlite3: '>=0.1.6 <2.0.0'
   sqlparser: ^0.17.0
 
