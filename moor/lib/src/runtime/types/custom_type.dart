@@ -22,7 +22,7 @@ abstract class TypeConverter<D, S> {
 
 /// Implementation for an enum to int converter that uses the index of the enum
 /// as the value stored in the database.
-class EnumIndexConverter<T> extends TypeConverter<T, int> {
+class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
   /// All values of the enum.
   final List<T> values;
 
@@ -30,14 +30,47 @@ class EnumIndexConverter<T> extends TypeConverter<T, int> {
   const EnumIndexConverter(this.values);
 
   @override
-  T? mapToDart(int? fromDb) {
-    return fromDb == null ? null : values[fromDb];
+  T requireMapToDart(int fromDb) {
+    return values[fromDb];
   }
 
   @override
-  int? mapToSql(T? value) {
-    return (value as dynamic)?.index as int;
+  int requireMapToSql(T value) {
+    // In Dart 2.14: Cast to Enum instead of dynamic. Also add Enum as an upper
+    // bound for T.
+    return (value as dynamic).index as int;
   }
+}
+
+/// A type converter automatically mapping `null` values to `null` in both
+/// directions.
+///
+/// Instead of overriding  [mapToDart] and [mapToSql], subclasses of this
+/// converter should implement [requireMapToDart] and [requireMapToSql], which
+/// are used to map non-null values to and from sql values, respectively.
+///
+/// Apart from the implementation changes, subclasses of this converter can be
+/// used just like all other type converters.
+abstract class NullAwareTypeConverter<D, S> extends TypeConverter<D, S> {
+  /// Constant default constructor.
+  const NullAwareTypeConverter();
+
+  @override
+  D? mapToDart(S? fromDb) {
+    return fromDb == null ? null : requireMapToDart(fromDb);
+  }
+
+  /// Maps a non-null column from the database back to Dart.
+  D requireMapToDart(S fromDb);
+
+  @override
+  S? mapToSql(D? value) {
+    return value == null ? null : requireMapToSql(value);
+  }
+
+  /// Map a non-null value from an object in Dart into something that will be
+  /// understood by the database.
+  S requireMapToSql(D value);
 }
 
 /// ORM

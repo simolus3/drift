@@ -31,7 +31,7 @@ class ColumnName {
   int get hashCode => name.hashCode + implicit.hashCode * 31;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
     // ignore: test_types_in_equals
     final typedOther = other as ColumnName;
@@ -219,7 +219,7 @@ class AutoIncrement extends PrimaryKey {
   factory AutoIncrement() => _instance;
 
   @override
-  bool operator ==(dynamic other) => other is AutoIncrement;
+  bool operator ==(Object other) => other is AutoIncrement;
 
   @override
   int get hashCode => 1337420;
@@ -236,7 +236,7 @@ class LimitingTextLength extends ColumnFeature {
   int get hashCode => minLength.hashCode ^ maxLength.hashCode;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
     // ignore: test_types_in_equals
     final typedOther = other as LimitingTextLength;

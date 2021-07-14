@@ -30,7 +30,15 @@ abstract class BackendTask {
 
   Future<String> readMoor(Uri uri);
 
-  Future<DartType> resolveTypeOf(Uri context, String dartExpression) {
+  /// Resolves the type of a Dart expression given as a string.
+  ///
+  /// [context] is a file in which the expression should be resolved, which is
+  /// relevant for relevant imports. [imports] is a list of (relative) imports
+  /// which may be used to resolve the expression.
+  ///
+  /// Throws a [CannotLoadTypeException] when the type could not be resolved.
+  Future<DartType> resolveTypeOf(
+      Uri context, String dartExpression, Iterable<String> imports) {
     throw CannotLoadTypeException('Resolving dart expressions not supported');
   }
 

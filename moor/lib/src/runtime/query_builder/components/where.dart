@@ -19,7 +19,7 @@ class Where extends Component {
   int get hashCode => predicate.hashCode * 7;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         other is Where && other.predicate == predicate;
   }

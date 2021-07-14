@@ -53,7 +53,7 @@ class _NullCheck extends Expression<bool> {
   int get hashCode => $mrjf($mrjc(_inner.hashCode, _isNull.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _NullCheck &&
         other._inner == _inner &&
         other._isNull == _isNull;

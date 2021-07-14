@@ -70,7 +70,8 @@ class BuildBackendTask extends BackendTask {
   }
 
   @override
-  Future<DartType> resolveTypeOf(Uri context, String dartExpression) async {
+  Future<DartType> resolveTypeOf(
+      Uri context, String dartExpression, Iterable<String> imports) async {
     // we try to detect all calls of resolveTypeOf in an earlier builder and
     // prepare the result. See PreprocessBuilder for details
     final preparedHelperFile =

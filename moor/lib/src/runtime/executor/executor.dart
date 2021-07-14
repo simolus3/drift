@@ -100,7 +100,7 @@ class BatchedStatements {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is BatchedStatements &&
         _equality.equals(other.statements, statements) &&
         _equality.equals(other.arguments, arguments);
@@ -130,7 +130,7 @@ class ArgumentsForBatchedStatement {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is ArgumentsForBatchedStatement &&
         other.statementIndex == statementIndex &&
         _equality.equals(other.arguments, arguments);

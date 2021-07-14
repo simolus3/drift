@@ -52,7 +52,7 @@ class _InExpression<T> extends _BaseInExpression {
       _expression.hashCode, $mrjc(_equality.hash(_values), _not.hashCode)));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _InExpression &&
         other._expression == _expression &&
         _equality.equals(other._values, _values) &&
@@ -76,7 +76,7 @@ class _InSelectExpression extends _BaseInExpression {
       $mrjc(_expression.hashCode, $mrjc(_select.hashCode, _not.hashCode)));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _InSelectExpression &&
         other._expression == _expression &&
         other._select == _select &&

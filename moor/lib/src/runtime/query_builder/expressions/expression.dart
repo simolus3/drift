@@ -174,7 +174,7 @@ class Precedence implements Comparable<Precedence> {
   int get hashCode => _value;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     // runtimeType comparison isn't necessary, the private constructor prevents
     // subclasses
     return other is Precedence && other._value == _value;
@@ -257,7 +257,7 @@ abstract class _InfixOperator<D> extends Expression<D> {
       $mrjf($mrjc(left.hashCode, $mrjc(right.hashCode, operator.hashCode)));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _InfixOperator &&
         other.left == left &&
         other.right == right &&
@@ -357,7 +357,7 @@ class _UnaryMinus<DT> extends Expression<DT> {
   int get hashCode => inner.hashCode * 5;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _UnaryMinus && other.inner == inner;
   }
 }
@@ -382,7 +382,7 @@ class _DartCastExpression<D1, D2> extends Expression<D2> {
   int get hashCode => inner.hashCode * 7;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is _DartCastExpression && other.inner == inner;
   }
 }
@@ -436,7 +436,7 @@ class FunctionCallExpression<R> extends Expression<R> {
       $mrjf($mrjc(functionName.hashCode, _equality.hash(arguments)));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is FunctionCallExpression &&
         other.functionName == functionName &&
         _equality.equals(other.arguments, arguments);

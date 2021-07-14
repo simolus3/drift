@@ -100,7 +100,7 @@ class TableUpdate {
   int get hashCode => $mrjf($mrjc(kind.hashCode, table.hashCode));
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return other is TableUpdate && other.kind == kind && other.table == table;
   }
 
