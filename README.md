@@ -38,7 +38,16 @@ class Country {
   int? id;
 
   @ColumnDef(ColumnType.text)
-  final String name;
+  String name;
+  
+  @ColumnDef(ColumnType.text)
+  final Val<String> nameWrapped;
+  
+  @EnumColumn()
+  final EnumVal<Language> languageWrapped;
+  
+  @EnumColumn()
+  final Language language;
 
   Country({
     this.id,
