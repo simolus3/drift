@@ -2,10 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:moor_generator/src/backends/build/serialized_types.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -85,8 +82,11 @@ class PreprocessBuilder extends Builder {
     final importedDartFiles =
         seenFiles.where((asset) => asset.extension == '.dart');
 
+    final codeToField = <String, String>{};
+
     // to analyze the expressions, generate a fake Dart file that declares each
-    // expression in a `var`, we can then read the static type.
+    // expression in a `var`, we can then read the static type when resolving
+    // file later.
 
     final dartBuffer = StringBuffer();
     for (final import in importedDartFiles) {
@@ -95,38 +95,20 @@ class PreprocessBuilder extends Builder {
     }
 
     for (var i = 0; i < dartLexemes.length; i++) {
-      dartBuffer.write('var ${_nameForDartExpr(i)} = ${dartLexemes[i]};\n');
+      final name = _nameForDartExpr(i);
+      dartBuffer.write('var $name = ${dartLexemes[i]};\n');
+      codeToField[dartLexemes[i]] = name;
     }
 
     final tempDartAsset = input.changeExtension('.temp.dart');
+
+    // Await the file needed to resolve types.
     await buildStep.writeAsString(tempDartAsset, dartBuffer.toString());
 
-    // we can now resolve the library we just wrote
-
-    final createdLibrary = await buildStep.resolver.libraryFor(tempDartAsset);
-    final serializer = TypeSerializer(buildStep.resolver);
-    final codeToType = <String, SerializedType>{};
-
-    for (var i = 0; i < dartLexemes.length; i++) {
-      final member =
-          _findVariableDefinition(_nameForDartExpr(i), createdLibrary);
-      final node = await buildStep.resolver.astNodeFor(member, resolve: true)
-          as VariableDeclaration;
-
-      final type = node.initializer.staticType;
-      codeToType[dartLexemes[i]] = await serializer.serialize(type);
-    }
-
+    // And the file mapping Dart expressions onto the variable names here
     final outputAsset = input.changeExtension('.dart_in_moor');
-    await buildStep.writeAsString(outputAsset, jsonEncode(codeToType));
+    await buildStep.writeAsString(outputAsset, json.encode(codeToField));
   }
 
   String _nameForDartExpr(int i) => 'expr_$i';
-
-  TopLevelVariableElement _findVariableDefinition(
-      String name, LibraryElement element) {
-    return element.units
-        .expand((u) => u.topLevelVariables)
-        .firstWhere((e) => e.name == name);
-  }
 }

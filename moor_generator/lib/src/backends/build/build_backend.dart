@@ -8,7 +8,6 @@ import 'package:build/build.dart' as build show log;
 import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/backends/backend.dart';
-import 'package:moor_generator/src/backends/build/serialized_types.dart';
 
 class BuildBackend extends Backend {
   final MoorOptions options;
@@ -29,10 +28,8 @@ class BuildBackend extends Backend {
 class BuildBackendTask extends BackendTask {
   final BuildStep step;
   final BuildBackend backend;
-  final TypeDeserializer typeDeserializer;
 
-  BuildBackendTask(this.step, this.backend)
-      : typeDeserializer = TypeDeserializer(step);
+  BuildBackendTask(this.step, this.backend);
 
   @override
   Uri get entrypoint => step.inputId.uri;
@@ -76,6 +73,7 @@ class BuildBackendTask extends BackendTask {
     // prepare the result. See PreprocessBuilder for details
     final preparedHelperFile =
         _resolve(context).changeExtension('.dart_in_moor');
+    final temporaryFile = _resolve(context).changeExtension('.temp.dart');
 
     if (!await step.canRead(preparedHelperFile)) {
       throw CannotLoadTypeException('Generated helper file not found. '
@@ -83,10 +81,17 @@ class BuildBackendTask extends BackendTask {
     }
 
     final content = await step.readAsString(preparedHelperFile);
-    final json = jsonDecode(content) as Map<String, dynamic>;
-    final serializedType = json[dartExpression] as Map<String, dynamic>;
+    final json =
+        (jsonDecode(content) as Map<String, dynamic>).cast<String, String>();
+    final fieldName = json[dartExpression];
+    if (fieldName == null) {
+      throw CannotLoadTypeException('Generated helper file does not contain '
+          '$dartExpression!');
+    }
 
-    return typeDeserializer
-        .deserialize(SerializedType.fromJson(serializedType));
+    final library = await step.resolver.libraryFor(temporaryFile);
+    final field = library.units.first.topLevelVariables
+        .firstWhere((element) => element.name == fieldName);
+    return field.type;
   }
 }
