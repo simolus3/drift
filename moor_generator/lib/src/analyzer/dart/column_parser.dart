@@ -310,7 +310,7 @@ class ColumnParser {
       name = ColumnName.explicitly(foundExplicitName);
     } else {
       var suffix = '';
-      if (field.isForeignKey) {
+      if (field.isForeignKey || field.isEnumField) {
         suffix = '_id';
       }
       name = ColumnName.implicitly(ReCase(field.field.name).snakeCase + suffix);

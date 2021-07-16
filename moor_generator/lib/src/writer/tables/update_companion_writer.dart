@@ -244,11 +244,11 @@ class UpdateCompanionWriter {
 
     for (final field in named.values) {
       final column = table.columns.firstWhere(
-          (element) => element.name.name == field,
+          (element) => element.dartGetterName == field,
           orElse: () => null);
 
       if (column == null) {
-        break;
+        continue;
       }
 
       final dartName = column.dartGetterName;

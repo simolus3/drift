@@ -207,6 +207,6 @@ class WrittenMoorTable {
   WrittenMoorTable(this.table, this.kind);
 }
 
-String dbFieldName(String className) => ReCase(className).camelCase;
+String dbFieldName(String className) => '${ReCase(className).camelCase}Table';
 
 String tableInfoNameForTableClass(String className) => '\$${className}Table';

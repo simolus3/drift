@@ -39,7 +39,7 @@ class TableParser {
       overrideTableConstraints = dbTable
           .getField('customConstraints')
           .toListValue()
-          ?.map((e) => e.toString())
+          ?.map((e) => e.toStringValue())
           ?.toList(growable: true);
       overrideWithoutRowId = dbTable.getField('withoutRowId').toBoolValue();
     }
