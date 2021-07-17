@@ -75,7 +75,15 @@ abstract class DatabaseConnectionUser {
     return table.createAlias(alias).asDslTable;
   }
 
-  DatabaseConnectionUser get _resolvedEngine {
+  /// A, potentially more specific, database engine based on the [Zone] context.
+  ///
+  /// Inside a [transaction] block, moor will replace this [resolvedEngine] with
+  /// an engine specific to the transaction. All other methods on this class
+  /// implicitly use the [resolvedEngine] to run their SQL statements.
+  /// This let's users call methods on their top-level database or dao class
+  /// but run them in a transaction-specific executor.
+  @internal
+  DatabaseConnectionUser get resolvedEngine {
     return (Zone.current[_zoneRootUserKey] as DatabaseConnectionUser?) ?? this;
   }
 
@@ -97,7 +105,7 @@ abstract class DatabaseConnectionUser {
   /// fetched again.
   void notifyUpdates(Set<TableUpdate> updates) {
     final withRulesApplied = attachedDatabase.streamUpdateRules.apply(updates);
-    _resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
+    resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);
   }
 
   /// Listen for table updates reported through [notifyUpdates].
@@ -114,7 +122,7 @@ abstract class DatabaseConnectionUser {
       [TableUpdateQuery query = const TableUpdateQuery.any()]) {
     // The stream should refer to the transaction active when tableUpdates was
     // called, not the one when a listener attaches.
-    final engine = _resolvedEngine;
+    final engine = resolvedEngine;
 
     // We're wrapping updatesForSync in a stream controller to make it async.
     return Stream.multi(
@@ -138,7 +146,7 @@ abstract class DatabaseConnectionUser {
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   InsertStatement<T, D> into<T extends Table, D>(TableInfo<T, D> table) {
-    return InsertStatement<T, D>(_resolvedEngine, table);
+    return InsertStatement<T, D>(resolvedEngine, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
@@ -146,7 +154,7 @@ abstract class DatabaseConnectionUser {
   /// clause on that table and then use [UpdateStatement.write].
   UpdateStatement<Tbl, R> update<Tbl extends Table, R>(
           TableInfo<Tbl, R> table) =>
-      UpdateStatement(_resolvedEngine, table);
+      UpdateStatement(resolvedEngine, table);
 
   /// Starts a query on the given table.
   ///
@@ -175,7 +183,7 @@ abstract class DatabaseConnectionUser {
   SimpleSelectStatement<T, R> select<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
       {bool distinct = false}) {
-    return SimpleSelectStatement<T, R>(_resolvedEngine, table,
+    return SimpleSelectStatement<T, R>(resolvedEngine, table,
         distinct: distinct);
   }
 
@@ -214,7 +222,7 @@ abstract class DatabaseConnectionUser {
     bool distinct = false,
   }) {
     return JoinedSelectStatement<T, R>(
-        _resolvedEngine, table, [], distinct, false);
+        resolvedEngine, table, [], distinct, false);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
@@ -222,7 +230,7 @@ abstract class DatabaseConnectionUser {
   /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   /// for more details and example on how delete statements work.
   DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
-    return DeleteStatement<T, D>(_resolvedEngine, table);
+    return DeleteStatement<T, D>(resolvedEngine, table);
   }
 
   /// Executes a custom delete or update statement and returns the amount of
@@ -299,7 +307,7 @@ abstract class DatabaseConnectionUser {
     UpdateKind? updateKind,
     _CustomWriter<T> writer,
   ) async {
-    final engine = _resolvedEngine;
+    final engine = resolvedEngine;
 
     final ctx = GenerationContext.fromDb(engine);
     final mappedArgs = variables.map((v) => v.mapToSimpleValue(ctx)).toList();
@@ -329,7 +337,7 @@ abstract class DatabaseConnectionUser {
   Selectable<QueryRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<ResultSetImplementation> readsFrom = const {}}) {
-    return CustomSelectStatement(query, variables, readsFrom, _resolvedEngine);
+    return CustomSelectStatement(query, variables, readsFrom, resolvedEngine);
   }
 
   /// Creates a custom select statement from the given sql [query]. To run the
@@ -350,7 +358,7 @@ abstract class DatabaseConnectionUser {
 
   /// Executes the custom sql [statement] on the database.
   Future<void> customStatement(String statement, [List<dynamic>? args]) {
-    final engine = _resolvedEngine;
+    final engine = resolvedEngine;
 
     return engine.doWhenOpened((executor) {
       return executor.runCustom(statement, args);
@@ -382,7 +390,7 @@ abstract class DatabaseConnectionUser {
   /// See also:
   ///  - the docs on [transactions](https://moor.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action) async {
-    final resolved = _resolvedEngine;
+    final resolved = resolvedEngine;
     if (resolved is Transaction) {
       return action();
     }
@@ -443,7 +451,7 @@ abstract class DatabaseConnectionUser {
   ///  });
   /// ```
   Future<void> batch(_BatchRunner runInBatch) {
-    final engine = _resolvedEngine;
+    final engine = resolvedEngine;
 
     final batch = Batch._(engine, engine is! Transaction);
     final result = runInBatch(batch);
@@ -455,7 +463,7 @@ abstract class DatabaseConnectionUser {
     }
   }
 
-  /// Runs [calculation] in a forked [Zone] that has its [_resolvedEngine] set
+  /// Runs [calculation] in a forked [Zone] that has its [resolvedEngine] set
   /// to the [user].
   @protected
   Future<T> _runConnectionZoned<T>(
