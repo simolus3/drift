@@ -264,8 +264,8 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
       }
 
       await delegate.open(user);
-      await _runMigrations(user);
       _ensureOpenCalled = true;
+      await _runMigrations(user);
       return true;
     });
   }
