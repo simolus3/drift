@@ -13,7 +13,7 @@ abstract class Backend {
   /// should support both relative and `package:` imports.
   ///
   /// Returns null if the url can't be resolved.
-  Uri resolve(Uri base, String import);
+  Uri? resolve(Uri base, String import);
 }
 
 /// Used to analyze a single file via ([entrypoint]). The other methods can be

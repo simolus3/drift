@@ -1,4 +1,3 @@
-//@dart=2.9
 part of '../steps.dart';
 
 /// Analyzes the compiled queries found in a Dart file.
@@ -9,7 +8,7 @@ class AnalyzeDartStep extends AnalyzingStep {
     final parseResult = file.currentResult as ParsedDartFile;
 
     for (final accessor in parseResult.dbAccessors) {
-      final transitiveImports = task.crawlImports(accessor.imports).toList();
+      final transitiveImports = task.crawlImports(accessor.imports!).toList();
 
       final unsortedEntities = _availableEntities(transitiveImports).toSet();
 
@@ -35,7 +34,7 @@ class AnalyzeDartStep extends AnalyzingStep {
         unsortedEntities.add(declaredHere);
       }
 
-      List<MoorSchemaEntity> availableEntities;
+      List<MoorSchemaEntity>? availableEntities;
 
       try {
         availableEntities = sortEntitiesTopologically(unsortedEntities);
@@ -72,7 +71,7 @@ class AnalyzeDartStep extends AnalyzingStep {
       final availableQueries = transitiveImports
           .map((f) => f.currentResult)
           .whereType<ParsedMoorFile>()
-          .expand((f) => f.resolvedQueries);
+          .expand((f) => f.resolvedQueries ?? const <Never>[]);
 
       final availableTables = availableEntities.whereType<MoorTable>().toList();
       final availableViews = availableEntities.whereType<MoorView>().toList();

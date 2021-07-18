@@ -1,4 +1,3 @@
-//@dart=2.9
 const _hashCombine = '\$mrjc';
 const _hashFinish = '\$mrjf';
 

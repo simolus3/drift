@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/moor/find_dart_class.dart';
@@ -23,10 +22,10 @@ class ViewAnalyzer extends BaseAnalyzer {
   Future<void> resolve(Iterable<MoorView> viewsToAnalyze) async {
     // Going through the topologically sorted list and analyzing each view.
     for (final view in viewsToAnalyze) {
-      final ctx =
-          engine.analyzeNode(view.declaration.node, view.file.parseResult.sql);
+      final ctx = engine.analyzeNode(
+          view.declaration!.node, view.file!.parseResult.sql);
       lintContext(ctx, view.name);
-      final declaration = view.declaration.creatingStatement;
+      final declaration = view.declaration!.creatingStatement;
 
       final parserView = view.parserView =
           const SchemaFromCreateTable(moorExtensions: true)
@@ -35,7 +34,7 @@ class ViewAnalyzer extends BaseAnalyzer {
       final columns = <MoorColumn>[];
       for (final column in parserView.resolvedColumns) {
         final type = column.type;
-        UsedTypeConverter converter;
+        UsedTypeConverter? converter;
         if (type != null && type.hint is TypeConverterHint) {
           converter = (type.hint as TypeConverterHint).converter;
         }
@@ -59,16 +58,16 @@ class ViewAnalyzer extends BaseAnalyzer {
           final clazz = await findDartClass(step, imports, dataClassName);
           if (clazz == null) {
             step.reportError(ErrorInMoorFile(
-              span: declaration.viewNameToken.span,
+              span: declaration.viewNameToken!.span,
               message: 'Existing Dart class $dataClassName was not found, are '
                   'you missing an import?',
             ));
           } else {
             final rowClass = view.existingRowClass =
                 validateExistingClass(columns, clazz, '', step.errors);
-            final newName = rowClass?.targetClass?.name;
+            final newName = rowClass?.targetClass.name;
             if (newName != null) {
-              view.dartTypeName = rowClass?.targetClass?.name;
+              view.dartTypeName = rowClass!.targetClass.name;
             }
           }
         } else {
@@ -77,7 +76,7 @@ class ViewAnalyzer extends BaseAnalyzer {
       }
 
       engine.registerView(mapper.extractView(view));
-      view.references = findReferences(view.declaration.node).toList();
+      view.references = findReferences(view.declaration!.node).toList();
     }
   }
 }

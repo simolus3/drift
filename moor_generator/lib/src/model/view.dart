@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
@@ -13,13 +12,13 @@ import 'model.dart';
 /// A parsed view
 class MoorView extends MoorEntityWithResultSet {
   @override
-  final MoorViewDeclaration declaration;
+  final MoorViewDeclaration? declaration;
 
   /// The associated view to use for the sqlparser package when analyzing
   /// sql queries. Note that this field is set lazily.
-  View parserView;
+  View? parserView;
 
-  ParsedMoorFile file;
+  ParsedMoorFile? file;
 
   final String name;
 
@@ -27,7 +26,7 @@ class MoorView extends MoorEntityWithResultSet {
   List<MoorSchemaEntity> references = [];
 
   @override
-  List<MoorColumn> columns;
+  late List<MoorColumn> columns;
 
   @override
   String dartTypeName;
@@ -36,13 +35,13 @@ class MoorView extends MoorEntityWithResultSet {
   String entityInfoName;
 
   @override
-  ExistingRowClass /*?*/ existingRowClass;
+  ExistingRowClass? existingRowClass;
 
   MoorView({
     this.declaration,
-    this.name,
-    this.dartTypeName,
-    this.entityInfoName,
+    required this.name,
+    required this.dartTypeName,
+    required this.entityInfoName,
     this.existingRowClass,
   });
 
@@ -75,7 +74,12 @@ class MoorView extends MoorEntityWithResultSet {
 
   /// The `CREATE VIEW` statement that can be used to create this view.
   String createSql(MoorOptions options) {
-    return declaration.formatSqlIfAvailable(options) ?? declaration.createSql;
+    final decl = declaration;
+    if (decl == null) {
+      throw StateError('Cannot show SQL for views without a declaration');
+    }
+
+    return decl.formatSqlIfAvailable(options) ?? decl.createSql;
   }
 
   @override

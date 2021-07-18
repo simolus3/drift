@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'parser.dart';
 
 const String startInt = 'integer';
@@ -50,7 +49,7 @@ class ColumnParser {
 
   ColumnParser(this.base);
 
-  MoorColumn parse(MethodDeclaration getter, Element element) {
+  MoorColumn? parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (expr is! FunctionExpressionInvocation) {
@@ -62,16 +61,15 @@ class ColumnParser {
       return null;
     }
 
-    var remainingExpr =
-        (expr as FunctionExpressionInvocation).function as MethodInvocation;
+    var remainingExpr = expr.function as MethodInvocation;
 
-    String foundStartMethod;
-    String foundExplicitName;
-    String foundCustomConstraint;
-    Expression foundDefaultExpression;
-    Expression clientDefaultExpression;
-    Expression createdTypeConverter;
-    DartType typeConverterRuntime;
+    String? foundStartMethod;
+    String? foundExplicitName;
+    String? foundCustomConstraint;
+    Expression? foundDefaultExpression;
+    Expression? clientDefaultExpression;
+    Expression? createdTypeConverter;
+    DartType? typeConverterRuntime;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -119,8 +117,10 @@ class ColumnParser {
           final maxArg = base.findNamedArgument(args, 'max');
 
           foundFeatures.add(LimitingTextLength(
-            minLength: base.readIntLiteral(minArg, () {}),
-            maxLength: base.readIntLiteral(maxArg, () {}),
+            minLength:
+                minArg != null ? base.readIntLiteral(minArg, () {}) : null,
+            maxLength:
+                maxArg != null ? base.readIntLiteral(maxArg, () {}) : null,
           ));
           break;
         case _methodAutoIncrement:
@@ -159,7 +159,7 @@ class ColumnParser {
 
           // the map method has a parameter type that resolved to the runtime
           // type of the custom object
-          final type = remainingExpr.typeArgumentTypes.single;
+          final type = remainingExpr.typeArgumentTypes!.single;
 
           createdTypeConverter = expression;
           typeConverterRuntime = type;
@@ -180,7 +180,7 @@ class ColumnParser {
 
     final columnType = _startMethodToColumnType(foundStartMethod);
 
-    UsedTypeConverter converter;
+    UsedTypeConverter? converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
           expression: createdTypeConverter.toSource(),
@@ -198,7 +198,7 @@ class ColumnParser {
         ));
       }
 
-      final enumType = remainingExpr.typeArgumentTypes[0];
+      final enumType = remainingExpr.typeArgumentTypes![0];
       try {
         converter = UsedTypeConverter.forEnumColumn(enumType, nullable);
       } on InvalidTypeForEnumConverterException catch (e) {
@@ -222,9 +222,8 @@ class ColumnParser {
       );
     }
 
-    final docString = getter.documentationComment?.tokens
-        ?.map((t) => t.toString())
-        ?.join('\n');
+    final docString =
+        getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
     return MoorColumn(
       type: columnType,
       dartGetterName: getter.name.name,
@@ -250,18 +249,20 @@ class ColumnParser {
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,
       startReal: ColumnType.real,
-    }[startMethod];
+    }[startMethod]!;
   }
 
-  String _readJsonKey(Element getter) {
+  String? _readJsonKey(Element getter) {
     final annotations = getter.metadata;
-    final object = annotations.singleWhere((e) {
+    final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
-      return isFromMoor(value.type) && value.type.element.name == 'JsonKey';
-    }, orElse: () => null);
+      return value != null &&
+          isFromMoor(value.type!) &&
+          value.type!.element!.name == 'JsonKey';
+    });
 
     if (object == null) return null;
 
-    return object.computeConstantValue().getField('key').toStringValue();
+    return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 }

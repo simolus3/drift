@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'declaration.dart';
 
 abstract class ViewDeclaration extends Declaration {}
@@ -29,7 +28,7 @@ class MoorViewDeclaration
   }
 
   @override
-  String get createSql => node.span.text;
+  String get createSql => node.span!.text;
 
   @override
   CreateViewStatement get creatingStatement => node;

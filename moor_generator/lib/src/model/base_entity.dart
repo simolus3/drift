@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/moor_generator.dart';
 
@@ -24,7 +23,7 @@ abstract class MoorSchemaEntity implements HasDeclaration {
   /// The getter in a generated database accessor referring to this model.
   ///
   /// Returns null for entities that shouldn't have a getter.
-  String get dbGetterName;
+  String? get dbGetterName;
 }
 
 abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
@@ -39,7 +38,7 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   String get entityInfoName;
 
   /// The existing class designed to hold a row, if there is any.
-  ExistingRowClass /*?*/ get existingRowClass;
+  ExistingRowClass? get existingRowClass;
 
   /// The name of the Dart class storing the right column getters for this type.
   ///

@@ -1,4 +1,3 @@
-//@dart=2.9
 part of '../steps.dart';
 
 class AnalyzeMoorStep extends AnalyzingStep {
@@ -13,13 +12,13 @@ class AnalyzeMoorStep extends AnalyzingStep {
     final parseResult = file.currentResult as ParsedMoorFile;
 
     final transitiveImports =
-        task.crawlImports(parseResult.resolvedImports.values).toList();
+        task.crawlImports(parseResult.resolvedImports!.values).toList();
 
     // Check that all imports are valid
-    parseResult.resolvedImports.forEach((node, fileRef) {
+    parseResult.resolvedImports!.forEach((node, fileRef) {
       if (fileRef.type == FileType.other) {
         reportError(ErrorInMoorFile(
-          span: node.span,
+          span: node.span!,
           message: "Invalid import (the file exists, but couldn't be parsed). "
               'Is it a part file?',
         ));

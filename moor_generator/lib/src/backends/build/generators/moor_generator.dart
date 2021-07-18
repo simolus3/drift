@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/writer.dart';
@@ -21,7 +20,7 @@ const _targetMinorVersion = 6;
 
 class MoorGenerator extends Generator implements BaseGenerator {
   @override
-  MoorBuilder builder;
+  late MoorBuilder builder;
 
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:convert';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -39,7 +38,7 @@ class BuildBackendTask extends BackendTask {
   }
 
   @override
-  Future<AstNode> loadElementDeclaration(Element element) async {
+  Future<AstNode?> loadElementDeclaration(Element element) async {
     return await step.resolver.astNodeFor(element, resolve: true);
   }
 

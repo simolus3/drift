@@ -150,7 +150,11 @@ class GenerateUtilsCommand extends Command {
       ..writeDartVersion(nnbd)
       ..writeln("import 'package:moor/moor.dart';");
 
-    final db = Database()..entities = entities;
+    final db = Database(
+      declaredQueries: const [],
+      declaredIncludes: const [],
+      declaredTables: const [],
+    )..entities = entities;
     DatabaseWriter(db, writer.child()).write();
 
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));

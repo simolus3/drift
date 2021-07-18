@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'declaration.dart';
 
 abstract class TriggerDeclaration extends Declaration {
@@ -17,7 +16,7 @@ class MoorTriggerDeclaration implements MoorDeclaration, TriggerDeclaration {
       : declaration = SourceRange.fromNodeAndFile(node, file);
 
   @override
-  String get createSql => node.span.text;
+  String get createSql => node.span!.text;
 }
 
 class CustomTriggerDeclaration extends TriggerDeclaration {

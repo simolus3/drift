@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
@@ -8,7 +7,7 @@ class UpdateCompanionWriter {
   final MoorTable table;
   final Scope scope;
 
-  StringBuffer _buffer;
+  late StringBuffer _buffer;
 
   UpdateCompanionWriter(this.table, this.scope) {
     _buffer = scope.leaf();
@@ -173,9 +172,9 @@ class UpdateCompanionWriter {
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<$typeName>';
 
-      if (column.typeConverter != null) {
+      final converter = column.typeConverter;
+      if (converter != null) {
         // apply type converter before writing the variable
-        final converter = column.typeConverter;
         final fieldName = '${table.entityInfoName}.${converter.fieldName}';
         _buffer
           ..write('final converter = $fieldName;\n')

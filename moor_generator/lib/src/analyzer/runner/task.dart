@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
@@ -65,13 +64,13 @@ class Task {
     session.notifyTaskFinished(this);
   }
 
-  Future<Step> _parse(FoundFile file) async {
+  Future<Step?> _parse(FoundFile file) async {
     if (file.isParsed) {
       // already parsed, nothing to do :)
       return null;
     }
 
-    Step createdStep;
+    Step? createdStep;
     file.errors.clearAll();
     final resolvedImports = <FoundFile>{};
 
@@ -94,15 +93,10 @@ class Task {
 
         parsed.resolvedImports = <ImportStatement, FoundFile>{};
         for (final import in parsed.imports) {
-          if (import.importedFile == null) {
-            // invalid import statement, this can happen as the user is typing
-            continue;
-          }
-
           final found = await _resolveOrReportError(file, import.importedFile,
               (errorMsg) {
             step.reportError(ErrorInMoorFile(
-              span: import.importString.span,
+              span: import.importString!.span,
               severity: Severity.error,
               message: errorMsg,
             ));
@@ -110,7 +104,7 @@ class Task {
 
           if (found != null) {
             resolvedImports.add(found);
-            parsed.resolvedImports[import] = found;
+            parsed.resolvedImports![import] = found;
           }
         }
         break;
@@ -162,7 +156,7 @@ class Task {
     return createdStep;
   }
 
-  Future<FoundFile> _resolveOrReportError(
+  Future<FoundFile?> _resolveOrReportError(
     FoundFile file,
     String import,
     void Function(String) reporter,
@@ -199,7 +193,7 @@ class Task {
       var importsFromHere = const Iterable<FoundFile>.empty();
       if (available.type == FileType.moor) {
         importsFromHere =
-            (available.currentResult as ParsedMoorFile).resolvedImports.values;
+            (available.currentResult as ParsedMoorFile).resolvedImports!.values;
       }
 
       for (final next in importsFromHere) {
@@ -214,7 +208,7 @@ class Task {
     // skip if already analyzed.
     if (file.state == FileState.analyzed) return;
 
-    Step step;
+    Step? step;
 
     switch (file.type) {
       case FileType.dartLibrary:

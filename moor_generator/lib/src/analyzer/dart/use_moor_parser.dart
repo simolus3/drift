@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'parser.dart';
 
 class UseMoorParser {
@@ -11,8 +10,11 @@ class UseMoorParser {
   Future<Database> parseDatabase(
       ClassElement element, ConstantReader annotation) async {
     // the types declared in UseMoor.tables
-    final tablesOrNull =
-        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue());
+    final tablesOrNull = annotation
+        .peek('tables')
+        ?.listValue
+        .map((obj) => obj.toTypeValue())
+        .whereType<DartType>();
     if (tablesOrNull == null) {
       step.reportError(ErrorInDartCode(
         message: 'Could not read tables from @UseMoor annotation! \n'
@@ -27,13 +29,13 @@ class UseMoorParser {
             .read('include')
             .objectValue
             .toSetValue()
-            ?.map((e) => e.toStringValue())
-            ?.toList() ??
+            ?.map((e) => e.toStringValue()!)
+            .toList() ??
         [];
 
     final parsedTables = await step.parseTables(tableTypes, element);
 
-    final parsedQueries = step.readDeclaredQueries(queryStrings);
+    final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
     final daoTypes = _readDaoTypes(annotation);
 
     return Database(
@@ -49,8 +51,8 @@ class UseMoorParser {
     return annotation
             .peek('daos')
             ?.listValue
-            ?.map((obj) => obj.toTypeValue())
-            ?.toList() ??
+            .map((obj) => obj.toTypeValue()!)
+            .toList() ??
         [];
   }
 }

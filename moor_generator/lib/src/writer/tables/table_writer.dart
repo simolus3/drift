@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/sqlite_keywords.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/declarations/declaration.dart';
@@ -63,7 +62,7 @@ abstract class TableOrViewWriter {
 
     if (column.customConstraints != null) {
       additionalParams['\$customConstraints'] =
-          asDartLiteral(column.customConstraints);
+          asDartLiteral(column.customConstraints!);
     } else if (defaultConstraints.isNotEmpty) {
       // Use the default constraints supported by moor
       additionalParams['defaultConstraints'] =
@@ -71,11 +70,11 @@ abstract class TableOrViewWriter {
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] = column.defaultArgument;
+      additionalParams['defaultValue'] = column.defaultArgument!;
     }
 
     if (column.clientDefaultCode != null) {
-      additionalParams['clientDefault'] = column.clientDefaultCode;
+      additionalParams['clientDefault'] = column.clientDefaultCode!;
     }
 
     final innerType = column.innerColumnType(options);
@@ -142,7 +141,7 @@ abstract class TableOrViewWriter {
       buffer.write('final effectivePrefix = '
           "tablePrefix != null ? '\$tablePrefix.' : '';");
 
-      final info = tableOrView.existingRowClass;
+      final info = tableOrView.existingRowClass!;
       final positionalToIndex = <MoorColumn, int>{};
       final named = <MoorColumn, String>{};
 
@@ -158,7 +157,8 @@ abstract class TableOrViewWriter {
       // Sort positional columns by the position of their respective parameter
       // in the constructor.
       final positional = positionalToIndex.keys.toList()
-        ..sort((a, b) => positionalToIndex[a].compareTo(positionalToIndex[b]));
+        ..sort(
+            (a, b) => positionalToIndex[a]!.compareTo(positionalToIndex[b]!));
 
       final writer = RowMappingWriter(
         positional,
@@ -170,7 +170,7 @@ abstract class TableOrViewWriter {
       final classElement = info.targetClass;
       final ctor = info.constructor;
       buffer..write('return ')..write(classElement.name);
-      if (ctor.name != null && ctor.name.isNotEmpty) {
+      if (ctor.name.isNotEmpty) {
         buffer..write('.')..write(ctor.name);
       }
 
@@ -209,7 +209,7 @@ class TableWriter extends TableOrViewWriter {
   final Scope scope;
 
   @override
-  StringBuffer buffer;
+  late StringBuffer buffer;
 
   @override
   MoorTable get tableOrView => table;
@@ -366,12 +366,7 @@ class TableWriter extends TableOrViewWriter {
 
   void _writePrimaryKeyOverride() {
     buffer.write('@override\nSet<GeneratedColumn> get \$primaryKey => ');
-    var primaryKey = table.fullPrimaryKey;
-
-    // If there is an auto increment column, that forms the primary key. The
-    // PK returned by table.primaryKey only contains column that have been
-    // explicitly defined as PK, but with AI this happens implicitly.
-    primaryKey ??= table.columns.where((c) => c.hasAI).toSet();
+    final primaryKey = table.fullPrimaryKey;
 
     if (primaryKey.isEmpty) {
       buffer.write('<GeneratedColumn>{};');
@@ -403,13 +398,13 @@ class TableWriter extends TableOrViewWriter {
 
   void _overrideFieldsIfNeeded() {
     if (table.overrideWithoutRowId != null) {
-      final value = table.overrideWithoutRowId ? 'true' : 'false';
+      final value = table.overrideWithoutRowId! ? 'true' : 'false';
       buffer..write('@override\n')..write('bool get withoutRowId => $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {
       final value =
-          table.overrideTableConstraints.map(asDartLiteral).join(', ');
+          table.overrideTableConstraints!.map(asDartLiteral).join(', ');
 
       buffer
         ..write('@override\n')
@@ -417,7 +412,7 @@ class TableWriter extends TableOrViewWriter {
     }
 
     if (table.overrideDontWriteConstraints != null) {
-      final value = table.overrideDontWriteConstraints ? 'true' : 'false';
+      final value = table.overrideDontWriteConstraints! ? 'true' : 'false';
       buffer
         ..write('@override\n')
         ..write('bool get dontWriteConstraints => $value;\n');

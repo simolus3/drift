@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
@@ -10,7 +9,7 @@ class DataClassWriter {
 
   bool get isInsertable => table is MoorTable;
 
-  StringBuffer _buffer;
+  late StringBuffer _buffer;
 
   DataClassWriter(this.table, this.scope) {
     _buffer = scope.leaf();
@@ -224,7 +223,7 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = converter.tableAndField;
+        final fieldName = converter!.tableAndField;
         final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
 
         _buffer
@@ -316,9 +315,9 @@ class RowMappingWriter {
       // result.
       if (column.typeConverter != null) {
         // stored as a static field
-        final converter = column.typeConverter;
+        final converter = column.typeConverter!;
         final loaded =
-            '${converter.table.entityInfoName}.${converter.fieldName}';
+            '${converter.table!.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
       }
 

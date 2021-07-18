@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -12,7 +11,7 @@ class MoorIndex extends MoorSchemaEntity {
   /// The table on which this index is created.
   ///
   /// This field can be null in case the table wasn't resolved.
-  MoorTable table;
+  MoorTable? table;
   final String name;
 
   /// The sql statement creating this index.
@@ -27,7 +26,7 @@ class MoorIndex extends MoorSchemaEntity {
     return MoorIndex(
       stmt.indexName,
       MoorIndexDeclaration.fromNodeAndFile(stmt, file),
-      stmt.span.text,
+      stmt.span!.text,
     );
   }
 
@@ -50,6 +49,6 @@ class MoorIndex extends MoorSchemaEntity {
     if (table == null) {
       return const Iterable.empty();
     }
-    return [table];
+    return [table!];
   }
 }

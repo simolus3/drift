@@ -1,4 +1,3 @@
-//@dart=2.9
 part of '../steps.dart';
 
 /// Extracts the following information from a Dart file:
@@ -15,7 +14,7 @@ class ParseDartStep extends Step {
 
   final LibraryElement library;
 
-  MoorDartParser _parser;
+  late MoorDartParser _parser;
   MoorDartParser get parser => _parser;
 
   final Map<ClassElement, MoorTable> _tables = {};
@@ -55,12 +54,12 @@ class ParseDartStep extends Step {
     );
   }
 
-  Future<MoorTable> _parseTable(ClassElement element) async {
+  Future<MoorTable?> _parseTable(ClassElement element) async {
     if (!_tables.containsKey(element)) {
       final table = await parser.parseTable(element);
-      _tables[element] = table;
 
       if (table != null) {
+        _tables[element] = table;
         _lintDartTable(table, element);
       }
     }
@@ -71,7 +70,7 @@ class ParseDartStep extends Step {
     if (table.primaryKey != null) {
       final hasAdditional = table.columns.any((c) {
         final isPk = c.features.any((f) => f is PrimaryKey);
-        return isPk && !table.primaryKey.contains(c);
+        return isPk && table.primaryKey?.contains(c) != true;
       });
 
       if (hasAdditional) {
@@ -89,14 +88,14 @@ class ParseDartStep extends Step {
   /// Parses a [Database] from the [ClassElement] which was annotated
   /// with `@UseMoor` and the [annotation] reader that reads the `@UseMoor`
   /// annotation.
-  Future<Database> parseDatabase(
+  Future<Database?> parseDatabase(
       ClassElement element, ConstantReader annotation) {
     return UseMoorParser(this).parseDatabase(element, annotation);
   }
 
   /// Parses a [Dao] from a class declaration that has a `UseDao`
   /// [annotation].
-  Future<Dao> parseDao(ClassElement element, ConstantReader annotation) {
+  Future<Dao?> parseDao(ClassElement element, ConstantReader annotation) {
     return UseDaoParser(this).parseDao(element, annotation);
   }
 
@@ -107,7 +106,7 @@ class ParseDartStep extends Step {
   Future<List<MoorTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
-      if (!_tableTypeChecker.isAssignableFrom(type.element)) {
+      if (!_tableTypeChecker.isAssignableFrom(type.element!)) {
         reportError(ErrorInDartCode(
           severity: Severity.criticalError,
           message: 'The type $type is not a moor table',
@@ -125,8 +124,8 @@ class ParseDartStep extends Step {
 
   List<DeclaredQuery> readDeclaredQueries(Map<DartObject, DartObject> obj) {
     return obj.entries.map((entry) {
-      final key = entry.key.toStringValue();
-      final value = entry.value.toStringValue();
+      final key = entry.key.toStringValue()!;
+      final value = entry.value.toStringValue()!;
 
       return DeclaredDartQuery(key, value);
     }).toList();

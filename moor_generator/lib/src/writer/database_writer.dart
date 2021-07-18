@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart';
 // ignore: implementation_imports
 import 'package:moor/src/runtime/executor/stream_queries.dart';
@@ -24,7 +23,7 @@ class DatabaseWriter {
       return 'DatabaseAtV${scope.generationOptions.forSchema}';
     }
 
-    return '_\$${db.fromClass.name}';
+    return '_\$${db.fromClass!.name}';
   }
 
   void write() {
@@ -60,7 +59,7 @@ class DatabaseWriter {
     for (final entity in db.entities) {
       final getterName = entity.dbGetterName;
       if (getterName != null) {
-        entityGetters[entity] = entity.dbGetterName;
+        entityGetters[entity] = getterName;
       }
 
       if (entity is MoorTable) {
@@ -106,7 +105,7 @@ class DatabaseWriter {
     for (final dao in db.daos) {
       final typeName = dao.codeString(scope.generationOptions);
       final getterName = ReCase(typeName).camelCase;
-      final databaseImplName = db.fromClass.name;
+      final databaseImplName = db.fromClass!.name;
 
       writeMemoizedGetter(
         buffer: dbScope.leaf(),
@@ -118,7 +117,7 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-    for (final query in db.queries) {
+    for (final query in db.queries ?? const <Never>[]) {
       QueryWriter(query, dbScope.child()).write();
     }
 

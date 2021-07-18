@@ -1,5 +1,3 @@
-//@dart=2.9
-import 'package:meta/meta.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 
@@ -12,7 +10,7 @@ import 'package:moor_generator/src/analyzer/options.dart';
 /// [StringBuffer] to the generators that will get ugly to manage, but when
 /// passing a [Scope] we will always be able to write code in a parent scope.
 class Writer {
-  /* late final */ Scope _root;
+  late final Scope _root;
   final MoorOptions options;
   final GenerationOptions generationOptions;
 
@@ -38,7 +36,7 @@ class Writer {
 }
 
 abstract class _Node {
-  final Scope parent;
+  final Scope? parent;
 
   _Node(this.parent);
 }
@@ -59,9 +57,9 @@ class Scope extends _Node {
   /// This can be used to generated methods which must have a unique name-
   int counter = 0;
 
-  Scope({@required Scope parent, Writer writer})
-      : scope = parent?.scope?.nextLevel ?? DartScope.library,
-        writer = writer ?? parent?.writer,
+  Scope({required Scope? parent, Writer? writer})
+      : scope = parent?.scope.nextLevel ?? DartScope.library,
+        writer = writer ?? parent!.writer,
         super(parent);
 
   MoorOptions get options => writer.options;
@@ -71,15 +69,15 @@ class Scope extends _Node {
   Scope get root {
     var found = this;
     while (found.parent != null) {
-      found = found.parent;
+      found = found.parent!;
     }
     return found;
   }
 
   Iterable<Scope> get _thisAndParents sync* {
-    var scope = this;
+    Scope? scope = this;
     do {
-      yield scope;
+      yield scope!;
       scope = scope.parent;
     } while (scope != null);
   }
@@ -108,7 +106,7 @@ class GenerationOptions {
   ///
   /// When non-null, we're generating from a schema snapshot instead of from
   /// source.
-  final int forSchema;
+  final int? forSchema;
 
   /// Whether to generate Dart code that supports non-nullable types.
   final bool nnbd;

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 import 'package:moor_generator/src/analyzer/errors.dart';
@@ -64,7 +63,7 @@ class MoorSession {
   /// Returns null if the import could not be resolved. Note that it does not
   /// return null if the file doesn't exists - that needs to be checked
   /// separately.
-  FoundFile resolve(FoundFile source, String import) {
+  FoundFile? resolve(FoundFile source, String import) {
     final resolvedUri = backend.resolve(source.uri, import);
     return resolvedUri == null ? null : _uriToFile(resolvedUri);
   }

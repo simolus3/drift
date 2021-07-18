@@ -1,6 +1,4 @@
-//@dart=2.9
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
@@ -45,7 +43,7 @@ class DeclaredDartQuery extends DeclaredQuery {
 /// available.
 class DeclaredMoorQuery extends DeclaredQuery {
   final DeclaredStatement astNode;
-  ParsedMoorFile file;
+  ParsedMoorFile? file;
 
   DeclaredMoorQuery(String name, this.astNode) : super(name);
 
@@ -61,7 +59,7 @@ class DeclaredMoorQuery extends DeclaredQuery {
 abstract class SqlQuery {
   final String name;
   final AnalysisContext fromContext;
-  List<AnalysisError> lints;
+  List<AnalysisError>? lints;
 
   /// Whether this query was declared in a `.moor` file.
   ///
@@ -75,7 +73,7 @@ abstract class SqlQuery {
   ///
   /// This is non-nullable for select queries. Updating queries might have a
   /// result set if they have a `RETURNING` clause.
-  InferredResultSet /*?*/ get resultSet;
+  InferredResultSet? get resultSet;
 
   /// The variables that appear in the [sql] query. We support three kinds of
   /// sql variables: The regular "?" variables, explicitly indexed "?xyz"
@@ -93,14 +91,14 @@ abstract class SqlQuery {
   ///    if their index is lower than that of the array (e.g `a = ?2 AND b IN ?
   ///    AND c IN ?1`. In other words, we can expand an array without worrying
   ///    about the variables that appear after that array.
-  List<FoundVariable> variables;
+  late List<FoundVariable> variables;
 
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
   /// [ExpressionDartPlaceholderType] and [ColumnType.boolean]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
-  List<FoundDartPlaceholder> placeholders;
+  late List<FoundDartPlaceholder> placeholders;
 
   /// Union of [variables] and [elements], but in the order in which they
   /// appear inside the query.
@@ -111,7 +109,8 @@ abstract class SqlQuery {
   /// write their table name (e.g. `foo.bar` instead of just `bar`).
   final bool hasMultipleTables;
 
-  SqlQuery(this.name, this.fromContext, this.elements, {bool hasMultipleTables})
+  SqlQuery(this.name, this.fromContext, this.elements,
+      {bool? hasMultipleTables})
       : hasMultipleTables = hasMultipleTables ?? false {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
@@ -141,7 +140,7 @@ abstract class SqlQuery {
     }
 
     if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable.table.dartTypeName;
+      return resultSet.matchingTable!.table.dartTypeName;
     }
 
     if (resultSet.singleColumn) {
@@ -159,7 +158,7 @@ class SqlSelectQuery extends SqlQuery {
 
   /// The name of the result class, as requested by the user.
   // todo: Allow custom result classes for RETURNING as well?
-  final String /*?*/ requestedResultClass;
+  final String? requestedResultClass;
 
   SqlSelectQuery(
     String name,
@@ -200,7 +199,7 @@ class UpdatingQuery extends SqlQuery {
   final List<WrittenMoorTable> updates;
   final bool isInsert;
   @override
-  final InferredResultSet /*?*/ resultSet;
+  final InferredResultSet? resultSet;
 
   bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
 
@@ -208,7 +207,7 @@ class UpdatingQuery extends SqlQuery {
 
   UpdatingQuery(String name, AnalysisContext fromContext,
       List<FoundElement> elements, this.updates,
-      {this.isInsert = false, bool hasMultipleTables, this.resultSet})
+      {this.isInsert = false, bool? hasMultipleTables, this.resultSet})
       : super(name, fromContext, elements,
             hasMultipleTables: hasMultipleTables);
 }
@@ -217,20 +216,20 @@ class InferredResultSet {
   /// If the result columns of a SELECT statement exactly match one table, we
   /// can just use the data class generated for that table. Otherwise, we'd have
   /// to create another class.
-  final MatchingMoorTable /*?*/ matchingTable;
+  final MatchingMoorTable? matchingTable;
 
   /// Tables in the result set that should appear as a class.
   ///
   /// See [NestedResultTable] for further discussion and examples.
   final List<NestedResultTable> nestedResults;
-  Map<NestedResultTable, String> _expandedNestedPrefixes;
+  Map<NestedResultTable, String>? _expandedNestedPrefixes;
 
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
 
   /// The name of the Dart class generated to store this result set, or null if
   /// it hasn't explicitly been set.
-  final String resultClassName;
+  final String? resultClassName;
 
   /// Explicitly controls that no result class should be generated for this
   /// result set.
@@ -265,7 +264,7 @@ class InferredResultSet {
   bool get singleColumn =>
       matchingTable == null && nestedResults.isEmpty && columns.length == 1;
 
-  String nestedPrefixFor(NestedResultTable table) {
+  String? nestedPrefixFor(NestedResultTable table) {
     if (_expandedNestedPrefixes == null) {
       var index = 0;
       _expandedNestedPrefixes = {
@@ -273,7 +272,7 @@ class InferredResultSet {
       };
     }
 
-    return _expandedNestedPrefixes[table];
+    return _expandedNestedPrefixes![table];
   }
 
   void forceDartNames(Map<ResultColumn, String> names) {
@@ -351,10 +350,10 @@ class ResultColumn implements HasType {
   final bool nullable;
 
   @override
-  final UsedTypeConverter typeConverter;
+  final UsedTypeConverter? typeConverter;
 
   /// The analyzed column from the `sqlparser` package.
-  final Column sqlParserColumn;
+  final Column? sqlParserColumn;
 
   ResultColumn(this.name, this.type, this.nullable,
       {this.typeConverter, this.sqlParserColumn});
@@ -437,7 +436,7 @@ abstract class FoundElement {
   String get dartParameterName;
 
   /// The name of this element as declared in the query
-  String /*?*/ get name;
+  String? get name;
 
   bool get hasSqlName => name != null;
 
@@ -456,7 +455,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   /// The name of this variable, or null if it's not a named variable.
   @override
-  String name;
+  String? name;
 
   /// The (inferred) type for this variable.
   @override
@@ -464,7 +463,7 @@ class FoundVariable extends FoundElement implements HasType {
 
   /// The type converter to apply before writing this value.
   @override
-  final UsedTypeConverter typeConverter;
+  final UsedTypeConverter? typeConverter;
 
   @override
   final bool nullable;
@@ -484,10 +483,10 @@ class FoundVariable extends FoundElement implements HasType {
   final bool isRequired;
 
   FoundVariable({
-    @required this.index,
-    @required this.name,
-    @required this.type,
-    @required this.variable,
+    required this.index,
+    required this.name,
+    required this.type,
+    required this.variable,
     this.nullable = false,
     this.isArray = false,
     this.isRequired = false,
@@ -497,7 +496,7 @@ class FoundVariable extends FoundElement implements HasType {
   @override
   String get dartParameterName {
     if (name != null) {
-      return name.replaceAll(_illegalChars, '');
+      return name!.replaceAll(_illegalChars, '');
     } else {
       return 'var${variable.resolvedIndex}';
     }
@@ -544,15 +543,13 @@ class SimpleDartPlaceholderType extends DartPlaceholderType {
       case SimpleDartPlaceholderKind.orderBy:
         return 'OrderBy';
     }
-
-    throw AssertionError('cant happen, all branches covered');
   }
 }
 
 class ExpressionDartPlaceholderType extends DartPlaceholderType {
   /// The sql type of this expression.
-  final ColumnType /*?*/ columnType;
-  final Expression /*?*/ defaultValue;
+  final ColumnType? columnType;
+  final Expression? defaultValue;
 
   ExpressionDartPlaceholderType(this.columnType, this.defaultValue);
 
@@ -571,13 +568,13 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
       [GenerationOptions options = const GenerationOptions()]) {
     if (columnType == null) return 'Expression';
 
-    final dartType = dartTypeNames[columnType];
+    final dartType = dartTypeNames[columnType]!;
     return 'Expression<${options.nullableType(dartType)}>';
   }
 }
 
 class InsertableDartPlaceholderType extends DartPlaceholderType {
-  final MoorTable /*?*/ table;
+  final MoorTable? table;
 
   InsertableDartPlaceholderType(this.table);
 
@@ -595,7 +592,7 @@ class InsertableDartPlaceholderType extends DartPlaceholderType {
     if (table == null) {
       return 'Insertable';
     } else {
-      return 'Insertable<${table.dartTypeName}>';
+      return 'Insertable<${table!.dartTypeName}>';
     }
   }
 }
@@ -637,7 +634,7 @@ class FoundDartPlaceholder extends FoundElement {
 
   @override
   final String name;
-  DartPlaceholder astNode;
+  DartPlaceholder? astNode;
 
   bool get hasDefault =>
       type is ExpressionDartPlaceholderType &&
@@ -688,7 +685,7 @@ class AvailableMoorResultSet {
   /// The table or view that is available.
   final MoorEntityWithResultSet entity;
 
-  final ResultSetAvailableInStatement source;
+  final ResultSetAvailableInStatement? source;
 
   AvailableMoorResultSet(this.name, this.entity, [this.source]);
 
@@ -716,7 +713,7 @@ class _ResultColumnEquality implements Equality<ResultColumn> {
   int hash(ResultColumn e) => e.compatibilityHashCode;
 
   @override
-  bool isValidKey(Object e) => e is ResultColumn;
+  bool isValidKey(Object? e) => e is ResultColumn;
 }
 
 class _NestedResultTableEquality implements Equality<NestedResultTable> {
@@ -731,5 +728,5 @@ class _NestedResultTableEquality implements Equality<NestedResultTable> {
   int hash(NestedResultTable e) => e.compatibilityHashCode;
 
   @override
-  bool isValidKey(Object e) => e is NestedResultTable;
+  bool isValidKey(Object? e) => e is NestedResultTable;
 }

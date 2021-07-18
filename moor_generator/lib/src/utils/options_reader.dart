@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build_config/build_config.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 
@@ -10,7 +9,7 @@ Future<MoorOptions> fromRootDir(String path) async {
 MoorOptions readOptionsFromConfig(BuildConfig config) {
   final options = config.buildTargets.values
       .map((t) => t.builders['moor_generator:moor_generator']?.options)
-      .where((t) => t != null)
+      .whereType<Map>()
       .map((json) => MoorOptions.fromJson(json));
 
   final iterator = options.iterator;

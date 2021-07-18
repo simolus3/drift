@@ -1,5 +1,3 @@
-//@dart=2.9
-import 'package:meta/meta.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 
@@ -17,17 +15,17 @@ import 'package:recase/recase.dart';
 /// This means that [code] should be an expression without any trailing
 /// semicolon.
 void writeMemoizedGetter(
-    {@required StringBuffer buffer,
-    @required String getterName,
-    @required String returnType,
-    @required String code,
-    @required GenerationOptions options,
-    bool hasOverride}) {
+    {required StringBuffer buffer,
+    required String getterName,
+    required String returnType,
+    required String code,
+    required GenerationOptions options,
+    bool hasOverride = false}) {
   if (options.nnbd) {
     buffer.writeln('late final $returnType $getterName = $code;');
   } else {
     buffer.write('$returnType _$getterName;\n');
-    if (hasOverride == true) {
+    if (hasOverride) {
       buffer.write('@override\n');
     }
     buffer.write('$returnType get $getterName => _$getterName ??= $code;');
@@ -53,18 +51,18 @@ void writeMemoizedGetter(
 /// }
 /// ```
 void writeMemoizedGetterWithBody(
-    {@required StringBuffer buffer,
-    @required String getterName,
-    @required String returnType,
-    @required String code,
-    @required GenerationOptions options,
-    bool hasOverride}) {
+    {required StringBuffer buffer,
+    required String getterName,
+    required String returnType,
+    required String code,
+    required GenerationOptions options,
+    bool hasOverride = false}) {
   final constructingMethod = '_construct${ReCase(getterName).pascalCase}';
 
   // We only need another field without nnbd
   if (!options.nnbd) buffer.write('$returnType _$getterName;\n');
 
-  if (hasOverride == true) {
+  if (hasOverride) {
     buffer.write('@override\n');
   }
   if (options.nnbd) {

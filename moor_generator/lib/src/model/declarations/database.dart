@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'declaration.dart';
 
 /// Declaration of a database or dao in a Dart file.
@@ -13,9 +12,7 @@ class DatabaseOrDaoDeclaration implements DartDeclaration {
   factory DatabaseOrDaoDeclaration(ClassElement fromClass, FoundFile file) {
     return DatabaseOrDaoDeclaration._(
       fromClass,
-      fromClass != null
-          ? SourceRange.fromElementAndFile(fromClass, file)
-          : null,
+      SourceRange.fromElementAndFile(fromClass, file),
     );
   }
 

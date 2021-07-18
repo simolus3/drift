@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'declaration.dart';
 
 abstract class TableDeclaration extends Declaration {
@@ -55,7 +54,7 @@ class MoorTableDeclaration
   bool get isVirtual => node is CreateVirtualTableStatement;
 
   @override
-  String get createSql => node.span.text;
+  String get createSql => node.span!.text;
 
   @override
   TableInducingStatement get creatingStatement => node;
@@ -76,7 +75,7 @@ class CustomVirtualTableDeclaration implements TableDeclarationWithSql {
   bool get isVirtual => true;
 
   @override
-  String get createSql => creatingStatement.span.text;
+  String get createSql => creatingStatement.span!.text;
 }
 
 class CustomTableDeclaration implements TableDeclaration {

@@ -1,4 +1,3 @@
-//@dart=2.9
 // ignore_for_file: file_names
 
 /// Generates a `toString` override into the [into] buffer.

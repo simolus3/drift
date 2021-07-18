@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
@@ -48,7 +47,7 @@ class MoorParser {
           if (identifier.specialName != 'create') {
             step.reportError(
               ErrorInMoorFile(
-                span: identifier.nameToken.span,
+                span: identifier.nameToken!.span,
                 message: 'Only @create is supported at the moment.',
               ),
             );
