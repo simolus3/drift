@@ -554,7 +554,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
+        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = @0 OR f.second_user = @0)',
         variables: [
           Variable<int>(user)
         ],
@@ -565,7 +565,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
-        'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND\n             user.id != :user\n       WHERE (f.first_user = :user OR f.second_user = :user)',
+        'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND\n             "user".id != @0\n       WHERE (f.first_user = @0 OR f.second_user = @0)',
         variables: [Variable<int>(user)],
         readsFrom: {friendships, users}).map((QueryRow row) {
       return FriendshipsOfResult(
@@ -582,7 +582,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<Preferences?> settingsFor(int user) {
-    return customSelect('SELECT preferences FROM users WHERE id = :user',
+    return customSelect('SELECT preferences FROM users WHERE id = @0',
             variables: [Variable<int>(user)], readsFrom: {users})
         .map((QueryRow row) => $UsersTable.$converter0
             .mapToDart(row.read<String?>('preferences')));
@@ -599,7 +599,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+        'INSERT INTO friendships VALUES (@0, @1, @2) RETURNING *;',
         variables: [
           Variable<int>(var1),
           Variable<int>(var2),

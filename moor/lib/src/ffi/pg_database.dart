@@ -81,6 +81,7 @@ class _PgDelegate extends DatabaseDelegate {
 
   void _initializeDatabase() {
     // TODO: Do we need create these functions?
+    // TODO: CREATE DOMAIN BLOB AS BYTEA;
     //_db.useMoorVersions();
     //setup?.call(_db);
     versionDelegate = _PgVersionDelegate(_db);
@@ -160,10 +161,18 @@ class _PgDelegate extends DatabaseDelegate {
 }
 
 /// TODO: create migrate version table
-class _PgVersionDelegate extends NoVersionDelegate {
+class _PgVersionDelegate extends DynamicVersionDelegate {
   final PostgreSQLConnection database;
 
   _PgVersionDelegate(this.database);
+
+  @override
+  Future<int> get schemaVersion => Future.value(0);
+
+  @override
+  Future<void> setSchemaVersion(int version) {
+    return Future.value();
+  }
 }
 
 class _PgTransactionDelegate extends SupportedTransactionDelegate {

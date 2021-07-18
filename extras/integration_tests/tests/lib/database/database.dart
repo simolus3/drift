@@ -77,17 +77,17 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
     'amountOfGoodFriends':
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
-            '(f.first_user = :user OR f.second_user = :user)',
+            '(f.first_user = @0 OR f.second_user = @0)',
     'friendshipsOf': ''' SELECT 
           f.really_good_friends, user.**
        FROM friendships f
-         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND
-             user.id != :user
-       WHERE (f.first_user = :user OR f.second_user = :user)''',
+         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND
+             "user".id != @0
+       WHERE (f.first_user = @0 OR f.second_user = @0)''',
     'userCount': 'SELECT COUNT(id) FROM users',
-    'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
-    'usersById': 'SELECT * FROM users WHERE id IN ?',
-    'returning': 'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+    'settingsFor': 'SELECT preferences FROM users WHERE id = @0',
+    'usersById': 'SELECT * FROM users WHERE id IN @0',
+    'returning': 'INSERT INTO friendships VALUES (@0, @1, @2) RETURNING *;',
   },
 )
 class Database extends _$Database {
