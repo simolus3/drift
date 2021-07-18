@@ -157,7 +157,7 @@ extension NameWithAlias on ResultSetImplementation<dynamic, dynamic> {
     if (aliasedName == entityName) {
       return entityName;
     } else {
-      return '$entityName $aliasedName';
+      return '$entityName "$aliasedName"';
     }
   }
 }
