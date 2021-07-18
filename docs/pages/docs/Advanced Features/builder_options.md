@@ -100,7 +100,7 @@ targets:
       moor_generator:
         options:
           sqlite:
-            version: 3.34
+            version: "3.34"
 ```
 
 With that option, the generator will emit warnings when using newer sqlite version.
