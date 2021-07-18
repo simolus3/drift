@@ -93,10 +93,20 @@ class GeneratedColumn<T> extends Column<T> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(GenerationContext into) {
-    into.buffer.write('$escapedName $typeName');
+    final isSerial = into.dialect == SqlDialect.postgres &&
+        typeName == 'INTEGER' &&
+        _defaultConstraints == 'PRIMARY KEY AUTOINCREMENT';
+
+    if (isSerial) {
+      into.buffer.write('$escapedName SERIAL PRIMARY KEY NOT NULL');
+    } else {
+      into.buffer.write('$escapedName $typeName');
+    }
 
     if ($customConstraints == null) {
-      into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
+      if (!isSerial) {
+        into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
+      }
 
       final defaultValue = this.defaultValue;
       if (defaultValue != null) {
@@ -112,7 +122,7 @@ class GeneratedColumn<T> extends Column<T> {
       }
 
       // these custom constraints refer to builtin constraints from moor
-      if (_defaultConstraints != null) {
+      if (!isSerial && _defaultConstraints != null) {
         into.buffer..write(' ')..write(_defaultConstraints);
       }
     } else if ($customConstraints?.isNotEmpty == true) {

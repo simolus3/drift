@@ -124,6 +124,10 @@ class InsertStatement<T extends Table, D> {
       final columnName = column.$name;
 
       if (rawValues.containsKey(columnName)) {
+        final value = rawValues[columnName]!;
+        if (database.executor.dialect == SqlDialect.postgres &&
+            value is Variable &&
+            value.value == null) continue;
         map[columnName] = rawValues[columnName]!;
       } else {
         if (column.clientDefault != null) {
@@ -184,6 +188,12 @@ class InsertStatement<T extends Table, D> {
 
       first = true;
       for (final update in updateSet.entries) {
+        if (database.executor.dialect == SqlDialect.postgres &&
+            conflictTarget.any((element) =>
+                (element as GeneratedColumn).$name == update.key)) {
+          continue;
+        }
+
         final column = escapeIfNeeded(update.key);
 
         if (!first) ctx.buffer.write(', ');
@@ -202,6 +212,9 @@ class InsertStatement<T extends Table, D> {
 
     if (returning) {
       ctx.buffer.write(' RETURNING *');
+    } else if (ctx.dialect == SqlDialect.postgres) {
+      final primaryKey = table.$primaryKey.first;
+      ctx.buffer.write(' RETURNING ${primaryKey.$name}');
     }
 
     return ctx;

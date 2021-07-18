@@ -111,6 +111,9 @@ class _TransactionExecutor extends TransactionExecutor
   @override
   bool get logStatements => _db.logStatements;
 
+  @override
+  SqlDialect get dialect => _db.dialect;
+
   final Completer<void> _sendCalled = Completer();
   Completer<bool>? _openingCompleter;
 
