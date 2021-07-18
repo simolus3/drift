@@ -135,7 +135,7 @@ We currently support the following extensions:
 - [fts5](https://www.sqlite.org/fts5.html): Support `CREATE VIRTUAL TABLE` statements for `fts5` tables and the `MATCH` operator.
   Functions like `highlight` or `bm25` are available as well.
 - `moor_ffi`: Enables support for functions that are only available when using `moor_ffi`. This contains `pow`, `sqrt` and a variety
-  of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" }}).
+  of trigonometric functions. Details on those functions are available [here]({{ "../Other engines/vm.md#moor-only-functions" | pageUrl }}).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
 
