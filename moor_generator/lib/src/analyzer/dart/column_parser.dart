@@ -426,7 +426,8 @@ class ColumnParser {
     final annotations = getter.metadata;
     return annotations.any((e) {
       final value = e.computeConstantValue();
-      return value.type.element.name == 'PrimaryKeyColumn';
+      return value.type.element.name == 'PrimaryKeyColumn' ||
+          value.type.element.name == 'AutoIncrement';
     });
   }
 
