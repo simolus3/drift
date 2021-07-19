@@ -62,9 +62,9 @@ class Variable<T> extends Expression<T> {
   void writeInto(GenerationContext context) {
     if (value != null) {
       if (context.dialect == SqlDialect.postgres) {
-        context.buffer.write('@${context.amountOfVariables}');
+        context.buffer.write('@${context.amountOfVariables + 1}');
       } else {
-        context.buffer.write('?');
+        context.buffer.write('@${context.amountOfVariables + 1}');
       }
       context.introduceVariable(this, mapToSimpleValue(context));
     } else {

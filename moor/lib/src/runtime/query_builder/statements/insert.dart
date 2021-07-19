@@ -141,7 +141,8 @@ class InsertStatement<T extends Table, D> {
 
     final ctx = GenerationContext.fromDb(database);
     ctx.buffer
-      ..write(_insertKeywords[mode])
+      ..write(_insertKeywords[
+          ctx.dialect == SqlDialect.sqlite ? mode : InsertMode.insert])
       ..write(' INTO ')
       ..write(table.$tableName)
       ..write(' ');
@@ -208,6 +209,24 @@ class InsertStatement<T extends Table, D> {
       writeDoUpdate(onConflict);
     } else if (onConflict is UpsertMultiple<T, D>) {
       onConflict.clauses.forEach(writeDoUpdate);
+    } else if (ctx.dialect == SqlDialect.postgres &&
+        mode != InsertMode.insert) {
+      switch (mode) {
+        case InsertMode.insertOrAbort:
+        case InsertMode.insertOrFail:
+        case InsertMode.insertOrRollback:
+        case InsertMode.insert:
+          break;
+        case InsertMode.insertOrReplace:
+        case InsertMode.replace:
+          if (onConflict is DoUpdate<T, D>) {
+            writeDoUpdate(onConflict);
+          }
+          break;
+        case InsertMode.insertOrIgnore:
+          ctx.buffer.write(' ON CONFLICT DO NOTHING');
+          break;
+      }
     }
 
     if (returning) {
