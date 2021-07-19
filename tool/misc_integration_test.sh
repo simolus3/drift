@@ -2,7 +2,7 @@
 
 EXIT_CODE=0
 
-pushd extras/integration_tests/pg
+pushd extras/integration_tests/vm
 echo "Running integration tests with moor_ffi & VM"
 dart pub upgrade
 dart test || EXIT_CODE=$?

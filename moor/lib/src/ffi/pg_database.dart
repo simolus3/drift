@@ -90,17 +90,29 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     await _ensureOpen();
-    for (var i = 0; i < statements.statements.length; i++) {
-      final stmt = statements.statements[i];
-      final args = statements.arguments[i].arguments;
+    if (_ec == _db) {
+      await _db.transaction((connection) async {
+        for (final row in statements.arguments) {
+          final stmt = statements.statements[row.statementIndex];
+          final args = row.arguments;
 
-      await _ec.execute(stmt,
-          substitutionValues: args
-              .asMap()
-              .map((key, value) => MapEntry(key.toString(), value)));
+          await connection.execute(stmt,
+              substitutionValues: args
+                  .asMap()
+                  .map((key, value) => MapEntry((key + 1).toString(), value)));
+        }
+      });
+    } else {
+      for (final row in statements.arguments) {
+        final stmt = statements.statements[row.statementIndex];
+        final args = row.arguments;
+
+        await _ec.execute(stmt,
+            substitutionValues: args
+                .asMap()
+                .map((key, value) => MapEntry((key + 1).toString(), value)));
+      }
     }
-
-    return Future.value();
   }
 
   Future<int> _runWithArgs(String statement, List<Object?> args) async {
@@ -111,7 +123,7 @@ class _PgDelegate extends DatabaseDelegate {
       return _ec.execute(statement,
           substitutionValues: args
               .asMap()
-              .map((key, value) => MapEntry(key.toString(), value)));
+              .map((key, value) => MapEntry((key + 1).toString(), value)));
     }
   }
 
@@ -130,7 +142,7 @@ class _PgDelegate extends DatabaseDelegate {
       result = await _ec.query(statement,
           substitutionValues: args
               .asMap()
-              .map((key, value) => MapEntry(key.toString(), value)));
+              .map((key, value) => MapEntry((key + 1).toString(), value)));
     }
     final id = result[0][0];
     return id as int;
@@ -145,8 +157,9 @@ class _PgDelegate extends DatabaseDelegate {
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     await _ensureOpen();
     final result = await _ec.query(statement,
-        substitutionValues:
-            args.asMap().map((key, value) => MapEntry(key.toString(), value)));
+        substitutionValues: args
+            .asMap()
+            .map((key, value) => MapEntry((key + 1).toString(), value)));
 
     return Future.value(QueryResult.fromRows(
         result.map((e) => e.toColumnMap()).toList(growable: false)));
@@ -182,6 +195,11 @@ class _PgTransactionDelegate extends SupportedTransactionDelegate {
 
   @override
   void startTransaction(Future Function(QueryDelegate p1) run) {
-    _db.transaction((connection) => run(_PgDelegate(_db, connection)));
+    _db.transaction((connection) async {
+      if (_db.isClosed) {
+        await _db.open();
+      }
+      return run(_PgDelegate(_db, connection));
+    });
   }
 }

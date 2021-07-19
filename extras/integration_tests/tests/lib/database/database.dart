@@ -77,17 +77,17 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
     'amountOfGoodFriends':
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
-            '(f.first_user = @0 OR f.second_user = @0)',
+            '(f.first_user = @1 OR f.second_user = @1)',
     'friendshipsOf': ''' SELECT 
           f.really_good_friends, user.**
        FROM friendships f
          INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND
-             "user".id != @0
-       WHERE (f.first_user = @0 OR f.second_user = @0)''',
+             "user".id != @1
+       WHERE (f.first_user = @1 OR f.second_user = @1)''',
     'userCount': 'SELECT COUNT(id) FROM users',
-    'settingsFor': 'SELECT preferences FROM users WHERE id = @0',
-    'usersById': 'SELECT * FROM users WHERE id IN @0',
-    'returning': 'INSERT INTO friendships VALUES (@0, @1, @2) RETURNING *;',
+    'settingsFor': 'SELECT preferences FROM users WHERE id = @1',
+    'usersById': 'SELECT * FROM users WHERE id IN @1',
+    'returning': 'INSERT INTO friendships VALUES (@1, @2, @3) RETURNING *;',
   },
 )
 class Database extends _$Database {
@@ -113,6 +113,8 @@ class Database extends _$Database {
     return overrideMigration ??
         MigrationStrategy(
           onCreate: (m) async {
+            await m.deleteTable(friendships.actualTableName);
+            await m.deleteTable(users.actualTableName);
             await m.createTable(users);
             if (schemaVersion >= 2) {
               // ensure that transactions can be used in a migration callback.

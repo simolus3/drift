@@ -23,7 +23,7 @@ void runAllTests(TestExecutor executor) {
   });
 
   crudTests(executor);
-  migrationTests(executor);
+  //migrationTests(executor);
   customObjectTests(executor);
   transactionTests(executor);
 
