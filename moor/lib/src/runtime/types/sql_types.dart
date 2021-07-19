@@ -103,7 +103,7 @@ class IntType extends SqlType<int> {
   const IntType();
 
   @override
-  String get sqlName => 'INTEGER';
+  String get sqlName => 'BIGINT';
 
   @override
   int? mapFromDatabaseResponse(dynamic response) {
