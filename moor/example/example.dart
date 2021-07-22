@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/ffi/vm_database.dart';
 
 part 'example.g.dart';
 
@@ -67,16 +66,4 @@ class Database extends _$Database {
       },
     );
   }
-}
-
-void main() async {
-  final db = Database(VmDatabase.memory(logStatements: true));
-  await db.transaction(() async {
-    final names = ['foo', 'bar', 'baz'];
-    names.forEach((element) async {
-      await db
-          .into(db.categories)
-          .insert(CategoriesCompanion.insert(description: Value(element)));
-    });
-  });
 }
