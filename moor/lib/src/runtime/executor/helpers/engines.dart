@@ -263,7 +263,6 @@ class DelegatedDatabase extends _BaseExecutor {
   SqlDialect get dialect => delegate.dialect;
 
   final Lock _openingLock = Lock();
-  bool _closed = false;
 
   /// Constructs a delegated database by providing the [delegate].
   DelegatedDatabase(this.delegate,
