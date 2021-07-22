@@ -9,7 +9,7 @@ void main() {
     testStatement(
       'DELETE FROM tbl WHERE id = 5',
       DeleteStatement(
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         where: BinaryExpression(
           Reference(columnName: 'id'),
           token(TokenType.equal),
@@ -26,7 +26,7 @@ void main() {
     testStatement(
       'DELETE FROM tbl RETURNING *;',
       DeleteStatement(
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         returning: Returning([StarResultColumn()]),
       ),
     );

@@ -9,7 +9,7 @@ void main() {
       'INSERT OR REPLACE INTO tbl (a, b, c) VALUES (d, e, f)',
       InsertStatement(
         mode: InsertMode.insertOrReplace,
-        table: TableReference('tbl', null),
+        table: TableReference('tbl'),
         targetColumns: [
           Reference(columnName: 'a'),
           Reference(columnName: 'b'),
@@ -31,7 +31,7 @@ void main() {
       'INSERT INTO tbl DEFAULT VALUES',
       InsertStatement(
         mode: InsertMode.insert,
-        table: TableReference('tbl', null),
+        table: TableReference('tbl'),
         targetColumns: const [],
         source: DefaultValues(),
       ),
@@ -43,12 +43,12 @@ void main() {
       'REPLACE INTO tbl SELECT * FROM tbl',
       InsertStatement(
         mode: InsertMode.replace,
-        table: TableReference('tbl', null),
+        table: TableReference('tbl'),
         targetColumns: const [],
         source: SelectInsertSource(
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: TableReference('tbl', null),
+            from: TableReference('tbl'),
           ),
         ),
       ),

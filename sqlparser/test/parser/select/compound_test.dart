@@ -10,7 +10,7 @@ void main() {
       CompoundSelectStatement(
         base: SelectStatement(
           columns: [StarResultColumn(null)],
-          from: TableReference('tbl', null),
+          from: TableReference('tbl'),
         ),
         additional: [
           CompoundSelectPart(

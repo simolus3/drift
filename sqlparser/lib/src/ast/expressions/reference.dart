@@ -8,6 +8,11 @@ part of '../ast.dart';
 /// 2 * c AS d FROM table", the "c" after the "2 *" is a reference that refers
 /// to the expression "COUNT(*)".
 class Reference extends Expression with ReferenceOwner {
+  /// An optional schema name.
+  ///
+  /// When this is non-null, [entityName] will not be null either.
+  final String? schemaName;
+
   /// Entity can be either a table or a view.
   final String? entityName;
   final String columnName;
@@ -17,7 +22,11 @@ class Reference extends Expression with ReferenceOwner {
 
   Column? get resolvedColumn => resolved as Column?;
 
-  Reference({this.entityName, required this.columnName});
+  Reference({this.entityName, this.schemaName, required this.columnName})
+      : assert(
+          entityName != null || schemaName == null,
+          'When setting a schemaName, entityName must not be null either.',
+        );
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -32,10 +41,16 @@ class Reference extends Expression with ReferenceOwner {
 
   @override
   String toString() {
-    if (entityName != null) {
-      return 'Reference to the column $entityName.$columnName';
-    } else {
-      return 'Reference to the column $columnName';
+    final result = StringBuffer();
+
+    if (schemaName != null) {
+      result..write(schemaName)..write('.');
     }
+    if (entityName != null) {
+      result..write(entityName)..write('.');
+    }
+    result.write(columnName);
+
+    return result.toString();
   }
 }

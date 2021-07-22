@@ -964,14 +964,22 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitReference(Reference e, void arg) {
-    var hasTable = false;
-    if (e.entityName != null) {
-      hasTable = true;
-      _identifier(e.entityName!, spaceAfter: false);
+    var didWriteSpaceBefore = false;
+
+    if (e.schemaName != null) {
+      _identifier(e.schemaName!, spaceAfter: false);
       _symbol('.');
+      didWriteSpaceBefore = true;
+    }
+    if (e.entityName != null) {
+      _identifier(e.entityName!,
+          spaceAfter: false, spaceBefore: !didWriteSpaceBefore);
+      _symbol('.');
+      didWriteSpaceBefore = true;
     }
 
-    _identifier(e.columnName, spaceAfter: true, spaceBefore: !hasTable);
+    _identifier(e.columnName,
+        spaceAfter: true, spaceBefore: !didWriteSpaceBefore);
   }
 
   @override
@@ -1131,7 +1139,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitTableReference(TableReference e, void arg) {
-    _identifier(e.tableName);
+    if (e.schemaName != null) {
+      _identifier(e.schemaName!, spaceAfter: false);
+      _symbol('.');
+    }
+    _identifier(e.tableName, spaceBefore: e.schemaName == null);
+
     if (e.as != null) {
       _keyword(TokenType.as);
       _identifier(e.as!);

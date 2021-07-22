@@ -751,32 +751,7 @@ class Parser {
 
       return CastExpression(operand, typeName)..setSpan(first, _previous);
     } else if (_checkIdentifier()) {
-      final first = _consumeIdentifier(
-          'This error message should never be displayed. Please report.');
-
-      // could be table.column, function(...) or just column
-      if (_matchOne(TokenType.dot)) {
-        final second =
-            _consumeIdentifier('Expected a column name here', lenient: true);
-        return Reference(
-            entityName: first.identifier, columnName: second.identifier)
-          ..setSpan(first, second);
-      } else if (_matchOne(TokenType.leftParen)) {
-        // regular function invocation
-        final parameters = _functionParameters();
-        final rightParen = _consume(TokenType.rightParen,
-            'Expected closing bracket after argument list');
-
-        if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
-          return _aggregate(first, parameters);
-        }
-
-        return FunctionExpression(
-            name: first.identifier, parameters: parameters)
-          ..setSpan(first, rightParen);
-      } else {
-        return Reference(columnName: first.identifier)..setSpan(first, first);
-      }
+      return _referenceOrFunctionCall();
     }
 
     if (_peek is KeywordToken) {
@@ -784,6 +759,55 @@ class Parser {
           'keyword, you can escape it in double ticks');
     } else {
       _error('Could not parse this expression');
+    }
+  }
+
+  Expression _referenceOrFunctionCall() {
+    final first = _consumeIdentifier(
+        'This error message should never be displayed. Please report.');
+
+    // An expression starting with an identifier could be three things:
+    //  - a simple reference: "foo"
+    //  - a reference with a table: "foo.bar"
+    //  - a reference with a table and a schema: "foo.bar.baz"
+    //  - a function call: "foo()"
+
+    if (_matchOne(TokenType.dot)) {
+      // Ok, we're down to two here. it's either a table or a schema ref
+      final second = _consumeIdentifier('Expected a column or table name here',
+          lenient: true);
+
+      if (_matchOne(TokenType.dot)) {
+        // Three identifiers, that's a schema reference
+        final third =
+            _consumeIdentifier('Expected a column name here', lenient: true);
+        return Reference(
+          schemaName: first.identifier,
+          entityName: second.identifier,
+          columnName: third.identifier,
+        )..setSpan(first, third);
+      } else {
+        // Two identifiers only, so we have a table-based reference
+        return Reference(
+          entityName: first.identifier,
+          columnName: second.identifier,
+        )..setSpan(first, second);
+      }
+    } else if (_matchOne(TokenType.leftParen)) {
+      // We have something like "foo(" -> that's a function!
+      final parameters = _functionParameters();
+      final rightParen = _consume(
+          TokenType.rightParen, 'Expected closing bracket after argument list');
+
+      if (_peek.type == TokenType.filter || _peek.type == TokenType.over) {
+        return _aggregate(first, parameters);
+      }
+
+      return FunctionExpression(name: first.identifier, parameters: parameters)
+        ..setSpan(first, rightParen);
+    } else {
+      // Ok, just a regular reference then
+      return Reference(columnName: first.identifier)..setSpan(first, first);
     }
   }
 
@@ -1169,19 +1193,6 @@ class Parser {
     _suggestHint(const TableNameDescription());
     if (_check(TokenType.identifier)) return _tableReference();
     return null;
-  }
-
-  TableReference _tableReference() {
-    _suggestHint(const TableNameDescription());
-    // ignore the schema name, it's not supported. Besides that, we're on the
-    // first branch in the diagram here https://www.sqlite.org/syntax/table-or-subquery.html
-    final firstToken = _consumeIdentifier('Expected a table reference');
-
-    final tableName = firstToken.identifier;
-    final alias = _as();
-    return TableReference(tableName, alias?.identifier)
-      ..setSpan(firstToken, _previous)
-      ..tableNameToken = firstToken;
   }
 
   JoinClause? _joinClause(TableOrSubquery start) {
@@ -2424,15 +2435,37 @@ class Parser {
     return null;
   }
 
+  TableReference _tableReference({bool allowAlias = true}) {
+    _suggestHint(const TableNameDescription());
+
+    final first = _consumeIdentifier('Expected table or schema name here');
+    IdentifierToken? second;
+    IdentifierToken? as;
+    if (_matchOne(TokenType.dot)) {
+      second = _consumeIdentifier('Expected a table name here');
+    }
+
+    if (allowAlias) {
+      as = _as();
+    }
+
+    final tableNameToken = second ?? first;
+
+    return TableReference(
+      tableNameToken.identifier,
+      as: as?.identifier,
+      schemaName: second == null ? null : first.identifier,
+    )
+      ..setSpan(first, _previous)
+      ..tableNameToken = tableNameToken;
+  }
+
   ForeignKeyClause _foreignKeyClause() {
     // https://www.sqlite.org/syntax/foreign-key-clause.html
     _consume(TokenType.references, 'Expected REFERENCES');
     final firstToken = _previous;
 
-    final foreignTable = _consumeIdentifier('Expected a table name');
-    final foreignTableName = TableReference(foreignTable.identifier, null)
-      ..setSpan(foreignTable, foreignTable);
-
+    final foreignTable = _tableReference(allowAlias: false);
     final columnNames = _listColumnsInParentheses(allowEmpty: true);
 
     ReferenceAction? onDelete, onUpdate;
@@ -2472,7 +2505,7 @@ class Parser {
     }
 
     return ForeignKeyClause(
-      foreignTable: foreignTableName,
+      foreignTable: foreignTable,
       columnNames: columnNames,
       onUpdate: onUpdate,
       onDelete: onDelete,

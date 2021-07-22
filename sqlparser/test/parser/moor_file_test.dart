@@ -46,7 +46,7 @@ void main() {
                 ForeignKeyColumnConstraint(
                   null,
                   ForeignKeyClause(
-                    foreignTable: TableReference('other', null),
+                    foreignTable: TableReference('other'),
                     columnNames: [
                       Reference(columnName: 'location'),
                     ],
@@ -62,7 +62,7 @@ void main() {
           SimpleName('all'),
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: TableReference('tbl', null),
+            from: TableReference('tbl'),
             where: DartExpressionPlaceholder(name: 'predicate'),
           ),
         ),
@@ -70,7 +70,7 @@ void main() {
           SpecialStatementIdentifier('special'),
           SelectStatement(
             columns: [StarResultColumn(null)],
-            from: TableReference('tbl', null),
+            from: TableReference('tbl'),
           ),
         ),
         DeclaredStatement(
@@ -104,7 +104,7 @@ void main() {
           SimpleName('nested'),
           SelectStatement(
             columns: [NestedStarResultColumn('foo')],
-            from: TableReference('tbl', 'foo'),
+            from: TableReference('tbl', as: 'foo'),
           ),
           as: 'MyResultSet',
         ),

@@ -16,7 +16,13 @@ void main() {
       final stmt =
           SqlEngine().parse('SELECT * FROM tbl').rootNode as SelectStatement;
 
-      enforceEqual(stmt.from!, TableReference('tbl', null));
+      _enforceFrom(stmt, TableReference('tbl'));
+    });
+
+    test('schema name and alias', () {
+      final stmt = SqlEngine().parse('SELECT * FROM main.tbl foo').rootNode
+          as SelectStatement;
+      _enforceFrom(stmt, TableReference('tbl', schemaName: 'main', as: 'foo'));
     });
 
     test('from more than one table', () {
@@ -27,11 +33,11 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('tbl', 'test'),
+          primary: TableReference('tbl', as: 'test'),
           joins: [
             Join(
               operator: JoinOperator.comma,
-              query: TableReference('table2', null),
+              query: TableReference('table2'),
             ),
           ],
         ),
@@ -46,11 +52,11 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('tbl', 'test'),
+          primary: TableReference('tbl', as: 'test'),
           joins: [
             Join(
               operator: JoinOperator.comma,
-              query: TableReference('table2', null),
+              query: TableReference('table2'),
               constraint: OnConstraint(
                 expression: BooleanLiteral.withTrue(token(TokenType.$true)),
               ),
@@ -69,14 +75,14 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('table1', null),
+          primary: TableReference('table1'),
           joins: [
             Join(
               operator: JoinOperator.comma,
               query: SelectStatementAsSource(
                 statement: SelectStatement(
                   columns: [StarResultColumn(null)],
-                  from: TableReference('table2', null),
+                  from: TableReference('table2'),
                   where: Reference(columnName: 'a'),
                 ),
                 as: 'inner',
@@ -132,16 +138,16 @@ void main() {
       _enforceFrom(
         stmt,
         JoinClause(
-          primary: TableReference('table1', null),
+          primary: TableReference('table1'),
           joins: [
             Join(
               operator: JoinOperator.inner,
-              query: TableReference('table2', null),
+              query: TableReference('table2'),
               constraint: UsingConstraint(columnNames: ['test']),
             ),
             Join(
               operator: JoinOperator.leftOuter,
-              query: TableReference('table3', null),
+              query: TableReference('table3'),
               constraint: OnConstraint(
                 expression: BooleanLiteral.withTrue(token(TokenType.$true)),
               ),
