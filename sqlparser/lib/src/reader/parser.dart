@@ -559,6 +559,7 @@ class Parser {
 
   Expression _postfix() {
     var expression = _prefix();
+    final firstToken = expression.first;
 
     // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
     // with NOT BETWEEN / NOT IN / ... expressions
@@ -592,7 +593,7 @@ class Parser {
           // we checked with _match, this may never happen
           throw AssertionError();
       }
-      expression.setSpan(operator, _previous);
+      expression.setSpan(firstToken ?? operator, _previous);
     }
 
     return expression;
