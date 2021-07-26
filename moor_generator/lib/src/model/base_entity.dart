@@ -1,6 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/moor_generator.dart';
+import 'package:moor_generator/writer.dart';
 
 /// Some schema entity found.
 ///
@@ -32,7 +34,13 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   List<MoorColumn> get columns;
 
   /// The name of the Dart row class for this result set.
+  @Deprecated('Use dartTypeCode instead')
   String get dartTypeName;
+
+  /// The type name of the Dart row class for this result set.
+  ///
+  /// This may contain generics.
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
 
   /// The name of the Dart class storing additional properties like type
   /// converters.
@@ -63,4 +71,17 @@ class ExistingRowClass {
 
   ExistingRowClass(this.targetClass, this.constructor, this.mapping,
       {this.typeInstantiation = const []});
+
+  String dartType([GenerationOptions options = const GenerationOptions()]) {
+    if (typeInstantiation.isEmpty) {
+      return targetClass.name;
+    } else {
+      return targetClass
+          .instantiate(
+            typeArguments: typeInstantiation,
+            nullabilitySuffix: NullabilitySuffix.none,
+          )
+          .getDisplayString(withNullability: options.nnbd);
+    }
+  }
 }

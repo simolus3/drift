@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:moor/moor.dart' show UpdateKind;
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
+import 'package:moor_generator/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -68,6 +69,11 @@ class MoorTable extends MoorEntityWithResultSet {
       return '${name}Table';
     }
     return name;
+  }
+
+  @override
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
+    return existingRowClass?.dartType(options) ?? dartTypeName;
   }
 
   String getNameForCompanionClass(MoorOptions options) {

@@ -15,7 +15,8 @@ class UpdateCompanionWriter {
 
   void write() {
     _buffer.write('class ${table.getNameForCompanionClass(scope.options)} '
-        'extends UpdateCompanion<${table.dartTypeName}> {\n');
+        'extends '
+        'UpdateCompanion<${table.dartTypeCode(scope.generationOptions)}> {\n');
     _writeFields();
 
     _writeConstructor();
@@ -106,8 +107,9 @@ class UpdateCompanionWriter {
         ? 'createCustom'
         : 'custom';
 
+    final dartTypeName = table.dartTypeCode(scope.generationOptions);
     _buffer
-      ..write('static Insertable<${table.dartTypeName}> $constructorName')
+      ..write('static Insertable<$dartTypeName> $constructorName')
       ..write('({');
 
     for (final column in table.columns) {

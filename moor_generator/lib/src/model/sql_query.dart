@@ -140,7 +140,7 @@ abstract class SqlQuery {
     }
 
     if (resultSet.matchingTable != null) {
-      return resultSet.matchingTable!.table.dartTypeName;
+      return resultSet.matchingTable!.table.dartTypeCode(options);
     }
 
     if (resultSet.singleColumn) {
@@ -592,7 +592,7 @@ class InsertableDartPlaceholderType extends DartPlaceholderType {
     if (table == null) {
       return 'Insertable';
     } else {
-      return 'Insertable<${table!.dartTypeName}>';
+      return 'Insertable<${table!.dartTypeCode(options)}>';
     }
   }
 }
