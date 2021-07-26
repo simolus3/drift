@@ -1,8 +1,16 @@
 part of '../query_builder.dart';
 
-/// Base class for generated classes. [TableDsl] is the type specified by the
-/// user that extends [Table], [D] is the type of the data class
-/// generated from the table.
+/// Base class for generated table classes.
+///
+/// Moor generates a subclass of [TableInfo] for each table used in a database.
+/// This classes contains information about the table's schema (e.g. its
+/// [primaryKey] or [$columns]).
+///
+/// [TableDsl] is the original table class written by the user. For tables
+/// defined in moor files, this is the table implementation class itself.
+/// [D] is the type of the data class generated from the table.
+///
+/// To obtain an instance of this class, use a table getter from the database.
 mixin TableInfo<TableDsl extends Table, D> on Table
     implements DatabaseSchemaEntity, ResultSetImplementation<TableDsl, D> {
   @override
