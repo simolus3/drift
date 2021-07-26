@@ -212,6 +212,21 @@ void main() {
     expect(type, const ResolvedType.bool());
   });
 
+  test('supports unions', () {
+    void check(String sql) {
+      final resolver = _obtainResolver(sql);
+      final column = (resolver.session.context.root as CompoundSelectStatement)
+          .resolvedColumns!
+          .single;
+      final type = resolver.session.typeOf(column)!;
+      expect(type.type, BasicType.text);
+      expect(type.nullable, isTrue);
+    }
+
+    check("SELECT 'foo' AS r UNION ALL SELECT NULL AS r");
+    check("SELECT NULL AS r UNION ALL SELECT 'foo' AS r");
+  });
+
   test('handles recursive CTEs', () {
     final type = _resolveResultColumn('''
 WITH RECURSIVE

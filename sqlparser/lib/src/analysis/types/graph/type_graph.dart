@@ -160,7 +160,7 @@ class TypeGraph {
       if (previousType == elementType || elementType == BasicType.nullType) {
         return previous.withNullable(eitherNullable);
       }
-      if (previousType == BasicType.nullType) return element;
+      if (previousType == BasicType.nullType) return element.withNullable(true);
 
       bool isIntOrNumeric(BasicType? type) {
         return type == BasicType.int || type == BasicType.real;
