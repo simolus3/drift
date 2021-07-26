@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
@@ -15,8 +14,7 @@ void main() {
     state.close();
     final queries = (result.currentResult as ParsedMoorFile).resolvedQueries;
 
-    return Database(declaration: DatabaseOrDaoDeclaration(null, result))
-      ..queries = queries;
+    return Database()..queries = queries;
   }
 
   group('does not allow custom classes for queries', () {

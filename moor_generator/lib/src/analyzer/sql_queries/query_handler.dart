@@ -214,13 +214,13 @@ class QueryHandler {
 
     for (final column in query.columns) {
       if (column is NestedStarResultColumn) {
-        final originalResult = column.resultSet!;
-        final result = originalResult.unalias();
+        final originalResult = column.resultSet;
+        final result = originalResult?.unalias();
         if (result is! Table && result is! View) continue;
 
         final moorTable = mapper.viewOrTableToMoor(result)!;
         final isNullable =
-            analysis == null || analysis.isNullableTable(originalResult);
+            analysis == null || analysis.isNullableTable(originalResult!);
         nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
             isNullable: isNullable));
       }
