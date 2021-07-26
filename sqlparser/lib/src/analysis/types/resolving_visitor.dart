@@ -531,7 +531,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return null;
       case 'coalesce':
       case 'ifnull':
-        session._addRelation(CopyEncapsulating(e, params));
+        session._addRelation(CopyEncapsulating(
+            e, params, null, EncapsulatingNullability.nullIfAll));
         for (final param in params) {
           session._addRelation(DefaultType(param, isNullable: true));
         }
