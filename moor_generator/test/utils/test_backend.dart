@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -9,7 +8,7 @@ import 'package:moor_generator/src/backends/backend.dart';
 
 class TestBackend extends Backend {
   final Map<AssetId, String> fakeContent;
-  Resolver _resolver;
+  late Resolver _resolver;
 
   final Completer _initCompleter = Completer();
   final Completer _finish = Completer();
@@ -56,14 +55,14 @@ class _TestBackendTask extends BackendTask {
   final Uri entrypoint;
 
   @override
-  Logger get log => null;
+  Logger get log => Logger.root;
 
   _TestBackendTask(this.backend, this.entrypoint);
 
   @override
   Future<String> readMoor(Uri path) async {
     await backend._ready;
-    return backend.fakeContent[AssetId.resolve(path)];
+    return backend.fakeContent[AssetId.resolve(path)]!;
   }
 
   @override

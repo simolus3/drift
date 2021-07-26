@@ -1,12 +1,14 @@
-// @dart=2.9
 @Tags(['analyzer'])
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
+import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/model/base_entity.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
 
 void main() {
-  TestState state;
+  late TestState state;
 
   setUpAll(() {
     state = TestState.withContent({
@@ -72,6 +74,28 @@ class TableClass extends Table {
   TextColumn get x => text().map(const MyConverter())();
 }
       ''',
+      'a|lib/generic.dart': '''
+//@dart=2.13
+import 'package:moor/moor.dart';
+
+typedef StringRow = GenericRow<String>;
+typedef IntRow = GenericRow<int>;
+
+class GenericRow<T> {
+  final T value;
+  GenericRow(this.value);
+}
+
+@UseRowClass(StringRow)
+class StringTable extends Table {
+  TextColumn get value => text()();
+}
+
+@UseRowClass(IntRow)
+class IntTable extends Table {
+  IntColumn get value => integer()();
+}
+      '''
     });
   });
 
@@ -127,5 +151,48 @@ class TableClass extends Table {
             .having((e) => e.message, 'message', 'Parameter must accept int')),
       );
     });
+  });
+
+  test('supports generic row classes', () async {
+    final file = await state.analyze('package:a/generic.dart');
+    expect(file.errors.errors, isEmpty);
+
+    final tables = (file.currentResult as ParsedDartFile).declaredTables;
+    final stringTable = tables.firstWhere((e) => e.dslName == 'StringTable');
+    final intTable = tables.firstWhere((e) => e.dslName == 'IntTable');
+
+    expect(
+      stringTable.existingRowClass,
+      isA<ExistingRowClass>()
+          .having((e) => e.targetClass.name, 'targetClass.name', 'GenericRow')
+          .having(
+            (e) => e.typeInstantiation,
+            'typeInstantiation',
+            allOf(
+              hasLength(1),
+              anyElement(
+                isA<DartType>().having(
+                    (e) => e.isDartCoreString, 'isDartCoreString', isTrue),
+              ),
+            ),
+          ),
+    );
+
+    expect(
+      intTable.existingRowClass,
+      isA<ExistingRowClass>()
+          .having((e) => e.targetClass.name, 'targetClass.name', 'GenericRow')
+          .having(
+            (e) => e.typeInstantiation,
+            'typeInstantiation',
+            allOf(
+              hasLength(1),
+              anyElement(
+                isA<DartType>()
+                    .having((e) => e.isDartCoreInt, 'isDartCoreInt', isTrue),
+              ),
+            ),
+          ),
+    );
   });
 }

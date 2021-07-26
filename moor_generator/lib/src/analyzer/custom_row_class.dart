@@ -5,9 +5,33 @@ import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 
+class FoundDartClass {
+  final ClassElement classElement;
+
+  /// The instantiation of the [classElement], if the found type was a generic
+  /// typedef.
+  final List<DartType>? instantiation;
+
+  FoundDartClass(this.classElement, this.instantiation);
+}
+
 ExistingRowClass? validateExistingClass(Iterable<MoorColumn> columns,
-    ClassElement desiredClass, String constructor, ErrorSink errors) {
-  final ctor = desiredClass.getNamedConstructor(constructor);
+    FoundDartClass dartClass, String constructor, ErrorSink errors) {
+  final desiredClass = dartClass.classElement;
+  ConstructorElement? ctor;
+
+  if (dartClass.instantiation != null) {
+    final instantiation = desiredClass.instantiate(
+      typeArguments: dartClass.instantiation!,
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+
+    // If we have an instantation, search the constructor on the type because it
+    // will report the right parameter types if they're generic.
+    ctor = instantiation.lookUpConstructor(constructor, desiredClass.library);
+  } else {
+    ctor = desiredClass.getNamedConstructor(constructor);
+  }
 
   if (ctor == null) {
     final msg = constructor == ''
@@ -39,7 +63,8 @@ ExistingRowClass? validateExistingClass(Iterable<MoorColumn> columns,
     }
   }
 
-  return ExistingRowClass(desiredClass, ctor, columnsToParameter);
+  return ExistingRowClass(desiredClass, ctor, columnsToParameter,
+      typeInstantiation: dartClass.instantiation ?? const []);
 }
 
 void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {

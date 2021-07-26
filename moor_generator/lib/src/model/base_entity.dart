@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/moor_generator.dart';
 
 /// Some schema entity found.
@@ -54,8 +55,12 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
 /// written by users.
 class ExistingRowClass {
   final ClassElement targetClass;
+
+  /// The Dart types that should be used to instantiate the [targetClass].
+  final List<DartType> typeInstantiation;
   final ConstructorElement constructor;
   final Map<MoorColumn, ParameterElement> mapping;
 
-  ExistingRowClass(this.targetClass, this.constructor, this.mapping);
+  ExistingRowClass(this.targetClass, this.constructor, this.mapping,
+      {this.typeInstantiation = const []});
 }

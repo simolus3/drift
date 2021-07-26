@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
@@ -16,7 +15,7 @@ class TestState {
   TestState(this.backend, this.session);
 
   factory TestState.withContent(Map<String, String> content,
-      {MoorOptions options, bool enableAnalyzer = true}) {
+      {MoorOptions? options, bool enableAnalyzer = true}) {
     final backend = TestBackend(
       {
         for (final entry in content.entries)
@@ -62,13 +61,12 @@ class _HasInferredColumnTypes extends CustomMatcher {
       : super('Select query with inferred columns', 'columns', expected);
 
   @override
-  Object featureValueOf(dynamic actual) {
+  Object? featureValueOf(dynamic actual) {
     if (actual is! SqlSelectQuery) {
       return actual;
     }
 
-    final query = actual as SqlSelectQuery;
-    final resultSet = query.resultSet;
+    final resultSet = actual.resultSet;
     return {for (final column in resultSet.columns) column.name: column.type};
   }
 }
