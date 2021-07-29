@@ -51,7 +51,8 @@ class EnumIndexConverter<T> extends NullAwareTypeConverter<T, int> {
 ///
 /// Apart from the implementation changes, subclasses of this converter can be
 /// used just like all other type converters.
-abstract class NullAwareTypeConverter<D, S> extends TypeConverter<D, S> {
+abstract class NullAwareTypeConverter<D, S extends Object>
+    extends TypeConverter<D, S> {
   /// Constant default constructor.
   const NullAwareTypeConverter();
 
