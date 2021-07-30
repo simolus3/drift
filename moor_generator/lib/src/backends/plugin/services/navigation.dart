@@ -49,8 +49,8 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
 
       if (resolved != null) {
         final span = e.importString.span;
-        _reportForSpan(span, ElementKind.FILE,
-            Location(resolved.uri.path, 0, 0, 1, 1, 1, 1));
+        _reportForSpan(
+            span, ElementKind.FILE, Location(resolved.uri.path, 0, 0, 1, 1));
       }
     }
 

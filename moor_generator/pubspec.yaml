@@ -28,8 +28,8 @@ dependencies:
   sqlparser: ^0.17.0
 
   # Dart analysis
-  analyzer: "^1.7.1"
-  analyzer_plugin: ^0.6.0
+  analyzer: "^2.0.0"
+  analyzer_plugin: ^0.7.0
   source_span: ^1.5.5
   package_config: ^2.0.0
   pub_semver: ^2.0.0
@@ -46,7 +46,7 @@ dev_dependencies:
   test: ^1.16.0
   build_runner: ^2.0.0
   build_test: ^2.0.0
-  json_serializable: ^4.0.0
+  json_serializable: ^5.0.0
 
 executables:
   moor_generator:
