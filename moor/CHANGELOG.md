@@ -1,3 +1,8 @@
+## 4.5.0-dev
+
+- Add `moorRuntimeOptions.debugPrint` option to control which `print` method is used by moor.
+- Add `NullAwareTypeConverter` to simplify type converters that always map `null` from and to `null`.
+
 ## 4.4.1
 
 - Include latest generator in analyzer plugin

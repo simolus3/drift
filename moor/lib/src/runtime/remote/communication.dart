@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../cancellation_zone.dart';
@@ -65,7 +66,7 @@ class MoorCommunication {
     msg = _protocol.deserialize(msg!);
 
     if (_debugLog) {
-      print('[IN]: $msg');
+      moorRuntimeOptions.debugPrint('[IN]: $msg');
     }
 
     if (msg is SuccessResponse) {
@@ -108,7 +109,7 @@ class MoorCommunication {
     }
 
     if (_debugLog) {
-      print('[OUT]: $msg');
+      moorRuntimeOptions.debugPrint('[OUT]: $msg');
     }
     _channel.sink.add(_protocol.serialize(msg));
   }

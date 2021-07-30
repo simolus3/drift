@@ -21,6 +21,12 @@ class MoorRuntimeOptions {
 
   /// The [ValueSerializer] that will be used by default in [DataClass.toJson].
   ValueSerializer defaultSerializer = const ValueSerializer.defaults();
+
+  /// The function used by moor to emit debug prints.
+  ///
+  /// This is the function used with `logStatements: true` on databases and
+  /// `debugLog` on isolates.
+  void Function(String) debugPrint = print;
 }
 
 /// Stores the [MoorRuntimeOptions] describing global moor behavior across

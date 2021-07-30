@@ -59,7 +59,7 @@ without awaiting every statement in it.''');
 
   void _log(String sql, List<Object?> args) {
     if (logStatements) {
-      print('Moor: Sent $sql with args $args');
+      moorRuntimeOptions.debugPrint('Moor: Sent $sql with args $args');
     }
   }
 
@@ -116,7 +116,7 @@ without awaiting every statement in it.''');
     return _synchronized(() {
       assert(_debugCheckIsOpen());
       if (logStatements) {
-        print('Moor: Executing $statements in a batch');
+        moorRuntimeOptions.debugPrint('Moor: Executing $statements in a batch');
       }
       return impl.runBatched(statements);
     });
