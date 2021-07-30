@@ -1,6 +1,7 @@
 @TestOn('vm')
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart' hide isNull;
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/custom_tables.dart';
@@ -238,4 +239,98 @@ void main() {
 
     expect(entry.readString('sql'), contains('WITHOUT ROWID'));
   });
+
+  group('exceptions in migrations', () {
+    test('do not change the user version', () async {
+      final nativeDb = sqlite3.openInMemory();
+      final db = _TestDatabase(
+        VmDatabase.opened(nativeDb),
+        1,
+        MigrationStrategy(onCreate: (m) => Future.error('do not migrate')),
+      );
+      addTearDown(db.close);
+
+      await expectLater(db.doWhenOpened((_) {}), throwsA('do not migrate'));
+      expect(nativeDb.userVersion, isZero);
+    });
+
+    test('do not change the user version when in a nested transaction',
+        () async {
+      final nativeDb = sqlite3.openInMemory();
+      var db = _TestDatabase(
+        VmDatabase.opened(nativeDb, closeUnderlyingOnClose: false),
+        1,
+        MigrationStrategy(),
+      );
+      await db.doWhenOpened((e) {});
+      await db.close();
+
+      db = _TestDatabase(
+        VmDatabase.opened(nativeDb),
+        2,
+        MigrationStrategy(
+          onCreate: (m) => Future.error('Should not call onCreate'),
+          onUpgrade: expectAsync3(
+            (m, from, to) {
+              expect(from, 1);
+              expect(to, 2);
+
+              return db.transaction(() => Future.error('error in transaction'));
+            },
+          ),
+        ),
+      );
+      addTearDown(db.close);
+
+      await expectLater(
+          db.doWhenOpened((_) {}), throwsA('error in transaction'));
+      expect(nativeDb.userVersion, 1);
+    });
+
+    test('can set user version in callback', () async {
+      final nativeDb = sqlite3.openInMemory();
+      var db = _TestDatabase(
+          VmDatabase.opened(nativeDb, closeUnderlyingOnClose: false),
+          1,
+          MigrationStrategy());
+      await db.doWhenOpened((e) {});
+
+      db = _TestDatabase(
+        VmDatabase.opened(nativeDb),
+        10,
+        MigrationStrategy(
+          onCreate: (m) => Future.error('Should not call onCreate'),
+          onUpgrade: expectAsync3((m, from, to) async {
+            expect(from, 1);
+            expect(to, 10);
+
+            await db.customStatement('CREATE TABLE foo (bar INT);');
+            await db.customStatement('pragma user_version = 3');
+
+            await db.transaction(
+                () => Future.error('Error after partial migration'));
+          }),
+        ),
+      );
+      addTearDown(db.close);
+
+      await expectLater(
+          db.doWhenOpened((_) {}), throwsA('Error after partial migration'));
+      expect(nativeDb.userVersion, 3);
+    });
+  });
+}
+
+class _TestDatabase extends GeneratedDatabase {
+  _TestDatabase(QueryExecutor executor, this.schemaVersion, this.migration)
+      : super(const SqlTypeSystem.withDefaults(), executor);
+
+  @override
+  Iterable<TableInfo<Table, dynamic>> get allTables => const Iterable.empty();
+
+  @override
+  final int schemaVersion;
+
+  @override
+  final MigrationStrategy migration;
 }
