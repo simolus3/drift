@@ -50,7 +50,7 @@ class ComparingEmitter implements ScoreEmitter {
       ..write(' us');
 
     if (oldTimings.containsKey(testName)) {
-      final oldTime = oldTimings[testName];
+      final oldTime = oldTimings[testName]!;
       final increasedTime = value - oldTime;
 
       final relative = increasedTime.abs() / oldTime;

@@ -7,7 +7,7 @@ import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
 
 class TokenizerBenchmark extends BenchmarkBase {
-  StringBuffer input;
+  late StringBuffer input;
 
   static const int size = 10000;
 

@@ -5,8 +5,8 @@ class SelectStringBenchmark extends BenchmarkBase {
   SelectStringBenchmark(ScoreEmitter emitter)
       : super('SELECTing a single string variable', emitter);
 
-  PreparedStatement statement;
-  Database database;
+  late PreparedStatement statement;
+  late Database database;
 
   @override
   void setup() {
