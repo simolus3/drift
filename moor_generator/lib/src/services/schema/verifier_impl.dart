@@ -75,7 +75,7 @@ class VerifierImplementation implements SchemaVerifier {
 
   @override
   Future<DatabaseConnection> startAt(int version) {
-    return schemaAt(version).then((schema) => schema.connection);
+    return schemaAt(version).then((schema) => schema.newConnection());
   }
 }
 

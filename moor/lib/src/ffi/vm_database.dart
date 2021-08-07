@@ -15,7 +15,8 @@ import 'moor_ffi_functions.dart';
 /// implementations.
 typedef DatabaseSetup = void Function(Database database);
 
-/// A moor database that runs on the Dart VM.
+/// A moor database implementation based on `dart:ffi`, running directly in a
+/// Dart VM or an AOT compiled Dart/Flutter application.
 class VmDatabase extends DelegatedDatabase {
   VmDatabase._(DatabaseDelegate delegate, bool logStatements)
       : super(delegate, isSequential: true, logStatements: logStatements);
@@ -50,6 +51,10 @@ class VmDatabase extends DelegatedDatabase {
   /// When the [closeUnderlyingOnClose] argument is set (which is the default),
   /// calling [QueryExecutor.close] on the returned [VmDatabase] will also
   /// [Database.dispose] the [database] passed to this constructor.
+  ///
+  /// Using [VmDatabase.opened] may be useful when you want to use the same
+  /// underlying [Database] in multiple moor connections. Moor uses this
+  /// internally when running [integration tests for migrations](https://moor.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations).
   ///
   /// {@macro moor_vm_database_factory}
   factory VmDatabase.opened(Database database,
