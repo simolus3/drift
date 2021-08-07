@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:meta/meta.dart';
 import 'package:moor_generator/moor_generator.dart';
@@ -22,7 +21,7 @@ abstract class BaseAnalyzer {
 
   @protected
   final TypeMapper mapper;
-  SqlEngine _engine;
+  SqlEngine? _engine;
 
   BaseAnalyzer(this.tables, this.views, this.step)
       : mapper = TypeMapper(
@@ -33,11 +32,11 @@ abstract class BaseAnalyzer {
   @protected
   SqlEngine get engine {
     if (_engine == null) {
-      _engine = step.task.session.spawnEngine();
-      tables.map(mapper.extractStructure).forEach(_engine.registerTable);
-      views.map(mapper.extractView).forEach(_engine.registerView);
+      final engine = _engine = step.task.session.spawnEngine();
+      tables.map(mapper.extractStructure).forEach(engine.registerTable);
+      views.map(mapper.extractView).forEach(engine.registerView);
     }
-    return _engine;
+    return _engine!;
   }
 
   @protected
@@ -46,12 +45,13 @@ abstract class BaseAnalyzer {
     final finder = ReferencedTablesVisitor();
     node.acceptWithoutArg(finder);
 
-    var entities = finder.foundTables.map<MoorSchemaEntity>(mapper.tableToMoor);
+    var entities =
+        finder.foundTables.map<MoorSchemaEntity?>(mapper.tableToMoor);
     if (includeViews) {
       entities = entities.followedBy(finder.foundViews.map(mapper.viewToMoor));
     }
 
-    return entities;
+    return entities.whereType();
   }
 
   @protected
@@ -65,20 +65,21 @@ abstract class BaseAnalyzer {
   }
 
   @protected
-  void report(AnalysisError error, {String Function() msg, Severity severity}) {
+  void report(AnalysisError error,
+      {String Function()? msg, Severity? severity}) {
     if (step.file.type == FileType.moor) {
       step.reportError(
           ErrorInMoorFile.fromSqlParser(error, overrideSeverity: severity));
     } else {
       step.reportError(MoorError(
-        severity: severity,
-        message: msg(),
+        severity: severity!,
+        message: msg!(),
       ));
     }
   }
 
   @protected
-  void reportLints(List<AnalysisError> lints, {String name}) {
+  void reportLints(List<AnalysisError> lints, {String? name}) {
     for (final lint in lints) {
       report(
         lint,
@@ -103,7 +104,7 @@ class SqlAnalyzer extends BaseAnalyzer {
       final name = query.name;
       var declaredInMoor = false;
 
-      AnalysisContext context;
+      AnalysisContext? context;
       var requiredVariables = RequiredVariables.empty;
 
       try {
@@ -116,7 +117,7 @@ class SqlAnalyzer extends BaseAnalyzer {
 
           context = engine.analyzeNode(
             query.query,
-            query.file.parseResult.sql,
+            query.file!.parseResult.sql,
             stmtOptions: options.options,
           );
           declaredInMoor = true;
@@ -128,7 +129,7 @@ class SqlAnalyzer extends BaseAnalyzer {
         continue;
       }
 
-      for (final error in context.errors) {
+      for (final error in context!.errors) {
         report(error,
             msg: () => 'The sql query $name is invalid: $error',
             severity: Severity.error);
@@ -148,7 +149,7 @@ class SqlAnalyzer extends BaseAnalyzer {
 
     // report lints
     for (final query in foundQueries) {
-      reportLints(query.lints, name: query.name);
+      reportLints(query.lints ?? const <Never>[], name: query.name);
     }
   }
 
@@ -168,7 +169,7 @@ class SqlAnalyzer extends BaseAnalyzer {
           if (variable is ColonNamedVariable) {
             requiredName.add(variable.name);
           } else if (variable is NumberedVariable) {
-            requiredIndex.add(variable.resolvedIndex);
+            requiredIndex.add(variable.resolvedIndex!);
           }
         }
 
@@ -180,7 +181,7 @@ class SqlAnalyzer extends BaseAnalyzer {
           if (variable is ColonNamedVariable) {
             namedHints[variable.name] = type;
           } else if (variable is NumberedVariable) {
-            indexedHints[variable.resolvedIndex] = type;
+            indexedHints[variable.resolvedIndex!] = type;
           }
         }
       } else if (parameter is DartPlaceholderDefaultValue) {

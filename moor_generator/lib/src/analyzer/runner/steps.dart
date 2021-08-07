@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -36,9 +35,7 @@ abstract class Step {
 
   String get path => file.uri.path;
 
-  Step(this.task, this.file)
-      : assert(task != null),
-        assert(file != null);
+  Step(this.task, this.file);
 
   void reportError(MoorError error) =>
       errors.report(error..wasDuringParsing = isParsing);

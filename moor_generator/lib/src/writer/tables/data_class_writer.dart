@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:moor_generator/moor_generator.dart';
@@ -12,7 +11,7 @@ class DataClassWriter {
 
   bool get isInsertable => table is MoorTable;
 
-  StringBuffer _buffer;
+  late StringBuffer _buffer;
 
   DataClassWriter(this.table, this.scope) {
     _buffer = scope.leaf();
@@ -36,8 +35,9 @@ class DataClassWriter {
         _buffer.write('${column.documentationComment}\n');
       }
       final modifier = scope.options.fieldModifier;
-      _buffer.write('$modifier ${column.dartTypeCode(scope.generationOptions)} '
-          '${column.dartGetterName}; \n');
+      final dartType =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
+      _buffer.write('$modifier $dartType ${column.dartGetterName}; \n');
     }
 
     // write constructor with named optional fields
@@ -118,7 +118,8 @@ class DataClassWriter {
     for (final column in table.columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
-      final type = column.dartTypeCode(scope.generationOptions);
+      final type =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
 
       _buffer.write("$getter: serializer.fromJson<$type>(json['$jsonKey']),");
     }
@@ -146,7 +147,8 @@ class DataClassWriter {
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
       final value = needsThis ? 'this.$getter' : getter;
-      final dartType = column.dartTypeCode(scope.generationOptions);
+      final dartType =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
 
       _buffer.write("'$name': serializer.toJson<$dartType>($value),");
     }
@@ -164,7 +166,8 @@ class DataClassWriter {
       final last = i == table.columns.length - 1;
       final isNullable = column.nullableInDart;
 
-      final typeName = column.dartTypeCode(scope.generationOptions);
+      final typeName =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
       if (wrapNullableInValue && isNullable) {
         _buffer
           ..write('Value<$typeName> ${column.dartGetterName} ')
@@ -226,7 +229,7 @@ class DataClassWriter {
       if (column.typeConverter != null) {
         // apply type converter before writing the variable
         final converter = column.typeConverter;
-        final fieldName = converter.tableAndField;
+        final fieldName = converter!.tableAndField;
         final assertNotNull = !column.nullable && scope.generationOptions.nnbd;
 
         _buffer
@@ -318,18 +321,25 @@ class RowMappingWriter {
       // result.
       if (column.typeConverter != null) {
         // stored as a static field
-        final converter = column.typeConverter;
+        final converter = column.typeConverter!;
         final loaded =
-            '${converter.table.entityInfoName}.${converter.fieldName}';
+            '${converter.table!.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
       }
 
-      final nullField = ((column.declaration as DartColumnDeclaration).element
-              as FieldElement)
-          .type
+      var nullable = !column.nullable;
+
+      final columnField =
+          (column.declaration as DartColumnDeclaration?)?.element;
+      final nullField = (columnField is FieldElement ? columnField : null)
+          ?.type
           .nullabilitySuffix;
 
-      if (nullField == NullabilitySuffix.none && options.nnbd) {
+      if (nullField != null && nullField == NullabilitySuffix.none) {
+        nullable = true;
+      }
+
+      if (nullable && options.nnbd) {
         loadType = '$loadType!';
       }
 

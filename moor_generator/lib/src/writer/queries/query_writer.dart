@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:math' show max;
 
 import 'package:moor_generator/moor_generator.dart';
@@ -24,13 +23,13 @@ class QueryWriter {
   final SqlQuery query;
   final Scope scope;
 
-  ExplicitAliasTransformer _transformer;
+  late ExplicitAliasTransformer _transformer;
 
   SqlSelectQuery get _select => query as SqlSelectQuery;
   UpdatingQuery get _update => query as UpdatingQuery;
 
   MoorOptions get options => scope.writer.options;
-  StringBuffer _buffer;
+  late StringBuffer _buffer;
 
   bool get _newSelectableMode =>
       query.declaredInMoorFile || options.compactQueryMethods;
@@ -91,8 +90,7 @@ class QueryWriter {
   /// Writes the function literal that turns a "QueryRow" into the desired
   /// custom return type of a query.
   void _writeMappingLambda() {
-    final resultSet = query.resultSet;
-    assert(resultSet != null);
+    final resultSet = query.resultSet!;
 
     if (resultSet.singleColumn) {
       final column = resultSet.columns.single;
@@ -102,7 +100,7 @@ class QueryWriter {
       // note that, even if the result set has a matching table, we can't just
       // use the mapFromRow() function of that table - the column names might
       // be different!
-      final match = resultSet.matchingTable;
+      final match = resultSet.matchingTable!;
       final table = match.table;
 
       if (match.effectivelyNoAlias) {
@@ -160,9 +158,9 @@ class QueryWriter {
       rawDartType = '$rawDartType?';
     }
 
-    String specialName;
+    String? specialName;
     if (options.newSqlCodeGeneration) {
-      specialName = _transformer.newNameFor(column.sqlParserColumn);
+      specialName = _transformer.newNameFor(column.sqlParserColumn!);
     }
 
     final dartLiteral = asDartLiteral(specialName ?? column.name);
@@ -172,7 +170,7 @@ class QueryWriter {
       final needsAssert = !column.nullable && generationOptions.nnbd;
 
       final converter = column.typeConverter;
-      code = '${_converter(converter)}.mapToDart($code)';
+      code = '${_converter(converter!)}.mapToDart($code)';
       if (needsAssert) code += '!';
     }
     return code;
@@ -180,7 +178,7 @@ class QueryWriter {
 
   /// Returns code to load an instance of the [converter] at runtime.
   static String _converter(UsedTypeConverter converter) {
-    final infoName = converter.table.entityInfoName;
+    final infoName = converter.table!.entityInfoName;
     final field = '$infoName.${converter.fieldName}';
 
     return field;
@@ -326,7 +324,7 @@ class QueryWriter {
         if (needsComma) _buffer.write(', ');
         needsComma = true;
 
-        String defaultCode;
+        String? defaultCode;
 
         if (optional is FoundDartPlaceholder) {
           final kind = optional.type;
@@ -335,7 +333,7 @@ class QueryWriter {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
             final defaultSql =
-                "'(${escapeForDart(kind.defaultValue.toSql())})'";
+                "'(${escapeForDart(kind.defaultValue!.toSql())})'";
             defaultCode = 'const CustomExpression($defaultSql)';
           } else if (kind is SimpleDartPlaceholderType &&
               kind.kind == SimpleDartPlaceholderKind.orderBy) {
@@ -559,7 +557,7 @@ class QueryWriter {
           if (element.typeConverter != null) {
             // Apply the converter
             buffer.write(
-                '${_converter(element.typeConverter)}.mapToSql($dartExpr)');
+                '${_converter(element.typeConverter!)}.mapToSql($dartExpr)');
 
             final needsNullAssertion =
                 !element.nullable && scope.generationOptions.nnbd;

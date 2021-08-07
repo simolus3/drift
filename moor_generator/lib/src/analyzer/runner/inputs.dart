@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 
 /// Inputs coming from an external system (such as the analyzer, the build

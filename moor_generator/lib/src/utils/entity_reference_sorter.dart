@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 
 /// Topologically sorts a list of [MoorSchemaEntity]s by their
@@ -25,8 +24,6 @@ List<MoorSchemaEntity> sortEntitiesTopologically(
 
 void _visit(MoorSchemaEntity entity, _SortRun run) {
   for (final reference in entity.references) {
-    assert(reference != null, '$entity had a null reference');
-
     if (run.result.contains(reference) || reference == entity) {
       // When the target entity has already been added there's nothing to do.
       // We also ignore self-references
@@ -51,7 +48,7 @@ class _SortRun {
   ///
   /// This means that, when an entity references another entity that is present
   /// in `previous.keys`, that's a circular reference.
-  final Map<MoorSchemaEntity, MoorSchemaEntity> previous = {};
+  final Map<MoorSchemaEntity, MoorSchemaEntity?> previous = {};
 
   /// Entities that have already been fully handled, in topological order.
   ///
@@ -64,7 +61,7 @@ class _SortRun {
   /// thrown exception will go from [first] to [last].
   void throwCircularException(MoorSchemaEntity last, MoorSchemaEntity first) {
     final constructedPath = <MoorSchemaEntity>[];
-    for (var current = last; current != first; current = previous[current]) {
+    for (var current = last; current != first; current = previous[current]!) {
       constructedPath.insert(0, current);
     }
     constructedPath.insert(0, first);

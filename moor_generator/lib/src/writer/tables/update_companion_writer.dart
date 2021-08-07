@@ -1,14 +1,14 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
 import 'package:moor_generator/writer.dart';
+import 'package:collection/collection.dart';
 
 class UpdateCompanionWriter {
   final MoorTable table;
   final Scope scope;
 
-  StringBuffer _buffer;
+  late StringBuffer _buffer;
 
   UpdateCompanionWriter(this.table, this.scope) {
     _buffer = scope.leaf();
@@ -44,7 +44,8 @@ class UpdateCompanionWriter {
   void _writeFields() {
     for (final column in table.columns) {
       final modifier = scope.options.fieldModifier;
-      final type = column.dartTypeCode(scope.generationOptions);
+      final type =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
       _buffer.write('$modifier Value<$type> ${column.dartGetterName};\n');
     }
   }
@@ -84,7 +85,8 @@ class UpdateCompanionWriter {
 
       if (table.isColumnRequiredForInsert(column)) {
         requiredColumns.add(column);
-        final typeName = column.dartTypeCode(scope.generationOptions);
+        final typeName =
+            column.dartTypeCode(scope.generationOptions, column.isNotNullType);
 
         _buffer.write('${scope.required} $typeName $param,');
       } else {
@@ -124,7 +126,8 @@ class UpdateCompanionWriter {
 
     for (final column in table.columns) {
       // todo (breaking change): This should not consider type converters.
-      final typeName = column.dartTypeCode(scope.generationOptions);
+      final typeName =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
       final type = scope.nullableType('Expression<$typeName>');
       _buffer.write('$type ${column.dartGetterName}, \n');
     }
@@ -152,7 +155,8 @@ class UpdateCompanionWriter {
       }
       first = false;
 
-      final typeName = column.dartTypeCode(scope.generationOptions);
+      final typeName =
+          column.dartTypeCode(scope.generationOptions, column.isNotNullType);
       final valueType = scope.nullableType('Value<$typeName>');
       _buffer.write('$valueType ${column.dartGetterName}');
     }
@@ -184,9 +188,9 @@ class UpdateCompanionWriter {
       final mapSetter = 'map[${asDartLiteral(column.name.name)}] = '
           'Variable<$typeName>';
 
-      if (column.typeConverter != null) {
+      final converter = column.typeConverter;
+      if (converter != null) {
         // apply type converter before writing the variable
-        final converter = column.typeConverter;
         final fieldName = '${table.entityInfoName}.${converter.fieldName}';
         _buffer
           ..write('final converter = $fieldName;\n')
@@ -236,16 +240,15 @@ class UpdateCompanionWriter {
     final info = table.existingRowClass;
     final named = <MoorColumn, String>{};
 
-    info.mapping.forEach((column, parameter) {
+    info!.mapping.forEach((column, parameter) {
       if (parameter.isNamed) {
         named[column] = parameter.name;
       }
     });
 
     for (final field in named.values) {
-      final column = table.columns.firstWhere(
-          (element) => element.dartGetterName == field,
-          orElse: () => null);
+      final column = table.columns
+          .firstWhereOrNull((element) => element.dartGetterName == field);
 
       if (column == null) {
         continue;

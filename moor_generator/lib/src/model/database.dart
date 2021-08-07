@@ -1,7 +1,5 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:meta/meta.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
@@ -12,10 +10,10 @@ import 'table.dart';
 /// Abstract class for database and dao elements.
 abstract class BaseMoorAccessor implements HasDeclaration {
   @override
-  final DatabaseOrDaoDeclaration declaration;
+  final DatabaseOrDaoDeclaration? declaration;
 
   /// The [ClassElement] that was annotated with `UseMoor` or `UseDao`.
-  ClassElement get fromClass => declaration.fromClass;
+  ClassElement? get fromClass => declaration?.fromClass;
 
   /// All tables that have been declared on this accessor directly.
   ///
@@ -45,10 +43,10 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   ///
   /// This includes the resolve result for queries that were declared in the
   /// same annotation, and queries that were in declared files.
-  List<SqlQuery> queries = [];
+  List<SqlQuery>? queries = [];
 
   /// Resolved imports from this file.
-  List<FoundFile> imports = [];
+  List<FoundFile>? imports = [];
 
   BaseMoorAccessor._(this.declaration, this.declaredTables,
       this.declaredIncludes, this.declaredQueries);
@@ -60,10 +58,10 @@ class Database extends BaseMoorAccessor {
 
   Database({
     this.daos = const [],
-    DatabaseOrDaoDeclaration declaration,
-    List<MoorTable> declaredTables,
-    List<String> declaredIncludes,
-    List<DeclaredQuery> declaredQueries,
+    DatabaseOrDaoDeclaration? declaration,
+    List<MoorTable> declaredTables = const [],
+    List<String> declaredIncludes = const [],
+    List<DeclaredQuery> declaredQueries = const [],
   }) : super._(declaration, declaredTables, declaredIncludes, declaredQueries);
 }
 
@@ -73,10 +71,10 @@ class Dao extends BaseMoorAccessor {
   final DartType dbClass;
 
   Dao({
-    @required this.dbClass,
-    DatabaseOrDaoDeclaration declaration,
-    List<MoorTable> declaredTables,
-    List<String> declaredIncludes,
-    List<DeclaredQuery> declaredQueries,
+    required this.dbClass,
+    DatabaseOrDaoDeclaration? declaration,
+    required List<MoorTable> declaredTables,
+    required List<String> declaredIncludes,
+    required List<DeclaredQuery> declaredQueries,
   }) : super._(declaration, declaredTables, declaredIncludes, declaredQueries);
 }

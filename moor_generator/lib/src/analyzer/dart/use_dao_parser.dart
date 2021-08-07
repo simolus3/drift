@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'parser.dart';
 
 class UseDaoParser {
@@ -8,10 +7,9 @@ class UseDaoParser {
 
   /// If [element] has a `@UseDao` annotation, parses the database model
   /// declared by that class and the referenced tables.
-  Future<Dao> parseDao(ClassElement element, ConstantReader annotation) async {
-    final dbType = element.allSupertypes.firstWhere(
-        (i) => i.element.name == 'DatabaseAccessor',
-        orElse: () => null);
+  Future<Dao?> parseDao(ClassElement element, ConstantReader annotation) async {
+    final dbType = element.allSupertypes
+        .firstWhereOrNull((i) => i.element.name == 'DatabaseAccessor');
 
     if (dbType == null) {
       step.reportError(ErrorInDartCode(
@@ -34,9 +32,12 @@ class UseDaoParser {
       return null;
     }
 
-    final tableTypes =
-        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue()) ??
-            [];
+    final tableTypes = annotation
+            .peek('tables')
+            ?.listValue
+            .map((obj) => obj.toTypeValue())
+            .whereType<DartType>() ??
+        const [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
 
     final includes = annotation
@@ -44,11 +45,12 @@ class UseDaoParser {
             .objectValue
             .toSetValue()
             ?.map((e) => e.toStringValue())
-            ?.toList() ??
+            .whereType<String>()
+            .toList() ??
         [];
 
     final parsedTables = await step.parseTables(tableTypes, element);
-    final parsedQueries = step.readDeclaredQueries(queryStrings);
+    final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
 
     return Dao(
       declaration: DatabaseOrDaoDeclaration(element, step.file),

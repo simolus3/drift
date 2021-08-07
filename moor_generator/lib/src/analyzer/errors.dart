@@ -1,13 +1,11 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 typedef LogFunction = void Function(dynamic message,
-    [Object error, StackTrace stackTrace]);
+    [Object? error, StackTrace? stackTrace]);
 
 /// Base class for errors that can be presented to a user.
 class MoorError {
@@ -16,7 +14,7 @@ class MoorError {
 
   bool wasDuringParsing = true;
 
-  MoorError({@required this.severity, this.message});
+  MoorError({required this.severity, required this.message});
 
   bool get isError =>
       severity == Severity.criticalError || severity == Severity.error;
@@ -34,10 +32,10 @@ class MoorError {
 }
 
 class ErrorInDartCode extends MoorError {
-  final Element affectedElement;
+  final Element? affectedElement;
 
   ErrorInDartCode(
-      {String message,
+      {required String message,
       this.affectedElement,
       Severity severity = Severity.warning})
       : super(severity: severity, message: message);
@@ -45,7 +43,7 @@ class ErrorInDartCode extends MoorError {
   @override
   void writeDescription(LogFunction log) {
     if (affectedElement != null) {
-      final span = spanForElement(affectedElement);
+      final span = spanForElement(affectedElement!);
       log(span.message(message));
     } else {
       log(message);
@@ -57,13 +55,13 @@ class ErrorInMoorFile extends MoorError {
   final FileSpan span;
 
   ErrorInMoorFile(
-      {@required this.span,
-      String message,
+      {required this.span,
+      required String message,
       Severity severity = Severity.warning})
       : super(message: message, severity: severity);
 
   factory ErrorInMoorFile.fromSqlParser(AnalysisError error,
-      {Severity overrideSeverity}) {
+      {Severity? overrideSeverity}) {
     // Describe how to change the sqlite version for errors caused by a wrong
     // version
     var msg = error.message ?? error.type.toString();
@@ -73,7 +71,7 @@ class ErrorInMoorFile extends MoorError {
     }
 
     return ErrorInMoorFile(
-      span: error.span,
+      span: error.span!,
       message: msg,
       severity: overrideSeverity ?? Severity.error,
     );

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
@@ -17,7 +16,7 @@ part 'views.dart';
 /// Interface for model elements that are declared somewhere.
 abstract class HasDeclaration {
   /// Gets the declaration of this element, if set.
-  Declaration get declaration;
+  Declaration? get declaration;
 }
 
 /// Base class for all declarations in the generator model.
@@ -43,13 +42,13 @@ extension ToSql on MoorDeclaration {
     if (options.newSqlCodeGeneration) {
       return node.toSql();
     } else {
-      return node.span.text;
+      return node.span!.text;
     }
   }
 }
 
 extension ToSqlIfAvailable on Declaration {
-  String formatSqlIfAvailable(MoorOptions options) {
+  String? formatSqlIfAvailable(MoorOptions options) {
     final $this = this;
     if ($this is MoorDeclaration) {
       return $this.exportSql(options);

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
@@ -30,13 +29,13 @@ class CreateTableReader {
 
   CreateTableReader(this.stmt, this.step, [this.imports = const []]);
 
-  Future<MoorTable> extractTable(TypeMapper mapper) async {
+  Future<MoorTable?> extractTable(TypeMapper mapper) async {
     Table table;
     try {
       table = _schemaReader.read(stmt);
     } catch (e) {
       step.reportError(ErrorInMoorFile(
-        span: stmt.tableNameToken.span,
+        span: stmt.tableNameToken!.span,
         message: 'Could not extract schema information for this table: $e',
       ));
 
@@ -44,24 +43,25 @@ class CreateTableReader {
     }
 
     final foundColumns = <String, MoorColumn>{};
-    Set<MoorColumn> primaryKeyFromTableConstraint;
+    Set<MoorColumn>? primaryKeyFromTableConstraint;
 
     for (final column in table.resultColumns) {
       final features = <ColumnFeature>[];
       final sqlName = column.name;
-      String overriddenDartName;
+      String? overriddenDartName;
       final dartName = ReCase(sqlName).camelCase;
       final constraintWriter = StringBuffer();
       final moorType = mapper.resolvedToMoor(column.type);
-      UsedTypeConverter converter;
-      String defaultValue;
-      String overriddenJsonKey;
+      UsedTypeConverter? converter;
+      String? defaultValue;
+      String? overriddenJsonKey;
 
-      final enumMatch = column.definition != null
-          ? _enumRegex.firstMatch(column.definition.typeName)
-          : null;
+      final typeName = column.definition?.typeName;
+
+      final enumMatch =
+          typeName != null ? _enumRegex.firstMatch(typeName) : null;
       if (enumMatch != null) {
-        final dartTypeName = enumMatch.group(1);
+        final dartTypeName = enumMatch.group(1)!;
         final dartType = await _readDartType(dartTypeName);
 
         if (dartType == null) {
@@ -69,17 +69,17 @@ class CreateTableReader {
             message: 'Type $dartTypeName could not be found. Are you missing '
                 'an import?',
             severity: Severity.error,
-            span: column.definition.typeNames.span,
+            span: column.definition!.typeNames!.span,
           ));
         } else {
           try {
-            converter =
-                UsedTypeConverter.forEnumColumn(dartType, column.type.nullable);
+            converter = UsedTypeConverter.forEnumColumn(
+                dartType, column.type.nullable != false);
           } on InvalidTypeForEnumConverterException catch (e) {
             step.reportError(ErrorInMoorFile(
               message: e.errorDescription,
               severity: Severity.error,
-              span: column.definition.typeNames.span,
+              span: column.definition!.typeNames!.span,
             ));
           }
         }
@@ -87,9 +87,8 @@ class CreateTableReader {
 
       // columns from virtual tables don't necessarily have a definition, so we
       // can't read the constraints.
-      final constraints = column.hasDefinition
-          ? column.constraints
-          : const Iterable<ColumnConstraint>.empty();
+      final constraints =
+          column.hasDefinition ? column.constraints : const <Never>[];
       for (final constraint in constraints) {
         if (constraint is PrimaryKeyColumn) {
           features.add(const PrimaryKey());
@@ -100,7 +99,7 @@ class CreateTableReader {
         if (constraint is Default) {
           final dartType = dartTypeNames[moorType];
           final expressionName = 'const CustomExpression<$dartType>';
-          final sqlDefault = constraint.expression.span.text;
+          final sqlDefault = constraint.expression.span!.text;
           defaultValue = '$expressionName(${asDartLiteral(sqlDefault)})';
         }
 
@@ -111,7 +110,7 @@ class CreateTableReader {
               message: 'This column has an ENUM type, which implicitly creates '
                   "a type converter. You can't apply another converter to such "
                   'column. ',
-              span: constraint.span,
+              span: constraint.span!,
               severity: Severity.warning,
             ));
             continue;
@@ -136,7 +135,7 @@ class CreateTableReader {
         if (constraintWriter.isNotEmpty) {
           constraintWriter.write(' ');
         }
-        constraintWriter.write(constraint.span.text);
+        constraintWriter.write(constraint.span!.text);
       }
 
       // if the column definition isn't set - which can happen for CREATE
@@ -150,7 +149,7 @@ class CreateTableReader {
 
       final parsed = MoorColumn(
         type: moorType,
-        nullable: column.type.nullable,
+        nullable: column.type.nullable != false,
         dartGetterName: overriddenDartName ?? dartName,
         name: ColumnName.implicitly(sqlName),
         features: features,
@@ -165,8 +164,8 @@ class CreateTableReader {
     }
 
     final tableName = table.name;
-    String dartTableName, dataClassName;
-    ExistingRowClass existingRowClass;
+    String? dartTableName, dataClassName;
+    ExistingRowClass? existingRowClass;
 
     final moorTableInfo = stmt.moorTableName;
     if (moorTableInfo != null) {
@@ -176,14 +175,14 @@ class CreateTableReader {
         final clazz = await findDartClass(step, imports, overriddenNames);
         if (clazz == null) {
           step.reportError(ErrorInMoorFile(
-            span: stmt.tableNameToken.span,
+            span: stmt.tableNameToken!.span,
             message: 'Existing Dart class $overriddenNames was not found, are '
                 'you missing an import?',
           ));
         } else {
           existingRowClass = validateExistingClass(
               foundColumns.values, clazz, '', step.errors);
-          dataClassName = existingRowClass?.targetClass?.name;
+          dataClassName = existingRowClass?.targetClass.name;
         }
       } else if (overriddenNames.contains('/')) {
         // Feature to also specify the generated table class. This is extremely
@@ -199,7 +198,8 @@ class CreateTableReader {
     dartTableName ??= ReCase(tableName).pascalCase;
     dataClassName ??= dataClassNameForClassName(dartTableName);
 
-    final constraints = table.tableConstraints.map((c) => c.span.text).toList();
+    final constraints =
+        table.tableConstraints.map((c) => c.span!.text).toList();
 
     for (final keyConstraint in table.tableConstraints.whereType<KeyClause>()) {
       if (keyConstraint.isPrimaryKey) {
@@ -207,7 +207,7 @@ class CreateTableReader {
         for (final column in keyConstraint.columns) {
           final expr = column.expression;
           if (expr is Reference && foundColumns.containsKey(expr.columnName)) {
-            primaryKeyFromTableConstraint.add(foundColumns[expr.columnName]);
+            primaryKeyFromTableConstraint.add(foundColumns[expr.columnName]!);
           }
         }
       }
@@ -235,34 +235,29 @@ class CreateTableReader {
     return moorTable;
   }
 
-  Future<UsedTypeConverter> _readTypeConverter(
+  Future<UsedTypeConverter?> _readTypeConverter(
       ColumnType sqlType, MappedBy mapper) async {
     final code = mapper.mapper.dartCode;
 
     DartType type;
     try {
-      type = await step.task.backend.resolveTypeOf(
-          step.file.uri,
-          code,
-          imports
-              .map((e) => e.importString.value)
-              .where((e) => e.endsWith('.dart')));
+      type = await step.task.backend.resolveTypeOf(step.file.uri, code,
+          imports.map((e) => e.importedFile).where((e) => e.endsWith('.dart')));
     } on CannotLoadTypeException catch (e) {
-      step.reportError(ErrorInMoorFile(span: mapper.span, message: e.msg));
+      step.reportError(ErrorInMoorFile(span: mapper.span!, message: e.msg));
       return null;
     }
 
     if (type is! InterfaceType) {
       step.reportError(
         ErrorInMoorFile(
-            span: mapper.span,
+            span: mapper.span!,
             message: 'Must be an interface type (backed by a class)'),
       );
       return null;
     }
 
-    final interfaceType = type as InterfaceType;
-    final asTypeConverter = interfaceType.allSupertypes.firstWhere(
+    final asTypeConverter = type.allSupertypes.firstWhere(
         (type) => isFromMoor(type) && type.element.name == 'TypeConverter');
 
     // TypeConverter<D, S>, where D is the type in Dart
@@ -272,7 +267,7 @@ class CreateTableReader {
         expression: code, mappedType: typeInDart, sqlType: sqlType);
   }
 
-  Future<DartType> _readDartType(String typeIdentifier) async {
+  Future<DartType?> _readDartType(String typeIdentifier) async {
     final foundClass = await findDartClass(step, imports, typeIdentifier);
 
     return foundClass?.instantiate(

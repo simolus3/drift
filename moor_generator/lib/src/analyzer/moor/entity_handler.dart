@@ -1,4 +1,4 @@
-//@dart=2.9
+import 'package:collection/collection.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
@@ -30,7 +30,7 @@ class EntityHandler extends BaseAnalyzer {
   final Map<TableInducingStatement, MoorTable> _tables = {};
   final Map<CreateIndexStatement, MoorIndex> _indexes = {};
 
-  _ReferenceResolvingVisitor _referenceResolver;
+  late _ReferenceResolvingVisitor _referenceResolver;
 
   void handle() {
     for (final entity in file.declaredEntities) {
@@ -51,7 +51,7 @@ class EntityHandler extends BaseAnalyzer {
         // find additional tables that might be referenced in the body
 
         entity.bodyReferences.addAll(_findTables(node.action));
-        entity.bodyUpdates.addAll(_findUpdatedTables(node.action));
+        entity.bodyUpdates.addAll(_findUpdatedTables(node.action).whereType());
       } else if (entity is MoorIndex) {
         entity.table = null;
 
@@ -74,7 +74,7 @@ class EntityHandler extends BaseAnalyzer {
     return findReferences(node, includeViews: false).cast();
   }
 
-  Iterable<WrittenMoorTable> _findUpdatedTables(AstNode node) {
+  Iterable<WrittenMoorTable?> _findUpdatedTables(AstNode node) {
     final finder = UpdatedTablesVisitor();
     node.acceptWithoutArg(finder);
     return finder.writtenTables.map(mapper.writtenToMoor);
@@ -91,15 +91,15 @@ class EntityHandler extends BaseAnalyzer {
     return declaration.node;
   }
 
-  MoorTable _inducedTable(TableInducingStatement stmt) {
+  MoorTable? _inducedTable(TableInducingStatement stmt) {
     return _tables[stmt];
   }
 
-  MoorTrigger _inducedTrigger(CreateTriggerStatement stmt) {
+  MoorTrigger? _inducedTrigger(CreateTriggerStatement stmt) {
     return _triggers[stmt];
   }
 
-  MoorIndex _inducedIndex(CreateIndexStatement stmt) {
+  MoorIndex? _inducedIndex(CreateIndexStatement stmt) {
     return _indexes[stmt];
   }
 }
@@ -109,9 +109,9 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
 
   _ReferenceResolvingVisitor(this.handler);
 
-  MoorTable _resolveTable(TableReference reference) {
-    return handler.tables.singleWhere((t) => t.sqlName == reference.tableName,
-        orElse: () => null);
+  MoorTable? _resolveTable(TableReference reference) {
+    return handler.tables
+        .firstWhereOrNull((t) => t.sqlName == reference.tableName);
   }
 
   @override
@@ -120,7 +120,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
     if (table == null) {
       handler.step.reportError(ErrorInMoorFile(
         severity: Severity.error,
-        span: e.onTable.span,
+        span: e.onTable.span!,
         message: 'Target table ${e.onTable.tableName} could not be found.',
       ));
     } else {
@@ -135,7 +135,7 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
     if (table == null) {
       handler.step.reportError(ErrorInMoorFile(
         severity: Severity.error,
-        span: e.on.span,
+        span: e.on.span!,
         message: 'Target table ${e.on.tableName} could not be found.',
       ));
     } else {
@@ -152,14 +152,14 @@ class _ReferenceResolvingVisitor extends RecursiveVisitor<void, void> {
     if (referencedTable == null) {
       handler.step.reportError(ErrorInMoorFile(
         severity: Severity.error,
-        span: clause.span,
+        span: clause.span!,
         message:
             'Referenced table ${clause.foreignTable.tableName} could not be'
             'found.',
       ));
     } else {
       final createdTable = handler._inducedTable(stmt);
-      createdTable?.references?.add(referencedTable);
+      createdTable?.references.add(referencedTable);
     }
 
     super.visitForeignKeyClause(clause, arg);

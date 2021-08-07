@@ -1,5 +1,5 @@
-//@dart=2.9
 import 'package:build/build.dart';
+import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
@@ -7,7 +7,7 @@ import 'package:source_gen/source_gen.dart';
 
 class DaoGenerator extends Generator implements BaseGenerator {
   @override
-  MoorBuilder builder;
+  late MoorBuilder builder;
 
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
@@ -19,7 +19,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
       final classScope = writer.child();
       final element = dao.fromClass;
 
-      final daoName = element.displayName;
+      final daoName = element!.displayName;
 
       final dbTypeName = dao.dbClass.codeString(writer.generationOptions);
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
@@ -32,7 +32,7 @@ class DaoGenerator extends Generator implements BaseGenerator {
             '$infoType get $getterName => attachedDatabase.$getterName;\n');
       }
 
-      for (final query in dao.queries) {
+      for (final query in dao.queries ?? const <SqlQuery>[]) {
         QueryWriter(query, classScope.child()).write();
       }
 

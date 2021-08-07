@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:build/build.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
@@ -25,7 +24,7 @@ mixin MoorBuilder on Builder {
   }
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {
-    Task task;
+    Task? task;
     FoundFile input;
     try {
       final backend = BuildBackend(options);
@@ -39,7 +38,7 @@ mixin MoorBuilder on Builder {
       task?.printErrors();
     }
 
-    return input?.currentResult as ParsedDartFile;
+    return input.currentResult as ParsedDartFile;
   }
 }
 
@@ -106,5 +105,5 @@ class MoorPartBuilder extends PartBuilder with MoorBuilder {
 }
 
 abstract class BaseGenerator {
-  MoorBuilder builder;
+  late MoorBuilder builder;
 }

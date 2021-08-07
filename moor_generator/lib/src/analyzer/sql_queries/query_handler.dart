@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/used_type_converter.dart';
@@ -19,9 +18,9 @@ class QueryHandler {
   final TypeMapper mapper;
   final RequiredVariables requiredVariables;
 
-  Set<Table> _foundTables;
-  Set<View> _foundViews;
-  List<FoundElement> _foundElements;
+  late Set<Table> _foundTables;
+  late Set<View> _foundViews;
+  late List<FoundElement> _foundElements;
 
   Iterable<FoundVariable> get _foundVariables =>
       _foundElements.whereType<FoundVariable>();
@@ -74,7 +73,7 @@ class QueryHandler {
     final root = context.root;
     final isInsert = root is InsertStatement;
 
-    InferredResultSet resultSet;
+    InferredResultSet? resultSet;
     if (root is StatementReturningColumns) {
       final columns = root.returnedResultSet?.resolvedColumns;
       if (columns != null) {
@@ -86,7 +85,10 @@ class QueryHandler {
       name,
       context,
       _foundElements,
-      updatedFinder.writtenTables.map(mapper.writtenToMoor).toList(),
+      updatedFinder.writtenTables
+          .map(mapper.writtenToMoor)
+          .whereType<WrittenMoorTable>()
+          .toList(),
       isInsert: isInsert,
       hasMultipleTables: updatedFinder.foundTables.length > 1,
       resultSet: resultSet,
@@ -99,13 +101,13 @@ class QueryHandler {
     _applyFoundTables(tableFinder);
 
     final moorTables =
-        _foundTables.map(mapper.tableToMoor).where((s) => s != null).toList();
+        _foundTables.map(mapper.tableToMoor).whereType<MoorTable>().toList();
     final moorViews =
-        _foundViews.map(mapper.viewToMoor).where((s) => s != null).toList();
+        _foundViews.map(mapper.viewToMoor).whereType<MoorView>().toList();
 
     final moorEntities = [...moorTables, ...moorViews];
 
-    String requestedName;
+    String? requestedName;
     if (source is DeclaredMoorQuery) {
       requestedName = (source as DeclaredMoorQuery).astNode.as;
     }
@@ -115,7 +117,7 @@ class QueryHandler {
       context,
       _foundElements,
       moorEntities,
-      _inferResultSet(_select.resolvedColumns),
+      _inferResultSet(_select.resolvedColumns!),
       requestedName,
     );
   }
@@ -128,9 +130,9 @@ class QueryHandler {
     for (final column in rawColumns) {
       final type = context.typeOf(column).type;
       final moorType = mapper.resolvedToMoor(type);
-      UsedTypeConverter converter;
+      UsedTypeConverter? converter;
       if (type?.hint is TypeConverterHint) {
-        converter = (type.hint as TypeConverterHint).converter;
+        converter = (type!.hint as TypeConverterHint).converter;
       }
 
       columns.add(ResultColumn(column.name, moorType, type?.nullable ?? true,
@@ -210,13 +212,13 @@ class QueryHandler {
     final nestedTables = <NestedResultTable>[];
     final analysis = JoinModel.of(query);
 
-    for (final column in (query as SelectStatement).columns) {
+    for (final column in query.columns) {
       if (column is NestedStarResultColumn) {
-        final originalResult = column.resultSet;
+        final originalResult = column.resultSet!;
         final result = originalResult.unalias();
         if (result is! Table && result is! View) continue;
 
-        final moorTable = mapper.viewOrTableToMoor(result);
+        final moorTable = mapper.viewOrTableToMoor(result)!;
         final isNullable =
             analysis == null || analysis.isNullableTable(originalResult);
         nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
@@ -227,13 +229,13 @@ class QueryHandler {
     return nestedTables;
   }
 
-  Column _toTableOrViewColumn(Column c) {
+  Column? _toTableOrViewColumn(Column? c) {
     // ignore: literal_only_boolean_expressions
     while (true) {
       if (c is TableColumn || c is ViewColumn) {
         return c;
       } else if (c is ExpressionColumn) {
-        final expression = (c as ExpressionColumn).expression;
+        final expression = c.expression;
         if (expression is Reference) {
           final resolved = expression.resolved;
           if (resolved is Column) {
@@ -241,17 +243,17 @@ class QueryHandler {
             continue;
           }
         }
-        // Not a refernece to a column
+        // Not a reference to a column
         return null;
       } else if (c is DelegatedColumn) {
-        c = (c as DelegatedColumn).innerColumn;
+        c = c.innerColumn;
       } else {
         return null;
       }
     }
   }
 
-  ResultSet _resultSetOfColumn(Column c) {
+  ResultSet? _resultSetOfColumn(Column c) {
     final mapped = _toTableOrViewColumn(c);
     if (mapped == null) return null;
 

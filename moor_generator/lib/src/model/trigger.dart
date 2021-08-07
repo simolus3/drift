@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -15,7 +14,7 @@ class MoorTrigger implements MoorSchemaEntity {
   /// The table on which this trigger operates.
   ///
   /// This field can be null in case the table wasn't resolved.
-  MoorTable on;
+  MoorTable? on;
   List<WrittenMoorTable> bodyUpdates = [];
   List<MoorTable> bodyReferences = [];
 
@@ -36,7 +35,8 @@ class MoorTrigger implements MoorSchemaEntity {
   }
 
   @override
-  Iterable<MoorSchemaEntity> get references => {on, ...bodyReferences};
+  Iterable<MoorSchemaEntity> get references =>
+      {if (on != null) on!, ...bodyReferences};
 
   /// The `CREATE TRIGGER` statement that can be used to create this trigger.
   String createSql(MoorOptions options) {

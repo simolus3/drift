@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -6,7 +5,7 @@ import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 
-ExistingRowClass /*?*/ validateExistingClass(Iterable<MoorColumn> columns,
+ExistingRowClass? validateExistingClass(Iterable<MoorColumn> columns,
     ClassElement desiredClass, String constructor, ErrorSink errors) {
   final ctor = desiredClass.getNamedConstructor(constructor);
 
@@ -47,8 +46,9 @@ ExistingRowClass /*?*/ validateExistingClass(Iterable<MoorColumn> columns,
 
 void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
   final type = element.type;
-  final typesystem = element.library.typeSystem;
-  final provider = element.library.typeProvider;
+  final library = element.library!;
+  final typesystem = library.typeSystem;
+  final provider = library.typeProvider;
 
   void error(String message) {
     errors.report(ErrorInDartCode(
@@ -57,7 +57,7 @@ void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
     ));
   }
 
-  if (element.library.isNonNullableByDefault &&
+  if (library.isNonNullableByDefault &&
       column.nullableInDart &&
       !typesystem.isNullable(type) &&
       element.isNotOptional) {
@@ -68,7 +68,7 @@ void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
   DartType expectedDartType;
 
   if (column.typeConverter != null) {
-    expectedDartType = column.typeConverter.mappedType;
+    expectedDartType = column.typeConverter!.mappedType;
   } else {
     expectedDartType = provider.typeFor(column.type);
   }
@@ -89,7 +89,7 @@ extension on TypeProvider {
       case ColumnType.boolean:
         return boolType;
       case ColumnType.datetime:
-        return intElement.library.getType('DateTime').instantiate(
+        return intElement.library.getType('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.blob:
         // todo: We should return Uint8List, but how?
@@ -97,7 +97,5 @@ extension on TypeProvider {
       case ColumnType.real:
         return doubleType;
     }
-
-    throw AssertionError('Unhandled moor type');
   }
 }

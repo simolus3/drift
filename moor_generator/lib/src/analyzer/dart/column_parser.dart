@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'parser.dart';
 
 const String startInt = 'integer';
@@ -66,7 +65,7 @@ class ColumnParser {
     return '';
   }
 
-  MoorColumn parse(MethodDeclaration getter, Element element) {
+  MoorColumn? parse(MethodDeclaration getter, Element element) {
     final expr = base.returnExpressionOfMethod(getter);
 
     if (expr is! FunctionExpressionInvocation) {
@@ -78,16 +77,15 @@ class ColumnParser {
       return null;
     }
 
-    var remainingExpr =
-        (expr as FunctionExpressionInvocation).function as MethodInvocation;
+    var remainingExpr = expr.function as MethodInvocation;
 
-    String foundStartMethod;
-    String foundExplicitName;
-    String foundCustomConstraint;
-    Expression foundDefaultExpression;
-    Expression clientDefaultExpression;
-    Expression createdTypeConverter;
-    DartType typeConverterRuntime;
+    String? foundStartMethod;
+    String? foundExplicitName;
+    String? foundCustomConstraint;
+    Expression? foundDefaultExpression;
+    Expression? clientDefaultExpression;
+    Expression? createdTypeConverter;
+    DartType? typeConverterRuntime;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -135,8 +133,10 @@ class ColumnParser {
           final maxArg = base.findNamedArgument(args, 'max');
 
           foundFeatures.add(LimitingTextLength(
-            minLength: base.readIntLiteral(minArg, () {}),
-            maxLength: base.readIntLiteral(maxArg, () {}),
+            minLength:
+                minArg != null ? base.readIntLiteral(minArg, () {}) : null,
+            maxLength:
+                maxArg != null ? base.readIntLiteral(maxArg, () {}) : null,
           ));
           break;
         case _methodAutoIncrement:
@@ -175,7 +175,7 @@ class ColumnParser {
 
           // the map method has a parameter type that resolved to the runtime
           // type of the custom object
-          final type = remainingExpr.typeArgumentTypes.single;
+          final type = remainingExpr.typeArgumentTypes!.single;
 
           createdTypeConverter = expression;
           typeConverterRuntime = type;
@@ -196,7 +196,7 @@ class ColumnParser {
 
     final columnType = _startMethodToColumnType(foundStartMethod);
 
-    UsedTypeConverter converter;
+    UsedTypeConverter? converter;
     if (createdTypeConverter != null && typeConverterRuntime != null) {
       converter = UsedTypeConverter(
           expression: createdTypeConverter.toSource(),
@@ -214,7 +214,7 @@ class ColumnParser {
         ));
       }
 
-      final enumType = remainingExpr.typeArgumentTypes[0];
+      final enumType = remainingExpr.typeArgumentTypes![0];
       try {
         converter = UsedTypeConverter.forEnumColumn(enumType, nullable);
       } on InvalidTypeForEnumConverterException catch (e) {
@@ -238,9 +238,8 @@ class ColumnParser {
       );
     }
 
-    final docString = getter.documentationComment?.tokens
-        ?.map((t) => t.toString())
-        ?.join('\n');
+    final docString =
+        getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
     return MoorColumn(
       type: columnType,
       dartGetterName: getter.name.name,
@@ -266,19 +265,21 @@ class ColumnParser {
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,
       startReal: ColumnType.real,
-    }[startMethod];
+    }[startMethod]!;
   }
 
-  String _readJsonKey(Element getter) {
+  String? _readJsonKey(Element getter) {
     final annotations = getter.metadata;
-    final object = annotations.singleWhere((e) {
+    final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
-      return isFromMoor(value.type) && value.type.element.name == 'JsonKey';
-    }, orElse: () => null);
+      return value != null &&
+          isFromMoor(value.type!) &&
+          value.type!.element!.name == 'JsonKey';
+    });
 
     if (object == null) return null;
 
-    return object.computeConstantValue().getField('key').toStringValue();
+    return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 
   /// ORM
@@ -288,8 +289,8 @@ class ColumnParser {
     final limits = _readDbTextLimit(field.field);
     if (limits != null) {
       foundFeatures.add(LimitingTextLength(
-        minLength: limits.getField('min').toIntValue(),
-        maxLength: limits.getField('max').toIntValue(),
+        minLength: limits.getField('min')!.toIntValue(),
+        maxLength: limits.getField('max')!.toIntValue(),
       ));
     }
 
@@ -317,7 +318,7 @@ class ColumnParser {
     }
 
     final cr = ConstantReader(field.annotation);
-    final crt = cr.peek('type').objectValue;
+    final crt = cr.peek('type')!.objectValue;
     ColumnType columnType;
     if (field.isEnumField) {
       columnType = ColumnType.integer;
@@ -326,20 +327,20 @@ class ColumnParser {
           .firstWhere((e) => crt.getField(e.toString().substring(11)) != null);
     }
 
-    final sqlDefault = annotation.arguments.arguments.firstWhere(
+    final sqlDefault = annotation.arguments?.arguments.firstWhereOrNull(
         (element) =>
             element is NamedExpression &&
-            element.name.label.token.toString() == 'sqlDefault',
-        orElse: () => null);
+            element.name.label.token.toString() == 'sqlDefault');
 
-    final nullableArg = annotation.arguments.arguments.firstWhere(
-        (element) =>
-            element is NamedExpression &&
-            element.name.label.token.toString() == 'nullable',
-        orElse: () => null) as NamedExpression;
-    final nullable = nullableArg?.expression?.toString() == 'true';
+    final nullableArg = annotation.arguments?.arguments.firstWhereOrNull(
+            (element) =>
+                element is NamedExpression &&
+                element.name.label.token.toString() == 'nullable')
+        as NamedExpression?;
 
-    UsedTypeConverter usedConverter;
+    final nullable = nullableArg?.expression.toString() == 'true';
+
+    UsedTypeConverter? usedConverter;
     if (field.isEnumField) {
       final enumType = field.field.type as InterfaceType;
       if (enumType.typeArguments.isEmpty) {
@@ -355,11 +356,11 @@ class ColumnParser {
       }
     } else {
       // ignore: avoid_bool_literals_in_conditional_expressions
-      final converter = annotation.arguments.arguments.firstWhere(
-          (element) =>
-              element is NamedExpression &&
-              element.name.label.token.toString() == 'converter',
-          orElse: () => null) as NamedExpression;
+      final converter = annotation.arguments?.arguments.firstWhereOrNull(
+              (element) =>
+                  element is NamedExpression &&
+                  element.name.label.token.toString() == 'converter')
+          as NamedExpression?;
 
       if (converter != null) {
         usedConverter = UsedTypeConverter(
@@ -369,24 +370,22 @@ class ColumnParser {
       }
     }
 
-    KeyAction onUpdate;
+    KeyAction? onUpdate;
     final onUpdateField = field.annotation.getField('onUpdate');
     if (onUpdateField != null) {
-      onUpdate = KeyAction.values.firstWhere(
-          (e) => onUpdateField.getField(e.toString().substring(10)) != null,
-          orElse: () => null);
+      onUpdate = KeyAction.values.firstWhereOrNull(
+          (e) => onUpdateField.getField(e.toString().substring(10)) != null);
     }
 
-    KeyAction onDelete;
+    KeyAction? onDelete;
     final onDeleteField = field.annotation.getField('onDelete');
     if (onDeleteField != null) {
-      onDelete = KeyAction.values.firstWhere(
-          (e) => onDeleteField.getField(e.toString().substring(10)) != null,
-          orElse: () => null);
+      onDelete = KeyAction.values.firstWhereOrNull(
+          (e) => onDeleteField.getField(e.toString().substring(10)) != null);
     }
 
-    String onDeleteString;
-    String onUpdateString;
+    String? onDeleteString;
+    String? onUpdateString;
     if (onDelete != null) {
       onDeleteString = _parseKeyAction(onDelete.toString().substring(10));
     }
@@ -404,13 +403,14 @@ class ColumnParser {
       overriddenJsonName: _readJsonKey(field.field),
       customConstraints:
           field.annotation.getField('customConstraints')?.toStringValue(),
-      nullable: isPrimaryKey || nullable,
+      nullable: nullable,
       isPrimaryKey: isPrimaryKey,
       isForeignKey: field.isForeignKey,
       isEnum: field.isEnumField,
       isORM: true,
+      isNotNullType: field.isForeignKey || field.isEnumField,
       features: foundFeatures,
-      defaultArgument: (sqlDefault as NamedExpression)?.expression?.toSource(),
+      defaultArgument: (sqlDefault as NamedExpression?)?.expression.toSource(),
       clientDefaultCode: null,
       typeConverter: usedConverter,
       declaration: DartColumnDeclaration(field.field, base.step.file),
@@ -426,8 +426,8 @@ class ColumnParser {
     final annotations = getter.metadata;
     return annotations.any((e) {
       final value = e.computeConstantValue();
-      return value.type.element.name == 'PrimaryKeyColumn' ||
-          value.type.element.name == 'AutoIncrement';
+      return value?.type?.element?.name == 'PrimaryKeyColumn' ||
+          value?.type?.element?.name == 'AutoIncrement';
     });
   }
 
@@ -435,16 +435,16 @@ class ColumnParser {
     final annotations = getter.metadata;
     return annotations.any((e) {
       final value = e.computeConstantValue();
-      return value.type.element.name == 'AutoIncrement';
+      return value?.type?.element?.name == 'AutoIncrement';
     });
   }
 
-  DartObject _readDbTextLimit(Element getter) {
+  DartObject? _readDbTextLimit(Element getter) {
     final annotations = getter.metadata;
-    final object = annotations.singleWhere((e) {
+    final object = annotations.singleWhereOrNull((e) {
       final value = e.computeConstantValue();
-      return value.type.element.name == 'TextLimit';
-    }, orElse: () => null);
+      return value?.type?.element?.name == 'TextLimit';
+    });
 
     if (object == null) return null;
 

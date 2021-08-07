@@ -1,10 +1,9 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/writer/writer.dart';
 
 bool isFromMoor(DartType type) {
-  return type.element?.library?.location?.components?.first?.contains('moor') ??
+  return type.element?.library?.location?.components.first.contains('moor') ??
       false;
 }
 

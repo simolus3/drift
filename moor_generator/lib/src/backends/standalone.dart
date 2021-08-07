@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -19,7 +18,7 @@ class StandaloneBackend extends Backend {
 
   StandaloneBackend(this.context, this.provider);
 
-  String pathOfUri(Uri uri) {
+  String? pathOfUri(Uri uri) {
     final currentSession = context.currentSession;
     final path = currentSession.uriConverter.uriToPath(uri);
 
@@ -52,7 +51,8 @@ class _StandaloneBackendTask extends BackendTask {
   @override
   Future<bool> exists(Uri uri) {
     final path = backend.pathOfUri(uri);
-    return Future.value(
+
+    return Future.value(path != null &&
         backend.context.currentSession.resourceProvider.getFile(path).exists);
   }
 
@@ -84,7 +84,7 @@ class _StandaloneBackendTask extends BackendTask {
       Uri context, String dartExpression, Iterable<String> imports) async {
     // Create a fake file next to the content
     final provider = backend.provider;
-    final path = backend.pathOfUri(context);
+    final path = backend.pathOfUri(context)!;
     final pathContext = provider.pathContext;
     final pathForTemp = pathContext.join(
         pathContext.dirname(path), 'moor_temp_${dartExpression.hashCode}.dart');
@@ -110,12 +110,7 @@ class _StandaloneBackendTask extends BackendTask {
             'Could not resolve temporary helper file');
       }
 
-      final field = (result as ResolvedLibraryResult)
-          .element
-          .units
-          .first
-          .topLevelVariables
-          .first;
+      final field = result.element!.units.first.topLevelVariables.first;
       return field.type;
     } finally {
       provider.removeOverlay(pathForTemp);

@@ -234,6 +234,7 @@ class SchemaReader {
 
       return MoorTable(
         sqlName: sqlName,
+        dartTypeName: sqlName,
         overriddenName: sqlName,
         declaration: CustomVirtualTableDeclaration(parsed),
         overrideWithoutRowId: withoutRowId,

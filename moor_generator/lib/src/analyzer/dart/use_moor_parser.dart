@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'parser.dart';
 
 class UseMoorParser {
@@ -11,8 +10,11 @@ class UseMoorParser {
   Future<Database> parseDatabase(
       ClassElement element, ConstantReader annotation) async {
     // the types declared in UseMoor.tables
-    final tablesOrNull =
-        annotation.peek('tables')?.listValue?.map((obj) => obj.toTypeValue());
+    final tablesOrNull = annotation
+        .peek('tables')
+        ?.listValue
+        .map((obj) => obj.toTypeValue())
+        .whereType<DartType>();
     if (tablesOrNull == null) {
       step.reportError(ErrorInDartCode(
         message: 'Could not read tables from @UseMoor annotation! \n'
@@ -27,13 +29,13 @@ class UseMoorParser {
             .read('include')
             .objectValue
             .toSetValue()
-            ?.map((e) => e.toStringValue())
-            ?.toList() ??
+            ?.map((e) => e.toStringValue()!)
+            .toList() ??
         [];
 
     final parsedTables = await step.parseTables(tableTypes, element);
 
-    final parsedQueries = step.readDeclaredQueries(queryStrings);
+    final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
     final daoTypes = _readDaoTypes(annotation);
 
     _parseForeignKeys(parsedTables);
@@ -52,8 +54,8 @@ class UseMoorParser {
     return annotation
             .peek('daos')
             ?.listValue
-            ?.map((obj) => obj.toTypeValue())
-            ?.toList() ??
+            .map((obj) => obj.toTypeValue()!)
+            .toList() ??
         [];
   }
 
@@ -62,9 +64,8 @@ class UseMoorParser {
       final fkColumns =
           table.columns.where((element) => element.isForeignKey).toList();
       for (final c in fkColumns) {
-        final rt = parsedTables.firstWhere(
-            (t) => t.fromClass == c.fkReferences.element,
-            orElse: () => null);
+        final rt = parsedTables
+            .firstWhereOrNull((t) => t.fromClass == c.fkReferences?.element);
         if (rt != null) {
           var delete = '';
           var update = '';
@@ -88,28 +89,24 @@ class UseMoorParser {
       List<MoorTable> parsedTables, ConstantReader annotation) {
     final converterList = annotation.peek('converters')?.mapValue ?? {};
     final converters = converterList
-        .map((key, value) => MapEntry(key.toTypeValue(), '${value.type}()'));
+        .map((key, value) => MapEntry(key!.toTypeValue(), '${value!.type}()'));
 
     final enumConverterList = annotation.peek('enumConverters')?.mapValue ?? {};
     final enumConverters = enumConverterList.map((key, value) =>
-        MapEntry(key.toTypeValue(), '${value.type.element.name}'));
+        MapEntry(key!.toTypeValue(), '${value!.type!.element!.name}'));
 
     final genericConverterList =
         annotation.peek('genericConverters')?.mapValue ?? {};
     final genericConverters = genericConverterList.map((key, value) =>
-        MapEntry(key.toTypeValue(), '${value.type.element.name}'));
+        MapEntry(key!.toTypeValue(), '${value!.type!.element!.name}'));
 
-    final foreignKeyConverter = annotation
-        .peek('foreignKeyConverter')
-        ?.objectValue
-        ?.type
-        ?.element
-        ?.name;
+    final foreignKeyConverter =
+        annotation.peek('foreignKeyConverter')?.objectValue.type?.element?.name;
 
     final nullableForeignKeyConverter = annotation
         .peek('nullableForeignKeyConverter')
         ?.objectValue
-        ?.type
+        .type
         ?.element
         ?.name;
 
@@ -122,7 +119,7 @@ class UseMoorParser {
             final fieldElement = columnDeclaration.element as FieldElement;
             final type = fieldElement.type;
 
-            String converter;
+            String? converter;
             if (c.isForeignKey && !c.nullable && foreignKeyConverter != null) {
               final typeName = (type as InterfaceType).typeArguments[0];
               converter = '$foreignKeyConverter<$typeName>()';
@@ -132,33 +129,30 @@ class UseMoorParser {
               final typeName = (type as InterfaceType).typeArguments[0];
               converter = '$nullableForeignKeyConverter<$typeName>()';
             } else if (c.isEnum) {
-              final convType = enumConverters.keys.firstWhere(
-                  (element) => _genericTypeEquals(
-                      type as InterfaceType, element as InterfaceType),
-                  orElse: () => null);
-              converter = enumConverters[convType];
+              final convType = enumConverters.keys.firstWhereOrNull((element) =>
+                  _genericTypeEquals(
+                      type as InterfaceType, element as InterfaceType));
 
               if (convType != null) {
+                converter = enumConverters[convType];
                 final typeName = (type as InterfaceType).typeArguments[0];
                 converter = '${enumConverters[convType]}'
                     "${"<$typeName>($typeName.values)"}";
               }
             } else {
-              final convType = converters.keys.firstWhere(
-                  (element) => _typeEquals(
-                      type as InterfaceType, element as InterfaceType),
-                  orElse: () => null);
+              final convType = converters.keys.firstWhereOrNull((element) =>
+                  _typeEquals(type as InterfaceType, element as InterfaceType));
 
               if (convType != null) {
-                converter = converters[convType];
+                converter = converters[convType]!;
               } else {
-                final convType = genericConverters.keys.firstWhere(
+                final convType = genericConverters.keys.firstWhereOrNull(
                     (element) => _genericTypeEquals(
-                        type as InterfaceType, element as InterfaceType),
-                    orElse: () => null);
-                converter = genericConverters[convType];
+                        type as InterfaceType, element as InterfaceType));
 
                 if (convType != null) {
+                  c.isNotNullType = true;
+                  converter = genericConverters[convType]!;
                   final typeName = (type as InterfaceType).typeArguments[0];
                   converter = '${genericConverters[convType]}'
                       "${"<$typeName, ${c.innerColumnType()}>()"}";
@@ -169,8 +163,8 @@ class UseMoorParser {
             if (converter != null) {
               c.typeConverter = UsedTypeConverter(
                   expression: converter, mappedType: type, sqlType: c.type);
-              c.typeConverter.index = startIndex++;
-              c.typeConverter.table = table;
+              c.typeConverter!.index = startIndex++;
+              c.typeConverter!.table = table;
             }
           }
         }

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart' show MoorColumn;
 import 'package:sqlparser/sqlparser.dart';
 
@@ -53,7 +52,8 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
         final type = linter.context.typeOf(child as Expression);
         if (type.unknown) continue;
 
-        if (!allowed.contains(type.type.type)) {
+        final basicType = type.type?.type;
+        if (basicType != null && !allowed.contains(basicType)) {
           linter.lints.add(AnalysisError(
             type: AnalysisErrorType.other,
             message: message,
@@ -172,7 +172,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     } else if (source is SelectInsertSource) {
       final columns = source.stmt.resolvedColumns;
 
-      if (columns.length != targeted.length) {
+      if (columns != null && columns.length != targeted.length) {
         linter.lints.add(AnalysisError(
           type: AnalysisErrorType.other,
           message: 'This select statement should return ${targeted.length} '
@@ -198,7 +198,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     List<MoorColumn> required;
     if (resolved is Table) {
       final specifiedTable =
-          linter.mapper.tableToMoor(e.table.resolved as Table);
+          linter.mapper.tableToMoor(e.table.resolved as Table)!;
       required = specifiedTable.columns
           .where(specifiedTable.isColumnRequiredForInsert)
           .toList();
@@ -216,7 +216,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
     } else {
       final notPresent = required.where((c) {
         return !targeted
-            .any((t) => t?.name?.toUpperCase() == c.name.name.toUpperCase());
+            .any((t) => t?.name.toUpperCase() == c.name.name.toUpperCase());
       });
 
       if (notPresent.isNotEmpty) {

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
@@ -63,7 +62,7 @@ class FileGraph {
     // clear old imports, we also need to take the transposed imports into
     // account here
     if (_imports.containsKey(file)) {
-      for (final oldImport in _imports[file]) {
+      for (final oldImport in _imports[file]!) {
         _transposedImports[oldImport]?.remove(file);
       }
       _imports.remove(file);
@@ -108,7 +107,7 @@ class FoundFile {
   final Uri uri;
   FileType type;
 
-  FileResult currentResult;
+  FileResult? currentResult;
   FileState state = FileState.dirty;
   final ErrorSink errors = ErrorSink();
 

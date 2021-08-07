@@ -1,5 +1,5 @@
-//@dart=2.9
 import 'package:charcode/ascii.dart';
+import 'package:collection/collection.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -52,11 +52,9 @@ class SqlWriter extends NodeSqlBuilder {
     return _out.toString();
   }
 
-  FoundVariable _findMoorVar(Variable target) {
-    return query.variables.singleWhere(
-      (f) => f.variable.resolvedIndex == target.resolvedIndex,
-      orElse: () => null,
-    );
+  FoundVariable? _findMoorVar(Variable target) {
+    return query.variables.firstWhereOrNull(
+        (f) => f.variable.resolvedIndex == target.resolvedIndex);
   }
 
   void _writeMoorVariable(FoundVariable variable) {
@@ -134,7 +132,7 @@ class _DartEscapingSink implements StringSink {
   _DartEscapingSink(this._inner);
 
   @override
-  void write(Object obj) {
+  void write(Object? obj) {
     _inner.write(escapeForDart(obj.toString()));
   }
 
@@ -160,7 +158,7 @@ class _DartEscapingSink implements StringSink {
   }
 
   @override
-  void writeln([Object obj = '']) {
+  void writeln([Object? obj = '']) {
     write(obj);
     writeCharCode($lf);
   }

@@ -1,12 +1,11 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/entity_reference_sorter.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('throws cyclic exception when two tables reference each other', () {
-    final first = MoorTable(sqlName: 'a');
-    final second = MoorTable(sqlName: 'b');
+    final first = MoorTable(sqlName: 'a', dartTypeName: 'a');
+    final second = MoorTable(sqlName: 'b', dartTypeName: 'b');
     first.references.add(second);
     second.references.add(first);
 
@@ -16,10 +15,10 @@ void main() {
   });
 
   test('throws cyclic exception on a circular reference with three tables', () {
-    final a = MoorTable(sqlName: 'a');
-    final b = MoorTable(sqlName: 'b');
-    final c = MoorTable(sqlName: 'c');
-    final d = MoorTable(sqlName: 'd');
+    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
+    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
+    final c = MoorTable(sqlName: 'c', dartTypeName: 'c');
+    final d = MoorTable(sqlName: 'd', dartTypeName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -32,10 +31,10 @@ void main() {
   });
 
   test('sorts tables topologically when no cycles exist', () {
-    final a = MoorTable(sqlName: 'a');
-    final b = MoorTable(sqlName: 'b');
-    final c = MoorTable(sqlName: 'c');
-    final d = MoorTable(sqlName: 'd');
+    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
+    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
+    final c = MoorTable(sqlName: 'c', dartTypeName: 'c');
+    final d = MoorTable(sqlName: 'd', dartTypeName: 'd');
 
     a.references.add(b);
     b.references.add(c);
@@ -46,8 +45,8 @@ void main() {
 
   test('accepts self-references', () {
     // https://github.com/simolus3/moor/issues/586
-    final a = MoorTable(sqlName: 'a');
-    final b = MoorTable(sqlName: 'b');
+    final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
+    final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
 
     a.references..add(a)..add(b);
 

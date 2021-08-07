@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 
@@ -11,7 +10,7 @@ class ViewWriter extends TableOrViewWriter {
   final Scope scope;
 
   @override
-  StringBuffer buffer;
+  late StringBuffer buffer;
 
   @override
   MoorView get tableOrView => view;

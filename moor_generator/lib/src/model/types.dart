@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/model/model.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/writer.dart';
@@ -20,7 +19,7 @@ abstract class HasType {
   ColumnType get type;
 
   /// The applied type converter, or null.
-  UsedTypeConverter get typeConverter;
+  UsedTypeConverter? get typeConverter;
 }
 
 extension OperationOnTypes on HasType {
@@ -31,11 +30,11 @@ extension OperationOnTypes on HasType {
 
   /// the Dart type of this column that can be handled by moors type mapping.
   /// Basically the same as [dartTypeCode], minus custom types and nullability.
-  String get variableTypeName => dartTypeNames[type];
+  String get variableTypeName => dartTypeNames[type]!;
 
   /// The class inside the moor library that represents the same sql type as
   /// this column.
-  String get sqlTypeName => sqlTypes[type];
+  String get sqlTypeName => sqlTypes[type]!;
 
   /// The moor Dart type that matches the type of this column.
   ///
@@ -58,11 +57,16 @@ extension OperationOnTypes on HasType {
   /// The dart type that matches the values of this column. For instance, if a
   /// table has declared an `IntColumn`, the matching dart type name would be
   /// [int].
-  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
-    if (typeConverter != null) {
-      final needsSuffix =
-          options.nnbd && nullable && !typeConverter.hasNullableDartType;
-      final baseType = typeConverter.mappedType.codeString(options);
+  String dartTypeCode(
+      [GenerationOptions options = const GenerationOptions(),
+      bool isNotNullType = false]) {
+    final converter = typeConverter;
+    if (converter != null) {
+      final needsSuffix = !isNotNullType &&
+          options.nnbd &&
+          nullable &&
+          !converter.hasNullableDartType;
+      final baseType = converter.mappedType.codeString(options);
 
       final inner = needsSuffix ? '$baseType?' : baseType;
       return isArray ? 'List<$inner>' : inner;

@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 
@@ -30,11 +29,11 @@ class CustomResultClassTransformer {
 
     // Find and group queries with the same result class name
     var index = 0;
-    for (final query in accessor.queries) {
+    for (final query in accessor.queries ?? const <Never>[]) {
       final indexOfQuery = index++;
 
       if (query is! SqlSelectQuery) continue;
-      final selectQuery = query as SqlSelectQuery;
+      final selectQuery = query;
 
       // Doesn't use a custom result class, so it's not affected by this
       if (selectQuery.requestedResultClass == null) continue;
@@ -45,7 +44,7 @@ class CustomResultClassTransformer {
         errors.report(ErrorInDartCode(
           message: "The query ${selectQuery.name} can't have a custom name as "
               'it only returns one column.',
-          affectedElement: accessor.declaration.element,
+          affectedElement: accessor.declaration?.element,
         ));
         continue;
       }
@@ -53,16 +52,18 @@ class CustomResultClassTransformer {
         errors.report(ErrorInDartCode(
           message: "The query ${selectQuery.name} can't have a custom name as "
               'it returns a single table data class.',
-          affectedElement: accessor.declaration.element,
+          affectedElement: accessor.declaration?.element,
         ));
         continue;
       }
 
       // query will be replaced, save index for fast replacement later on
       indexOfOldQueries[selectQuery] = indexOfQuery;
-      queryGroups
-          .putIfAbsent(selectQuery.requestedResultClass, () => [])
-          .add(selectQuery);
+      if (selectQuery.requestedResultClass != null) {
+        queryGroups
+            .putIfAbsent(selectQuery.requestedResultClass!, () => [])
+            .add(selectQuery);
+      }
     }
 
     for (final group in queryGroups.entries) {
@@ -73,7 +74,7 @@ class CustomResultClassTransformer {
         errors.report(ErrorInDartCode(
           message: 'Could not merge result sets to $resultSetName: The queries '
               'have different columns and types.',
-          affectedElement: accessor.declaration.element,
+          affectedElement: accessor.declaration?.element,
         ));
         continue;
       }
@@ -104,7 +105,7 @@ class CustomResultClassTransformer {
         });
 
         final newQuery = query.replaceResultSet(newResultSet);
-        accessor.queries[indexOfOldQueries[query]] = newQuery;
+        accessor.queries![indexOfOldQueries[query]!] = newQuery;
 
         isFirst = false;
       }
@@ -112,7 +113,7 @@ class CustomResultClassTransformer {
   }
 
   bool _resultSetsCompatible(Iterable<InferredResultSet> resultSets) {
-    InferredResultSet last;
+    InferredResultSet? last;
 
     for (final current in resultSets) {
       if (last != null && !last.isCompatibleTo(current)) {

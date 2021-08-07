@@ -1,4 +1,3 @@
-//@dart=2.9
 part of 'declaration.dart';
 
 abstract class IndexDeclaration extends Declaration {}

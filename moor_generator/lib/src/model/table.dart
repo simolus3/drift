@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:moor/moor.dart' show UpdateKind;
 import 'package:moor_generator/src/analyzer/options.dart';
@@ -15,27 +14,27 @@ import 'declarations/declaration.dart';
 class MoorTable extends MoorEntityWithResultSet {
   /// The [ClassElement] for the class that declares this table or null if
   /// the table was inferred from a `CREATE TABLE` statement.
-  final ClassElement fromClass;
+  final ClassElement? fromClass;
 
   @override
-  final TableDeclaration declaration;
+  final TableDeclaration? declaration;
 
   /// The associated table to use for the sqlparser package when analyzing
   /// sql queries. Note that this field is set lazily.
-  Table parserTable;
+  Table? parserTable;
 
   @override
-  final ExistingRowClass /*?*/ existingRowClass;
+  final ExistingRowClass? existingRowClass;
 
   /// If [fromClass] is null, another source to use when determining the name
   /// of this table in generated Dart code.
-  final String _overriddenName;
+  final String? _overriddenName;
 
   /// Whether this table was created from an `CREATE TABLE` statement instead of
   /// a Dart class.
   bool get isFromSql => _overriddenName != null;
 
-  String get _baseName => _overriddenName ?? fromClass.name;
+  String get _baseName => _overriddenName ?? fromClass!.name;
 
   @override
   String get dslName => fromClass?.name ?? entityInfoName;
@@ -85,25 +84,25 @@ class MoorTable extends MoorEntityWithResultSet {
   /// not been defined that way.
   ///
   /// For the full primary key, see [fullPrimaryKey].
-  final Set<MoorColumn> primaryKey;
+  final Set<MoorColumn>? primaryKey;
 
   /// The primary key for this table.
   ///
   /// Unlikely [primaryKey], this method is not limited to the `primaryKey`
   /// override in Dart table declarations.
   Set<MoorColumn> get fullPrimaryKey {
-    if (primaryKey != null) return primaryKey;
+    if (primaryKey != null) return primaryKey!;
 
     return columns.where((c) => c.features.any((f) => f is PrimaryKey)).toSet();
   }
 
   /// When non-null, the generated table class will override the `withoutRowId`
   /// getter on the table class with this value.
-  final bool /*?*/ overrideWithoutRowId;
+  final bool? overrideWithoutRowId;
 
   /// When non-null, the generated table class will override the
   /// `dontWriteConstraint` getter on the table class with this value.
-  final bool overrideDontWriteConstraints;
+  final bool? overrideDontWriteConstraints;
 
   /// When non-null, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
@@ -120,12 +119,12 @@ class MoorTable extends MoorEntityWithResultSet {
           'table since its declaration is unknown.');
     }
 
-    return declaration.isVirtual;
+    return declaration!.isVirtual;
   }
 
   /// If this table [isVirtualTable], returns the `CREATE VIRTUAL TABLE`
   /// statement to create this table. Otherwise returns null.
-  String get createVirtual {
+  String? get createVirtual {
     if (!isVirtualTable) return null;
 
     return (declaration as TableDeclarationWithSql).createSql;
@@ -134,12 +133,12 @@ class MoorTable extends MoorEntityWithResultSet {
   MoorTable({
     this.fromClass,
     this.columns = const [],
-    this.sqlName,
-    this.dartTypeName,
+    required this.sqlName,
+    required this.dartTypeName,
     this.primaryKey,
-    String overriddenName,
+    String? overriddenName,
     this.overrideWithoutRowId,
-    this.overrideTableConstraints,
+    this.overrideTableConstraints = const [],
     this.overrideDontWriteConstraints,
     this.declaration,
     this.existingRowClass,
@@ -150,7 +149,7 @@ class MoorTable extends MoorEntityWithResultSet {
 
   /// Finds all type converters used in this tables.
   Iterable<UsedTypeConverter> get converters =>
-      columns.map((c) => c.typeConverter).where((t) => t != null);
+      columns.map((c) => c.typeConverter).whereType();
 
   void _attachToConverters() {
     var index = 0;
@@ -190,7 +189,7 @@ class MoorTable extends MoorEntityWithResultSet {
     if (isFromSql) {
       return sqlName;
     } else {
-      return fromClass.displayName;
+      return fromClass!.displayName;
     }
   }
 

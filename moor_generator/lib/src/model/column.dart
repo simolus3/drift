@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/writer.dart';
@@ -54,7 +53,7 @@ class MoorColumn implements HasDeclaration, HasType {
   /// The declaration of this column, contains information about where this
   /// column was created in source code.
   @override
-  final ColumnDeclaration declaration;
+  final ColumnDeclaration? declaration;
 
   /// Whether this column was declared inside a moor file.
   bool get declaredInMoorFile => declaration?.isDefinedInMoorFile ?? false;
@@ -67,9 +66,9 @@ class MoorColumn implements HasDeclaration, HasType {
   final ColumnName name;
 
   /// An (optional) name to use as a json key instead of the [dartGetterName].
-  final String overriddenJsonName;
+  final String? overriddenJsonName;
   String getJsonKey([MoorOptions options = const MoorOptions.defaults()]) {
-    if (overriddenJsonName != null) return overriddenJsonName;
+    if (overriddenJsonName != null) return overriddenJsonName!;
 
     final useColumnName = options.useColumnNameAsJsonKeyWhenDefinedInMoorFile &&
         declaredInMoorFile;
@@ -88,34 +87,35 @@ class MoorColumn implements HasDeclaration, HasType {
 
   /// If this columns has custom constraints that should be used instead of the
   /// default ones.
-  final String customConstraints;
+  final String? customConstraints;
 
   /// Dart code that generates the default expression for this column, or null
   /// if there is no default expression.
-  final String defaultArgument;
+  final String? defaultArgument;
 
   /// Dart code for the `clientDefault` expression, or null if it hasn't been
   /// set.
-  final String clientDefaultCode;
+  final String? clientDefaultCode;
 
   /// The [UsedTypeConverter], if one has been set on this column.
   @override
-  UsedTypeConverter typeConverter;
+  UsedTypeConverter? typeConverter;
 
   /// The documentation comment associated with this column
   ///
   /// Stored as a multi line string with leading triple-slashes `///` for every line
-  final String documentationComment;
+  final String? documentationComment;
 
   /// ORM
   final bool isPrimaryKey;
   final bool isForeignKey;
   final bool isEnum;
   final bool isORM;
-  final DartType fkReferences;
-  final String fkColumn;
-  final String fkOnUpdate;
-  final String fkOnDelete;
+  bool isNotNullType;
+  final DartType? fkReferences;
+  final String? fkColumn;
+  final String? fkOnUpdate;
+  final String? fkOnDelete;
 
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
@@ -128,7 +128,7 @@ class MoorColumn implements HasDeclaration, HasType {
         ColumnType.datetime: 'DateTimeColumn',
         ColumnType.blob: 'BlobColumn',
         ColumnType.real: 'RealColumn',
-      }[type];
+      }[type]!;
 
   String innerColumnType(
       [GenerationOptions options = const GenerationOptions()]) {
@@ -173,17 +173,15 @@ class MoorColumn implements HasDeclaration, HasType {
       case ColumnType.real:
         return 'REAL';
     }
-
-    throw AssertionError("Can't happen");
   }
 
   @override
   bool get isArray => false;
 
   MoorColumn({
-    this.type,
-    this.dartGetterName,
-    this.name,
+    required this.type,
+    required this.dartGetterName,
+    required this.name,
     this.overriddenJsonName,
     this.customConstraints,
     this.nullable = false,
@@ -197,6 +195,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.isForeignKey = false,
     this.isEnum = false,
     this.isORM = false,
+    this.isNotNullType = false,
     this.fkColumn,
     this.fkOnDelete,
     this.fkOnUpdate,
@@ -228,9 +227,9 @@ class AutoIncrement extends PrimaryKey {
 }
 
 class LimitingTextLength extends ColumnFeature {
-  final int minLength;
+  final int? minLength;
 
-  final int maxLength;
+  final int? maxLength;
 
   LimitingTextLength({this.minLength, this.maxLength});
 

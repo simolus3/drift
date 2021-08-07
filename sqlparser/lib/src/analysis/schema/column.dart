@@ -50,7 +50,7 @@ class TableColumn extends Column implements ColumnWithType {
   ///
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
-  List<ColumnConstraint?> get constraints => definition!.constraints;
+  List<ColumnConstraint> get constraints => definition!.constraints;
 
   /// The definition in the AST that was used to create this column model.
   final ColumnDefinition? definition;

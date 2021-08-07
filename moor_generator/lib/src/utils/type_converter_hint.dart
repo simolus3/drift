@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/model/used_type_converter.dart';
 import 'package:sqlparser/sqlparser.dart';
 

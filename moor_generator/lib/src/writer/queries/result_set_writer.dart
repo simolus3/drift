@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/writer/utils/override_toString.dart';
@@ -17,7 +16,7 @@ class ResultSetWriter {
     final nonNullableFields = <String>{};
     final into = scope.leaf();
 
-    final resultSet = query.resultSet;
+    final resultSet = query.resultSet!;
 
     into.write('class $className ');
     if (scope.options.rawResultSetData) {

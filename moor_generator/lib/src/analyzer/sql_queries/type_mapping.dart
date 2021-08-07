@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor/moor.dart' as m;
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
@@ -22,7 +21,7 @@ class TypeMapper {
   /// by the sqlparser library.
   Table extractStructure(MoorTable table) {
     if (table.parserTable != null) {
-      final parserTbl = table.parserTable;
+      final parserTbl = table.parserTable!;
       _engineTablesToSpecified[parserTbl] = table;
       return parserTbl;
     }
@@ -30,7 +29,7 @@ class TypeMapper {
     final columns = <TableColumn>[];
     for (final specified in table.columns) {
       final hint = specified.typeConverter != null
-          ? TypeConverterHint(specified.typeConverter)
+          ? TypeConverterHint(specified.typeConverter!)
           : null;
       final type = resolveForColumnType(specified.type, overrideHint: hint)
           .withNullable(specified.nullable);
@@ -51,7 +50,7 @@ class TypeMapper {
     return engineTable;
   }
 
-  ResolvedType resolveForColumnType(ColumnType type, {TypeHint overrideHint}) {
+  ResolvedType resolveForColumnType(ColumnType type, {TypeHint? overrideHint}) {
     switch (type) {
       case ColumnType.integer:
         return ResolvedType(type: BasicType.int, hint: overrideHint);
@@ -68,15 +67,15 @@ class TypeMapper {
       case ColumnType.real:
         return ResolvedType(type: BasicType.real, hint: overrideHint);
     }
-    throw StateError('cant happen');
   }
 
-  ColumnType resolvedToMoor(ResolvedType type) {
+  ColumnType resolvedToMoor(ResolvedType? type) {
     if (type == null) {
       return ColumnType.text;
     }
 
     switch (type.type) {
+      case null:
       case BasicType.nullType:
         return ColumnType.text;
       case BasicType.int:
@@ -93,14 +92,13 @@ class TypeMapper {
       case BasicType.blob:
         return ColumnType.blob;
     }
-    throw StateError('Unexpected type: $type');
   }
 
   /// Converts a [MoorView] into something that can be understood
   /// by the sqlparser library.
   View extractView(MoorView view) {
     if (view.parserView != null) {
-      final parserView = view.parserView;
+      final parserView = view.parserView!;
       _engineViewsToSpecified[parserView] = view;
       return parserView;
     }
@@ -149,7 +147,7 @@ class TypeMapper {
           continue; // already handled, we only report a single variable / index
         }
 
-        currentIndex = used.resolvedIndex;
+        currentIndex = used.resolvedIndex!;
         final name = (used is ColonNamedVariable) ? used.name : null;
         final explicitIndex =
             (used is NumberedVariable) ? used.explicitIndex : null;
@@ -165,13 +163,13 @@ class TypeMapper {
               'array appearing after an array!');
         }
 
-        UsedTypeConverter converter;
+        UsedTypeConverter? converter;
 
         // Recognizing type converters on variables is opt-in since it would
         // break existing code.
         if (applyTypeConvertersToVariables &&
             internalType.type?.hint is TypeConverterHint) {
-          converter = (internalType.type.hint as TypeConverterHint).converter;
+          converter = (internalType.type!.hint as TypeConverterHint).converter;
         }
 
         foundElements.add(FoundVariable(
@@ -192,7 +190,7 @@ class TypeMapper {
               'Cannot use an array variable with an explicit index');
         }
         if (isArray) {
-          maxIndex = used.resolvedIndex;
+          maxIndex = used.resolvedIndex!;
         }
       } else if (used is DartPlaceholder) {
         // we don't what index this placeholder has, so we can't allow _any_
@@ -211,19 +209,19 @@ class TypeMapper {
     final groupVarsByIndex = <int, List<Variable>>{};
     for (final variable in vars) {
       groupVarsByIndex
-          .putIfAbsent(variable.resolvedIndex, () => [])
+          .putIfAbsent(variable.resolvedIndex!, () => [])
           .add(variable);
     }
     // sort each group by index
     for (final group in groupVarsByIndex.values) {
-      group.sort((a, b) => a.resolvedIndex.compareTo(b.resolvedIndex));
+      group.sort((a, b) => a.resolvedIndex!.compareTo(b.resolvedIndex!));
     }
 
-    int Function(dynamic, dynamic) comparer;
+    late int Function(dynamic, dynamic) comparer;
     comparer = (dynamic a, dynamic b) {
       if (a is Variable && b is Variable) {
         // variables are sorted by their index
-        return a.resolvedIndex.compareTo(b.resolvedIndex);
+        return a.resolvedIndex!.compareTo(b.resolvedIndex!);
       } else if (a is DartPlaceholder && b is DartPlaceholder) {
         // placeholders by their position
         return AnalysisContext.compareNodesByOrder(a, b);
@@ -232,7 +230,7 @@ class TypeMapper {
         // assume a is the variable. If not, we just switch results.
         if (a is Variable) {
           final placeholderB = b as DartPlaceholder;
-          final firstWithSameIndex = groupVarsByIndex[a.resolvedIndex].first;
+          final firstWithSameIndex = groupVarsByIndex[a.resolvedIndex]!.first;
 
           return firstWithSameIndex.firstPosition
               .compareTo(placeholderB.firstPosition);
@@ -253,7 +251,7 @@ class TypeMapper {
     final type = placeholder.when(
       isExpression: (e) {
         final foundType = context.typeOf(e);
-        ColumnType columnType;
+        ColumnType? columnType;
         if (foundType.type != null) {
           columnType = resolvedToMoor(foundType.type);
         }
@@ -295,9 +293,9 @@ class TypeMapper {
       MoorEntityWithResultSet moorEntity;
 
       if (resultSet is Table) {
-        moorEntity = tableToMoor(resultSet);
+        moorEntity = tableToMoor(resultSet)!;
       } else if (resultSet is View) {
-        moorEntity = viewToMoor(resultSet);
+        moorEntity = viewToMoor(resultSet)!;
       } else {
         // If this result set is an inner select statement or anything else we
         // can't represent it in Dart.
@@ -308,19 +306,19 @@ class TypeMapper {
           .add(AvailableMoorResultSet(name, moorEntity, available));
     }
 
-    return FoundDartPlaceholder(type, name, availableMoorResults)
+    return FoundDartPlaceholder(type!, name, availableMoorResults)
       ..astNode = placeholder;
   }
 
-  MoorTable tableToMoor(Table table) {
+  MoorTable? tableToMoor(Table table) {
     return _engineTablesToSpecified[table];
   }
 
-  MoorView viewToMoor(View view) {
+  MoorView? viewToMoor(View view) {
     return _engineViewsToSpecified[view];
   }
 
-  MoorEntityWithResultSet viewOrTableToMoor(dynamic entity) {
+  MoorEntityWithResultSet? viewOrTableToMoor(dynamic entity) {
     if (entity is Table) {
       return tableToMoor(entity);
     } else if (entity is View) {
@@ -330,13 +328,16 @@ class TypeMapper {
     }
   }
 
-  WrittenMoorTable writtenToMoor(s.TableWrite table) {
+  WrittenMoorTable? writtenToMoor(s.TableWrite table) {
     final moorKind = const {
       s.UpdateKind.insert: m.UpdateKind.insert,
       s.UpdateKind.update: m.UpdateKind.update,
       s.UpdateKind.delete: m.UpdateKind.delete,
-    }[table.kind];
+    }[table.kind]!;
 
-    return WrittenMoorTable(tableToMoor(table.table), moorKind);
+    final moorTable = tableToMoor(table.table);
+    if (moorTable != null) {
+      return WrittenMoorTable(moorTable, moorKind);
+    }
   }
 }

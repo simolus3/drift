@@ -1,4 +1,4 @@
-//@dart=2.9
+import 'package:collection/collection.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -28,20 +28,18 @@ class FindStreamUpdateRules {
     // We only know about foreign key clauses from tables in moor files
     if (declaration is! MoorTableDeclaration) return;
 
-    final moorDeclaration = declaration as MoorTableDeclaration;
-    if (moorDeclaration.node is! CreateTableStatement) return;
+    if (declaration.node is! CreateTableStatement) return;
 
-    final stmt = moorDeclaration.node as CreateTableStatement;
+    final stmt = declaration.node as CreateTableStatement;
     final tableName = table.sqlName;
 
     for (final fkClause in stmt.allDescendants.whereType<ForeignKeyClause>()) {
-      final referencedMoorTable = table.references.firstWhere(
+      final referencedMoorTable = table.references.firstWhereOrNull(
         (tbl) => tbl.sqlName == fkClause.foreignTable.tableName,
-        orElse: () => null,
       );
 
-      void writeRule(UpdateKind listen, ReferenceAction action) {
-        TableUpdate effect;
+      void writeRule(UpdateKind listen, ReferenceAction? action) {
+        TableUpdate? effect;
         switch (action) {
           case ReferenceAction.setNull:
           case ReferenceAction.setDefault:
@@ -58,7 +56,7 @@ class FindStreamUpdateRules {
           rules.add(
             WritePropagation(
               on: TableUpdateQuery.onTableName(
-                referencedMoorTable.sqlName,
+                referencedMoorTable!.sqlName,
                 limitUpdateKind: listen,
               ),
               result: [effect],
@@ -78,7 +76,7 @@ class FindStreamUpdateRules {
 
     if (declaration is! MoorTriggerDeclaration) return;
 
-    final target = (declaration as MoorTriggerDeclaration).node.target;
+    final target = declaration.node.target;
     UpdateKind targetKind;
     if (target is DeleteTarget) {
       targetKind = UpdateKind.delete;
@@ -91,7 +89,7 @@ class FindStreamUpdateRules {
     rules.add(
       WritePropagation(
         on: TableUpdateQuery.onTableName(
-          trigger.on.sqlName,
+          trigger.on!.sqlName,
           limitUpdateKind: targetKind,
         ),
         result: [

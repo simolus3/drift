@@ -1,8 +1,6 @@
-//@dart=2.9
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:meta/meta.dart';
 import 'package:moor_generator/src/model/table.dart';
 import 'package:moor_generator/src/utils/type_utils.dart';
 import 'package:moor_generator/src/writer/writer.dart';
@@ -12,10 +10,10 @@ import 'types.dart';
 
 class UsedTypeConverter {
   /// Index of this converter in the table in which it has been created.
-  int index;
+  int? index;
 
   /// The table using this type converter.
-  MoorTable table;
+  MoorTable? table;
 
   /// The expression that will construct the type converter at runtime. The
   /// type converter constructed will map a [mappedType] to the [sqlType] and
@@ -33,12 +31,12 @@ class UsedTypeConverter {
   String get fieldName => '\$converter$index';
 
   /// A Dart expression resolving to this converter.
-  String get tableAndField => '${table.entityInfoName}.$fieldName';
+  String get tableAndField => '${table!.entityInfoName}.$fieldName';
 
   UsedTypeConverter({
-    @required this.expression,
-    @required this.mappedType,
-    @required this.sqlType,
+    required this.expression,
+    required this.mappedType,
+    required this.sqlType,
   });
 
   bool get hasNullableDartType =>

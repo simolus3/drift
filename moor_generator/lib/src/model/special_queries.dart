@@ -1,4 +1,3 @@
-//@dart=2.9
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -23,12 +22,12 @@ class SpecialQuery implements MoorSchemaEntity {
       [this.mode = SpecialQueryMode.atCreate]);
 
   factory SpecialQuery.fromMoor(DeclaredStatement stmt, FoundFile file) {
-    return SpecialQuery(stmt.statement.span.text,
+    return SpecialQuery(stmt.statement.span!.text,
         MoorSpecialQueryDeclaration.fromNodeAndFile(stmt, file));
   }
 
   @override
-  String get dbGetterName => null;
+  String? get dbGetterName => null;
 
   @override
   String get displayName =>
