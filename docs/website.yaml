@@ -32,7 +32,7 @@ site:
       - name: "GitHub"
         url: "https://github.com/simolus3/moor/"
       - name: "API docs"
-        url: "https://pub.dev/documentation/moor/latest/"
+        url: "/api/"
 
 environments:
   dev:
