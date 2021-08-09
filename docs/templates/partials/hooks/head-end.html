@@ -1,2 +1,3 @@
-<link rel="stylesheet" href="{{ "/main.css" | relUrl }}">
-<script defer src="{{ "/main.dart.js" | relUrl }}"></script>
+{% if page.path == '/search' %}
+<link rel="stylesheet" href="/search.css">
+{% endif %}
