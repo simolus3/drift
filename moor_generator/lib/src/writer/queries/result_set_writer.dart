@@ -39,7 +39,7 @@ class ResultSetWriter {
     }
 
     for (final nested in resultSet.nestedResults) {
-      var typeName = nested.table.dartTypeName;
+      var typeName = nested.table.dartTypeCode(scope.generationOptions);
       final fieldName = nested.dartFieldName;
 
       if (nested.isNullable) {

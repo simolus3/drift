@@ -45,10 +45,11 @@ class ErrorService {
       final span = error.span;
       final start = span.start;
       final end = span.end;
-      return Location(path, start.offset, span.length, start.line + 1,
-          start.column + 1, end.line + 1, end.column + 1);
+      return Location(
+          path, start.offset, span.length, start.line + 1, start.column + 1,
+          endLine: end.line + 1, endColumn: end.column + 1);
     }
 
-    return Location(path, 0, 0, 0, 0, 0, 0);
+    return Location(path, 0, 0, 0, 0);
   }
 }

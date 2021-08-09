@@ -1,8 +1,11 @@
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'package:moor/moor.dart';
+import '../data/tables/custom_tables.dart';
 import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';
+import '../data/utils/mocks.dart';
 
 class _UnknownExpr extends Expression {
   @override
@@ -67,5 +70,35 @@ void main() {
       generates('(SELECT users.name AS "users.name" FROM users '
           'INNER JOIN categories ON categories.id = users.id)'),
     );
+  });
+
+  group('rowId', () {
+    test('cannot be used on virtual tables', () {
+      final custom = CustomTablesDb(MockExecutor());
+      expect(() => custom.email.rowId, throwsArgumentError);
+    });
+
+    test('cannot be used on tables WITHOUT ROWID', () {
+      final custom = CustomTablesDb(MockExecutor());
+      expect(() => custom.noIds.rowId, throwsArgumentError);
+    });
+
+    test('generates a rowid expression', () {
+      expect(TodoDb().categories.rowId, generates('_rowid_'));
+    });
+
+    test('generates an aliased rowid expression when needed', () async {
+      final executor = MockExecutor();
+      final db = TodoDb(executor);
+      addTearDown(db.close);
+
+      final query = db
+          .select(db.users)
+          .join([innerJoin(db.categories, db.categories.rowId.equals(3))]);
+      await query.get();
+
+      verify(executor
+          .runSelect(argThat(contains('ON categories._rowid_ = ?')), [3]));
+    });
   });
 }

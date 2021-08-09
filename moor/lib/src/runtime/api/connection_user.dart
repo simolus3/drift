@@ -87,10 +87,16 @@ abstract class DatabaseConnectionUser {
     return (Zone.current[_zoneRootUserKey] as DatabaseConnectionUser?) ?? this;
   }
 
-  /// Marks the tables as updated. This method will be called internally
-  /// whenever a update, delete or insert statement is issued on the database.
-  /// We can then inform all active select-streams on those tables that their
-  /// snapshot might be out-of-date and needs to be fetched again.
+  /// Marks the [tables] as updated.
+  ///
+  /// In response to calling this method, all streams listening on any of the
+  /// [tables] will load their data again.
+  ///
+  /// Primarily, this method is meant to be used by moor-internal code. Higher-
+  /// level moor APIs will call this method to dispatch stream updates.
+  /// Of course, you can also call it yourself to manually dispatch table
+  /// updates. To obtain a [TableInfo], use the corresponding getter on the
+  /// database class.
   void markTablesUpdated(Set<TableInfo> tables) {
     notifyUpdates(
       {for (final table in tables) TableUpdate(table.actualTableName)},
@@ -99,10 +105,15 @@ abstract class DatabaseConnectionUser {
 
   /// Dispatches the set of [updates] to the stream query manager.
   ///
-  /// Internally, moor will call this method whenever a update, delete or insert
-  /// statement is issued on the database. We can then inform all active select-
-  /// streams affected that their snapshot might be out-of-date and needs to be
-  /// fetched again.
+  /// This method is more specific than [markTablesUpdated] in the presence of
+  /// triggers or foreign key constraints. Moor needs to support both when
+  /// calculating which streams to update. For instance, consider a simple
+  /// database with two tables (`a` and `b`) and a trigger inserting into `b`
+  /// after a delete on `a`).
+  /// Now, an insert on `a` should not update a stream listening on table `b`,
+  /// but a delete should! This additional information is not available with
+  /// [markTablesUpdated], so [notifyUpdates] can be used to more efficiently
+  /// calculate stream updates in some instances.
   void notifyUpdates(Set<TableUpdate> updates) {
     final withRulesApplied = attachedDatabase.streamUpdateRules.apply(updates);
     resolvedEngine.streamQueries.handleTableUpdates(withRulesApplied);

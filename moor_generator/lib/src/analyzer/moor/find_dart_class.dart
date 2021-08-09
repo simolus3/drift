@@ -1,9 +1,13 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/backends/backend.dart';
 import 'package:sqlparser/sqlparser.dart';
 
-Future<ClassElement?> findDartClass(
+import '../custom_row_class.dart';
+
+/// Resolves a Dart class or generalized typedef pointing towards a Dart class.
+Future<FoundDartClass?> findDartClass(
     Step step, List<ImportStatement> imports, String identifier) async {
   final dartImports = imports
       .map((import) => import.importedFile)
@@ -20,7 +24,12 @@ Future<ClassElement?> findDartClass(
 
     final foundElement = library.exportNamespace.get(identifier);
     if (foundElement is ClassElement) {
-      return foundElement;
+      return FoundDartClass(foundElement, null);
+    } else if (foundElement is TypeAliasElement) {
+      final innerType = foundElement.aliasedType;
+      if (innerType is InterfaceType) {
+        return FoundDartClass(innerType.element, innerType.typeArguments);
+      }
     }
   }
 

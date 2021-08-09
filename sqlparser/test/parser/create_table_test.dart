@@ -77,7 +77,7 @@ void main() {
               ForeignKeyColumnConstraint(
                 null,
                 ForeignKeyClause(
-                  foreignTable: TableReference('some', null),
+                  foreignTable: TableReference('some'),
                   columnNames: [Reference(columnName: 'thing')],
                   onUpdate: ReferenceAction.cascade,
                   onDelete: ReferenceAction.setNull,
@@ -107,7 +107,7 @@ void main() {
               Reference(columnName: 'email'),
             ],
             clause: ForeignKeyClause(
-              foreignTable: TableReference('another', null),
+              foreignTable: TableReference('another'),
               columnNames: [
                 Reference(columnName: 'a'),
                 Reference(columnName: 'b'),

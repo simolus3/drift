@@ -18,8 +18,8 @@ Location _locationForSpan(SourceSpan span, FoundFile file) {
     last.offset - first.offset,
     first.line + 1,
     first.column + 1,
-    last.line + 1,
-    last.column + 1,
+    endLine: last.line + 1,
+    endColumn: last.column + 1,
   );
 }
 

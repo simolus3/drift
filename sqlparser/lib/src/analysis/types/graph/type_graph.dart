@@ -118,7 +118,7 @@ class TypeGraph {
     if (edge is CopyEncapsulating) {
       if (!knowsType(edge.target)) {
         final fromTypes = edge.from.map((t) => this[t]).where((e) => e != null);
-        var encapsulated = _encapsulate(fromTypes);
+        var encapsulated = _encapsulate(fromTypes, edge.nullability);
 
         if (encapsulated != null) {
           if (edge.cast != null) {
@@ -148,19 +148,31 @@ class TypeGraph {
     }
   }
 
-  ResolvedType? _encapsulate(Iterable<ResolvedType?> targets) {
+  ResolvedType? _encapsulate(
+      Iterable<ResolvedType?> targets, EncapsulatingNullability nullability) {
     return targets.fold<ResolvedType?>(null, (previous, element) {
       if (previous == null) return element;
 
       final previousType = previous.type;
       final elementType = element!.type;
-      final eitherNullable =
-          previous.nullable == true || element.nullable == true;
+      bool nullableTogether;
+      switch (nullability) {
+        case EncapsulatingNullability.nullIfAny:
+          nullableTogether =
+              previous.nullable == true || element.nullable == true;
+          break;
+        case EncapsulatingNullability.nullIfAll:
+          nullableTogether =
+              previous.nullable == true && element.nullable == true;
+          break;
+      }
 
       if (previousType == elementType || elementType == BasicType.nullType) {
-        return previous.withNullable(eitherNullable);
+        return previous.withNullable(nullableTogether);
       }
-      if (previousType == BasicType.nullType) return element;
+      if (previousType == BasicType.nullType) {
+        return element.withNullable(nullableTogether);
+      }
 
       bool isIntOrNumeric(BasicType? type) {
         return type == BasicType.int || type == BasicType.real;
@@ -168,7 +180,7 @@ class TypeGraph {
 
       // encapsulate two different numeric types to real
       if (isIntOrNumeric(previousType) && isIntOrNumeric(elementType)) {
-        return ResolvedType(type: BasicType.real, nullable: eitherNullable);
+        return ResolvedType(type: BasicType.real, nullable: nullableTogether);
       }
 
       // fallback to text if everything else fails

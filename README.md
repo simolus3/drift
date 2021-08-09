@@ -281,6 +281,21 @@ query.map((row) {
 [![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
 
+## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/simolus3/moor&utm_medium=github&utm_content=developer&utm_term=flutter)
+
+<p align="center">
+<table>    
+    <tbody>
+        <tr>
+            <td align="center">
+                <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/simolus3/moor&utm_medium=github&utm_content=developer&utm_term=flutter" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/simolus3/moor&utm_medium=github&utm_content=developer&utm_term=flutter" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+</p>
+
+
 | Core          | Flutter           | Generator  |
 |:-------------:|:-------------:|:-----:|
 | [![Generator version](https://img.shields.io/pub/v/moor.svg)](https://pub.dev/packages/moor) | [![Flutter version](https://img.shields.io/pub/v/moor_flutter.svg)](https://pub.dev/packages/moor_flutter) | [![Generator version](https://img.shields.io/pub/v/moor_generator.svg)](https://pub.dev/packages/moor_generator) |

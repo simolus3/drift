@@ -6,7 +6,7 @@ import 'utils.dart';
 final Map<String, AstNode> testCases = {
   'UPDATE OR ROLLBACK tbl SET a = NULL, b = c WHERE d': UpdateStatement(
     or: FailureMode.rollback,
-    table: TableReference('tbl', null),
+    table: TableReference('tbl'),
     set: [
       SetComponent(
         column: Reference(columnName: 'a'),

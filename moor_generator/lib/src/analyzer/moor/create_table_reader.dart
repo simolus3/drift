@@ -270,7 +270,7 @@ class CreateTableReader {
   Future<DartType?> _readDartType(String typeIdentifier) async {
     final foundClass = await findDartClass(step, imports, typeIdentifier);
 
-    return foundClass?.instantiate(
+    return foundClass?.classElement.instantiate(
       typeArguments: const [],
       nullabilitySuffix: NullabilitySuffix.none,
     );

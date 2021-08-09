@@ -7,7 +7,7 @@ import 'package:pedantic/pedantic.dart';
 import '../../cancellation_zone.dart';
 import 'delegates.dart';
 
-mixin _ExecutorWithQueryDelegate on QueryExecutor {
+abstract class _BaseExecutor extends QueryExecutor {
   final Lock _lock = Lock();
 
   QueryDelegate get impl;
@@ -19,6 +19,31 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
   /// Used to provide better error messages when calling operations without
   /// calling [ensureOpen] before.
   bool _ensureOpenCalled = false;
+
+  /// Whether this executor has explicitly been closed.
+  bool _closed = false;
+
+  bool _debugCheckIsOpen() {
+    if (!_ensureOpenCalled) {
+      throw StateError('''
+Tried to run an operation without first calling QueryExecutor.ensureOpen()!
+
+If you're seeing this exception from a moor database, it may indicate a bug in
+moor itself. Please consider opening an issue with the stack trace and details
+on how to reproduce this.''');
+    }
+
+    if (_closed) {
+      throw StateError('''
+This database or transaction runner has already been closed and may not be used
+anymore.
+
+If this is happening in a transaction, you might be using the transaction 
+without awaiting every statement in it.''');
+    }
+
+    return true;
+  }
 
   Future<T> _synchronized<T>(Future<T> Function() action) {
     if (isSequential) {
@@ -34,15 +59,15 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   void _log(String sql, List<Object?> args) {
     if (logStatements) {
-      print('Moor: Sent $sql with args $args');
+      moorRuntimeOptions.debugPrint('Moor: Sent $sql with args $args');
     }
   }
 
   @override
   Future<List<Map<String, Object?>>> runSelect(
       String statement, List<Object?> args) async {
-    assert(_ensureOpenCalled);
     final result = await _synchronized(() {
+      assert(_debugCheckIsOpen());
       _log(statement, args);
       return impl.runSelect(statement, args);
     });
@@ -51,8 +76,8 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runUpdate(String statement, List<Object?> args) {
-    assert(_ensureOpenCalled);
     return _synchronized(() {
+      assert(_debugCheckIsOpen());
       _log(statement, args);
       return impl.runUpdate(statement, args);
     });
@@ -60,8 +85,8 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runDelete(String statement, List<Object?> args) {
-    assert(_ensureOpenCalled);
     return _synchronized(() {
+      assert(_debugCheckIsOpen());
       _log(statement, args);
       return impl.runUpdate(statement, args);
     });
@@ -69,8 +94,8 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<int> runInsert(String statement, List<Object?> args) {
-    assert(_ensureOpenCalled);
     return _synchronized(() {
+      assert(_debugCheckIsOpen());
       _log(statement, args);
       return impl.runInsert(statement, args);
     });
@@ -78,8 +103,8 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<void> runCustom(String statement, [List<Object?>? args]) {
-    assert(_ensureOpenCalled);
     return _synchronized(() {
+      assert(_debugCheckIsOpen());
       final resolvedArgs = args ?? const [];
       _log(statement, resolvedArgs);
       return impl.runCustom(statement, resolvedArgs);
@@ -88,18 +113,18 @@ mixin _ExecutorWithQueryDelegate on QueryExecutor {
 
   @override
   Future<void> runBatched(BatchedStatements statements) {
-    assert(_ensureOpenCalled);
     return _synchronized(() {
+      assert(_debugCheckIsOpen());
       if (logStatements) {
-        print('Moor: Executing $statements in a batch');
+        moorRuntimeOptions.debugPrint('Moor: Executing $statements in a batch');
       }
       return impl.runBatched(statements);
     });
   }
 }
 
-class _TransactionExecutor extends TransactionExecutor
-    with _ExecutorWithQueryDelegate {
+class _TransactionExecutor extends _BaseExecutor
+    implements TransactionExecutor {
   final DelegatedDatabase _db;
 
   @override
@@ -123,8 +148,6 @@ class _TransactionExecutor extends TransactionExecutor
   Future get completed => _sendCalled.future;
   bool _sendFakeErrorOnRollback = false;
 
-  bool _done = false;
-
   _TransactionExecutor(this._db);
 
   @override
@@ -135,7 +158,7 @@ class _TransactionExecutor extends TransactionExecutor
   @override
   Future<bool> ensureOpen(_) async {
     assert(
-      !_done,
+      !_closed,
       'Transaction was used after it completed. Are you missing an await '
       'somewhere?',
     );
@@ -202,7 +225,7 @@ class _TransactionExecutor extends TransactionExecutor
     }
 
     _sendCalled.complete();
-    _done = true;
+    _closed = true;
   }
 
   @override
@@ -221,14 +244,13 @@ class _TransactionExecutor extends TransactionExecutor
     } else {
       _sendCalled.complete();
     }
-
-    _done = true;
+    _closed = true;
   }
 }
 
 /// A database engine (implements [QueryExecutor]) that delegates the relevant
 /// work to a [DatabaseDelegate].
-class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
+class DelegatedDatabase extends _BaseExecutor {
   /// The [DatabaseDelegate] to send queries to.
   final DatabaseDelegate delegate;
 
@@ -244,7 +266,6 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
   SqlDialect get dialect => delegate.dialect;
 
   final Lock _openingLock = Lock();
-  bool _closed = false;
 
   /// Constructs a delegated database by providing the [delegate].
   DelegatedDatabase(this.delegate,
@@ -338,8 +359,7 @@ class DelegatedDatabase extends QueryExecutor with _ExecutorWithQueryDelegate {
 /// of a `beforeOpen` callback can run. We do this by introducing a special
 /// executor that delegates all work to the original executor, but without
 /// blocking on `ensureOpen`
-class _BeforeOpeningExecutor extends QueryExecutor
-    with _ExecutorWithQueryDelegate {
+class _BeforeOpeningExecutor extends _BaseExecutor {
   final DelegatedDatabase _base;
 
   _BeforeOpeningExecutor(this._base);

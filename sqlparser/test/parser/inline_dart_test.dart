@@ -9,7 +9,7 @@ void main() {
       r'SELECT * FROM tbl LIMIT $limit',
       SelectStatement(
         columns: [StarResultColumn(null)],
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         limit: DartLimitPlaceholder(name: 'limit'),
       ),
       moorMode: true,
@@ -21,7 +21,7 @@ void main() {
       r'SELECT * FROM tbl LIMIT $amount OFFSET 3',
       SelectStatement(
         columns: [StarResultColumn(null)],
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         limit: Limit(
           count: DartExpressionPlaceholder(name: 'amount'),
           offsetSeparator: token(TokenType.offset),
@@ -37,7 +37,7 @@ void main() {
       r'SELECT * FROM tbl ORDER BY $term, $expr DESC',
       SelectStatement(
         columns: [StarResultColumn(null)],
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         orderBy: OrderBy(
           terms: [
             DartOrderingTermPlaceholder(name: 'term'),
@@ -57,7 +57,7 @@ void main() {
       r'SELECT * FROM tbl ORDER BY $order',
       SelectStatement(
         columns: [StarResultColumn(null)],
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
         orderBy: DartOrderByPlaceholder(name: 'order'),
       ),
       moorMode: true,

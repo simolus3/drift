@@ -31,7 +31,8 @@ class ViewWriter extends TableOrViewWriter {
 
     buffer.write('class ${view.entityInfoName} extends View');
     if (scope.generationOptions.writeDataClasses) {
-      buffer.write('<${view.entityInfoName}, ${view.dartTypeName}>');
+      buffer.write('<${view.entityInfoName}, '
+          '${view.dartTypeCode(scope.generationOptions)}>');
     } else {
       buffer.write('<${view.entityInfoName}, Never>');
     }

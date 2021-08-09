@@ -37,11 +37,12 @@ class TableParser {
       dataClassInfo = ORMTableParser.readDbDataClassInformation(
           columns, element, dbTable, base);
       overrideTableConstraints = dbTable
-          .getField('customConstraints')
-          ?.toListValue()
-          ?.map((e) => e.toStringValue())
-          .whereNotNull()
-          .toList() ?? [];
+              .getField('customConstraints')
+              ?.toListValue()
+              ?.map((e) => e.toStringValue())
+              .whereNotNull()
+              .toList() ??
+          [];
       overrideWithoutRowId = dbTable.getField('withoutRowId')?.toBoolValue();
     }
 
@@ -100,7 +101,7 @@ class TableParser {
     }
 
     String name;
-    ClassElement? existingClass;
+    FoundDartClass? existingClass;
     String? constructorInExistingClass;
 
     if (dataClassName != null) {
@@ -115,8 +116,8 @@ class TableParser {
           useRowClass.getField('constructor')!.toStringValue()!;
 
       if (type is InterfaceType) {
-        existingClass = type.element;
-        name = existingClass.name;
+        existingClass = FoundDartClass(type.element, type.typeArguments);
+        name = type.element.name;
       } else {
         base.step.reportError(ErrorInDartCode(
           message: 'The @UseRowClass annotation must be used with a class',
@@ -339,8 +340,9 @@ class ORMTableParser {
       MoorDartParser base) {
     final constructorInExistingClass =
         annotation.getField('dbConstructor')?.toStringValue() ?? '';
-    final existingClass = element.thisType.element;
-    final name = existingClass.name;
+    final existingClass = FoundDartClass(
+        element.thisType.element, element.thisType.typeArguments);
+    final name = element.thisType.element.name;
 
     final verified = validateExistingClass(
         columns, existingClass, constructorInExistingClass, base.step.errors);

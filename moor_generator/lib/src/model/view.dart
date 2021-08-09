@@ -5,6 +5,7 @@ import 'package:moor_generator/src/utils/names.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../../writer.dart';
 import 'base_entity.dart';
 import 'declarations/declaration.dart';
 import 'model.dart';
@@ -44,6 +45,11 @@ class MoorView extends MoorEntityWithResultSet {
     required this.entityInfoName,
     this.existingRowClass,
   });
+
+  @override
+  String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
+    return existingRowClass?.dartType(options) ?? dartTypeName;
+  }
 
   /// Obtains all tables transitively referenced by the declaration of this
   /// view.

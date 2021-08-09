@@ -547,7 +547,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitReference(Reference e, void arg) {
     final current = _currentAs<Reference>(e);
     _assert(
-        current.entityName == e.entityName &&
+        current.schemaName == e.schemaName &&
+            current.entityName == e.entityName &&
             current.columnName == e.columnName,
         e);
     _checkChildren(e);
@@ -628,7 +629,11 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   @override
   void visitTableReference(TableReference e, void arg) {
     final current = _currentAs<TableReference>(e);
-    _assert(current.tableName == e.tableName && current.as == e.as, e);
+    _assert(
+        current.schemaName == e.schemaName &&
+            current.tableName == e.tableName &&
+            current.as == e.as,
+        e);
     _checkChildren(e);
   }
 

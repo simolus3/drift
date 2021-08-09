@@ -221,6 +221,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         ''');
       });
 
+      test('table references', () {
+        testFormat('SELECT * FROM foo');
+        testFormat('SELECT * FROM main.foo');
+      });
+
       test('limit', () {
         testFormat('SELECT * FROM foo LIMIT 3, 4');
         testFormat('SELECT * FROM foo LIMIT 4 OFFSET 3');
@@ -378,6 +383,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
     test('unary expression', () {
       testFormat('SELECT -(+(~3));');
+    });
+
+    test('references', () {
+      testFormat('SELECT foo');
+      testFormat('SELECT foo.bar');
+      testFormat('SELECT foo.bar.baz');
     });
   });
 

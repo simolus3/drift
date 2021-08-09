@@ -181,7 +181,7 @@ void main() {
   group('open and close', () {
     test('throws when being used before ensureOpen is complete', () async {
       final db = DelegatedDatabase(delegate);
-      expect(db.runSelect('', []), throwsA(isA<AssertionError>()));
+      expect(db.runSelect('', []), throwsA(isA<StateError>()));
     });
 
     test('does not do anything when closing before opening', () async {
@@ -197,6 +197,14 @@ void main() {
       await db.close();
 
       expect(db.ensureOpen(_FakeExecutorUser()), throwsStateError);
+    });
+
+    test('throws when using after closing', () async {
+      final db = DelegatedDatabase(delegate);
+      await db.ensureOpen(_FakeExecutorUser());
+      await db.close();
+
+      expect(db.runSelect('SELECT 1', []), throwsStateError);
     });
 
     test('does not close more than once', () async {

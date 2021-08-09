@@ -106,7 +106,7 @@ final Map<String, Expression> _testCases = {
     ExistsExpression(
       select: SelectStatement(
         columns: [StarResultColumn(null)],
-        from: TableReference('demo', null),
+        from: TableReference('demo'),
       ),
     ),
   ),
@@ -141,7 +141,7 @@ final Map<String, Expression> _testCases = {
             expression: Reference(columnName: 'col'),
           )
         ],
-        from: TableReference('tbl', null),
+        from: TableReference('tbl'),
       ),
     ),
   ),
@@ -192,6 +192,13 @@ final Map<String, Expression> _testCases = {
   'RAISE(IGNORE)': RaiseExpression(RaiseKind.ignore),
   "RAISE(ROLLBACK, 'Not allowed')":
       RaiseExpression(RaiseKind.rollback, 'Not allowed'),
+  'foo': Reference(columnName: 'foo'),
+  'foo.bar': Reference(entityName: 'foo', columnName: 'bar'),
+  'foo.bar.baz': Reference(
+    schemaName: 'foo',
+    entityName: 'bar',
+    columnName: 'baz',
+  ),
 };
 
 void main() {

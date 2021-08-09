@@ -75,8 +75,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
     final count =
         _openedDbCount[runtimeType] = _openedDbCount[runtimeType]! + 1;
     if (count > 1) {
-      // ignore: avoid_print
-      print(
+      moorRuntimeOptions.debugPrint(
         'WARNING (moor): It looks like you\'ve created the database class '
         '$runtimeType multiple times. When these two databases use the same '
         'QueryExecutor, race conditions will occur and might corrupt the '

@@ -42,13 +42,14 @@ abstract class TableOrSubquery extends Queryable {
 class TableReference extends TableOrSubquery
     with ReferenceOwner
     implements Renamable, ResolvesToResultSet {
+  final String? schemaName;
   final String tableName;
   Token? tableNameToken;
 
   @override
   final String? as;
 
-  TableReference(this.tableName, [this.as]);
+  TableReference(this.tableName, {this.as, this.schemaName});
 
   @override
   Iterable<AstNode> get childNodes => const [];

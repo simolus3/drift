@@ -107,6 +107,12 @@ which allows you to seamlessly synchronize query-streams and updates across mult
 Since web workers can't use local storage, you need to use `MoorWebStorage.indexedDb` instead of
 the regular implementation.
 
+The following example is meant to be used with a regular Dart web app, compiled using
+[build_web_compilers](https://pub.dev/packages/build_web_compilers).
+Flutter users will have to use a different approach to compile service workers.
+As long as you can compile a seperate Dart file (with a `main` function that's not your app)
+into a JS file, you can use that as a worker too.
+
 To write a web worker that will serve requests for moor, create a file called `worker.dart` in 
 the `web/` folder of your app. It could have the following content:
 

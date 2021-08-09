@@ -38,8 +38,10 @@ class CopyEncapsulating extends TypeRelation implements MultiSourceRelation {
   final List<Typeable?> from;
 
   final CastMode? cast;
+  final EncapsulatingNullability nullability;
 
-  CopyEncapsulating(this.target, this.from, [this.cast]);
+  CopyEncapsulating(this.target, this.from,
+      [this.cast, this.nullability = EncapsulatingNullability.nullIfAny]);
 }
 
 /// Dependency declaring that [first] and [second] have the same type. This is
@@ -75,6 +77,11 @@ enum CastMode {
   /// match.
   numericPreferInt,
   boolean,
+}
+
+enum EncapsulatingNullability {
+  nullIfAny,
+  nullIfAll,
 }
 
 /// Dependency declaring that [target] has the same type as [other] after

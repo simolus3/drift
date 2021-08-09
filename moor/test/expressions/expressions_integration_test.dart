@@ -45,6 +45,10 @@ void main() {
     expect(eval(asDate), completion('2020-09-04'));
   });
 
+  test('rowid', () {
+    expect(eval(db.users.rowId), completion(1));
+  });
+
   test('aggregate expressions for datetimes', () async {
     final firstTime = DateTime(2021, 5, 7);
     final secondTime = DateTime(2021, 5, 14);

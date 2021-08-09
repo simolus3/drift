@@ -11,9 +11,8 @@ dependencies:
 
 dev_dependencies:
   moor_generator: ^4.0.0
-  built_value_generator: ^8.0.0
-  build_runner: ^1.12.0
-
+  built_value_generator: ^8.1.1
+  build_runner: ^2.0.0
 dependency_overrides:
   moor:
     path: ../../moor
@@ -21,3 +20,6 @@ dependency_overrides:
     path: ../../moor_generator
   sqlparser:
     path: ../../sqlparser
+
+  # todo: Remove after https://github.com/google/built_value.dart/pull/1085 gets released
+  analyzer: ^2.0.0

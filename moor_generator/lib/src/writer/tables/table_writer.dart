@@ -132,7 +132,7 @@ abstract class TableOrViewWriter {
       return;
     }
 
-    final dataClassName = tableOrView.dartTypeName;
+    final dataClassName = tableOrView.dartTypeCode(scope.generationOptions);
 
     buffer.write('@override\n$dataClassName map(Map<String, dynamic> data, '
         '{${scope.nullableType('String')} tablePrefix}) {\n');
@@ -248,13 +248,11 @@ class TableWriter extends TableOrViewWriter {
       }
     } else {
       // Regular generation, write full table class
-      final dataClass = table.dartTypeName;
-      String tableDslName;
+      final dataClass = table.dartTypeCode(scope.generationOptions);
+      var tableDslName = table.fromClass?.name ?? 'Table';
 
       if (table.isOrmTable) {
         tableDslName = 'Table';
-      } else {
-        tableDslName = table.fromClass?.name ?? 'Table';
       }
 
       // class UsersTable extends Users implements TableInfo<Users, User> {
@@ -324,9 +322,10 @@ class TableWriter extends TableOrViewWriter {
   void _writeValidityCheckMethod() {
     if (_skipVerification) return;
 
+    final innerType = table.dartTypeCode(scope.generationOptions);
     buffer
       ..write('@override\nVerificationContext validateIntegrity'
-          '(Insertable<${table.dartTypeName}> instance, '
+          '(Insertable<$innerType> instance, '
           '{bool isInserting = false}) {\n')
       ..write('final context = VerificationContext();\n')
       ..write('final data = instance.toColumns(true);\n');

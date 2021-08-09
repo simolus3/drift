@@ -10,39 +10,34 @@ part of 'database.dart';
 class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
-  KeyValue({@required this.key, @required this.value});
+  KeyValue({required this.key, required this.value});
   factory KeyValue.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     return KeyValue(
-      key: stringType.mapFromDatabaseResponse(data['${effectivePrefix}key']),
-      value:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}value']),
+      key: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}key'])!,
+      value: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}value'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || key != null) {
-      map['key'] = Variable<String>(key);
-    }
-    if (!nullToAbsent || value != null) {
-      map['value'] = Variable<String>(value);
-    }
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
     return map;
   }
 
   KeyValuesCompanion toCompanion(bool nullToAbsent) {
     return KeyValuesCompanion(
-      key: key == null && nullToAbsent ? const Value.absent() : Value(key),
-      value:
-          value == null && nullToAbsent ? const Value.absent() : Value(value),
+      key: Value(key),
+      value: Value(value),
     );
   }
 
   factory KeyValue.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return KeyValue(
       key: serializer.fromJson<String>(json['key']),
@@ -50,7 +45,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'key': serializer.toJson<String>(key),
@@ -58,7 +53,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
     };
   }
 
-  KeyValue copyWith({String key, String value}) => KeyValue(
+  KeyValue copyWith({String? key, String? value}) => KeyValue(
         key: key ?? this.key,
         value: value ?? this.value,
       );
@@ -74,7 +69,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
   @override
   int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) ||
       (other is KeyValue && other.key == this.key && other.value == this.value);
 }
@@ -87,13 +82,13 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
     this.value = const Value.absent(),
   });
   KeyValuesCompanion.insert({
-    @required String key,
-    @required String value,
+    required String key,
+    required String value,
   })  : key = Value(key),
         value = Value(value);
   static Insertable<KeyValue> custom({
-    Expression<String> key,
-    Expression<String> value,
+    Expression<String>? key,
+    Expression<String>? value,
   }) {
     return RawValuesInsertable({
       if (key != null) 'key': key,
@@ -101,7 +96,7 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
     });
   }
 
-  KeyValuesCompanion copyWith({Value<String> key, Value<String> value}) {
+  KeyValuesCompanion copyWith({Value<String>? key, Value<String>? value}) {
     return KeyValuesCompanion(
       key: key ?? this.key,
       value: value ?? this.value,
@@ -133,40 +128,22 @@ class KeyValuesCompanion extends UpdateCompanion<KeyValue> {
 class $KeyValuesTable extends KeyValues
     with TableInfo<$KeyValuesTable, KeyValue> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $KeyValuesTable(this._db, [this._alias]);
   final VerificationMeta _keyMeta = const VerificationMeta('key');
-  GeneratedTextColumn _key;
-  @override
-  GeneratedTextColumn get key => _key ??= _constructKey();
-  GeneratedTextColumn _constructKey() {
-    return GeneratedTextColumn(
-      'key',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
+      'key', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _valueMeta = const VerificationMeta('value');
-  GeneratedTextColumn _value;
-  @override
-  GeneratedTextColumn get value => _value ??= _constructValue();
-  GeneratedTextColumn _constructValue() {
-    return GeneratedTextColumn(
-      'value',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
+      'value', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [key, value];
   @override
-  $KeyValuesTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'key_values';
   @override
-  String get $tableName => _alias ?? 'key_values';
-  @override
-  final String actualTableName = 'key_values';
+  String get actualTableName => 'key_values';
   @override
   VerificationContext validateIntegrity(Insertable<KeyValue> instance,
       {bool isInserting = false}) {
@@ -174,13 +151,13 @@ class $KeyValuesTable extends KeyValues
     final data = instance.toColumns(true);
     if (data.containsKey('key')) {
       context.handle(
-          _keyMeta, key.isAcceptableOrUnknown(data['key'], _keyMeta));
+          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('value')) {
       context.handle(
-          _valueMeta, value.isAcceptableOrUnknown(data['value'], _valueMeta));
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     } else if (isInserting) {
       context.missing(_valueMeta);
     }
@@ -190,9 +167,9 @@ class $KeyValuesTable extends KeyValues
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
   @override
-  KeyValue map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return KeyValue.fromData(data, _db, prefix: effectivePrefix);
+  KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return KeyValue.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -203,8 +180,7 @@ class $KeyValuesTable extends KeyValues
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  $KeyValuesTable _keyValues;
-  $KeyValuesTable get keyValues => _keyValues ??= $KeyValuesTable(this);
+  late final $KeyValuesTable keyValues = $KeyValuesTable(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
