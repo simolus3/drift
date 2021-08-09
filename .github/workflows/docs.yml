@@ -17,7 +17,9 @@ jobs:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' }}
         run: dart run tool/ci_build.dart
         working-directory: docs
-      - name: Deploy to netlify
+
+      - name: Deploy to netlify (Branch)
+        if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.1
         with:
           production-branch: master
@@ -26,9 +28,25 @@ jobs:
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          alias: ${{ github.head_ref }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Deploy to netlify (Pull Request)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          production-branch: master
+          publish-dir: docs/deploy
+          enable-pull-request-comment: true
+          enable-commit-comment: false
+          netlify-config-path: "./netlify.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alias: deploy-preview-${{ github.event.number }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
   linkcheck:
     name: Check links in markdown
     runs-on: ubuntu-20.04
