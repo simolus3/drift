@@ -20,7 +20,7 @@ jobs:
 
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
-        uses: nwtgck/actions-netlify@v1.1
+        uses: nwtgck/actions-netlify@v1.2
         with:
           production-branch: master
           publish-dir: docs/deploy
@@ -34,7 +34,7 @@ jobs:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       - name: Deploy to netlify (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
-        uses: nwtgck/actions-netlify@v1.1
+        uses: nwtgck/actions-netlify@v1.2
         with:
           production-branch: master
           publish-dir: docs/deploy
