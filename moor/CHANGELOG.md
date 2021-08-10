@@ -3,6 +3,7 @@
 - Add `moorRuntimeOptions.debugPrint` option to control which `print` method is used by moor.
 - Add a `rowId` extension on generated tables.
 - Add `NullAwareTypeConverter` to simplify type converters that always map `null` from and to `null`.
+- Kill backing isolates after calling `MoorIsolate.shutdownAll`.
 
 ## 4.4.1
 

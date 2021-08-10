@@ -58,7 +58,11 @@ class ServerImplementation implements MoorServer {
 
   @override
   Future<void> shutdown() {
-    _isShuttingDown = true;
+    if (!_isShuttingDown) {
+      _done.complete();
+      _isShuttingDown = true;
+    }
+
     return done;
   }
 
