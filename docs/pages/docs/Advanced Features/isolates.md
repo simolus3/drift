@@ -43,8 +43,11 @@ import 'package:moor/isolate.dart';
 
 // This needs to be a top-level method because it's run on a background isolate
 DatabaseConnection _backgroundConnection() {
-    // construct the database. You can also wrap the VmDatabase in a "LazyDatabase" if you need to run
-    // work before the database opens.
+    // Construct the database to use. This example uses a non-persistent in-memory database each
+    // time. You can use your existing VmDatabase with a file as well, or a `LazyDatabase` if you
+    // need to construct it asynchronously.
+    // When using a Flutter plugin like `path_provider` to determine the path, also see the
+    // "Initialization on the main thread" section below!
     final database = VmDatabase.memory();
     return DatabaseConnection.fromExecutor(database);
 }
