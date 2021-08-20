@@ -20,7 +20,7 @@ dev_dependencies:
     hosted:
       url: https://simonbinder.eu
       name: built_site
-    version: ^0.2.0
+    version: ^0.2.2
 
   moor:
   moor_generator:
@@ -40,5 +40,3 @@ dependency_overrides:
     git:
       url: https://github.com/simolus3/mime.git
       ref: woff2
-  built_site:
-    path: /home/simon/programming/built_site/built_site
