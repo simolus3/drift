@@ -1,3 +1,7 @@
+## 4.5.0
+
+- Migrate builder implementation to null-safety
+
 ## 4.4.1
 
 - Fix analyzer plugin

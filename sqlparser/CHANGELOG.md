@@ -1,3 +1,7 @@
+## 0.17.2
+
+- Fix nullability analysis of `COALESCE` and `IFNULL`
+
 ## 0.17.1
 
 - Fix nullability analysis of references and star columns

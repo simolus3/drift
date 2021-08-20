@@ -1,4 +1,4 @@
-## 4.5.0-dev
+## 4.5.0
 
 - Add `moorRuntimeOptions.debugPrint` option to control which `print` method is used by moor.
 - Add a `rowId` extension on generated tables.
