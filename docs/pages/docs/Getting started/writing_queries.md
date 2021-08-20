@@ -291,6 +291,8 @@ or companion and immediately get the row it inserts.
 The returned row contains all the default values and incrementing ids that were
 generated.
 
+__Note:__ This uses the `RETURNING` syntax added in sqlite3 version 3.35, which is not available on most operating systems by default. When using this method, make sure that you have a recent sqlite3 version available. This is the case with `sqlite3_flutter_libs`.
+
 For instance, consider this snippet using the tables from the [getting started guide]({{ 'index.md' | pageUrl }}):
 
 ```dart
