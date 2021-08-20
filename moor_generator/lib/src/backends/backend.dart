@@ -46,7 +46,7 @@ abstract class BackendTask {
     final library = element.library;
     if (library == null) return null;
 
-    final info = await library.session.getResolvedLibraryByElement2(library);
+    final info = await library.session.getResolvedLibraryByElement(library);
     if (info is ResolvedLibraryResult) {
       return info.getElementDeclaration(element)?.node;
     } else {

@@ -71,7 +71,7 @@ class _StandaloneBackendTask extends BackendTask {
   @override
   Future<LibraryElement> resolveDart(Uri uri) async {
     final result =
-        await backend.context.currentSession.getLibraryByUri2(uri.toString());
+        await backend.context.currentSession.getLibraryByUri(uri.toString());
     if (result is LibraryElementResult) {
       return result.element;
     }
@@ -103,14 +103,14 @@ class _StandaloneBackendTask extends BackendTask {
 
     try {
       final result =
-          await backend.context.currentSession.getResolvedLibrary2(pathForTemp);
+          await backend.context.currentSession.getResolvedLibrary(pathForTemp);
 
       if (result is! ResolvedLibraryResult) {
         throw CannotLoadTypeException(
             'Could not resolve temporary helper file');
       }
 
-      final field = result.element!.units.first.topLevelVariables.first;
+      final field = result.element.units.first.topLevelVariables.first;
       return field.type;
     } finally {
       provider.removeOverlay(pathForTemp);
