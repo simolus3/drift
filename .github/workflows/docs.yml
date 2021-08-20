@@ -8,6 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: beta
 
       - name: Get dependencies
         run: dart pub get
