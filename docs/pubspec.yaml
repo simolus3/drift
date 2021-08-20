@@ -20,7 +20,7 @@ dev_dependencies:
     hosted:
       url: https://simonbinder.eu
       name: built_site
-    version: ^0.2.2
+    version: ^0.2.3
 
   moor:
   moor_generator:
