@@ -14,6 +14,7 @@ targets:
     sources:
       - "$package$"
       - "lib/versions.json"
+      - "tool/write_versions.dart"
 
   $default:
     dependencies: [":prepare"]
