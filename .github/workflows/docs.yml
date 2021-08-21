@@ -10,6 +10,15 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: beta
+      
+      # Temporarily using a custom dartdoc until https://github.com/dart-lang/dartdoc/issues/2755 is fixed
+      - uses: actions/checkout@v2
+        with:
+          repository: simolus3/dartdoc
+          path: ./dartdoc/
+      - name: Setup dartdoc
+        run: dart pub get
+        working-directory: dartdoc
 
       - name: Get dependencies
         run: dart pub get
