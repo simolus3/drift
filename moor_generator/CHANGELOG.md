@@ -1,3 +1,7 @@
+## 4.5.1
+
+- Fix generating parameters when `named_parameters_always_required` is enabled.
+
 ## 4.5.0
 
 - Migrate builder implementation to null-safety
