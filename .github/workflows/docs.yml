@@ -29,6 +29,12 @@ jobs:
         run: dart run tool/ci_build.dart
         working-directory: docs
 
+      - name: Extract branch name
+        shell: bash
+        if: ${{ github.event_name == 'push' }}
+        # https://stackoverflow.com/a/58035262/3260197
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.2
@@ -39,10 +45,11 @@ jobs:
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          alias: ${{ github.head_ref }}
+          alias: ${{ steps.extract_branch.outputs.branch }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
       - name: Deploy to netlify (Pull Request)
         if: ${{ github.event_name == 'pull_request' }}
         uses: nwtgck/actions-netlify@v1.2
