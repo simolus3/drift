@@ -68,6 +68,39 @@ You might have to restart your IDE for the changes to apply.
 All database implementations (`VmDatabase`, `FlutterQueryExecutor`, ...) have a `logStatements` parameter that 
 you can set to `true`. When enabled, moor will print the statements it runs.
 
+## How do I insert data on the first app start?
+
+You can populate the database on the first start of your app with a custom [migration strategy]({{ 'Advanced Features/migrations.md' | pageUrl }}).
+To insert data when the database is created (which usually happens when the app is first run), you can use this:
+
+```dart
+MigrationStrategy(
+  onCreate: (m) async {
+    await m.createAll(); // create all tables
+    await into(myTable).insert(...); // insert on first run.
+  }
+)
+```
+
+You can even use transactions or batcehs in the `onCreate` callback.
+
+Another approach is to include a pre-populated database in your app's asset and use that one:
+
+```dart
+QueryExecutor databaseWithDefaultAsset(File file, String asset) {
+  // A LazyDatabase lets us do async initialization work.
+  return LazyDatabase(() async {
+    if (!await file.exists()) {
+      // Database does not exist yet, use default from asset
+      final content = await rootBundle.load(asset);
+
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(content.buffer.asUint8List(0));
+    }
+  });
+}
+```
+
 ## How does moor compare to X?
 There are a variety of good persistence libraries for Dart and Flutter.
 
@@ -75,7 +108,7 @@ That said, here's an incomplete (and obviously biased) list of great libraries a
 If you have experience with any of these (or other) libraries and want to share how they compare to moor, please
 feel invited to contribute to this page.
 
-## sqflite, sqlite3
+### sqflite, sqlite3
 
 Sqflite is a Flutter package that provides bindings to the sqlite api for both iOS and Android. It's well maintained
 and has stable api. In fact, the `moor_flutter` variant is built on top of sqflite. But even though sqflite

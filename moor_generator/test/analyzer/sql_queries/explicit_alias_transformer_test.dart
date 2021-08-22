@@ -30,6 +30,10 @@ void main() {
         'SELECT _c0 FROM (SELECT 1 + 2 AS _c0)');
   });
 
+  test('does not rewrite subquery expressions', () {
+    _test('SELECT (SELECT 1)', 'SELECT (SELECT 1) AS _c0');
+  });
+
   test('rewrites compound select statements', () {
     _test("SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
         "SELECT 1 + 2 AS _c0, 'foo' AS _c1 UNION ALL SELECT 3 + 4, 'bar'");

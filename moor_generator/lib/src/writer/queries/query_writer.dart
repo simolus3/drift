@@ -387,7 +387,7 @@ class QueryWriter {
         }
 
         _buffer.write('$type ${optional.dartParameterName}');
-        if (defaultCode != null) {
+        if (defaultCode != null && !isRequired) {
           _buffer..write(' =  ')..write(defaultCode);
         }
       }

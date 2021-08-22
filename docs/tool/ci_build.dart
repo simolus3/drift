@@ -1,4 +1,4 @@
-//@dart=2.9
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:build_runner_core/build_runner_core.dart';
@@ -10,8 +10,37 @@ import 'package:path/path.dart' as p;
 Future<void> main() async {
   final isReleaseEnv = Platform.environment['IS_RELEASE'];
   print('Is release build: $isReleaseEnv');
-
   final isRelease = isReleaseEnv == 'true';
+
+  final output = Directory('deploy');
+  if (output.existsSync()) {
+    output.deleteSync(recursive: true);
+  }
+  output.createSync();
+
+  await Future.wait([
+    _runBuildAndCopyFiles(output, isRelease),
+    _createApiDocumentation(output),
+  ]);
+}
+
+Future<void> _waitForProcess(Process p, String name) async {
+  Future<void> forward(Stream<List<int>> source, IOSink out) {
+    return source
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .forEach((line) => out.writeln('$name: $line'));
+  }
+
+  await Future.wait([
+    forward(p.stdout, stdout),
+    forward(p.stderr, stderr),
+  ]);
+  await stdout.flush();
+  await stderr.flush();
+}
+
+Future<void> _runBuildAndCopyFiles(Directory output, bool isRelease) async {
   final buildArgs = [
     'run',
     'build_runner',
@@ -19,9 +48,8 @@ Future<void> main() async {
     '--release',
     if (isRelease) '--config=deploy',
   ];
-  final build = await Process.start('dart', buildArgs,
-      mode: ProcessStartMode.inheritStdio);
-  await build.exitCode;
+  final build = await Process.start('dart', buildArgs);
+  await _waitForProcess(build, 'build');
 
   print('Copying generated sources into deploy/');
   // Advanced build magic because --output creates weird files that we don't
@@ -32,12 +60,6 @@ Future<void> main() async {
       AssetGraph.deserialize(await (await _findAssetGraph()).readAsBytes());
   final reader = BuildCacheReader(env.reader, assets, graph.root.name);
 
-  final output = Directory('deploy');
-  if (output.existsSync()) {
-    output.deleteSync(recursive: true);
-  }
-  output.createSync();
-
   final idsToRead = assets.allNodes
       .where((node) => !_shouldSkipNode(node, graph))
       .map((e) => e.id);
@@ -46,6 +68,41 @@ Future<void> main() async {
     final file = File(p.join('deploy', p.relative(id.path, from: 'web/')));
     file.parent.createSync(recursive: true);
     await file.writeAsBytes(await reader.readAsBytes(id));
+  }
+}
+
+Future<void> _createApiDocumentation(Directory output) async {
+  final gitRevResult =
+      await Process.run('git', ['rev-parse', 'HEAD'], stdoutEncoding: utf8);
+  final rev = (gitRevResult.stdout as String).replaceAll('\n', '');
+
+  // Dartdoc supports %r% for the revision, %f% for the file name and %l% for
+  // the line number.
+  const source = 'https://github.com/simolus3/moor/blob/%r%/%f%/#L%l%';
+  final dartDoc = await Process.start(
+    'dart',
+    [
+      'run',
+      '../dartdoc/bin/dartdoc.dart',
+      '--rel-canonical-prefix=https://pub.dev/documentation/moor/latest',
+      '--link-to-source-revision=$rev',
+      '--link-to-source-root=..',
+      '--link-to-source-uri-template=$source',
+    ],
+    workingDirectory: '../moor',
+  );
+  await _waitForProcess(dartDoc, 'dartdoc');
+
+  final docOutput = Directory('../moor/doc/api');
+  final targetForDocs = p.join(output.path, 'api');
+
+  await for (final file in docOutput.list(recursive: true)) {
+    if (file is! File) continue;
+
+    final target =
+        p.join(targetForDocs, p.relative(file.path, from: docOutput.path));
+    File(target).parent.createSync(recursive: true);
+    await file.copy(target);
   }
 }
 

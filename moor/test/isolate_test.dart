@@ -78,6 +78,19 @@ void main() {
     await db.close();
     await isolate.shutdownAll();
   }, tags: 'background_isolate');
+
+  test('kills isolate when calling shutdownAll', () async {
+    final spawned = ReceivePort();
+    final done = ReceivePort();
+
+    await Isolate.spawn(_createBackground, spawned.sendPort,
+        onExit: done.sendPort);
+    // The isolate shold eventually exit!
+    expect(done.first, completion(anything));
+
+    final moor = await spawned.first as MoorIsolate;
+    await moor.shutdownAll();
+  }, tags: 'background_isolate');
 }
 
 void _runTests(
@@ -266,4 +279,11 @@ class _BackgroundEntryMessage {
   final SendPort sendDone;
 
   _BackgroundEntryMessage(this.isolate, this.sendDone);
+}
+
+void _createBackground(SendPort send) {
+  final moor = MoorIsolate.inCurrent(
+      () => DatabaseConnection.fromExecutor(VmDatabase.memory()),
+      killIsolateWhenDone: true);
+  send.send(moor);
 }

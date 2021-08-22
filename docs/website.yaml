@@ -8,7 +8,7 @@ site:
   github_repo: "https://github.com/simolus3/moor"
   github_subdir: "docs/"
   github_branch: master
-  #  gcs_engine_id: "002567324444333206795:_yptu7lact8"
+  gcs_engine_id: set # this just needs to be set so that the search box shows
   sidebar_search_disable: true
 
   links:
@@ -32,7 +32,7 @@ site:
       - name: "GitHub"
         url: "https://github.com/simolus3/moor/"
       - name: "API docs"
-        url: "https://pub.dev/documentation/moor/latest/"
+        url: "/api/"
 
 environments:
   dev:

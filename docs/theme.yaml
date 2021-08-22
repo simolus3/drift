@@ -1,2 +1,3 @@
 contributes:
   sass: 'lib/_style.scss'
+  dart: 'lib/site.dart'

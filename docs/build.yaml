@@ -1,5 +1,23 @@
+builders:
+  versions:
+    import: 'tool/write_versions.dart'
+    build_to: cache
+    builder_factories: ["writeVersions"]
+    build_extensions: {"$package$": ["lib/versions.json"]}
+
 targets:
+  prepare:
+    builders:
+      "|versions":
+        enabled: true
+    auto_apply_builders: false
+    sources:
+      - "$package$"
+      - "lib/versions.json"
+      - "tool/write_versions.dart"
+
   $default:
+    dependencies: [":prepare"]
     builders:
       built_site:
         release_options:

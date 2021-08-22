@@ -21,6 +21,7 @@ import 'package:moor_generator/src/backends/plugin/services/folding.dart';
 import 'package:moor_generator/src/backends/plugin/services/navigation.dart';
 import 'package:moor_generator/src/backends/plugin/services/outline.dart';
 import 'package:moor_generator/src/backends/plugin/services/requests.dart';
+import 'package:moor_generator/src/services/ide/moor_ide.dart';
 
 import 'logger.dart';
 
@@ -164,7 +165,7 @@ class MoorPlugin extends ServerPlugin
       return;
     }
 
-    final highlights = await driver.ide.highlight(path);
+    final highlights = await driver.ideServices.highlight(path);
 
     channel.sendNotification(
         plugin.AnalysisHighlightsParams(path, highlights).toNotification());
@@ -199,7 +200,7 @@ class MoorPlugin extends ServerPlugin
   Future<plugin.EditGetAssistsResult> handleEditGetAssists(
       plugin.EditGetAssistsParams parameters) async {
     final driver = _moorDriverOrFail(parameters.file);
-    final results = await driver.ide
+    final results = await driver.ideServices
         .assists(parameters.file, parameters.offset, parameters.length);
 
     return plugin.EditGetAssistsResult(results);
@@ -219,5 +220,30 @@ class MoorPlugin extends ServerPlugin
 
     return MoorRequestAtPosition(
         file, parameters.length, parameters.offset, resourceProvider);
+  }
+}
+
+final _ideExpando = Expando<MoorIde>();
+
+extension on MoorDriver {
+  MoorIde get ideServices {
+    return _ideExpando[this] ??=
+        MoorIde(session, _DriverBasedFileManagement(this));
+  }
+}
+
+class _DriverBasedFileManagement implements IdeFileManagement {
+  final MoorDriver driver;
+
+  _DriverBasedFileManagement(this.driver);
+
+  @override
+  Uri fsPathToUri(String path) {
+    return driver.backend.provider.pathContext.toUri(path);
+  }
+
+  @override
+  Future<void> waitUntilParsed(String path) {
+    return driver.waitFileParsed(path);
   }
 }

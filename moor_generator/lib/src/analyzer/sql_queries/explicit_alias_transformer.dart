@@ -1,14 +1,24 @@
 import 'package:sqlparser/sqlparser.dart';
 
+/// A transformer adding explicit aliases to columns in a projection.
+///
+/// In sqlite3, the result name of columns without an alias is undefined. While
+/// the names of direct column references (`SELECT foo FROM bar`) is unlikely
+/// to change, we shouldn't assume that for more complex columns (`SELECT
+/// MAX(id) * 14 FROM bar`). This transformer adds an alias to such columns
+/// which avoids undefined behavior that might be different across sqlite3
+/// versions.
 class ExplicitAliasTransformer extends Transformer<bool> {
   int _aliasCounter = 0;
   final Map<Expression, String> _renamed = {};
 
+  /// Rewrites an SQL [node] to use explicit aliases for columns.
   AstNode rewrite(AstNode node) {
     node = transform(node, true)!;
     return _PatchReferences(this).transform(node, null)!;
   }
 
+  /// Obtain the new name for a [column] after an alias has been added.
   String? newNameFor(Column column) {
     while (column is CompoundSelectColumn) {
       // In compound select statement, the first column determines the overall
@@ -54,6 +64,14 @@ class ExplicitAliasTransformer extends Transformer<bool> {
     } else {
       return super.visitExpressionResultColumn(e, arg);
     }
+  }
+
+  @override
+  AstNode? visitSubQuery(SubQuery e, bool arg) {
+    // Subquery expressions only have a single column, so the inner column
+    // doesn't matter. For instance, `SELECT (SELECT 1) AS foo` has no undefined
+    // behavior, even though the inner `1` has no alias.
+    return e..transformChildren(this, false);
   }
 }
 

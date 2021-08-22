@@ -11,14 +11,11 @@ import 'package:moor/src/utils/synchronized.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
-import 'package:moor_generator/src/services/ide/moor_ide.dart';
 import 'package:moor_generator/src/utils/options_reader.dart' as options;
 
 import '../standalone.dart';
 
 class MoorDriver {
-  MoorIde ide;
-
   final ResourceProvider _resourceProvider;
   final Lock lock = Lock();
 
@@ -43,7 +40,6 @@ class MoorDriver {
 
     // Options will be loaded later.
     session = MoorSession(backend, options: options);
-    ide = MoorIde(session, _DriverBasedFileManagement(this));
   }
 
   bool _ownsFile(String path) =>
@@ -127,21 +123,5 @@ class MoorDriver {
       final task = session.startTask(backendTask);
       return task.runTask();
     });
-  }
-}
-
-class _DriverBasedFileManagement implements IdeFileManagement {
-  final MoorDriver driver;
-
-  _DriverBasedFileManagement(this.driver);
-
-  @override
-  Uri fsPathToUri(String path) {
-    return driver._resourceProvider.pathContext.toUri(path);
-  }
-
-  @override
-  Future<void> waitUntilParsed(String path) {
-    return driver.waitFileParsed(path);
   }
 }

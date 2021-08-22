@@ -1,44 +1,31 @@
-//@dart=2.9
+// @dart=2.9
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:analyzer_plugin/channel/channel.dart';
 import 'package:analyzer_plugin/protocol/protocol.dart';
+import 'package:args/args.dart';
 import 'package:moor_generator/src/backends/plugin/plugin.dart';
 
-import '../cli.dart';
-
-class DebugPluginCommand extends MoorCommand {
-  DebugPluginCommand(MoorCli cli) : super(cli) {
-    argParser.addOption(
+void main(List<String> args) {
+  final parser = ArgParser()
+    ..addOption(
       'port',
       abbr: 'p',
       help: 'The port to use when starting the websocket server',
       defaultsTo: '9999',
     );
+  final results = parser.parse(args);
+
+  final port = int.tryParse(results['port'] as String);
+  if (port == null) {
+    print('Port must be an int');
+    print(parser.usage);
+    return;
   }
 
-  @override
-  String get name => 'debug-plugin';
-
-  @override
-  String get description => 'Start the analyzer plugin on a websocket server';
-
-  @override
-  bool get hidden => true;
-
-  @override
-  void run() {
-    final port = int.tryParse(argResults['port'] as String);
-    if (port == null) {
-      print('Port must be an int');
-      printUsage();
-      return;
-    }
-
-    MoorPlugin.forProduction().start(_WebSocketPluginServer(port: port));
-  }
+  MoorPlugin.forProduction().start(_WebSocketPluginServer(port: port));
 }
 
 class _WebSocketPluginServer implements PluginCommunicationChannel {

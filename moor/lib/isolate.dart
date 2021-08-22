@@ -65,6 +65,7 @@ class MoorIsolate {
   /// Connects to this [MoorIsolate] from another isolate. All operations on the
   /// returned [DatabaseConnection] will be executed on a background isolate.
   /// Setting the [isolateDebugLog] is only helpful when debugging moor itself.
+  // todo: breaking: Make synchronous
   Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
     return remote(_open(), debugLog: isolateDebugLog);
   }
@@ -86,6 +87,8 @@ class MoorIsolate {
   ///
   /// Because [opener] will be called on another isolate with its own memory,
   /// it must either be a top-level member or a static class method.
+  ///
+  /// To close the isolate later, use [shutdownAll].
   static Future<MoorIsolate> spawn(DatabaseOpener opener) async {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
@@ -99,8 +102,14 @@ class MoorIsolate {
   /// [MoorIsolate] is an object than can be sent across isolates - any other
   /// isolate can then use [MoorIsolate.connect] to obtain a special database
   /// connection which operations are all executed on this isolate.
-  factory MoorIsolate.inCurrent(DatabaseOpener opener) {
-    final server = _RunningMoorServer(opener());
+  ///
+  /// When [killIsolateWhenDone] is enabled (it defaults to `false`) and
+  /// [shutdownAll] is called on the returned [MoorIsolate], the isolate used
+  /// to call [inCurrent] will be killed.
+  factory MoorIsolate.inCurrent(DatabaseOpener opener,
+      {bool killIsolateWhenDone = false}) {
+    final server = _RunningMoorServer(Isolate.current, opener(),
+        killIsolateWhenDone: killIsolateWhenDone);
     return MoorIsolate.fromConnectPort(server.portToOpenConnection);
   }
 }
@@ -116,18 +125,22 @@ void _startMoorIsolate(List args) {
   final sendPort = args[0] as SendPort;
   final opener = args[1] as DatabaseOpener;
 
-  final server = _RunningMoorServer(opener());
+  final server = _RunningMoorServer(Isolate.current, opener());
   sendPort.send(server.portToOpenConnection);
 }
 
 class _RunningMoorServer {
+  final Isolate self;
+  final bool killIsolateWhenDone;
+
   final MoorServer server;
   final ReceivePort connectPort = ReceivePort('moor connect');
   int _counter = 0;
 
   SendPort get portToOpenConnection => connectPort.sendPort;
 
-  _RunningMoorServer(DatabaseConnection connection)
+  _RunningMoorServer(this.self, DatabaseConnection connection,
+      {this.killIsolateWhenDone = true})
       : server = MoorServer(connection, allowRemoteShutdown: true) {
     final subscription = connectPort.listen((message) {
       if (message is SendPort) {
@@ -148,6 +161,7 @@ class _RunningMoorServer {
     server.done.then((_) {
       subscription.cancel();
       connectPort.close();
+      if (killIsolateWhenDone) self.kill();
     });
   }
 }
