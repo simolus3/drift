@@ -40,6 +40,7 @@ class CreateTableStatement extends TableInducingStatement {
 
   Token? openingBracket;
   Token? closingBracket;
+  Token? strict;
 
   CreateTableStatement({
     bool ifNotExists = false,

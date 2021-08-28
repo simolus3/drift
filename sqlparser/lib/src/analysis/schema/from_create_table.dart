@@ -126,6 +126,20 @@ class SchemaFromCreateTable {
     return const ResolvedType(type: BasicType.real);
   }
 
+  bool isValidTypeNameForStrictTable(String typeName) {
+    // See https://www.sqlite.org/draft/stricttables.html
+    const allowed = {'INT', 'INTEGER', 'REAL', 'TEXT', 'BLOB', 'ANY'};
+    const alsoAllowedInMoor = {'ENUM', 'BOOL', 'DATE'};
+
+    if (allowed.contains(typeName.toUpperCase()) ||
+        (moorExtensions &&
+            alsoAllowedInMoor.contains(typeName.toUpperCase()))) {
+      return true;
+    }
+
+    return false;
+  }
+
   /// Looks up the correct column affinity for a declared type name with the
   /// rules described here:
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity

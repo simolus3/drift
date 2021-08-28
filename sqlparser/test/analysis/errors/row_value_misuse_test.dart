@@ -1,6 +1,8 @@
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   late SqlEngine engine;
   setUp(() {
@@ -8,33 +10,39 @@ void main() {
   });
 
   test('when using row value in select', () {
-    engine.analyze('SELECT (1, 2, 3)').expectError('(1, 2, 3)');
+    engine
+        .analyze('SELECT (1, 2, 3)')
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   test('as left hand operator of in', () {
-    engine.analyze('SELECT (1, 2, 3) IN (4, 5, 6)').expectError('(1, 2, 3)');
+    engine
+        .analyze('SELECT (1, 2, 3) IN (4, 5, 6)')
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   test('in BETWEEN expression', () {
-    engine.analyze('SELECT 1 BETWEEN (1, 2, 3) AND 3').expectError('(1, 2, 3)');
+    engine
+        .analyze('SELECT 1 BETWEEN (1, 2, 3) AND 3')
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   test('in CASE - value', () {
     engine
         .analyze('SELECT CASE 1 WHEN 1 THEN (1, 2, 3) ELSE 1 END')
-        .expectError('(1, 2, 3)');
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   test('in CASE - when', () {
     engine
         .analyze('SELECT CASE 1 WHEN (1, 2, 3) THEN 1 ELSE 1 END')
-        .expectError('(1, 2, 3)');
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   test('in CASE - base', () {
     engine
         .analyze('SELECT CASE (1, 2, 3) WHEN 1 THEN 1 ELSE 1 END')
-        .expectError('(1, 2, 3)');
+        .expectError('(1, 2, 3)', type: AnalysisErrorType.rowValueMisuse);
   });
 
   group('does not generate error for valid usage', () {
@@ -60,21 +68,4 @@ void main() {
           .expectNoError();
     });
   });
-}
-
-extension on AnalysisContext {
-  void expectError(String lexeme) {
-    expect(
-      errors,
-      [
-        isA<AnalysisError>()
-            .having((e) => e.type, 'type', AnalysisErrorType.rowValueMisuse)
-            .having((e) => e.span!.text, 'span.text', lexeme),
-      ],
-    );
-  }
-
-  void expectNoError() {
-    expect(errors, isEmpty);
-  }
 }

@@ -53,4 +53,28 @@ extension UnionEntityExtension on Iterable<SyntacticEntity> {
   FileSpan? get spanOrNull {
     return isEmpty ? null : span;
   }
+
+  /// Returns a single [SyntacticEntity] representing this range of entities.
+  SyntacticEntity get toSingleEntity => _UnionSyntacticEntity(toList());
+}
+
+class _UnionSyntacticEntity extends SyntacticEntity {
+  final List<SyntacticEntity> _members;
+
+  _UnionSyntacticEntity(this._members);
+
+  @override
+  int get firstPosition => _members.first.firstPosition;
+
+  @override
+  bool get hasSpan => _members.any((entity) => entity.hasSpan);
+
+  @override
+  int get lastPosition => _members.last.lastPosition;
+
+  @override
+  FileSpan? get span => _members.spanOrNull;
+
+  @override
+  bool get synthetic => _members.every((entity) => entity.synthetic);
 }

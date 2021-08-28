@@ -1886,12 +1886,14 @@ class Parser {
 
     var withoutRowId = false;
     var isStrict = false;
+    Token? strict;
 
     // Parses a `WITHOUT ROWID` or a `STRICT` keyword. Returns if either such
     // option has been parsed.
     bool tableOptions() {
       if (_matchOne(TokenType.strict)) {
         isStrict = true;
+        strict = _previous;
         return true;
       } else if (_matchOne(TokenType.without)) {
         _consume(TokenType.rowid,
@@ -1936,7 +1938,8 @@ class Parser {
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
       ..tableNameToken = tableIdentifier
-      ..closingBracket = rightParen;
+      ..closingBracket = rightParen
+      ..strict = strict;
   }
 
   /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE

@@ -28,6 +28,8 @@ class ColumnDefinition extends AstNode {
   @override
   Iterable<AstNode> get childNodes => constraints;
 
+  bool get isNonNullable => findConstraint<NotNull>() != null;
+
   /// Finds a constraint of type [T], or null, if none is set.
   T? findConstraint<T extends ColumnConstraint>() {
     final typedConstraints = constraints.whereType<T>().iterator;

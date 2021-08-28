@@ -26,7 +26,7 @@ class AnalysisError {
   /// The relevant portion of the source code that caused this error. Some AST
   /// nodes don't have a span, in that case this error is going to have a null
   /// span as well.
-  FileSpan? get span => source!.span;
+  FileSpan? get span => source?.span;
 
   @override
   String toString() {
@@ -75,5 +75,9 @@ enum AnalysisErrorType {
   notSupportedInDesiredVersion,
   illegalUseOfReturning,
   raiseMisuse,
+  nullableColumnInStrictPrimaryKey,
+  missingPrimaryKey,
+  noTypeNameInStrictTable,
+  invalidTypeNameInStrictTable,
   other,
 }
