@@ -94,8 +94,9 @@ CREATE VIEW my_view AS SELECT * FROM t1;
       ''');
     });
 
-    test('table', () {
-      testFormat('''
+    group('table', () {
+      test('complex', () {
+        testFormat('''
 CREATE TABLE IF NOT EXISTS my_table(
   foo TEXT NOT NULL PRIMARY KEY DEFAULT (3 * 4),
   baz INT CONSTRAINT not_null NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -114,16 +115,35 @@ CREATE TABLE IF NOT EXISTS my_table(
   FOREIGN KEY (bar) REFERENCES t2 (bax) ON DELETE SET DEFAULT NOT DEFERRABLE
 );
       ''');
+      });
 
-      testFormat('''
+      test('WITHOUT ROWID', () {
+        testFormat('''
 CREATE TABLE IF NOT EXISTS my_table(
   foo INTEGER NOT NULL PRIMARY KEY ASC
 ) WITHOUT ROWID;
       ''');
-    });
+      });
 
-    test('virtual table', () {
-      testFormat('CREATE VIRTUAL TABLE foo USING bar(a, b, c);');
+      test('STRICT', () {
+        testFormat('''
+CREATE TABLE IF NOT EXISTS my_table(
+  foo INTEGER NOT NULL PRIMARY KEY ASC
+) STRICT;
+      ''');
+      });
+
+      test('STRICT and WITHOUT ROWID', () {
+        testFormat('''
+CREATE TABLE IF NOT EXISTS my_table(
+  foo INTEGER NOT NULL PRIMARY KEY ASC
+) WITHOUT ROWID, STRICT;
+      ''');
+      });
+
+      test('virtual', () {
+        testFormat('CREATE VIRTUAL TABLE foo USING bar(a, b, c);');
+      });
     });
 
     test('index', () {

@@ -251,4 +251,18 @@ void main() {
       ),
     );
   });
+
+  test('parses WITHOUT ROWID and STRICT', () {
+    testStatement(
+      'CREATE TABLE a (c INTEGER) STRICT, WITHOUT ROWID, STRICT',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(columnName: 'c', typeName: 'INTEGER'),
+        ],
+        withoutRowId: true,
+        isStrict: true,
+      ),
+    );
+  });
 }

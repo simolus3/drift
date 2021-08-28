@@ -67,13 +67,16 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
+  /// Version `3.37.0` of `sqlite3`.
+  static const SqliteVersion v3_37 = SqliteVersion.v3(37);
+
   /// Version `3.35.0` of `sqlite3`.
   static const SqliteVersion v3_35 = SqliteVersion.v3(35);
 
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = SqliteVersion.v3(36);
+  static const SqliteVersion current = v3_37;
 
   /// The major version of sqlite.
   ///

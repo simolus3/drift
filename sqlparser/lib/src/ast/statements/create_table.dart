@@ -28,7 +28,15 @@ abstract class TableInducingStatement extends Statement
 class CreateTableStatement extends TableInducingStatement {
   List<ColumnDefinition> columns;
   List<TableConstraint> tableConstraints;
+
+  /// Whether this table has been defined with an `WITHOUT ROWID` clause.
   final bool withoutRowId;
+
+  /// Whether this table has been defined as `STRICT`.
+  ///
+  /// Strict tables are limited to a few column type names. Columns in strict
+  /// tables may not store other types.
+  final bool isStrict;
 
   Token? openingBracket;
   Token? closingBracket;
@@ -39,6 +47,7 @@ class CreateTableStatement extends TableInducingStatement {
     this.columns = const [],
     this.tableConstraints = const [],
     this.withoutRowId = false,
+    this.isStrict = false,
     MoorTableName? moorTableName,
   }) : super._(ifNotExists, tableName, moorTableName);
 

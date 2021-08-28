@@ -393,6 +393,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.without);
       _keyword(TokenType.rowid);
     }
+
+    if (e.isStrict) {
+      if (e.withoutRowId) _symbol(',');
+
+      _keyword(TokenType.strict);
+    }
   }
 
   @override

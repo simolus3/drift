@@ -1885,10 +1885,41 @@ class Parser {
         _consume(TokenType.rightParen, 'Expected closing parenthesis');
 
     var withoutRowId = false;
-    if (_matchOne(TokenType.without)) {
-      _consume(
-          TokenType.rowid, 'Expected ROWID to complete the WITHOUT ROWID part');
-      withoutRowId = true;
+    var isStrict = false;
+
+    // Parses a `WITHOUT ROWID` or a `STRICT` keyword. Returns if either such
+    // option has been parsed.
+    bool tableOptions() {
+      if (_matchOne(TokenType.strict)) {
+        isStrict = true;
+        return true;
+      } else if (_matchOne(TokenType.without)) {
+        _consume(TokenType.rowid,
+            'Expected ROWID to complete the WITHOUT ROWID part');
+        withoutRowId = true;
+        return true;
+      }
+
+      return false;
+    }
+
+    // Table options can be seperated by comma, but they're not required either.
+    if (tableOptions()) {
+      while (_matchOne(TokenType.comma)) {
+        if (!tableOptions()) {
+          _error('Expected WITHOUT ROWID or STRICT here!');
+        }
+      }
+    }
+
+    while (_check(TokenType.without) || _check(TokenType.strict)) {
+      if (_matchOne(TokenType.without)) {
+      } else {
+        // Matched a strict keyword
+        isStrict = true;
+        _advance();
+        assert(_previous.type == TokenType.strict);
+      }
     }
 
     final overriddenName = _moorTableName();
@@ -1899,6 +1930,7 @@ class Parser {
       withoutRowId: withoutRowId,
       columns: columns,
       tableConstraints: tableConstraints,
+      isStrict: isStrict,
       moorTableName: overriddenName,
     )
       ..setSpan(first, _previous)

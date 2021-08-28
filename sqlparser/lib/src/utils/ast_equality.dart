@@ -206,7 +206,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _assert(
         current.ifNotExists == e.ifNotExists &&
             current.tableName == e.tableName &&
-            current.withoutRowId == e.withoutRowId,
+            current.withoutRowId == e.withoutRowId &&
+            current.isStrict == e.isStrict,
         e);
     _checkChildren(e);
   }
