@@ -82,7 +82,7 @@ MigrationStrategy(
 )
 ```
 
-You can even use transactions or batcehs in the `onCreate` callback.
+You can even use transactions or batches in the `onCreate` callback.
 
 Another approach is to include a pre-populated database in your app's asset and use that one:
 
