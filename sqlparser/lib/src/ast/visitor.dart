@@ -1,7 +1,5 @@
 import 'ast.dart';
 
-import 'expressions/raise.dart';
-
 abstract class AstVisitor<A, R> {
   R visitSelectStatement(SelectStatement e, A arg);
   R visitCompoundSelectStatement(CompoundSelectStatement e, A arg);
@@ -92,6 +90,8 @@ abstract class AstVisitor<A, R> {
   R visitNamedVariable(ColonNamedVariable e, A arg);
 
   R visitBlock(Block block, A arg);
+  R visitBeginTransaction(BeginTransactionStatement e, A arg);
+  R visitCommitStatement(CommitStatement e, A arg);
 
   R visitMoorFile(MoorFile e, A arg);
   R visitMoorImportStatement(ImportStatement e, A arg);
@@ -391,6 +391,16 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitBlock(Block e, A arg) {
     return defaultNode(e, arg);
+  }
+
+  @override
+  R? visitBeginTransaction(BeginTransactionStatement e, A arg) {
+    return visitStatement(e, arg);
+  }
+
+  @override
+  R? visitCommitStatement(CommitStatement e, A arg) {
+    return visitStatement(e, arg);
   }
 
   // Moor-specific additions

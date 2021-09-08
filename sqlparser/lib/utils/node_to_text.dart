@@ -7,25 +7,6 @@ import 'package:charcode/charcode.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
-/// Defines the [toSql] extension method that turns ast nodes into a compatible
-/// textual representation.
-///
-/// Parsing the output of [toSql] will result in an equal AST.
-extension NodeToText on AstNode {
-  /// Obtains a textual representation for AST nodes.
-  ///
-  /// Parsing the output of [toSql] will result in an equal AST. Since only the
-  /// AST is used, the output will not contain comments. It's possible for the
-  /// output to have more than just whitespace changes if there are multiple
-  /// ways to represent an equivalent node (e.g. the no-op `FOR EACH ROW` on
-  /// triggers).
-  String toSql() {
-    final builder = NodeSqlBuilder();
-    builder.visit(this, null);
-    return builder.buffer.toString();
-  }
-}
-
 class NodeSqlBuilder extends AstVisitor<void, void> {
   final StringSink buffer;
 
@@ -34,42 +15,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
 
-  void _join(Iterable<AstNode> nodes, String separatingSymbol) {
-    var isFirst = true;
-
-    for (final node in nodes) {
-      if (!isFirst) {
-        _symbol(separatingSymbol, spaceAfter: true);
-      }
-
-      visit(node, null);
-      isFirst = false;
-    }
-  }
-
-  void _identifier(String identifier,
-      {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
-      identifier = '"$identifier"';
-    }
-
-    _symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
-  }
-
-  void _ifNotExists(bool ifNotExists) {
-    if (ifNotExists) {
-      _keyword(TokenType.$if);
-      _keyword(TokenType.not);
-      _keyword(TokenType.exists);
-    }
-  }
-
-  void _keyword(TokenType type) {
-    _symbol(reverseKeywords[type]!, spaceAfter: true, spaceBefore: true);
-  }
-
-  void _space() => buffer.writeCharCode($space);
-
   /// Writes a space character if [needsSpace] is set.
   ///
   /// This also resets [needsSpace] to `false`.
@@ -77,35 +22,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     if (needsSpace) {
       needsSpace = false;
       _space();
-    }
-  }
-
-  void _stringLiteral(String content) {
-    final escapedChars = content.replaceAll("'", "''");
-    _symbol("'$escapedChars'", spaceBefore: true, spaceAfter: true);
-  }
-
-  void _symbol(String lexeme,
-      {bool spaceBefore = false, bool spaceAfter = false}) {
-    if (needsSpace && spaceBefore) {
-      _space();
-    }
-
-    buffer.write(lexeme);
-    needsSpace = spaceAfter;
-  }
-
-  void _where(Expression? where) {
-    if (where != null) {
-      _keyword(TokenType.where);
-      visit(where, null);
-    }
-  }
-
-  void _from(Queryable? from) {
-    if (from != null) {
-      _keyword(TokenType.from);
-      visit(from, null);
     }
   }
 
@@ -131,6 +47,25 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (e.windowName != null) {
       _keyword(TokenType.over);
       _identifier(e.windowName!);
+    }
+  }
+
+  @override
+  void visitBeginTransaction(BeginTransactionStatement e, void arg) {
+    _keyword(TokenType.begin);
+
+    switch (e.mode) {
+      case TransactionMode.none:
+        break;
+      case TransactionMode.deferred:
+        _keyword(TokenType.deferred);
+        break;
+      case TransactionMode.immediate:
+        _keyword(TokenType.immediate);
+        break;
+      case TransactionMode.exclusive:
+        _keyword(TokenType.exclusive);
+        break;
     }
   }
 
@@ -229,21 +164,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _identifier(e.collation);
   }
 
-  void _conflictClause(ConflictClause? clause) {
-    if (clause != null) {
-      _keyword(TokenType.on);
-      _keyword(TokenType.conflict);
-
-      _keyword(const {
-        ConflictClause.rollback: TokenType.rollback,
-        ConflictClause.abort: TokenType.abort,
-        ConflictClause.fail: TokenType.fail,
-        ConflictClause.ignore: TokenType.ignore,
-        ConflictClause.replace: TokenType.replace,
-      }[clause]!);
-    }
-  }
-
   @override
   void visitColumnConstraint(ColumnConstraint e, void arg) {
     if (e.name != null) {
@@ -303,6 +223,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visitList(e.constraints, arg);
+  }
+
+  @override
+  void visitCommitStatement(CommitStatement e, void arg) {
+    _keyword(TokenType.commit);
   }
 
   @override
@@ -550,6 +475,15 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
+    visit(e.expression, arg);
+    if (e.as != null) {
+      _keyword(TokenType.as);
+      _identifier(e.as!);
+    }
+  }
+
+  @override
   void visitForeignKeyClause(ForeignKeyClause e, void arg) {
     _keyword(TokenType.references);
     visit(e.foreignTable, arg);
@@ -674,6 +608,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitIndexedColumn(IndexedColumn e, void arg) {
+    visit(e.expression, arg);
+    _orderingMode(e.ordering);
+  }
+
+  @override
   void visitInExpression(InExpression e, void arg) {
     visit(e.left, arg);
 
@@ -683,30 +623,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _keyword(TokenType.$in);
 
     visit(e.inside, arg);
-  }
-
-  @override
-  void visitRaiseExpression(RaiseExpression e, void arg) {
-    _keyword(TokenType.raise);
-    _symbol('(', spaceBefore: true);
-    _keyword(const {
-      RaiseKind.ignore: TokenType.ignore,
-      RaiseKind.rollback: TokenType.rollback,
-      RaiseKind.abort: TokenType.abort,
-      RaiseKind.fail: TokenType.fail,
-    }[e.raiseKind]!);
-
-    if (e.errorMessage != null) {
-      _symbol(',', spaceAfter: true);
-      _stringLiteral(e.errorMessage!);
-    }
-    _symbol(')', spaceAfter: true);
-  }
-
-  @override
-  void visitIndexedColumn(IndexedColumn e, void arg) {
-    visit(e.expression, arg);
-    _orderingMode(e.ordering);
   }
 
   @override
@@ -876,6 +792,12 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
+    _identifier(e.tableName);
+    _symbol('.**', spaceAfter: true);
+  }
+
+  @override
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
       if (e.isRequired) _keyword(TokenType.required);
@@ -937,15 +859,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _join(e.terms, ',');
   }
 
-  void _orderingMode(OrderingMode? mode) {
-    if (mode != null) {
-      _keyword(const {
-        OrderingMode.ascending: TokenType.asc,
-        OrderingMode.descending: TokenType.desc,
-      }[mode]!);
-    }
-  }
-
   @override
   void visitOrderingTerm(OrderingTerm e, void arg) {
     visit(e.expression, arg);
@@ -969,6 +882,24 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    _keyword(TokenType.raise);
+    _symbol('(', spaceBefore: true);
+    _keyword(const {
+      RaiseKind.ignore: TokenType.ignore,
+      RaiseKind.rollback: TokenType.rollback,
+      RaiseKind.abort: TokenType.abort,
+      RaiseKind.fail: TokenType.fail,
+    }[e.raiseKind]!);
+
+    if (e.errorMessage != null) {
+      _symbol(',', spaceAfter: true);
+      _stringLiteral(e.errorMessage!);
+    }
+    _symbol(')', spaceAfter: true);
+  }
+
+  @override
   void visitReference(Reference e, void arg) {
     var didWriteSpaceBefore = false;
 
@@ -986,31 +917,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
     _identifier(e.columnName,
         spaceAfter: true, spaceBefore: !didWriteSpaceBefore);
-  }
-
-  @override
-  void visitStarResultColumn(StarResultColumn e, void arg) {
-    if (e.tableName != null) {
-      _identifier(e.tableName!);
-      _symbol('.');
-    }
-
-    _symbol('*', spaceAfter: true, spaceBefore: e.tableName == null);
-  }
-
-  @override
-  void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
-    _identifier(e.tableName);
-    _symbol('.**', spaceAfter: true);
-  }
-
-  @override
-  void visitExpressionResultColumn(ExpressionResultColumn e, void arg) {
-    visit(e.expression, arg);
-    if (e.as != null) {
-      _keyword(TokenType.as);
-      _identifier(e.as!);
-    }
   }
 
   @override
@@ -1079,6 +985,16 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitStarFunctionParameter(StarFunctionParameter e, void arg) {
     _symbol('*', spaceAfter: true);
+  }
+
+  @override
+  void visitStarResultColumn(StarResultColumn e, void arg) {
+    if (e.tableName != null) {
+      _identifier(e.tableName!);
+      _symbol('.');
+    }
+
+    _symbol('*', spaceAfter: true, spaceBefore: e.tableName == null);
   }
 
   @override
@@ -1315,5 +1231,113 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     _join(e.ctes, ',');
+  }
+
+  void _conflictClause(ConflictClause? clause) {
+    if (clause != null) {
+      _keyword(TokenType.on);
+      _keyword(TokenType.conflict);
+
+      _keyword(const {
+        ConflictClause.rollback: TokenType.rollback,
+        ConflictClause.abort: TokenType.abort,
+        ConflictClause.fail: TokenType.fail,
+        ConflictClause.ignore: TokenType.ignore,
+        ConflictClause.replace: TokenType.replace,
+      }[clause]!);
+    }
+  }
+
+  void _from(Queryable? from) {
+    if (from != null) {
+      _keyword(TokenType.from);
+      visit(from, null);
+    }
+  }
+
+  void _identifier(String identifier,
+      {bool spaceBefore = true, bool spaceAfter = true}) {
+    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
+      identifier = '"$identifier"';
+    }
+
+    _symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
+  }
+
+  void _ifNotExists(bool ifNotExists) {
+    if (ifNotExists) {
+      _keyword(TokenType.$if);
+      _keyword(TokenType.not);
+      _keyword(TokenType.exists);
+    }
+  }
+
+  void _join(Iterable<AstNode> nodes, String separatingSymbol) {
+    var isFirst = true;
+
+    for (final node in nodes) {
+      if (!isFirst) {
+        _symbol(separatingSymbol, spaceAfter: true);
+      }
+
+      visit(node, null);
+      isFirst = false;
+    }
+  }
+
+  void _keyword(TokenType type) {
+    _symbol(reverseKeywords[type]!, spaceAfter: true, spaceBefore: true);
+  }
+
+  void _orderingMode(OrderingMode? mode) {
+    if (mode != null) {
+      _keyword(const {
+        OrderingMode.ascending: TokenType.asc,
+        OrderingMode.descending: TokenType.desc,
+      }[mode]!);
+    }
+  }
+
+  void _space() => buffer.writeCharCode($space);
+
+  void _stringLiteral(String content) {
+    final escapedChars = content.replaceAll("'", "''");
+    _symbol("'$escapedChars'", spaceBefore: true, spaceAfter: true);
+  }
+
+  void _symbol(String lexeme,
+      {bool spaceBefore = false, bool spaceAfter = false}) {
+    if (needsSpace && spaceBefore) {
+      _space();
+    }
+
+    buffer.write(lexeme);
+    needsSpace = spaceAfter;
+  }
+
+  void _where(Expression? where) {
+    if (where != null) {
+      _keyword(TokenType.where);
+      visit(where, null);
+    }
+  }
+}
+
+/// Defines the [toSql] extension method that turns ast nodes into a compatible
+/// textual representation.
+///
+/// Parsing the output of [toSql] will result in an equal AST.
+extension NodeToText on AstNode {
+  /// Obtains a textual representation for AST nodes.
+  ///
+  /// Parsing the output of [toSql] will result in an equal AST. Since only the
+  /// AST is used, the output will not contain comments. It's possible for the
+  /// output to have more than just whitespace changes if there are multiple
+  /// ways to represent an equivalent node (e.g. the no-op `FOR EACH ROW` on
+  /// triggers).
+  String toSql() {
+    final builder = NodeSqlBuilder();
+    builder.visit(this, null);
+    return builder.buffer.toString();
   }
 }

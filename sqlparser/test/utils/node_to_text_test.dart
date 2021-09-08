@@ -167,6 +167,17 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
   });
 
+  group('misc', () {
+    test('transactions', () {
+      testFormat('BEGIN DEFERRED TRANSACTION;');
+      testFormat('BEGIN IMMEDIATE');
+      testFormat('BEGIN EXCLUSIVE');
+
+      testFormat('COMMIT');
+      testFormat('END TRANSACTION');
+    });
+  });
+
   group('query statements', () {
     group('select', () {
       test('with common table expressions', () {

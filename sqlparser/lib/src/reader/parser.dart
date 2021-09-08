@@ -110,6 +110,11 @@ class Parser {
     return _peek.type == type;
   }
 
+  bool _checkAny(Iterable<TokenType> type) {
+    if (_isAtEnd) return false;
+    return type.contains(_peek.type);
+  }
+
   /// Returns whether the next token is an [TokenType.identifier] or a
   /// [KeywordToken]. If this method returns true, calling [_consumeIdentifier]
   /// with same [lenient] parameter will now throw.
@@ -177,18 +182,45 @@ class Parser {
         InvalidStatement();
   }
 
-  Statement statement() {
-    final first = _peek;
-    Statement? stmt = _crud();
-    stmt ??= _create();
+  Statement _statementWithoutSemicolon() {
+    if (_checkAny(const [
+      TokenType.$with,
+      TokenType.select,
+      TokenType.$values,
+      TokenType.delete,
+      TokenType.update,
+      TokenType.insert,
+      TokenType.replace,
+    ])) {
+      return _crud()!;
+    }
+
+    if (_check(TokenType.create)) {
+      return _create()!;
+    }
+
+    if (_check(TokenType.begin)) {
+      return _beginStatement();
+    }
+    if (_checkAny(const [TokenType.commit, TokenType.end])) {
+      return _commit();
+    }
 
     if (enableMoorExtensions) {
-      stmt ??= _import() ?? _declaredStatement();
+      if (_check(TokenType.import)) {
+        return _import()!;
+      }
+      if (_check(TokenType.identifier) || _peek is KeywordToken) {
+        return _declaredStatement()!;
+      }
     }
 
-    if (stmt == null) {
-      _error('Expected a sql statement to start here');
-    }
+    _error('Expected a sql statement to start here');
+  }
+
+  Statement statement() {
+    final first = _peek;
+    final stmt = _statementWithoutSemicolon();
 
     if (_matchOne(TokenType.semicolon)) {
       stmt.semicolon = _previous;
@@ -909,6 +941,61 @@ class Parser {
     }
   }
 
+  Statement _beginStatement() {
+    final begin = _consume(TokenType.begin);
+    Token? modeToken;
+    var mode = TransactionMode.none;
+
+    if (_match(
+        const [TokenType.deferred, TokenType.immediate, TokenType.exclusive])) {
+      modeToken = _previous;
+
+      switch (modeToken.type) {
+        case TokenType.deferred:
+          mode = TransactionMode.deferred;
+          break;
+        case TokenType.immediate:
+          mode = TransactionMode.immediate;
+          break;
+        case TokenType.exclusive:
+          mode = TransactionMode.exclusive;
+          break;
+        default:
+          throw AssertionError('unreachable');
+      }
+    }
+
+    Token? transaction;
+    if (_matchOne(TokenType.transaction)) {
+      transaction = _previous;
+    }
+
+    return BeginTransactionStatement(mode)
+      ..setSpan(begin, _previous)
+      ..begin = begin
+      ..modeToken = modeToken
+      ..transaction = transaction;
+  }
+
+  CommitStatement _commit() {
+    Token commitOrEnd;
+    if (_match(const [TokenType.commit, TokenType.end])) {
+      commitOrEnd = _previous;
+    } else {
+      _error('Expected COMMIT or END here');
+    }
+
+    Token? transaction;
+    if (_matchOne(TokenType.transaction)) {
+      transaction = _previous;
+    }
+
+    return CommitStatement()
+      ..setSpan(commitOrEnd, _previous)
+      ..commitOrEnd = commitOrEnd
+      ..transaction = transaction;
+  }
+
   CrudStatement? _crud() {
     final withClause = _withClause();
 
@@ -921,6 +1008,14 @@ class Parser {
     } else if (_check(TokenType.insert) || _check(TokenType.replace)) {
       return _insertStmt(withClause);
     }
+
+    // A WITH clause without a following select, insert, delete or update
+    // is invalid!
+    if (withClause != null) {
+      _error('Expected a SELECT, INSERT, UPDATE or DELETE statement to '
+          'follow this WITH clause.');
+    }
+
     return null;
   }
 

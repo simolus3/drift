@@ -30,6 +30,7 @@ export 'statements/insert.dart';
 export 'statements/invalid.dart';
 export 'statements/select.dart';
 export 'statements/statement.dart';
+export 'statements/transaction.dart';
 export 'statements/update.dart';
 export 'visitor.dart';
 
