@@ -42,6 +42,14 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is ImportStatement) {
+      return visitMoorImportStatement(e, arg);
+    }
+
+    visitChildren(e, arg);
+  }
+
   void visitMoorImportStatement(ImportStatement e, void arg) {
     if (request.isMoorAndParsed) {
       final moor = request.parsedMoor;

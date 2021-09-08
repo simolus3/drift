@@ -93,13 +93,7 @@ abstract class AstVisitor<A, R> {
   R visitBeginTransaction(BeginTransactionStatement e, A arg);
   R visitCommitStatement(CommitStatement e, A arg);
 
-  R visitMoorFile(MoorFile e, A arg);
-  R visitMoorImportStatement(ImportStatement e, A arg);
-  R visitMoorDeclaredStatement(DeclaredStatement e, A arg);
-  R visitMoorStatementParameter(StatementParameter e, A arg);
-  R visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg);
-  R visitMoorTableName(MoorTableName e, A arg);
-  R visitDartPlaceholder(DartPlaceholder e, A arg);
+  R visitMoorSpecificNode(MoorSpecificNode e, A arg);
 }
 
 /// Visitor that walks down the entire tree, visiting all children in order.
@@ -205,16 +199,6 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   @override
   R? visitExpressionResultColumn(ExpressionResultColumn e, A arg) {
     return visitResultColumn(e, arg);
-  }
-
-  @override
-  R? visitMoorNestedStarResultColumn(NestedStarResultColumn e, A arg) {
-    return visitResultColumn(e, arg);
-  }
-
-  @override
-  R? visitMoorTableName(MoorTableName e, A arg) {
-    return defaultNode(e, arg);
   }
 
   @override
@@ -403,29 +387,8 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
     return visitStatement(e, arg);
   }
 
-  // Moor-specific additions
   @override
-  R? visitMoorFile(MoorFile e, A arg) {
-    return defaultNode(e, arg);
-  }
-
-  @override
-  R? visitMoorImportStatement(ImportStatement e, A arg) {
-    return visitStatement(e, arg);
-  }
-
-  @override
-  R? visitMoorDeclaredStatement(DeclaredStatement e, A arg) {
-    return visitStatement(e, arg);
-  }
-
-  @override
-  R? visitDartPlaceholder(DartPlaceholder e, A arg) {
-    return defaultNode(e, arg);
-  }
-
-  @override
-  R? visitMoorStatementParameter(StatementParameter e, A arg) {
+  R? visitMoorSpecificNode(MoorSpecificNode e, A arg) {
     return defaultNode(e, arg);
   }
 

@@ -4,21 +4,24 @@ import '../visitor.dart';
 import 'declared_statement.dart';
 import 'import_statement.dart';
 
+/// Marker interface for AST nodes that are moor-specific.
+abstract class MoorSpecificNode implements AstNode {}
+
 /// Something that can appear as a top-level declaration inside a `.moor` file.
-abstract class PartOfMoorFile implements Statement {}
+abstract class PartOfMoorFile implements Statement, MoorSpecificNode {}
 
 /// A moor file.
 ///
 /// A moor file consists of [ImportStatement], followed by ddl statements,
 /// followed by [DeclaredStatement]s.
-class MoorFile extends AstNode {
+class MoorFile extends AstNode implements MoorSpecificNode {
   List<PartOfMoorFile> statements;
 
   MoorFile(this.statements);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorFile(this, arg);
+    return visitor.visitMoorSpecificNode(this, arg);
   }
 
   @override
@@ -34,7 +37,7 @@ class MoorFile extends AstNode {
       childNodes.whereType<ImportStatement>();
 }
 
-class MoorTableName extends AstNode {
+class MoorTableName extends AstNode implements MoorSpecificNode {
   final String overriddenDataClassName;
   final bool useExistingDartClass;
 
@@ -42,7 +45,7 @@ class MoorTableName extends AstNode {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorTableName(this, arg);
+    return visitor.visitMoorSpecificNode(this, arg);
   }
 
   @override

@@ -78,6 +78,16 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is DartPlaceholder) {
+      return visitDartPlaceholder(e, arg);
+    } else if (e is NestedStarResultColumn) {
+      return visitResultColumn(e, arg);
+    }
+
+    visitChildren(e, arg);
+  }
+
   void visitDartPlaceholder(DartPlaceholder e, void arg) {
     if (e is! DartExpressionPlaceholder) {
       // Default values are supported for expressions only

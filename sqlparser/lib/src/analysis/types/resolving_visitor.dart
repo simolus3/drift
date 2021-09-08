@@ -171,11 +171,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   }
 
   @override
-  void visitDartPlaceholder(DartPlaceholder e, TypeExpectation arg) {
+  void visitMoorSpecificNode(MoorSpecificNode e, TypeExpectation arg) {
     if (e is DartExpressionPlaceholder) {
       _inferAsVariable(e, arg);
     } else {
-      super.visitDartPlaceholder(e, arg);
+      super.visitMoorSpecificNode(e, arg);
     }
   }
 

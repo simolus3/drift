@@ -14,7 +14,7 @@ class ImportStatement extends Statement implements PartOfMoorFile {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorImportStatement(this, arg);
+    return visitor.visitMoorSpecificNode(this, arg);
   }
 
   @override

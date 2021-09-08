@@ -147,20 +147,22 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
-    final identifier = e.identifier;
-    if (identifier is SimpleName && identifier.identifier != null) {
-      _contribute(identifier.identifier,
-          HighlightRegionType.TOP_LEVEL_FUNCTION_DECLARATION);
-    } else if (identifier is SpecialStatementIdentifier &&
-        identifier.nameToken != null) {
-      _contribute(identifier.nameToken, HighlightRegionType.ANNOTATION);
-    }
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is DeclaredStatement) {
+      final identifier = e.identifier;
+      if (identifier is SimpleName && identifier.identifier != null) {
+        _contribute(identifier.identifier,
+            HighlightRegionType.TOP_LEVEL_FUNCTION_DECLARATION);
+      } else if (identifier is SpecialStatementIdentifier &&
+          identifier.nameToken != null) {
+        _contribute(identifier.nameToken, HighlightRegionType.ANNOTATION);
+      }
 
-    if (e.parameters != null) {
-      isDeclaringVariables = true;
-      visitList(e.parameters, arg);
-      isDeclaringVariables = false;
+      if (e.parameters != null) {
+        isDeclaringVariables = true;
+        visitList(e.parameters, arg);
+        isDeclaringVariables = false;
+      }
     }
 
     visitChildren(e, arg);

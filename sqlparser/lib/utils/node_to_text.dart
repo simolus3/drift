@@ -397,9 +397,69 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
-  void visitDartPlaceholder(DartPlaceholder e, void arg) {
-    _symbol(r'$', spaceBefore: true);
-    _symbol(e.name, spaceAfter: true);
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is DartPlaceholder) {
+      _symbol(r'$', spaceBefore: true);
+      _symbol(e.name, spaceAfter: true);
+    } else if (e is DeclaredStatement) {
+      _identifier(e.identifier.name);
+
+      if (e.parameters.isNotEmpty) {
+        _symbol('(');
+        _join(e.parameters, ',');
+        _symbol(')');
+      }
+
+      if (e.as != null) {
+        _keyword(TokenType.as);
+        _identifier(e.as!);
+      }
+
+      _symbol(':', spaceAfter: true);
+      visit(e.statement, arg);
+      _symbol(';');
+    } else if (e is MoorFile) {
+      for (final stmt in e.statements) {
+        visit(stmt, arg);
+        buffer.write('\n');
+        needsSpace = false;
+      }
+    } else if (e is ImportStatement) {
+      _keyword(TokenType.import);
+      _stringLiteral(e.importedFile);
+      _symbol(';', spaceAfter: true);
+    } else if (e is NestedStarResultColumn) {
+      _identifier(e.tableName);
+      _symbol('.**', spaceAfter: true);
+    } else if (e is StatementParameter) {
+      if (e is VariableTypeHint) {
+        if (e.isRequired) _keyword(TokenType.required);
+
+        visit(e.variable, arg);
+        final typeName = e.typeName;
+        if (typeName != null) {
+          _keyword(TokenType.as);
+          _symbol(typeName, spaceBefore: true, spaceAfter: true);
+        }
+
+        if (e.orNull) {
+          _keyword(TokenType.or);
+          _keyword(TokenType.$null);
+        }
+      } else if (e is DartPlaceholderDefaultValue) {
+        _symbol('\$${e.variableName}', spaceAfter: true);
+        _symbol('=', spaceBefore: true, spaceAfter: true);
+        visit(e.defaultValue, arg);
+      } else {
+        throw AssertionError('Unknown StatementParameter: $e');
+      }
+    } else if (e is MoorTableName) {
+      _keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
+      _identifier(e.overriddenDataClassName);
+    } else if (e is NestedStarResultColumn) {
+      _identifier(e.tableName);
+      _symbol('.**', spaceAfter: true);
+    }
   }
 
   @override
@@ -753,79 +813,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.offset);
       visit(e.offset!, arg);
     }
-  }
-
-  @override
-  void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
-    _identifier(e.identifier.name);
-
-    if (e.parameters.isNotEmpty) {
-      _symbol('(');
-      _join(e.parameters, ',');
-      _symbol(')');
-    }
-
-    if (e.as != null) {
-      _keyword(TokenType.as);
-      _identifier(e.as!);
-    }
-
-    _symbol(':', spaceAfter: true);
-    visit(e.statement, arg);
-    _symbol(';');
-  }
-
-  @override
-  void visitMoorFile(MoorFile e, void arg) {
-    for (final stmt in e.statements) {
-      visit(stmt, arg);
-      buffer.write('\n');
-      needsSpace = false;
-    }
-  }
-
-  @override
-  void visitMoorImportStatement(ImportStatement e, void arg) {
-    _keyword(TokenType.import);
-    _stringLiteral(e.importedFile);
-    _symbol(';', spaceAfter: true);
-  }
-
-  @override
-  void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
-    _identifier(e.tableName);
-    _symbol('.**', spaceAfter: true);
-  }
-
-  @override
-  void visitMoorStatementParameter(StatementParameter e, void arg) {
-    if (e is VariableTypeHint) {
-      if (e.isRequired) _keyword(TokenType.required);
-
-      visit(e.variable, arg);
-      final typeName = e.typeName;
-      if (typeName != null) {
-        _keyword(TokenType.as);
-        _symbol(typeName, spaceBefore: true, spaceAfter: true);
-      }
-
-      if (e.orNull) {
-        _keyword(TokenType.or);
-        _keyword(TokenType.$null);
-      }
-    } else if (e is DartPlaceholderDefaultValue) {
-      _symbol('\$${e.variableName}', spaceAfter: true);
-      _symbol('=', spaceBefore: true, spaceAfter: true);
-      visit(e.defaultValue, arg);
-    } else {
-      throw AssertionError('Unknown StatementParameter: $e');
-    }
-  }
-
-  @override
-  void visitMoorTableName(MoorTableName e, void arg) {
-    _keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
-    _identifier(e.overriddenDataClassName);
   }
 
   @override

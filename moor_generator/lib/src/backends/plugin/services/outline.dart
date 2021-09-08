@@ -77,13 +77,20 @@ class _OutlineVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is MoorFile) {
+      visitMoorFile(e, arg);
+    } else if (e is DeclaredStatement) {
+      visitMoorDeclaredStatement(e, arg);
+    }
+  }
+
   void visitMoorFile(MoorFile e, void arg) {
     _startElement(ElementKind.LIBRARY, request.file.shortName, e);
     visitChildren(e, arg);
     collector.endElement();
   }
 
-  @override
   void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     if (!e.isRegularQuery) {
       visitChildren(e, arg);

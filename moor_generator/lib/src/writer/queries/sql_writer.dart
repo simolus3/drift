@@ -72,14 +72,6 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   @override
-  void visitDartPlaceholder(DartPlaceholder e, void arg) {
-    final moorPlaceholder =
-        query.placeholders.singleWhere((p) => p.astNode == e);
-
-    _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
-  }
-
-  @override
   void visitNamedVariable(ColonNamedVariable e, void arg) {
     final moor = _findMoorVar(e);
     if (moor != null) {
@@ -100,29 +92,38 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   @override
-  void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
-    final result = _starColumnToResolved[e];
-    if (result == null) {
-      return super.visitMoorNestedStarResultColumn(e, arg);
-    }
-
-    final select = query as SqlSelectQuery;
-    final prefix = select.resultSet.nestedPrefixFor(result);
-    final table = e.tableName;
-
-    // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
-    var isFirst = true;
-
-    for (final column in result.table.columns) {
-      if (isFirst) {
-        isFirst = false;
-      } else {
-        _out.write(', ');
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is NestedStarResultColumn) {
+      final result = _starColumnToResolved[e];
+      if (result == null) {
+        return super.visitMoorSpecificNode(e, arg);
       }
 
-      final columnName = column.name.name;
-      _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
+      final select = query as SqlSelectQuery;
+      final prefix = select.resultSet.nestedPrefixFor(result);
+      final table = e.tableName;
+
+      // Convert foo.** to "foo.a" AS "nested_0.a", ... for all columns in foo
+      var isFirst = true;
+
+      for (final column in result.table.columns) {
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          _out.write(', ');
+        }
+
+        final columnName = column.name.name;
+        _out.write('"$table"."$columnName" AS "$prefix.$columnName"');
+      }
+    } else if (e is DartPlaceholder) {
+      final moorPlaceholder =
+          query.placeholders.singleWhere((p) => p.astNode == e);
+
+      _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
     }
+
+    return super.visitMoorSpecificNode(e, arg);
   }
 }
 

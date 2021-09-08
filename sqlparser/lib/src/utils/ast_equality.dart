@@ -228,7 +228,6 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
-  @override
   void visitDartPlaceholder(DartPlaceholder e, void arg) {
     final current = _currentAs<DartPlaceholder>(e);
     _assert(current.name == e.name && current.runtimeType == e.runtimeType, e);
@@ -413,27 +412,23 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
-  @override
   void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
     final current = _currentAs<DeclaredStatement>(e);
     _assert(current.identifier == e.identifier && current.as == e.as, e);
     _checkChildren(e);
   }
 
-  @override
   void visitMoorFile(MoorFile e, void arg) {
     _currentAs<MoorFile>(e);
     _checkChildren(e);
   }
 
-  @override
   void visitMoorImportStatement(ImportStatement e, void arg) {
     final current = _currentAs<ImportStatement>(e);
     _assert(current.importedFile == e.importedFile, e);
     _checkChildren(e);
   }
 
-  @override
   void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
     final current = _currentAs<NestedStarResultColumn>(e);
     _assert(current.tableName == e.tableName, e);
@@ -441,6 +436,24 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is DartPlaceholder) {
+      return visitDartPlaceholder(e, arg);
+    } else if (e is DeclaredStatement) {
+      return visitMoorDeclaredStatement(e, arg);
+    } else if (e is MoorFile) {
+      return visitMoorFile(e, arg);
+    } else if (e is ImportStatement) {
+      return visitMoorImportStatement(e, arg);
+    } else if (e is NestedStarResultColumn) {
+      return visitMoorNestedStarResultColumn(e, arg);
+    } else if (e is StatementParameter) {
+      return visitMoorStatementParameter(e, arg);
+    } else if (e is MoorTableName) {
+      return visitMoorTableName(e, arg);
+    }
+  }
+
   void visitMoorStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
       final current = _currentAs<VariableTypeHint>(e);
@@ -457,7 +470,6 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
-  @override
   void visitMoorTableName(MoorTableName e, void arg) {
     final current = _currentAs<MoorTableName>(e);
     _assert(
