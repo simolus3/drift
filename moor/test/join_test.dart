@@ -180,8 +180,8 @@ void main() {
     final query = db
         .select(todos)
         .join([innerJoin(categories, todos.category.equalsExp(categories.id))])
-          ..where(todos.id.isSmallerThanValue(5))
-          ..where(categories.id.isBiggerOrEqualValue(10));
+      ..where(todos.id.isSmallerThanValue(5))
+      ..where(categories.id.isBiggerOrEqualValue(10));
 
     await query.get();
 

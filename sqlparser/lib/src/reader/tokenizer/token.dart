@@ -586,7 +586,9 @@ class NumericToken extends Token {
   String toString() {
     final buffer = StringBuffer();
     if (hexDigits != null) {
-      buffer..write('0x')..write(hexDigits);
+      buffer
+        ..write('0x')
+        ..write(hexDigits);
     } else {
       if (digitsBeforeDecimal != null) {
         buffer.write(digitsBeforeDecimal);
@@ -599,7 +601,9 @@ class NumericToken extends Token {
       }
 
       if (exponent != null) {
-        buffer..write('E')..write(exponent);
+        buffer
+          ..write('E')
+          ..write(exponent);
       }
     }
 

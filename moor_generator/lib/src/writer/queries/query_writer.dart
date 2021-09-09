@@ -211,7 +211,9 @@ class QueryWriter {
         'Future<List<${_select.resultTypeCode(scope.generationOptions)}>>';
     _buffer.write('$returnType ${query.name}(');
     _writeParameters();
-    _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _buffer
+      ..write(') {\n')
+      ..write('return ${_nameOfCreationMethod()}(');
     _writeUseParameters();
     _buffer.write(').get();\n}\n');
   }
@@ -232,7 +234,9 @@ class QueryWriter {
         'Stream<List<${_select.resultTypeCode(scope.generationOptions)}>>';
     _buffer.write('$returnType $methodName(');
     _writeParameters();
-    _buffer..write(') {\n')..write('return ${_nameOfCreationMethod()}(');
+    _buffer
+      ..write(') {\n')
+      ..write('return ${_nameOfCreationMethod()}(');
     _writeUseParameters();
     _buffer.write(').watch();\n}\n');
   }
@@ -359,10 +363,16 @@ class QueryWriter {
             for (final arg in optional.availableResultSets) {
               if (i != 0) buffer.write(', ');
 
-              buffer..write(arg.argumentType)..write(' ')..write('_' * (i + 1));
+              buffer
+                ..write(arg.argumentType)
+                ..write(' ')
+                ..write('_' * (i + 1));
               i++;
             }
-            buffer..write(') => ')..write(defaultCode)..write(';');
+            buffer
+              ..write(') => ')
+              ..write(defaultCode)
+              ..write(';');
 
             // With the function being written, the default code is just a tear-
             // off of that function
@@ -383,12 +393,16 @@ class QueryWriter {
             (!isNullable || isMarkedAsRequired) && defaultCode == null ||
                 options.namedParametersAlwaysRequired;
         if (isRequired) {
-          _buffer..write(scope.required)..write(' ');
+          _buffer
+            ..write(scope.required)
+            ..write(' ');
         }
 
         _buffer.write('$type ${optional.dartParameterName}');
         if (defaultCode != null && !isRequired) {
-          _buffer..write(' =  ')..write(defaultCode);
+          _buffer
+            ..write(' =  ')
+            ..write(defaultCode);
         }
       }
 
@@ -451,7 +465,10 @@ class QueryWriter {
 
     void _increaseIndexCounter(String by) {
       if (needsIndexCounter) {
-        _buffer..write('$highestAssignedIndexVar += ')..write(by)..write(';\n');
+        _buffer
+          ..write('$highestAssignedIndexVar += ')
+          ..write(by)
+          ..write(';\n');
       }
     }
 
@@ -516,7 +533,9 @@ class QueryWriter {
             ..write(useExpression())
             ..write(');\n');
         } else {
-          _buffer..write(r'$write(')..write(useExpression());
+          _buffer
+            ..write(r'$write(')
+            ..write(useExpression());
           if (query.hasMultipleTables) {
             _buffer.write(', hasMultipleTables: true');
           }
@@ -608,7 +627,7 @@ class QueryWriter {
             node is DartPlaceholder ||
             node is NestedStarResultColumn)
         .toList()
-          ..sort(_compareNodes);
+      ..sort(_compareNodes);
 
     final buffer = StringBuffer("'");
 
@@ -700,7 +719,10 @@ class QueryWriter {
 
   void _writeUpdates() {
     final from = _update.updates.map((t) => t.table.dbGetterName).join(', ');
-    _buffer..write('updates: {')..write(from)..write('}');
+    _buffer
+      ..write('updates: {')
+      ..write(from)
+      ..write('}');
   }
 
   void _writeUpdateKind() {

@@ -40,7 +40,9 @@ ComputedSuggestions _compute(String moorFile) {
 }
 
 void _setupEngine(SqlEngine engine) {
-  engine..registerTable(demoTable)..registerTable(anotherTable);
+  engine
+    ..registerTable(demoTable)
+    ..registerTable(anotherTable);
 }
 
 Matcher get suggestsTables => suggestsAll(['demo', 'tbl', 'sqlite_master']);

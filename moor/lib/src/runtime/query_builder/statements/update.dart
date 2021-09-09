@@ -23,7 +23,9 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
         first = false;
       }
 
-      ctx.buffer..write(escapeIfNeeded(columnName))..write(' = ');
+      ctx.buffer
+        ..write(escapeIfNeeded(columnName))
+        ..write(' = ');
 
       variable.writeInto(ctx);
     });

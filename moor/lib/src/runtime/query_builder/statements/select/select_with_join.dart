@@ -74,7 +74,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
         0, _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
 
     ctx.hasMultipleTables = true;
-    ctx.buffer..write(_beginOfSelect(distinct))..write(' ');
+    ctx.buffer
+      ..write(_beginOfSelect(distinct))
+      ..write(' ');
 
     for (var i = 0; i < _selectedColumns.length; i++) {
       if (i != 0) {
@@ -91,7 +93,10 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       _columnAliases[column] = chosenAlias;
 
       column.writeInto(ctx);
-      ctx.buffer..write(' AS "')..write(chosenAlias)..write('"');
+      ctx.buffer
+        ..write(' AS "')
+        ..write(chosenAlias)
+        ..write('"');
     }
 
     ctx.buffer.write(' FROM ${table.tableWithAlias}');

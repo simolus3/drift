@@ -135,12 +135,14 @@ INSERT INTO demo VALUES (?, ?)
 
   test('handles update statement with from clause', () {
     // Example from here: https://www.sqlite.org/lang_update.html#upfrom
-    engine..registerTableFromSql('''
+    engine
+      ..registerTableFromSql('''
       CREATE TABLE inventory (
         itemId INTEGER PRIMARY KEY,
         quantity INTEGER NOT NULL DEFAULT 0,
       );
-    ''')..registerTableFromSql('''
+    ''')
+      ..registerTableFromSql('''
       CREATE TABLE sales (
         itemId INTEGER NOT NULL,
         quantity INTEGER NOT NULL,

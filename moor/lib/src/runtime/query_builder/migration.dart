@@ -270,7 +270,9 @@ class Migrator {
     final constraints = dslTable.customConstraints;
 
     for (var i = 0; i < constraints.length; i++) {
-      context.buffer..write(', ')..write(constraints[i]);
+      context.buffer
+        ..write(', ')
+        ..write(constraints[i]);
     }
 
     context.buffer.write(')');

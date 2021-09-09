@@ -45,7 +45,9 @@ const Map<String, ResolvedType?> _types = {
 };
 
 SqlEngine _spawnEngine() {
-  return SqlEngine()..registerTable(demoTable)..registerTable(anotherTable);
+  return SqlEngine()
+    ..registerTable(demoTable)
+    ..registerTable(anotherTable);
 }
 
 void main() {

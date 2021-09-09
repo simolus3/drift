@@ -1192,7 +1192,9 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
       );
   @override
   String toString() {
-    return (StringBuffer('PureDefault(')..write('txt: $txt')..write(')'))
+    return (StringBuffer('PureDefault(')
+          ..write('txt: $txt')
+          ..write(')'))
         .toString();
   }
 

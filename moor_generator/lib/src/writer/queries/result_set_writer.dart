@@ -61,7 +61,9 @@ class ResultSetWriter {
 
     for (final column in fieldNames) {
       if (nonNullableFields.contains(column)) {
-        into..write(scope.required)..write(' ');
+        into
+          ..write(scope.required)
+          ..write(' ');
       }
       into.write('this.$column,');
     }

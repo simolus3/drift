@@ -12,10 +12,16 @@ void setupLogging({bool verbose = false, bool useAnsi}) {
     final level = rec.level;
     final msgBuffer = StringBuffer();
 
-    msgBuffer..write(rec.level.name)..write(': ')..write(rec.message);
+    msgBuffer
+      ..write(rec.level.name)
+      ..write(': ')
+      ..write(rec.message);
 
     if (rec.error != null) {
-      msgBuffer..write(rec.error)..write('\n')..write(rec.stackTrace);
+      msgBuffer
+        ..write(rec.error)
+        ..write('\n')
+        ..write(rec.stackTrace);
     }
 
     if (level <= log.Level.CONFIG) {

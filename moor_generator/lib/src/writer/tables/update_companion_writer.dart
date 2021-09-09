@@ -119,7 +119,9 @@ class UpdateCompanionWriter {
       _buffer.write('$type ${column.dartGetterName}, \n');
     }
 
-    _buffer..write('}) {\n')..write('return RawValuesInsertable({');
+    _buffer
+      ..write('}) {\n')
+      ..write('return RawValuesInsertable({');
 
     for (final column in table.columns) {
       _buffer

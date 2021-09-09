@@ -91,7 +91,10 @@ abstract class TableOrViewWriter {
         first = false;
       }
 
-      expressionBuffer..write(name)..write(': ')..write(value);
+      expressionBuffer
+        ..write(name)
+        ..write(': ')
+        ..write(value);
     });
 
     expressionBuffer.write(')');
@@ -169,9 +172,13 @@ abstract class TableOrViewWriter {
 
       final classElement = info.targetClass;
       final ctor = info.constructor;
-      buffer..write('return ')..write(classElement.name);
+      buffer
+        ..write('return ')
+        ..write(classElement.name);
       if (ctor.name.isNotEmpty) {
-        buffer..write('.')..write(ctor.name);
+        buffer
+          ..write('.')
+          ..write(ctor.name);
       }
 
       writer.writeArguments(buffer);
@@ -400,7 +407,9 @@ class TableWriter extends TableOrViewWriter {
   void _overrideFieldsIfNeeded() {
     if (table.overrideWithoutRowId != null) {
       final value = table.overrideWithoutRowId! ? 'true' : 'false';
-      buffer..write('@override\n')..write('bool get withoutRowId => $value;\n');
+      buffer
+        ..write('@override\n')
+        ..write('bool get withoutRowId => $value;\n');
     }
 
     if (table.overrideTableConstraints != null) {

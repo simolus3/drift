@@ -262,7 +262,9 @@ class DataClassWriter {
 
     for (final column in table.columns) {
       final dartName = column.dartGetterName;
-      _buffer..write(dartName)..write(': ');
+      _buffer
+        ..write(dartName)
+        ..write(': ');
 
       final needsNullCheck = column.nullable || !scope.generationOptions.nnbd;
       if (needsNullCheck) {
@@ -272,7 +274,10 @@ class DataClassWriter {
         // We'll write the non-null case afterwards
       }
 
-      _buffer..write('Value (')..write(dartName)..write('),');
+      _buffer
+        ..write('Value (')
+        ..write(dartName)
+        ..write('),');
     }
 
     _buffer.writeln(');\n}');
@@ -331,7 +336,9 @@ class RowMappingWriter {
     buffer.write('(');
 
     for (final column in positional) {
-      buffer..write(readAndMap(column))..write(', ');
+      buffer
+        ..write(readAndMap(column))
+        ..write(', ');
     }
 
     named.forEach((column, parameterName) {

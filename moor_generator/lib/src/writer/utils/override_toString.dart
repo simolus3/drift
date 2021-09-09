@@ -32,5 +32,7 @@ void overrideToString(
     into.write("')");
   }
 
-  into..write("..write(')')).toString();")..write('\}\n');
+  into
+    ..write("..write(')')).toString();")
+    ..write('\}\n');
 }

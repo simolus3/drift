@@ -48,7 +48,9 @@ void main() {
     final a = MoorTable(sqlName: 'a', dartTypeName: 'a');
     final b = MoorTable(sqlName: 'b', dartTypeName: 'b');
 
-    a.references..add(a)..add(b);
+    a.references
+      ..add(a)
+      ..add(b);
 
     final sorted = sortEntitiesTopologically([a, b]);
     expect(sorted, [b, a]);

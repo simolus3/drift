@@ -44,10 +44,14 @@ class Reference extends Expression with ReferenceOwner {
     final result = StringBuffer();
 
     if (schemaName != null) {
-      result..write(schemaName)..write('.');
+      result
+        ..write(schemaName)
+        ..write('.');
     }
     if (entityName != null) {
-      result..write(entityName)..write('.');
+      result
+        ..write(entityName)
+        ..write('.');
     }
     result.write(columnName);
 

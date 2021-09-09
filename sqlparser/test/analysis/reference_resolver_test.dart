@@ -208,11 +208,13 @@ SELECT row_number() OVER wnd FROM demo
   });
 
   group('nullability for references from outer join', () {
-    final engine = SqlEngine()..registerTableFromSql('''
+    final engine = SqlEngine()
+      ..registerTableFromSql('''
       CREATE TABLE users (
         id INTEGER NOT NULL PRIMARY KEY
       );
-    ''')..registerTableFromSql('''
+    ''')
+      ..registerTableFromSql('''
       CREATE TABLE messages (
         sender INTEGER NOT NULL
       );

@@ -113,7 +113,9 @@ class _AggregateExpression<D> extends Expression<D> {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer..write(functionName)..write('(');
+    context.buffer
+      ..write(functionName)
+      ..write('(');
 
     if (distinct) {
       context.buffer.write('DISTINCT ');

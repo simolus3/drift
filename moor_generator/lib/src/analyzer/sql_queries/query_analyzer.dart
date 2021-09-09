@@ -139,7 +139,7 @@ class SqlAnalyzer extends BaseAnalyzer {
         final handled = QueryHandler(query, context, mapper,
                 requiredVariables: requiredVariables)
             .handle()
-              ..declaredInMoorFile = declaredInMoor;
+          ..declaredInMoorFile = declaredInMoor;
         foundQueries.add(handled);
       } catch (e, s) {
         // todo remove dependency on build package here

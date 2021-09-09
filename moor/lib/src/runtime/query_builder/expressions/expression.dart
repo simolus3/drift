@@ -426,7 +426,9 @@ class FunctionCallExpression<R> extends Expression<R> {
 
   @override
   void writeInto(GenerationContext context) {
-    context.buffer..write(functionName)..write('(');
+    context.buffer
+      ..write(functionName)
+      ..write('(');
     _writeCommaSeparated(context, arguments);
     context.buffer.write(')');
   }

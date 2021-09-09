@@ -113,17 +113,23 @@ class GeneratedColumn<T> extends Column<T> {
 
       // these custom constraints refer to builtin constraints from moor
       if (_defaultConstraints != null) {
-        into.buffer..write(' ')..write(_defaultConstraints);
+        into.buffer
+          ..write(' ')
+          ..write(_defaultConstraints);
       }
     } else if ($customConstraints?.isNotEmpty == true) {
-      into.buffer..write(' ')..write($customConstraints);
+      into.buffer
+        ..write(' ')
+        ..write($customConstraints);
     }
   }
 
   @override
   void writeInto(GenerationContext context, {bool ignoreEscape = false}) {
     if (context.hasMultipleTables) {
-      context.buffer..write(tableName)..write('.');
+      context.buffer
+        ..write(tableName)
+        ..write('.');
     }
     context.buffer.write(ignoreEscape ? $name : escapedName);
   }

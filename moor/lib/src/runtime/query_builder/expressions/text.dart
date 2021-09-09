@@ -201,7 +201,9 @@ class _CollateOperator extends Expression<String> {
   @override
   void writeInto(GenerationContext context) {
     writeInner(context, inner);
-    context.buffer..write(' COLLATE ')..write(_operatorNames[collate]);
+    context.buffer
+      ..write(' COLLATE ')
+      ..write(_operatorNames[collate]);
   }
 
   @override
