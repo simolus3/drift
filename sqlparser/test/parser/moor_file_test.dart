@@ -123,6 +123,38 @@ void main() {
     );
   });
 
+  test('parses transaction blocks', () {
+    testMoorFile(
+      '''
+test: BEGIN
+  UPDATE foo SET bar = baz;
+  DELETE FROM t;
+END;
+''',
+      MoorFile([
+        DeclaredStatement(
+          SimpleName('test'),
+          TransactionBlock(
+            begin: BeginTransactionStatement(),
+            innerStatements: [
+              UpdateStatement(
+                table: TableReference('foo'),
+                set: [
+                  SetComponent(
+                    column: Reference(columnName: 'bar'),
+                    expression: Reference(columnName: 'baz'),
+                  ),
+                ],
+              ),
+              DeleteStatement(from: TableReference('t')),
+            ],
+            commit: CommitStatement(),
+          ),
+        ),
+      ]),
+    );
+  });
+
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
     final parsed = SqlEngine(EngineOptions(useMoorExtensions: true))

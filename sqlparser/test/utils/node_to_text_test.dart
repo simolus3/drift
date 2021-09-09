@@ -446,6 +446,20 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     test('nested star', () {
       testFormat('q: SELECT foo.** FROM foo;', kind: _ParseKind.moorFile);
     });
+
+    test('transaction block', () {
+      testFormat(
+        '''
+test: BEGIN TRANSACTION
+  SELECT * FROM foo;
+  UPDATE foo SET bar = baz;
+  DELETE FROM x;
+  INSERT INTO foo VALUES (x, y, z);
+COMMIT TRANSACTION;
+''',
+        kind: _ParseKind.moorFile,
+      );
+    });
   });
 
   test('does not format invalid statements', () {

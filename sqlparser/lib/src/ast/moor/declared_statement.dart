@@ -3,6 +3,7 @@ import '../ast.dart' show Variable;
 import '../expressions/expressions.dart';
 import '../node.dart';
 import '../statements/statement.dart';
+import '../statements/transaction.dart';
 import '../visitor.dart';
 import 'moor_file.dart';
 
@@ -10,7 +11,7 @@ import 'moor_file.dart';
 /// followed by a colon and the query to run.
 class DeclaredStatement extends Statement implements PartOfMoorFile {
   final DeclaredStatementIdentifier identifier;
-  CrudStatement statement;
+  AstNode statement;
   List<StatementParameter> parameters;
 
   /// The desired result class name, if set.
@@ -150,5 +151,32 @@ class DartPlaceholderDefaultValue extends StatementParameter {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     defaultValue = transformer.transformChild(defaultValue, this, arg);
+  }
+}
+
+class TransactionBlock extends AstNode implements MoorSpecificNode {
+  BeginTransactionStatement begin;
+  List<CrudStatement> innerStatements;
+  CommitStatement commit;
+
+  TransactionBlock({
+    required this.begin,
+    required this.innerStatements,
+    required this.commit,
+  });
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitMoorSpecificNode(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    begin = transformer.transformChild(begin, this, arg);
+    innerStatements = transformer.transformChildren(innerStatements, this, arg);
+    commit = transformer.transformChild(commit, this, arg);
   }
 }

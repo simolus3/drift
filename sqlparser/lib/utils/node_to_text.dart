@@ -117,13 +117,17 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.right, arg);
   }
 
+  void _writeStatements(Iterable<Statement> statements) {
+    for (final stmt in statements) {
+      visit(stmt, null);
+      _symbol(';');
+    }
+  }
+
   @override
   void visitBlock(Block block, void arg) {
     _keyword(TokenType.begin);
-    for (final stmt in block.statements) {
-      visit(stmt, arg);
-      _symbol(';');
-    }
+    _writeStatements(block.statements);
     _keyword(TokenType.end);
   }
 
@@ -459,6 +463,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (e is NestedStarResultColumn) {
       _identifier(e.tableName);
       _symbol('.**', spaceAfter: true);
+    } else if (e is TransactionBlock) {
+      visit(e.begin, arg);
+      _writeStatements(e.innerStatements);
+      visit(e.commit, arg);
     }
   }
 

@@ -323,7 +323,13 @@ class Parser {
         TokenType.colon,
         'Expected a colon (:) followed by a query. Imports and CREATE '
         'statements must appear before the first query.');
-    final stmt = _crud();
+
+    AstNode? stmt;
+    if (_check(TokenType.begin)) {
+      stmt = _transactionBlock();
+    } else {
+      stmt = _crud();
+    }
 
     if (stmt == null) {
       _error(
@@ -410,9 +416,7 @@ class Parser {
     return result;
   }
 
-  /// Parses a block, which consists of statements between `BEGIN` and `END`.
-  Block _consumeBlock() {
-    final begin = _consume(TokenType.begin, 'Expected BEGIN');
+  List<CrudStatement> _crudStatements() {
     final stmts = <CrudStatement>[];
 
     for (var stmt = _parseAsStatement(_crud);
@@ -421,12 +425,29 @@ class Parser {
       if (stmt != null) stmts.add(stmt);
     }
 
+    return stmts;
+  }
+
+  /// Parses a block, which consists of statements between `BEGIN` and `END`.
+  Block _consumeBlock() {
+    final begin = _consume(TokenType.begin, 'Expected BEGIN');
+    final stmts = _crudStatements();
     final end = _consume(TokenType.end, 'Expected END');
 
     return Block(stmts)
       ..setSpan(begin, end)
       ..begin = begin
       ..end = end;
+  }
+
+  TransactionBlock _transactionBlock() {
+    final first = _peek;
+    final begin = _beginStatement();
+    final stmts = _crudStatements();
+    final end = _commit();
+
+    return TransactionBlock(begin: begin, innerStatements: stmts, commit: end)
+      ..setSpan(first, _previous);
   }
 
   Expression expression() {
@@ -941,7 +962,7 @@ class Parser {
     }
   }
 
-  Statement _beginStatement() {
+  BeginTransactionStatement _beginStatement() {
     final begin = _consume(TokenType.begin);
     Token? modeToken;
     var mode = TransactionMode.none;
