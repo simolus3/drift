@@ -102,7 +102,6 @@ class SqlAnalyzer extends BaseAnalyzer {
   void parse() {
     for (final query in definedQueries) {
       final name = query.name;
-      var declaredInMoor = false;
 
       AnalysisContext? context;
       var requiredVariables = RequiredVariables.empty;
@@ -113,14 +112,19 @@ class SqlAnalyzer extends BaseAnalyzer {
           context = engine.analyze(sql);
         } else if (query is DeclaredMoorQuery) {
           final options = _createOptionsAndVars(query.astNode);
-          requiredVariables = options.variables;
+          final statements = query.query;
 
-          context = engine.analyzeNode(
-            query.query,
-            query.file!.parseResult.sql,
-            stmtOptions: options.options,
-          );
-          declaredInMoor = true;
+          if (statements.length > 1) {
+            _handleMultiStatementQuery(query, statements, options);
+            continue;
+          } else {
+            requiredVariables = options.variables;
+            context = engine.analyzeNode(
+              statements.single,
+              query.file!.parseResult.sql,
+              stmtOptions: options.options,
+            );
+          }
         }
       } catch (e, s) {
         step.reportError(MoorError(
@@ -129,27 +133,49 @@ class SqlAnalyzer extends BaseAnalyzer {
         continue;
       }
 
-      for (final error in context!.errors) {
-        report(error,
-            msg: () => 'The sql query $name is invalid: $error',
-            severity: Severity.error);
-      }
-
-      try {
-        final handled = QueryHandler(query, context, mapper,
-                requiredVariables: requiredVariables)
-            .handle()
-          ..declaredInMoorFile = declaredInMoor;
-        foundQueries.add(handled);
-      } catch (e, s) {
-        // todo remove dependency on build package here
-        log.warning('Error while generating APIs for $name', e, s);
-      }
+      _handleQuery(query, context!, mapper, requiredVariables);
     }
 
     // report lints
     for (final query in foundQueries) {
       reportLints(query.lints ?? const <Never>[], name: query.name);
+    }
+  }
+
+  void _handleMultiStatementQuery(
+    DeclaredMoorQuery query,
+    Iterable<CrudStatement> statements,
+    _OptionsAndRequiredVariables options,
+  ) {
+    for (final stmt in statements) {
+      final context = engine.analyzeNode(
+        stmt,
+        query.file!.parseResult.sql,
+        stmtOptions: options.options,
+      );
+
+      _handleQuery(query, context, mapper, options.variables);
+    }
+  }
+
+  void _handleQuery(DeclaredQuery query, AnalysisContext context,
+      TypeMapper mapper, RequiredVariables variables) {
+    final name = query.name;
+    for (final error in context.errors) {
+      report(error,
+          msg: () => 'The sql query $name is invalid: $error',
+          severity: Severity.error);
+    }
+
+    try {
+      final handled =
+          QueryHandler(query, context, mapper, requiredVariables: variables)
+              .handle()
+                ..declaredInMoorFile = query is DeclaredMoorQuery;
+      foundQueries.add(handled);
+    } catch (e, s) {
+      // todo remove dependency on build package here
+      log.warning('Error while generating APIs for $name', e, s);
     }
   }
 

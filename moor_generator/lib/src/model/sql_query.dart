@@ -47,7 +47,16 @@ class DeclaredMoorQuery extends DeclaredQuery {
 
   DeclaredMoorQuery(String name, this.astNode) : super(name);
 
-  CrudStatement get query => astNode.statement;
+  List<CrudStatement> get query {
+    final stmt = astNode.statement;
+    if (stmt is CrudStatement) {
+      return [stmt];
+    } else if (stmt is TransactionBlock) {
+      return stmt.innerStatements;
+    } else {
+      throw StateError('Invalid statement: $stmt');
+    }
+  }
 
   factory DeclaredMoorQuery.fromStatement(DeclaredStatement stmt) {
     assert(stmt.identifier is SimpleName);
@@ -58,7 +67,8 @@ class DeclaredMoorQuery extends DeclaredQuery {
 
 abstract class SqlQuery {
   final String name;
-  final AnalysisContext fromContext;
+
+  AnalysisContext? get fromContext;
   List<AnalysisError>? lints;
 
   /// Whether this query was declared in a `.moor` file.
@@ -67,7 +77,7 @@ abstract class SqlQuery {
   /// instead only generate a single method returning a selectable.
   bool declaredInMoorFile = false;
 
-  String get sql => fromContext.sql;
+  String? get sql => fromContext?.sql;
 
   /// The result set of this statement, mapped to moor-generated classes.
   ///
@@ -109,8 +119,7 @@ abstract class SqlQuery {
   /// write their table name (e.g. `foo.bar` instead of just `bar`).
   final bool hasMultipleTables;
 
-  SqlQuery(this.name, this.fromContext, this.elements,
-      {bool? hasMultipleTables})
+  SqlQuery(this.name, this.elements, {bool? hasMultipleTables})
       : hasMultipleTables = hasMultipleTables ?? false {
     variables = elements.whereType<FoundVariable>().toList();
     placeholders = elements.whereType<FoundDartPlaceholder>().toList();
@@ -155,6 +164,8 @@ class SqlSelectQuery extends SqlQuery {
   final List<MoorSchemaEntity> readsFrom;
   @override
   final InferredResultSet resultSet;
+  @override
+  final AnalysisContext fromContext;
 
   /// The name of the result class, as requested by the user.
   // todo: Allow custom result classes for RETURNING as well?
@@ -162,13 +173,12 @@ class SqlSelectQuery extends SqlQuery {
 
   SqlSelectQuery(
     String name,
-    AnalysisContext fromContext,
+    this.fromContext,
     List<FoundElement> elements,
     this.readsFrom,
     this.resultSet,
     this.requestedResultClass,
-  ) : super(name, fromContext, elements,
-            hasMultipleTables: readsFrom.length > 1);
+  ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
 
   Set<MoorTable> get readsFromTables {
     return {
@@ -200,16 +210,36 @@ class UpdatingQuery extends SqlQuery {
   final bool isInsert;
   @override
   final InferredResultSet? resultSet;
+  @override
+  final AnalysisContext fromContext;
 
   bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
 
   bool get isOnlyUpdate => updates.every((w) => w.kind == UpdateKind.update);
 
-  UpdatingQuery(String name, AnalysisContext fromContext,
-      List<FoundElement> elements, this.updates,
-      {this.isInsert = false, bool? hasMultipleTables, this.resultSet})
-      : super(name, fromContext, elements,
-            hasMultipleTables: hasMultipleTables);
+  UpdatingQuery(
+    String name,
+    this.fromContext,
+    List<FoundElement> elements,
+    this.updates, {
+    this.isInsert = false,
+    bool? hasMultipleTables,
+    this.resultSet,
+  }) : super(name, elements, hasMultipleTables: hasMultipleTables);
+}
+
+/// A special kind of query running multiple inner queries in a transaction.
+class InTransactionQuery extends SqlQuery {
+  final List<SqlQuery> innerQueries;
+
+  InTransactionQuery(this.innerQueries, String name)
+      : super(name, [for (final query in innerQueries) ...query.elements]);
+
+  @override
+  InferredResultSet? get resultSet => null;
+
+  @override
+  AnalysisContext? get fromContext => null;
 }
 
 class InferredResultSet {

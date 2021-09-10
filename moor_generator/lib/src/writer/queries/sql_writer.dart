@@ -46,7 +46,7 @@ class SqlWriter extends NodeSqlBuilder {
 
   String write() {
     _out.write("'");
-    visit(query.fromContext.root, null);
+    visit(query.fromContext!.root, null);
     _out.write("'");
 
     return _out.toString();
