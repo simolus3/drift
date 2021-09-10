@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:moor_example/bloc.dart';
 import 'package:moor_example/database/database.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 final _dateFormat = DateFormat.yMMMd();
@@ -80,14 +80,18 @@ class _TodoEditDialogState extends State<TodoEditDialog> {
         ],
       ),
       actions: [
-        FlatButton(
+        TextButton(
           child: const Text('Cancel'),
-          textColor: Colors.black,
+          style: ButtonStyle(
+            textStyle: MaterialStateProperty.all(
+              const TextStyle(color: Colors.black),
+            ),
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        FlatButton(
+        TextButton(
           child: const Text('Save'),
           onPressed: () {
             final updatedContent = textController.text;

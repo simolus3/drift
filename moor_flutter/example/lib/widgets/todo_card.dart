@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:moor_example/bloc.dart';
 import 'package:moor_example/database/database.dart';
-import 'package:intl/intl.dart';
 import 'package:moor_example/widgets/todo_edit_dialog.dart';
 import 'package:provider/provider.dart';
 

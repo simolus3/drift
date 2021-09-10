@@ -38,9 +38,13 @@ class CategoriesDrawer extends StatelessWidget {
           const Spacer(),
           Row(
             children: <Widget>[
-              FlatButton(
+              TextButton(
                 child: const Text('Add category'),
-                textColor: Theme.of(context).accentColor,
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all(
+                    Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
                 onPressed: () {
                   showDialog(
                       context: context, builder: (_) => AddCategoryDialog());
@@ -77,7 +81,8 @@ class _CategoryDrawerEntry extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: isActive ? Theme.of(context).accentColor : Colors.black,
+          color:
+              isActive ? Theme.of(context).colorScheme.secondary : Colors.black,
         ),
       ),
       Padding(
@@ -107,9 +112,11 @@ class _CategoryDrawerEntry extends StatelessWidget {
                         Navigator.pop(context, false);
                       },
                     ),
-                    FlatButton(
+                    TextButton(
                       child: const Text('Delete'),
-                      textColor: Colors.red,
+                      style: ButtonStyle(
+                        foregroundColor: MaterialStateProperty.all(Colors.red),
+                      ),
                       onPressed: () {
                         Navigator.pop(context, true);
                       },

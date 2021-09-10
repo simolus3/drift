@@ -72,7 +72,7 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.send),
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).colorScheme.secondary,
                       onPressed: _createTodoEntry,
                     ),
                   ],

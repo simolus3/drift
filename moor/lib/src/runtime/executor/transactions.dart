@@ -8,6 +8,7 @@ class Transaction extends DatabaseConnectionUser {
   final DatabaseConnectionUser _parent;
 
   @override
+  // ignore: invalid_use_of_visible_for_overriding_member
   GeneratedDatabase get attachedDatabase => _parent.attachedDatabase;
 
   /// Constructs a transaction executor from the [_parent] engine and the
@@ -92,6 +93,7 @@ class BeforeOpenRunner extends DatabaseConnectionUser {
   final DatabaseConnectionUser _parent;
 
   @override
+  // ignore: invalid_use_of_visible_for_overriding_member
   GeneratedDatabase get attachedDatabase => _parent.attachedDatabase;
 
   /// Creates a [BeforeOpenRunner] from a [DatabaseConnectionUser] and the
