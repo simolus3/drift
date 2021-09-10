@@ -95,7 +95,20 @@ class StringTable extends Table {
 class IntTable extends Table {
   IntColumn get value => integer()();
 }
-      '''
+      ''',
+      'a|lib/blob.dart': '''
+import 'package:moor/moor.dart';
+
+@UseRowClass(Cls)
+class Tbl extends Table {
+  BlobColumn get foo => blob()();
+  BlobColumn get bar => blob()();
+}
+
+class Cls {
+  Cls(Uint8List foo, List<int> bar) {}
+}
+      ''',
     });
   });
 
@@ -194,5 +207,10 @@ class IntTable extends Table {
             ),
           ),
     );
+  });
+
+  test('handles blob columns', () async {
+    final file = await state.analyze('package:a/blob.dart');
+    expect(file.errors.errors, isEmpty);
   });
 }

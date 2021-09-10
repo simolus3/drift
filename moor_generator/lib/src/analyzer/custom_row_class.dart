@@ -96,7 +96,17 @@ void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
     expectedDartType = provider.typeFor(column.type);
   }
 
-  if (!typesystem.isAssignableTo(expectedDartType, type)) {
+  // BLOB columns should be stored in an Uint8List (or a supertype of that).
+  // We don't get a Uint8List from the type provider unfortunately, but as it
+  // cannot be extended we can just check for that manually.
+  final isAllowedUint8List = column.typeConverter == null &&
+      column.type == ColumnType.blob &&
+      type is InterfaceType &&
+      type.element.name == 'Uint8List' &&
+      type.element.library.name == 'dart.typed_data';
+
+  if (!typesystem.isAssignableTo(expectedDartType, type) &&
+      !isAllowedUint8List) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');
   }
@@ -115,7 +125,6 @@ extension on TypeProvider {
         return intElement.library.getType('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case ColumnType.blob:
-        // todo: We should return Uint8List, but how?
         return listType(intType);
       case ColumnType.real:
         return doubleType;
