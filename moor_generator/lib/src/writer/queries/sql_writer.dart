@@ -121,9 +121,9 @@ class SqlWriter extends NodeSqlBuilder {
           query.placeholders.singleWhere((p) => p.astNode == e);
 
       _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+    } else {
+      return super.visitMoorSpecificNode(e, arg);
     }
-
-    return super.visitMoorSpecificNode(e, arg);
   }
 }
 
