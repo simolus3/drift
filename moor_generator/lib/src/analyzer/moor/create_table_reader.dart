@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:moor_generator/src/backends/backend.dart';

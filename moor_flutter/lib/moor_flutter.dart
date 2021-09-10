@@ -6,9 +6,10 @@ library moor_flutter;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:path/path.dart';
-import 'package:moor/moor.dart';
+
 import 'package:moor/backends.dart';
+import 'package:moor/moor.dart';
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as s;
 
 export 'package:moor/moor.dart';

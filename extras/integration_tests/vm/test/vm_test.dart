@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:moor/ffi.dart';
+import 'package:path/path.dart' show join;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:tests/tests.dart';
-
-import 'package:path/path.dart' show join;
 
 class VmExecutor extends TestExecutor {
   static String fileName = 'moor-vm-tests-${DateTime.now().toIso8601String()}';

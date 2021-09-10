@@ -1,9 +1,9 @@
 import 'package:built_value/built_value.dart';
-import 'package:moor/moor.dart';
 import 'package:moor/ffi.dart';
+import 'package:moor/moor.dart';
 
-part 'database.moor.dart';
 part 'database.g.dart';
+part 'database.moor.dart';
 
 abstract class Foo implements Built<Foo, FooBuilder> {
   User get moorField;

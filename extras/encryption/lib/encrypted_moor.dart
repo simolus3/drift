@@ -6,9 +6,10 @@ library encrypted_moor;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:path/path.dart';
-import 'package:moor/moor.dart';
+
 import 'package:moor/backends.dart';
+import 'package:moor/moor.dart';
+import 'package:path/path.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart' as s;
 
 /// Signature of a function that runs when a database doesn't exist on file.

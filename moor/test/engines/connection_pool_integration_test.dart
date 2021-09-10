@@ -4,10 +4,8 @@ import 'dart:io';
 import 'package:moor/ffi.dart';
 import 'package:moor/isolate.dart';
 import 'package:moor/moor.dart';
-
-import 'package:test/test.dart';
-
 import 'package:path/path.dart' show join;
+import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 

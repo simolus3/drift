@@ -5,9 +5,9 @@ import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/lints/linter.dart';
-import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_handler.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
+import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -171,7 +171,7 @@ class SqlAnalyzer extends BaseAnalyzer {
       final handled =
           QueryHandler(query, context, mapper, requiredVariables: variables)
               .handle()
-                ..declaredInMoorFile = query is DeclaredMoorQuery;
+            ..declaredInMoorFile = query is DeclaredMoorQuery;
       foundQueries.add(handled);
     } catch (e, s) {
       // todo remove dependency on build package here

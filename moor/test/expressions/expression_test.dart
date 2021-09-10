@@ -1,7 +1,7 @@
 import 'package:mockito/mockito.dart';
+import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
-import 'package:moor/moor.dart';
 import '../data/tables/custom_tables.dart';
 import '../data/tables/todos.dart';
 import '../data/utils/expect_generated.dart';

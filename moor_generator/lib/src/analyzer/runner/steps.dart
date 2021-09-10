@@ -6,18 +6,17 @@ import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/dart/parser.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
 import 'package:moor_generator/src/analyzer/moor/entity_handler.dart';
+import 'package:moor_generator/src/analyzer/moor/parser.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
-import 'package:moor_generator/src/analyzer/moor/parser.dart';
+import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/custom_result_class.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:moor_generator/src/analyzer/sql_queries/type_mapping.dart';
-import 'package:moor_generator/src/analyzer/runner/task.dart';
 import 'package:moor_generator/src/analyzer/view/view_analyzer.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:moor_generator/src/model/view.dart';
 import 'package:moor_generator/src/utils/entity_reference_sorter.dart';
-
 import 'package:source_gen/source_gen.dart';
 
 part 'steps/analyze_dart.dart';

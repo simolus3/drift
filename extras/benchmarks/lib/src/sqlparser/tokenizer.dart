@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:benchmarks/benchmarks.dart';
 // ignore: implementation_imports
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
-// ignore: implementation_imports
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
+// ignore: implementation_imports
+import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 class TokenizerBenchmark extends BenchmarkBase {
   late StringBuffer input;
@@ -22,7 +22,9 @@ class TokenizerBenchmark extends BenchmarkBase {
     final keywordLexemes = keywords.keys.toList();
     for (var i = 0; i < size; i++) {
       final keyword = keywordLexemes[random.nextInt(keywordLexemes.length)];
-      input..write(' ')..write(keyword);
+      input
+        ..write(' ')
+        ..write(keyword);
     }
   }
 

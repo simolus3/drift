@@ -6,8 +6,8 @@ import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:moor_generator/src/backends/build/moor_builder.dart';
-import 'package:test/test.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:test/test.dart';
 
 const _testInput = r'''
 import 'package:moor/moor.dart';

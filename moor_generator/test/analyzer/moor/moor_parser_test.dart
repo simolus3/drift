@@ -1,9 +1,9 @@
 //@dart=2.9
 import 'package:build/build.dart';
-import 'package:moor_generator/src/model/types.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
 import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/session.dart';
+import 'package:moor_generator/src/model/types.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';

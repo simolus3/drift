@@ -1,6 +1,6 @@
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:test/test.dart';
-import 'package:sqlparser/sqlparser.dart';
 
 import 'utils.dart';
 

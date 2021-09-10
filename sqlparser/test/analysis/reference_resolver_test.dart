@@ -1,6 +1,6 @@
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:test/test.dart';
-import 'package:sqlparser/sqlparser.dart';
 
 import '../parser/utils.dart';
 import 'data.dart';

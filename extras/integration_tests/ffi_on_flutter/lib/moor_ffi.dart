@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
-import 'package:sqlite3/sqlite3.dart' as raw;
 import 'package:moor/ffi.dart';
-import 'package:test/test.dart';
-import 'package:tests/tests.dart';
 import 'package:moor/isolate.dart';
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:sqlite3/sqlite3.dart' as raw;
+import 'package:test/test.dart';
+import 'package:tests/tests.dart';
 
 class FfiExecutor extends TestExecutor {
   final String dbPath;

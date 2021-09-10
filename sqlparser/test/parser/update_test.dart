@@ -1,6 +1,7 @@
+import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:test/test.dart';
-import 'package:sqlparser/sqlparser.dart';
+
 import 'utils.dart';
 
 final Map<String, AstNode> testCases = {

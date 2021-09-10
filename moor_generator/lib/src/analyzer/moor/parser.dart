@@ -1,8 +1,8 @@
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/analyzer/errors.dart';
-import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/analyzer/moor/create_table_reader.dart';
 import 'package:moor_generator/src/analyzer/runner/results.dart';
+import 'package:moor_generator/src/analyzer/runner/steps.dart';
 import 'package:moor_generator/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 

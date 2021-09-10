@@ -2,11 +2,10 @@
 import 'dart:convert';
 import 'dart:ffi';
 
-import 'package:test/test.dart';
-import 'package:sqlite3/open.dart';
 import 'package:ffi/ffi.dart';
-
+import 'package:sqlite3/open.dart';
 import 'package:sqlparser/src/reader/tokenizer/token.dart';
+import 'package:test/test.dart';
 
 typedef SqliteKeywordCountNative = Int32 Function();
 typedef SqliteKeywordCount = int Function();

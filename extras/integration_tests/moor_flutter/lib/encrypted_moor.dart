@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
-import 'package:tests/tests.dart';
 import 'package:encrypted_moor/encrypted_moor.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:tests/tests.dart';
 
 class EncryptedTestExecutor extends TestExecutor {
   @override

@@ -1,5 +1,5 @@
-import 'package:moor/moor.dart';
 import 'package:moor/extensions/json1.dart';
+import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 import '../data/utils/expect_generated.dart';

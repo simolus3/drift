@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
-import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
 
 void main() {
   test('can close lost instances', () async {

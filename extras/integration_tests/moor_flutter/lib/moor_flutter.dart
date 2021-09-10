@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
-import 'package:tests/tests.dart';
-import 'package:test/test.dart';
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:test/test.dart';
+import 'package:tests/tests.dart';
 
 class SqfliteExecutor extends TestExecutor {
   @override

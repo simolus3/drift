@@ -1,9 +1,9 @@
 @TestOn('vm')
 import 'dart:async';
 
-import 'package:test/test.dart';
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
+import 'package:test/test.dart';
 
 class _TestDb extends GeneratedDatabase {
   _TestDb() : super(const SqlTypeSystem.withDefaults(), VmDatabase.memory());
