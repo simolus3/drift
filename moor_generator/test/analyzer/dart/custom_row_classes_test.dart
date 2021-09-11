@@ -97,16 +97,20 @@ class IntTable extends Table {
 }
       ''',
       'a|lib/blob.dart': '''
+// @dart=2.13
 import 'package:moor/moor.dart';
 
 @UseRowClass(Cls)
 class Tbl extends Table {
   BlobColumn get foo => blob()();
   BlobColumn get bar => blob()();
+  BlobColumn get baz => blob()();
 }
 
+typedef Bytes = Uint8List;
+
 class Cls {
-  Cls(Uint8List foo, List<int> bar) {}
+  Cls(Uint8List foo, List<int> bar, Bytes baz) {}
 }
       ''',
     });
