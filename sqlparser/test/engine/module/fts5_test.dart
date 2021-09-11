@@ -46,6 +46,7 @@ void main() {
     test('return type of bm25()', () {
       final result = engine
           .analyze('SELECT *, bm25(foo) AS b FROM foo WHERE foo MATCH \'\'');
+      expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
@@ -57,6 +58,7 @@ void main() {
       final result =
           engine.analyze("SELECT *, highlight(foo, 0, '<b>', '</b>') AS b "
               "FROM foo WHERE foo MATCH ''");
+      expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
@@ -68,6 +70,7 @@ void main() {
       final result = engine
           .analyze("SELECT *, snippet(foo, 0, '<b>', '</b>', '...', 20) AS b "
               "FROM foo WHERE foo MATCH ''");
+      expect(result.errors, isEmpty);
 
       final select = result.root as SelectStatement;
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
@@ -81,7 +84,7 @@ void main() {
     setUp(() {
       engine = SqlEngine(_fts5Options);
       // add an fts5 table for the following queries
-      final fts5Result = engine.analyze('CREATE VIRTUAL TABLE foo USING '
+      final fts5Result = engine.analyze('CREATE VIRTUAL TABLE fts USING '
           'fts5(bar, baz);');
       engine.registerTable(const SchemaFromCreateTable()
           .read(fts5Result.root as TableInducingStatement));
@@ -89,6 +92,8 @@ void main() {
 
     void checkVarTypes(String sql, List<BasicType> expected) {
       final result = engine.analyze(sql);
+      expect(result.errors, isEmpty);
+
       final foundVars = result.root.allDescendants.whereType<Variable>();
 
       expect(

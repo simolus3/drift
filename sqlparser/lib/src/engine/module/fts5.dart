@@ -147,7 +147,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
     }
 
     // the first argument to all functions must be a fts5 table name
-    if (firstResolved == null || firstResolved is! _Fts5TableColumn) {
+    if (firstResolved == null || firstResolved.source is! _Fts5TableColumn) {
       context.reportError(AnalysisError(
         relevantNode: args.first,
         message: 'Expected an fts5 table name here',
