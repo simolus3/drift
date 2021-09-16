@@ -1,4 +1,4 @@
-## 0.18.0
+## 0.18.0-dev
 
 - Fix unecessary errors around `fts5` tables
 - Merge all moor-specific nodes into a single `visitMoorSpecific` visitor method

@@ -19,8 +19,8 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<T> eval<T>(Expression<T> expr) {
-    final query = db.selectOnly(db.users)..addColumns([expr]);
+  Future<T> eval<T>(Expression<T> expr, {TableInfo? onTable}) {
+    final query = db.selectOnly(onTable ?? db.users)..addColumns([expr]);
     return query.getSingle().then((row) => row.read(expr));
   }
 
@@ -71,6 +71,26 @@ void main() {
     expect(eval(db.users.creationTime.max()), completion(secondTime));
     expect(eval(db.users.creationTime.avg()),
         completion(DateTime(2021, 5, 10, 12)));
+  });
+
+  test('aggregate filters', () async {
+    await db.delete(db.users).go();
+
+    await db
+        .into(db.tableWithoutPK)
+        .insert(TableWithoutPKCompanion.insert(notReallyAnId: 3, someFloat: 7));
+    await db
+        .into(db.tableWithoutPK)
+        .insert(TableWithoutPKCompanion.insert(notReallyAnId: 2, someFloat: 1));
+
+    expect(
+      eval(
+        db.tableWithoutPK.someFloat
+            .sum(filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3)),
+        onTable: db.tableWithoutPK,
+      ),
+      completion(7),
+    );
   });
 
   group('text', () {

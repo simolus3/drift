@@ -43,6 +43,8 @@ void main() {
 
   test('avg', () {
     expect(foo.avg(), generates('AVG(foo)'));
+    expect(foo.avg(filter: foo.isBiggerOrEqualValue(3)),
+        generates('AVG(foo) FILTER (WHERE foo >= ?)', [3]));
   });
 
   test('max', () {

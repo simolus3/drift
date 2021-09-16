@@ -3,9 +3,11 @@ part of '../query_builder.dart';
 /// Returns the amount of rows in the current group matching the optional
 /// [filter].
 ///
-/// To only count rows matching a predicate, you can set the optional [filter].
-/// Note that [filter] is only available from sqlite 3.30, released on
+/// {@templace moor_aggregate_filter}
+/// To only consider rows matching a predicate, you can set the optional
+/// [filter]. Note that [filter] is only available from sqlite 3.30, released on
 /// 2019-10-04. Most devices will use an older sqlite version.
+/// {@endtemplate}
 ///
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
@@ -21,9 +23,8 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// For `COUNT(*)`, which would count all rows, see [countAll].
   ///
   /// If [distinct] is set (defaults to false), duplicate values will not be
-  /// counted twice. An optional [filter] can be used to only include values
-  /// matching the filter. Note that [filter] is only available from sqlite
-  /// 3.30 and most devices will use an older sqlite version.
+  /// counted twice.
+  /// {@macro moor_aggregate_filter}
   Expression<int> count({bool? distinct, Expression<bool?>? filter}) {
     return _AggregateExpression('COUNT', this,
         filter: filter, distinct: distinct);
@@ -51,17 +52,24 @@ extension BaseAggregate<DT> on Expression<DT> {
 /// Provides aggregate functions that are available for numeric expressions.
 extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   /// Return the average of all non-null values in this group.
-  Expression<double?> avg() => _AggregateExpression('AVG', this);
+  ///
+  /// {@macro moor_aggregate_filter}
+  Expression<double?> avg({Expression<bool?>? filter}) =>
+      _AggregateExpression('AVG', this, filter: filter);
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DT?> max() => _AggregateExpression('MAX', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<DT?> max({Expression<bool?>? filter}) =>
+      _AggregateExpression('MAX', this, filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DT?> min() => _AggregateExpression('MIN', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<DT?> min({Expression<bool?>? filter}) =>
+      _AggregateExpression('MIN', this, filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
   ///
@@ -71,29 +79,39 @@ extension ArithmeticAggregates<DT extends num> on Expression<DT?> {
   ///
   /// See also [total], which behaves similarly but returns a floating point
   /// value and doesn't throw an overflow exception.
-  Expression<DT?> sum() => _AggregateExpression('SUM', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<DT?> sum({Expression<bool?>? filter}) =>
+      _AggregateExpression('SUM', this, filter: filter);
 
   /// Calculate the sum of all non-null values in the group.
   ///
   /// If all values in the group are null, [total] returns `0.0`. This function
   /// uses floating-point values internally.
-  Expression<double?> total() => _AggregateExpression('TOTAL', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<double?> total({Expression<bool?>? filter}) =>
+      _AggregateExpression('TOTAL', this, filter: filter);
 }
 
 /// Provides aggregate functions that are available on date time expressions.
 extension DateTimeAggregate on Expression<DateTime?> {
   /// Return the average of all non-null values in this group.
-  Expression<DateTime> avg() => secondsSinceEpoch.avg().roundToInt().dartCast();
+  /// {@macro moor_aggregate_filter}
+  Expression<DateTime> avg({Expression<bool?>? filter}) =>
+      secondsSinceEpoch.avg(filter: filter).roundToInt().dartCast();
 
   /// Return the maximum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DateTime> max() => _AggregateExpression('MAX', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<DateTime> max({Expression<bool?>? filter}) =>
+      _AggregateExpression('MAX', this, filter: filter);
 
   /// Return the minimum of all non-null values in this group.
   ///
   /// If there are no non-null values in the group, returns null.
-  Expression<DateTime> min() => _AggregateExpression('MIN', this);
+  /// {@macro moor_aggregate_filter}
+  Expression<DateTime> min({Expression<bool?>? filter}) =>
+      _AggregateExpression('MIN', this, filter: filter);
 }
 
 class _AggregateExpression<D> extends Expression<D> {
