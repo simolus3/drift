@@ -1,3 +1,7 @@
+## 4.6.0-dev
+
+- Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.
+
 ## 4.5.0
 
 - Add `moorRuntimeOptions.debugPrint` option to control which `print` method is used by moor.

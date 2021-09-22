@@ -7,10 +7,7 @@ const VerificationResult _invalidNull = VerificationResult.failure(
 /// Implementation for a [Column] declared on a table.
 class GeneratedColumn<T> extends Column<T> {
   /// The sql name of this column.
-  final String $name;
-
-  /// [$name], but escaped if it's an sql keyword.
-  String get escapedName => escapeIfNeeded($name);
+  final String $name; // todo: Remove, replace with `name`
 
   /// The name of the table that contains this column
   final String tableName;
@@ -54,6 +51,9 @@ class GeneratedColumn<T> extends Column<T> {
   /// created by moor.
   bool get hasAutoIncrement =>
       _defaultConstraints?.contains('AUTOINCREMENT') == true;
+
+  @override
+  String get name => $name;
 
   /// Used by generated code.
   GeneratedColumn(

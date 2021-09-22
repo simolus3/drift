@@ -266,6 +266,24 @@ void main() {
     expect(id, 3);
   });
 
+  test('can access excluded row in upsert', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'content'),
+          onConflict: DoUpdate.withExcluded(
+            (old, excluded) => TodosTableCompanion.custom(
+              content: old.content + excluded.content,
+            ),
+          ),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT(id) DO UPDATE '
+      'SET content = todos.content || excluded.content',
+      ['content'],
+    ));
+  });
+
   test('applies implicit type converter', () async {
     await db.into(db.categories).insert(CategoriesCompanion.insert(
           description: 'description',

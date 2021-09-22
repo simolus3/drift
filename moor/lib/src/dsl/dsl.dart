@@ -3,6 +3,7 @@ import 'dart:typed_data' show Uint8List;
 import 'package:meta/meta.dart';
 import 'package:meta/meta_meta.dart';
 import 'package:moor/moor.dart';
+import 'package:moor/sqlite_keywords.dart';
 
 part 'columns.dart';
 part 'database.dart';

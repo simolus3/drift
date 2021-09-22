@@ -26,6 +26,27 @@ void main() {
     expect(row.description, 'changed description');
   });
 
+  test('insert with DoUpdate and excluded row', () async {
+    await db.into(db.categories).insert(
+        CategoriesCompanion.insert(description: 'original description'));
+
+    var row = await db.select(db.categories).getSingle();
+
+    await db.into(db.categories).insert(
+        CategoriesCompanion(
+          id: Value(row.id),
+          description: const Value('new description'),
+        ),
+        onConflict: DoUpdate.withExcluded(
+          (old, excluded) => CategoriesCompanion.custom(
+              description:
+                  old.description + const Constant(' ') + excluded.description),
+        ));
+
+    row = await db.select(db.categories).getSingle();
+    expect(row.description, 'original description new description');
+  });
+
   test('returning', () async {
     final entry = await db.into(db.categories).insertReturning(
         CategoriesCompanion.insert(description: 'Description'));

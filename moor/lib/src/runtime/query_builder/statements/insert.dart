@@ -149,7 +149,10 @@ class InsertStatement<T extends Table, D> {
     }
 
     void writeDoUpdate(DoUpdate<T, D> onConflict) {
-      final upsertInsertable = onConflict._createInsertable(table.asDslTable);
+      if (onConflict._usesExcludedTable) {
+        ctx.hasMultipleTables = true;
+      }
+      final upsertInsertable = onConflict._createInsertable(table);
 
       if (!identical(entry, upsertInsertable)) {
         // We run a ON CONFLICT DO UPDATE, so make sure upsertInsertable is
@@ -176,7 +179,9 @@ class InsertStatement<T extends Table, D> {
       for (final target in conflictTarget) {
         if (!first) ctx.buffer.write(', ');
 
-        target.writeInto(ctx);
+        // Writing the escaped name directly because it should not have a table
+        // name in front of it.
+        ctx.buffer.write(target.escapedName);
         first = false;
       }
 
@@ -295,7 +300,8 @@ abstract class UpsertClause<T extends Table, D> {}
 ///
 /// For an example, see [InsertStatement.insert].
 class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
-  final Insertable<D> Function(T old) _creator;
+  final Insertable<D> Function(T old, T excluded) _creator;
+  final bool _usesExcludedTable;
 
   /// An optional list of columns to serve as an "conflict target", which
   /// specifies the uniqueness constraint that will trigger the upsert.
@@ -303,12 +309,32 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// By default, the primary key of the table will be used.
   final List<Column>? target;
 
+  /// Creates a `DO UPDATE` clause.
+  ///
+  /// The [update] function will be used to construct an [Insertable] used to
+  /// update an old row that prevented an insert.
+  /// If you need to refer to both the old row and the row that would have
+  /// been inserted, use [DoUpdate.withExcluded].
+  ///
   /// For an example, see [InsertStatement.insert].
   DoUpdate(Insertable<D> Function(T old) update, {this.target})
-      : _creator = update;
+      : _creator = ((old, _) => update(old)),
+        _usesExcludedTable = false;
 
-  Insertable<D> _createInsertable(T table) {
-    return _creator(table);
+  /// Creates a `DO UPDATE` clause.
+  ///
+  /// The [update] function will be used to construct an [Insertable] used to
+  /// update an old row that prevented an insert.
+  /// It can refer to the values from the old row in the first parameter and
+  /// to columns in the row that couldn't be inserted with the `excluded`
+  /// parameter.
+  ///
+  /// For an example, see [InsertStatement.insert].
+  DoUpdate.withExcluded(this._creator, {this.target})
+      : _usesExcludedTable = true;
+
+  Insertable<D> _createInsertable(TableInfo<T, D> table) {
+    return _creator(table.asDslTable, table.createAlias('excluded').asDslTable);
   }
 }
 

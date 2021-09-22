@@ -5,6 +5,15 @@ part of 'dsl.dart';
 abstract class Column<T> extends Expression<T> {
   @override
   final Precedence precedence = Precedence.primary;
+
+  /// The (unescaped) name of this column.
+  ///
+  /// Use [escapedName] to access a name that's escaped in double quotes if
+  /// needed.
+  String get name;
+
+  /// [name], but escaped if it's an sql keyword.
+  String get escapedName => escapeIfNeeded(name);
 }
 
 /// A column that stores int values.
