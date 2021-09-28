@@ -46,8 +46,12 @@ Also, make sure that your webserver serves the `.wasm` file as `application/wasm
 won't accept it otherwise.
 
 ## Sharing code between native apps and web
+
 If you want to share your database code between native applications and webapps, just import the
-basic `moor` library and make the `QueryExecutor` configurable:
+basic `moor` library into your databas file.
+And instead of passing a `VmDatabase` or `WebDatabase` to the `super` constructor, make the
+`QueryExecutor` customizable:
+
 ```dart
 // don't import moor_web.dart or moor_flutter/moor_flutter.dart in shared code
 import 'package:moor/moor.dart';
@@ -57,20 +61,53 @@ class SharedDatabase extends _$MyDatabase {
     SharedDatabase(QueryExecutor e): super(e);
 }
 ```
-With native Flutter, you can create an instance of your database with
+
+In native Flutter apps, you can create an instance of your database with
+
 ```dart
-import 'package:moor_flutter/moor_flutter.dart';
+// native.dart
+import 'package:moor/ffi.dart';
+
 SharedDatabase constructDb() {
-    return SharedDatabase(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
+  final db = LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    return VmDatabase(file);
+  });
+  return SharedDatabase(db);
 }
 ```
+
 On the web, you can use
+
 ```dart
+// web.dart
 import 'package:moor/moor_web.dart';
+
 SharedDatabase constructDb() {
-    return SharedDatabase(WebDatabase('db'));
+  return SharedDatabase(WebDatabase('db'));
 }
 ```
+
+Finally, we can use [conditional imports](https://dart.dev/guides/libraries/create-library-packages#conditionally-importing-and-exporting-library-files)
+to automatically pick the right `constructDb` function based on where your app runs.
+To do this, first create a `unsupported.dart` default implementation:
+
+```dart
+// unsupported.dart
+SharedDatabase constructDb() => throw UnimplementedError();
+```
+
+Now, we can use conditional imports in a `shared.dart` file to export the correct function:
+
+```dart
+// shared.dart
+export 'unsupported.dart'
+  if (dart.library.ffi) 'native.dart'
+  if (dart.library.html) 'web.dart';
+```
+
+A ready example of this construct can also be found [here](https://github.com/rodydavis/moor_shared/blob/master/lib/src/database/database/unsupported.dart).
 
 ## Debugging
 You can see all queries sent from moor to the underlying database engine by enabling the `logStatements`
