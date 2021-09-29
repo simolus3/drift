@@ -6,7 +6,7 @@ import 'package:moor/src/runtime/executor/stream_queries.dart';
 import 'package:moor/src/runtime/types/sql_types.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../cancellation_zone.dart';
+import '../runtime/cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 

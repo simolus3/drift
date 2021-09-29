@@ -56,10 +56,10 @@ import 'package:stream_channel/stream_channel.dart';
 import 'moor.dart';
 import 'remote.dart' as self;
 
-import 'src/runtime/remote/client_impl.dart';
-import 'src/runtime/remote/communication.dart';
-import 'src/runtime/remote/protocol.dart';
-import 'src/runtime/remote/server_impl.dart';
+import 'src/remote/client_impl.dart';
+import 'src/remote/communication.dart';
+import 'src/remote/protocol.dart';
+import 'src/remote/server_impl.dart';
 
 /// Serves a moor database connection over any two-way communication channel.
 ///

@@ -4,7 +4,7 @@ import 'package:moor/moor.dart';
 import 'package:moor/remote.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../cancellation_zone.dart';
+import '../runtime/cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 

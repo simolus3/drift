@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:moor/src/runtime/api/runtime_api.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../cancellation_zone.dart';
+import '../runtime/cancellation_zone.dart';
 import 'protocol.dart';
 
 /// Wrapper around a two-way communication channel to support requests and
