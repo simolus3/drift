@@ -97,7 +97,7 @@ abstract class DatabaseConnectionUser {
   /// Of course, you can also call it yourself to manually dispatch table
   /// updates. To obtain a [TableInfo], use the corresponding getter on the
   /// database class.
-  void markTablesUpdated(Set<TableInfo> tables) {
+  void markTablesUpdated(Iterable<TableInfo> tables) {
     notifyUpdates(
       {for (final table in tables) TableUpdate(table.actualTableName)},
     );
