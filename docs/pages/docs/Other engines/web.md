@@ -48,7 +48,7 @@ won't accept it otherwise.
 ## Sharing code between native apps and web
 
 If you want to share your database code between native applications and webapps, just import the
-basic `moor` library into your databas file.
+basic `moor` library into your database file.
 And instead of passing a `VmDatabase` or `WebDatabase` to the `super` constructor, make the
 `QueryExecutor` customizable:
 
