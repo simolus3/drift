@@ -113,4 +113,47 @@ void main() {
     expect(columns.map((e) => result.typeOf(e).nullable),
         [false, false, true, true]);
   });
+
+  test('regression test for #1096', () {
+    // https://github.com/simolus3/moor/issues/1096#issuecomment-931378474
+    final engine = SqlEngine(
+        EngineOptions(useMoorExtensions: true, version: SqliteVersion.v3_35))
+      ..registerTableFromSql('''
+CREATE TABLE downloads (
+    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+    uri TEXT NOT NULL,
+    last_modified_time INT,
+    attempts_started_count INT NOT NULL DEFAULT 0,
+    priority INT NOT NULL DEFAULT 0,
+    last_attempt_timestamp INT,
+    status TEXT NOT NULL,
+    handed_off bool NOT NULL DEFAULT false,
+    sync_session INT NOT NULL,
+
+    UNIQUE (sync_session, uri)
+);
+      ''');
+
+    final result = engine.analyze('''
+    UPDATE downloads
+    SET status = 'CHECKED_OUT'
+    FROM (
+        SELECT * FROM downloads
+        ) as w
+    WHERE downloads.id = w.id
+    RETURNING downloads.id;
+    ''');
+
+    expect(result.errors, isEmpty);
+
+    final select = result.root as UpdateStatement;
+    final columns = select.returnedResultSet!.resolvedColumns!;
+
+    expect(columns, hasLength(1));
+    expect(
+        result.typeOf(columns.single).type,
+        isA<ResolvedType>()
+            .having((e) => e.type, 'type', BasicType.int)
+            .having((e) => e.nullable, 'nullable', isFalse));
+  });
 }

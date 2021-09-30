@@ -35,22 +35,22 @@ class JoinModel {
 
   JoinModel._(this.nonNullable);
 
-  factory JoinModel._resolve(SelectStatement statement) {
+  factory JoinModel._resolve(AstNode statement) {
     final visitor = _FindNonNullableJoins();
-    visitor.visitSelectStatement(statement, true);
+    statement.accept(visitor, true);
 
     return JoinModel._(visitor.nonNullable);
   }
 
   static JoinModel? of(AstNode node) {
-    final enclosingSelect = node.enclosingOfType<SelectStatement>();
-    if (enclosingSelect == null) return null;
+    final enclosingStatement = node.enclosingOfType<CrudStatement>();
+    if (enclosingStatement == null) return null;
 
-    final existing = enclosingSelect.meta<JoinModel>();
+    final existing = enclosingStatement.meta<JoinModel>();
     if (existing != null) return existing;
 
-    final created = JoinModel._resolve(enclosingSelect);
-    enclosingSelect.setMeta(created);
+    final created = JoinModel._resolve(enclosingStatement);
+    enclosingStatement.setMeta(created);
     return created;
   }
 
@@ -100,6 +100,22 @@ class _FindNonNullableJoins extends RecursiveVisitor<bool, void> {
 
   @override
   void visitSelectStatement(SelectStatement e, bool arg) {
+    visitNullable(e.from, true);
+  }
+
+  @override
+  void visitDeleteStatement(DeleteStatement e, bool arg) {
+    visit(e.table, true);
+  }
+
+  @override
+  void visitInsertStatement(InsertStatement e, bool arg) {
+    visit(e.table, true);
+  }
+
+  @override
+  void visitUpdateStatement(UpdateStatement e, bool arg) {
+    visit(e.table, true);
     visitNullable(e.from, true);
   }
 

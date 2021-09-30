@@ -261,4 +261,39 @@ SELECT row_number() OVER wnd FROM demo
           'LEFT JOIN users ON id = sender');
     });
   });
+
+  group('join analysis keeps column non-nullable', () {
+    void testWith(String sql) {
+      final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35))
+        ..registerTableFromSql('''
+      CREATE TABLE users (
+        id INTEGER NOT NULL PRIMARY KEY
+      );
+    ''');
+
+      final result = engine.analyze(sql);
+      expect(result.errors, isEmpty);
+
+      final root = result.root as StatementReturningColumns;
+
+      expect(
+        root.returnedResultSet!.resolvedColumns!
+            .map((e) => result.typeOf(e).type),
+        everyElement(
+            isA<ResolvedType>().having((e) => e.nullable, 'nullable', isFalse)),
+      );
+    }
+
+    test('for reference to table in INSERT', () {
+      testWith('INSERT INTO users VALUES (?) RETURNING id;');
+    });
+
+    test('for reference to table in UPDATE', () {
+      testWith('UPDATE users SET id = id + 1 RETURNING id;');
+    });
+
+    test('for reference to table in DELETE', () {
+      testWith('DELETE FROM users RETURNING id;');
+    });
+  });
 }

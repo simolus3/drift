@@ -87,6 +87,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
     visit(e.source, SelectTypeExpectation(expectations));
     visitNullable(e.upsert, const NoTypeExpectation());
+    visitNullable(e.returning, const NoTypeExpectation());
   }
 
   @override
@@ -685,5 +686,33 @@ class _ResultColumnVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(stmt, arg);
+  }
+
+  void _handleReturning(StatementReturningColumns stmt) {
+    final columns = stmt.returnedResultSet?.resolvedColumns;
+
+    if (columns != null) {
+      for (final column in columns) {
+        resolver._handleColumn(column, stmt);
+      }
+    }
+  }
+
+  @override
+  void visitInsertStatement(InsertStatement e, void arg) {
+    _handleReturning(e);
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitUpdateStatement(UpdateStatement e, void arg) {
+    _handleReturning(e);
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitDeleteStatement(DeleteStatement e, void arg) {
+    _handleReturning(e);
+    visitChildren(e, arg);
   }
 }

@@ -3,6 +3,7 @@
 - Fix unecessary errors around `fts5` tables
 - Merge all moor-specific nodes into a single `visitMoorSpecific` visitor method
 - Parse `BEGIN` and `COMMIT` statements
+- Improve type inference around `RETURNING` clauses.
 
 ## 0.17.2
 
