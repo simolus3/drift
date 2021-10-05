@@ -1,6 +1,7 @@
 ## 4.6.0-dev
 
 - Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.
+- Add optional `where` clause to `DoUpdate` constructors
 
 ## 4.5.0
 
