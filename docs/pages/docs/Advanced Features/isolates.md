@@ -238,3 +238,29 @@ Internally, moor uses the following model to implement this api:
   raw sql string and parameters are then sent to the server isolate, which will enqueue the operation
   and execute it eventually. Implementing the isolate commands at a low level allows users to re-use
   all their code used without the isolate api.
+
+## Independent isolates
+
+All setups mentioned here assume that there will be one main isolate responsible for spawning a
+`MoorIsolate` that it (and other isolates) can then connect to.
+
+In Flutter apps, this model may not always fit your use case.
+For instance, your app may use background tasks or receive FCM notifications while closed.
+These tasks will run in a background `FlutterEngine` managed by native platform code, so there's
+no clear communication scheme between isolates.
+Still, you may want to share a live moor database between your UI engine and potential background engines,
+even without them directly knowing about each other.
+
+An [IsolateNameServer](https://api.flutter.dev/flutter/dart-ui/IsolateNameServer-class.html) from `dart:ui` can
+be used to transparently share a moor isolate between such workers.
+You can store the [`connectPort`](https://moor.simonbinder.eu/api/isolate/moorisolate/connectport) of a `MoorIsolate`
+under a specific name to look it up later.
+Other clients can use `MoorIsolate.fromConnectPort` to obtain a `MoorIsolate` from the name server, if one has been
+registered.
+
+Please note that, at the moment, Flutter still has some inherent problems with spawning isolates from background engines
+that complicate this setup. Further, the `IsolateNameServer` is not cleared on a (stateless) hot reload, even though
+the isolates are stopped and registered ports become invalid.
+There is no reliable way to check if a `SendPort` is bound to an active `ReceivePort` or not.
+
+Possible implementations of this pattern and associated problems are descibed in [this issue](https://github.com/simolus3/moor/issues/567#issuecomment-934514380).
