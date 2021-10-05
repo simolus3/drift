@@ -325,10 +325,9 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// If you need to refer to both the old row and the row that would have
   /// been inserted, use [DoUpdate.withExcluded].
   ///
-  /// The optional [where] clause can be used to
-  /// disable the update based on the old value.
-  /// If a [where] clause is set and it evaluates to false,
-  /// a conflict will keep the old row without applying the update
+  /// The optional [where] clause can be used to disable the update based on
+  /// the old value. If a [where] clause is set and it evaluates to false, a
+  /// conflict will keep the old row without applying the update.
   ///
   /// For an example, see [InsertStatement.insert].
   DoUpdate(Insertable<D> Function(T old) update,
@@ -344,12 +343,11 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// It can refer to the values from the old row in the first parameter and
   /// to columns in the row that couldn't be inserted with the `excluded`
   /// parameter.
-  /// 
-  /// The optional [where] clause can be used to
-  /// disable the update based on the old value.
-  /// If a [where] clause is set and it evaluates to false,
-  /// a conflict will keep the old row without applying the update
-  /// 
+  ///
+  /// The optional [where] clause can be used to disable the update based on
+  /// the old value. If a [where] clause is set and it evaluates to false, a
+  /// conflict will keep the old row without applying the update.
+  ///
   /// For an example, see [InsertStatement.insert].
   DoUpdate.withExcluded(this._creator,
       {this.target, Expression<bool?> Function(T old, T excluded)? where})
