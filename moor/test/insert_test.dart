@@ -205,6 +205,23 @@ void main() {
     ));
   });
 
+  test('can use an upsert clause with where', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate((old) {
+            return TodosTableCompanion.custom(
+                content: const Variable('important: ') + old.content);
+          }, where: (old) => old.category.equals(1)),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT(id) DO UPDATE SET content = ? || content '
+      'WHERE category = ?',
+      argThat(equals(['my content', 'important: ', 1])),
+    ));
+  });
+
   test(
     'can use multiple upsert targets',
     () async {
@@ -236,6 +253,36 @@ void main() {
     },
   );
 
+  test(
+    'can use multiple upsert targets with where',
+    () async {
+      await db
+          .into(db.todosTable)
+          .insert(TodosTableCompanion.insert(content: 'my content'),
+              onConflict: UpsertMultiple([
+                DoUpdate((old) {
+                  return TodosTableCompanion.custom(
+                      content: const Variable('important: ') + old.content);
+                }, where: (old) => old.category.equals(1)),
+                DoUpdate((old) {
+                  return TodosTableCompanion.custom(
+                      content: const Variable('second: ') + old.content);
+                },
+                    target: [db.todosTable.content],
+                    where: (old) => old.category.equals(1)),
+              ]));
+
+      verify(executor.runInsert(
+        'INSERT INTO todos (content) VALUES (?) '
+        'ON CONFLICT(id) DO UPDATE SET content = ? || content '
+        'WHERE category = ? '
+        'ON CONFLICT(content) DO UPDATE SET content = ? || content '
+        'WHERE category = ?',
+        argThat(equals(['my content', 'important: ', 1, 'second: ', 1])),
+      ));
+    },
+  );
+
   test('can use a custom conflict clause', () async {
     await db.into(db.todosTable).insert(
           TodosTableCompanion.insert(content: 'my content'),
@@ -248,6 +295,23 @@ void main() {
     verify(executor.runInsert(
       'INSERT INTO todos (content) VALUES (?) '
       'ON CONFLICT(content) DO UPDATE SET content = ?',
+      argThat(equals(['my content', 'changed'])),
+    ));
+  });
+
+  test('can use a custom conflict clause with where', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'my content'),
+          onConflict: DoUpdate(
+              (old) => TodosTableCompanion.insert(content: 'changed'),
+              target: [db.todosTable.content],
+              where: (old) => old.content.equalsExp(old.title)),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT(content) DO UPDATE SET content = ? '
+      'WHERE content = title',
       argThat(equals(['my content', 'changed'])),
     ));
   });
@@ -280,6 +344,25 @@ void main() {
       'INSERT INTO todos (content) VALUES (?) '
       'ON CONFLICT(id) DO UPDATE '
       'SET content = todos.content || excluded.content',
+      ['content'],
+    ));
+  });
+
+  test('can access excluded row in upsert with where', () async {
+    await db.into(db.todosTable).insert(
+          TodosTableCompanion.insert(content: 'content'),
+          onConflict: DoUpdate.withExcluded(
+              (old, excluded) => TodosTableCompanion.custom(
+                    content: old.content + excluded.content,
+                  ),
+              where: (old, excluded) => old.title.equalsExp(excluded.title)),
+        );
+
+    verify(executor.runInsert(
+      'INSERT INTO todos (content) VALUES (?) '
+      'ON CONFLICT(id) DO UPDATE '
+      'SET content = todos.content || excluded.content '
+      'WHERE todos.title = excluded.title',
       ['content'],
     ));
   });
