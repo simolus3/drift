@@ -197,6 +197,13 @@ class InsertStatement<T extends Table, D> {
 
         first = false;
       }
+
+      if (onConflict._where != null) {
+        ctx.writeWhitespace();
+        final where = onConflict._where!(
+            table.asDslTable, table.createAlias('excluded').asDslTable);
+        where.writeInto(ctx);
+      }
     }
 
     if (onConflict is DoUpdate<T, D>) {
@@ -301,6 +308,8 @@ abstract class UpsertClause<T extends Table, D> {}
 /// For an example, see [InsertStatement.insert].
 class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   final Insertable<D> Function(T old, T excluded) _creator;
+  final Where Function(T old, T excluded)? _where;
+
   final bool _usesExcludedTable;
 
   /// An optional list of columns to serve as an "conflict target", which
@@ -317,8 +326,10 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// been inserted, use [DoUpdate.withExcluded].
   ///
   /// For an example, see [InsertStatement.insert].
-  DoUpdate(Insertable<D> Function(T old) update, {this.target})
+  DoUpdate(Insertable<D> Function(T old) update,
+      {this.target, Expression<bool?> Function(T old)? where})
       : _creator = ((old, _) => update(old)),
+        _where = where == null ? null : ((old, _) => Where(where(old))),
         _usesExcludedTable = false;
 
   /// Creates a `DO UPDATE` clause.
@@ -330,8 +341,12 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   /// parameter.
   ///
   /// For an example, see [InsertStatement.insert].
-  DoUpdate.withExcluded(this._creator, {this.target})
-      : _usesExcludedTable = true;
+  DoUpdate.withExcluded(this._creator,
+      {this.target, Expression<bool?> Function(T old, T excluded)? where})
+      : _usesExcludedTable = true,
+        _where = where == null
+            ? null
+            : ((old, excluded) => Where(where(old, excluded)));
 
   Insertable<D> _createInsertable(TableInfo<T, D> table) {
     return _creator(table.asDslTable, table.createAlias('excluded').asDslTable);
