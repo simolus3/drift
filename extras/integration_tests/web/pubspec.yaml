@@ -14,6 +14,8 @@ dev_dependencies:
   moor_generator:
 
 dependency_overrides:
+  drift:
+    path: ../../../drift
   moor:
     path: ../../../moor
   moor_generator:

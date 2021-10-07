@@ -5,9 +5,9 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
-import 'package:logging/logging.dart';
 // ignore: implementation_imports
-import 'package:moor/src/utils/synchronized.dart';
+import 'package:drift/src/utils/synchronized.dart';
+import 'package:logging/logging.dart';
 import 'package:moor_generator/src/analyzer/options.dart';
 import 'package:moor_generator/src/analyzer/runner/file_graph.dart';
 import 'package:moor_generator/src/analyzer/session.dart';

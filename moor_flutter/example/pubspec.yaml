@@ -22,6 +22,8 @@ dev_dependencies:
     sdk: flutter
 
 dependency_overrides:
+  drift:
+    path: ../../drift
   moor_flutter:
     path: ..
   moor_generator:

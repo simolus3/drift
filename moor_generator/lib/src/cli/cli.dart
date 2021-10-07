@@ -10,6 +10,7 @@ import 'package:moor_generator/src/cli/project.dart';
 
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';
+import 'commands/migrate.dart';
 import 'commands/schema.dart';
 import 'logging.dart';
 
@@ -37,7 +38,8 @@ class MoorCli {
     )
       ..addCommand(AnalyzeCommand(this))
       ..addCommand(IdentifyDatabases(this))
-      ..addCommand(SchemaCommand(this));
+      ..addCommand(SchemaCommand(this))
+      ..addCommand(MigrateCommand(this));
 
     _runner.argParser
         .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);

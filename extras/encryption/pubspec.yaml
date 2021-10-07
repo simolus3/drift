@@ -10,5 +10,7 @@ dependencies:
   sqflite_sqlcipher: ^2.0.0
 
 dependency_overrides:
+  drift:
+    path: ../../drift
   moor:
     path: ../../moor

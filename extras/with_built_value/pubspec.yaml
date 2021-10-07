@@ -14,6 +14,8 @@ dev_dependencies:
   built_value_generator: ^8.1.1
   build_runner: ^2.0.0
 dependency_overrides:
+  drift:
+    path: ../../drift
   moor:
     path: ../../moor
   moor_generator:

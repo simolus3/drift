@@ -1,6 +1,6 @@
-import 'package:moor/moor.dart';
 // ignore: implementation_imports
-import 'package:moor/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:moor/moor.dart';
 import 'package:moor_generator/moor_generator.dart';
 import 'package:moor_generator/src/services/find_stream_update_rules.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
