@@ -104,4 +104,42 @@ export 'package:drift/native.dart';
 '''),
     ]).validate();
   });
+
+  _test('updates pubspec.yaml', () async {
+    await _setup(const [], pubspec: '''
+name: app
+
+environment:
+  sdk: ^2.12.0
+
+dependencies:
+  moor: ^1.2.3
+  something_else:
+
+# comment
+dev_dependencies:
+  moor_generator: ^4.5.6
+  build_runner: ^2.0.0
+''');
+
+    await _apply();
+
+    await d.dir('app', [
+      d.file('pubspec.yaml', '''
+name: app
+
+environment:
+  sdk: ^2.12.0
+
+dependencies:
+  drift: ^1.2.3
+  something_else:
+
+# comment
+dev_dependencies:
+  build_runner: ^2.0.0
+  drift_dev: ^4.5.6
+'''),
+    ]).validate();
+  });
 }

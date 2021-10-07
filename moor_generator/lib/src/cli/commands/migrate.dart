@@ -9,6 +9,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisContext, StringLiteral;
+import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
 import '../cli.dart';
@@ -100,7 +101,44 @@ class MigrateCommand extends MoorCommand {
 
   Future<void> _transformBuildYaml(File file) async {}
 
-  Future<void> _transformPubspec(File file) async {}
+  Future<void> _transformPubspec(File file) async {
+    dynamic originalPubspec;
+    YamlEditor editor;
+
+    try {
+      final content = await file.readAsString();
+      originalPubspec = loadYaml(content, sourceUrl: file.uri);
+      editor = YamlEditor(content);
+    } on Exception {
+      cli.logger.warning('Could not parse ${file.path}, ignoring...');
+    }
+
+    const newPackages = {'moor': 'drift', 'moor_generator': 'drift_dev'};
+
+    void replaceIn(String key) {
+      if (originalPubspec is! Map) return;
+
+      final dependencyBlock = originalPubspec[key];
+      if (dependencyBlock is! Map) return;
+
+      final block = dependencyBlock as Map;
+      for (final package in newPackages.keys) {
+        if (block.containsKey(package)) {
+          final newPackage = newPackages[package];
+
+          editor
+            ..remove([key, package])
+            ..update([key, newPackage], block[package]);
+        }
+      }
+    }
+
+    replaceIn('dependencies');
+    replaceIn('dev_dependencies');
+    replaceIn('dependency_overrides');
+
+    await file.writeAsString(editor.toString());
+  }
 }
 
 class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
