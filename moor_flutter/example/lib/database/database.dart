@@ -27,7 +27,7 @@ class CategoryWithCount {
   CategoryWithCount(this.category, this.count);
 
   // can be null, in which case we count how many entries don't have a category
-  final Category category;
+  final Category? category;
   final int count; // amount of entries in this category
 }
 
@@ -35,7 +35,7 @@ class EntryWithCategory {
   EntryWithCategory(this.entry, this.category);
 
   final TodoEntry entry;
-  final Category category;
+  final Category? category;
 }
 
 @UseMoor(
@@ -103,7 +103,7 @@ class Database extends _$Database {
     return _categoriesWithCount().map((row) {
       final hasId = row.id != null;
       final category =
-          hasId ? Category(id: row.id, description: row.desc) : null;
+          hasId ? Category(id: row.id!, description: row.desc!) : null;
 
       return CategoryWithCount(category, row.amount);
     }).watch();
@@ -111,7 +111,7 @@ class Database extends _$Database {
 
   /// Watches all entries in the given [category]. If the category is null, all
   /// entries will be shown instead.
-  Stream<List<EntryWithCategory>> watchEntriesInCategory(Category category) {
+  Stream<List<EntryWithCategory>> watchEntriesInCategory(Category? category) {
     final query = select(todos).join(
         [leftOuterJoin(categories, categories.id.equalsExp(todos.category))]);
 

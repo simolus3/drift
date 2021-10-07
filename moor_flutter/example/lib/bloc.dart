@@ -16,10 +16,10 @@ class TodoAppBloc {
 
   // the category that is selected at the moment. null means that we show all
   // entries
-  final BehaviorSubject<Category> _activeCategory =
+  final BehaviorSubject<Category?> _activeCategory =
       BehaviorSubject.seeded(null);
 
-  Stream<List<EntryWithCategory>> _currentEntries;
+  late final Stream<List<EntryWithCategory>> _currentEntries;
 
   /// A stream of entries that should be displayed on the home screen.
   Stream<List<EntryWithCategory>> get homeScreenEntries => _currentEntries;
@@ -35,7 +35,7 @@ class TodoAppBloc {
 
     // also watch all categories so that they can be displayed in the navigation
     // drawer.
-    Rx.combineLatest2<List<CategoryWithCount>, Category,
+    Rx.combineLatest2<List<CategoryWithCount>, Category?,
         List<CategoryWithActiveInfo>>(
       db.categoriesWithCount(),
       _activeCategory,
@@ -49,7 +49,7 @@ class TodoAppBloc {
     ).listen(_allCategories.add);
   }
 
-  void showCategory(Category category) {
+  void showCategory(Category? category) {
     _activeCategory.add(category);
   }
 

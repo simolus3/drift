@@ -42,7 +42,7 @@ class HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          final activeTodos = snapshot.data;
+          final activeTodos = snapshot.data!;
 
           return ListView.builder(
             itemCount: activeTodos.length,

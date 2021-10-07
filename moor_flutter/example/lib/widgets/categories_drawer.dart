@@ -16,7 +16,7 @@ class CategoriesDrawer extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .subtitle1
-                  .copyWith(color: Colors.white),
+                  ?.copyWith(color: Colors.white),
             ),
             decoration: const BoxDecoration(color: Colors.orange),
           ),
@@ -61,7 +61,7 @@ class CategoriesDrawer extends StatelessWidget {
 class _CategoryDrawerEntry extends StatelessWidget {
   final CategoryWithActiveInfo entry;
 
-  const _CategoryDrawerEntry({Key key, this.entry}) : super(key: key);
+  const _CategoryDrawerEntry({Key? key, required this.entry}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +70,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
     if (category == null) {
       title = 'No category';
     } else {
-      title = category.description ?? 'Unnamed';
+      title = category.description;
     }
 
     final isActive = entry.isActive;
@@ -87,7 +87,7 @@ class _CategoryDrawerEntry extends StatelessWidget {
       ),
       Padding(
         padding: const EdgeInsets.all(8),
-        child: Text('${entry.categoryWithCount?.count} entries'),
+        child: Text('${entry.categoryWithCount.count} entries'),
       ),
     ];
 
