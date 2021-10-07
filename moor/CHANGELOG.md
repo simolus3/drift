@@ -3,6 +3,12 @@
 - Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.
 - Add optional `where` clause to `DoUpdate` constructors
 
+### Important notice
+
+Moor has been renamed to `drift`. This package will continue to be supported until the next major release (5.0.0),
+at which point the `moor` package will be discontinued in favor of the `drift` package.
+Please consider migrating to `drift` at an early opps
+
 ## 4.5.0
 
 - Add `moorRuntimeOptions.debugPrint` option to control which `print` method is used by moor.
