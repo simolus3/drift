@@ -2,4 +2,4 @@
 /// `moor_ffi`.
 library moor_ffi_functions;
 
-export 'package:drift/extensions/ffi.dart';
+export 'package:drift/extensions/native.dart';

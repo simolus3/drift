@@ -7,9 +7,9 @@
 /// For more information other platforms, see [other engines](https://moor.simonbinder.eu/docs/other-engines/vm/).
 library moor.ffi;
 
-import 'package:drift/ffi.dart';
+import 'package:drift/native.dart';
 
-export 'package:drift/ffi.dart' hide NativeDatabase;
+export 'package:drift/native.dart' hide NativeDatabase;
 
 /// A moor database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.

@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqlparser/sqlparser.dart' hide AnalysisContext;
+import 'package:sqlparser/sqlparser.dart' hide AnalysisContext, StringLiteral;
 import 'package:yaml_edit/yaml_edit.dart';
 
 import '../cli.dart';
@@ -64,6 +67,10 @@ class MigrateCommand extends MoorCommand {
     }
 
     final typedResult = unitResult as ResolvedUnitResult;
+    final writer = _Moor2DriftDartRewriter(await file.readAsString());
+    typedResult.unit.accept(writer);
+
+    await file.writeAsString(writer.content);
   }
 
   Future<String> _transformMoorFile(File file) async {
@@ -94,4 +101,56 @@ class MigrateCommand extends MoorCommand {
   Future<void> _transformBuildYaml(File file) async {}
 
   Future<void> _transformPubspec(File file) async {}
+}
+
+class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
+  String content;
+  var _skew = 0;
+
+  _Moor2DriftDartRewriter(this.content);
+
+  void _replace(int start, int originalLength, String newContent) {
+    content = content.replaceRange(
+        _skew + start, _skew + start + originalLength, newContent);
+    _skew += newContent.length - originalLength;
+  }
+
+  void _rewriteImportString(StringLiteral l) {
+    // Don't do anything if this is not a 'package:moor/` uri
+    final value = l.stringValue;
+    if (value == null) return;
+
+    final uri = Uri.tryParse(value);
+    if (uri == null || uri.scheme != 'package') return;
+
+    final segments = uri.pathSegments;
+    if (segments.length <= 1 || segments[0] != 'moor') return;
+
+    // Oh, it is a moor package import! Replace with the right drift import.
+    var path = p.url.joinAll(segments.skip(1));
+
+    // Some libraries have a changed path
+    switch (path.toLowerCase()) {
+      case 'moor.dart':
+        path = 'drift.dart'; // moor/moor.dart -> drift/drift.dart
+        break;
+      case 'ffi.dart':
+        path = 'native.dart'; // moor/ffi.dart -> drift/native.dart
+        break;
+      case 'extensions/moor_ffi.dart':
+        path = 'extensions/native.dart'; // similar rename here
+        break;
+      case 'moor_web.dart':
+        path = 'web.dart'; // moor/moor_web.dart -> drift/web.dart
+        break;
+    }
+
+    final driftImport = 'package:drift/$path';
+    _replace(l.offset, l.length, asDartLiteral(driftImport));
+  }
+
+  @override
+  void visitUriBasedDirective(UriBasedDirective node) {
+    _rewriteImportString(node.uri);
+  }
 }
