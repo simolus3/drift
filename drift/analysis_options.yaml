@@ -1,0 +1,15 @@
+include: ../analysis_options.yaml
+
+analyzer:
+  errors:
+    public_member_api_docs: warning
+    deprecated_member_use_from_same_package: ignore
+  exclude:
+    - "example_web/**"
+    - "**/*.g.dart"
+    - "**/*.mocks.dart"
+
+linter:
+  rules:
+    # todo: Re-enable after https://dart-review.googlesource.com/c/sdk/+/204040 lands on beta
+    comment_references: false

@@ -1,0 +1,64 @@
+name: drift_dev
+description: Dev-dependency for users of drift. Contains a the generator and development tools.
+version: 4.5.1
+repository: https://github.com/simolus3/moor
+homepage: https://moor.simonbinder.eu/
+issue_tracker: https://github.com/simolus3/moor/issues
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  charcode: ^1.2.0
+  collection: ^1.14.0
+  recase: '>=2.0.1 <5.0.0'
+  meta: ^1.1.0
+  path: ^1.6.0
+  json_annotation: ^4.1.0
+  stream_transform: '>=0.1.0 <3.0.0'
+
+  # CLI
+  args: ">=1.5.0 <3.0.0"
+  logging: '>=0.11.0 <2.0.0'
+  cli_util: '>=0.2.0 <0.4.0'
+  yaml_edit: ^2.0.1
+  yaml: ^3.1.0
+
+  # Moor-specific analysis and apis
+  moor: ^4.4.0
+  drift: ^4.6.0
+  sqlite3: '>=0.1.6 <2.0.0'
+  sqlparser: ^0.17.0
+
+  # Dart analysis
+  analyzer: "^2.1.0"
+  analyzer_plugin: ^0.7.0
+  source_span: ^1.5.5
+  package_config: ^2.0.0
+  pub_semver: ^2.0.0
+
+  # Build system
+  build: ^2.0.0
+  build_resolvers: ^2.0.0
+  build_config: '>=0.3.1 <2.0.0'
+  dart_style: '>=1.3.3 <3.0.0'
+  source_gen: '>=0.9.4 <2.0.0'
+
+dev_dependencies:
+  checked_yaml: ^2.0.1
+  test: ^1.16.0
+  test_descriptor: ^2.0.0
+  build_runner: ^2.0.0
+  build_test: ^2.0.0
+  json_serializable: ^5.0.0
+
+executables:
+  moor_generator:
+
+dependency_overrides:
+  drift:
+    path: ../drift
+  sqlparser:
+    path: ../sqlparser
+  moor:
+    path: ../moor

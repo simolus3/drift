@@ -1,3 +1,0 @@
-# Build config without moor-specific builders. When running a build in this directory, this file replaces build.yaml,
-# which is what we want! Our builders depend on generated code, so they break the generated build script at the start of
-# a build.

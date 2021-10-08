@@ -1,1 +1,1 @@
-export 'src/model/model.dart';
+export 'package:drift_dev/moor_generator.dart';
