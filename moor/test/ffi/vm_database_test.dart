@@ -1,5 +1,5 @@
+import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
-import 'package:moor/src/ffi/vm_database.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 

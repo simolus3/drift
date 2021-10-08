@@ -1,5 +1,4 @@
 import 'package:moor/moor.dart';
-import 'package:moor/src/runtime/data_class.dart';
 import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:moor/src/ffi/vm_database.dart';
+import 'package:moor/ffi.dart';
 import 'package:test/scaffolding.dart';
 
 import '../data/tables/todos.dart';
