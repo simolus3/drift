@@ -10,7 +10,7 @@ import 'protocol.dart';
 
 /// The implementation of a moor server, manging remote channels to send
 /// database requests.
-class ServerImplementation implements MoorServer {
+class ServerImplementation implements DriftServer {
   /// The Underlying database connection that will be used.
   final DatabaseConnection connection;
 

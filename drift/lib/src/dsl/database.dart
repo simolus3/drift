@@ -1,10 +1,11 @@
 part of 'dsl.dart';
 
 /// Use this class as an annotation to inform moor_generator that a database
-/// class should be generated using the specified [UseMoor.tables].
+/// class should be generated using the specified [DriftDatabase.tables].
 ///
-/// To write a database class, first annotate an empty class with [UseMoor] and
-/// run the build runner using (flutter packages) pub run build_runner build.
+/// To write a database class, first annotate an empty class with
+/// [DriftDatabase] and run the build runner using
+/// `dart pub run build_runner build`.
 /// Moor will have generated a class that has the same name as your database
 /// class, but with `_$` as a prefix. You can now extend that class and provide
 /// a [QueryExecutor] to use moor:
@@ -14,7 +15,7 @@ part of 'dsl.dart';
 ///     super(FlutterQueryExecutor.inDatabaseFolder(path: 'path.db'));
 /// }
 /// ```
-class UseMoor {
+class DriftDatabase {
   /// The tables to include in the database
   final List<Type> tables;
 
@@ -22,7 +23,8 @@ class UseMoor {
   /// regular database class, making is suitable to extract parts of your
   /// database logic into smaller components.
   ///
-  /// For instructions on how to write a dao, see the documentation of [UseDao]
+  /// For instructions on how to write a dao, see the documentation of
+  /// [DriftAccessor].
   final List<Type> daos;
 
   /// {@template moor_compile_queries_param}
@@ -52,8 +54,8 @@ class UseMoor {
   final Set<String> include;
 
   /// Use this class as an annotation to inform moor_generator that a database
-  /// class should be generated using the specified [UseMoor.tables].
-  const UseMoor({
+  /// class should be generated using the specified [DriftDatabase.tables].
+  const DriftDatabase({
     this.tables = const [],
     this.daos = const [],
     this.queries = const {},
@@ -64,11 +66,13 @@ class UseMoor {
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specifies
 /// which tables should be made available in this dao.
 ///
-/// To write a dao, you'll first have to write a database class. See [UseMoor]
-/// for instructions on how to do that. Then, create an empty class that is
-/// annotated with [UseDao] and that extends [DatabaseAccessor]. For instance,
-/// if you have a class called `MyDatabase`, this could look like this:
+/// To write a dao, you'll first have to write a database class. See
+/// [DriftDatabase] for instructions on how to do that. Then, create an empty
+/// class that is annotated with [DriftAccessor] and extends [DatabaseAccessor].
+/// For instance, if you have a class called `MyDatabase`, this could look like
+/// this:
 /// ```dart
+/// @DriftAccessor()
 /// class MyDao extends DatabaseAccessor<MyDatabase> {
 ///   MyDao(MyDatabase db) : super(db);
 /// }
@@ -82,7 +86,7 @@ class UseMoor {
 ///
 /// See also:
 /// - https://moor.simonbinder.eu/daos/
-class UseDao {
+class DriftAccessor {
   /// The tables accessed by this DAO.
   final List<Type> tables;
 
@@ -94,7 +98,7 @@ class UseDao {
 
   /// Annotation for a class to declare it as an dao. See [UseDao] and the
   /// referenced documentation on how to use daos with moor.
-  const UseDao(
+  const DriftAccessor(
       {this.tables = const [],
       this.queries = const {},
       this.include = const {}});

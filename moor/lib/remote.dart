@@ -50,7 +50,16 @@
 @experimental
 library remote;
 
+import 'package:drift/remote.dart';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-export 'package:drift/remote.dart';
+export 'package:drift/remote.dart' hide DriftServer;
+
+/// Serves a moor database connection over any two-way communication channel.
+///
+/// Users are responsible for creating the underlying stream channels before
+/// passing them to this server via [DriftServer.serve].
+/// A single moor server can safely handle multiple clients.
+@pragma('moor2drift', 'DriftServer')
+typedef MoorServer = DriftServer;

@@ -255,7 +255,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   @alwaysThrows
   void _warnAboutDuplicate(
       dynamic cause, StackTrace trace, ResultSetImplementation table) {
-    throw MoorWrappedException(
+    throw DriftWrappedException(
       message: 'This query contained the table ${table.entityName} more than '
           'once. Is this a typo? \n'
           'If you need a join that includes the same table more than once, you '

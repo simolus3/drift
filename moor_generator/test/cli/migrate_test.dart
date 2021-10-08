@@ -111,14 +111,30 @@ export 'package:drift/native.dart';
 import 'package:moor/moor.dart';
 import 'package:moor/ffi.dart' as ffi;
 import 'package:moor/isolate.dart' as isolate;
+import 'package:moor/remote.dart';
+import 'package:moor/moor_web.dart';
+
+class MyStorage extends MoorWebStorage {
+  Never noSuchMethod(Invocation i) => throw '';
+}
 
 ffi.VmDatabase _openConnection() {
   return ffi.VmDatabase.memory();
 }
 
+@UseMoor()
+class Database {}
+
 void main() {
   moorRuntimeOptions = MoorRuntimeOptions()
     ..debugPrint = moorRuntimeOptions.debugPrint;
+  MoorServer(DatabaseConnection.fromExecutor(_openConnection()));
+
+  try {
+    Database();
+  } on MoorWrappedException {
+    // a comment here, why not
+  }
 }
 '''),
     ]);
@@ -130,14 +146,30 @@ void main() {
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart' as ffi;
 import 'package:drift/isolate.dart' as isolate;
+import 'package:drift/remote.dart';
+import 'package:drift/web.dart';
+
+class MyStorage extends DriftWebStorage {
+  Never noSuchMethod(Invocation i) => throw '';
+}
 
 ffi.NativeDatabase _openConnection() {
   return ffi.NativeDatabase.memory();
 }
 
+@DriftDatabase()
+class Database {}
+
 void main() {
   driftRuntimeOptions = DriftRuntimeOptions()
     ..debugPrint = driftRuntimeOptions.debugPrint;
+  DriftServer(DatabaseConnection.fromExecutor(_openConnection()));
+
+  try {
+    Database();
+  } on DriftWrappedException {
+    // a comment here, why not
+  }
 }
 '''),
     ]).validate();

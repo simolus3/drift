@@ -22,7 +22,7 @@ class InvalidDataException implements Exception {
 ///
 /// For instance, when we know that an invalid statement has been constructed,
 /// we catch the database exception and try to explain why that has happened.
-class MoorWrappedException implements Exception {
+class DriftWrappedException implements Exception {
   /// Contains a possible description of why the underlying [cause] occurred,
   /// for instance because a moor api was misused.
   final String message;
@@ -33,9 +33,9 @@ class MoorWrappedException implements Exception {
   /// The original stacktrace when caught by moor
   final StackTrace? trace;
 
-  /// Creates a new [MoorWrappedException] to provide additional details about
+  /// Creates a new [DriftWrappedException] to provide additional details about
   /// an underlying error from the database.
-  MoorWrappedException({required this.message, this.cause, this.trace});
+  DriftWrappedException({required this.message, this.cause, this.trace});
 
   @override
   String toString() {

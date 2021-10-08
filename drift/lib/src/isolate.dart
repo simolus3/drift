@@ -15,7 +15,7 @@ class RunningMoorServer {
   final Isolate self;
   final bool killIsolateWhenDone;
 
-  final MoorServer server;
+  final DriftServer server;
   final ReceivePort connectPort = ReceivePort('drift connect');
   int _counter = 0;
 
@@ -23,7 +23,7 @@ class RunningMoorServer {
 
   RunningMoorServer(this.self, DatabaseConnection connection,
       {this.killIsolateWhenDone = true})
-      : server = MoorServer(connection, allowRemoteShutdown: true) {
+      : server = DriftServer(connection, allowRemoteShutdown: true) {
     final subscription = connectPort.listen((message) {
       if (message is SendPort) {
         final receiveForConnection =

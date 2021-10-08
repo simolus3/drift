@@ -67,13 +67,13 @@ import 'src/remote/server_impl.dart';
 /// passing them to this server via [serve].
 /// A single drift server can safely handle multiple clients.
 @sealed
-abstract class MoorServer {
+abstract class DriftServer {
   /// Creates a drift server proxying incoming requests to the underlying
   /// [connection].
   ///
   /// If [allowRemoteShutdown] is set to `true` (it defaults to `false`),
   /// clients can use [shutdown] to stop this server remotely.
-  factory MoorServer(DatabaseConnection connection,
+  factory DriftServer(DatabaseConnection connection,
       {bool allowRemoteShutdown = false}) {
     return ServerImplementation(connection, allowRemoteShutdown);
   }
@@ -109,7 +109,7 @@ abstract class MoorServer {
 /// Connects to a remote server over a two-way communication channel.
 ///
 /// On the remote side, the corresponding [channel] must have been passed to
-/// [MoorServer.serve] for this setup to work.
+/// [DriftServer.serve] for this setup to work.
 ///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
@@ -122,8 +122,8 @@ DatabaseConnection remote(StreamChannel<Object?> channel,
 /// Sends a shutdown request over a channel.
 ///
 /// On the remote side, the corresponding channel must have been passed to
-/// [MoorServer.serve] for this setup to work.
-/// Also, the [MoorServer] must have been configured to allow remote-shutdowns.
+/// [DriftServer.serve] for this setup to work.
+/// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
 Future<void> shutdown(StreamChannel<Object?> channel) {
   final comm = MoorCommunication(channel);
   return comm.request(NoArgsRequest.terminateAll);

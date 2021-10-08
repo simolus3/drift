@@ -1,7 +1,7 @@
 part of 'package:drift/web.dart';
 
 /// Interface to control how moor should store data on the web.
-abstract class MoorWebStorage {
+abstract class DriftWebStorage {
   /// Opens the storage implementation.
   Future<void> open();
 
@@ -23,12 +23,12 @@ abstract class MoorWebStorage {
   ///
   /// The [name] parameter is used as a key to store the database blob in local
   /// storage. It can be used to store multiple databases.
-  const factory MoorWebStorage(String name) = _LocalStorageImpl;
+  const factory DriftWebStorage(String name) = _LocalStorageImpl;
 
   /// Creates an in-memory storage that doesn't persist data.
   ///
   /// This means that your database will be recreated at each page reload.
-  factory MoorWebStorage.volatile() = _VolatileStorage;
+  factory DriftWebStorage.volatile() = _VolatileStorage;
 
   /// An experimental storage implementation that uses IndexedDB.
   ///
@@ -37,7 +37,7 @@ abstract class MoorWebStorage {
   /// to be saved in IndexedDB.
   ///
   /// When the [migrateFromLocalStorage] parameter (defaults to `true`) is set,
-  /// old data saved using the default [MoorWebStorage] will be migrated to the
+  /// old data saved using the default [DriftWebStorage] will be migrated to the
   /// IndexedDB based implementation. This parameter can be turned off for
   /// applications that never used the local storage implementation as a small
   /// performance improvement.
@@ -48,20 +48,20 @@ abstract class MoorWebStorage {
   ///
   /// However, older browsers might not support IndexedDB.
   @experimental
-  factory MoorWebStorage.indexedDb(String name,
+  factory DriftWebStorage.indexedDb(String name,
       {bool migrateFromLocalStorage, bool inWebWorker}) = _IndexedDbStorage;
 
-  /// Uses [MoorWebStorage.indexedDb] if the current browser supports it.
+  /// Uses [DriftWebStorage.indexedDb] if the current browser supports it.
   /// Otherwise, falls back to the local storage based implementation.
-  static Future<MoorWebStorage> indexedDbIfSupported(String name,
+  static Future<DriftWebStorage> indexedDbIfSupported(String name,
       {bool inWebWorker = false}) async {
     return await supportsIndexedDb(inWebWorker: inWebWorker)
-        ? MoorWebStorage.indexedDb(name, inWebWorker: inWebWorker)
-        : MoorWebStorage(name);
+        ? DriftWebStorage.indexedDb(name, inWebWorker: inWebWorker)
+        : DriftWebStorage(name);
   }
 
   /// Attempts to check whether the current browser supports the
-  /// [MoorWebStorage.indexedDb] storage implementation.
+  /// [DriftWebStorage.indexedDb] storage implementation.
   static Future<bool> supportsIndexedDb({bool inWebWorker = false}) async {
     var isIndexedDbSupported = false;
     if (inWebWorker && WorkerGlobalScope.instance.indexedDB != null) {
@@ -85,7 +85,7 @@ abstract class MoorWebStorage {
   }
 }
 
-abstract class _CustomSchemaVersionSave implements MoorWebStorage {
+abstract class _CustomSchemaVersionSave implements DriftWebStorage {
   int? get schemaVersion;
   set schemaVersion(int? value);
 }
@@ -106,7 +106,7 @@ Uint8List? _restoreLocalStorage(String name) {
   return null;
 }
 
-class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
+class _LocalStorageImpl implements DriftWebStorage, _CustomSchemaVersionSave {
   final String name;
 
   String get _persistenceKey => _persistenceKeyForLocalStorage(name);
@@ -154,7 +154,7 @@ class _LocalStorageImpl implements MoorWebStorage, _CustomSchemaVersionSave {
   }
 }
 
-class _IndexedDbStorage implements MoorWebStorage {
+class _IndexedDbStorage implements DriftWebStorage {
   static const _objectStoreName = 'moor_databases';
 
   final String name;
@@ -225,7 +225,7 @@ class _IndexedDbStorage implements MoorWebStorage {
   }
 }
 
-class _VolatileStorage implements MoorWebStorage {
+class _VolatileStorage implements DriftWebStorage {
   Uint8List? _storedData;
 
   @override

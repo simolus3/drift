@@ -14,22 +14,22 @@ class WebDatabase extends DelegatedDatabase {
   /// [initializer] can be used to initialize the database if it doesn't exist.
   WebDatabase(String name,
       {bool logStatements = false, CreateWebDatabase? initializer})
-      : super(_WebDelegate(MoorWebStorage(name), initializer),
+      : super(_WebDelegate(DriftWebStorage(name), initializer),
             logStatements: logStatements, isSequential: true);
 
   /// A database executor that works on the web.
   ///
   /// The [storage] parameter controls how the data will be stored. The default
-  /// constructor of [MoorWebStorage] will use local storage for that, but an
+  /// constructor of [DriftWebStorage] will use local storage for that, but an
   /// IndexedDB-based implementation is available via.
-  WebDatabase.withStorage(MoorWebStorage storage,
+  WebDatabase.withStorage(DriftWebStorage storage,
       {bool logStatements = false, CreateWebDatabase? initializer})
       : super(_WebDelegate(storage, initializer),
             logStatements: logStatements, isSequential: true);
 }
 
 class _WebDelegate extends DatabaseDelegate {
-  final MoorWebStorage storage;
+  final DriftWebStorage storage;
   final CreateWebDatabase? initializer;
 
   late SqlJsDatabase _db;

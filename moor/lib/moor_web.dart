@@ -5,6 +5,11 @@
 @experimental
 library moor_web;
 
+import 'package:drift/web.dart';
 import 'package:meta/meta.dart';
 
-export 'package:drift/web.dart';
+export 'package:drift/web.dart' hide DriftWebStorage;
+
+/// Interface to control how moor should store data on the web.
+@pragma('moor2drift', 'DriftWebStorage')
+typedef MoorWebStorage = DriftWebStorage;
