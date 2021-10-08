@@ -6,6 +6,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:moor_generator/src/utils/string_escaper.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisContext, StringLiteral;
@@ -15,7 +16,9 @@ import 'package:yaml_edit/yaml_edit.dart';
 import '../cli.dart';
 
 class MigrateCommand extends MoorCommand {
-  static final RegExp _buildYamlPattern = RegExp('(?:\w+\.)build(?:\.\w+)');
+  static final RegExp _buildYamlPattern =
+      RegExp('(?:\\w+\\.)?build(?:\\.\\w+)?');
+  static final RegExp _builderKeyPattern = RegExp('(?:(\\w+)[:|])?(\\w+)');
 
   AnalysisContext context;
 
@@ -99,7 +102,62 @@ class MigrateCommand extends MoorCommand {
     return output;
   }
 
-  Future<void> _transformBuildYaml(File file) async {}
+  String _newBuilder(String oldKey) {
+    final match = _builderKeyPattern.firstMatch(oldKey);
+    if (match == null) return oldKey;
+
+    final builder = match.group(2);
+    final package = match.group(1) ?? builder;
+
+    if (package != 'moor_generator') return oldKey;
+
+    if (builder == 'moor_generator') {
+      return 'drift_dev';
+    } else if (builder == 'moor_generator_not_shared') {
+      return 'drift_dev|not_shared';
+    } else {
+      return 'drift_dev|$builder';
+    }
+  }
+
+  Future<void> _transformBuildYaml(File file) async {
+    dynamic originalBuildConfig;
+    final originalContent = await file.readAsString();
+    final writer = _StringRewriter(originalContent);
+
+    try {
+      originalBuildConfig = loadYaml(originalContent, sourceUrl: file.uri);
+    } on Exception {
+      cli.logger.warning('Could not parse ${file.path}, ignoring...');
+    }
+
+    if (originalBuildConfig is! Map) return;
+
+    final targets = originalBuildConfig['targets'];
+    if (targets is! Map) return;
+
+    for (final key in (targets as Map).keys) {
+      if (key is! String) continue;
+
+      final builders = targets[key]['builders'];
+      if (builders is! Map) continue;
+
+      final buildersMap = builders as YamlMap;
+
+      // Patch configured moor builders
+      for (final yamlKey in buildersMap.nodes.keys.cast<YamlNode>()) {
+        final builderKey = yamlKey.value as String;
+        final newBuilder = _newBuilder(builderKey);
+
+        if (newBuilder != builderKey) {
+          final span = yamlKey.span;
+          writer.replace(span.start.offset, span.length, newBuilder);
+        }
+      }
+    }
+
+    await file.writeAsString(writer.content);
+  }
 
   Future<void> _transformPubspec(File file) async {
     dynamic originalPubspec;
@@ -141,17 +199,25 @@ class MigrateCommand extends MoorCommand {
   }
 }
 
-class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
+class _StringRewriter {
   String content;
   var _skew = 0;
 
-  _Moor2DriftDartRewriter(this.content);
+  _StringRewriter(this.content);
 
-  void _replace(int start, int originalLength, String newContent) {
+  void replace(int start, int originalLength, String newContent) {
     content = content.replaceRange(
         _skew + start, _skew + start + originalLength, newContent);
     _skew += newContent.length - originalLength;
   }
+}
+
+class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
+  final _StringRewriter _writer;
+
+  String get content => _writer.content;
+
+  _Moor2DriftDartRewriter(String content) : _writer = _StringRewriter(content);
 
   void _rewriteImportString(StringLiteral l) {
     // Don't do anything if this is not a 'package:moor/` uri
@@ -184,11 +250,43 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     }
 
     final driftImport = 'package:drift/$path';
-    _replace(l.offset, l.length, asDartLiteral(driftImport));
+    _writer.replace(l.offset, l.length, asDartLiteral(driftImport));
   }
 
   @override
   void visitUriBasedDirective(UriBasedDirective node) {
     _rewriteImportString(node.uri);
+  }
+
+  @override
+  void visitSimpleIdentifier(SimpleIdentifier node) {
+    var element = node.staticElement;
+    if (element == null) {
+      // It looks like left-hand identifiers of assignments don't have a static
+      // element, infer from parent.
+      if (node.parent is AssignmentExpression) {
+        element = (node.parent as AssignmentExpression).writeElement;
+      }
+
+      if (element == null) return;
+    }
+
+    for (final annotation in element.metadata) {
+      final value = annotation.computeConstantValue();
+      final type = value.type;
+
+      if (type is! InterfaceType) continue;
+
+      final iType = type as InterfaceType;
+      if (iType.element.library.isDartCore && iType.element.name == 'pragma') {
+        final name = value.getField('name').toStringValue();
+
+        if (name == 'moor2drift') {
+          final newIdentifier = value.getField('options').toStringValue();
+          _writer.replace(node.offset, node.length, newIdentifier);
+          return;
+        }
+      }
+    }
   }
 }

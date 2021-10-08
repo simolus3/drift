@@ -105,6 +105,44 @@ export 'package:drift/native.dart';
     ]).validate();
   });
 
+  _test('updates identifier names', () async {
+    await _setup([
+      d.file('a.dart', '''
+import 'package:moor/moor.dart';
+import 'package:moor/ffi.dart' as ffi;
+import 'package:moor/isolate.dart' as isolate;
+
+ffi.VmDatabase _openConnection() {
+  return ffi.VmDatabase.memory();
+}
+
+void main() {
+  moorRuntimeOptions = MoorRuntimeOptions()
+    ..debugPrint = moorRuntimeOptions.debugPrint;
+}
+'''),
+    ]);
+
+    await _apply();
+
+    await d.dir('app/lib', [
+      d.file('a.dart', '''
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart' as ffi;
+import 'package:drift/isolate.dart' as isolate;
+
+ffi.NativeDatabase _openConnection() {
+  return ffi.NativeDatabase.memory();
+}
+
+void main() {
+  driftRuntimeOptions = DriftRuntimeOptions()
+    ..debugPrint = driftRuntimeOptions.debugPrint;
+}
+'''),
+    ]).validate();
+  });
+
   _test('updates pubspec.yaml', () async {
     await _setup(const [], pubspec: '''
 name: app
@@ -140,6 +178,55 @@ dev_dependencies:
   build_runner: ^2.0.0
   drift_dev: ^4.5.6
 '''),
+    ]).validate();
+  });
+
+  _test('transforms build configuration files', () async {
+    await _setup(
+      const [],
+      additional: [
+        d.file('build.yaml', r'''
+targets:
+  $default:
+    builders:
+      moor_generator:
+        options:
+          # comment
+          compact_query_methods: true
+      "moor_generator:foo":
+        options:
+          bar: baz
+  
+  another_target:
+    builders:
+      moor_generator|moor_generator_not_shared:
+        options:
+          another: option
+''')
+      ],
+    );
+
+    await _apply();
+
+    await d.dir('app', [
+      d.file('build.yaml', r'''
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # comment
+          compact_query_methods: true
+      drift_dev|foo:
+        options:
+          bar: baz
+  
+  another_target:
+    builders:
+      drift_dev|not_shared:
+        options:
+          another: option
+''')
     ]).validate();
   });
 }

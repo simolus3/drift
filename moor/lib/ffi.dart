@@ -13,4 +13,5 @@ export 'package:drift/native.dart' hide NativeDatabase;
 
 /// A moor database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
+@pragma('moor2drift', 'NativeDatabase')
 typedef VmDatabase = NativeDatabase;
