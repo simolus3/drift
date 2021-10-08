@@ -42,7 +42,7 @@ class Category extends DataClass implements Insertable<Category> {
 
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String?>(json['description']),
@@ -55,7 +55,7 @@ class Category extends DataClass implements Insertable<Category> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String?>(description),
@@ -239,7 +239,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
 
   factory Recipe.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Recipe(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
@@ -253,7 +253,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
@@ -482,7 +482,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
 
   factory Ingredient.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return Ingredient(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -496,7 +496,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -699,7 +699,7 @@ class IngredientInRecipe extends DataClass
 
   factory IngredientInRecipe.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return IngredientInRecipe(
       recipe: serializer.fromJson<int>(json['recipe']),
       ingredient: serializer.fromJson<int>(json['ingredient']),
@@ -713,7 +713,7 @@ class IngredientInRecipe extends DataClass
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'recipe': serializer.toJson<int>(recipe),
       'ingredient': serializer.toJson<int>(ingredient),

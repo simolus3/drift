@@ -27,7 +27,10 @@ void main() {
     final buffer = StringBuffer();
     const HashCodeWriter().writeHashCode(
         List.generate(26, (index) => String.fromCharCode($a + index)), buffer);
-    expect(buffer.toString(),
-        r'Object.hashAll([a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z])');
+    expect(
+      buffer.toString(),
+      r'Object.hashAll([a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, '
+      's, t, u, v, w, x, y, z])',
+    );
   });
 }

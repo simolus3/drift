@@ -52,6 +52,8 @@ class GenerateUtilsCommand extends Command {
     final isNnbd = (argResults['null-safety'] as bool) ??
         await _isCurrentPackageNullSafe();
 
+    final isForMoor = argResults.arguments.contains('moor_generator');
+
     final rest = argResults.rest;
     if (rest.length != 2) {
       usageException('Expected input and output directories');
@@ -73,8 +75,15 @@ class GenerateUtilsCommand extends Command {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
 
-      await _writeSchemaFile(outputDir, version, entities, isNnbd,
-          argResults['data-classes'] as bool, argResults['companions'] as bool);
+      await _writeSchemaFile(
+        outputDir,
+        version,
+        entities,
+        isNnbd,
+        argResults['data-classes'] as bool,
+        argResults['companions'] as bool,
+        isForMoor,
+      );
     }
 
     await _writeLibraryFile(outputDir, schema.keys, isNnbd);
@@ -128,12 +137,14 @@ class GenerateUtilsCommand extends Command {
   }
 
   Future<void> _writeSchemaFile(
-      Directory output,
-      int version,
-      List<MoorSchemaEntity> entities,
-      bool nnbd,
-      bool dataClasses,
-      bool companions) {
+    Directory output,
+    int version,
+    List<MoorSchemaEntity> entities,
+    bool nnbd,
+    bool dataClasses,
+    bool companions,
+    bool isForMoor,
+  ) {
     final writer = Writer(
       cli.project.moorOptions,
       generationOptions: GenerationOptions(
@@ -141,6 +152,7 @@ class GenerateUtilsCommand extends Command {
         nnbd: nnbd,
         writeCompanions: dataClasses,
         writeDataClasses: companions,
+        writeForMoorPackage: isForMoor,
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));
