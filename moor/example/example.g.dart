@@ -42,7 +42,7 @@ class Category extends DataClass implements Insertable<Category> {
 
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String?>(json['description']),
@@ -55,7 +55,7 @@ class Category extends DataClass implements Insertable<Category> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String?>(description),
@@ -78,7 +78,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
+  int get hashCode => Object.hash(id, description);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -239,7 +239,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
 
   factory Recipe.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Recipe(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
@@ -253,7 +253,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
@@ -285,8 +285,7 @@ class Recipe extends DataClass implements Insertable<Recipe> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(title.hashCode, $mrjc(instructions.hashCode, category.hashCode))));
+  int get hashCode => Object.hash(id, title, instructions, category);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -483,7 +482,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
 
   factory Ingredient.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Ingredient(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -497,7 +496,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -522,8 +521,7 @@ class Ingredient extends DataClass implements Insertable<Ingredient> {
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, caloriesPer100g.hashCode)));
+  int get hashCode => Object.hash(id, name, caloriesPer100g);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -701,7 +699,7 @@ class IngredientInRecipe extends DataClass
 
   factory IngredientInRecipe.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return IngredientInRecipe(
       recipe: serializer.fromJson<int>(json['recipe']),
       ingredient: serializer.fromJson<int>(json['ingredient']),
@@ -715,7 +713,7 @@ class IngredientInRecipe extends DataClass
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'recipe': serializer.toJson<int>(recipe),
       'ingredient': serializer.toJson<int>(ingredient),
@@ -741,8 +739,7 @@ class IngredientInRecipe extends DataClass
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      recipe.hashCode, $mrjc(ingredient.hashCode, amountInGrams.hashCode)));
+  int get hashCode => Object.hash(recipe, ingredient, amountInGrams);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -923,7 +920,7 @@ class TotalWeightResult extends CustomResultSet {
     required this.totalWeight,
   }) : super(row);
   @override
-  int get hashCode => $mrjf($mrjc(title.hashCode, totalWeight.hashCode));
+  int get hashCode => Object.hash(title, totalWeight);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

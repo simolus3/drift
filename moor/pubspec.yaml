@@ -14,7 +14,6 @@ dependencies:
   collection: ^1.15.0
   drift: ^4.6.0
   meta: ^1.3.0
-  pedantic: ^1.10.0
   stream_channel: ^2.1.0
   sqlite3: ^1.0.0
 

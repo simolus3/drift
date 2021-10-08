@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/utils/start_with_value_transformer.dart';
 import 'package:meta/meta.dart';
-import 'package:pedantic/pedantic.dart';
 
 import '../cancellation_zone.dart';
 

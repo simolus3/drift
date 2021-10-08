@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';

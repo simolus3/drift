@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:pedantic/pedantic.dart';
 
 import '../../../utils/synchronized.dart';
 import '../../cancellation_zone.dart';
