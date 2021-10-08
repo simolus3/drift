@@ -20,7 +20,7 @@ class MoorProject {
       : moorOptions = readOptionsFromConfig(buildConfig);
 
   Stream<File> get sourceFiles {
-    const topLevelDirs = {'lib', 'test', 'bin', 'example'};
+    const topLevelDirs = {'lib', 'test', 'bin', 'example', 'web'};
 
     return directory.list().asyncExpand((entity) {
       // report all top-level files and all (recursive) content in topLevelDirs

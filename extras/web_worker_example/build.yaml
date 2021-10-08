@@ -1,7 +1,7 @@
 targets:
   $default:
     builders:
-      moor_generator:
+      drift_dev:
         options:
           generate_connect_constructor: true
           compact_query_methods: true

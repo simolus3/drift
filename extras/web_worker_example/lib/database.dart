@@ -1,8 +1,8 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 part 'database.g.dart';
 
-@UseMoor(include: {'src/tables.moor'})
+@DriftDatabase(include: {'src/tables.drift'})
 class MyDatabase extends _$MyDatabase {
   MyDatabase(DatabaseConnection conn) : super.connect(conn);
 

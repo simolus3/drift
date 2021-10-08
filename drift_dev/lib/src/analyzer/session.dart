@@ -12,6 +12,7 @@ import 'options.dart';
 
 const _fileEndings = {
   '.moor': FileType.moor,
+  '.drift': FileType.moor,
   '.dart': FileType.dartLibrary,
 };
 

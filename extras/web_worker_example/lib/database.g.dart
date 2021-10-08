@@ -38,7 +38,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
 
   factory Entrie.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Entrie(
       id: serializer.fromJson<int>(json['id']),
       value: serializer.fromJson<String>(json['text']),
@@ -46,7 +46,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'text': serializer.toJson<String>(value),
@@ -67,7 +67,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, value.hashCode));
+  int get hashCode => Object.hash(id, value);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -185,13 +185,14 @@ abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase.connect(DatabaseConnection c) : super.connect(c);
   late final Entries entries = Entries(this);
   Selectable<Entrie> allEntries() {
-    return customSelect('SELECT * FROM entries',
-        variables: [], readsFrom: {entries}).map(entries.mapFromRow);
+    return customSelect('SELECT * FROM entries', variables: [], readsFrom: {
+      entries,
+    }).map(entries.mapFromRow);
   }
 
   Future<int> addEntry(String var1) {
     return customInsert(
-      'INSERT INTO entries (text) VALUES (?)',
+      'INSERT INTO entries (text) VALUES (?1)',
       variables: [Variable<String>(var1)],
       updates: {entries},
     );

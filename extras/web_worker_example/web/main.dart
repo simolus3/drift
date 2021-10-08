@@ -1,7 +1,7 @@
 import 'dart:html';
 
-import 'package:moor/remote.dart';
-import 'package:moor/moor_web.dart';
+import 'package:drift/remote.dart';
+import 'package:drift/web.dart';
 import 'package:web_worker_example/database.dart';
 
 void main() {
