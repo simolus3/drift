@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_dev/api/migrations.dart';
-import 'package:moor/ffi.dart';
-import 'package:moor/moor.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import 'find_differences.dart';
@@ -59,7 +59,7 @@ class VerifierImplementation implements SchemaVerifier {
     final dbForSetup = sqlite3.open(uri, uri: true);
     final dbForUse = sqlite3.open(uri, uri: true);
 
-    final executor = VmDatabase.opened(dbForSetup);
+    final executor = NativeDatabase.opened(dbForSetup);
     final db = helper.databaseForVersion(executor, version);
 
     // Opening the helper database will instantiate the schema for us
@@ -69,7 +69,7 @@ class VerifierImplementation implements SchemaVerifier {
 
     return InitializedSchema(dbForUse, () {
       final db = sqlite3.open(uri, uri: true);
-      return DatabaseConnection.fromExecutor(VmDatabase.opened(db));
+      return DatabaseConnection.fromExecutor(NativeDatabase.opened(db));
     });
   }
 

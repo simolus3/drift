@@ -3,6 +3,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
+import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
@@ -11,7 +12,6 @@ import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:drift_dev/src/utils/names.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:meta/meta.dart';
-import 'package:moor/sqlite_keywords.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
 

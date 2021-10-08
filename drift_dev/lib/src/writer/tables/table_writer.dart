@@ -1,9 +1,9 @@
+import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/model/declarations/declaration.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
-import 'package:moor/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 /// Common writer for tables or views.

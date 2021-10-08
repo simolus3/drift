@@ -1,6 +1,6 @@
 //@dart=2.9
+import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations.dart';
-import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -18,7 +18,7 @@ void main() {
 
   group('migrateAndValidate', () {
     test('invokes a migration', () async {
-      moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
       OpeningDetails capturedDetails;
 
       final connection = await verifier.startAt(3);
@@ -31,7 +31,7 @@ void main() {
       expect(capturedDetails.versionBefore, 3);
       expect(capturedDetails.versionNow, 4);
 
-      moorRuntimeOptions.dontWarnAboutMultipleDatabases = false;
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
     });
   });
 }

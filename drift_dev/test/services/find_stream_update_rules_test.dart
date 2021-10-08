@@ -1,9 +1,8 @@
 //@dart=2.9
 @Tags(['analyzer'])
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/services/find_stream_update_rules.dart';
-
-import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 import '../analyzer/utils.dart';

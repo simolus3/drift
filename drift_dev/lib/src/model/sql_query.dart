@@ -1,10 +1,9 @@
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/model/base_entity.dart';
-import 'package:drift_dev/src/utils/hash.dart';
 import 'package:drift_dev/src/writer/writer.dart';
-import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -394,10 +393,7 @@ class ResultColumn implements HasType {
   /// Hash-code that matching [compatibleTo], so that two compatible columns
   /// will have the same [compatibilityHashCode].
   int get compatibilityHashCode {
-    return $mrjf($mrjc(
-        name.hashCode,
-        $mrjc(
-            type.hashCode, $mrjc(nullable.hashCode, typeConverter.hashCode))));
+    return Object.hash(name, type, nullable, typeConverter);
   }
 
   /// Checks whether this column is compatible to the [other], meaning that they
@@ -448,7 +444,7 @@ class NestedResultTable {
 
   /// [hashCode] that matches [isCompatibleTo] instead of `==`.
   int get compatibilityHashCode {
-    return $mrjf($mrjc(name.hashCode, table.hashCode));
+    return Object.hash(name, table);
   }
 
   /// Checks whether this is compatible to the [other] nested result, which is
@@ -584,7 +580,7 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
   ExpressionDartPlaceholderType(this.columnType, this.defaultValue);
 
   @override
-  int get hashCode => hashAll([columnType, defaultValue]);
+  int get hashCode => Object.hash(columnType, defaultValue);
 
   @override
   bool operator ==(Object other) {
@@ -676,7 +672,7 @@ class FoundDartPlaceholder extends FoundElement {
   String get dartParameterName => name;
 
   @override
-  int get hashCode => hashAll([type, name, ...availableResultSets]);
+  int get hashCode => Object.hashAll([type, name, ...availableResultSets]);
 
   @override
   bool operator ==(Object other) {
@@ -723,7 +719,7 @@ class AvailableMoorResultSet {
   String get argumentType => entity.dslName;
 
   @override
-  int get hashCode => hashAll([name, entity]);
+  int get hashCode => Object.hash(name, entity);
 
   @override
   bool operator ==(Object other) {

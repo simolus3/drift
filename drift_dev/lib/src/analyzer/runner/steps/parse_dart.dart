@@ -9,8 +9,8 @@ part of '../steps.dart';
 class ParseDartStep extends Step {
   static const _tableTypeChecker = TypeChecker.fromRuntime(Table);
   static const _generatedInfoChecker = TypeChecker.fromRuntime(TableInfo);
-  static const _useMoorChecker = TypeChecker.fromRuntime(UseMoor);
-  static const _useDaoChecker = TypeChecker.fromRuntime(UseDao);
+  static const _useMoorChecker = TypeChecker.fromRuntime(DriftDatabase);
+  static const _useDaoChecker = TypeChecker.fromRuntime(DriftAccessor);
 
   final LibraryElement library;
 

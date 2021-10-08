@@ -1,6 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/services/schema/verifier_impl.dart';
 import 'package:meta/meta.dart';
-import 'package:moor/moor.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 abstract class SchemaVerifier {
