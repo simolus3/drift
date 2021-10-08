@@ -7,11 +7,11 @@ import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 // ignore: implementation_imports
 import 'package:drift/src/utils/synchronized.dart';
-import 'package:logging/logging.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
 import 'package:drift_dev/src/utils/options_reader.dart' as options;
+import 'package:logging/logging.dart';
 
 import '../standalone.dart';
 

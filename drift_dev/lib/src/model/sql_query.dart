@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
-import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/model/base_entity.dart';
 import 'package:drift_dev/src/utils/hash.dart';
 import 'package:drift_dev/src/writer/writer.dart';
+import 'package:moor/moor.dart' show $mrjf, $mrjc, UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 

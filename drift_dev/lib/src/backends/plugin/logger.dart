@@ -1,7 +1,7 @@
 //@dart=2.9
 import 'package:analyzer_plugin/protocol/protocol_generated.dart';
-import 'package:logging/logging.dart';
 import 'package:drift_dev/src/backends/plugin/plugin.dart';
+import 'package:logging/logging.dart';
 
 var _initialized = false;
 

@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:drift_dev/api/migrations.dart';
 import 'package:moor/ffi.dart';
 import 'package:moor/moor.dart';
-import 'package:drift_dev/api/migrations.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import 'find_differences.dart';

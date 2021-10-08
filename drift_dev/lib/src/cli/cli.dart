@@ -4,9 +4,9 @@ import 'dart:io';
 
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:args/command_runner.dart';
-import 'package:logging/logging.dart';
 import 'package:drift_dev/src/backends/common/driver.dart';
 import 'package:drift_dev/src/cli/project.dart';
+import 'package:logging/logging.dart';
 
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';

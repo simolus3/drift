@@ -1,11 +1,11 @@
 // ignore: implementation_imports
 import 'package:drift/src/runtime/executor/stream_queries.dart';
-import 'package:moor/moor.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/services/find_stream_update_rules.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
+import 'package:moor/moor.dart';
 import 'package:recase/recase.dart';
 
 import 'tables/view_writer.dart';

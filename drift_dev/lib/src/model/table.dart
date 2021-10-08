@@ -1,8 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:moor/moor.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:drift_dev/writer.dart';
+import 'package:moor/moor.dart' show UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 

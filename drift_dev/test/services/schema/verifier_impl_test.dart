@@ -1,6 +1,6 @@
 //@dart=2.9
-import 'package:moor/moor.dart';
 import 'package:drift_dev/api/migrations.dart';
+import 'package:moor/moor.dart';
 import 'package:test/test.dart';
 
 void main() {

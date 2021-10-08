@@ -1,12 +1,13 @@
 import 'dart:convert';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart' hide log;
 import 'package:build/build.dart' as build show log;
-import 'package:logging/logging.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/backends/backend.dart';
+import 'package:logging/logging.dart';
 
 class BuildBackend extends Backend {
   final MoorOptions options;

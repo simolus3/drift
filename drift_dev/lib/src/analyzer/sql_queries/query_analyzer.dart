@@ -1,5 +1,4 @@
 import 'package:build/build.dart';
-import 'package:meta/meta.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
@@ -9,6 +8,7 @@ import 'package:drift_dev/src/analyzer/sql_queries/query_handler.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:drift_dev/src/model/view.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 

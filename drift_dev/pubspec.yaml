@@ -25,7 +25,6 @@ dependencies:
   yaml: ^3.1.0
 
   # Moor-specific analysis and apis
-  moor: ^4.4.0
   drift: ^4.6.0
   sqlite3: '>=0.1.6 <2.0.0'
   sqlparser: ^0.17.0
@@ -53,12 +52,10 @@ dev_dependencies:
   json_serializable: ^5.0.0
 
 executables:
-  moor_generator:
+  drift_dev:
 
 dependency_overrides:
   drift:
     path: ../drift
   sqlparser:
     path: ../sqlparser
-  moor:
-    path: ../moor

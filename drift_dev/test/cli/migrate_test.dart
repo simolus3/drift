@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:meta/meta.dart';
 import 'package:drift_dev/src/cli/cli.dart';
+import 'package:meta/meta.dart';
 import 'package:package_config/package_config_types.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/scaffolding.dart';

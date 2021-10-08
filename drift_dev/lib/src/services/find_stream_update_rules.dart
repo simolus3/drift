@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
-import 'package:moor/moor.dart';
 import 'package:drift_dev/moor_generator.dart';
+import 'package:moor/moor.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class FindStreamUpdateRules {

@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:moor/moor.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
@@ -17,6 +16,7 @@ import 'package:drift_dev/src/analyzer/view/view_analyzer.dart';
 import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:drift_dev/src/model/view.dart';
 import 'package:drift_dev/src/utils/entity_reference_sorter.dart';
+import 'package:moor/moor.dart';
 import 'package:source_gen/source_gen.dart';
 
 part 'steps/analyze_dart.dart';
