@@ -117,11 +117,16 @@ class GenerationOptions {
   /// Whether companions should be generated.
   final bool writeCompanions;
 
+  /// Whether we're generating code for the old moor package instead of the
+  /// new `drift` package.
+  final bool writeForMoorPackage;
+
   const GenerationOptions({
     this.forSchema,
     this.nnbd = false,
     this.writeDataClasses = true,
     this.writeCompanions = true,
+    this.writeForMoorPackage = false,
   });
 
   /// Whether, instead of generating the full database code, we're only

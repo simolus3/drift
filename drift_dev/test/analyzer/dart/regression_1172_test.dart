@@ -7,7 +7,7 @@ void main() {
   test('can define abstract tables', () async {
     final test = TestState.withContent({
       'a|lib/main.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 abstract class CategoriesTable extends Table {
   IntColumn get id => integer()();
@@ -35,7 +35,7 @@ class SocietiesCategoriesTable extends CategoriesTable {
   String get tableName => 'societies_categories';
 }
 
-@UseMoor(tables: [OccurrenceCategoriesTable, SocietiesCategoriesTable])
+@DriftDatabase(tables: [OccurrenceCategoriesTable, SocietiesCategoriesTable])
 class Database {}
 ''',
     });

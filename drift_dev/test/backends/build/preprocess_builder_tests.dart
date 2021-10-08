@@ -24,7 +24,7 @@ CREATE TABLE foo (
 );
         ''',
         'foo|converter.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();
@@ -72,7 +72,7 @@ CREATE TABLE foo (
 import 'converter.dart';        
         ''',
         'foo|converter.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<DateTime, int> {
   const MyConverter();

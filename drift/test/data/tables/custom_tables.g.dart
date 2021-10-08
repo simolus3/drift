@@ -68,7 +68,7 @@ class Config extends DataClass implements Insertable<Config> {
 
   factory Config.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Config(
       configKey: serializer.fromJson<String>(json['config_key']),
       configValue: serializer.fromJson<String?>(json['config_value']),
@@ -83,7 +83,7 @@ class Config extends DataClass implements Insertable<Config> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'config_key': serializer.toJson<String>(configKey),
       'config_value': serializer.toJson<String?>(configValue),
@@ -117,10 +117,8 @@ class Config extends DataClass implements Insertable<Config> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      configKey.hashCode,
-      $mrjc(configValue.hashCode,
-          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+  int get hashCode =>
+      Object.hash(configKey, configValue, syncState, syncStateImplicit);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -322,7 +320,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
 
   factory WithDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return WithDefault(
       a: serializer.fromJson<String?>(json['a']),
       b: serializer.fromJson<int?>(json['b']),
@@ -335,7 +333,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String?>(a),
       'b': serializer.toJson<int?>(b),
@@ -359,7 +357,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(a.hashCode, b.hashCode));
+  int get hashCode => Object.hash(a, b);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -601,7 +599,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
 
   factory WithConstraint.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return WithConstraint(
       a: serializer.fromJson<String?>(json['a']),
       b: serializer.fromJson<int>(json['b']),
@@ -615,7 +613,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'a': serializer.toJson<String?>(a),
       'b': serializer.toJson<int>(b),
@@ -643,7 +641,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
+  int get hashCode => Object.hash(a, b, c);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -832,7 +830,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
 
   factory MytableData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return MytableData(
       someid: serializer.fromJson<int>(json['someid']),
       sometext: serializer.fromJson<String?>(json['sometext']),
@@ -847,7 +845,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'someid': serializer.toJson<int>(someid),
       'sometext': serializer.toJson<String?>(sometext),
@@ -879,10 +877,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      someid.hashCode,
-      $mrjc(
-          sometext.hashCode, $mrjc(isInserting.hashCode, somedate.hashCode))));
+  int get hashCode => Object.hash(someid, sometext, isInserting, somedate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1079,7 +1074,7 @@ class EMail extends DataClass implements Insertable<EMail> {
 
   factory EMail.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return EMail(
       sender: serializer.fromJson<String>(json['sender']),
       title: serializer.fromJson<String>(json['title']),
@@ -1092,7 +1087,7 @@ class EMail extends DataClass implements Insertable<EMail> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'sender': serializer.toJson<String>(sender),
       'title': serializer.toJson<String>(title),
@@ -1116,8 +1111,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc(sender.hashCode, $mrjc(title.hashCode, body.hashCode)));
+  int get hashCode => Object.hash(sender, title, body);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1289,7 +1283,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
 
   factory WeirdData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return WeirdData(
       sqlClass: serializer.fromJson<int>(json['class']),
       textColumn: serializer.fromJson<String>(json['text']),
@@ -1302,7 +1296,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'class': serializer.toJson<int>(sqlClass),
       'text': serializer.toJson<String>(textColumn),
@@ -1323,7 +1317,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(sqlClass.hashCode, textColumn.hashCode));
+  int get hashCode => Object.hash(sqlClass, textColumn);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1469,7 +1463,7 @@ class MyViewData extends DataClass {
   }
   factory MyViewData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return MyViewData(
       configKey: serializer.fromJson<String>(json['configKey']),
       configValue: serializer.fromJson<String?>(json['configValue']),
@@ -1485,7 +1479,7 @@ class MyViewData extends DataClass {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'configKey': serializer.toJson<String>(configKey),
       'configValue': serializer.toJson<String?>(configValue),
@@ -1519,10 +1513,8 @@ class MyViewData extends DataClass {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      configKey.hashCode,
-      $mrjc(configValue.hashCode,
-          $mrjc(syncState.hashCode, syncStateImplicit.hashCode))));
+  int get hashCode =>
+      Object.hash(configKey, configValue, syncState, syncStateImplicit);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1825,7 +1817,7 @@ class JsonResult extends CustomResultSet {
     this.value,
   }) : super(row);
   @override
-  int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
+  int get hashCode => Object.hash(key, value);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1853,7 +1845,7 @@ class MultipleResult extends CustomResultSet {
     this.c,
   }) : super(row);
   @override
-  int get hashCode => $mrjf($mrjc(a.hashCode, $mrjc(b.hashCode, c.hashCode)));
+  int get hashCode => Object.hash(a, b, c);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1887,12 +1879,8 @@ class ReadRowIdResult extends CustomResultSet {
     this.syncStateImplicit,
   }) : super(row);
   @override
-  int get hashCode => $mrjf($mrjc(
-      rowid.hashCode,
-      $mrjc(
-          configKey.hashCode,
-          $mrjc(configValue.hashCode,
-              $mrjc(syncState.hashCode, syncStateImplicit.hashCode)))));
+  int get hashCode =>
+      Object.hash(rowid, configKey, configValue, syncState, syncStateImplicit);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

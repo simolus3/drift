@@ -68,7 +68,7 @@ void main() {
          );
       ''',
       'foo|lib/enum.dart': '''
-        import 'package:moor/moor.dart';
+        import 'package:drift/drift.dart';
       
         enum Fruits {
           apple, orange, banane

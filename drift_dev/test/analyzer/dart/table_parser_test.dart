@@ -20,7 +20,7 @@ void main() {
   setUpAll(() {
     backend = TestBackend({
       AssetId.parse('test_lib|lib/main.dart'): r'''
-      import 'package:moor/moor.dart';
+      import 'package:drift/drift.dart';
       
       class TableWithCustomName extends Table {
         @override String get tableName => 'my-fancy-table';
@@ -95,13 +95,13 @@ void main() {
       }
       ''',
       AssetId.parse('test_lib|lib/invalid_reference.dart'): '''
-      import 'package:moor/moor.dart';
+      import 'package:drift/drift.dart';
 
       class Foo extends Table {
         IntColumn get id => integer().autoIncrement()();
       }
 
-      @UseMoor(tables: [Foo, DoesNotExist])
+      @DriftDatabase(tables: [Foo, DoesNotExist])
       class Database {}
       ''',
     });
@@ -310,7 +310,7 @@ void main() {
           (e) => e.message,
           'message',
           allOf(
-            contains('Could not read tables from @UseMoor annotation!'),
+            contains('Could not read tables from @DriftDatabase annotation!'),
             contains('Please make sure that all table classes exist.'),
           ),
         ),

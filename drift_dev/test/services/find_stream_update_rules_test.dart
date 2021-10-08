@@ -24,9 +24,9 @@ BEGIN
 END;
       ''',
       'foo|lib/main.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
-@UseMoor(include: {'a.moor'})
+@DriftDatabase(include: {'a.moor'})
 class MyDatabase {}      
       '''
     });
@@ -80,9 +80,9 @@ CREATE TABLE unaffected_on_update (
 );
       ''',
       'foo|lib/main.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
-@UseMoor(include: {'a.moor'})
+@DriftDatabase(include: {'a.moor'})
 class MyDatabase {}
       '''
     });

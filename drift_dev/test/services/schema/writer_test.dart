@@ -43,7 +43,7 @@ END;
 CREATE INDEX groups_name ON "groups"(name);
       ''',
       'foo|lib/main.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -60,7 +60,7 @@ class SettingsConverter extends TypeConverter<Settings, String> {
   Settings mapToDart(String db) => Settings();
 }
 
-@UseMoor(include: {'a.moor'}, tables: [Users])
+@DriftDatabase(include: {'a.moor'}, tables: [Users])
 class Database {}
       ''',
     }, options: const MoorOptions.defaults(modules: [SqlModule.fts5]));

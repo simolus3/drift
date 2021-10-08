@@ -9,7 +9,7 @@ void main() {
   test('reports an error when importing a part file into .moor', () async {
     final state = TestState.withContent({
       'a|lib/base.dart': '''
-      import 'package:moor/moor.dart';
+      import 'package:drift/drift.dart';
 
       part 'tables.dart';
       ''',

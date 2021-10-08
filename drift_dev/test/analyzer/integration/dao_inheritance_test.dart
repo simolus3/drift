@@ -9,14 +9,14 @@ void main() {
   test('supports inheritance for daos', () async {
     final state = TestState.withContent({
       'a|lib/database.dart': r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Products extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
 }
 
-@UseMoor(tables: [Products], daos: [ProductsDao])
+@DriftDatabase(tables: [Products], daos: [ProductsDao])
 class MyDatabase {}
 
 abstract class BaseDao<T extends Table, D > 
@@ -35,7 +35,7 @@ abstract class BaseProductsDao extends BaseDao<Products, Product> {
   BaseProductsDao(MyDatabase db): super(db, db.products);
 }
 
-@UseDao(tables: [ProductTable])
+@DriftAccessor(tables: [ProductTable])
 class ProductsDao extends BaseProductsDao with _$ProductDaoMixin {
   ProductsDao(MyDatabase db): super(db);
 }

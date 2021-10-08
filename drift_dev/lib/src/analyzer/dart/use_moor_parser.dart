@@ -17,7 +17,7 @@ class UseMoorParser {
         .whereType<DartType>();
     if (tablesOrNull == null) {
       step.reportError(ErrorInDartCode(
-        message: 'Could not read tables from @UseMoor annotation! \n'
+        message: 'Could not read tables from @DriftDatabase annotation! \n'
             'Please make sure that all table classes exist.',
         affectedElement: element,
       ));

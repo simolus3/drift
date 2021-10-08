@@ -273,6 +273,7 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
     for (final annotation in element.metadata) {
       final value = annotation.computeConstantValue();
+      if (value == null) return;
       final type = value.type;
 
       if (type is! InterfaceType) continue;

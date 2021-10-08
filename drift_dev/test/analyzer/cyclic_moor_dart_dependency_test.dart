@@ -15,13 +15,13 @@ void main() {
   setUpAll(() {
     backend = TestBackend({
       AssetId.parse('test_lib|lib/entry.dart'): r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Foos extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-@UseMoor(include: {'db.moor'}, tables: [Foos])
+@DriftDatabase(include: {'db.moor'}, tables: [Foos])
 class Database {}
      ''',
       AssetId.parse('test_lib|lib/db.moor'): r'''

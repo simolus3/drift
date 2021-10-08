@@ -69,7 +69,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
 
   factory TodoEntry.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return TodoEntry(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String?>(json['title']),
@@ -85,7 +85,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String?>(title),
@@ -121,12 +121,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          title.hashCode,
-          $mrjc(content.hashCode,
-              $mrjc(targetDate.hashCode, category.hashCode)))));
+  int get hashCode => Object.hash(id, title, content, targetDate, category);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -345,7 +340,7 @@ class Category extends DataClass implements Insertable<Category> {
 
   factory Category.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
@@ -359,7 +354,7 @@ class Category extends DataClass implements Insertable<Category> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
@@ -385,8 +380,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc(id.hashCode, $mrjc(description.hashCode, priority.hashCode)));
+  int get hashCode => Object.hash(id, description, priority);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -577,7 +571,7 @@ class User extends DataClass implements Insertable<User> {
 
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -592,7 +586,7 @@ class User extends DataClass implements Insertable<User> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -628,12 +622,8 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          name.hashCode,
-          $mrjc(isAwesome.hashCode,
-              $mrjc(profilePicture.hashCode, creationTime.hashCode)))));
+  int get hashCode =>
+      Object.hash(id, name, isAwesome, profilePicture, creationTime);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -854,7 +844,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
 
   factory SharedTodo.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return SharedTodo(
       todo: serializer.fromJson<int>(json['todo']),
       user: serializer.fromJson<int>(json['user']),
@@ -867,7 +857,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'todo': serializer.toJson<int>(todo),
       'user': serializer.toJson<int>(user),
@@ -888,7 +878,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(todo.hashCode, user.hashCode));
+  int get hashCode => Object.hash(todo, user);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1168,7 +1158,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
 
   factory PureDefault.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return PureDefault(
       txt: serializer.fromJson<String?>(json['txt']),
     );
@@ -1180,7 +1170,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'txt': serializer.toJson<String?>(txt),
     };
@@ -1199,7 +1189,7 @@ class PureDefault extends DataClass implements Insertable<PureDefault> {
   }
 
   @override
-  int get hashCode => $mrjf(txt.hashCode);
+  int get hashCode => txt.hashCode;
   @override
   bool operator ==(Object other) =>
       identical(this, other) || (other is PureDefault && other.txt == this.txt);
@@ -1395,16 +1385,8 @@ class AllTodosWithCategoryResult extends CustomResultSet {
     required this.catDesc,
   }) : super(row);
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          title.hashCode,
-          $mrjc(
-              content.hashCode,
-              $mrjc(
-                  targetDate.hashCode,
-                  $mrjc(category.hashCode,
-                      $mrjc(catId.hashCode, catDesc.hashCode)))))));
+  int get hashCode =>
+      Object.hash(id, title, content, targetDate, category, catId, catDesc);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

@@ -8,12 +8,12 @@ void main() {
   test('analyzes views referencing Dart tables', () async {
     final state = TestState.withContent({
       'a|lib/db.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'dart:io';
 
 import 'entities/person.dart';
 
-@UseMoor(tables: [Persons], include: {'query.moor'})
+@DriftDatabase(tables: [Persons], include: {'query.moor'})
 class MyDatabase {
   MyDatabase() : super(_openConnection());
   @override
@@ -33,7 +33,7 @@ SELECT id, name, last_name, '...' AS full_name
 FROM persons;
       ''',
       'a|lib/entities/person.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Persons extends Table {
   IntColumn get id => integer().autoIncrement()();

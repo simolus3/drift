@@ -14,7 +14,7 @@ void main() {
   setUpAll(() {
     state = TestState.withContent({
       'test_lib|lib/database.dart': r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 import 'another.dart'; // so that the resolver picks it up
 
@@ -27,7 +27,7 @@ class UsedLanguages extends Table {
   Set<Column> get primaryKey => {language, library};
 }
 
-@UseMoor(
+@DriftDatabase(
   tables: [UsedLanguages],
   include: {'package:test_lib/tables.moor'},
   queries: {
@@ -54,7 +54,7 @@ joinTest: SELECT * FROM reference_test r
   INNER JOIN libraries l ON l.id = r.library;
         ''',
       'test_lib|lib/another.dart': r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
       
 class ProgrammingLanguages extends Table {
   IntColumn get id => integer().autoIncrement()();

@@ -8,15 +8,15 @@ void main() {
   test('gracefully handles daos with invalid types', () async {
     final state = TestState.withContent({
       'foo|lib/bar.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Foos extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-@UseMoor() class Db {}
+@DriftDatabase() class Db {}
 
-@UseDao(tables: [Foos, Db])
+@DriftAccessor(tables: [Foos, Db])
 class Dao extends DatabaseAccessor<Db> {}
       ''',
     });

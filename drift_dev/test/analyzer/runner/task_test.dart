@@ -29,9 +29,9 @@ import 'b.moor';
     test('in a dart file', () async {
       final state = TestState.withContent({
         'foo|lib/a.dart': '''
-import 'package:moor/moor.dart';        
+import 'package:drift/drift.dart';        
 
-@UseMoor(include: {'b.moor'})
+@DriftDatabase(include: {'b.moor'})
 class Database {
 
 }        

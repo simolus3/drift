@@ -27,9 +27,9 @@ void main() {
         'foo|lib/a.dart': '''
 // @dart = 2.1
 
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
-@UseMoor(tables: [])
+@DriftDatabase(tables: [])
 class Database {}
         ''',
       },

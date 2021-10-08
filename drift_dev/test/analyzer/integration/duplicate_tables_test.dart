@@ -8,18 +8,18 @@ void main() {
   test("tables imported in two ways aren't duplicated", () async {
     final state = TestState.withContent({
       'foo|lib/main.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 import 'table.dart';
 
-@UseMoor(tables: [Users], include: {'file.moor'})
+@DriftDatabase(tables: [Users], include: {'file.moor'})
 class MyDatabase {}
       ''',
       'foo|lib/file.moor': '''
 import 'table.dart';      
       ''',
       'foo|lib/table.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();

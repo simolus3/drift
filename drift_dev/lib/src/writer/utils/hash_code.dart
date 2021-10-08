@@ -1,7 +1,6 @@
-const _hashCombine = '\$mrjc';
-const _hashFinish = '\$mrjf';
-
 class HashCodeWriter {
+  static const int _maxArgsToObjectHash = 20;
+
   const HashCodeWriter();
 
   /// Writes an expression to calculate a hash code of an object that consists
@@ -10,22 +9,20 @@ class HashCodeWriter {
     if (fields.isEmpty) {
       into.write('identityHashCode(this)');
     } else if (fields.length == 1) {
-      into.write('$_hashFinish(${fields.last}.hashCode)');
+      into.write('${fields[0]}.hashCode');
     } else {
-      into.write('$_hashFinish(');
-      _writeInner(fields, into, 0);
-      into.write(')');
-    }
-  }
+      final needsHashAll = fields.length > _maxArgsToObjectHash;
 
-  /// recursively writes a "combine(a, combine(b, c)))" expression
-  void _writeInner(List<String> fields, StringBuffer into, int index) {
-    if (index == fields.length - 1) {
-      into.write('${fields.last}.hashCode');
-    } else {
-      into.write('$_hashCombine(${fields[index]}.hashCode, ');
-      _writeInner(fields, into, index + 1);
-      into.write(')');
+      into.write(needsHashAll ? 'Object.hashAll([' : 'Object.hash(');
+      var first = true;
+      for (final field in fields) {
+        if (!first) into.write(', ');
+
+        into.write(field);
+        first = false;
+      }
+
+      into.write(needsHashAll ? '])' : ')');
     }
   }
 }

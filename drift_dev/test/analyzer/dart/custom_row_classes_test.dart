@@ -13,7 +13,7 @@ void main() {
   setUpAll(() {
     state = TestState.withContent({
       'a|lib/invalid_no_unnamed_constructor.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class RowClass {
   RowClass.create();
@@ -22,7 +22,7 @@ class RowClass {
 class TableClass extends Table {}
       ''',
       'a|lib/invalid_no_named_constructor.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class RowClass {
   RowClass();
@@ -32,7 +32,7 @@ class RowClass {
 class TableClass extends Table {}
       ''',
       'a|lib/mismatching_type.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class RowClass {
   RowClass(int x);
@@ -43,7 +43,7 @@ class TableClass extends Table {
 }
       ''',
       'a|lib/mismatching_nullability.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class RowClass {
   RowClass(int x);
@@ -54,7 +54,7 @@ class TableClass extends Table {
 }
       ''',
       'a|lib/mismatching_type_converter.dart': '''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class MyConverter extends TypeConverter<int, String> {
   const MyConverter();
@@ -76,7 +76,7 @@ class TableClass extends Table {
       ''',
       'a|lib/generic.dart': '''
 //@dart=2.13
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 typedef StringRow = GenericRow<String>;
 typedef IntRow = GenericRow<int>;
@@ -98,7 +98,7 @@ class IntTable extends Table {
       ''',
       'a|lib/blob.dart': '''
 // @dart=2.13
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 @UseRowClass(Cls)
 class Tbl extends Table {

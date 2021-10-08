@@ -8,7 +8,7 @@ void main() {
   test('moor files can import original dart source', () async {
     final state = TestState.withContent({
       'a|lib/base.dart': r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 part 'base.g.dart';
 
@@ -30,7 +30,7 @@ class Units extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-@UseMoor(include: {'customizedSQL.moor'})
+@DriftDatabase(include: {'customizedSQL.moor'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(FlutterQueryExecutor.inDatabaseFolder(

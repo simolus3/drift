@@ -10,7 +10,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 const _testInput = r'''
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 part 'main.moor.dart';
 
@@ -19,7 +19,7 @@ class Users extends Table {
   TextColumn get name => text()();
 }
 
-@UseMoor(
+@DriftDatabase(
   tables: [Users],
   queries: {
     'someQuery': 'SELECT 1 AS foo, 2 AS bar;',

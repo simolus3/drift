@@ -17,9 +17,9 @@ builders:
     build_extensions: {".moor": [".temp.dart", ".dart_in_moor"]}
     build_to: cache
     auto_apply: dependents
-    applies_builders: ["moor_generator|moor_cleanup"]
+    applies_builders: ["drift_dev|cleanup"]
 
-  moor_generator:
+  drift_dev:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["moorBuilder"]
     build_extensions: {".dart": [".moor.g.part"]}
@@ -37,6 +37,6 @@ builders:
     required_inputs: [".dart_in_moor"]
 
 post_process_builders:
-  moor_cleanup:
+  cleanup:
     import: "package:drift_dev/integrations/build.dart"
     builder_factory: "moorCleanup"

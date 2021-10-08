@@ -18,6 +18,7 @@ final _flags = Resource(() => _BuilderFlags());
 
 mixin MoorBuilder on Builder {
   MoorOptions get options;
+  bool get isForNewDriftPackage;
 
   Writer createWriter({bool nnbd = false}) {
     return Writer(options, generationOptions: GenerationOptions(nnbd: nnbd));
@@ -66,12 +67,18 @@ class MoorSharedPartBuilder extends SharedPartBuilder with MoorBuilder {
   @override
   final MoorOptions options;
 
-  MoorSharedPartBuilder._(List<Generator> generators, String name, this.options)
+  @override
+  final bool isForNewDriftPackage;
+
+  MoorSharedPartBuilder._(List<Generator> generators, String name, this.options,
+      this.isForNewDriftPackage)
       : super(generators, name);
 
-  factory MoorSharedPartBuilder(BuilderOptions options) {
+  factory MoorSharedPartBuilder(BuilderOptions options,
+      {bool isForNewDriftPackage = false}) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return MoorSharedPartBuilder._(generators, 'moor', parsedOptions);
+      return MoorSharedPartBuilder._(
+          generators, 'moor', parsedOptions, isForNewDriftPackage);
     });
   }
 
@@ -94,12 +101,18 @@ class MoorPartBuilder extends PartBuilder with MoorBuilder {
   @override
   final MoorOptions options;
 
-  MoorPartBuilder._(List<Generator> generators, String extension, this.options)
+  @override
+  final bool isForNewDriftPackage;
+
+  MoorPartBuilder._(List<Generator> generators, String extension, this.options,
+      this.isForNewDriftPackage)
       : super(generators, extension);
 
-  factory MoorPartBuilder(BuilderOptions options) {
+  factory MoorPartBuilder(BuilderOptions options,
+      {bool isForNewDriftPackage = false}) {
     return _createBuilder(options, (generators, parsedOptions) {
-      return MoorPartBuilder._(generators, '.moor.dart', parsedOptions);
+      return MoorPartBuilder._(
+          generators, '.moor.dart', parsedOptions, isForNewDriftPackage);
     });
   }
 }

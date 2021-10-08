@@ -13,7 +13,7 @@ void main() {
   setUpAll(() async {
     state = TestState.withContent({
       'foo|lib/main.dart': '''
-        import 'package:moor/moor.dart';
+        import 'package:drift/drift.dart';
       
         enum Fruits {
           apple, orange, banana
