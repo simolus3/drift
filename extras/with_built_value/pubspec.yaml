@@ -6,20 +6,19 @@ environment:
   sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
-  moor: ^4.0.0
+  drift: ^1.0.0
   built_value: ^8.0.0
 
 dev_dependencies:
-  moor_generator: ^4.0.0
+  drift_dev: ^1.0.0
   built_value_generator: ^8.1.1
   build_runner: ^2.0.0
+
 dependency_overrides:
   drift:
     path: ../../drift
-  moor:
-    path: ../../moor
-  moor_generator:
-    path: ../../moor_generator
+  drift_dev:
+    path: ../../drift_dev
   sqlparser:
     path: ../../sqlparser
 

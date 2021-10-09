@@ -64,8 +64,8 @@ class MigrateCommand extends MoorCommand {
         await _transformDartFile(file);
         break;
       case '.moor':
-        final newFile = File(p.setExtension(file.path, '.drift'));
-        await newFile.writeAsString(await _transformMoorFile(file));
+        await file.writeAsString(await _transformMoorFile(file));
+        await file.rename(p.setExtension(file.path, '.drift'));
         break;
       case '.yaml':
         final name = p.basenameWithoutExtension(file.path);
@@ -202,22 +202,31 @@ class MigrateCommand extends MoorCommand {
 
         if (newPackages.containsKey(package)) {
           final replaceWith = newPackages[package];
-          // replace the whole dependency
-          final start = dep.span.start;
-          var end = entry.value.span.end;
-          if (entry.value.span.length == 0) {
-            // We have a dependency like `moor: `, with an implicit yaml null.
-            // This is parsed as          ~~~~|
-            //                           key, value (before the `:`)
-            // But we want to replace all of it.
-            end = SourceLocation(end.offset + 1, sourceUrl: end.sourceUrl);
+          // Replace the package name, and the entire dependency block if its
+          // a string or null
+
+          final value = entry.value;
+          if (value.value == null || value.value is String) {
+            final start = dep.span.start;
+            var end = value.span.end;
+
+            if (entry.value.span.length == 0) {
+              // We have a dependency like `moor: `, with an implicit yaml null.
+              // This is parsed as          ~~~~|
+              //                           key, value (before the `:`)
+              // But we want to replace all of it.
+              end = SourceLocation(end.offset + 1, sourceUrl: end.sourceUrl);
+            }
+
+            final span = SourceSpan(
+                start, end, content.substring(start.offset, end.offset));
+
+            writer.replace(
+                span.start.offset, span.length, '$replaceWith: ^1.0.0');
+          } else {
+            // Only replace the package name
+            writer.replace(dep.span.start.offset, dep.span.length, replaceWith);
           }
-
-          final span = SourceSpan(
-              start, end, content.substring(start.offset, end.offset));
-
-          writer.replace(
-              span.start.offset, span.length, '$replaceWith: ^1.0.0');
         }
       }
     }

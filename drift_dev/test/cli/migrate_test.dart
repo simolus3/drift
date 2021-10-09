@@ -218,6 +218,14 @@ dependencies:
 dev_dependencies:
   moor_generator: ^4.5.6
   build_runner: ^2.0.0
+
+dependency_overrides:
+  moor:
+    path: /foo/bar
+  moor_generator:
+    hosted:
+      url: foo
+    version: ^1.2.3
 ''');
 
     await _apply();
@@ -237,6 +245,14 @@ dependencies:
 dev_dependencies:
   drift_dev: ^1.0.0
   build_runner: ^2.0.0
+
+dependency_overrides:
+  drift:
+    path: /foo/bar
+  drift_dev:
+    hosted:
+      url: foo
+    version: ^1.2.3
 '''),
     ]).validate();
   });

@@ -1,9 +1,9 @@
 import 'package:built_value/built_value.dart';
-import 'package:moor/ffi.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 
+part 'database.drift.dart';
 part 'database.g.dart';
-part 'database.moor.dart';
 
 abstract class Foo implements Built<Foo, FooBuilder> {
   User get moorField;
@@ -13,9 +13,9 @@ abstract class Foo implements Built<Foo, FooBuilder> {
   factory Foo([void Function(FooBuilder) updates]) = _$Foo;
 }
 
-@UseMoor(include: {'tables.moor'})
+@DriftDatabase(include: {'tables.drift'})
 class Database extends _$Database {
-  Database() : super(VmDatabase.memory());
+  Database() : super(NativeDatabase.memory());
 
   @override
   int get schemaVersion => 1;

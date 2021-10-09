@@ -28,10 +28,10 @@ builders:
     required_inputs: [".dart_in_moor"]
     applies_builders: ["source_gen|combining_builder"]
 
-  moor_generator_not_shared:
+  not_shared:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["moorBuilderNotShared"]
-    build_extensions: {".dart": [".moor.dart"]}
+    build_extensions: {".dart": [".drift.dart"]}
     build_to: source
     auto_apply: none
     required_inputs: [".dart_in_moor"]

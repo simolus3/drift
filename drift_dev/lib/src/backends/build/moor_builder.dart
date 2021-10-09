@@ -114,7 +114,10 @@ class MoorPartBuilder extends PartBuilder with MoorBuilder {
       {bool isForNewDriftPackage = false}) {
     return _createBuilder(options, (generators, parsedOptions) {
       return MoorPartBuilder._(
-          generators, '.moor.dart', parsedOptions, isForNewDriftPackage);
+          generators,
+          isForNewDriftPackage ? '.drift.dart' : '.moor.dart',
+          parsedOptions,
+          isForNewDriftPackage);
     });
   }
 }
