@@ -175,6 +175,34 @@ void main() {
     ]).validate();
   });
 
+  _test('patches include args from @UseMoor and @UseDao', () async {
+    await _setup([
+      d.file('a.dart', '''
+import 'package:moor/moor.dart';
+
+@UseMoor(include: {'foo/bar.moor'}, tables: [Foo, Bar])
+class MyDatabase {}
+
+@UseDao(include: {'package:x/y.moor'})
+class MyDao {}
+'''),
+    ]);
+
+    await _apply();
+
+    await d.dir('app/lib', [
+      d.file('a.dart', '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'foo/bar.drift'}, tables: [Foo, Bar])
+class MyDatabase {}
+
+@DriftAccessor(include: {'package:x/y.drift'})
+class MyDao {}
+'''),
+    ]).validate();
+  });
+
   _test('updates pubspec.yaml', () async {
     await _setup(const [], pubspec: '''
 name: app
@@ -183,7 +211,7 @@ environment:
   sdk: ^2.12.0
 
 dependencies:
-  moor: ^1.2.3
+  moor:
   something_else:
 
 # comment
@@ -202,13 +230,13 @@ environment:
   sdk: ^2.12.0
 
 dependencies:
-  drift: ^1.2.3
+  drift: ^1.0.0
   something_else:
 
 # comment
 dev_dependencies:
+  drift_dev: ^1.0.0
   build_runner: ^2.0.0
-  drift_dev: ^4.5.6
 '''),
     ]).validate();
   });

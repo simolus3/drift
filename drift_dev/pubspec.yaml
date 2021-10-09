@@ -21,8 +21,8 @@ dependencies:
   args: ">=1.5.0 <3.0.0"
   logging: '>=0.11.0 <2.0.0'
   cli_util: '>=0.2.0 <0.4.0'
-  yaml_edit: ^2.0.1
   yaml: ^3.1.0
+  io: ^1.0.3
 
   # Moor-specific analysis and apis
   drift: ^4.6.0
