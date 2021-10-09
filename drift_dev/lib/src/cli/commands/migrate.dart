@@ -295,6 +295,9 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
         break;
       case 'moor_generator':
         newPackage = 'drift_dev';
+        break;
+      default:
+        return;
     }
 
     final driftImport = 'package:$newPackage/$path';

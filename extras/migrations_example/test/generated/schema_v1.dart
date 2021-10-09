@@ -1,6 +1,6 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
 //@dart=2.12
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
@@ -28,14 +28,14 @@ class UsersData extends DataClass implements Insertable<UsersData> {
 
   factory UsersData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return UsersData(
       id: serializer.fromJson<int>(json['id']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
     };
@@ -46,12 +46,14 @@ class UsersData extends DataClass implements Insertable<UsersData> {
       );
   @override
   String toString() {
-    return (StringBuffer('UsersData(')..write('id: $id')..write(')'))
+    return (StringBuffer('UsersData(')
+          ..write('id: $id')
+          ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf(id.hashCode);
+  int get hashCode => id.hashCode;
   @override
   bool operator ==(Object other) =>
       identical(this, other) || (other is UsersData && other.id == this.id);
@@ -90,29 +92,28 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
 
   @override
   String toString() {
-    return (StringBuffer('UsersCompanion(')..write('id: $id')..write(')'))
+    return (StringBuffer('UsersCompanion(')
+          ..write('id: $id')
+          ..write(')'))
         .toString();
   }
 }
 
-class Users extends Table with TableInfo {
+class Users extends Table with TableInfo<Users, UsersData> {
   final GeneratedDatabase _db;
   final String? _alias;
   Users(this._db, [this._alias]);
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  Users get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override

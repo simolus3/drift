@@ -1,7 +1,7 @@
 import 'package:migrations_example/database.dart';
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
-import 'package:moor_generator/api/migrations.dart';
+import 'package:drift_dev/api/migrations.dart';
 
 // Import the generated schema helper to instantiate databases at old versions.
 import 'generated/schema.dart';
@@ -10,7 +10,7 @@ import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 
 void main() {
-  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   late SchemaVerifier verifier;
 
   setUpAll(() {

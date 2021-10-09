@@ -1,7 +1,7 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
 //@dart=2.12
-import 'package:moor/moor.dart';
-import 'package:moor_generator/api/migrations.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_dev/api/migrations.dart';
 import 'schema_v1.dart' as v1;
 import 'schema_v2.dart' as v2;
 import 'schema_v3.dart' as v3;

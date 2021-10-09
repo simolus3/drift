@@ -86,7 +86,7 @@ class GenerateUtilsCommand extends Command {
       );
     }
 
-    await _writeLibraryFile(outputDir, schema.keys, isNnbd);
+    await _writeLibraryFile(outputDir, schema.keys, isNnbd, isForMoor);
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
@@ -150,17 +150,22 @@ class GenerateUtilsCommand extends Command {
       generationOptions: GenerationOptions(
         forSchema: version,
         nnbd: nnbd,
-        writeCompanions: dataClasses,
-        writeDataClasses: companions,
+        writeCompanions: companions,
+        writeDataClasses: dataClasses,
         writeForMoorPackage: isForMoor,
       ),
     );
     final file = File(p.join(output.path, _filenameForVersion(version)));
 
-    writer.leaf()
+    final leaf = writer.leaf()
       ..writeln(_prefix)
-      ..writeDartVersion(nnbd)
-      ..writeln("import 'package:moor/moor.dart';");
+      ..writeDartVersion(nnbd);
+
+    if (isForMoor) {
+      leaf.writeln("import 'package:moor/moor.dart';");
+    } else {
+      leaf.writeln("import 'package:drift/drift.dart';");
+    }
 
     final db = Database(
       declaredQueries: const [],
@@ -172,13 +177,21 @@ class GenerateUtilsCommand extends Command {
     return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
   }
 
-  Future<void> _writeLibraryFile(
-      Directory output, Iterable<int> versions, bool nnbd) {
+  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions,
+      bool nnbd, bool useMoorImports) {
     final buffer = StringBuffer()
       ..writeln(_prefix)
-      ..writeDartVersion(nnbd)
-      ..writeln("import 'package:moor/moor.dart';")
-      ..writeln("import 'package:drift_dev/api/migrations.dart';");
+      ..writeDartVersion(nnbd);
+
+    if (useMoorImports) {
+      buffer
+        ..writeln("import 'package:moor/moor.dart';")
+        ..writeln("import 'package:moor_generator/api/migrations.dart';");
+    } else {
+      buffer
+        ..writeln("import 'package:drift/drift.dart';")
+        ..writeln("import 'package:drift_dev/api/migrations.dart';");
+    }
 
     for (final version in versions) {
       buffer.writeln("import '${_filenameForVersion(version)}' as v$version;");

@@ -1,6 +1,6 @@
 // GENERATED CODE, DO NOT EDIT BY HAND.
 //@dart=2.12
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
@@ -33,7 +33,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
 
   factory UsersData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return UsersData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -41,7 +41,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -62,7 +62,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, name.hashCode));
+  int get hashCode => Object.hash(id, name);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -119,33 +119,24 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   }
 }
 
-class Users extends Table with TableInfo {
+class Users extends Table with TableInfo<Users, UsersData> {
   final GeneratedDatabase _db;
   final String? _alias;
   Users(this._db, [this._alias]);
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
-  late final GeneratedTextColumn name = _constructName();
-  GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      $tableName,
-      false,
-    );
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
-  Users get asDslTable => this;
+  String get aliasedName => _alias ?? 'users';
   @override
-  String get $tableName => _alias ?? 'users';
-  @override
-  final String actualTableName = 'users';
+  String get actualTableName => 'users';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -212,7 +203,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
 
   factory GroupsData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return GroupsData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
@@ -222,7 +213,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
@@ -250,8 +241,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(title.hashCode, $mrjc(deleted.hashCode, owner.hashCode))));
+  int get hashCode => Object.hash(id, title, deleted, owner);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -337,43 +327,37 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
   }
 }
 
-class Groups extends Table with TableInfo {
+class Groups extends Table with TableInfo<Groups, GroupsData> {
   final GeneratedDatabase _db;
   final String? _alias;
   Groups(this._db, [this._alias]);
-  late final GeneratedIntColumn id = _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
-  late final GeneratedTextColumn title = _constructTitle();
-  GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, false,
-        $customConstraints: 'NOT NULL');
-  }
-
-  late final GeneratedBoolColumn deleted = _constructDeleted();
-  GeneratedBoolColumn _constructDeleted() {
-    return GeneratedBoolColumn('deleted', $tableName, true,
-        $customConstraints: 'DEFAULT FALSE',
-        defaultValue: const CustomExpression<bool>('FALSE'));
-  }
-
-  late final GeneratedIntColumn owner = _constructOwner();
-  GeneratedIntColumn _constructOwner() {
-    return GeneratedIntColumn('owner', $tableName, false,
-        $customConstraints: 'NOT NULL REFERENCES users (id)');
-  }
-
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      typeName: 'TEXT',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL');
+  late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
+      'deleted', aliasedName, true,
+      typeName: 'INTEGER',
+      requiredDuringInsert: false,
+      $customConstraints: 'DEFAULT FALSE',
+      defaultValue: const CustomExpression<bool>('FALSE'));
+  late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
+      'owner', aliasedName, false,
+      typeName: 'INTEGER',
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
   List<GeneratedColumn> get $columns => [id, title, deleted, owner];
   @override
-  Groups get asDslTable => this;
+  String get aliasedName => _alias ?? 'groups';
   @override
-  String get $tableName => _alias ?? 'groups';
-  @override
-  final String actualTableName = 'groups';
+  String get actualTableName => 'groups';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override

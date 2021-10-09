@@ -1,10 +1,10 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 import 'tables.dart';
 
 part 'database.g.dart';
 
-@UseMoor(include: {'tables.moor'})
+@DriftDatabase(include: {'tables.drift'})
 class Database extends _$Database {
   @override
   int get schemaVersion => 4;

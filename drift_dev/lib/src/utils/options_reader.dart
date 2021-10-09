@@ -8,7 +8,10 @@ Future<MoorOptions> fromRootDir(String path) async {
 
 MoorOptions readOptionsFromConfig(BuildConfig config) {
   final options = config.buildTargets.values
-      .map((t) => t.builders['moor_generator:moor_generator']?.options)
+      .map((t) {
+        return t.builders['moor_generator:moor_generator']?.options ??
+            t.builders['drift_dev:drift_dev']?.options;
+      })
       .whereType<Map>()
       .map((json) => MoorOptions.fromJson(json));
 
