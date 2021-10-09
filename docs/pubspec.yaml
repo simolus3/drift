@@ -25,13 +25,18 @@ dev_dependencies:
   moor:
   moor_generator:
   sqlparser:
-    
+  drift:
+  drift_dev:
 
 dependency_overrides:
   moor:
     path: ../moor
   moor_generator:
     path: ../moor_generator
+  drift:
+    path: ../drift
+  drift_dev:
+    path: ../drift_dev
   sqlparser:
     path: ../sqlparser
 

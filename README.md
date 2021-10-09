@@ -1,6 +1,6 @@
-# Moor
-[![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://cirrus-ci.com/github/simolus3/moor)
-[![codecov](https://codecov.io/gh/simolus3/moor/branch/master/graph/badge.svg)](https://codecov.io/gh/simolus3/moor)
+# Drift
+
+[![Build Status](https://api.cirrus-ci.com/github/simolus3/moor.svg)](https://github.com/simolus3/moor/actions/workflows/main.yml/badge.svg)
 [![Chat on Gitter](https://img.shields.io/gitter/room/moor-dart/community)](https://gitter.im/moor-dart/community)
 
 ## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/simolus3/moor&utm_medium=github&utm_content=developer&utm_term=flutter)
@@ -52,12 +52,11 @@ project, I'd appreciate your [🌟 on GitHub](https://github.com/simolus3/moor/)
 
 -----
 
-Packages in this repo:
-- `moor`: The main runtime for moor, which provides most apis
-- `moor_ffi`: New and faster executor for moor, built with `dart:ffi`.
-- `moor_flutter`: The standard executor wrapping the `sqflite` package
-- `moor_generator`: The compiler for moor tables, databases and daos. It 
-   also contains a fully-featured sql ide
-- `sqlparser`: A sql parser and static analyzer, written in pure Dart. This package can be used without moor to perform analysis on sql statements.
+Important packages in this repo:
+
+- `drift`: The main runtime for drift, which provides most apis
+- `drift_dev`: The compiler for moor tables, databases and daos. It 
+   also contains a fully-featured sql ide for the Dart analyzer.
+- `sqlparser`: A sql parser and static analyzer, written in pure Dart. This package can be used without drift to perform analysis on sql statements.
 It's on pub at 
 [![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser)

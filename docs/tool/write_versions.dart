@@ -17,6 +17,8 @@ class _VersionsBuilder extends Builder {
       'sqlparser',
       'path',
       'build_runner',
+      'drift',
+      'drift_dev',
     ];
 
     final versions = <String, String>{};

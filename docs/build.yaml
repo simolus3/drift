@@ -30,6 +30,8 @@ targets:
           dart2js_args:
             - "-O4"
             - "--csp"
+      moor_generator:
+        enabled: false
     sources:
       - "lib/**"
       - "pages/**"
