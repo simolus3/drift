@@ -52,7 +52,7 @@ class SqlTypeSystem {
   static String mapToSqlConstant(Object? dart) {
     if (dart == null) return 'NULL';
 
-    // todo: Inline and remove types in the next major moor version
+    // todo: Inline and remove types in the next major drift version
     if (dart is bool) {
       return const BoolType().mapToSqlConstant(dart);
     } else if (dart is String) {

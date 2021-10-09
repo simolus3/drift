@@ -10,13 +10,13 @@ typedef OnCreate = Future<void> Function(Migrator m);
 typedef OnUpgrade = Future<void> Function(Migrator m, int from, int to);
 
 /// Signature of a function that's called before a database is marked opened by
-/// moor, but after migrations took place. This is a suitable callback to to
+/// drift, but after migrations took place. This is a suitable callback to to
 /// populate initial data or issue `PRAGMA` statements that you want to use.
 typedef OnBeforeOpen = Future<void> Function(OpeningDetails details);
 
 Future<void> _defaultOnCreate(Migrator m) => m.createAll();
 Future<void> _defaultOnUpdate(Migrator m, int from, int to) async =>
-    throw Exception("You've bumped the schema version for your moor database "
+    throw Exception("You've bumped the schema version for your drift database "
         "but didn't provide a strategy for schema updates. Please do that by "
         'adapting the migrations getter in your database class.');
 
@@ -50,7 +50,7 @@ class MigrationStrategy {
 class Migrator {
   final GeneratedDatabase _db;
 
-  /// Used internally by moor when opening the database.
+  /// Used internally by drift when opening the database.
   Migrator(this._db);
 
   /// Creates all tables specified for the database, if they don't exist
@@ -108,8 +108,8 @@ class Migrator {
   ///
   /// The [migration] to run describes the transformation to apply to the table.
   /// The individual fields of the [TableMigration] class contain more
-  /// information on the transformations supported at the moment. Moor's
-  /// [documentation][moor docs] also contains more details and examples for
+  /// information on the transformations supported at the moment. Drifts's
+  /// [documentation][drift docs] also contains more details and examples for
   /// common migrations that can be run with [alterTable].
   ///
   /// When deleting columns from a table, make sure to migrate tables that have
@@ -119,7 +119,7 @@ class Migrator {
   /// not reliably handle views at the moment.
   ///
   /// [other alter]: https://www.sqlite.org/lang_altertable.html#otheralter
-  /// [moor docs]: https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations
+  /// [drift docs]: https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations
   @experimental
   Future<void> alterTable(TableMigration migration) async {
     final foreignKeysEnabled =
@@ -349,14 +349,14 @@ class Migrator {
 
   /// Changes the name of a column in a [table].
   ///
-  /// After renaming a column in a Dart table or a moor file and re-running the
+  /// After renaming a column in a Dart table or a drift file and re-running the
   /// generator, you can use [renameColumn] in a migration step to rename the
   /// column for existing databases.
   ///
   /// The [table] argument must be set to the table enclosing the changed
   /// column. The [oldName] must be set to the old name of the [column] in SQL.
-  /// For Dart tables, note that moor will transform `camelCase` column names in
-  /// Dart to `snake_case` column names in SQL.
+  /// For Dart tables, note that drift will transform `camelCase` column names
+  /// in Dart to `snake_case` column names in SQL.
   ///
   /// __Important compatibility information__: [renameColumn] uses an
   /// `ALTER TABLE RENAME COLUMN` internally. Support for that syntax was added
@@ -378,7 +378,7 @@ class Migrator {
   /// Changes the [table] name from [oldName] to the current
   /// [TableInfo.actualTableName].
   ///
-  /// After renaming a table in moor or Dart and re-running the generator, you
+  /// After renaming a table in drift or Dart and re-running the generator, you
   /// can use [renameTable] in a migration step to rename the table in existing
   /// databases.
   Future<void> renameTable(TableInfo table, String oldName) async {
@@ -415,7 +415,7 @@ class OpeningDetails {
   /// Whether a schema upgrade was performed while opening the database.
   bool get hadUpgrade => !wasCreated && versionBefore != versionNow;
 
-  /// Used internally by moor when opening a database.
+  /// Used internally by drift when opening a database.
   const OpeningDetails(this.versionBefore, this.versionNow)
       // Should use null instead of 0 for consistency
       : assert(versionBefore != 0);
@@ -429,7 +429,7 @@ extension DestructiveMigrationExtension on GeneratedDatabase {
   /// To use this behavior, override the `migration` getter in your database:
   ///
   /// ```dart
-  /// @UseMoor(...)
+  /// @DriftDatabase(...)
   /// class MyDatabase extends _$MyDatabase {
   ///   @override
   ///   MigrationStrategy get migration => destructiveFallback;
@@ -457,7 +457,7 @@ extension DestructiveMigrationExtension on GeneratedDatabase {
 /// Contains instructions needed to run a complex migration on a table, using
 /// the steps described in [Making other kinds of table schema changes][https://www.sqlite.org/lang_altertable.html#otheralter].
 ///
-/// For examples and more details, see [the documentation](https://moor.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations).
+/// For examples and more details, see [the documentation](https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations).
 @experimental
 class TableMigration {
   /// The table to migrate. It is assumed that this table already exists at the

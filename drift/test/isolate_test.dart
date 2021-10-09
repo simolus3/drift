@@ -10,9 +10,9 @@ import 'package:test/test.dart';
 import 'data/tables/todos.dart';
 
 void main() {
-  // Using the MoorIsolate apis without actually running on a background isolate
-  // is pointless, but we can't collect coverage for background isolates:
-  // https://github.com/dart-lang/test/issues/1108
+  // Using the DriftIsolate apis without actually running on a background
+  // isolate is pointless, but we can't collect coverage for background
+  // isolates: https://github.com/dart-lang/test/issues/1108
   group('in same isolate', () {
     DriftIsolate spawnInSame() {
       return DriftIsolate.inCurrent(_backgroundConnection);
@@ -33,14 +33,14 @@ void main() {
     // three isolates:
     // 1. this one, starting a query stream
     // 2. another one running an insert
-    // 3. the MoorIsolate executor the other two are connecting to
-    final moorIsolate = await DriftIsolate.spawn(_backgroundConnection);
+    // 3. the DriftIsolate executor the other two are connecting to
+    final driftIsolate = await DriftIsolate.spawn(_backgroundConnection);
 
     final receiveDone = ReceivePort();
     final writer = await Isolate.spawn(_writeTodoEntryInBackground,
-        _BackgroundEntryMessage(moorIsolate, receiveDone.sendPort));
+        _BackgroundEntryMessage(driftIsolate, receiveDone.sendPort));
 
-    final db = TodoDb.connect(await moorIsolate.connect());
+    final db = TodoDb.connect(await driftIsolate.connect());
     final expectedEntry = const TypeMatcher<TodoEntry>()
         .having((e) => e.content, 'content', 'Hello from background');
 
@@ -57,7 +57,7 @@ void main() {
     await receiveDone.first;
     writer.kill();
     await expectation;
-    await moorIsolate.shutdownAll();
+    await driftIsolate.shutdownAll();
   }, tags: 'background_isolate');
 
   test('errors propagate across isolates', () async {
@@ -88,8 +88,8 @@ void main() {
     // The isolate shold eventually exit!
     expect(done.first, completion(anything));
 
-    final moor = await spawned.first as DriftIsolate;
-    await moor.shutdownAll();
+    final drift = await spawned.first as DriftIsolate;
+    await drift.shutdownAll();
   }, tags: 'background_isolate');
 }
 
@@ -282,8 +282,8 @@ class _BackgroundEntryMessage {
 }
 
 void _createBackground(SendPort send) {
-  final moor = DriftIsolate.inCurrent(
+  final drift = DriftIsolate.inCurrent(
       () => DatabaseConnection.fromExecutor(NativeDatabase.memory()),
       killIsolateWhenDone: true);
-  send.send(moor);
+  send.send(drift);
 }

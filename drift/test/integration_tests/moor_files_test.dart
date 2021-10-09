@@ -51,7 +51,7 @@ const _defaultInsert = 'INSERT INTO config (config_key, config_value) '
     "VALUES ('key', 'values')";
 
 void main() {
-  // see ../data/tables/tables.moor
+  // see ../data/tables/tables.drift
   late MockExecutor mock;
   late CustomTablesDb db;
 
@@ -62,7 +62,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  test('creates everything as specified in .moor files', () async {
+  test('creates everything as specified in .drift files', () async {
     await db.createMigrator().createAll();
 
     verify(mock.runCustom(_createNoIds, []));

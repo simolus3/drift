@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' as moor;
+import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 const _exampleUnixSqlite = 1550172560;
@@ -7,7 +7,7 @@ final _exampleDateTime =
     DateTime.fromMillisecondsSinceEpoch(_exampleUnixMillis);
 
 void main() {
-  const type = moor.DateTimeType();
+  const type = drift.DateTimeType();
 
   group('DateTimes', () {
     test('can be read from unix stamps returned by sql', () {

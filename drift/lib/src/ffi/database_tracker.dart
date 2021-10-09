@@ -19,7 +19,7 @@ import 'package:sqlite3/sqlite3.dart';
 /// `VmDatabase.closeExistingInstances()` to release those resources.
 final DatabaseTracker tracker = DatabaseTracker();
 
-/// Internal class that we don't export to moor users. See [tracker] for why
+/// Internal class that we don't export to drift users. See [tracker] for why
 /// this is necessary.
 class DatabaseTracker {
   final Database _db;
@@ -27,7 +27,7 @@ class DatabaseTracker {
   /// Creates a new tracker with necessary tables.
   DatabaseTracker()
       : _db = sqlite3.open(
-          'file:moor_connection_store?mode=memory&cache=shared',
+          'file:drift_connection_store?mode=memory&cache=shared',
           uri: true,
         ) {
     _db.execute('''

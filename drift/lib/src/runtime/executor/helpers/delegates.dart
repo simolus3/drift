@@ -28,7 +28,7 @@ abstract class DatabaseDelegate extends QueryDelegate {
   /// MySql server we connect to)
   /// - [OnOpenVersionDelegate] for databases whose schema version can only be
   /// set while opening it (such as sqflite)
-  /// - [DynamicVersionDelegate] for databases where moor can set the schema
+  /// - [DynamicVersionDelegate] for databases where drift can set the schema
   /// version at any time (used for the web and VM implementation)
   DbVersionDelegate get versionDelegate;
 
@@ -37,17 +37,17 @@ abstract class DatabaseDelegate extends QueryDelegate {
 
   /// A future that completes with `true` when this database is open and with
   /// `false` when its not. The future may never complete with an error or with
-  /// null. It should return relatively quickly, as moor queries it before each
+  /// null. It should return relatively quickly, as drift queries it before each
   /// statement it sends to the database.
   FutureOr<bool> get isOpen;
 
-  /// Opens the database. Moor will only call this when [isOpen] has returned
-  /// false before. Further, moor will not attempt to open a database multiple
+  /// Opens the database. Drift will only call this when [isOpen] has returned
+  /// false before. Further, drift will not attempt to open a database multiple
   /// times, so you don't have to worry about a connection being created
   /// multiple times.
   ///
   /// The [QueryExecutorUser] is the user-defined database annotated with
-  /// [UseMoor]. It might be useful to read the
+  /// [DriftDatabase]. It might be useful to read the
   /// [QueryExecutorUser.schemaVersion] if that information is required while
   /// opening the database.
   Future<void> open(QueryExecutorUser db);
@@ -58,7 +58,7 @@ abstract class DatabaseDelegate extends QueryDelegate {
     // default no-op implementation
   }
 
-  /// Callback from moor after the database has been fully opened and all
+  /// Callback from drift after the database has been fully opened and all
   /// migrations ran.
   void notifyDatabaseOpened(OpeningDetails details) {
     // default no-op
@@ -122,9 +122,9 @@ abstract class TransactionDelegate {
 }
 
 /// A [TransactionDelegate] for database APIs which don't already support
-/// creating transactions. Moor will send a `BEGIN TRANSACTION` statement at the
-/// beginning, then block the database, and finally send a `COMMIT` statement
-/// at the end.
+/// creating transactions. Drift will send a `BEGIN TRANSACTION` statement at
+/// the beginning, then block the database, and finally send a `COMMIT`
+/// statement at the end.
 class NoTransactionDelegate extends TransactionDelegate {
   /// The statement that starts a transaction on this database engine.
   final String start;

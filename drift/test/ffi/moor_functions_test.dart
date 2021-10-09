@@ -1,14 +1,14 @@
 @TestOn('vm')
 import 'dart:math';
 
-import 'package:drift/src/ffi/moor_ffi_functions.dart';
+import 'package:drift/src/ffi/native_functions.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 void main() {
   late Database db;
 
-  setUp(() => db = sqlite3.openInMemory()..useMoorVersions());
+  setUp(() => db = sqlite3.openInMemory()..useNativeFunctions());
   tearDown(() => db.dispose());
 
   dynamic selectSingle(String expression) {

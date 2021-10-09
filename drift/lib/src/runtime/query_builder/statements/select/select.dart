@@ -4,7 +4,7 @@ part of '../../query_builder.dart';
 /// a table.
 typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 
-/// The abstract base class for all select statements in the moor api.
+/// The abstract base class for all select statements in the drift api.
 ///
 /// Users are not allowed to extend, implement or mix-in this class.
 @sealed
@@ -22,7 +22,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   /// `SELECT DISTINCT` statement in sql). Defaults to false.
   final bool distinct;
 
-  /// Used internally by moor, users will want to call
+  /// Used internally by drift, users will want to call
   /// [DatabaseConnectionUser.select] instead.
   SimpleSelectStatement(
       DatabaseConnectionUser database, ResultSetImplementation<T, D> table,
@@ -91,7 +91,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   /// ```
   ///
   /// See also:
-  ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+  ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
   ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
   ///  construct a [Join].
   ///  - [DatabaseConnectionUser.alias], which can be used to build statements
@@ -112,7 +112,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     return statement;
   }
 
-  /// {@macro moor_select_addColumns}
+  /// {@macro drift_select_addColumns}
   JoinedSelectStatement addColumns(List<Expression> expressions) {
     return join([])..addColumns(expressions);
   }
@@ -163,7 +163,7 @@ class TypedResult {
       throw ArgumentError(
           'Invalid table passed to readTable: ${table.aliasedName}. This row '
           'does not contain values for that table. \n'
-          'In moor version 4, you have to use readTableNull for outer joins.');
+          'Please use readTableOrNull for outer joins.');
     }
 
     return _parsedData[table] as D;

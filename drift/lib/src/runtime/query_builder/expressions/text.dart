@@ -14,8 +14,9 @@ extension StringExpressionOperators on Expression<String?> {
   /// The [multiLine], [caseSensitive], [unicode] and [dotAll] parameters
   /// correspond to the parameters on [RegExp].
   ///
-  /// Note that this function is only available when using `moor_ffi`. If you
-  /// need to support the web or `moor_flutter`, consider using [like] instead.
+  /// Note that this function is only available when using a `NativeDatabase`.
+  /// If you need to support the web or `moor_flutter`, consider using [like]
+  /// instead.
   Expression<bool?> regexp(
     String regex, {
     bool multiLine = false,
@@ -23,7 +24,7 @@ extension StringExpressionOperators on Expression<String?> {
     bool unicode = false,
     bool dotAll = false,
   }) {
-    // moor_ffi has a special regexp sql function that takes a third parameter
+    // We have a special regexp sql function that takes a third parameter
     // to encode flags. If the least significant bit is set, multiLine is
     // enabled. The next three bits enable case INSENSITIVITY (it's sensitive
     // by default), unicode and dotAll.

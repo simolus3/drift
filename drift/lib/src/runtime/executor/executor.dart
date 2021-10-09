@@ -7,11 +7,11 @@ import 'package:drift/drift.dart' show OpeningDetails;
 /// A query executor is responsible for executing statements on a database and
 /// return their results in a raw form.
 ///
-/// This is an internal api of moor, which can break often. If you want to
+/// This is an internal api of drift, which can break often. If you want to
 /// implement custom database backends, consider using the new `backends` API.
-/// The [moor_flutter implementation](https://github.com/simolus3/moor/blob/develop/moor_flutter/lib/moor_flutter.dart)
+/// The [NativeDatabase implementation](https://github.com/simolus3/moor/blob/develop/drift/lib/src/ffi/database.dart)
 /// might be useful as a reference. If you want to write your own database
-/// engine to use with moor and run into issues, please consider creating an
+/// engine to use with drift and run into issues, please consider creating an
 /// issue.
 abstract class QueryExecutor {
   /// The [SqlDialect] to use for this database engine.
@@ -42,8 +42,8 @@ abstract class QueryExecutor {
 
   /// Prepares and runs [statements].
   ///
-  /// Running them doesn't need to happen in a transaction. When using moor's
-  /// batch api, moor will call this method from a transaction either way. This
+  /// Running them doesn't need to happen in a transaction. When using drift's
+  /// batch api, drift will call this method from a transaction either way. This
   /// method mainly exists to save duplicate parsing costs, allowing each
   /// statement to be prepared only once.
   Future<void> runBatched(BatchedStatements statements);
@@ -120,7 +120,7 @@ class ArgumentsForBatchedStatement {
   /// Bound arguments for the referenced statement.
   final List<Object?> arguments;
 
-  /// Used internally by moor.
+  /// Used internally by drift.
   ArgumentsForBatchedStatement(this.statementIndex, this.arguments);
 
   @override

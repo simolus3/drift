@@ -28,8 +28,8 @@ abstract class _BaseExecutor extends QueryExecutor {
       throw StateError('''
 Tried to run an operation without first calling QueryExecutor.ensureOpen()!
 
-If you're seeing this exception from a moor database, it may indicate a bug in
-moor itself. Please consider opening an issue with the stack trace and details
+If you're seeing this exception from a drift database, it may indicate a bug in
+drift itself. Please consider opening an issue with the stack trace and details
 on how to reproduce this.''');
     }
 
@@ -59,7 +59,7 @@ without awaiting every statement in it.''');
 
   void _log(String sql, List<Object?> args) {
     if (logStatements) {
-      driftRuntimeOptions.debugPrint('Moor: Sent $sql with args $args');
+      driftRuntimeOptions.debugPrint('Drift: Sent $sql with args $args');
     }
   }
 
@@ -117,7 +117,7 @@ without awaiting every statement in it.''');
       assert(_debugCheckIsOpen());
       if (logStatements) {
         driftRuntimeOptions
-            .debugPrint('Moor: Executing $statements in a batch');
+            .debugPrint('Drift: Executing $statements in a batch');
       }
       return impl.runBatched(statements);
     });
@@ -352,11 +352,11 @@ class DelegatedDatabase extends _BaseExecutor {
   }
 }
 
-/// Inside a `beforeOpen` callback, all moor apis must be available. At the same
-/// time, the `beforeOpen` callback must complete before any query sent outside
-/// of a `beforeOpen` callback can run. We do this by introducing a special
-/// executor that delegates all work to the original executor, but without
-/// blocking on `ensureOpen`
+/// Inside a `beforeOpen` callback, all drift apis must be available. At the
+/// same time, the `beforeOpen` callback must complete before any query sent
+/// outside of a `beforeOpen` callback can run. We do this by introducing a
+/// special executor that delegates all work to the original executor, but
+/// without blocking on `ensureOpen`
 class _BeforeOpeningExecutor extends _BaseExecutor {
   final DelegatedDatabase _base;
 

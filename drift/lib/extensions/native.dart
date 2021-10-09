@@ -11,7 +11,7 @@ import '../drift.dart';
 /// This function is equivalent to [pow], except that it evaluates to null
 /// instead of `NaN`.
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlPow(Expression<num?> base, Expression<num?> exponent) {
   return FunctionCallExpression('pow', [base, exponent]);
 }
@@ -21,7 +21,7 @@ Expression<num?> sqlPow(Expression<num?> base, Expression<num?> exponent) {
 /// This function is equivalent to [sqrt], except that it returns null instead
 /// of `NaN` for negative values.
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlSqrt(Expression<num?> value) {
   return FunctionCallExpression('sqrt', [value]);
 }
@@ -30,7 +30,7 @@ Expression<num?> sqlSqrt(Expression<num?> value) {
 ///
 /// This function is equivalent to [sin].
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlSin(Expression<num?> value) {
   return FunctionCallExpression('sin', [value]);
 }
@@ -39,7 +39,7 @@ Expression<num?> sqlSin(Expression<num?> value) {
 ///
 /// This function is equivalent to [sin].
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlCos(Expression<num?> value) {
   return FunctionCallExpression('cos', [value]);
 }
@@ -48,7 +48,7 @@ Expression<num?> sqlCos(Expression<num?> value) {
 ///
 /// This function is equivalent to [tan].
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlTan(Expression<num?> value) {
   return FunctionCallExpression('tan', [value]);
 }
@@ -58,7 +58,7 @@ Expression<num?> sqlTan(Expression<num?> value) {
 /// This function is equivalent to [asin], except that it evaluates to null
 /// instead of `NaN`.
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlAsin(Expression<num?> value) {
   return FunctionCallExpression('asin', [value]);
 }
@@ -68,7 +68,7 @@ Expression<num?> sqlAsin(Expression<num?> value) {
 /// This function is equivalent to [acos], except that it evaluates to null
 /// instead of `NaN`.
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlAcos(Expression<num?> value) {
   return FunctionCallExpression('acos', [value]);
 }
@@ -78,14 +78,14 @@ Expression<num?> sqlAcos(Expression<num?> value) {
 /// This function is equivalent to [atan], except that it evaluates to null
 /// instead of `NaN`.
 ///
-/// This function is only available when using `moor_ffi`.
+/// This function is only available when using a `NativeDatabase`.
 Expression<num?> sqlAtan(Expression<num?> value) {
   return FunctionCallExpression('atan', [value]);
 }
 
 /// Adds functionality to string expressions that only work when using
-/// `moor_ffi`.
-extension MoorFfiSpecificStringExtensions on Expression<String?> {
+/// a `NativeDatabase`.
+extension DriftNativeStringExtensions on Expression<String?> {
   /// Version of `contains` that allows controlling case sensitivity better.
   ///
   /// The default `contains` method uses sqlite's `LIKE`, which is case-
@@ -100,9 +100,6 @@ extension MoorFfiSpecificStringExtensions on Expression<String?> {
   /// Note that, while Dart has better support for an international alphabet,
   /// it can still yield unexpected results like the
   /// [Turkish İ Problem](https://haacked.com/archive/2012/07/05/turkish-i-problem-and-why-you-should-care.aspx/)
-  ///
-  /// Note that this is only available when using `moor_ffi` version 0.6.0 or
-  /// greater.
   Expression<bool?> containsCase(String substring,
       {bool caseSensitive = false}) {
     return FunctionCallExpression('moor_contains', [

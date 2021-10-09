@@ -10,7 +10,7 @@ import '../cancellation_zone.dart';
 
 const _listEquality = ListEquality<Object?>();
 
-// This is an internal moor library that's never exported to users.
+// This is an internal drift library that's never exported to users.
 // ignore_for_file: public_member_api_docs
 
 /// Representation of a select statement that knows from which tables the
@@ -132,7 +132,7 @@ class StreamQueryStore {
 
     // Hey there! If you're sent here because your Flutter tests fail, please
     // call and await Database.close() in your Flutter widget tests!
-    // Moor uses timers internally so that after you stopped listening to a
+    // Drift uses timers internally so that after you stopped listening to a
     // stream, it can keep its cache just a bit longer. When you listen to
     // streams a lot, this helps reduce duplicate statements, especially with
     // Flutter's StreamBuilder.

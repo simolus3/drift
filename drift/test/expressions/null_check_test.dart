@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:drift/drift.dart' as moor;
+import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 import '../data/utils/expect_equality.dart';
@@ -10,7 +10,7 @@ void main() {
       CustomExpression<int>('name', precedence: Precedence.primary);
 
   test('IS NULL expressions are generated', () {
-    final oldFunction = moor.isNull(innerExpression);
+    final oldFunction = drift.isNull(innerExpression);
     final extension = innerExpression.isNull();
 
     expect(oldFunction, generates('name IS NULL'));
@@ -20,7 +20,7 @@ void main() {
   });
 
   test('IS NOT NULL expressions are generated', () {
-    final oldFunction = moor.isNotNull(innerExpression);
+    final oldFunction = drift.isNotNull(innerExpression);
     final extension = innerExpression.isNotNull();
 
     expect(oldFunction, generates('name IS NOT NULL'));
@@ -30,7 +30,8 @@ void main() {
   });
 
   test('generates COALESCE expressions', () {
-    final expr = moor.coalesce([const Constant<int?>(null), const Constant(3)]);
+    final expr =
+        drift.coalesce([const Constant<int?>(null), const Constant(3)]);
 
     expect(expr, generates('COALESCE(NULL, 3)'));
   });

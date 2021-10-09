@@ -2,7 +2,7 @@
 library drift.sqlite_keywords;
 
 /// Contains a set of all sqlite keywords, according to
-/// https://www.sqlite.org/lang_keywords.html. Moor will use this list to
+/// https://www.sqlite.org/lang_keywords.html. Drift will use this list to
 /// escape keywords.
 const sqliteKeywords = {
   'ADD',

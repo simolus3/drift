@@ -3,7 +3,7 @@ part of '../query_builder.dart';
 /// Represents an `UPDATE` statement in sql.
 class UpdateStatement<T extends Table, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D> {
-  /// Used internally by moor, construct an update statement
+  /// Used internally by drift, construct an update statement
   UpdateStatement(DatabaseConnectionUser database, TableInfo<T, D> table)
       : super(database, table);
 
@@ -55,7 +55,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   ///
   /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
   /// run, but all the validations are still in place. This is mainly used
-  /// internally by moor.
+  /// internally by drift.
   ///
   /// Returns the amount of rows that have been affected by this operation.
   ///
@@ -89,7 +89,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   ///
   /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
   /// run, but all the validations are still in place. This is mainly used
-  /// internally by moor.
+  /// internally by drift.
   ///
   /// Returns true if a row was affected by this operation.
   ///

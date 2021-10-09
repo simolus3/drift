@@ -71,7 +71,7 @@ void _writeCommaSeparated(
   }
 }
 
-/// An enumeration of database systems supported by moor. Only
+/// An enumeration of database systems supported by drift. Only
 /// [SqlDialect.sqlite] is officially supported, all others are in an
 /// experimental state at the moment.
 enum SqlDialect {

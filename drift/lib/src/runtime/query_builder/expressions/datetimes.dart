@@ -49,7 +49,7 @@ extension DateTimeExpressions on Expression<DateTime?> {
   /// Returns an expression containing the amount of seconds from the unix
   /// epoch (January 1st, 1970) to `this` datetime expression. The datetime is
   /// assumed to be in utc.
-  // for moor, date times are just unix timestamps, so we don't need to rewrite
+  // for drift, date times are just unix timestamps, so we don't need to rewrite
   // anything when converting
   Expression<int> get secondsSinceEpoch => dartCast();
 

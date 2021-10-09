@@ -330,7 +330,7 @@ void main() {
     expect(db.customSelect('SELECT 1').watchSingle().isBroadcast, isTrue);
   });
 
-  test('moor streams can be used with switchMap in rxdart', () async {
+  test('drift streams can be used with switchMap in rxdart', () async {
     // Regression test for https://github.com/simolus3/moor/issues/500
     when(executor.runSelect(any, any)).thenAnswer((i) async {
       final sql = i.positionalArguments.first as String;

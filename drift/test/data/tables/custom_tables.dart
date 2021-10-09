@@ -8,7 +8,7 @@ export 'data_classes.dart';
 part 'custom_tables.g.dart';
 
 @DriftDatabase(
-  include: {'tables.moor'},
+  include: {'tables.drift'},
   queries: {
     'writeConfig': 'REPLACE INTO config (config_key, config_value) '
         'VALUES (:key, :value)'

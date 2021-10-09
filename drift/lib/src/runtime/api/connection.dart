@@ -1,6 +1,6 @@
 part of 'runtime_api.dart';
 
-/// A database connection managed by moor. Contains three components:
+/// A database connection managed by drift. Contains three components:
 /// - a [SqlTypeSystem], which is responsible to map between Dart types and
 ///   values understood by the database engine.
 /// - a [QueryExecutor], which runs sql commands
@@ -32,14 +32,14 @@ class DatabaseConnection {
   ///
   /// This can be useful in scenarios where you need to obtain a database
   /// instance synchronously, but need an async setup. A prime example here is
-  /// `MoorIsolate`:
+  /// `DriftIsolate`:
   ///
   /// ```dart
-  /// @UseMoor(...)
+  /// @DriftDatabase(...)
   /// class MyDatabase extends _$MyDatabase {
   ///   MyDatabase._connect(DatabaseConnection c): super.connect(c);
   ///
-  ///   factory MyDatabase.fromIsolate(MoorIsolate isolate) {
+  ///   factory MyDatabase.fromIsolate(DriftDatabase isolate) {
   ///     return MyDatabase._connect(
   ///       // isolate.connect() returns a future, but we can still return a
   ///       // database synchronously thanks to DatabaseConnection.delayed!

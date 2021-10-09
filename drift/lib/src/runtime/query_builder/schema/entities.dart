@@ -9,7 +9,7 @@ abstract class DatabaseSchemaEntity {
 
 /// A sqlite trigger that's executed before, after or instead of a subset of
 /// writes on a specific tables.
-/// In moor, triggers can only be declared in `.moor` files.
+/// In drift, triggers can only be declared in `.drift` files.
 ///
 /// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
 /// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
@@ -49,7 +49,7 @@ class Index extends DatabaseSchemaEntity {
 
 /// A sqlite view.
 ///
-/// In moor, views can only be declared in `.moor` files.
+/// In drift, views can only be declared in `.drift` files.
 ///
 /// For more information on views, see the [CREATE VIEW][sqlite-docs]
 /// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
@@ -72,7 +72,7 @@ abstract class View<Self, Row> extends ResultSetImplementation<Self, Row>
 /// An internal schema entity to run an sql statement when the database is
 /// created.
 ///
-/// The generator uses this entity to implement `@create` statements in moor
+/// The generator uses this entity to implement `@create` statements in drift
 /// files:
 /// ```sql
 /// CREATE TABLE users (name TEXT);
@@ -80,7 +80,7 @@ abstract class View<Self, Row> extends ResultSetImplementation<Self, Row>
 /// @create: INSERT INTO users VALUES ('Bob');
 /// ```
 /// A [OnCreateQuery] is emitted for each `@create` statement in an included
-/// moor file.
+/// drift file.
 class OnCreateQuery extends DatabaseSchemaEntity {
   /// The sql statement that should be run in the default `onCreate` clause.
   final String sql;

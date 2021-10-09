@@ -28,7 +28,7 @@
 /// However, note that drift might encode a `List<int>` as `Uint8List`. For
 /// performance reasons, channel implementations should preserve this.
 ///
-/// Moor assumes full control over the [StreamChannel]s it manages. For this
+/// Drift assumes full control over the [StreamChannel]s it manages. For this
 /// reason, do not send your own messages over them or close them prematurely.
 /// If you need further channels over the same underlying connection, consider a
 /// [MultiChannel] instead.
@@ -88,7 +88,7 @@ abstract class DriftServer {
   /// Starts processing requests from the [channel].
   ///
   /// The [channel] uses a drift-internal protocol to serialize database
-  /// requests. Moor assumes full control over the [channel]. Manually sending
+  /// requests. Drift assumes full control over the [channel]. Manually sending
   /// messages over it, or closing it prematurely, can disrupt the server.
   ///
   /// __Warning__: As long as this library is marked experimental, the protocol
@@ -115,7 +115,7 @@ abstract class DriftServer {
 /// messages.
 DatabaseConnection remote(StreamChannel<Object?> channel,
     {bool debugLog = false}) {
-  final client = MoorClient(channel, debugLog);
+  final client = DriftClient(channel, debugLog);
   return client.connection;
 }
 
@@ -125,6 +125,6 @@ DatabaseConnection remote(StreamChannel<Object?> channel,
 /// [DriftServer.serve] for this setup to work.
 /// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
 Future<void> shutdown(StreamChannel<Object?> channel) {
-  final comm = MoorCommunication(channel);
+  final comm = DriftCommunication(channel);
   return comm.request(NoArgsRequest.terminateAll);
 }

@@ -6,7 +6,7 @@ class VerificationMeta {
   /// The dart getter name of the property being validated.
   final String dartGetterName;
 
-  /// Used internally by moor
+  /// Used internally by drift
   const VerificationMeta(this.dartGetterName);
 }
 
@@ -20,23 +20,23 @@ class VerificationResult {
   /// wrong.
   final String? message;
 
-  /// Used internally by moor
+  /// Used internally by drift
   const VerificationResult(this.success, this.message);
 
-  /// Used internally by moor
+  /// Used internally by drift
   const VerificationResult.success()
       : success = true,
         message = null;
 
-  /// Used internally by moor
+  /// Used internally by drift
   const VerificationResult.failure(this.message) : success = false;
 }
 
-/// Used internally by moor for integrity checks.
+/// Used internally by drift for integrity checks.
 class VerificationContext {
   final Map<VerificationMeta, VerificationResult> _errors;
 
-  /// Used internally by moor
+  /// Used internally by drift
   bool get dataValid => _errors.isEmpty;
 
   /// Creates a verification context, which stores the individual integrity
@@ -44,23 +44,23 @@ class VerificationContext {
   VerificationContext() : _errors = {};
 
   /// Constructs a verification context that can't be used to report errors.
-  /// This is used internally by moor if integrity checks have been disabled.
+  /// This is used internally by drift if integrity checks have been disabled.
   const VerificationContext.notEnabled() : _errors = const {};
 
-  /// Used internally by moor when inserting
+  /// Used internally by drift when inserting
   void handle(VerificationMeta meta, VerificationResult result) {
     if (!result.success) {
       _errors[meta] = result;
     }
   }
 
-  /// Used internally by moor
+  /// Used internally by drift
   void missing(VerificationMeta meta) {
     _errors[meta] = const VerificationResult.failure(
         "This value was required, but isn't present");
   }
 
-  /// Used internally by moor
+  /// Used internally by drift
   void throwIfInvalid(dynamic dataObject) {
     if (dataValid) return;
 

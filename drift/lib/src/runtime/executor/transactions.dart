@@ -86,7 +86,7 @@ class _TransactionStreamStore extends StreamQueryStore {
 
 /// Special query engine to run the [MigrationStrategy.beforeOpen] callback.
 ///
-/// To use this api, moor users should use the [MigrationStrategy.beforeOpen]
+/// To use this api, drift users should use the [MigrationStrategy.beforeOpen]
 /// parameter inside the [GeneratedDatabase.migration] getter.
 @internal
 class BeforeOpenRunner extends DatabaseConnectionUser {

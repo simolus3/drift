@@ -1,5 +1,6 @@
-/// Contains utils to run moor databases in a background isolate. This API is
-/// not supported on the web.
+/// Contains utils to run drift databases in a background isolate.
+///
+/// Please note that this API is not supported on the web.
 library isolate;
 
 import 'dart:isolate';
@@ -13,14 +14,14 @@ import 'src/isolate.dart';
 /// Signature of a function that opens a database connection.
 typedef DatabaseOpener = DatabaseConnection Function();
 
-/// Defines utilities to run moor in a background isolate. In the operation mode
-/// created by these utilities, there's a single background isolate doing all
-/// the work. Any other isolate can use the [connect] method to obtain an
+/// Defines utilities to run drift in a background isolate. In the operation
+/// mode created by these utilities, there's a single background isolate doing
+/// all the work. Any other isolate can use the [connect] method to obtain an
 /// instance of a [GeneratedDatabase] class that will delegate its work onto a
 /// background isolate. Auto-updating queries, and transactions work across
 /// isolates, and the user facing api is exactly the same.
 ///
-/// Please note that, while running moor in a background isolate can reduce
+/// Please note that, while running drift in a background isolate can reduce
 /// latency in foreground isolates (thus reducing UI lags), the overall
 /// performance is going to be much worse as data has to be serialized and
 /// deserialized to be sent over isolates.
@@ -28,7 +29,7 @@ typedef DatabaseOpener = DatabaseConnection Function();
 ///
 /// See also:
 /// - [Isolate], for general information on multi threading in Dart.
-/// - The [detailed documentation](https://moor.simonbinder.eu/docs/advanced-features/isolates),
+/// - The [detailed documentation](https://drift.simonbinder.eu/docs/advanced-features/isolates),
 ///   which provides example codes on how to use this api.
 class DriftIsolate {
   /// The underlying port used to establish a connection with this
@@ -43,7 +44,7 @@ class DriftIsolate {
   DriftIsolate.fromConnectPort(this.connectPort);
 
   StreamChannel _open() {
-    final receive = ReceivePort('moor client receive');
+    final receive = ReceivePort('drift client receive');
     connectPort.send(receive.sendPort);
 
     final controller =
@@ -65,7 +66,7 @@ class DriftIsolate {
   ///
   /// All operations on the returned [DatabaseConnection] will be executed on a
   /// background isolate. Setting the [isolateDebugLog] is only helpful when
-  /// debugging moor itself.
+  /// debugging drift itself.
   // todo: breaking: Make synchronous in drift 5
   Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
     return remote(_open(), debugLog: isolateDebugLog);
@@ -94,7 +95,7 @@ class DriftIsolate {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 
-    await Isolate.spawn(_startMoorIsolate, [receiveServer.sendPort, opener]);
+    await Isolate.spawn(_startDriftIsolate, [receiveServer.sendPort, opener]);
     final key = await keyFuture as SendPort;
     return DriftIsolate.fromConnectPort(key);
   }
@@ -109,23 +110,23 @@ class DriftIsolate {
   /// to call [DriftIsolate.inCurrent] will be killed.
   factory DriftIsolate.inCurrent(DatabaseOpener opener,
       {bool killIsolateWhenDone = false}) {
-    final server = RunningMoorServer(Isolate.current, opener(),
+    final server = RunningDriftServer(Isolate.current, opener(),
         killIsolateWhenDone: killIsolateWhenDone);
     return DriftIsolate.fromConnectPort(server.portToOpenConnection);
   }
 }
 
-/// Creates a [RunningMoorServer] and sends a [SendPort] that can be used to
+/// Creates a [RunningDriftServer] and sends a [SendPort] that can be used to
 /// establish connections.
 ///
 /// Te [args] list must contain two elements. The first one is the [SendPort]
-/// that [_startMoorIsolate] will use to send the new [SendPort] used to
+/// that [_startDriftIsolate] will use to send the new [SendPort] used to
 /// establish further connections. The second element is a [DatabaseOpener]
 /// used to open the underlying database connection.
-void _startMoorIsolate(List args) {
+void _startDriftIsolate(List args) {
   final sendPort = args[0] as SendPort;
   final opener = args[1] as DatabaseOpener;
 
-  final server = RunningMoorServer(Isolate.current, opener());
+  final server = RunningDriftServer(Isolate.current, opener());
   sendPort.send(server.portToOpenConnection);
 }

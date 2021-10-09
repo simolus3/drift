@@ -77,9 +77,9 @@ abstract class DatabaseConnectionUser {
 
   /// A, potentially more specific, database engine based on the [Zone] context.
   ///
-  /// Inside a [transaction] block, moor will replace this [resolvedEngine] with
-  /// an engine specific to the transaction. All other methods on this class
-  /// implicitly use the [resolvedEngine] to run their SQL statements.
+  /// Inside a [transaction] block, drift will replace this [resolvedEngine]
+  /// with an engine specific to the transaction. All other methods on this
+  /// class implicitly use the [resolvedEngine] to run their SQL statements.
   /// This let's users call methods on their top-level database or dao class
   /// but run them in a transaction-specific executor.
   @internal
@@ -92,8 +92,8 @@ abstract class DatabaseConnectionUser {
   /// In response to calling this method, all streams listening on any of the
   /// [tables] will load their data again.
   ///
-  /// Primarily, this method is meant to be used by moor-internal code. Higher-
-  /// level moor APIs will call this method to dispatch stream updates.
+  /// Primarily, this method is meant to be used by drift-internal code. Higher-
+  /// level drift APIs will call this method to dispatch stream updates.
   /// Of course, you can also call it yourself to manually dispatch table
   /// updates. To obtain a [TableInfo], use the corresponding getter on the
   /// database class.
@@ -106,7 +106,7 @@ abstract class DatabaseConnectionUser {
   /// Dispatches the set of [updates] to the stream query manager.
   ///
   /// This method is more specific than [markTablesUpdated] in the presence of
-  /// triggers or foreign key constraints. Moor needs to support both when
+  /// triggers or foreign key constraints. Drift needs to support both when
   /// calculating which streams to update. For instance, consider a simple
   /// database with two tables (`a` and `b`) and a trigger inserting into `b`
   /// after a delete on `a`).
@@ -149,7 +149,7 @@ abstract class DatabaseConnectionUser {
   /// already ready.
   ///
   /// Calling this method directly might circumvent the current transaction. For
-  /// that reason, it should only be called inside moor.
+  /// that reason, it should only be called inside drift.
   Future<T> doWhenOpened<T>(FutureOr<T> Function(QueryExecutor e) fn) {
     return executor.ensureOpen(attachedDatabase).then((_) => fn(executor));
   }
@@ -169,7 +169,7 @@ abstract class DatabaseConnectionUser {
 
   /// Starts a query on the given table.
   ///
-  /// In moor, queries are commonly used as a builder by chaining calls on them
+  /// In drift, queries are commonly used as a builder by chaining calls on them
   /// using the `..` syntax from Dart. For instance, to load the 10 oldest users
   /// with an 'S' in their name, you could use:
   /// ```dart
@@ -190,7 +190,7 @@ abstract class DatabaseConnectionUser {
   /// duplicate rows from the result set.
   ///
   /// For more information on queries, see the
-  /// [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/).
+  /// [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/).
   SimpleSelectStatement<T, R> select<T extends HasResultSet, R>(
       ResultSetImplementation<T, R> table,
       {bool distinct = false}) {
@@ -226,8 +226,8 @@ abstract class DatabaseConnectionUser {
   /// For simple queries, use [select].
   ///
   /// See also:
-  ///  - the documentation on [aggregate expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/#aggregate)
-  ///  - the documentation on [group by](https://moor.simonbinder.eu/docs/advanced-features/joins/#group-by)
+  ///  - the documentation on [aggregate expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/#aggregate)
+  ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
     ResultSetImplementation<T, R> table, {
     bool distinct = false,
@@ -238,7 +238,7 @@ abstract class DatabaseConnectionUser {
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   ///
-  /// See the [documentation](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
+  /// See the [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   /// for more details and example on how delete statements work.
   DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
     return DeleteStatement<T, D>(resolvedEngine, table);
@@ -246,7 +246,7 @@ abstract class DatabaseConnectionUser {
 
   /// Executes a custom delete or update statement and returns the amount of
   /// rows that have been changed.
-  /// You can use the [updates] parameter so that moor knows which tables are
+  /// You can use the [updates] parameter so that drift knows which tables are
   /// affected by your query. All select streams that depend on a table
   /// specified there will then update their data. For more accurate results,
   /// you can also set the [updateKind] parameter to [UpdateKind.delete] or
@@ -271,7 +271,7 @@ abstract class DatabaseConnectionUser {
 
   /// Executes a custom insert statement and returns the last inserted rowid.
   ///
-  /// You can tell moor which tables your query is going to affect by using the
+  /// You can tell drift which tables your query is going to affect by using the
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
   Future<int> customInsert(String query,
@@ -289,7 +289,7 @@ abstract class DatabaseConnectionUser {
 
   /// Runs a `INSERT`, `UPDATE` or `DELETE` statement returning rows.
   ///
-  /// You can use the [updates] parameter so that moor knows which tables are
+  /// You can use the [updates] parameter so that drift knows which tables are
   /// affected by your query. All select streams that depend on a table
   /// specified there will then update their data. For more accurate results,
   /// you can also set the [updateKind] parameter.
@@ -399,7 +399,7 @@ abstract class DatabaseConnectionUser {
   /// transaction inside a transaction returns the parent transaction.
   ///
   /// See also:
-  ///  - the docs on [transactions](https://moor.simonbinder.eu/docs/transactions/)
+  ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action) async {
     final resolved = resolvedEngine;
     if (resolved is Transaction) {

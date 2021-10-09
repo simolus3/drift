@@ -1,8 +1,8 @@
-import 'package:drift/drift.dart' as moor;
+import 'package:drift/drift.dart' as drift;
 import 'package:test/test.dart';
 
 void main() {
-  const type = moor.RealType();
+  const type = drift.RealType();
 
   group('RealType', () {
     test('can be read from floating point values returned by sql', () {

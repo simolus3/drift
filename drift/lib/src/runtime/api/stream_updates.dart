@@ -50,7 +50,7 @@ abstract class UpdateRule {
 ///
 /// An update on [on] implicitly triggers updates on [result].
 ///
-/// This class is for use by generated or moor-internal code only. It does not
+/// This class is for use by generated or drift-internal code only. It does not
 /// adhere to Semantic Versioning and should not be used manually.
 class WritePropagation extends UpdateRule {
   /// The updates that cause further writes in [result].

@@ -4,8 +4,8 @@ import 'dart:js';
 import 'dart:typed_data';
 
 // We write our own mapping code to js instead of depending on package:js
-// This way, projects using moor can run on flutter as long as they don't import
-// this file.
+// This way, projects using drift can run on flutter as long as they don't
+// import this file.
 
 Completer<SqlJsModule>? _moduleCompleter;
 
@@ -17,10 +17,10 @@ Future<SqlJsModule> initSqlJs() {
 
   _moduleCompleter = Completer();
   if (!context.hasProperty('initSqlJs')) {
-    return Future.error(
-        UnsupportedError('Could not access the sql.js javascript library. '
-            'The moor documentation contains instructions on how to setup moor '
-            'the web, which might help you fix this.'));
+    return Future.error(UnsupportedError(
+        'Could not access the sql.js javascript library. '
+        'The drift documentation contains instructions on how to setup drift '
+        'the web, which might help you fix this.'));
   }
 
   (context.callMethod('initSqlJs') as JsObject)

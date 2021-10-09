@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 
 import '../data/tables/todos.dart';
 
-String fileName = 'moor-wal-integration-test.db';
+String fileName = 'drift-wal-integration-test.db';
 final _file = File(join(Directory.systemTemp.path, fileName));
 
 QueryExecutor _createExecutor() => NativeDatabase(_file);

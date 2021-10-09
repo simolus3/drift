@@ -2,12 +2,12 @@ part of '../query_builder.dart';
 
 /// Base class for generated table classes.
 ///
-/// Moor generates a subclass of [TableInfo] for each table used in a database.
+/// Drift generates a subclass of [TableInfo] for each table used in a database.
 /// This classes contains information about the table's schema (e.g. its
 /// [primaryKey] or [$columns]).
 ///
 /// [TableDsl] is the original table class written by the user. For tables
-/// defined in moor files, this is the table implementation class itself.
+/// defined in drift files, this is the table implementation class itself.
 /// [D] is the type of the data class generated from the table.
 ///
 /// To obtain an instance of this class, use a table getter from the database.
@@ -97,7 +97,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   int get hashCode => Object.hash(aliasedName, actualTableName);
 }
 
-/// Additional interface for tables in a moor file that have been created with
+/// Additional interface for tables in a drift file that have been created with
 /// an `CREATE VIRTUAL TABLE STATEMENT`.
 mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
   /// Returns the module name and the arguments that were used in the statement
@@ -108,7 +108,7 @@ mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 
 /// Static extension members for generated table classes.
 ///
-/// Most of these are accessed internally by moor or by generated code.
+/// Most of these are accessed internally by drift or by generated code.
 extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// Like [map], but from a [row] instead of the low-level map.
   D mapFromRow(QueryRow row, {String? tablePrefix}) {
@@ -131,7 +131,7 @@ extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
 
   /// Like [mapFromRow], but maps columns from the result through [alias].
   ///
-  /// This is used internally by moor to support mapping to a table from a
+  /// This is used internally by drift to support mapping to a table from a
   /// select statement with different column names. For instance, for:
   ///
   /// ```sql
@@ -140,7 +140,7 @@ extension TableInfoUtils<TableDsl, D> on ResultSetImplementation<TableDsl, D> {
   /// query: SELECT foo AS c1, bar AS c2 FROM tbl;
   /// ```
   ///
-  /// Moor would generate code to call this method with `'c1': 'foo'` and
+  /// Drift would generate code to call this method with `'c1': 'foo'` and
   /// `'c2': 'bar'` in [alias].
   D mapFromRowWithAlias(QueryRow row, Map<String, String> alias) {
     return map({
@@ -158,7 +158,7 @@ extension RowIdExtension on TableInfo {
   /// column is an _alias_ to the row id in sqlite3.
   ///
   /// If the row id has not explicitly been declared as a column aliasing it,
-  /// the [rowId] will not be part of a moor-generated data class. In this
+  /// the [rowId] will not be part of a drift-generated data class. In this
   /// case, the [rowId] getter can be used to refer to a table's row id in a
   /// query.
   Expression<int?> get rowId {

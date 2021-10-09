@@ -1,7 +1,7 @@
 part of '../../query_builder.dart';
 
 /// A select statement that is constructed with a raw sql prepared statement
-/// instead of the high-level moor api.
+/// instead of the high-level drift api.
 class CustomSelectStatement with Selectable<QueryRow> {
   /// Tables this select statement reads from. When turning this select query
   /// into an auto-updating stream, that stream will emit new items whenever

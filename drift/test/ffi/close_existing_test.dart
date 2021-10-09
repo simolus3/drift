@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('can close lost instances', () async {
-    final file = File(p.join(Directory.systemTemp.path, 'moor_close.db'));
+    final file = File(p.join(Directory.systemTemp.path, 'drift_close.db'));
     if (file.existsSync()) file.deleteSync();
 
     // Create the first database holding the lock

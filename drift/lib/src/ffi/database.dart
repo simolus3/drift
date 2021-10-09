@@ -5,16 +5,16 @@ import 'package:sqlite3/sqlite3.dart';
 
 import '../../backends.dart';
 import 'database_tracker.dart';
-import 'moor_ffi_functions.dart';
+import 'native_functions.dart';
 
 /// Signature of a function that can perform setup work on a [database] before
-/// moor is fully ready.
+/// drift is fully ready.
 ///
 /// This could be used to, for instance, set encryption keys for SQLCipher
 /// implementations.
 typedef DatabaseSetup = void Function(Database database);
 
-/// A moor database implementation based on `dart:ffi`, running directly in a
+/// A drift database implementation based on `dart:ffi`, running directly in a
 /// Dart VM or an AOT compiled Dart/Flutter application.
 class NativeDatabase extends DelegatedDatabase {
   NativeDatabase._(DatabaseDelegate delegate, bool logStatements)
@@ -23,11 +23,11 @@ class NativeDatabase extends DelegatedDatabase {
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.
   ///
-  /// {@template moor_vm_database_factory}
+  /// {@template drift_vm_database_factory}
   /// If [logStatements] is true (defaults to `false`), generated sql statements
   /// will be printed before executing. This can be useful for debugging.
   /// The optional [setup] function can be used to perform a setup just after
-  /// the database is opened, before moor is fully ready. This can be used to
+  /// the database is opened, before drift is fully ready. This can be used to
   /// add custom user-defined sql functions or to provide encryption keys in
   /// SQLCipher implementations.
   /// {@endtemplate}
@@ -38,13 +38,13 @@ class NativeDatabase extends DelegatedDatabase {
 
   /// Creates an in-memory database won't persist its changes on disk.
   ///
-  /// {@macro moor_vm_database_factory}
+  /// {@macro drift_vm_database_factory}
   factory NativeDatabase.memory(
       {bool logStatements = false, DatabaseSetup? setup}) {
     return NativeDatabase._(_VmDelegate(null, setup), logStatements);
   }
 
-  /// Creates a moor executor for an opened [database] from the `sqlite3`
+  /// Creates a drift executor for an opened [database] from the `sqlite3`
   /// package.
   ///
   /// When the [closeUnderlyingOnClose] argument is set (which is the default),
@@ -52,10 +52,10 @@ class NativeDatabase extends DelegatedDatabase {
   /// [Database.dispose] the [database] passed to this constructor.
   ///
   /// Using [NativeDatabase.opened] may be useful when you want to use the same
-  /// underlying [Database] in multiple moor connections. Moor uses this
-  /// internally when running [integration tests for migrations](https://moor.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations).
+  /// underlying [Database] in multiple drift connections. Drift uses this
+  /// internally when running [integration tests for migrations](https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations).
   ///
-  /// {@macro moor_vm_database_factory}
+  /// {@macro drift_vm_database_factory}
   factory NativeDatabase.opened(Database database,
       {bool logStatements = false,
       DatabaseSetup? setup,
@@ -81,7 +81,7 @@ class NativeDatabase extends DelegatedDatabase {
   /// it's not necessary to call [closeExistingInstances]. However, features
   /// like hot (stateless) restart can make it impossible to reliably close
   /// every database. In that case, we leak native sqlite3 database connections
-  /// that aren't referenced by any Dart object. Moor can track those
+  /// that aren't referenced by any Dart object. Drift can track those
   /// connections across Dart VM restarts by storing them in an in-memory sqlite
   /// database.
   /// Calling this method can cleanup resources and database locks after a
@@ -94,7 +94,7 @@ class NativeDatabase extends DelegatedDatabase {
   /// aren't any active [NativeDatabase]s, not even on another isolate.
   ///
   /// A suitable place to call [closeExistingInstances] is at an early stage
-  /// of your `main` method, before you're using moor.
+  /// of your `main` method, before you're using drift.
   ///
   /// ```dart
   /// void main() {
@@ -174,7 +174,7 @@ class _VmDelegate extends DatabaseDelegate {
   }
 
   void _initializeDatabase() {
-    _db.useMoorVersions();
+    _db.useNativeFunctions();
     setup?.call(_db);
     versionDelegate = _VmVersionDelegate(_db);
   }

@@ -8,7 +8,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     extends Query<FirstT, FirstD>
     with LimitContainerMixin, Selectable<TypedResult>
     implements BaseSelectStatement {
-  /// Used internally by moor, users should use [SimpleSelectStatement.join]
+  /// Used internally by drift, users should use [SimpleSelectStatement.join]
   /// instead.
   JoinedSelectStatement(DatabaseConnectionUser database,
       ResultSetImplementation<FirstT, FirstD> table, this._joins,
@@ -141,7 +141,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     orderByExpr = OrderBy(terms);
   }
 
-  /// {@template moor_select_addColumns}
+  /// {@template drift_select_addColumns}
   /// Adds a custom expression to the query.
   ///
   /// The database will evaluate the [Expression] for each row found for this
@@ -158,7 +158,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// ```
   ///
   /// See also:
-  ///  - The docs on expressions: https://moor.simonbinder.eu/docs/getting-started/expressions/
+  ///  - The docs on expressions: https://drift.simonbinder.eu/docs/getting-started/expressions/
   /// {@endtemplate}
   void addColumns(Iterable<Expression> expressions) {
     _selectedColumns.addAll(expressions);
@@ -169,7 +169,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// Always returns the same instance.
   ///
   /// See also:
-  ///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+  ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
   ///  - [SimpleSelectStatement.join], which is used for the first join
   ///  - [innerJoin], [leftOuterJoin] and [crossJoin], which can be used to
   ///  construct a [Join].
@@ -259,7 +259,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       message: 'This query contained the table ${table.entityName} more than '
           'once. Is this a typo? \n'
           'If you need a join that includes the same table more than once, you '
-          'need to alias() at least one table. See https://moor.simonbinder.eu/queries/joins#aliases '
+          'need to alias() at least one table. See https://drift.simonbinder.eu/queries/joins#aliases '
           'for an example.',
       cause: cause,
       trace: trace,

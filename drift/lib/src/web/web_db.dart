@@ -5,7 +5,7 @@ part of 'package:drift/web.dart';
 /// The bytes returned should represent a valid sqlite3 database file.
 typedef CreateWebDatabase = Future<Uint8List> Function();
 
-/// Experimental moor backend for the web. To use this platform, you need to
+/// Experimental drift backend for the web. To use this platform, you need to
 /// include the latest version of `sql.js` in your html.
 class WebDatabase extends DelegatedDatabase {
   /// A database executor that works on the web.
@@ -183,7 +183,7 @@ class _WebVersionDelegate extends DynamicVersionDelegate {
 
   _WebVersionDelegate(this.delegate);
 
-  // Note: Earlier moor versions used to store the database version in a special
+  // Note: Earlier versions used to store the database version in a special
   // field in local storage (moor_db_version_<name>). Since 2.3, we instead use
   // the user_version pragma, but still need to keep backwards compatibility.
 

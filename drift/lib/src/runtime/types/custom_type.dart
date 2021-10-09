@@ -3,7 +3,7 @@ part of 'sql_types.dart';
 /// Maps a custom dart object of type [D] into a primitive type [S] understood
 /// by the sqlite backend.
 ///
-/// Moor currently supports [DateTime], [double], [int], [Uint8List], [bool]
+/// Dart currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
 ///
 /// Also see [BuildColumn.map] for details.

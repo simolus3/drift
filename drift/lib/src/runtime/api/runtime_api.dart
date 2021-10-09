@@ -13,7 +13,7 @@ part 'dao_base.dart';
 part 'db_base.dart';
 part 'stream_updates.dart';
 
-/// Defines additional runtime behavior for moor. Changing the fields of this
+/// Defines additional runtime behavior for drift. Changing the fields of this
 /// class is rarely necessary.
 class DriftRuntimeOptions {
   /// Don't warn when a database class isn't used as singleton.
@@ -22,7 +22,7 @@ class DriftRuntimeOptions {
   /// The [ValueSerializer] that will be used by default in [DataClass.toJson].
   ValueSerializer defaultSerializer = const ValueSerializer.defaults();
 
-  /// The function used by moor to emit debug prints.
+  /// The function used by drift to emit debug prints.
   ///
   /// This is the function used with `logStatements: true` on databases and
   /// `debugLog` on isolates.

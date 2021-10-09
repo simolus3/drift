@@ -77,8 +77,8 @@ class Batch {
   /// Writes all present columns from the [row] into all rows in the [table]
   /// that match the [where] clause.
   ///
-  /// For more details on how updates work in moor, check out
-  /// [UpdateStatement.write] or the [documentation with examples](https://moor.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
+  /// For more details on how updates work in drift, check out
+  /// [UpdateStatement.write] or the [documentation with examples](https://drift.simonbinder.eu/docs/getting-started/writing_queries/#updates-and-deletes)
   void update<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row,
       {Expression<bool?> Function(T table)? where}) {
     _addUpdate(table, UpdateKind.update);

@@ -11,7 +11,7 @@ import '../remote.dart';
 // ignore_for_file: public_member_api_docs
 
 @internal
-class RunningMoorServer {
+class RunningDriftServer {
   final Isolate self;
   final bool killIsolateWhenDone;
 
@@ -21,7 +21,7 @@ class RunningMoorServer {
 
   SendPort get portToOpenConnection => connectPort.sendPort;
 
-  RunningMoorServer(this.self, DatabaseConnection connection,
+  RunningDriftServer(this.self, DatabaseConnection connection,
       {this.killIsolateWhenDone = true})
       : server = DriftServer(connection, allowRemoteShutdown: true) {
     final subscription = connectPort.listen((message) {

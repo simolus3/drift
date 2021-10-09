@@ -11,7 +11,7 @@ class InsertStatement<T extends Table, D> {
   final TableInfo<T, D> table;
 
   /// Constructs an insert statement from the database and the table. Used
-  /// internally by moor.
+  /// internally by drift.
   InsertStatement(this.database, this.table);
 
   /// Inserts a row constructed from the fields in [entity].
@@ -111,7 +111,7 @@ class InsertStatement<T extends Table, D> {
   /// Creates a [GenerationContext] which contains the sql necessary to run an
   /// insert statement fro the [entry] with the [mode].
   ///
-  /// This method is used internally by moor. Consider using [insert] instead.
+  /// This method is used internally by drift. Consider using [insert] instead.
   GenerationContext createContext(Insertable<D> entry, InsertMode mode,
       {UpsertClause<T, D>? onConflict, bool returning = false}) {
     _validateIntegrity(entry);

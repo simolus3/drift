@@ -18,19 +18,19 @@ class InvalidDataException implements Exception {
 }
 
 /// A wrapper class for internal exceptions thrown by the underlying database
-/// engine when moor can give additional context or help.
+/// engine when drift can give additional context or help.
 ///
 /// For instance, when we know that an invalid statement has been constructed,
 /// we catch the database exception and try to explain why that has happened.
 class DriftWrappedException implements Exception {
   /// Contains a possible description of why the underlying [cause] occurred,
-  /// for instance because a moor api was misused.
+  /// for instance because a drift api was misused.
   final String message;
 
-  /// The underlying exception caught by moor
+  /// The underlying exception caught by drift
   final Object? cause;
 
-  /// The original stacktrace when caught by moor
+  /// The original stacktrace when caught by drift
   final StackTrace? trace;
 
   /// Creates a new [DriftWrappedException] to provide additional details about
@@ -40,15 +40,15 @@ class DriftWrappedException implements Exception {
   @override
   String toString() {
     return '$cause at \n$trace\n'
-        'Moor detected a possible cause for this: $message';
+        'Drift detected a possible cause for this: $message';
   }
 }
 
-/// Exception thrown by moor when rolling back a transaction fails.
+/// Exception thrown by drift when rolling back a transaction fails.
 ///
 /// When using a `transaction` block, transactions are automatically rolled back
 /// when the inner block throws an exception.
-/// If sending the `ROLLBACK TRANSACTION` command fails as well, moor reports
+/// If sending the `ROLLBACK TRANSACTION` command fails as well, drift reports
 /// both that and the initial error with a [CouldNotRollBackException].
 class CouldNotRollBackException implements Exception {
   /// The original exception that caused the transaction to be rolled back.

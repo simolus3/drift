@@ -38,12 +38,12 @@ typedef RealColumn = Column<double?>;
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
-/// be called at runtime. Instead, moor_generator will take a look at your
+/// be called at runtime. Instead, the generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
 class ColumnBuilder<T> {}
 
-/// DSL extension to define a column with moor.
+/// DSL extension to define a column inside a drift table.
 extension BuildColumn<T> on ColumnBuilder<T> {
   /// By default, the field name will be used as the column name, e.g.
   /// `IntColumn get id = integer()` will have "id" as its associated name.
@@ -62,7 +62,7 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// primary key. Columns are non-null by default.
   ColumnBuilder<T?> nullable() => _isGenerated();
 
-  /// Tells moor to write a custom constraint after this column definition when
+  /// Tells drift to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
   ///
   /// When no custom constraint is set, columns will be written like this:
@@ -78,9 +78,9 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// nullability information is lost - you'll have to include it in
   /// [constraint] if that is desired.
   ///
-  /// This can be used to implement constraints that moor does not (yet)
+  /// This can be used to implement constraints that drift does not (yet)
   /// support (e.g. unique keys, etc.). If you've found a common use-case for
-  /// this, it should be considered a limitation of moor itself. Please feel
+  /// this, it should be considered a limitation of drift itself. Please feel
   /// free to open an issue at https://github.com/simolus3/moor/issues/new to
   /// report that.
   ///
@@ -178,7 +178,7 @@ extension BuildColumn<T> on ColumnBuilder<T> {
       _isGenerated();
 
   /// Turns this column builder into a column. This method won't actually be
-  /// called in your code. Instead, moor_generator will take a look at your
+  /// called in your code. Instead, the generator will take a look at your
   /// source code to figure out your table structure.
   Column<T> call() => _isGenerated();
 }
@@ -227,7 +227,7 @@ class JsonKey {
   /// for [JsonKey] for details.
   final String key;
 
-  /// An annotation to tell moor how the name of a column should appear in
+  /// An annotation to tell drift how the name of a column should appear in
   /// generated json. See the documentation for [JsonKey] for details.
   const JsonKey(this.key);
 }

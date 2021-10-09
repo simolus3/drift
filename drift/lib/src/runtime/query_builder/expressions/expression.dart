@@ -6,7 +6,7 @@ const _equality = ListEquality();
 ///
 /// Most prominently, this includes [Expression]s.
 ///
-/// Used internally by moor.
+/// Used internally by drift.
 abstract class FunctionParameter implements Component {}
 
 /// Any sql expression that evaluates to some generic value. This does not
@@ -44,14 +44,14 @@ abstract class Expression<D> implements FunctionParameter {
   /// will __NOT__ generate a `CAST` expression in sql. To generate a `CAST`
   /// in sql, use [cast].
   ///
-  /// This method is used internally by moor.
+  /// This method is used internally by drift.
   Expression<D2> dartCast<D2>() {
     return _DartCastExpression<D, D2>(this);
   }
 
   /// Generates a `CAST(expression AS TYPE)` expression.
   ///
-  /// Note that this does not do a meaningful conversion for moor-only types
+  /// Note that this does not do a meaningful conversion for drift-only types
   /// like `bool` or `DateTime`. Both would simply generate a `CAST AS INT`
   /// expression.
   Expression<D2> cast<D2>() => _CastInSqlExpression<D, D2>(this);
@@ -406,9 +406,9 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
 
 /// A sql expression that calls a function.
 ///
-/// This class is mainly used by moor internally. If you find yourself using
+/// This class is mainly used by drift internally. If you find yourself using
 /// this class, consider [creating an issue](https://github.com/simolus3/moor/issues/new)
-/// to request native support in moor.
+/// to request native support in drift.
 class FunctionCallExpression<R> extends Expression<R> {
   /// The name of the function to call
   final String functionName;

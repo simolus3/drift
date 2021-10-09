@@ -10,7 +10,7 @@ abstract class Query<T extends HasResultSet, D> extends Component {
   /// The (main) table or view that this query operates on.
   ResultSetImplementation<T, D> table;
 
-  /// Used internally by moor. Users should use the appropriate methods on
+  /// Used internally by drift. Users should use the appropriate methods on
   /// [DatabaseConnectionUser] instead.
   Query(this.database, this.table);
 
@@ -57,9 +57,9 @@ abstract class Query<T extends HasResultSet, D> extends Component {
 
   /// Constructs the query that can then be sent to the database executor.
   ///
-  /// This is used internally by moor to run the query. Users should use the
-  /// other methods explained in the [documentation][moor-docs].
-  /// [moor-docs]: https://moor.simonbinder.eu/docs/getting-started/writing_queries/
+  /// This is used internally by drift to run the query. Users should use the
+  /// other methods explained in the [documentation][drift-docs].
+  /// [drift-docs]: https://drift.simonbinder.eu/docs/getting-started/writing_queries/
   GenerationContext constructQuery() {
     final ctx = GenerationContext.fromDb(database);
     writeInto(ctx);
@@ -73,7 +73,7 @@ abstract class Query<T extends HasResultSet, D> extends Component {
 /// Useful for refining the return type of a query, while still delegating
 /// whether to [get] or [watch] results to the consuming code.
 ///
-/// {@template moor_multi_selectable_example}
+/// {@template drift_multi_selectable_example}
 /// ```dart
 /// /// Retrieve a page of [Todo]s.
 /// MultiSelectable<Todo> pageOfTodos(int page, {int pageSize = 10}) {
@@ -101,7 +101,7 @@ abstract class MultiSelectable<T> {
 /// Useful for refining the return type of a query, while still delegating
 /// whether to [getSingle] or [watchSingle] results to the consuming code.
 ///
-/// {@template moor_single_selectable_example}
+/// {@template drift_single_selectable_example}
 /// ```dart
 /// // Retrieve a todo known to exist.
 /// SingleSelectable<Todo> entryById(int id) {
@@ -120,7 +120,7 @@ abstract class SingleSelectable<T> {
   /// value. the query returns no or too many rows, the returned future will
   /// complete with an error.
   ///
-  /// {@template moor_single_query_expl}
+  /// {@template drift_single_query_expl}
   /// Be aware that this operation won't put a limit clause on this statement,
   /// if that's needed you would have to do use [SimpleSelectStatement.limit]:
   /// ```dart
@@ -147,7 +147,7 @@ abstract class SingleSelectable<T> {
   /// `Stream<T>`. If, at any point, the query emits no or more than one rows,
   /// an error will be added to the stream instead.
   ///
-  /// {@macro moor_single_query_expl}
+  /// {@macro drift_single_query_expl}
   Stream<T> watchSingle();
 }
 
@@ -158,7 +158,7 @@ abstract class SingleSelectable<T> {
 /// whether to [getSingleOrNull] or [watchSingleOrNull] result to the
 /// consuming code.
 ///
-/// {@template moor_single_or_null_selectable_example}
+/// {@template drift_single_or_null_selectable_example}
 ///```dart
 /// // Retrieve a todo from an external link that may not be valid.
 /// SingleOrNullSelectable<Todo> entryFromExternalLink(int id) {
@@ -177,7 +177,7 @@ abstract class SingleOrNullSelectable<T> {
   /// value. If the result too many values, this method will throw. If no
   /// row is returned, `null` will be returned instead.
   ///
-  /// {@macro moor_single_query_expl}
+  /// {@macro drift_single_query_expl}
   ///
   /// See also: [Selectable.getSingle], which can be used if the query will
   /// always evaluate to exactly one row.
@@ -191,7 +191,7 @@ abstract class SingleOrNullSelectable<T> {
   /// If the query emits zero rows at some point, `null` will be added
   /// to the stream instead.
   ///
-  /// {@macro moor_single_query_expl}
+  /// {@macro drift_single_query_expl}
   Stream<T?> watchSingleOrNull();
 }
 
@@ -202,9 +202,9 @@ abstract class SingleOrNullSelectable<T> {
 /// [Stream], you can refine your return type using one of Selectable's
 /// base classes:
 ///
-/// {@macro moor_multi_selectable_example}
-/// {@macro moor_single_selectable_example}
-/// {@macro moor_single_or_null_selectable_example}
+/// {@macro drift_multi_selectable_example}
+/// {@macro drift_single_selectable_example}
+/// {@macro drift_single_or_null_selectable_example}
 abstract class Selectable<T>
     implements
         MultiSelectable<T>,
@@ -295,7 +295,7 @@ mixin SingleTableQueryMixin<T extends HasResultSet, D> on Query<T, D> {
   /// will be the conjunction of both calls.
   ///
   /// For more information, see:
-  ///  - The docs on [expressions](https://moor.simonbinder.eu/docs/getting-started/expressions/),
+  ///  - The docs on [expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/),
   ///    which explains how to express most SQL expressions in Dart.
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [DatabaseConnectionUser.select].

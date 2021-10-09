@@ -5,9 +5,9 @@ import 'package:sqlite3/sqlite3.dart';
 // ignore_for_file: avoid_returning_null, only_throw_errors
 
 /// Extension to register moor-specific sql functions.
-extension EnableMoorFunctions on Database {
+extension EnableNativeFunctions on Database {
   /// Enables moor-specific sql functions on this database.
-  void useMoorVersions() {
+  void useNativeFunctions() {
     createFunction(
       functionName: 'power',
       deterministic: true,

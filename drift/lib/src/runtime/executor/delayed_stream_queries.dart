@@ -5,7 +5,7 @@ import 'stream_queries.dart';
 
 /// Version of [StreamQueryStore] that delegates work to an asynchronously-
 /// available delegate.
-/// This class is internal and should not be exposed to moor users. It's used
+/// This class is internal and should not be exposed to drift users. It's used
 /// through a delayed database connection.
 @internal
 class DelayedStreamQueryStore implements StreamQueryStore {

@@ -1,10 +1,10 @@
-// This is a moor-internal file
+// This is a drift-internal file
 // ignore_for_file: constant_identifier_names, public_member_api_docs
 
 import 'package:drift/drift.dart';
 
-class MoorProtocol {
-  const MoorProtocol();
+class DriftProtocol {
+  const DriftProtocol();
 
   static const _tag_Request = 0;
   static const _tag_Response_success = 1;

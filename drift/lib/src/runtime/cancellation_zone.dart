@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
-const _key = #moor.runtime.cancellation;
+const _key = #drift.runtime.cancellation;
 
 /// Runs an asynchronous operation with support for cancellations.
 ///

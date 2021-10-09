@@ -2,7 +2,7 @@ part of 'runtime_api.dart';
 
 /// Keep track of how many databases have been opened for a given database
 /// type.
-/// We get a number of error reports of "moor not generating tables" that have
+/// We get a number of error reports of "drift not generating tables" that have
 /// their origin in users opening multiple instances of their database. This
 /// can cause a race conditions when the second [GeneratedDatabase] is opening a
 /// underlying [DatabaseConnection] that is already opened but doesn't have the
@@ -32,7 +32,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// The collection of update rules contains information on how updates on
   /// tables result in other updates, for instance due to a trigger.
   ///
-  /// There should be no need to overwrite this field, moor will generate an
+  /// There should be no need to overwrite this field, drift will generate an
   /// appropriate implementation automatically.
   StreamQueryUpdateRules get streamUpdateRules =>
       const StreamQueryUpdateRules.none();
@@ -76,13 +76,13 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
         _openedDbCount[runtimeType] = _openedDbCount[runtimeType]! + 1;
     if (count > 1) {
       driftRuntimeOptions.debugPrint(
-        'WARNING (moor): It looks like you\'ve created the database class '
+        'WARNING (drift): It looks like you\'ve created the database class '
         '$runtimeType multiple times. When these two databases use the same '
         'QueryExecutor, race conditions will occur and might corrupt the '
         'database. \n'
-        'Try to follow the advice at https://moor.simonbinder.eu/faq/#using-the-database '
+        'Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database '
         'or, if you know what you\'re doing, set '
-        'moorRuntimeOptions.dontWarnAboutMultipleDatabases = true\n'
+        'driftRuntimeOptions.dontWarnAboutMultipleDatabases = true\n'
         'Here is the stacktrace from when the database was opened a second '
         'time:\n${StackTrace.current}\n'
         'This warning will only appear on debug builds.',
@@ -95,7 +95,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
   /// Creates a [Migrator] with the provided query executor. Migrators generate
   /// sql statements to create or drop tables.
   ///
-  /// This api is mainly used internally in moor, especially to implement the
+  /// This api is mainly used internally in drift, especially to implement the
   /// [beforeOpen] callback from the database site.
   /// However, it can also be used if you need to create tables manually and
   /// outside of a [MigrationStrategy]. For almost all use cases, overriding

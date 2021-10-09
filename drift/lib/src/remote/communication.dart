@@ -8,15 +8,15 @@ import 'protocol.dart';
 
 /// Wrapper around a two-way communication channel to support requests and
 /// responses.
-class MoorCommunication {
-  static const _protocol = MoorProtocol();
+class DriftCommunication {
+  static const _protocol = DriftProtocol();
 
   final StreamChannel<Object?> _channel;
   final bool _debugLog;
 
   StreamSubscription? _inputSubscription;
 
-  // note that there are two MoorCommunication instances in each connection,
+  // note that there are two DriftCommunication instances in each connection,
   // (one per remote). Each of them has an independent _currentRequestId field
   int _currentRequestId = 0;
   final Completer<void> _closeCompleter = Completer();
@@ -24,8 +24,8 @@ class MoorCommunication {
   final StreamController<Request> _incomingRequests =
       StreamController(sync: true);
 
-  /// Starts a moor communication channel over a raw [StreamChannel].
-  MoorCommunication(this._channel, [this._debugLog = false]) {
+  /// Starts a drift communication channel over a raw [StreamChannel].
+  DriftCommunication(this._channel, [this._debugLog = false]) {
     _inputSubscription = _channel.stream.listen(
       _handleMessage,
       onDone: _closeCompleter.complete,

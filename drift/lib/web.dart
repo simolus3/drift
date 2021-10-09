@@ -1,9 +1,9 @@
-/// A version of moor that runs on the web by using [sql.js](https://github.com/sql-js/sql.js)
+/// A version of drift that runs on the web by using [sql.js](https://github.com/sql-js/sql.js)
 /// You manually need to include that library into your website to use the
-/// web version of moor. See [the documentation](https://moor.simonbinder.eu/web)
+/// web version of drift. See [the documentation](https://drift.simonbinder.eu/web)
 /// for a more detailed instruction.
 @experimental
-library moor_web;
+library drift.web;
 
 import 'dart:async';
 import 'dart:html';

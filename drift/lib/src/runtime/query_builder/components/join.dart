@@ -18,7 +18,7 @@ const Map<_JoinType, String> _joinKeywords = {
   _JoinType.cross: 'CROSS',
 };
 
-/// Used internally by moor when calling [SimpleSelectStatement.join].
+/// Used internally by drift when calling [SimpleSelectStatement.join].
 ///
 /// You should use [innerJoin], [leftOuterJoin] or [crossJoin] to obtain a
 /// [Join] instance.
@@ -61,14 +61,14 @@ class Join<T extends HasResultSet, D> extends Component {
 
 /// Creates a sql inner join that can be used in [SimpleSelectStatement.join].
 ///
-/// {@template moor_join_include_results}
+/// {@template drift_join_include_results}
 /// The optional [useColumns] parameter (defaults to true) can be used to
 /// exclude the [other] table from the result set. When set to false,
 /// [TypedResult.readTable] will return `null` for that table.
 /// {@endtemplate}
 ///
 /// See also:
-///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
 Join innerJoin<T extends HasResultSet, D>(
     ResultSetImplementation<T, D> other, Expression<bool?> on,
@@ -79,10 +79,10 @@ Join innerJoin<T extends HasResultSet, D>(
 /// Creates a sql left outer join that can be used in
 /// [SimpleSelectStatement.join].
 ///
-/// {@macro moor_join_include_results}
+/// {@macro drift_join_include_results}
 ///
 /// See also:
-///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
 Join leftOuterJoin<T extends HasResultSet, D>(
     ResultSetImplementation<T, D> other, Expression<bool?> on,
@@ -93,10 +93,10 @@ Join leftOuterJoin<T extends HasResultSet, D>(
 /// Creates a sql cross join that can be used in
 /// [SimpleSelectStatement.join].
 ///
-/// {@macro moor_join_include_results}
+/// {@macro drift_join_include_results}
 ///
 /// See also:
-///  - https://moor.simonbinder.eu/docs/advanced-features/joins/#joins
+///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
 Join crossJoin<T extends HasResultSet, D>(ResultSetImplementation<T, D> other,
     {bool? useColumns}) {

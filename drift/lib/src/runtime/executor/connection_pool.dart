@@ -1,7 +1,7 @@
 import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
 
-/// A query executor for moor that delegates work to multiple executors.
+/// A query executor for drift that delegates work to multiple executors.
 abstract class MultiExecutor extends QueryExecutor {
   /// Creates a query executor that will delegate work to different executors.
   ///

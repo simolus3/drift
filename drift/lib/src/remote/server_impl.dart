@@ -8,7 +8,7 @@ import '../runtime/cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
-/// The implementation of a moor server, manging remote channels to send
+/// The implementation of a drift server, manging remote channels to send
 /// database requests.
 class ServerImplementation implements DriftServer {
   /// The Underlying database connection that will be used.
@@ -36,7 +36,7 @@ class ServerImplementation implements DriftServer {
   late final _ServerDbUser _dbUser = _ServerDbUser(this);
 
   bool _isShuttingDown = false;
-  final Set<MoorCommunication> _activeChannels = {};
+  final Set<DriftCommunication> _activeChannels = {};
   final Completer<void> _done = Completer();
 
   /// Creates a server from the underlying connection and further options.
@@ -51,7 +51,7 @@ class ServerImplementation implements DriftServer {
       throw StateError('Cannot add new channels after shutdown() was called');
     }
 
-    final comm = MoorCommunication(channel)..setRequestHandler(_handleRequest);
+    final comm = DriftCommunication(channel)..setRequestHandler(_handleRequest);
     _activeChannels.add(comm);
     comm.closed.then((_) => _activeChannels.remove(comm));
   }
@@ -66,7 +66,7 @@ class ServerImplementation implements DriftServer {
     return done;
   }
 
-  MoorCommunication? get _anyClient {
+  DriftCommunication? get _anyClient {
     final iterator = _activeChannels.iterator;
     if (iterator.moveNext()) {
       return iterator.current;

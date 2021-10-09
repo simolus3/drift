@@ -1,6 +1,6 @@
 part of 'package:drift/web.dart';
 
-/// Interface to control how moor should store data on the web.
+/// Interface to control how drift should store data on the web.
 abstract class DriftWebStorage {
   /// Opens the storage implementation.
   Future<void> open();
@@ -74,7 +74,7 @@ abstract class DriftWebStorage {
           // Try opening a mock database to check if IndexedDB is really
           // available. This avoids the problem with Firefox incorrectly
           // reporting IndexedDB as supported in private mode.
-          final mockDb = await window.indexedDB!.open('moor_mock_db');
+          final mockDb = await window.indexedDB!.open('drift_mock_db');
           mockDb.close();
         }
       } catch (error) {

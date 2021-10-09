@@ -10,9 +10,9 @@ import '../runtime/cancellation_zone.dart';
 import 'communication.dart';
 import 'protocol.dart';
 
-/// The client part of a remote moor communication scheme.
-class MoorClient {
-  final MoorCommunication _channel;
+/// The client part of a remote drift communication scheme.
+class DriftClient {
+  final DriftCommunication _channel;
 
   late final _RemoteStreamQueryStore _streamStore =
       _RemoteStreamQueryStore(this);
@@ -28,8 +28,8 @@ class MoorClient {
   late QueryExecutorUser _connectedDb;
 
   /// Starts relaying database operations over the request channel.
-  MoorClient(StreamChannel<Object?> channel, bool debugLog)
-      : _channel = MoorCommunication(channel, debugLog) {
+  DriftClient(StreamChannel<Object?> channel, bool debugLog)
+      : _channel = DriftCommunication(channel, debugLog) {
     _channel.setRequestHandler(_handleRequest);
   }
 
@@ -46,7 +46,7 @@ class MoorClient {
 }
 
 abstract class _BaseExecutor extends QueryExecutor {
-  final MoorClient client;
+  final DriftClient client;
   int? _executorId;
 
   _BaseExecutor(this.client, [this._executorId]);
@@ -110,7 +110,7 @@ abstract class _BaseExecutor extends QueryExecutor {
 }
 
 class _RemoteQueryExecutor extends _BaseExecutor {
-  _RemoteQueryExecutor(MoorClient client, [int? executorId])
+  _RemoteQueryExecutor(DriftClient client, [int? executorId])
       : super(client, executorId);
 
   Completer<void>? _setSchemaVersion;
@@ -147,7 +147,7 @@ class _RemoteTransactionExecutor extends _BaseExecutor
     implements TransactionExecutor {
   final int? _outerExecutorId;
 
-  _RemoteTransactionExecutor(MoorClient client, this._outerExecutorId)
+  _RemoteTransactionExecutor(DriftClient client, this._outerExecutorId)
       : super(client);
 
   Completer<bool>? _pendingOpen;
@@ -200,7 +200,7 @@ class _RemoteTransactionExecutor extends _BaseExecutor
 }
 
 class _RemoteStreamQueryStore extends StreamQueryStore {
-  final MoorClient _client;
+  final DriftClient _client;
   final Set<Completer> _awaitingUpdates = {};
 
   _RemoteStreamQueryStore(this._client);
