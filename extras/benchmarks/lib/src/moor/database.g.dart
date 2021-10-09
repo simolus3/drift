@@ -38,7 +38,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
 
   factory KeyValue.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return KeyValue(
       key: serializer.fromJson<String>(json['key']),
       value: serializer.fromJson<String>(json['value']),
@@ -46,7 +46,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'key': serializer.toJson<String>(key),
       'value': serializer.toJson<String>(value),
@@ -67,7 +67,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(key.hashCode, value.hashCode));
+  int get hashCode => Object.hash(key, value);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
