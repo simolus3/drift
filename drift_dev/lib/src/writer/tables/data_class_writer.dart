@@ -85,7 +85,8 @@ class DataClassWriter {
     final dataClassName = table.dartTypeName;
     // The GeneratedDatabase db parameter is not actually used, but we need to
     // keep it on tables for backwards compatibility.
-    final includeUnusedDbColumn = table is MoorTable;
+    final includeUnusedDbColumn =
+        scope.generationOptions.writeForMoorPackage && table is MoorTable;
 
     _buffer
       ..write('factory $dataClassName.fromData')

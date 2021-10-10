@@ -14,7 +14,9 @@ builders:
   preparing_builder:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["preparingBuilder"]
-    build_extensions: {".moor": [".temp.dart", ".dart_in_moor"]}
+    build_extensions: 
+      ".moor": [".temp.dart", ".dart_in_moor"]
+      ".drift": [".temp.dart", ".dart_in_moor"]
     build_to: cache
     auto_apply: dependents
     applies_builders: ["drift_dev|cleanup"]

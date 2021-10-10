@@ -19,8 +19,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
       required this.content,
       this.targetDate,
       this.category});
-  factory TodoEntry.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory TodoEntry.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return TodoEntry(
       id: const IntType()
@@ -290,7 +289,7 @@ class $TodosTableTable extends TodosTable
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TodoEntry.fromData(data, _db,
+    return TodoEntry.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -306,8 +305,7 @@ class Category extends DataClass implements Insertable<Category> {
   final CategoryPriority priority;
   Category(
       {required this.id, required this.description, required this.priority});
-  factory Category.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Category.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Category(
       id: const IntType()
@@ -507,7 +505,7 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Category.fromData(data, _db,
+    return Category.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -532,8 +530,7 @@ class User extends DataClass implements Insertable<User> {
       required this.isAwesome,
       required this.profilePicture,
       required this.creationTime});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType()
@@ -803,7 +800,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -817,8 +814,7 @@ class SharedTodo extends DataClass implements Insertable<SharedTodo> {
   final int todo;
   final int user;
   SharedTodo({required this.todo, required this.user});
-  factory SharedTodo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory SharedTodo.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return SharedTodo(
       todo: const IntType()
@@ -981,7 +977,7 @@ class $SharedTodosTable extends SharedTodos
   Set<GeneratedColumn> get $primaryKey => {todo, user};
   @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return SharedTodo.fromData(data, _db,
+    return SharedTodo.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -1133,8 +1129,7 @@ class $TableWithoutPKTable extends TableWithoutPK
 class PureDefault extends DataClass implements Insertable<PureDefault> {
   final String? txt;
   PureDefault({this.txt});
-  factory PureDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory PureDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return PureDefault(
       txt: const StringType()
@@ -1266,7 +1261,7 @@ class $PureDefaultsTable extends PureDefaults
   Set<GeneratedColumn> get $primaryKey => {txt};
   @override
   PureDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return PureDefault.fromData(data, _db,
+    return PureDefault.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

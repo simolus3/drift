@@ -185,7 +185,8 @@ abstract class TableOrViewWriter {
       buffer.write(';\n');
     } else {
       // Use default .fromData constructor in the moor-generated data class
-      final hasDbParameter = tableOrView is MoorTable;
+      final hasDbParameter = scope.generationOptions.writeForMoorPackage &&
+          tableOrView is MoorTable;
       if (hasDbParameter) {
         buffer.write('return $dataClassName.fromData(data, _db, '
             "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");

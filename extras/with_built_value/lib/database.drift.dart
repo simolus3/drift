@@ -11,8 +11,7 @@ class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
   User({@required this.id, @required this.name});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
@@ -172,7 +171,7 @@ class Users extends Table with TableInfo<Users, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

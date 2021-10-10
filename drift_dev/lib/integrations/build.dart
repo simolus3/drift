@@ -8,7 +8,8 @@ Builder moorBuilder(BuilderOptions options) =>
 Builder moorBuilderNotShared(BuilderOptions options) =>
     MoorPartBuilder(options, isForNewDriftPackage: true);
 
-Builder preparingBuilder(BuilderOptions options) => PreprocessBuilder();
+Builder preparingBuilder(BuilderOptions options) =>
+    PreprocessBuilder(isForNewDriftPackage: true);
 
 PostProcessBuilder moorCleanup(BuilderOptions options) {
   return const FileDeletingBuilder(['.temp.dart']);

@@ -17,8 +17,7 @@ class Config extends DataClass implements Insertable<Config> {
       this.configValue,
       this.syncState,
       this.syncStateImplicit});
-  factory Config.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Config.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Config(
       configKey: const StringType()
@@ -270,7 +269,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   Set<GeneratedColumn> get $primaryKey => {configKey};
   @override
   Config map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Config.fromData(data, _db,
+    return Config.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -290,8 +289,7 @@ class WithDefault extends DataClass implements Insertable<WithDefault> {
   final String? a;
   final int? b;
   WithDefault({this.a, this.b});
-  factory WithDefault.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory WithDefault.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WithDefault(
       a: const StringType()
@@ -455,7 +453,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithDefault map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return WithDefault.fromData(data, _db,
+    return WithDefault.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -565,9 +563,7 @@ class WithConstraint extends DataClass implements Insertable<WithConstraint> {
   final int b;
   final double? c;
   WithConstraint({this.a, required this.b, this.c});
-  factory WithConstraint.fromData(
-      Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory WithConstraint.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WithConstraint(
       a: const StringType()
@@ -760,7 +756,7 @@ class WithConstraints extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WithConstraint map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return WithConstraint.fromData(data, _db,
+    return WithConstraint.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -783,8 +779,7 @@ class MytableData extends DataClass implements Insertable<MytableData> {
   final DateTime? somedate;
   MytableData(
       {required this.someid, this.sometext, this.isInserting, this.somedate});
-  factory MytableData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory MytableData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return MytableData(
       someid: const IntType()
@@ -1023,7 +1018,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   Set<GeneratedColumn> get $primaryKey => {someid};
   @override
   MytableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return MytableData.fromData(data, _db,
+    return MytableData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -1043,8 +1038,7 @@ class EMail extends DataClass implements Insertable<EMail> {
   final String title;
   final String body;
   EMail({required this.sender, required this.title, required this.body});
-  factory EMail.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory EMail.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return EMail(
       sender: const StringType()
@@ -1237,7 +1231,7 @@ class Email extends Table
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   EMail map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return EMail.fromData(data, _db,
+    return EMail.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -1256,8 +1250,7 @@ class WeirdData extends DataClass implements Insertable<WeirdData> {
   final int sqlClass;
   final String textColumn;
   WeirdData({required this.sqlClass, required this.textColumn});
-  factory WeirdData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory WeirdData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return WeirdData(
       sqlClass: const IntType()
@@ -1424,7 +1417,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
   WeirdData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return WeirdData.fromData(data, _db,
+    return WeirdData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

@@ -44,12 +44,12 @@ jobs:
           retention-days: 1
 
   moor:
-    name: "moor package"
+    name: "drift package"
     needs: [compile_sqlite3]
     runs-on: ubuntu-20.04
     defaults:
       run:
-        working-directory: moor
+        working-directory: drift
     steps:
       # setup
       - uses: actions/checkout@v2
@@ -82,11 +82,11 @@ jobs:
 #            moor/.dart_tool/package_config.json
 #          retention-days: 1
 
-  moor_generator:
+  drift_dev:
     runs-on: ubuntu-20.04
     defaults:
       run:
-        working-directory: moor_generator
+        working-directory: drift_dev
     steps:
     # setup
     - uses: actions/checkout@v2

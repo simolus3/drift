@@ -24,9 +24,16 @@ import 'package:sqlparser/sqlparser.dart';
 /// moor file. The main generator can then read the `.dart_in_moor` file to
 /// resolve those expressions.
 class PreprocessBuilder extends Builder {
+  static const _outputs = ['.temp.dart', '.dart_in_moor'];
+
+  final bool isForNewDriftPackage;
+
+  PreprocessBuilder({this.isForNewDriftPackage = false});
+
   @override
-  final Map<String, List<String>> buildExtensions = const {
-    '.moor': ['.temp.dart', '.dart_in_moor'],
+  late final Map<String, List<String>> buildExtensions = {
+    '.moor': _outputs,
+    if (isForNewDriftPackage) '.drift': _outputs
   };
 
   @override
@@ -61,7 +68,7 @@ class PreprocessBuilder extends Builder {
       if (!seenFiles.contains(asset)) {
         seenFiles.add(asset);
 
-        if (asset.extension == '.moor') {
+        if (asset.extension == '.moor' || asset.extension == '.drift') {
           final parsed = asset == input
               ? parsedInput
               : engine.parseMoorFile(await buildStep.readAsString(asset));
