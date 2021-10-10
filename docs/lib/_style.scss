@@ -1,2 +1,7 @@
 @import 'variables.scss';
 @import '_highlight.scss';
+
+.renamed {
+   padding: 10px;
+   background-color: rgba(0, 0, 0, 0.08);
+}

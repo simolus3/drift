@@ -7,13 +7,17 @@ template: layouts/docs/single
 path: /name
 ---
 
-Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor is used as a derogatory term.
-I have not been aware of this when starting this project, but this name does not reflect the inclusivity of the Dart and Flutter communities.
-Despite the associated effort, I believe that renaming the project is the right decision.
+Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatery term.
+I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
+Despite the associated effort, renaming the project is the right decision.
 Thank you for your understanding!
 
+Until version `5.0.0`, the current `moor` and `moor_generator` packages will continue to work - __no urgent action is necessary__.
+All features and fixes to the new `drift` packages will be mirrored in `moor` as well.
+At the next breaking release, the `moor` set of packages will be discontinued in favor of `drift` and `drift_dev`.
+
 This page describes how to migrate from the old `moor` package to the new `drift` package.
-An automatic tool can make all necessary changes, and this is the recommended approach for all users.
+This process can be automated, and we hope that the migration is a matter of minutes for you.
 In case of issues with the tool, this page also describes how to manually migrate to the new `drift` packages.
 
 ## Automatic migration
