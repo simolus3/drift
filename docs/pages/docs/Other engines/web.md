@@ -1,28 +1,32 @@
 ---
 data:
   title: Web
-  description: Experimental support for moor and webapps.
+  description: Experimental support for drift and webapps.
 template: layouts/docs/single
 path: web/
 ---
 
-Starting from moor `1.6`, you can experimentally use moor in Dart webapps. Moor web supports 
+You can experimentally use drift in Dart webapps. Drift web supports 
 Flutter Web, AngularDart, plain `dart:html` or any other web framework.
 
 ## Getting started
-Instead of depending on `moor_flutter` in your pubspec, you need to depend on on `moor` directly. Apart from that, you can
-follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}).
-Also, instead of using a `FlutterQueryExecutor` in your database classes, you can use a `WebDatabase` executor:
-```dart
-import 'package:moor/moor_web.dart';
 
-@UseMoor(tables: [Todos, Categories])
+From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
+You can follow the [getting started guide]({{ '../Getting started/index.md' | pageUrl }}) for general
+information on using drift.
+
+Instead of using a `NativeDatabase` in your database classes, you can use a `WebDatabase` executor:
+
+```dart
+import 'package:drift/web.dart';
+
+@DriftDatabase(tables: [Todos, Categories])
 class MyDatabase extends _$MyDatabase {
   // here, "app" is the name of the database - you can choose any name you want
   MyDatabase() : super(WebDatabase('app'));
 ```
 
-Moor web is built on top of the [sql.js](https://github.com/sql-js/sql.js/) library, which you need to include:
+Drift web is built on top of the [sql.js](https://github.com/sql-js/sql.js/) library, which you need to include:
 ```html
 <!doctype html>
 <html lang="en">
@@ -48,15 +52,15 @@ won't accept it otherwise.
 ## Sharing code between native apps and web
 
 If you want to share your database code between native applications and webapps, just import the
-basic `moor` library into your database file.
-And instead of passing a `VmDatabase` or `WebDatabase` to the `super` constructor, make the
+basic `drift/drift.dart` library into your database file.
+And instead of passing a `NativeDatabase` or `WebDatabase` to the `super` constructor, make the
 `QueryExecutor` customizable:
 
 ```dart
-// don't import moor_web.dart or moor_flutter/moor_flutter.dart in shared code
-import 'package:moor/moor.dart';
+// don't import drift/web.dart or drift/native.dart in shared code
+import 'package:drift/drift.dart';
 
-@UseMoor(/* ... */)
+@DriftDatabase(/* ... */)
 class SharedDatabase extends _$MyDatabase {
     SharedDatabase(QueryExecutor e): super(e);
 }
@@ -66,13 +70,13 @@ In native Flutter apps, you can create an instance of your database with
 
 ```dart
 // native.dart
-import 'package:moor/ffi.dart';
+import 'package:drift/native.dart';
 
 SharedDatabase constructDb() {
   final db = LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'db.sqlite'));
-    return VmDatabase(file);
+    return NativeDatabase(file);
   });
   return SharedDatabase(db);
 }
@@ -82,7 +86,7 @@ On the web, you can use
 
 ```dart
 // web.dart
-import 'package:moor/moor_web.dart';
+import 'package:drift/web.dart';
 
 SharedDatabase constructDb() {
   return SharedDatabase(WebDatabase('db'));
@@ -110,9 +114,9 @@ export 'unsupported.dart'
 A ready example of this construct can also be found [here](https://github.com/rodydavis/moor_shared/blob/master/lib/src/database/database/unsupported.dart).
 
 ## Debugging
-You can see all queries sent from moor to the underlying database engine by enabling the `logStatements`
+You can see all queries sent from drift to the underlying database engine by enabling the `logStatements`
 parameter on the `WebDatabase` - they will appear in the console.
-When you have assertions enabled (e.g. in debug mode), moor will expose the underlying 
+When you have assertions enabled (e.g. in debug mode), drift will expose the underlying 
 [database](https://sql.js.org/documentation/Database.html)
 object via `window.db`. If you need to quickly run a query to check the state of the database, you can use
 `db.exec(sql)`.
@@ -129,19 +133,19 @@ performant, since we don't have to encode binary blobs as strings.
 To use this implementation on browsers that support it, replace `WebDatabase(name)` with:
 
 ```dart
-WebDatabase.withStorage(await MoorWebStorage.indexedDbIfSupported(name))
+WebDatabase.withStorage(await DriftWebStorage.indexedDbIfSupported(name))
 ```
 
-Moor will automatically migrate data from local storage to `IndexedDb` when it is available.
+Drift will automatically migrate data from local storage to `IndexedDb` when it is available.
 
 ### Using web workers
 
-Starting from moor 4.1, you can offload the database to a background thread by using 
+You can offload the database to a background thread by using 
 [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
-Moor also supports [shared workers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker),
+Drift also supports [shared workers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker),
 which allows you to seamlessly synchronize query-streams and updates across multiple tabs!
 
-Since web workers can't use local storage, you need to use `MoorWebStorage.indexedDb` instead of
+Since web workers can't use local storage, you need to use `DriftWebStorage.indexedDb` instead of
 the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
@@ -150,23 +154,23 @@ Flutter users will have to use a different approach to compile service workers.
 As long as you can compile a seperate Dart file (with a `main` function that's not your app)
 into a JS file, you can use that as a worker too.
 
-To write a web worker that will serve requests for moor, create a file called `worker.dart` in 
+To write a web worker that will serve requests for drift, create a file called `worker.dart` in 
 the `web/` folder of your app. It could have the following content:
 
 ```dart
 import 'dart:html';
 
-import 'package:moor/moor.dart';
-import 'package:moor/moor_web.dart';
-import 'package:moor/remote.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/web.dart';
+import 'package:drift/remote.dart';
 
 void main() {
   final self = SharedWorkerGlobalScope.instance;
   self.importScripts('sql-wasm.js');
 
-  final db = WebDatabase.withStorage(MoorWebStorage.indexedDb('worker',
+  final db = WebDatabase.withStorage(DriftWebStorage.indexedDb('worker',
       migrateFromLocalStorage: false, inWebWorker: true));
-  final server = MoorServer(DatabaseConnection.fromExecutor(db));
+  final server = DriftServer(DatabaseConnection.fromExecutor(db));
 
   self.onConnect.listen((event) {
     final msg = event as MessageEvent;
@@ -175,16 +179,16 @@ void main() {
 }
 ```
 
-For more information on this api, see the [remote API](https://pub.dev/documentation/moor/latest/remote/remote-library.html).
+For more information on this api, see the [remote API](https://pub.dev/documentation/drift/latest/remote/remote-library.html).
 
-Connecting to that worker is very simple with moor's web and remote apis. In your regular app code (outside of the worker),
+Connecting to that worker is very simple with drift's web and remote apis. In your regular app code (outside of the worker),
 you can connect like this:
 
 ```dart
 import 'dart:html';
 
-import 'package:moor/remote.dart';
-import 'package:moor/moor_web.dart';
+import 'package:drift/remote.dart';
+import 'package:drift/web.dart';
 import 'package:web_worker_example/database.dart';
 
 DatabaseConnection connectToWorker() {
@@ -199,4 +203,4 @@ For more information on the `DatabaseConnection` class, see the documentation on
 [isolates]({{ "../Advanced Features/isolates.md" | pageUrl }}).
 
 A small, but working example is available under [extras/web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/web_worker_example)
-in the moor repository.
+in the drift repository.

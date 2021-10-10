@@ -1,26 +1,24 @@
 ---
 data:
   title: "Testing"
-  description: Guide on writing unit tests for moor databases
+  description: Guide on writing unit tests for drift databases
 
 template: layouts/docs/single
 ---
 
-Flutter apps using moor can always be tested with [integration tests](https://flutter.dev/docs/cookbook/testing/integration/introduction)
-running on a real device. This guide focuses on writing unit tests for a database written in moor.
+Flutter apps using drift can always be tested with [integration tests](https://flutter.dev/docs/cookbook/testing/integration/introduction)
+running on a real device. This guide focuses on writing unit tests for a database written in drift.
 Those tests can be run and debugged on your computer without additional setup, you don't need a
 physical device to run them.
 
 ## Setup
 
-For tests, you need to use a `VmDatabase` included in `moor` version `3.3.0` and above. You can also test your database on older moor
-versions by using the `moor_ffi` package.
-
-For this guide, we're going to test a very simple database that stores user names. The only important change from a regular moor
+For this guide, we're going to test a very simple database that stores user names. The only important change from a regular drift
 database is the constructor: We make the `QueryExecutor` argument explicit instead of having a no-args constructor that passes
-a `FlutterQueryExecutor` to the superclass.
+a fixed executor (like a `FlutterQueryExecutor` or a `NativeDatabase`) to the superclass:
+
 ```dart
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 part 'database.g.dart';
 
@@ -29,7 +27,7 @@ class Users extends Table {
   TextColumn get name => text()();
 }
 
-@UseMoor(tables: [Users])
+@DriftDatabase(tables: [Users])
 class MyDatabase extends _$MyDatabase {
   MyDatabase(QueryExecutor e) : super(e);
 
@@ -76,9 +74,9 @@ We can create an in-memory version of the database by using a
 place to open the database is the `setUp` and `tearDown` methods from
 `package:test`:
 ```dart
-import 'package:moor_ffi/moor_ffi.dart';
+import 'package:drift/native.dart';
 import 'package:test/test.dart';
-// the file defined above, you can test any moor database of course
+// the file defined above, you can test any drift database of course
 import 'database.dart'; 
 
 void main() {
@@ -117,5 +115,5 @@ test('stream emits a new user when the name updates', () async {
 
 ## Testing migrations
 
-Moor can help you generate code for schema migrations. For more details, see
+Drift can help you generate code for schema migrations. For more details, see
 [this guide]({{ "Advanced Features/migrations.md#verifying-migrations" | pageUrl }}).

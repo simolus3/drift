@@ -10,7 +10,7 @@ template: layouts/docs/single
 ---
 
 Expressions are pieces of sql that return a value when the database interprets them.
-The Dart API from moor allows you to write most expressions in Dart and then convert
+The Dart API from drift allows you to write most expressions in Dart and then convert
 them to sql. Expressions are used in all kinds of situations. For instance, `where`
 expects an expression that returns a boolean.
 
@@ -37,7 +37,7 @@ Future<List<Animal>> findAnimalsByLegs(int legCount) {
 
 ## Boolean algebra
 You can nest boolean expressions by using the `&`, `|` operators and the `not` method
-exposed by moor:
+exposed by drift:
 
 ```dart
 // find all animals that aren't mammals and have 4 legs
@@ -93,7 +93,7 @@ select(users)..where((u) => u.birthDate.year.isLessThan(1950))
 The individual fields like `year`, `month` and so on are expressions themselves. This means
 that you can use operators and comparisons on them.
 To obtain the current date or the current time as an expression, use the `currentDate` 
-and `currentDateAndTime` constants provided by moor.
+and `currentDateAndTime` constants provided by drift.
 
 You can also use the `+` and `-` operators to add or subtract a duration from a time column:
 
@@ -113,7 +113,7 @@ Again, the `isNotIn` function works the other way around.
 
 ## Aggregate functions (like count and sum) {#aggregate}
 
-Since moor 2.4, [aggregate functions](https://www.sqlite.org/lang_aggfunc.html) are available 
+[Aggregate functions](https://www.sqlite.org/lang_aggfunc.html) are available 
 from the Dart api. Unlike regular functions, aggregate functions operate on multiple rows at
 once. 
 By default, they combine all rows that would be returned by the select statement into a single value.
@@ -171,7 +171,7 @@ use the `filter` parameter on `count`.
 To count all rows (instead of a single value), you can use the top-level `countAll()`
 function.
 
-More information on how to write aggregate queries with moor's Dart api is available
+More information on how to write aggregate queries with drift's Dart api is available
 [here]({{ "joins.md#group-by" | pageUrl }})
 
 ### group_concat
@@ -198,7 +198,7 @@ For more information, see the [list of functions]({{ "../Other engines/vm.md#moo
 
 ## Subqueries
 
-Starting from version 4.1, moor has basic support for subqueries in expressions.
+Drift has basic support for subqueries in expressions.
 
 ### Scalar subqueries
 
@@ -215,7 +215,7 @@ Future<List<Todo>> findTodosInCategory(String description) async {
 }
 ```
 
-Here, `groupId` is a regular select statement. By default moor would select all columns, so we use
+Here, `groupId` is a regular select statement. By default drift would select all columns, so we use
 `selectOnly` to only load the id of the category we care about.
 Then, we can use `subqueryExpression` to embed that query into an expression that we're using as
 a filter.
@@ -250,6 +250,6 @@ select(users)..where((u) => inactive);
 ```
 
 _Note_: It's easy to write invalid queries by using `CustomExpressions` too much. If you feel like
-you need to use them because a feature you use is not available in moor, consider creating an issue
+you need to use them because a feature you use is not available in drift, consider creating an issue
 to let us know. If you just prefer sql, you could also take a look at 
 [compiled sql]({{ "../Using SQL/custom_queries.md" | pageUrl }}) which is typesafe to use.

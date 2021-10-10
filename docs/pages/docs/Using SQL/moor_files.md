@@ -1,36 +1,37 @@
 ---
 data:
-  title: "Moor files"
+  title: "Drift files"
   weight: 1
-  description: Learn everything about the new `.moor` files which can contain tables and queries
+  description: Learn everything about the new `.drift` files which can contain tables and queries
 
 aliases:
   - /docs/using-sql/custom_tables/  # Redirect from outdated "custom tables" page which has been deleted
 template: layouts/docs/single
 ---
 
-Moor files are a new feature that lets you write all your database code in SQL - moor will generate typesafe APIs for them.
+Drift files are a new feature that lets you write all your database code in SQL - drift will generate typesafe APIs for them.
 
 ## Getting started
-To use this feature, lets create two files: `database.dart` and `tables.moor`. The Dart file only contains the minimum code
+To use this feature, lets create two files: `database.dart` and `tables.drift`. The Dart file only contains the minimum code
 to setup the database:
 ```dart
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 
 part 'database.g.dart';
 
-@UseMoor(
-  include: {'tables.moor'},
+@DriftDatabase(
+  include: {'tables.drift'},
 )
-class MoorDb extends _$MoorDb {
-  MoorDb() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'app.db'));
+class MyDb extends _$MyDb {
+  MyDb() : super(NativeDatabase.memory());
 
   @override
   int get schemaVersion => 1;
 }
 ```
 
-We can now declare tables and queries in the moor file:
+We can now declare tables and queries in the drift file:
 ```sql
 CREATE TABLE todos (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +45,7 @@ CREATE TABLE categories (
     description TEXT NOT NULL
 ) AS Category; -- the AS xyz after the table defines the data class name
 
--- You can also create an index or triggers with moor files
+-- You can also create an index or triggers with drift files
 CREATE INDEX categories_description ON categories(description);
 
 -- we can put named sql queries in here as well:
@@ -54,13 +55,13 @@ allTodos: SELECT * FROM todos;
 ```
 
 After running the build runner with `flutter pub run build_runner build`,
-moor will write the `database.g.dart`
-file which contains the `_$MoorDb` superclass. Let's take a look at
+drift will write the `database.g.dart`
+file which contains the `_$MyDb` superclass. Let's take a look at
 what we got:
 
 - Generated data classes (`Todo` and `Category`), and companion versions
   for inserts (see [Dart Interop](#dart-interop) for info). By default,
-  moor strips a trailing "s" from the table name for the class. That's why 
+  drift strips a trailing "s" from the table name for the class. That's why 
   we used `AS Category` on the second table - it would have been called
   `Categorie` otherwise.
 - Methods to run the queries:
@@ -81,7 +82,7 @@ Inside of named queries, you can use variables just like you would expect with
 sql. We support regular variables (`?`), explicitly indexed variables (`?123`)
 and colon-named variables (`:id`). We don't support variables declared
 with @ or $. The compiler will attempt to infer the variable's type by
-looking at its context. This lets moor generate typesafe apis for your
+looking at its context. This lets drift generate typesafe apis for your
 queries, the variables will be written as parameters to your method.
 
 When it's ambiguous, the analyzer might be unable to resolve the type of
@@ -110,20 +111,20 @@ enabled. Further, non-nullable variables are required by default.
 
 ### Arrays
 If you want to check whether a value is in an array of values, you can
-use `IN ?`. That's not valid sql, but moor will desugar that at runtime. So, for this query:
+use `IN ?`. That's not valid sql, but drift will desugar that at runtime. So, for this query:
 ```sql
 entriesWithId: SELECT * FROM todos WHERE id IN ?;
 ```
-Moor will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
+Drift will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
 Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and
-bind the arguments accordingly. To make sure this works as expected, moor 
+bind the arguments accordingly. To make sure this works as expected, drift 
 imposes two small restrictions:
 
 1. __No explicit variables__: `WHERE id IN ?2` will be rejected at build time. 
 As the variable is expanded, giving it a single index is invalid.
 2. __No higher explicit index after a variable__: Running 
 `WHERE id IN ? OR title = ?2` will also be rejected. Expanding the 
-variable can clash with the explicit index, which is why moor forbids
+variable can clash with the explicit index, which is why drift forbids
 it. Of course, `id IN ? OR title = ?` will work as expected.
 
 ## Supported column types
@@ -136,20 +137,20 @@ Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 written as an `INTEGER` column when the table gets created.
 
 ## Imports
-You can put import statements at the top of a `moor` file:
+You can put import statements at the top of a `drift` file:
 ```sql
-import 'other.moor'; -- single quotes are required for imports
+import 'other.drift'; -- single quotes are required for imports
 ```
 All tables reachable from the other file will then also be visible in
 the current file and to the database that `includes` it. If you want
-to declare queries on tables that were defined in another moor
+to declare queries on tables that were defined in another drift
 file, you also need to import that file for the tables to be
 visible.
-Note that imports in moor file are always transitive, so in the above example
-you would have all imports declared in `other.moor` available as well.
-There is no `export` mechanism for moor files.
+Note that imports in drift file are always transitive, so in the above example
+you would have all imports declared in `other.drift` available as well.
+There is no `export` mechanism for drift files.
 
-Importing Dart files into a moor file will also work - then, 
+Importing Dart files into a drift file will also work - then, 
 all the tables declared via Dart tables can be used inside queries.
 We support both relative imports and the `package:` imports you
 know from Dart.
@@ -179,7 +180,7 @@ routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
   INNER JOIN coordinates t ON t.id = r.to;
 ```
 
-To match the returned column names while avoiding name clashes in Dart, moor 
+To match the returned column names while avoiding name clashes in Dart, drift 
 will generate a class having an `id`, `name`,  `id1`, `lat`, `long`, `lat1` and
 a `long1` field.
 Of course, that's not helpful at all - was `lat1` coming from `from` or `to` 
@@ -191,9 +192,9 @@ routesWithNestedPoints: SELECT r.id, r.name, f.**, t.** FROM routes r
   INNER JOIN coordinates t ON t.id = r.to;
 ```
 
-As you can see, we can nest a result simply by using the moor-specific 
+As you can see, we can nest a result simply by using the drift-specific 
 `table.**` syntax.
-For this query, moor will generate the following class:
+For this query, drift will generate the following class:
 ```dart
 class RoutesWithNestedPointsResult {
   final int id;
@@ -215,21 +216,21 @@ At the moment, there are some limitations with this approach:
   valued functions.
 
 You might be wondering how `**` works under the hood, since it's not valid sql.
-At build time, moor's generator will transform `**` into a list of all columns
+At build time, drift's generator will transform `**` into a list of all columns
 from the referred table. For instance, if we had a table `foo` with an `id INT`
 and a `bar TEXT` column. Then, `SELECT foo.** FROM foo` might be desugared to
 `SELECT foo.id AS "nested_0.id", foo.bar AS "nested_0".bar FROM foo`.
 
 ## Dart interop
-Moor files work perfectly together with moor's existing Dart API:
+Drift files work perfectly together with drift's existing Dart API:
 
-- you can write Dart queries for tables declared in a moor file:
+- you can write Dart queries for tables declared in a drift file:
 ```dart
 Future<void> insert(TodosCompanion companion) async {
       await into(todos).insert(companion);
 }
 ```
-- by importing Dart files into a moor file, you can write sql queries for
+- by importing Dart files into a drift file, you can write sql queries for
   tables declared in Dart.
 - generated methods for queries can be used in transactions, they work 
   together with auto-updating queries, etc.
@@ -247,7 +248,7 @@ $-variable in a query:
 ```sql
 _filterTodos: SELECT * FROM todos WHERE $predicate;
 ```
-Moor will generate a `Selectable<Todo> _filterTodos(Expression<bool> predicate)`
+Drift will generate a `Selectable<Todo> _filterTodos(Expression<bool> predicate)`
 method that can be used to construct dynamic filters at runtime:
 ```dart
 Stream<List<Todo>> watchInCategory(int category) {
@@ -286,7 +287,7 @@ WHERE $predicate
 ```
 
 If you want to filter for the `start` point in Dart, you have to use
-an explicit [`alias`](https://pub.dev/documentation/moor/latest/moor/DatabaseConnectionUser/alias.html):
+an explicit [`alias`](https://pub.dev/documentation/drift/latest/drift/DatabaseConnectionUser/alias.html):
 
 ```dart
 Future<List<Route>> routesByStart(int startPointId) {
@@ -295,9 +296,9 @@ Future<List<Route>> routesByStart(int startPointId) {
 }
 ```
 
-Since moor 4.4, you can enable the `scoped_dart_components` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }})
+You can enable the `scoped_dart_components` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }})
 and let the generator help you here.
-When the option is enabled, moor would generate a `Expression<bool> Function(Routes r, Points start, Points end)` as a parameter, which
+When the option is enabled, drift would generate a `Expression<bool> Function(Routes r, Points start, Points end)` as a parameter, which
 makes this a lot easier:
 
 ```dart
@@ -310,7 +311,7 @@ Future<List<Route>> routesByStart(int startPointId) {
 ### Type converters
 
 You can import and use [type converters]({{ "../Advanced Features/type_converters.md" | pageUrl }})
-written in Dart in a moor file. Importing a Dart file works with a regular `import` statement.
+written in Dart in a drift file. Importing a Dart file works with a regular `import` statement.
 To apply a type converter on a column definition, you can use the `MAPPED BY` column constraints:
 ```sql
 CREATE TABLE users (
@@ -321,7 +322,7 @@ CREATE TABLE users (
 ```
 
 
-More details on type converts in moor files are available
+More details on type converts in drift files are available
 [here]({{ "../Advanced Features/type_converters.md#using-converters-in-moor" | pageUrl }}).
 
 When using type converters, we recommend the [`apply_converters_on_variables`]({{ "../Advanced Features/builder_options.md" | pageUrl }})
@@ -331,8 +332,7 @@ With that option, the variable will be inferred to `Preferences` instead of `Str
 
 ### Existing row classes
 
-Starting from moor 4.3, you can use custom row classes instead of having moor generate one for you.
-
+You can use custom row classes instead of having drift generate one for you.
 For instance, let's say you had a Dart class defined as
 
 ```dart
@@ -344,7 +344,7 @@ class User {
 }
 ```
 
-Then, you can instruct moor to use that class as a row class as follows:
+Then, you can instruct drift to use that class as a row class as follows:
 
 ```sql
 import 'row_class.dart'; --import for where the row class is defined
@@ -352,7 +352,7 @@ import 'row_class.dart'; --import for where the row class is defined
 CREATE TABLE users (
   id INTEGER NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
-) WITH User; -- This tells moor to use the existing Dart class
+) WITH User; -- This tells drift to use the existing Dart class
 ```
 
 When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
@@ -361,7 +361,7 @@ For more general information on this feature, please check [this page]({{ '../Ad
 
 ## Result class names
 
-For most queries, moor generates a new class to hold the result. This class is named after the query
+For most queries, drift generates a new class to hold the result. This class is named after the query
 with a `Result` suffix, e.g. a `myQuery` query would get a `MyQueryResult` class.
 
 You can change the name of a result class like this:
@@ -371,25 +371,25 @@ routesWithNestedPoints AS FullRoute: SELECT r.id, -- ...
 ```
 
 This way, multiple queries can also share a single result class. As long as they have an identical result set,
-you can assign the same custom name to them and moor will only generate one class.
+you can assign the same custom name to them and drift will only generate one class.
 
-For queries that select all columns from a table and nothing more, moor won't generate a new class
+For queries that select all columns from a table and nothing more, drift won't generate a new class
 and instead re-use the dataclass that it generates either way.
-Similarly, for queries with only one column, moor will just return that column directly instead of
+Similarly, for queries with only one column, drift will just return that column directly instead of
 wrapping it in a result class.
 It's not possible to override this behavior at the moment, so you can't customize the result class
 name of a query if it has a matching table or only has one column.
 
 ## Supported statements
-At the moment, the following statements can appear in a `.moor` file.
+At the moment, the following statements can appear in a `.drift` file.
 
-- `import 'other.moor'`: Import all tables and queries declared in the other file
+- `import 'other.drift'`: Import all tables and queries declared in the other file
    into the current file.
 - DDL statements: You can put `CREATE TABLE`, `CREATE VIEW`, `CREATE INDEX` and `CREATE TRIGGER` statements
-  into moor files.
+  into drift files.
 - Query statements: We support `INSERT`, `SELECT`, `UPDATE` and `DELETE` statements.
 
 All imports must come before DDL statements, and those must come before named queries.
 
-If you need support for another statement, or if moor rejects a query you think is valid, please
+If you need support for another statement, or if drift rejects a query you think is valid, please
 create an issue!

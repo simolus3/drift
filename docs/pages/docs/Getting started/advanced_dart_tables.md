@@ -8,7 +8,7 @@ template: layouts/docs/single
 
 {% block "blocks/pageinfo" %}
 __Prefer sql?__ If you prefer, you can also declare tables via `CREATE TABLE` statements.
-Moor's sql analyzer will generate matching Dart code. [Details]({{ "starting_with_sql.md" | pageUrl }}).
+Drift's sql analyzer will generate matching Dart code. [Details]({{ "starting_with_sql.md" | pageUrl }}).
 {% endblock %}
 
 As shown in the [getting started guide]({{ "index.md" | pageUrl }}), sql tables can be written in Dart:
@@ -25,7 +25,7 @@ In this article, we'll cover some advanced features of this syntax.
 
 ## Names
 
-By default, moor uses the `snake_case` name of the Dart getter in the database. For instance, the
+By default, drift uses the `snake_case` name of the Dart getter in the database. For instance, the
 table
 ```dart
 class EnabledCategories extends Table {
@@ -49,18 +49,18 @@ class EnabledCategories extends Table {
 The updated class would be generated as `CREATE TABLE categories (parent INTEGER NOT NULL)`.
 
 To update the name of a column when serializing data to json, annotate the getter with 
-[`@JsonKey`](https://pub.dev/documentation/moor/latest/moor/JsonKey-class.html).
+[`@JsonKey`](https://pub.dev/documentation/drift/latest/drift/JsonKey-class.html).
 
-You can change the name of the generated data class too. By default, moor will stip a trailing
+You can change the name of the generated data class too. By default, drift will stip a trailing
 `s` from the table name (so a `Users` table would have a `User` data class).
 That doesn't work in all cases though. With the `EnabledCategories` class from above, we'd get
-a `EnabledCategorie` data class. In those cases, you can use the [`@DataClassName`](https://pub.dev/documentation/moor/latest/moor/DataClassName-class.html)
+a `EnabledCategorie` data class. In those cases, you can use the [`@DataClassName`](https://pub.dev/documentation/drift/latest/drift/DataClassName-class.html)
 annotation to set the desired name.
 
 ## Nullability
 
 By default, columns may not contain null values. When you forgot to set a value in an insert,
-an exception will be thrown. When using sql, moor also warns about that at compile time.
+an exception will be thrown. When using sql, drift also warns about that at compile time.
 
 If you do want to make a column nullable, just use `nullable()`:
 ```dart
@@ -109,7 +109,7 @@ can be more efficient, but doesn't support dynamic values.
 
 ## Primary keys
 
-If your table has an `IntColumn` with an `autoIncrement()` constraint, moor recognizes that as the default
+If your table has an `IntColumn` with an `autoIncrement()` constraint, drift recognizes that as the default
 primary key. If you want to specify a custom primary key for your table, you can override the `primaryKey`
 getter in your table:
 
@@ -130,7 +130,7 @@ Note that the primary key must essentially be constant so that the generator can
 
 ## Supported column types
 
-Moor supports a variety of column types out of the box. You can store custom classes in columns by using
+Drift supports a variety of column types out of the box. You can store custom classes in columns by using
 [type converters]({{ "../Advanced Features/type_converters.md" | pageUrl }}).
 
 | Dart type    | Column        | Corresponding SQLite type                           |
@@ -146,11 +146,11 @@ Note that the mapping for `boolean`, `dateTime` and type converters only applies
 the database.
 They don't affect JSON serialization at all. For instance, `boolean` values are expected as `true` or `false`
 in the `fromJson` factory, even though they would be saved as `0` or `1` in the database.
-If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/moor/latest/moor/ValueSerializer-class.html).
+If you want a custom mapping for JSON, you need to provide your own [`ValueSerializer`](https://pub.dev/documentation/drift/latest/drift/ValueSerializer-class.html).
 
 ## Custom constraints
 
-Some column and table constraints aren't supported through moor's Dart api. This includes `REFERENCES` clauses on columns, which you can set
+Some column and table constraints aren't supported through drift's Dart api. This includes `REFERENCES` clauses on columns, which you can set
 through `customConstraint`:
 
 ```dart

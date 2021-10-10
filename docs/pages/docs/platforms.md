@@ -1,26 +1,24 @@
 ---
 data:
   title: "Supported platforms"
-  description: All platforms supported by moor, and how to use them
+  description: All platforms supported by drift, and how to use them
 template: layouts/docs/single
 ---
 
-Being built ontop of the sqlite3 database, moor can run on almost every Dart platform.
-Since the initial release of moor, the Dart and Flutter ecosystems have changed a lot.
-For instance, `dart:ffi` wasn't a thing when moor first came out, and now it's the basis
-for moor's most popular implemention.
-To clear confusion about different moor packages and when to use them, this document
-lists all supported platforms and how to use moor when building apps for them.
+Being built ontop of the sqlite3 database, drift can run on almost every Dart platform.
+Since the initial release, the Dart and Flutter ecosystems have changed a lot.
+To clear confusion about different drift packages and when to use them, this document
+lists all supported platforms and how to use drift when building apps for them.
 
-To achive platform independence, moor separates its core apis from a platform-specific
+To achive platform independence, drift separates its core apis from a platform-specific
 database implementation. The core apis are pure-Dart and run on all Dart platforms, even
-outside of Flutter. When writing moor apps, prefer to mainly use the apis in 
-`package:moor/moor.dart` as they are guaranteed to work across all platforms.
+outside of Flutter. When writing drift apps, prefer to mainly use the apis in 
+`package:drift/drift.dart` as they are guaranteed to work across all platforms.
 Depending on your platform, you can choose a different `QueryExecutor`.
 
 ## Mobile (Android and iOS)
 
-There are two moor implementations for mobile that you can use:
+There are two drift implementations for mobile that you can use:
 
 ### using `moor_flutter`
 
@@ -29,16 +27,16 @@ only works on Android and iOS.
 For new projects, we generally recommend the newer ffi-based implementation, but `moor_flutter`
 is still maintained and suppported.
 
-### using `moor/ffi`
+### using `drift/native`
 
-The new `package:moor/ffi.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
+The new `package:drift/native.dart` implementation uses `dart:ffi` to bind to sqlite3's native C apis.
 This is the recommended approach for newer projects as described in the [getting started]({{ "Getting started/index.md" | pageUrl }}) guide.
 
 To ensure that your app ships with the latest sqlite3 version, also add a dependency to the `sqlite3_flutter_libs`
-package when using `package:moor/ffi.dart`!
+package when using `package:drift/native.dart`!
 
 {% block "blocks/alert" title="A note on ffi and Android" %}
-> `package:moor/ffi.dart` is the recommended moor implementation for new Android apps.
+> `package:drift/native.dart` is the recommended drift implementation for new Android apps.
   However, there are some smaller issues on some devices that you should be aware of:
   
   - Using `sqlite3_flutter_libs` will include prebuilt binaries for 32-bit `x86` devices which you
@@ -57,28 +55,28 @@ package when using `package:moor/ffi.dart`!
 
 _Main article: [Web]({{ "Other engines/web.md" | pageUrl }})_
 
-For apps that run on the web, you can use moor's experimental web implementation, located
-in `package:moor/moor_web.dart`.
+For apps that run on the web, you can use drift's experimental web implementation, located
+in `package:drift/web.dart`.
 As it binds to [sql.js](https://github.com/sql-js/sql.js), special setup is required. Please
 read the main article for details.
 
 ## Desktop
 
-Moor also supports all major Desktop operating systems where Dart runs on by using the 
-`VmDatabase` from `package:moor/ffi.dart`. Depending on your operating system, further
+Drift also supports all major Desktop operating systems where Dart runs on by using the 
+`NativeDatabase` from `package:drift/native.dart`. Depending on your operating system, further
 setup might be required:
 
 ### Windows
 
 On Windows, you can [download sqlite](https://www.sqlite.org/download.html) and extract
-`sqlite3.dll` into a folder that's in your `PATH` environment variable to use moor.
+`sqlite3.dll` into a folder that's in your `PATH` environment variable to use drift.
 
 You can also ship a custom `sqlite3.dll` along with your app. See the section below for
 details.
 
 ### Linux
 
-On most distributions, `libsqlite3.so` is installed already. If you only need to use moor for
+On most distributions, `libsqlite3.so` is installed already. If you only need to use drift for
 development, you can just install the sqlite3 libraries. On Ubuntu and other Debian-based
 distros, you can install the `libsqlite3-dev` package for this. Virtually every other distribution
 will also have a prebuilt package for sqlite.
@@ -88,12 +86,12 @@ details.
 
 ### macOS
 
-This one is easy! Just use the `VmDatabase` from `package:moor/ffi.dart`. No further setup is
+This one is easy! Just use the `VmDatabase` from `package:drift/native.dart`. No further setup is
 necessary. 
 
 If you need a custom sqlite3 library, or want to make sure that your app will always use a
 specific sqlite3 version, you can also ship that version with your app.
-When depending on `sqlite3_flutter_libs`, moor will automatically use that version which is
+When depending on `sqlite3_flutter_libs`, drift will automatically use that version which is
 usually more recent than the `sqlite3` version that comes with macOS.
 
 ### Bundling sqlite with your app
@@ -115,7 +113,7 @@ import 'package:sqlite3/open.dart';
 void main() {
   open.overrideFor(OperatingSystem.linux, _openOnLinux);
 
-  // After setting all the overrides, you can use moor!
+  // After setting all the overrides, you can use drift!
 }
 
 DynamicLibrary _openOnLinux() {
@@ -126,7 +124,7 @@ DynamicLibrary _openOnLinux() {
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`
 ```
 
-Be sure to use moor _after_ you set the platform-specific overrides.
-When you use moor in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
+Be sure to use drift _after_ you set the platform-specific overrides.
+When you usedrift in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
 you'll also need to apply the opening overrides on that background isolate.
-You can call them in the isolate's entrypoint before using any moor apis.
+You can call them in the isolate's entrypoint before using any drift apis.

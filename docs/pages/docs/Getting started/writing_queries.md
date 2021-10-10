@@ -2,7 +2,7 @@
 data:
   title: "Writing queries"
   linkTitle: "Writing queries"
-  description: Learn how to write database queries in pure Dart with moor
+  description: Learn how to write database queries in pure Dart with drift
   weight: 100
 aliases:
  - /queries/
@@ -13,12 +13,12 @@ template: layouts/docs/single
 __Note__: This assumes that you've already completed [the setup]({{ "index.md" | pageUrl }}).
 {% endblock %}
 
-For each table you've specified in the `@UseMoor` annotation on your database class,
+For each table you've specified in the `@DriftDatabase` annotation on your database class,
 a corresponding getter for a table will be generated. That getter can be used to
 run statements:
 ```dart
-// inside the database class, the `todos` getter has been created by moor.
-@UseMoor(tables: [Todos, Categories])
+// inside the database class, the `todos` getter has been created by drift.
+@DriftDatabase(tables: [Todos, Categories])
 class MyDatabase extends _$MyDatabase {  
 
   // the schemaVersion getter and the constructor from the previous page
@@ -37,7 +37,7 @@ class MyDatabase extends _$MyDatabase {
 ## Select statements
 You can create `select` statements by starting them with `select(tableName)`, where the 
 table name
-is a field generated for you by moor. Each table used in a database will have a matching field
+is a field generated for you by drift. Each table used in a database will have a matching field
 to run queries against. Any query can be run once with `get()` or be turned into an auto-updating
 stream using `watch()`.
 ### Where
@@ -72,7 +72,7 @@ You can also reverse the order by setting the `mode` property of the `OrderingTe
 
 ### Single values
 If you know a query is never going to return more than one row, wrapping the result in a `List`
-can be tedious. Moor lets you work around that with `getSingle` and `watchSingle`:
+can be tedious. Drift lets you work around that with `getSingle` and `watchSingle`:
 ```dart
 Stream<Todo> entryById(int id) {
   return (select(todos)..where((t) => t.id.equals(id))).watchSingle();
@@ -156,7 +156,7 @@ the statement will affect all rows in the table!
 
 {% block "blocks/alert"  title="Entries, companions - why do we need all of this?" %}
 You might have noticed that we used a `TodosCompanion` for the first update instead of
-just passing a `Todo`. Moor generates the `Todo` class (also called _data
+just passing a `Todo`. Drift generates the `Todo` class (also called _data
 class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
 prefer to use companions. In the example above, we only set the the `category` column,
 so we used a companion. 
@@ -271,23 +271,22 @@ Future<void> trackWord(String word) {
 {% block "blocks/alert" title="Unique constraints and conflict targets" %}
 > Both `insertOnConflictUpdate` and `onConflict: DoUpdate` use an `DO UPDATE`
   upsert in sql. This requires us to provide a so-called "conflict target", a
-  set of columns to check for uniqueness violations. By default, moor will use
+  set of columns to check for uniqueness violations. By default, drift will use
   the table's primary key as conflict target. That works in most cases, but if
   you have custom `UNIQUE` constraints on some columns, you'll need to use
   the `target` parameter on `DoUpdate` in Dart to include those columns.
 {% endblock %}
 
 Note that this requires a fairly recent sqlite3 version (3.24.0) that might not
-be available on older Android devices when using `moor_flutter`. `moor_ffi`
-includes the latest sqlite on Android, so consider using it if you want to
-support upserts.
+be available on older Android devices when using `moor_flutter`. `NativeDatabases`
+and `sqlite3_flutter_libs` includes the latest sqlite on Android, so consider using
+it if you want to support upserts.
 
 Also note that the returned rowid may not be accurate when an upsert took place.
 
 ### Returning
 
-Starting from moor version 4.3, you can use `insertReturning` to insert a row
-or companion and immediately get the row it inserts.
+You can use `insertReturning` to insert a row or companion and immediately get the row it inserts.
 The returned row contains all the default values and incrementing ids that were
 generated.
 

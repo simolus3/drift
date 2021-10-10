@@ -2,33 +2,27 @@
 data:
   title: "Custom queries"
   weight: 10
-  description: Let moor generate Dart from your SQL statements
+  description: Let drift generate Dart from your SQL statements
 aliases:
   - /queries/custom
 template: layouts/docs/single
 ---
 
-{% block "blocks/alert" title="Moor files!" color="warning" %}
-With moor 2.0, we moved the new `.moor` files out of preview and added some powerful features to them.
-They are easier to use than the approaches described here. While these features will continue to
-be supported, moor files will get better tooling support in the future and we recommend to
-migrate. See [their api]({{ "moor_files.md" | pageUrl }}) for details.
-{% endblock %}
-
-Although moor includes a fluent api that can be used to model most statements, advanced
+Although drift includes a fluent api that can be used to model most statements, advanced
 features like `WITH` clauses or subqueries aren't supported yet. You can
 use these features with custom statements. You don't have to miss out on other benefits
-moor brings, though: Moor helps you parse the result rows and custom queries also
+drift brings, though: Drift helps you parse the result rows and custom queries also
 support auto-updating streams.
 
 ## Statements with a generated api
-Starting from version `1.5`, you can instruct moor to automatically generate a typesafe
+
+You can instruct drift to automatically generate a typesafe
 API for your select, update and delete statements. Of course, you can still write custom
  sql manually. See the sections below for details.
 
-To use this feature, all you need to is define your queries in your `UseMoor` annotation:
+To use this feature, all you need to is define your queries in your `DriftDatabase` annotation:
 ```dart
-@UseMoor(
+@DriftDatabase(
   tables: [Todos, Categories],
   queries: {
     'categoriesWithCount':
@@ -39,13 +33,13 @@ class MyDatabase extends _$MyDatabase {
   // rest of class stays the same
 }
 ```
-After running the build step again, moor will have written the `CategoriesWithCountResult` class for you -
+After running the build step again, drift will have written the `CategoriesWithCountResult` class for you -
 it will hold the result of your query. Also, the `_$MyDatabase` class from which you inherit will have the
 methods `categoriesWithCount` (which runs the query once) and `watchCategoriesWithCount` (which returns
 an auto-updating stream).
 
 Queries can have parameters in them by using the `?` or `:name` syntax. When your queries contains parameters,
-moor will figure out an appropriate type for them and include them in the generated methods. For instance,
+drift will figure out an appropriate type for them and include them in the generated methods. For instance,
 `'categoryById': 'SELECT * FROM categories WHERE id = :id'` will generate the method `categoryById(int id)`.
 
 {% block "blocks/alert" title="On table names" color="info" %}
@@ -53,7 +47,7 @@ To use this feature, it's helpful to know how Dart tables are named in sql. For 
 override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
 called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
 called `user_address_information`. The same rule applies to column getters without an explicit name.
-Tables and columns declared in [Moor files]({{ "moor_files.md" | pageUrl }}) will always have the
+Tables and columns declared in [Drift files]({{ "moor_files.md" | pageUrl }}) will always have the
 name you specified.
 {% endblock %}
 
@@ -86,7 +80,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
       readsFrom: {todos, categories}, // used for the stream: the stream will update when either table changes
       ).watch().map((rows) {
         // we get list of rows here. We just have to turn the raw data from the row into a
-        // CategoryWithCount. As we defined the Category table earlier, moor knows how to parse
+        // CategoryWithCount. As we defined the Category table earlier, drift knows how to parse
         // a category. The only thing left to do manually is extracting the amount
         return rows
           .map((row) => CategoryWithCount(Category.fromData(row.data, this), row.readInt('amount')))
@@ -95,7 +89,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
   }
 ```
 For custom selects, you should use the `readsFrom` parameter to specify from which tables the query is
-reading. When using a `Stream`, moor will be able to know after which updates the stream should emit
+reading. When using a `Stream`, drift will be able to know after which updates the stream should emit
 items. 
 
 You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
@@ -115,6 +109,6 @@ Of course, you can also use indexed variables (like `?12`) - for more informatio
 
 ## Custom update statements
 For update and delete statements, you can use `customUpdate`. Just like `customSelect`, that method
-also takes a sql statement and optional variables. You can also tell moor which tables will be
+also takes a sql statement and optional variables. You can also tell drift which tables will be
 affected by your query using the optional `updates` parameter. That will help with other select
 streams, which will then update automatically.

@@ -6,7 +6,7 @@ data:
 template: layouts/docs/single
 ---
 
-Moor ships with an experimental analyzer plugin that provides real-time feedback on errors,
+Drift ships with an experimental analyzer plugin that provides real-time feedback on errors,
 hints, folding and outline.
 
 ## Features
@@ -26,27 +26,27 @@ us here.
 ## Setup
 To use the plugin, you need a supported editor (see below).
 
-First, tell the Dart analysis server to run the moor plugin. Create a file called
+First, tell the Dart analysis server to run the drift plugin. Create a file called
 `analysis_options.yaml` in your project root, next to your pubspec. It should contain
 this section:
 ```yaml
 analyzer:
   plugins:
-    - moor
+    - drift
 ```
 
 Then, follow the steps for the IDE you want to use.
 
 ### Using with VS Code
 
-Make sure that your project depends on moor 2.0 or later. Then
+To use the drift analyzer plugin in VS Code, use
 
-1. Tell Dart Code to analyze moor files. Add this to your `settings.json`:
+1. Tell Dart Code to analyze drift files. Add this to your `settings.json`:
 ```json
-"dart.additionalAnalyzerFileExtensions": ["moor"]
+"dart.additionalAnalyzerFileExtensions": ["drift"]
 ```
 2. close and re-open your IDE so that the analysis server is restarted. The analysis server will
-   then load the moor plugin and start providing analysis results for `.moor` files. Loading the plugin
+   then load the drift plugin and start providing analysis results for `.drift` files. Loading the plugin
    can take some time (around a minute for the first time).
 
 ### Other IDEs
@@ -54,7 +54,7 @@ Make sure that your project depends on moor 2.0 or later. Then
 Unfortunately, we can't support IntelliJ and Android Studio yet. Please vote on
 [this issue](https://youtrack.jetbrains.com/issue/WEB-41424) to help us here!
 
-As a workaround, you can configure IntellIJ to recognize moor files as sql. Moor-only
+As a workaround, you can configure IntellIJ to recognize drift files as sql. Drift-only
 features like imports and Dart templates will report errors, but the rest of the
 syntax works well. See [this comment](https://github.com/simolus3/moor/issues/150#issuecomment-538582696)
 on how to set this up.

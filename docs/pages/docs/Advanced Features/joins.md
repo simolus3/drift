@@ -10,7 +10,7 @@ template: layouts/docs/single
 
 ## Joins
 
-Moor supports sql joins to write queries that operate on more than one table. To use that feature, start
+Drift supports sql joins to write queries that operate on more than one table. To use that feature, start
 a select regular select statement with `select(table)` and then add a list of joins using `.join()`. For
 inner and left outer joins, a `ON` expression needs to be specified. Here's an example using the tables
 defined in the [example]({{ "../Getting started/index.md" | pageUrl }}).
@@ -182,7 +182,7 @@ comes from multiple rows. Common questions include
 - what's the average length of a todo entry?
 
 What these queries have in common is that data from multiple rows needs to be combined into a single
-row. In sql, this can be achieved with "aggregate functions", for which moor has
+row. In sql, this can be achieved with "aggregate functions", for which drift has
 [builtin support]({{ "expressions.md#aggregate" | pageUrl }}).
 
 _Additional info_: A good tutorial for group by in sql is available [here](https://www.sqlitetutorial.net/sqlite-group-by/).
@@ -190,7 +190,7 @@ _Additional info_: A good tutorial for group by in sql is available [here](https
 To write a query that answers the first question for us, we can use the `count` function.
 We're going to select all categories and join each todo entry for each category. What's special is that we set
 `useColumns: false` on the join. We do that because we're not interested in the columns of the todo item.
-We only care about how many there are. By default, moor would attempt to read each todo item when it appears
+We only care about how many there are. By default, drift would attempt to read each todo item when it appears
 in a join.
 
 ```dart
@@ -219,8 +219,8 @@ a `join` since all the data comes from a single table (todos).
 That's a problem though - in the join, we used `useColumns: false` because we weren't interested
 in the columns of each todo item. Here we don't care about an individual item either, but there's
 no join where we could set that flag.
-Moor provides a special method for this case - instead of using `select`, we use `selectOnly`.
-The "only" means that moor will only report columns we added via "addColumns". In a regular select,
+Drift provides a special method for this case - instead of using `select`, we use `selectOnly`.
+The "only" means that drift will only report columns we added via "addColumns". In a regular select,
 all columns from the table would be selected, which is what you'd usually need.
 
 ```dart

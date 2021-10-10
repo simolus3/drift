@@ -7,10 +7,10 @@ aliases:
 template: layouts/docs/single
 ---
 
-Moor supports a variety of types out of the box, but sometimes you need to store more complex data.
+Drift supports a variety of types out of the box, but sometimes you need to store more complex data.
 You can achieve this by using `TypeConverters`. In this example, we'll use the the 
 [json_serializable](https://pub.dev/packages/json_annotation) package to store a custom object in a
-text column. Moor supports any Dart type for which you provide a `TypeConverter`, we're using that
+text column. Drift supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.
 
 ## Using converters in Dart
@@ -19,7 +19,7 @@ package here to make the example simpler.
 import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart' as j;
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 
 part 'database.g.dart';
 
@@ -37,7 +37,7 @@ class Preferences {
 }
 ```
 
-Next, we have to tell moor how to store a `Preferences` object in the database. We write
+Next, we have to tell drift how to store a `Preferences` object in the database. We write
 a `TypeConverter` for that:
 ```dart
 // stores preferences as strings
@@ -74,7 +74,7 @@ class Users extends Table {
 ```
 
 The generated `User` class will then have a `preferences` column of type 
-`Preferences`. Moor will automatically take care of storing and loading
+`Preferences`. Drift will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
 also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
 
@@ -86,7 +86,7 @@ also works with [compiled custom queries]({{ "/queries/custom" | absUrl }}).
 ### Implicit enum converters
 
 A common scenario for type converters is to map between enums and integers by representing enums
-as their index. Since this is so common, moor has the integrated `intEnum` column type to make this
+as their index. Since this is so common, drift has the integrated `intEnum` column type to make this
 easier.
 
 ```dart
@@ -125,11 +125,11 @@ class Tasks extends Table {
 
 Also note that you can't apply another type converter on a column declared with an enum converter.
 
-## Using converters in moor
+## Using converters in drift {#using-converters-in-moor}
 
-Since moor 2.4, type converters can also be used inside moor files.
+Type converters can also be used inside drift files.
 Assuming that the `Preferences` and `PreferenceConverter` are contained in
-`preferences.dart`, that file can imported into moor for the type converter to
+`preferences.dart`, that file can imported into drift for the type converter to
 be available.
 
 ```sql
@@ -142,11 +142,11 @@ CREATE TABLE users (
 );
 ```
 
-When using type converters in moor files, we recommend the [`apply_converters_on_variables`]({{ "builder_options.md" | pageUrl }})
+When using type converters in drift files, we recommend the [`apply_converters_on_variables`]({{ "builder_options.md" | pageUrl }})
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
-Moor files also have special support for implicit enum converters:
+Drift files also have special support for implicit enum converters:
 
 ```sql
 import 'status.dart';
@@ -157,4 +157,4 @@ CREATE TABLE tasks (
 );
 ```
 
-Of course, the warning about automatic enum converters also applies to moor files.
+Of course, the warning about automatic enum converters also applies to drift files.

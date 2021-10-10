@@ -1,14 +1,14 @@
 ---
 data:
   title: "Many to many relationships"
-  description: An example that models a shopping cart system with moor.
+  description: An example that models a shopping cart system with drift.
 template: layouts/docs/single
 ---
 
 ## Defining the model
 
 In this example, we're going to model a shopping system and some of its
-queries in moor. First, we need to store some items that can be bought:
+queries in drift. First, we need to store some items that can be bought:
 ```dart
 class BuyableItems extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -39,7 +39,7 @@ class ShoppingCartEntries extends Table {
 }
 ```
 
-Moor will generate matching classes for the three tables. But having to use
+Drift will generate matching classes for the three tables. But having to use
 three different classes to model a shopping cart in our application would be
 quite annoying. Let's write a single class to represent an entire shopping
 cart that:

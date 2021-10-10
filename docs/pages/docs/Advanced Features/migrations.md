@@ -8,7 +8,7 @@ aliases:
 template: layouts/docs/single
 ---
 
-Moor provides a migration API that can be used to gradually apply schema changes after bumping
+Drift provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
 getter. Here's an example: Let's say you wanted to add a due date to your todo entries:
 
@@ -44,7 +44,7 @@ We can now change the `database` class like this:
   // rest of class can stay the same
 ```
 
-You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/moor/latest/moor/Migrator-class.html)
+You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/drift/latest/drift/Migrator-class.html)
 for all the available options. You can't use the high-level query API in migrations - calling `select` or similar
 methods will throw.
 
@@ -57,9 +57,9 @@ can be used together with `customStatement` to run the statements.
 Sqlite has builtin statements for simple changes, like adding columns or dropping entire tables.
 More complex migrations require a [12-step procedure](https://www.sqlite.org/lang_altertable.html#otheralter) that
 involes creating a copy of the table and copying over data from the old table.
-Moor 3.4 introduced the `TableMigration` api to automate most of this procedure, making it easier and safer to use.
+Drift 3.4 introduced the `TableMigration` api to automate most of this procedure, making it easier and safer to use.
 
-To start the migration, moor will create a new instance of the table with the current schema. Next, it will copy over
+To start the migration, drift will create a new instance of the table with the current schema. Next, it will copy over
 rows from the old table.
 In most cases, for instance when changing column types, we can't just copy over each row without changing its content.
 Here, you can use a `columnTransformer` to apply a per-row transformation.
@@ -73,13 +73,13 @@ columnTransformer: {
 }
 ```
 
-Internally, moor will use a `INSERT INTO SELECT` statement to copy old data. In this case, it would look like
+Internally, drift will use a `INSERT INTO SELECT` statement to copy old data. In this case, it would look like
 `INSERT INTO temporary_todos_copy SELECT id, title, content, CAST(category AS INT) FROM todos`.
-As you can see, moor will use the expression from the `columnTransformer` map and fall back to just copying the column
+As you can see, drift will use the expression from the `columnTransformer` map and fall back to just copying the column
 otherwise.  
 If you're introducing new columns in a table migration, be sure to include them in the `newColumns` parameter of
-`TableMigration`. Moor will ensure that those columns have a default value or a transformation in `columnTransformer`.
-Of course, moor won't attempt to copy `newColumns` from the old table either.
+`TableMigration`. Drift will ensure that those columns have a default value or a transformation in `columnTransformer`.
+Of course, drift won't attempt to copy `newColumns` from the old table either.
 
 Regardless of whether you're implementing complex migrations with `TableMigration` or by running a custom sequence
 of statements, we strongly recommend to write integration tests covering your migrations. This helps to avoid data
@@ -225,24 +225,24 @@ on how that can be achieved.
 
 ## Verifying migrations
 
-Since version 3.4, moor contains **experimental** support to verify the integrity of your migrations in unit tests.
+Drift contains **experimental** support to verify the integrity of your migrations in unit tests.
 
-To support this feature, moor can help you generate
+To support this feature, drift can help you generate
 
 - a json represenation of your database schema
 - test databases operating on an older schema version
 
-By using those test databases, moor can help you test migrations from and to any schema version.
+By using those test databases, drift can help you test migrations from and to any schema version.
 
 {% block "blocks/alert" title="Complex topic ahead" %}
 > Writing schema tests is an advanced topic that requires a fairly complex setup described here.
   If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/moor/discussions).
-  Also, there's a working example [in the moor repository](https://github.com/simolus3/moor/tree/master/extras/migrations_example).
+  Also, there's a working example [in the drift repository](https://github.com/simolus3/moor/tree/master/extras/migrations_example).
 {% endblock %}
 
 ### Setup
 
-To use this feature, moor needs to know all schemas of your database. A schema is the set of all tables, triggers
+To use this feature, drift needs to know all schemas of your database. A schema is the set of all tables, triggers
 and indices that you use in your database.
 
 You can use the [CLI tools]({{ "../CLI.md" | pageUrl }}) to export a json representation of your schema.
@@ -260,14 +260,14 @@ my_app
       schema.dart
       schema_v1.dart
       schema_v2.dart
-  moor_schemas/
-    moor_schema_v1.json
-    moor_schema_v2.json
+  drift_schemas/
+    drift_schema_v1.json
+    drift_schema_v2.json
   pubspec.yaml
 ```
 
-The generated migrations implementation and the schema jsons will be generated by moor.
-To start writing schemas, create an empty folder named `moor_schemas` in your project.
+The generated migrations implementation and the schema jsons will be generated by drift.
+To start writing schemas, create an empty folder named `drift_schemas` in your project.
 Of course, you can also choose a different name or use a nested subfolder if you want to.
 
 #### Exporting the schema
@@ -275,8 +275,8 @@ Of course, you can also choose a different name or use a nested subfolder if you
 To begin, let's create the first schema representation:
 
 ```
-$ mkdir moor_schemas
-$ dart pub run moor_generator schema dump lib/database/database.dart moor_schemas/moor_schema_v1.json
+$ mkdir drift_schemas
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v1.json
 ```
 
 This instructs the generator to look at the database defined in `lib/database/database.dart` and extract
@@ -286,24 +286,24 @@ After making a change to your database schema, you can run the command again. Fo
 made a change to our tables and increased the `schemaVersion` to `2`. We would then run:
 
 ```
-$ dart pub run moor_generator schema dump lib/database/database.dart moor_schemas/moor_schema_v2.json
+$ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v2.json
 ```
 
 You'll need to run this command everytime you change the schema of your database and increment the `schemaVersion`.
-Remember to name the files `moor_schema_vX.json`, where `X` is the current `schemaVersion` of your database.
+Remember to name the files `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your database.
 
 #### Generating test code
 
 After you exported the database schema into a folder, you can generate old versions of your database class
 based on those schema files.
-For verifications, moor will generate a much smaller database implementation that can only be used to
+For verifications, drift will generate a much smaller database implementation that can only be used to
 test migrations.
 
 You can put this test code whereever you want, but it makes sense to put it in a subfolder of `test/`.
 If we wanted to write them to `test/generated_migrations/`, we could use
 
 ```
-$ dart pub run moor_generator schema generate moor_schemas/ test/generated/
+$ dart run drift_dev schema generate drift_schemas/ test/generated/
 ```
 
 ### Writing tests
@@ -314,7 +314,7 @@ After that setup, it's finally time to write some tests! For instance, a test co
 import 'package:my_app/database/database.dart';
 
 import 'package:test/test.dart';
-import 'package:moor_generator/api/migrations.dart';
+import 'package:drift_dev/api/migrations.dart';
 
 // The generated directory from before.
 import 'generated/schema.dart';
@@ -323,8 +323,8 @@ void main() {
   SchemaVerifier verifier;
 
   setUpAll(() {
-    // GeneratedHelper() was generated by moor, the verifier is an api
-    // provided by moor_generator.
+    // GeneratedHelper() was generated by drift, the verifier is an api
+    // provided by drift_generator.
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
@@ -368,8 +368,8 @@ You can use `schemaAt` to obtain a raw `Database` from the `sqlite3` package in 
 This can be used to insert data before a migration. After the migration ran, you can then check that the data is still there.
 
 Note that you can't use the regular database class from you app for this, since its data classes always expect the latest
-schema. However, you can instruct moor to generate older snapshots of your data classes and companions for this purpose.
-To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `moor_generator schema generate`
+schema. However, you can instruct drift to generate older snapshots of your data classes and companions for this purpose.
+To enable this feature, pass the `--data-classes` and `--companions` command-line arguments to the `drift_dev schema generate`
 command.
 
 Then, you can import the generated classes with an alias:

@@ -1,33 +1,36 @@
 ---
 data:
   title: Encryption
-  description: Use moor on encrypted databases
+  description: Use drift on encrypted databases
 template: layouts/docs/single
 ---
 
-There are two ways to use moor on encrypted databases. 
+There are two ways to use drift on encrypted databases. 
 The `encrypted_moor` package is similar to `moor_flutter` and uses a platform plugin written in
 Java.
 Alternatively, you can use the ffi-based implementation with the `sqlcipher_flutter_libs` package.
 
 ## Using `encrypted_moor`
 
-Starting from 1.7, we have a version of moor that can work with encrypted databases by using the
+Starting from 1.7, we have a version of drift that can work with encrypted databases by using the
 [sqflite_sqlcipher](https://pub.dev/packages/sqflite_sqlcipher) library
 by [@davidmartos96](https://github.com/davidmartos96). To use it, you need to
 remove the dependency on `moor_flutter` from your `pubspec.yaml` and replace it
 with this:
+
+{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
+
 ```yaml
 dependencies:
-  moor: "$latest version"
+  drift: ^{{ versions.drift }}
   encrypted_moor:
    git:
     url: https://github.com/simolus3/moor.git
     path: extras/encryption 
 ```
 
-Instead of importing `package:moor_flutter/moor_flutter` (or `package:moor/ffi.dart`) in your apps, 
-you would then import both `package:moor/moor.dart` and `package:encrypted_moor/encrypted_moor.dart`.
+Instead of importing `package:moor_flutter/moor_flutter` (or `package:drift/native.dart`) in your apps, 
+you would then import both `package:drift/drift.dart` and `package:encrypted_moor/encrypted_moor.dart`.
 
 Finally, you can replace `FlutterQueryExecutor` (or an `VmDatabase`) with an `EncryptedExecutor`.
 
@@ -37,10 +40,10 @@ Some extra steps may have to be taken in your project so that SQLCipher works co
 
 [Read instructions](https://pub.dev/packages/sqflite_sqlcipher) (Usage and installation instructions of the package can be ignored, as that is handled internally by `moor`)
 
-## Encrypted version of `moor/ffi`
+## Encrypted version of a `NativeDatabase`
 
-You can also use the new `moor/ffi` library with an encrypted executor.
-This allows you to use an encrypted moor database on more platforms, which is particularly
+You can also use the new `drift/native` library with an encrypted executor.
+This allows you to use an encrypted drift database on more platforms, which is particularly
 interesting for Desktop applications.
 
 ### Setup
@@ -62,14 +65,14 @@ of the regular `libsqlite3.so`:
 ```dart
 import 'package:sqlite3/open.dart';
 
-// call this method before using moor
+// call this method before using drift
 void setupSqlCipher() {
   open.overrideFor(
       OperatingSystem.android, () => DynamicLibrary.open('libsqlcipher.so'));
 }
 ```
 
-When using moor on a background database, you need to call `setupSqlCipher` on the background isolate
+When using drift on a background database, you need to call `setupSqlCipher` on the background isolate
 as well.
 
 On iOS and macOS, no additional setup is necessary - simply depend on `sqlcipher_flutter_libs`.
@@ -83,14 +86,14 @@ of SQLCipher.
 ### Using
 
 SQLCipher implements sqlite3's C api, which means that you can continue to use the `sqlite3` package
-or `moor/ffi` without changes. They're both fully compatible with `sqlcipher_flutter_libs`.
+or `drift/ffi` without changes. They're both fully compatible with `sqlcipher_flutter_libs`.
 
 To actually encrypt a database, you must set an encryption key before using it.
-A good place to do that in moor is the `setup` parameter of `VmDatabase`, which runs before moor
+A good place to do that in drift is the `setup` parameter of `NativeDatabase`, which runs before drift
 is using the database in any way:
 
 ```dart
-VmDatabase(
+NativeDatabase(
   File(...),
   setup: (rawDb) {
     rawDb.execute("PRAGMA key = 'passphrase';");

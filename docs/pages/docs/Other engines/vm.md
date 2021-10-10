@@ -1,18 +1,18 @@
 ---
 data:
-  title: moor ffi (Desktop support)
-  description: Run moor on both mobile and desktop
+  title: Native Drift (Desktop support)
+  description: Run drift on both mobile and desktop
 template: layouts/docs/single
 ---
 
 ## Supported platforms
 
-The `moor/ffi.dart` library uses the `sqlite3` package to send queries.
+The `drift/native.dart` library uses the `sqlite3` package to send queries.
 At the moment, that package supports iOS, macOS and Android out of the box. Most Linux
 Distros have sqlite available as a shared library, those are supported as well. 
 
 If you're shipping apps for Windows and Linux, it is recommended that you bundle a
-`sqlite3.so` and `sqlite3.dll` file with your app. You can then make `moor_ffi`
+`sqlite3.so` and `sqlite3.dll` file with your app. You can then make `drift`
 support your setup by running this code before opening the database:
 
 ```dart
@@ -37,24 +37,26 @@ DynamicLibrary _openOnLinux() {
 
 ```
 
-## Migrating from moor_flutter to moor ffi
+## Migrating from moor_flutter to `drift/native` {#migrating-from-moor_flutter-to-moor-ffi}
 
 First, adapt your `pubspec.yaml`: You can remove the `moor_flutter` dependency and instead
-add both the `moor` and `sqlite3_flutter_libs` dependencies:
+add both the `drift` and `sqlite3_flutter_libs` dependencies:
+{% assign versions = 'package:moor_documentation/versions.json' | readString | json_decode %}
+
 ```yaml
 dependencies:
- moor: ^3.0.0
+ drift: ^{{ versions.drift }}
  sqlite3_flutter_libs:
  sqflite: ^1.1.7 # Still used to obtain the database location
 dev_dependencies:
- moor_generator: ^3.0.0
+ drift_dev: ^{{ versions.drift_dev }}
 ```
 
 Adapt your imports:
 
   - In the file where you created a `FlutterQueryExecutor`, replace the `moor_flutter` import
-    with `package:moor/ffi.dart`.
-  - In all other files where you might have imported `moor_flutter`, just import `package:moor/moor.dart`.
+    with `package:drift/native.dart`.
+  - In all other files where you might have imported `moor_flutter`, just import `package:drift/drift.dart`.
   
 Replace the executor. This code:
 ```dart
@@ -78,7 +80,7 @@ Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a diffe
 `path_provider` on Android. This can cause data loss if you've already shipped a version using
 `moor_flutter`. In that case, using `getDatabasePath` from sqflite is the suggested solution.
 
-## Using moor ffi with an existing database
+## Using native drift with an existing database {#using-moor-ffi-with-an-existing-database}
 
 If your existing sqlite database is stored as a file, you can just use `VmDatabase(thatFile)` - no further
 changes are required.
@@ -88,7 +90,7 @@ It allows you to perform some async work before opening the database:
 
 ```dart
 // before
-VmDatabase(File('...'));
+NativeDatabase(File('...'));
 
 // after
 LazyDatabase(() async {
@@ -96,27 +98,27 @@ LazyDatabase(() async {
   if (!await file.exists()) {
     // copy the file from an asset, or network, or any other source
   }
-  return VmDatabase(file);
+  return NativeDatabase(file);
 });
 ```
 
 ## Used compile options on Android
 
-Note: Android is the only platform where moor_ffi will compile sqlite. The sqlite3 library from the system
-is used on all other platforms. The chosen options help reduce binary size by removing features not used by
-moor. Important options are marked in bold.
+On Android, iOS and macOs, depending on `sqlite3_flutter_libs` will include a custom build of sqlite instead of
+using the one from the system.
+The chosen options help reduce binary size by removing features not used by drift. Important options are marked in bold.
 
 - We use the `-O3` performance option
 - __SQLITE_DQS=0__: This will make sqlite not accept double-quoted strings (and instead parse them as identifiers). This matches
-  the behavior of moor and compiled queries
+  the behavior of drift and compiled queries
 - __SQLITE_THREADSAFE=0__: Since the majority of Flutter apps only use one isolate, thread safety is turned off. Note that you
   can still use the [isolate api]({{"../Advanced Features/isolates.md" | pageUrl}}) for background operations. As long as all
   database accesses happen from the same thread, there's no problem.
-- SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by moor_ffi, so there's no point of having them.
+- SQLITE_DEFAULT_MEMSTATUS=0: The `sqlite3_status()` interfaces are not exposed by drift, so there's no point of having them.
 - SQLITE_MAX_EXPR_DEPTH=0: Disables maximum depth when sqlite parses expressions, which can make the parser faster.
 - `SQLITE_OMIT_AUTHORIZATION`, `SQLITE_OMIT_DECLTYPE`, __SQLITE_OMIT_DEPRECATED__, `SQLITE_OMIT_GET_TABLE`, `SQLITE_OMIT_LOAD_EXTENSION`,
   `SQLITE_OMIT_PROGRESS_CALLBACK`, `SQLITE_OMIT_SHARED_CACHE`, `SQLITE_OMIT_TCL_VARIABLE`, `SQLITE_OMIT_TRACE`: Disables features not supported
-  by moor.
+  by drift.
 - `SQLITE_USE_ALLOCA`: Allocate temporary memory on the stack
 - `SQLITE_UNTESTABLE`: Remove util functions that are only required to test sqlite3
 - `SQLITE_HAVE_ISNAN`: Use the `isnan` function from the system instead of the one shipped with sqlite3.
@@ -125,9 +127,9 @@ moor. Important options are marked in bold.
 
 For more details on sqlite compile options, see [their documentation](https://www.sqlite.org/compile.html).
 
-## Moor-only functions
+## Drift-only functions {#moor-only-functions}
 
-`moor_ffi` includes additional sql functions not available in standard sqlite:
+The `NativeDatabase` includes additional sql functions not available in standard sqlite:
 
 - `pow(base, exponent)` and `power(base, exponent)`: This function takes two numerical arguments and returns `base` raised to the power of `exponent`.
   If `base` or `exponent` aren't numerical values or null, this function will return `null`. This function behaves exactly like `pow` in `dart:math`.
@@ -140,14 +142,14 @@ For more details on sqlite compile options, see [their documentation](https://ww
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 
 When enabling the `moor_ffi` module in your [build options]({{ "../Advanced Features/builder_options.md#available-extensions" | pageUrl }}),
-the generator will allow you to use those functions in moor files or compiled queries. 
+the generator will allow you to use those functions in drift files or compiled queries. 
 
-To use those methods from Dart, you need to import `package:moor/extensions/moor_ffi.dart`.
+To use those methods from Dart, you need to import `package:drift/extensions/native.dart`.
 You can then use the additional functions like this:
 ```dart
-import 'package:moor/moor.dart';
-// those methods are hidden behind another import because they're only available on moor_ffi
-import 'package:moor/extensions/moor_ffi.dart';
+import 'package:drift/drift.dart';
+// those methods are hidden behind another import because they're only available with a NativeDatabase
+import 'package:drift/extensions/native.dart';
 
 class Coordinates extends Table {
   RealColumn get x => real()();

@@ -7,30 +7,30 @@ template: layouts/docs/single
 ---
 
 _Note_: Since `moor_flutter` uses the sqlite version shipped on the device, these extensions might not
-be available on all devices. When using these extensions, using `moor_ffi` is strongly recommended.
-This enables the extensions listed here on all Android devices and on iOS 11 and later.
+be available on all devices. When using these extensions, using a `NativeDatabase` is strongly recommended.
+This enables the extensions listed here on all Android and iOS devices.
 
 ## json1
 
-To enable the json1 extension in moor files and compiled queries, modify your
+To enable the json1 extension in drift files and compiled queries, modify your
 [build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include 
 `json1` in the `sqlite_module` section.
 
-The sqlite extension doesn't require any special tables and works on all text columns. In moor
+The sqlite extension doesn't require any special tables and works on all text columns. In drift
 files and compiled queries, all `json` functions are available after enabling the extension.
 
 Since the json extension is optional, enabling it in Dart requires a special import,
-`package:moor/extensions/json1.dart`. An example that uses json functions in Dart is shown below:
+`package:drift/extensions/json1.dart`. An example that uses json functions in Dart is shown below:
 ```dart
-import 'package:moor/moor.dart';
-import 'package:moor/extensions/json1.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/extensions/json1.dart';
 
 class Contacts extends Table {
     IntColumn get id => integer().autoIncrement()();
     TextColumn get data => text()();
 }
 
-@UseMoor(tables: [Contacts])
+@DriftDatabase(tables: [Contacts])
 class Database extends _$Database {
   // constructor and schemaVersion omitted for brevity
 
@@ -51,11 +51,11 @@ You can learn more about the json1 extension on [sqlite.org](https://www.sqlite.
 ## fts5
 
 The fts5 extension provides full-text search capabilities in sqlite tables.
-To enable the fts5 extension in moor files and compiled queries, modify the 
+To enable the fts5 extension in drift files and compiled queries, modify the 
 [build options]({{ "../Advanced Features/builder_options.md" | pageUrl }}) to include 
 `fts5` in the `sqlite_module` section.
 
-Just like you'd expect when using sqlite, you can create a fts5 table in a moor file
+Just like you'd expect when using sqlite, you can create a fts5 table in a drift file
 by using a `CREATE VIRTUAL TABLE` statement.
 ```sql
 CREATE VIRTUAL TABLE email USING fts5(sender, title, body);

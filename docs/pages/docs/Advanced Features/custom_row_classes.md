@@ -2,18 +2,18 @@
 data:
   title: "Custom row classes"
   description: >-
-    Use your own classes as data classes for moor tables
+    Use your own classes as data classes for drift tables
 template: layouts/docs/single
 ---
 
-For each table declared in Dart or in a moor file, `moor_generator` generates a row class (sometimes also referred to as _data class_)
+For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)
 to hold a full row and a companion class for updates and inserts.
-This works well for most cases: Moor knows  what columns your table has, and it can generate a simple class for all of that.
+This works well for most cases: Drift knows  what columns your table has, and it can generate a simple class for all of that.
 In some cases, you might want to customize the generated classes though.
 For instance, you might want to add a mixin, let it extend another class or interface, or use other builders like
 `json_serializable` to customize how it gets serialized to json.
 
-Starting from moor version 4.3, it is possible to use your own classes as data classes.
+Starting from moor version 4.3 (and in drift), it is possible to use your own classes as data classes.
 
 ## Using custom classes
 
@@ -39,7 +39,7 @@ class User {
 A row class must adhere to the following requirements:
 
 - It must have an unnamed constructor
-- Each constructor argument must have the name of a moor column
+- Each constructor argument must have the name of a drift column
   (matching the getter name in the table definition)
 - The type of a constructor argument must be equal to the type of a column,
   including nullability and applied type converters.
@@ -47,14 +47,14 @@ A row class must adhere to the following requirements:
 On the other hand, note that:
 
 - A custom row class can have additional fields and constructor arguments, as
-  long as they're not required. Moor will ignore those parameters when mapping
+  long as they're not required. Drift will ignore those parameters when mapping
   a database row.
 - A table can have additional columns not reflected in a custom data class.
-  Moor will simply not load those columns when mapping a row.
+  Drift will simply not load those columns when mapping a row.
 
 ### Using another constructor
 
-By default, moor will use the default, unnamed constructor to map a row to the class.
+By default, drift will use the default, unnamed constructor to map a row to the class.
 If you want to use another constructor, set the `constructor` parameter on the
 `@UseRowClass` annotation:
 
@@ -73,11 +73,11 @@ class User {
 }
 ```
 
-### Existing row classes in moor files
+### Existing row classes in drift files
 
-To use existing row classes in moor files, use the `WITH` keyword at the end of the
+To use existing row classes in drift files, use the `WITH` keyword at the end of the
 table declaration. Also, don't forget to import the Dart file declaring the row
-class into the moor file.
+class into the drift file.
 
 ```sql
 import 'user.dart'; -- or what the Dart file is called
@@ -117,10 +117,10 @@ class User implements Insertable<User> {
 
 ## When custom classes make sense
 
-The default moor-generated classes are a good default for most applications.
+The default drift-generated classes are a good default for most applications.
 In some advanced use-cases, custom classes can be a better alternative though:
 
-- Reduce generated code size: Due to historical reasons and backwards-compatibility, moor's classes
+- Reduce generated code size: Due to historical reasons and backwards-compatibility, drift's classes
   contain a number of methods for json serialization and `copyWith` that might not be necessary
   for all users.
   Custom row classes can reduce bloat here.
@@ -131,10 +131,10 @@ In some advanced use-cases, custom classes can be a better alternative though:
 
 ## Limitations
 
-These restrictions will be gradually lifted in upcoming moor versions. Follow [#1134](https://github.com/simolus3/moor/issues/1134) for details.
+These restrictions will be gradually lifted in upcoming drift versions. Follow [#1134](https://github.com/simolus3/moor/issues/1134) for details.
 
 For now, this feature is subject to the following limitations:
 
-- In moor files, you can only use the default unnamed constructor
+- In drift files, you can only use the default unnamed constructor
 - Custom row classes can only be used for tables, not for custom result sets of compiled queries
 

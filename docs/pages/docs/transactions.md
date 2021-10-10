@@ -2,14 +2,14 @@
 data:
   title: "Transactions"
   weight: 70
-  description: Run multiple queries atomically
+  description: Run multiple statements atomically
 
 template: layouts/docs/single
 aliases:
   - /transactions/ 
 ---
 
-Moor has support for transactions and allows multiple queries to run atomically,
+Drift has support for transactions and allows multiple statements to run atomically,
 so that none of their changes is visible to the main database until the transaction
 is finished.
 To begin a transaction, call the `transaction` method on your database or a DAO.
