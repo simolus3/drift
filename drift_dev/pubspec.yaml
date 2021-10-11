@@ -25,7 +25,7 @@ dependencies:
   io: ^1.0.3
 
   # Moor-specific analysis and apis
-  drift: ^4.6.0
+  drift: ^1.0.0
   sqlite3: '>=0.1.6 <2.0.0'
   sqlparser: ^0.17.0
 

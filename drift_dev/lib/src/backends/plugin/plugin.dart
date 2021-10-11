@@ -41,9 +41,9 @@ class MoorPlugin extends ServerPlugin
   }
 
   @override
-  List<String> get fileGlobsToAnalyze => const ['*.moor'];
+  List<String> get fileGlobsToAnalyze => const ['*.moor', '*.drift'];
   @override
-  String get name => 'Moor plugin';
+  String get name => 'Drift plugin';
   @override
   // docs say that this should a version of _this_ plugin, but they lie. this
   // version will be used to determine compatibility with the analyzer
