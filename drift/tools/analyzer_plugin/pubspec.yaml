@@ -9,12 +9,6 @@ dependencies:
   drift_dev: ^1.0.0
   web_socket_channel: ^1.0.15
 
-dependency_overrides: 
-  drift:
-    path: /home/simon/IdeaProjects/moor/drift
-  drift_dev:
-    path: /home/simon/IdeaProjects/moor/drift_dev
-
 # These overrides are only needed when working on the plugin with useDebuggingVariant = false (not recommended)
 
 #dependency_overrides:
