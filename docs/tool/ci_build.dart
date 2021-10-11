@@ -84,16 +84,16 @@ Future<void> _createApiDocumentation(Directory output) async {
     [
       'run',
       '../dartdoc/bin/dartdoc.dart',
-      '--rel-canonical-prefix=https://pub.dev/documentation/moor/latest',
+      '--rel-canonical-prefix=https://pub.dev/documentation/drift/latest',
       '--link-to-source-revision=$rev',
       '--link-to-source-root=..',
       '--link-to-source-uri-template=$source',
     ],
-    workingDirectory: '../moor',
+    workingDirectory: '../drift',
   );
   await _waitForProcess(dartDoc, 'dartdoc');
 
-  final docOutput = Directory('../moor/doc/api');
+  final docOutput = Directory('../drift/doc/api');
   final targetForDocs = p.join(output.path, 'api');
 
   await for (final file in docOutput.list(recursive: true)) {
