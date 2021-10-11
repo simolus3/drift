@@ -1,3 +1,12 @@
+## 4.6.0
+
+Moor has been renamed to `drift`. This package will continue to be supported until the next major release (5.0.0),
+no immediate action is needed.
+
+At the next breaking release, moor will  be discontinued in favor of the `drift` package.
+Please consider migrating to `drift` at a suitable opportunity.
+Automated migration tooling exists! See https://drift.simonbinder.eu/name for details.
+
 ## 4.5.1
 
 - Fix generating parameters when `named_parameters_always_required` is enabled.

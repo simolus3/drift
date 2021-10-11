@@ -1,4 +1,4 @@
-name: analyzer_load_moor_plugin
+name: analyzer_load_drift_plugin
 version: 1.0.0
 description: This pubspec is a part of Drift and determines the version of the analyzer plugin to load
 
