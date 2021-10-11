@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:drift_dev/plugin.dart' as plugin;
+import 'package:drift_dev/integrations/plugin.dart' as plugin;
 import 'package:web_socket_channel/io.dart';
 
 const useDebuggingVariant = false;
@@ -16,8 +16,8 @@ void main(List<String> args, SendPort sendPort) {
   }
 }
 
-// Used during development. See CONTRIBUTING.md in the moor repo on how to debug
-// the plugin.
+// Used during development. See CONTRIBUTING.md in the drift repo on how to
+// debug the plugin.
 class _PluginProxy {
   final SendPort sendToAnalysisServer;
 

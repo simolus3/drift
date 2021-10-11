@@ -99,8 +99,7 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(content.hashCode, $mrjc(targetDate.hashCode, category.hashCode))));
+  int get hashCode => Object.hash(id, content, targetDate, category);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -316,7 +315,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode, description.hashCode));
+  int get hashCode => Object.hash(id, description);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
