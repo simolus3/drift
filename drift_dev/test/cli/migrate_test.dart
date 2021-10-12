@@ -305,4 +305,33 @@ targets:
 ''')
     ]).validate();
   });
+
+  _test('transforms analysis option files', () async {
+    await _setup(
+      const [],
+      additional: [
+        d.file('analysis_options.yaml', '''
+# a comment
+analyzer:
+  plugins:
+    # comment 2
+    - moor # another
+    # another
+''')
+      ],
+    );
+
+    await _apply();
+
+    await d.dir('app', [
+      d.file('analysis_options.yaml', r'''
+# a comment
+analyzer:
+  plugins:
+    # comment 2
+    - drift # another
+    # another
+''')
+    ]).validate();
+  });
 }

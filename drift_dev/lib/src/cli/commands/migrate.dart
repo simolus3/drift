@@ -78,6 +78,8 @@ class MigrateCommand extends MoorCommand {
           await _transformPubspec(file);
         } else if (_buildYamlPattern.hasMatch(name)) {
           await _transformBuildYaml(file);
+        } else if (name == 'analysis_options') {
+          await _transformAnalysisOptions(file);
         }
         break;
     }
@@ -250,6 +252,37 @@ class MigrateCommand extends MoorCommand {
     }
 
     await file.writeAsString(writer.content);
+  }
+
+  Future<void> _transformAnalysisOptions(File file) async {
+    // Replace moor with drift from the `analyzer/plugins` key.
+    var content = await file.readAsString();
+    YamlNode node;
+    try {
+      node = loadYamlNode(content, sourceUrl: file.uri);
+    } on Exception {
+      print('Could not parse analysis options in ${file.path}, skipping.');
+    }
+
+    if (node is YamlMap) {
+      final analyzer = node['analyzer'];
+      if (analyzer is YamlMap) {
+        final plugins = analyzer['plugins'];
+
+        if (plugins is YamlList) {
+          for (final entry in plugins.nodes) {
+            if (entry is YamlScalar && entry.value == 'moor') {
+              final span = entry.span;
+              content = content.replaceRange(
+                  span.start.offset, span.end.offset, 'drift');
+
+              await file.writeAsString(content);
+              return;
+            }
+          }
+        }
+      }
+    }
   }
 }
 

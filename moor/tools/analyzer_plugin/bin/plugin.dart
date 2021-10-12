@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:moor_generator/plugin.dart' as plugin;
+import 'package:moor_generator/integrations/plugin.dart' as plugin;
 import 'package:web_socket_channel/io.dart';
 
 const useDebuggingVariant = false;
