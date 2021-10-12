@@ -40,7 +40,7 @@ environments:
     base_url: "http://localhost:8080/"
   preview:
     minify: true
-    base_url: "https://moor.simonbinder.eu/"
+    base_url: "https://drift.simonbinder.eu/"
   prod:
     minify: true
-    base_url: "https://moor.simonbinder.eu/"
+    base_url: "https://drift.simonbinder.eu/"

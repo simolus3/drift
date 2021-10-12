@@ -5,7 +5,13 @@
 
 [[redirects]]
   from = "https://moor.netlify.app/*"
-  to = "https://moor.simonbinder.eu/:splat"
+  to = "https://drift.simonbinder.eu/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://moor.simonbinder.eu/*"
+  to = "https://drift.simonbinder.eu/:splat"
   status = 301
   force = true
 

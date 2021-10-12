@@ -42,7 +42,7 @@ class MigrateCommand extends MoorCommand {
       await _applyToFile(file);
     }
 
-    final isRunningFlutter = argResults.arguments.contains('flutter');
+    final isRunningFlutter = Platform.executable == 'flutter';
     final formatCommand =
         isRunningFlutter ? 'flutter format .' : 'dart format .';
     final pubGetCommand = isRunningFlutter ? 'flutter pub get' : 'dart pub get';
@@ -55,7 +55,12 @@ class MigrateCommand extends MoorCommand {
     print(' - Changed files might need formatting - run `$formatCommand`');
     print(' - Download drift with `$pubGetCommand`');
     print(' - Re-run the build with `$buildCommand`');
-    print('Thanks for using ${styleCrossedOut.wrap('moor')} drift');
+
+    if (ansiOutputEnabled) {
+      print('Thanks for using ${styleCrossedOut.wrap('moor')} drift');
+    } else {
+      print('Thanks for using drift');
+    }
   }
 
   Future<void> _applyToFile(File file) async {

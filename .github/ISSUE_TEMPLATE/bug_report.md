@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help improve moor
+about: Create a report to help improve drift and moor
 title: ''
 labels: ''
 assignees: ''
