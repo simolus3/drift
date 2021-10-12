@@ -5,12 +5,12 @@ data:
 template: layouts/docs/single
 ---
 
-Being built ontop of the sqlite3 database, drift can run on almost every Dart platform.
+Being built on top of the sqlite3 database, drift can run on almost every Dart platform.
 Since the initial release, the Dart and Flutter ecosystems have changed a lot.
 To clear confusion about different drift packages and when to use them, this document
 lists all supported platforms and how to use drift when building apps for them.
 
-To achive platform independence, drift separates its core apis from a platform-specific
+To achieve platform independence, drift separates its core apis from a platform-specific
 database implementation. The core apis are pure-Dart and run on all Dart platforms, even
 outside of Flutter. When writing drift apps, prefer to mainly use the apis in 
 `package:drift/drift.dart` as they are guaranteed to work across all platforms.
@@ -25,7 +25,7 @@ There are two drift implementations for mobile that you can use:
 The original [`moor_flutter`](https://pub.dev/packages/moor_flutter) package uses `sqflite` and
 only works on Android and iOS.
 For new projects, we generally recommend the newer ffi-based implementation, but `moor_flutter`
-is still maintained and suppported.
+is still maintained and supported.
 
 ### using `drift/native`
 

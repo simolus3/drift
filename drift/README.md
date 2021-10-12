@@ -14,7 +14,7 @@
 </table>
 </p>
 
-Drift is a reactive persistence library for Flutter and Dart, built ontop of
+Drift is a reactive persistence library for Flutter and Dart, built on top of
 sqlite. 
 Drift is
 

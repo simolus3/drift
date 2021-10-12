@@ -2,12 +2,12 @@
 data:
   title: "Moor and Drift"
   description: >-
-    Infomation about the name change from `moor` to `drift`
+    Information about the name change from `moor` to `drift`
 template: layouts/docs/single
 path: /name
 ---
 
-Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatery term.
+Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatory term.
 I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
 Despite the associated effort, I'm convinced that renaming the project is the right decision.
 Thank you for your understanding!
@@ -91,7 +91,7 @@ This table compares the old imports from `moor` and the new imports for `drift`:
 | `package:moor/extensions/moor_ffi.dart` | `package:drift/extensions/native.dart` |
 | `package:moor/backends.dart`            | `package:drift/backends.dart`          |
 | `package:moor/ffi.dart`                 | `package:drift/native.dart`            |
-| `package:moor/isolate.dart`             | `package:drift/isoalte.dart`           |
+| `package:moor/isolate.dart`             | `package:drift/isolate.dart`           |
 | `package:moor/moor_web.dart`            | `package:drift/web.dart`               |
 | `package:moor/moor.dart`                | `package:drift/drift.dart`             |
 | `package:moor/remote.dart`              | `package:drift/remote.dart`            |

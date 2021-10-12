@@ -153,7 +153,7 @@ on the isolate where you're actually opening the database!
 With a background isolate as shown here, the right place to call `open.overrideFor` is in the
 `_startBackground` function, before you're using `DriftIsolate.inCurrent`.
 Other global fields that you might be relying on when constructing the database (service
-locators like `get_it` come to mind) may also need to be initialized seperately on the background
+locators like `get_it` come to mind) may also need to be initialized separately on the background
 isolate.
 {% endblock %}
 
@@ -257,4 +257,4 @@ that complicate this setup. Further, the `IsolateNameServer` is not cleared on a
 the isolates are stopped and registered ports become invalid.
 There is no reliable way to check if a `SendPort` is bound to an active `ReceivePort` or not.
 
-Possible implementations of this pattern and associated problems are descibed in [this issue](https://github.com/simolus3/moor/issues/567#issuecomment-934514380).
+Possible implementations of this pattern and associated problems are described in [this issue](https://github.com/simolus3/moor/issues/567#issuecomment-934514380).

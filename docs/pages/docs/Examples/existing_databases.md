@@ -43,7 +43,7 @@ LazyDatabase _openConnection() {
     final file = File(p.join(dbFolder.path, 'app.db'));
     
     if (!await file.exists()) {
-        // Extract the pre-populated datbaase file from assets
+        // Extract the pre-populated database file from assets
         final blob = await rootBundle.load('assets/my_database.db');
         await file.writeAsBytes(blob);
     }
