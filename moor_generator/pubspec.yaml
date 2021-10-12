@@ -9,6 +9,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
+  build: ^2.1.0
   drift_dev: ^1.0.0
   # When users depend on the latest moor_generator, they should also get the latest moor for
   # the migration to work
