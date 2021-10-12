@@ -301,6 +301,6 @@ final row = await into(todos).insertReturning(TodosCompanion.insert(
 ));
 ``` 
 
-The `row` returned has the proper `id` set. If a table has furher default
+The `row` returned has the proper `id` set. If a table has further default
 values, including dynamic values like `CURRENT_TIME`, then those would also be
 set in a row returned by `insertReturning`.

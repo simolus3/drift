@@ -56,7 +56,7 @@ can be used together with `customStatement` to run the statements.
 
 Sqlite has builtin statements for simple changes, like adding columns or dropping entire tables.
 More complex migrations require a [12-step procedure](https://www.sqlite.org/lang_altertable.html#otheralter) that
-involes creating a copy of the table and copying over data from the old table.
+involves creating a copy of the table and copying over data from the old table.
 Drift 3.4 introduced the `TableMigration` api to automate most of this procedure, making it easier and safer to use.
 
 To start the migration, drift will create a new instance of the table with the current schema. Next, it will copy over
@@ -229,7 +229,7 @@ Drift contains **experimental** support to verify the integrity of your migratio
 
 To support this feature, drift can help you generate
 
-- a json represenation of your database schema
+- a json representation of your database schema
 - test databases operating on an older schema version
 
 By using those test databases, drift can help you test migrations from and to any schema version.
@@ -289,7 +289,7 @@ made a change to our tables and increased the `schemaVersion` to `2`. We would t
 $ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_schema_v2.json
 ```
 
-You'll need to run this command everytime you change the schema of your database and increment the `schemaVersion`.
+You'll need to run this command every time you change the schema of your database and increment the `schemaVersion`.
 Remember to name the files `drift_schema_vX.json`, where `X` is the current `schemaVersion` of your database.
 
 #### Generating test code
