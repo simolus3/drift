@@ -48,10 +48,12 @@
 /// contains another implementation based on web workers that might be of
 /// interest.
 @experimental
+@moorDeprecated
 library remote;
 
 import 'package:drift/remote.dart';
 import 'package:meta/meta.dart';
+import 'package:moor/src/deprecated.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 export 'package:drift/remote.dart' hide DriftServer;

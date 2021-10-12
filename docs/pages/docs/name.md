@@ -9,7 +9,7 @@ path: /name
 
 Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatery term.
 I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
-Despite the associated effort, renaming the project is the right decision.
+Despite the associated effort, I'm convinced that renaming the project is the right decision.
 Thank you for your understanding!
 
 Until version `5.0.0`, the current `moor` and `moor_generator` packages will continue to work - __no urgent action is necessary__.

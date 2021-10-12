@@ -1,6 +1,9 @@
+@moorDeprecated
 library moor;
 
 import 'package:drift/drift.dart';
+
+import 'src/deprecated.dart';
 
 export 'package:drift/drift.dart'
     hide
@@ -26,6 +29,7 @@ export 'package:drift/drift.dart'
 /// }
 /// ```
 @pragma('moor2drift', 'DriftDatabase')
+@moorDeprecated
 typedef UseMoor = DriftDatabase;
 
 /// Annotation to use on classes that implement [DatabaseAccessor]. It specifies
@@ -52,6 +56,7 @@ typedef UseMoor = DriftDatabase;
 /// See also:
 /// - https://moor.simonbinder.eu/daos/
 @pragma('moor2drift', 'DriftAccessor')
+@moorDeprecated
 typedef UseDao = DriftAccessor;
 
 /// A wrapper class for internal exceptions thrown by the underlying database
@@ -60,11 +65,13 @@ typedef UseDao = DriftAccessor;
 /// For instance, when we know that an invalid statement has been constructed,
 /// we catch the database exception and try to explain why that has happened.
 @pragma('moor2drift', 'DriftWrappedException')
+@moorDeprecated
 typedef MoorWrappedException = DriftWrappedException;
 
 /// Defines additional runtime behavior for moor. Changing the fields of this
 /// class is rarely necessary.
 @pragma('moor2drift', 'DriftRuntimeOptions')
+@moorDeprecated
 typedef MoorRuntimeOptions = DriftRuntimeOptions;
 
 /// Stores the [MoorRuntimeOptions] describing global moor behavior across
@@ -72,9 +79,11 @@ typedef MoorRuntimeOptions = DriftRuntimeOptions;
 ///
 /// Note that is is adapting this behavior is rarely needed.
 @pragma('moor2drift', 'driftRuntimeOptions')
+@moorDeprecated
 MoorRuntimeOptions get moorRuntimeOptions => driftRuntimeOptions;
 
 @pragma('moor2drift', 'driftRuntimeOptions')
+@moorDeprecated
 set moorRuntimeOptions(MoorRuntimeOptions o) => driftRuntimeOptions = o;
 
 /// For use by generated code in calculating hash codes. Do not use directly.

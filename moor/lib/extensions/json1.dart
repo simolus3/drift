@@ -6,8 +6,10 @@
 /// [moor_ffi](https://moor.simonbinder.eu/docs/other-engines/vm/) and it might
 /// not work on older iOS versions.
 @experimental
+@moorDeprecated
 library json1;
 
 import 'package:meta/meta.dart';
+import 'package:moor/src/deprecated.dart';
 
 export 'package:drift/extensions/json1.dart';

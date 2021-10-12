@@ -5,9 +5,11 @@
 /// `sqlite3_flutter_libs` package to ship the latest sqlite3 version with your
 /// app.
 /// For more information other platforms, see [other engines](https://moor.simonbinder.eu/docs/other-engines/vm/).
+@moorDeprecated
 library moor.ffi;
 
 import 'package:drift/native.dart';
+import 'package:moor/src/deprecated.dart';
 
 export 'package:drift/native.dart' hide NativeDatabase;
 

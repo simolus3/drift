@@ -1,8 +1,10 @@
 /// Contains utils to run moor databases in a background isolate. This API is
 /// not supported on the web.
+@moorDeprecated
 library isolate;
 
 import 'package:drift/isolate.dart';
+import 'package:moor/src/deprecated.dart';
 
 export 'package:drift/isolate.dart';
 

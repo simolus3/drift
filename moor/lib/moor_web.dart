@@ -3,10 +3,12 @@
 /// web version of moor. See [the documentation](https://moor.simonbinder.eu/web)
 /// for a more detailed instruction.
 @experimental
+@moorDeprecated
 library moor_web;
 
 import 'package:drift/web.dart';
 import 'package:meta/meta.dart';
+import 'package:moor/src/deprecated.dart';
 
 export 'package:drift/web.dart' hide DriftWebStorage;
 
