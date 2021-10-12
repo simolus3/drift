@@ -121,13 +121,14 @@ abstract class Table extends HasResultSet {
 /// A class to be used as an annotation on [Table] classes to customize the
 /// name for the data class that will be generated for the table class. The data
 /// class is a dart object that will be used to represent a row in the table.
+///
 /// {@template drift_custom_data_class}
 /// By default, drift will attempt to use the singular form of the table name
 /// when naming data classes (e.g. a table named "Users" will generate a data
 /// class called "User"). However, this doesn't work for irregular plurals and
 /// you might want to choose a different name, for which this annotation can be
 /// used.
-/// {@template}
+/// {@endtemplate}
 @Target({TargetKind.classType})
 class DataClassName {
   /// The overridden name to use when generating the data class for a table.

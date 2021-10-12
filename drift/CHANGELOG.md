@@ -1,4 +1,4 @@
-## 1.0.0
+## 1.0.1
 
 - Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.
 - Add optional `where` clause to `DoUpdate` constructors

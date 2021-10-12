@@ -46,7 +46,7 @@ class DriftDatabase {
   /// {@endtemplate}
   final Map<String, String> queries;
 
-  /// {@template drift_compile_queries_param}
+  /// {@template drift_include_param}
   ///
   /// Defines the `.drift` files to include when building the table structure
   /// for this database. For details on how to integrate `.drift` files into
