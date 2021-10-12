@@ -24,7 +24,7 @@ To use a custom row class, simply annotate your table definition with `@UseRowCl
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  DateTimeColumn get birthdate => dateTime()();
+  DateTimeColumn get birthday => dateTime()();
 }
 
 class User {

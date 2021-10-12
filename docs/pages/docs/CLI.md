@@ -68,7 +68,7 @@ The generated file (`schema.json` in this case) contains information about all
 - triggers
 - indices
 - `@create`-queries from included drift files
-- dependecies thereof
+- dependencies thereof
 
 Exporting a schema can be used to generate test code for your schema migrations. For details,
 see [the guide]({{ "Advanced Features/migrations.md#verifying-migrations" | pageUrl }}).

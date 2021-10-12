@@ -13,7 +13,7 @@
 </table>
 </p>
 
-Moor is a reactive persistence library for Flutter and Dart, built ontop of
+Moor is a reactive persistence library for Flutter and Dart, built on top of
 sqlite. 
 Moor is
 
