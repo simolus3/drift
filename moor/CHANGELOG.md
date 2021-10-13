@@ -1,3 +1,7 @@
+## 4.6.1
+
+- Fix the moor analyzer plugin not starting
+
 ## 4.6.0
 
 - Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.

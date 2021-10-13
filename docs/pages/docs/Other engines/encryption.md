@@ -100,3 +100,33 @@ NativeDatabase(
   }
 );
 ```
+
+### Important notice
+
+On the native side, `SQLCipher` and `sqlite3` stand in conflict with each other.
+If your package depends on both native libraries, the one you will actually get may be undefined on some platforms.
+In particular, if you depend on `sqlcipher_flutter_libs` and another package you use depends on say `sqflite`,
+you could still be getting the regular `sqlite3` library without support for encryption!
+
+For this reason, it is recommended that you check that the `cipher_version` pragma is available at runtime:
+
+```dart
+bool _debugCheckHasCipher(Database database) {
+  return database.select('PRAGMA cipher_version;').isNotEmpty;
+}
+```
+
+Next, add an `assert(_debugCheckHasCipher(database))` before using the database. A suitable place is the
+`setup` parameter to a `NativeDatabase`:
+
+```dart
+NativeDatabase(
+  File(...),
+  setup: (rawDb) {
+    assert(_debugCheckHasCipher());
+    rawDb.execute("PRAGMA key = 'passphrase';");
+  }
+);
+```
+
+If this check reveals that the encrypted variant is not available, please see [the documentation here](https://github.com/simolus3/sqlite3.dart/tree/master/sqlcipher_flutter_libs#incompatibilities-with-sqlite3-on-ios-and-macos) for advice.
