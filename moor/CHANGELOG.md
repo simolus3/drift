@@ -1,6 +1,6 @@
-## 4.6.1-dev
+## 4.6.1
 
-- Fix the moor analyzer plugin
+- Fix the moor analyzer plugin not starting
 
 ## 4.6.0
 

@@ -1,4 +1,4 @@
-## 1.0.2-dev
+## 1.0.2
 
 - Also transform `analysis_options.yaml` files in the `drift_dev migrate` command.
 
