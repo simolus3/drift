@@ -5,8 +5,7 @@ import 'package:drift/drift.dart';
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   UsersData({required this.id});
-  factory UsersData.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory UsersData.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return UsersData(
       id: const IntType()
@@ -118,7 +117,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   UsersData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return UsersData.fromData(data, _db,
+    return UsersData.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

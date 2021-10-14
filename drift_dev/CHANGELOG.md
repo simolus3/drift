@@ -1,3 +1,7 @@
+## 1.0.3-dev
+
+- Consider `drift`-named files when generating schema migrations ([#1486](https://github.com/simolus3/moor/issues/1486))
+
 ## 1.0.2
 
 - Also transform `analysis_options.yaml` files in the `drift_dev migrate` command.

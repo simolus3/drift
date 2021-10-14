@@ -81,4 +81,9 @@ class FatalToolError implements Exception {
   final String message;
 
   FatalToolError(this.message);
+
+  @override
+  String toString() {
+    return 'Fatal error: $message';
+  }
 }

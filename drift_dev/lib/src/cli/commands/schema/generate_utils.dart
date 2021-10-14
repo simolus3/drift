@@ -222,7 +222,7 @@ class GenerateUtilsCommand extends Command {
 
   String _filenameForVersion(int version) => 'schema_v$version.dart';
 
-  static final _filenames = RegExp(r'moor_schema_v(\d+)\.json');
+  static final _filenames = RegExp(r'(?:moor|drift)_schema_v(\d+)\.json');
   static final _dartfmt = DartFormatter();
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.';
 }
