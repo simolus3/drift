@@ -70,7 +70,7 @@ import 'package:path/path.dart' as p;
 LazyDatabase(() async {
   final dbFolder = await getDatabasesPath();
   final file = File(p.join(dbFolder, 'db.sqlite'));
-  return VmDatabase(file);
+  return NativeDatabase(file);
 })
 ```
 
@@ -82,7 +82,7 @@ Please be aware that `FlutterQueryExecutor.inDatabaseFolder` might yield a diffe
 
 ## Using native drift with an existing database {#using-moor-ffi-with-an-existing-database}
 
-If your existing sqlite database is stored as a file, you can just use `VmDatabase(thatFile)` - no further
+If your existing sqlite database is stored as a file, you can just use `NativeDatabase(thatFile)` - no further
 changes are required.
 
 If you want to load databases from assets or any other source, you can use a `LazyDatabase`.

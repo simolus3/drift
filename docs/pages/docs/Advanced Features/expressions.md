@@ -192,7 +192,7 @@ with the `separator` argument on `groupConcat`.
 
 ## Mathematical functions and regexp
 
-When using a `VmDatabase`, a basic set of trigonometric functions will be available. 
+When using a `NativeDatabase`, a basic set of trigonometric functions will be available. 
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in sql queries.
 For more information, see the [list of functions]({{ "../Other engines/vm.md#moor-only-functions" | pageUrl }}) here.
 

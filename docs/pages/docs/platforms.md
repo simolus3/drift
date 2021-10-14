@@ -86,7 +86,7 @@ details.
 
 ### macOS
 
-This one is easy! Just use the `VmDatabase` from `package:drift/native.dart`. No further setup is
+This one is easy! Just use the `NativeDatabase` from `package:drift/native.dart`. No further setup is
 necessary. 
 
 If you need a custom sqlite3 library, or want to make sure that your app will always use a

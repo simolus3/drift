@@ -48,7 +48,7 @@ LazyDatabase _openConnection() {
         await file.writeAsBytes(blob);
     }
 
-    return VmDatabase(file);
+    return NativeDatabase(file);
   });
 }
 ```

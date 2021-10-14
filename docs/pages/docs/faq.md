@@ -65,7 +65,7 @@ You might have to restart your IDE for the changes to apply.
 
 ## How can I inspect generated SQL?
 
-All database implementations (`VmDatabase`, `FlutterQueryExecutor`, ...) have a `logStatements` parameter that 
+All database implementations (`NativeDatabase`, `FlutterQueryExecutor`, ...) have a `logStatements` parameter that 
 you can set to `true`. When enabled, drift will print the statements it runs.
 
 ## How do I insert data on the first app start?

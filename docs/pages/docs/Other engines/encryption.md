@@ -32,7 +32,7 @@ dependencies:
 Instead of importing `package:moor_flutter/moor_flutter` (or `package:drift/native.dart`) in your apps, 
 you would then import both `package:drift/drift.dart` and `package:encrypted_moor/encrypted_moor.dart`.
 
-Finally, you can replace `FlutterQueryExecutor` (or an `VmDatabase`) with an `EncryptedExecutor`.
+Finally, you can replace `FlutterQueryExecutor` (or a `NativeDatabase`) with an `EncryptedExecutor`.
 
 ### Extra setup on Android and iOS
 
