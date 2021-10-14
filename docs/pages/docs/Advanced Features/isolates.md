@@ -22,7 +22,7 @@ Next, re-run the build. You can now add another constructor to the generated dat
 ```dart
 @DriftDatabase(...)
 class TodoDb extends _$TodoDb {
-  TodoDb() : super(VmDatabase.memory());
+  TodoDb() : super(NativeDatabase.memory());
 
   // this is the new constructor
   TodoDb.connect(DatabaseConnection connection) : super.connect(connection);
@@ -38,11 +38,11 @@ import 'package:drift/isolate.dart';
 // This needs to be a top-level method because it's run on a background isolate
 DatabaseConnection _backgroundConnection() {
     // Construct the database to use. This example uses a non-persistent in-memory database each
-    // time. You can use your existing VmDatabase with a file as well, or a `LazyDatabase` if you
+    // time. You can use your existing NativeDatabase with a file as well, or a `LazyDatabase` if you
     // need to construct it asynchronously.
     // When using a Flutter plugin like `path_provider` to determine the path, also see the
     // "Initialization on the main thread" section below!
-    final database = VmDatabase.memory();
+    final database = NativeDatabase.memory();
     return DatabaseConnection.fromExecutor(database);
 }
 

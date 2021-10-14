@@ -70,7 +70,7 @@ all apps will run with this `PATH` change.
 ## Writing tests
 
 We can create an in-memory version of the database by using a 
-`VmDatabase.memory()` instead of a `FlutterQueryExecutor`. A good
+`NativeDatabase.memory()` instead of a `FlutterQueryExecutor` or other implementations. A good
 place to open the database is the `setUp` and `tearDown` methods from
 `package:test`:
 ```dart
@@ -83,7 +83,7 @@ void main() {
   MyDatabase database;
 
   setUp(() {
-    database = MyDatabase(VmDatabase.memory());
+    database = MyDatabase(NativeDatabase.memory());
   });
   tearDown(() async {
     await database.close();
