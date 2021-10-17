@@ -12,13 +12,11 @@ class AnalyzeDartStep extends AnalyzingStep {
 
       final unsortedEntities = _availableEntities(transitiveImports).toSet();
 
-      final tableDartClasses = unsortedEntities.map((e) {
-        final declaration = e.declaration;
-        if (declaration is DartTableDeclaration) {
-          return declaration.element;
-        }
-        return null;
-      }).where((element) => element != null);
+      final tableDartClasses = {
+        for (final entry in unsortedEntities)
+          if (entry.declaration is DartTableDeclaration)
+            (entry.declaration as DartTableDeclaration).element: entry
+      };
 
       for (final declaredHere in accessor.declaredTables) {
         // See issue #447: The table added to an accessor might already be
@@ -26,13 +24,17 @@ class AnalyzeDartStep extends AnalyzingStep {
         // it to avoid duplicates.
         final declaration = declaredHere.declaration;
         if (declaration is DartTableDeclaration &&
-            tableDartClasses.contains(declaration.element)) {
+            tableDartClasses.containsKey(declaration.element)) {
           continue;
         }
 
         // Not a Dart table that we already included - add it now
         unsortedEntities.add(declaredHere);
+        if (declaration is DartTableDeclaration) {
+          tableDartClasses[declaration.element] = declaredHere;
+        }
       }
+      _resolveDartColumnReferences(tableDartClasses);
 
       List<MoorSchemaEntity>? availableEntities;
 
@@ -86,5 +88,53 @@ class AnalyzeDartStep extends AnalyzingStep {
       // Support custom result class names.
       CustomResultClassTransformer(accessor).transform(errors);
     }
+  }
+
+  /// Resolves a `.reference` action declared on a Dart-defined column.
+  void _resolveDartColumnReferences(
+      Map<ClassElement, MoorSchemaEntity> dartTables) {
+    dartTables.forEach((dartClass, moorEntity) {
+      if (moorEntity is! MoorTable) return;
+
+      for (final column in moorEntity.columns) {
+        for (var i = 0; i < column.features.length; i++) {
+          final feature = column.features[i];
+
+          if (feature is UnresolvedDartForeignKeyReference) {
+            final table = dartTables[feature.otherTable];
+
+            if (table is! MoorTable) {
+              reportError(ErrorInDartCode(
+                message: 'This class has not been added as a table',
+                affectedElement: feature.surroundingElementForErrors,
+                affectedNode: feature.otherTableName,
+              ));
+              continue;
+            }
+
+            // This table now references the other, so we need to track that.
+            moorEntity.references.add(table);
+            final referencedColumn = table.columns.firstWhereOrNull(
+                (c) => c.dartGetterName == feature.otherColumnName);
+
+            if (referencedColumn == null) {
+              reportError(
+                ErrorInDartCode(
+                  message:
+                      'The table `${table.sqlName}` does not declare a column '
+                      'named `${feature.otherColumnName}`',
+                  affectedElement: feature.surroundingElementForErrors,
+                  affectedNode: feature.columnNameNode,
+                ),
+              );
+              continue;
+            }
+
+            column.features[i] = ResolvedDartForeignKeyReference(
+                table, referencedColumn, feature.onUpdate, feature.onDelete);
+          }
+        }
+      }
+    });
   }
 }

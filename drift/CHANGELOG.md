@@ -1,3 +1,8 @@
+## 1.1.0
+
+- Add the `references` method to `BuildColumn` to reference a column declared 
+  in another Dart table.
+
 ## 1.0.0
 
 - Add `DoUpdate.withExcluded` to refer to the excluded row in an upsert clause.

@@ -23,7 +23,7 @@ void main() {
           'CREATE TABLE IF NOT EXISTS todos '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, title TEXT NULL, '
           'content TEXT NOT NULL, target_date INTEGER NULL, '
-          'category INTEGER NULL);',
+          'category INTEGER NULL REFERENCES categories (id));',
           []));
 
       verify(mockExecutor.runCustom(

@@ -1,5 +1,31 @@
 part of 'dsl.dart';
 
+/// A [KeyAction] can be used on a [BuildColumn.references] clause to describe
+/// how updates and deletes to a referenced table should propagate in your
+/// database.
+///
+/// By default, [KeyAction.noAction] will be used.
+/// For details, see [the sqlite3 documentation](https://www.sqlite.org/foreignkeys.html#fk_actions).
+enum KeyAction {
+  /// Set the column to null when the referenced column changes.
+  setNull,
+
+  /// Set the column back to its default value when the referenced column
+  /// changes.
+  setDefault,
+
+  /// Propagate updates and deletes into referencing rows.
+  cascade,
+
+  /// Forbid deleting or updating the referenced column in a database if there
+  /// are children pointing towards it.
+  restrict,
+
+  /// No special action is taken when the parent key is modified or deleted from
+  /// the database.
+  noAction,
+}
+
 /// Base class for columns in sql. Type [T] refers to the type a value of this
 /// column will have in Dart.
 abstract class Column<T> extends Expression<T> {
@@ -176,6 +202,45 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// `String`, which would usually be used for [Table.text] columns.
   ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T> converter) =>
       _isGenerated();
+
+  /// Adds a foreign-key reference from this column.
+  ///
+  /// The [table] type must be a Dart class name defining a drift table.
+  /// The [column] must be a Dart symbol with the same name as a column in the
+  /// referenced table.
+  /// In Dart, symbols can be created by prefixing an identifier with `#`.
+  ///
+  /// In the following example, a `Books` table keeps a reference to the author
+  /// of each book:
+  ///
+  /// ```dart
+  /// class Authors extends Table {
+  ///   IntColumn get id => integer().autoIncrement()();
+  ///   // ...
+  /// }
+  ///
+  /// class Books extends Table {
+  ///   IntColumn get author => integer().references(Authors, #id)();
+  /// }
+  /// ```
+  ///
+  /// __Important notice__: In sqlite3, foreign keys are not enabled by default.
+  /// When using foreign keys, remember to enable the option in the
+  /// [MigrationStrategy.beforeOpen] callback:
+  ///
+  /// ```dart
+  /// beforeOpen: (details) async {
+  ///   await customStatement('PRAGMA foreign_keys = ON');
+  /// }
+  /// ```
+  ColumnBuilder<T> references(
+    Type table,
+    Symbol column, {
+    KeyAction? onUpdate,
+    KeyAction? onDelete,
+  }) {
+    _isGenerated();
+  }
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, the generator will take a look at your

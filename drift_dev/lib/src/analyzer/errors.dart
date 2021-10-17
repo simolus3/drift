@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:source_gen/source_gen.dart';
@@ -33,17 +34,40 @@ class MoorError {
 
 class ErrorInDartCode extends MoorError {
   final Element? affectedElement;
+  final dart.AstNode? affectedNode;
 
-  ErrorInDartCode(
-      {required String message,
-      this.affectedElement,
-      Severity severity = Severity.warning})
-      : super(severity: severity, message: message);
+  ErrorInDartCode({
+    required String message,
+    this.affectedElement,
+    this.affectedNode,
+    Severity severity = Severity.warning,
+  }) : super(severity: severity, message: message);
+
+  SourceSpan? get span {
+    if (affectedElement != null) {
+      final span = spanForElement(affectedElement!);
+
+      final node = affectedNode;
+      if (node != null) {
+        if (span is FileSpan) {
+          return span.file.span(node.offset, node.offset + node.length);
+        } else {
+          final start = SourceLocation(node.offset, sourceUrl: span.sourceUrl);
+          final end = SourceLocation(node.offset + node.length,
+              sourceUrl: span.sourceUrl);
+          return SourceSpan(start, end, node.toSource());
+        }
+      }
+
+      return span;
+    }
+  }
 
   @override
   void writeDescription(LogFunction log) {
-    if (affectedElement != null) {
-      final span = spanForElement(affectedElement!);
+    final span = this.span;
+
+    if (span != null) {
       log(span.message(message));
     } else {
       log(message);

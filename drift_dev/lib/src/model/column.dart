@@ -1,7 +1,11 @@
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/writer.dart';
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import 'declarations/declaration.dart';
+import 'table.dart';
 import 'types.dart';
 import 'used_type_converter.dart';
 
@@ -220,4 +224,35 @@ class LimitingTextLength extends ColumnFeature {
     return typedOther.minLength == minLength &&
         typedOther.maxLength == maxLength;
   }
+}
+
+class UnresolvedDartForeignKeyReference extends ColumnFeature {
+  final ClassElement otherTable;
+  final String otherColumnName;
+  final ReferenceAction? onUpdate;
+  final ReferenceAction? onDelete;
+
+  final Element? surroundingElementForErrors;
+  final AstNode? otherTableName;
+  final AstNode columnNameNode;
+
+  UnresolvedDartForeignKeyReference(
+    this.otherTable,
+    this.otherColumnName,
+    this.onUpdate,
+    this.onDelete,
+    this.surroundingElementForErrors,
+    this.otherTableName,
+    this.columnNameNode,
+  );
+}
+
+class ResolvedDartForeignKeyReference extends ColumnFeature {
+  final MoorTable otherTable;
+  final MoorColumn otherColumn;
+  final ReferenceAction? onUpdate;
+  final ReferenceAction? onDelete;
+
+  ResolvedDartForeignKeyReference(
+      this.otherTable, this.otherColumn, this.onUpdate, this.onDelete);
 }

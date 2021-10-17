@@ -20,7 +20,7 @@ class TodosTable extends Table with AutoIncrement {
   @JsonKey('target_date')
   DateTimeColumn get targetDate => dateTime().nullable()();
 
-  IntColumn get category => integer().nullable()();
+  IntColumn get category => integer().references(Categories, #id).nullable()();
 }
 
 class Users extends Table with AutoIncrement {

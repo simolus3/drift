@@ -14,6 +14,7 @@ import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import '../custom_row_class.dart';
 

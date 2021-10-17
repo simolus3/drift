@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/task.dart';
@@ -68,5 +69,15 @@ class _HasInferredColumnTypes extends CustomMatcher {
 
     final resultSet = actual.resultSet;
     return {for (final column in resultSet.columns) column.name: column.type};
+  }
+}
+
+extension ExpectErrors on FoundFile {
+  void expectDartError(dynamic matcher, String lexeme) {
+    expect(
+        errors.errors,
+        contains(isA<ErrorInDartCode>()
+            .having((e) => e.message, 'message', matcher)
+            .having((e) => e.span?.text, 'span.text', lexeme)));
   }
 }

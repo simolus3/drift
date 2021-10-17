@@ -110,6 +110,91 @@ class ColumnParser {
           });
           break;
         case _methodReferences:
+          final args = remainingExpr.argumentList.arguments;
+          final first = args.first;
+
+          if (first is! Identifier) {
+            base.step.reportError(ErrorInDartCode(
+              message: 'This parameter should be a simple class name',
+              affectedElement: getter.declaredElement,
+              affectedNode: first,
+            ));
+            break;
+          }
+
+          final staticElement = first.staticElement;
+          if (staticElement is! ClassElement) {
+            base.step.reportError(ErrorInDartCode(
+              message: '${first.name} is not a class!',
+              affectedElement: getter.declaredElement,
+              affectedNode: first,
+            ));
+            break;
+          }
+
+          final columnNameNode = args[1];
+          if (columnNameNode is! SymbolLiteral) {
+            base.step.reportError(ErrorInDartCode(
+              message: 'This should be a symbol literal (`#columnName`)',
+              affectedElement: getter.declaredElement,
+              affectedNode: columnNameNode,
+            ));
+            break;
+          }
+
+          final columnName =
+              columnNameNode.components.map((token) => token.lexeme).join('.');
+
+          ReferenceAction? onUpdate, onDelete;
+
+          ReferenceAction? parseAction(Expression expr) {
+            if (expr is! PrefixedIdentifier) {
+              base.step.reportError(ErrorInDartCode(
+                message:
+                    'Should be a direct enum reference (`KeyAction.cascade`)',
+                affectedElement: getter.declaredElement,
+                affectedNode: expr,
+              ));
+              return null;
+            }
+
+            final name = expr.identifier.name;
+            switch (name) {
+              case 'setNull':
+                return ReferenceAction.setNull;
+              case 'setDefault':
+                return ReferenceAction.setDefault;
+              case 'cascade':
+                return ReferenceAction.cascade;
+              case 'restrict':
+                return ReferenceAction.restrict;
+              case 'noAction':
+              default:
+                return ReferenceAction.noAction;
+            }
+          }
+
+          for (final expr in args) {
+            if (expr is! NamedExpression) continue;
+
+            final name = expr.name.label.name;
+            final value = expr.expression;
+            if (name == 'onUpdate') {
+              onUpdate = parseAction(value);
+            } else if (name == 'onDelete') {
+              onDelete = parseAction(value);
+            }
+          }
+
+          foundFeatures.add(UnresolvedDartForeignKeyReference(
+            staticElement,
+            columnName,
+            onUpdate,
+            onDelete,
+            getter.declaredElement,
+            first,
+            columnNameNode,
+          ));
           break;
         case _methodWithLength:
           final args = remainingExpr.argumentList;

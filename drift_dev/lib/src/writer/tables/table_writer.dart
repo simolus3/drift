@@ -33,6 +33,26 @@ abstract class TableOrViewWriter {
         }
       }
 
+      if (feature is ResolvedDartForeignKeyReference) {
+        final tableName = escapeIfNeeded(feature.otherTable.sqlName);
+        final columnName = escapeIfNeeded(feature.otherColumn.name.name);
+
+        var constraint = 'REFERENCES $tableName ($columnName)';
+
+        final onUpdate = feature.onUpdate;
+        final onDelete = feature.onDelete;
+
+        if (onUpdate != null) {
+          constraint = '$constraint ON UPDATE ${onUpdate.description}';
+        }
+
+        if (onDelete != null) {
+          constraint = '$constraint ON DELETE ${onDelete.description}';
+        }
+
+        defaultConstraints.add(constraint);
+      }
+
       if (feature is LimitingTextLength) {
         final buffer = StringBuffer('GeneratedColumn.checkTextLength(');
 
@@ -437,6 +457,23 @@ class TableWriter extends TableOrViewWriter {
       buffer
         ..write('@override\n')
         ..write('String get moduleAndArgs => $moduleAndArgs;\n');
+    }
+  }
+}
+
+extension on ReferenceAction {
+  String get description {
+    switch (this) {
+      case ReferenceAction.setNull:
+        return 'SET NULL';
+      case ReferenceAction.setDefault:
+        return 'SET DEFAULT';
+      case ReferenceAction.cascade:
+        return 'CASCADE';
+      case ReferenceAction.restrict:
+        return 'RESTRICT';
+      case ReferenceAction.noAction:
+        return 'NO ACTION';
     }
   }
 }
