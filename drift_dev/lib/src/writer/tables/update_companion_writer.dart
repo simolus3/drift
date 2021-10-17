@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/utils/override_toString.dart';
@@ -28,6 +29,10 @@ class UpdateCompanionWriter {
     _writeToString();
 
     _buffer.write('}\n');
+
+    if (scope.options.generateToCompanionExtension) {
+      _writeToCompanionExtension();
+    }
   }
 
   void _writeFields() {
@@ -210,5 +215,42 @@ class UpdateCompanionWriter {
       [for (final column in table.columns) column.dartGetterName],
       _buffer,
     );
+  }
+
+  void _writeToCompanionExtension() {
+    final info = table.existingRowClass;
+    if (info == null) return;
+
+    final companionName = table.getNameForCompanionClass(scope.options);
+
+    _buffer.write('\n');
+    _buffer.write('extension ${table.dartTypeName}ToCompanion');
+    _buffer.write(' on ${table.dartTypeName} {');
+    _buffer.write('$companionName toCompanion() {');
+
+    _buffer
+      ..write('return ')
+      ..write(table.getNameForCompanionClass(scope.options))
+      ..write('(');
+
+    final named = <MoorColumn, String>{};
+
+    info.mapping.forEach((column, parameter) {
+      if (parameter.isNamed) {
+        named[column] = parameter.name;
+      }
+    });
+
+    for (final field in named.values) {
+      final column = table.columns
+          .firstWhereOrNull((element) => element.name.name == field);
+
+      if (column == null) break;
+
+      final dartName = column.dartGetterName;
+      _buffer.write('$dartName: Value ($dartName),');
+    }
+
+    _buffer.writeln(');\n}}\n');
   }
 }
