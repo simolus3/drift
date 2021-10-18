@@ -155,12 +155,14 @@ class UseRowClass {
   /// used to map database rows to the desired row class.
   final String constructor;
 
-  /// Generate a companion constructor mapping the referenced [type] to a companion.
-  ///
-  /// When this option is set (it defaults to `false`), moor generates a constructor in the
-  /// matching companion class of this table mapping an instance of [type] to a suitable
+  /// Generate a companion constructor mapping the referenced [type] to a
   /// companion.
-  /// This can be useful when a custom data class should be used for inserts or updates.
+  ///
+  /// When this option is set (it defaults to `false`), moor generates a
+  /// constructor in the matching companion class of this table mapping an
+  /// instance of [type] to a suitable companion.
+  /// This can be useful when a custom data class should be used for inserts or
+  /// updates.
   /// For this purpose, make it implement the `Insertable` interface, enable
   /// [generateToCompanion] and use the generated companion in your `toColumns`
   /// implementation.
