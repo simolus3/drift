@@ -21,6 +21,7 @@ class TableParser {
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
+      generateToCompanion: dataClassInfo.generateToCompanion,
       primaryKey: primaryKey,
       overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
@@ -70,6 +71,7 @@ class TableParser {
     String name;
     FoundDartClass? existingClass;
     String? constructorInExistingClass;
+    var generateToCompanion = false;
 
     if (dataClassName != null) {
       name = dataClassName.getField('name')!.toStringValue()!;
@@ -81,6 +83,8 @@ class TableParser {
       final type = useRowClass.getField('type')!.toTypeValue();
       constructorInExistingClass =
           useRowClass.getField('constructor')!.toStringValue()!;
+      generateToCompanion =
+          useRowClass.getField('generateToCompanion')!.toBoolValue()!;
 
       if (type is InterfaceType) {
         existingClass = FoundDartClass(type.element, type.typeArguments);
@@ -97,7 +101,7 @@ class TableParser {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass!, base.step.errors);
-    return _DataClassInformation(name, verified);
+    return _DataClassInformation(name, verified, generateToCompanion);
   }
 
   Future<String?> _parseTableName(ClassElement element) async {
@@ -226,8 +230,10 @@ class TableParser {
 class _DataClassInformation {
   final String enforcedName;
   final ExistingRowClass? existingClass;
+  bool generateToCompanion;
 
-  _DataClassInformation(this.enforcedName, this.existingClass);
+  _DataClassInformation(
+      this.enforcedName, this.existingClass, this.generateToCompanion);
 }
 
 extension on Element {

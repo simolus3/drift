@@ -71,9 +71,6 @@ class MoorOptions {
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
   final bool dataClassToCompanions;
 
-  @JsonKey(name: 'generate_to_companion_extension', defaultValue: false)
-  final bool generateToCompanionExtension;
-
   @JsonKey(name: 'mutable_classes', defaultValue: false)
   final bool generateMutableClasses;
 
@@ -111,7 +108,6 @@ class MoorOptions {
     this.generateConnectConstructor = false,
     this.eagerlyLoadDartAst = false,
     this.dataClassToCompanions = true,
-    this.generateToCompanionExtension = false,
     this.generateMutableClasses = false,
     this.rawResultSetData = false,
     this.applyConvertersOnVariables = false,
@@ -134,7 +130,6 @@ class MoorOptions {
     required this.generateConnectConstructor,
     required this.eagerlyLoadDartAst,
     required this.dataClassToCompanions,
-    required this.generateToCompanionExtension,
     required this.generateMutableClasses,
     required this.rawResultSetData,
     required this.applyConvertersOnVariables,

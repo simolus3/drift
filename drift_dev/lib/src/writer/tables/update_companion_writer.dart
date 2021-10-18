@@ -30,7 +30,7 @@ class UpdateCompanionWriter {
 
     _buffer.write('}\n');
 
-    if (scope.options.generateToCompanionExtension) {
+    if (table.generateToCompanion) {
       _writeToCompanionExtension();
     }
   }

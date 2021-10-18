@@ -155,9 +155,21 @@ class UseRowClass {
   /// used to map database rows to the desired row class.
   final String constructor;
 
+  /// Generate a companion constructor mapping the referenced [type] to a companion.
+  ///
+  /// When this option is set (it defaults to `false`), moor generates a constructor in the
+  /// matching companion class of this table mapping an instance of [type] to a suitable
+  /// companion.
+  /// This can be useful when a custom data class should be used for inserts or updates.
+  /// For this purpose, make it implement the `Insertable` interface, enable
+  /// [generateToCompanion] and use the generated companion in your `toColumns`
+  /// implementation.
+  final bool generateToCompanion;
+
   /// Customize the class used by drift to hold an instance of an annotated
   /// table.
   ///
   /// For details, see the overall documentation on [UseRowClass].
-  const UseRowClass(this.type, {this.constructor = ''});
+  const UseRowClass(this.type,
+      {this.constructor = '', this.generateToCompanion = false});
 }

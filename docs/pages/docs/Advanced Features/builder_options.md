@@ -68,7 +68,6 @@ At the moment, drift supports these options:
   instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
 * `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
    data classes.
-* `generate_to_companion_extension`: Controls whether drift will generate `toCompanion` extension function for custom row classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
 * `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes

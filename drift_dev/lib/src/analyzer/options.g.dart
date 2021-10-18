@@ -24,7 +24,6 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'sqlite',
             'eagerly_load_dart_ast',
             'data_class_to_companions',
-            'generate_to_companion_extension',
             'mutable_classes',
             'raw_result_set_data',
             'apply_converters_on_variables',
@@ -47,8 +46,6 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
               'skip_verification_code', (v) => v as bool? ?? false),
           useDataClassNameForCompanions: $checkedConvert(
               'use_data_class_name_for_companions', (v) => v as bool? ?? false),
-          generateToCompanionExtension: $checkedConvert(
-              'generate_to_companion_extension', (v) => v as bool? ?? false),
           useColumnNameAsJsonKeyWhenDefinedInMoorFile: $checkedConvert(
               'use_column_name_as_json_key_when_defined_in_moor_file',
               (v) => v as bool? ?? true),
@@ -101,7 +98,6 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
         'generateConnectConstructor': 'generate_connect_constructor',
         'eagerlyLoadDartAst': 'eagerly_load_dart_ast',
         'dataClassToCompanions': 'data_class_to_companions',
-        'generateToCompanionExtension': 'generate_to_companion_extension',
         'generateMutableClasses': 'mutable_classes',
         'rawResultSetData': 'raw_result_set_data',
         'applyConvertersOnVariables': 'apply_converters_on_variables',
