@@ -484,8 +484,10 @@ abstract class DatabaseConnectionUser {
 
   /// Will be used by generated code to resolve inline Dart components in sql.
   @protected
-  GenerationContext $write(Component component, {bool? hasMultipleTables}) {
-    final context = GenerationContext.fromDb(this);
+  GenerationContext $write(Component component,
+      {bool? hasMultipleTables, int? startIndex}) {
+    final context = GenerationContext.fromDb(this)
+      ..explicitVariableIndex = startIndex;
     if (hasMultipleTables != null) {
       context.hasMultipleTables = hasMultipleTables;
     }
@@ -498,8 +500,10 @@ abstract class DatabaseConnectionUser {
   ///
   /// Used by generated code.
   @protected
-  GenerationContext $writeInsertable(TableInfo table, Insertable insertable) {
-    final context = GenerationContext.fromDb(this);
+  GenerationContext $writeInsertable(TableInfo table, Insertable insertable,
+      {int? startIndex}) {
+    final context = GenerationContext.fromDb(this)
+      ..explicitVariableIndex = startIndex;
 
     table.validateIntegrity(insertable, isInserting: true);
     InsertStatement(this, table)

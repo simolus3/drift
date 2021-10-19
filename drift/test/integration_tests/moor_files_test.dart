@@ -123,7 +123,7 @@ void main() {
         .getSingle();
 
     verify(
-        mock.runSelect('SELECT * FROM config WHERE config_key = ?', ['key']));
+        mock.runSelect('SELECT * FROM config WHERE config_key = ?1', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
   });
 

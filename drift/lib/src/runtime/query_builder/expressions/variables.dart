@@ -60,7 +60,14 @@ class Variable<T> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    if (value != null) {
+    final explicitStart = context.explicitVariableIndex;
+
+    if (explicitStart != null) {
+      context.buffer
+        ..write('?')
+        ..write(explicitStart + context.amountOfVariables);
+      context.introduceVariable(this, mapToSimpleValue(context));
+    } else if (value != null) {
       context.buffer.write('?');
       context.introduceVariable(this, mapToSimpleValue(context));
     } else {

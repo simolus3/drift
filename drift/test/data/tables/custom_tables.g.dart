@@ -1587,7 +1587,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    final generatedclause = $write(clause(this.config));
+    final generatedclause =
+        $write(clause(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
         'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
@@ -1604,7 +1605,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<Config> readDynamic(
       {Expression<bool?> Function(ConfigTable config) predicate =
           _$moor$default$1}) {
-    final generatedpredicate = $write(predicate(this.config));
+    var $arrayStartIndex = 1;
+    final generatedpredicate =
+        $write(predicate(this.config), startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
         variables: [
           ...generatedpredicate.introducedVariables
@@ -1619,15 +1623,16 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       {Expression<bool?> Function(ConfigTable config) pred =
           _$moor$default$2}) {
     var $arrayStartIndex = 2;
-    final generatedpred = $write(pred(this.config));
+    final generatedpred =
+        $write(pred(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
         'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          ...generatedpred.introducedVariables,
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
+          ...generatedpred.introducedVariables,
           for (var $ in var2)
             Variable<int?>(ConfigTable.$converter1.mapToSql($))
         ],
@@ -1668,10 +1673,13 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple(
       {required Expression<bool?> Function(WithDefaults d, WithConstraints c)
           predicate}) {
+    var $arrayStartIndex = 1;
     final generatedpredicate = $write(
         predicate(
             alias(this.withDefaults, 'd'), alias(this.withConstraints, 'c')),
-        hasMultipleTables: true);
+        hasMultipleTables: true,
+        startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect(
         'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [
@@ -1704,7 +1712,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<ReadRowIdResult> readRowId(
       {required Expression<int?> Function(ConfigTable config) expr}) {
-    final generatedexpr = $write(expr(this.config));
+    var $arrayStartIndex = 1;
+    final generatedexpr =
+        $write(expr(this.config), startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedexpr.amountOfVariables;
     return customSelect(
         'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [
@@ -1749,7 +1760,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {
-    final generatedvalue = $writeInsertable(this.config, value);
+    var $arrayStartIndex = 1;
+    final generatedvalue =
+        $writeInsertable(this.config, value, startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedvalue.amountOfVariables;
     return customWriteReturning(
         'INSERT INTO config ${generatedvalue.sql} RETURNING *',
         variables: [...generatedvalue.introducedVariables],

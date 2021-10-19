@@ -8,6 +8,10 @@ class GenerationContext {
   /// queries.
   bool hasMultipleTables = false;
 
+  /// When set to a non-null value, [Variable]s in this context will generate
+  /// explicit indices starting at [explicitVariableIndex].
+  int? explicitVariableIndex;
+
   /// All tables that the generated query reads from.
   final List<ResultSetImplementation> watchedTables = [];
 

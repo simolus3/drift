@@ -109,7 +109,7 @@ abstract class SqlQuery {
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
   late List<FoundDartPlaceholder> placeholders;
 
-  /// Union of [variables] and [elements], but in the order in which they
+  /// Union of [variables] and [placeholders], but in the order in which they
   /// appear inside the query.
   final List<FoundElement> elements;
 

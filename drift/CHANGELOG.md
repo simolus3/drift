@@ -1,7 +1,9 @@
-## 1.1.0
+## 1.1.0-dev
 
 - Add the `references` method to `BuildColumn` to reference a column declared 
   in another Dart table.
+- Allow the generator to emit correct SQL code when using arrays with the
+  `new_sql_code_generation` option in specific scenarios.
 
 ## 1.0.0
 

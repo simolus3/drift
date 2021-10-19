@@ -176,14 +176,6 @@ class QueryWriter {
     return code;
   }
 
-  /// Returns code to load an instance of the [converter] at runtime.
-  static String _converter(UsedTypeConverter converter) {
-    final infoName = converter.table!.entityInfoName;
-    final field = '$infoName.${converter.fieldName}';
-
-    return field;
-  }
-
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
   /// of the custom query.
   void _writeSelectStatementCreator() {
@@ -418,194 +410,13 @@ class QueryWriter {
     _buffer.write(parameters.join(', '));
   }
 
-  // Some notes on parameters and generating query code:
-  // We expand array parameters to multiple variables at runtime (see the
-  // documentation of FoundVariable and SqlQuery for further discussion).
-  // To do this. we have to rewrite the sql. Consider this query:
-  // SELECT * FROM t WHERE a = ?1 AND b IN :vars OR c IN :vars AND d = ?
-  // When expanding an array variable, we write the expanded sql into a local
-  // var called "expanded$Name", e.g. when we bind "vars" to [1, 2, 3] in the
-  // query, then `expandedVars` would be "(?2, ?3, ?4)".
-  // We use explicit indexes when expanding so that we don't have to expand the
-  // "vars" variable twice. To do this, a local var called "$currentVarIndex"
-  // keeps track of the highest variable number assigned.
-  // We can use the same mechanism for runtime Dart placeholders, where we
-  // generate a GenerationContext, write the placeholder and finally extract the
-  // variables
-
   void _writeExpandedDeclarations() {
-    var indexCounterWasDeclared = false;
-    var needsIndexCounter = false;
-    var highestIndexBeforeArray = 0;
-
-    for (final variable in query.variables) {
-      // Variables use an explicit index, we need to know the start index at
-      // runtime (can be dynamic when placeholders or other arrays appear before
-      // this one)
-      if (variable.isArray) {
-        needsIndexCounter = true;
-        break;
-      }
-
-      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
-    }
-
-    void _writeIndexCounterIfNeeded() {
-      if (indexCounterWasDeclared || !needsIndexCounter) {
-        return; // already written or not necessary at all
-      }
-
-      // we only need the index counter when the query contains an expanded
-      // element.
-      // add +1 because that's going to be the first index of this element.
-      final firstVal = highestIndexBeforeArray + 1;
-      _buffer.write('var $highestAssignedIndexVar = $firstVal;');
-      indexCounterWasDeclared = true;
-    }
-
-    void _increaseIndexCounter(String by) {
-      if (needsIndexCounter) {
-        _buffer
-          ..write('$highestAssignedIndexVar += ')
-          ..write(by)
-          ..write(';\n');
-      }
-    }
-
-    // query.elements are guaranteed to be sorted in the order in which they're
-    // going to have an effect when expanded. See TypeMapper.extractElements for
-    // the gory details.
-    for (final element in query.elements) {
-      if (element is FoundVariable) {
-        if (element.isArray) {
-          _writeIndexCounterIfNeeded();
-
-          // final expandedvar1 = $expandVar(<startIndex>, <amount>);
-          _buffer
-            ..write('final ')
-            ..write(expandedName(element))
-            ..write(' = ')
-            ..write(r'$expandVar(')
-            ..write(highestAssignedIndexVar)
-            ..write(', ')
-            ..write(element.dartParameterName)
-            ..write('.length);\n');
-
-          // increase highest index for the next expanded element
-          _increaseIndexCounter('${element.dartParameterName}.length');
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _writeIndexCounterIfNeeded();
-
-        String useExpression() {
-          if (element.writeAsScopedFunction(scope.options)) {
-            // The parameter is a function type that needs to be evaluated first
-            final args = element.availableResultSets.map((e) {
-              final table = 'this.${e.entity.dbGetterName}';
-              final needsAlias = e.name != e.entity.displayName;
-
-              if (needsAlias) {
-                return 'alias($table, ${asDartLiteral(e.name)})';
-              } else {
-                return table;
-              }
-            }).join(', ');
-            return '${element.dartParameterName}($args)';
-          } else {
-            // We can just use the parameter directly
-            return element.dartParameterName;
-          }
-        }
-
-        _buffer
-          ..write('final ')
-          ..write(placeholderContextName(element))
-          ..write(' = ');
-
-        final type = element.type;
-        if (type is InsertableDartPlaceholderType) {
-          final table = type.table;
-
-          _buffer
-            ..write(r'$writeInsertable(this.')
-            ..write(table?.dbGetterName)
-            ..write(', ')
-            ..write(useExpression())
-            ..write(');\n');
-        } else {
-          _buffer
-            ..write(r'$write(')
-            ..write(useExpression());
-          if (query.hasMultipleTables) {
-            _buffer.write(', hasMultipleTables: true');
-          }
-
-          _buffer.write(');\n');
-        }
-
-        // similar to the case for expanded array variables, we need to
-        // increase the index
-        _increaseIndexCounter(
-            '${placeholderContextName(element)}.amountOfVariables');
-      }
-    }
+    _ExpandedDeclarationWriter(query, options, _buffer)
+        .writeExpandedDeclarations();
   }
 
   void _writeVariables() {
-    _buffer.write('variables: [');
-
-    var first = true;
-    for (final element in query.elements) {
-      if (!first) {
-        _buffer.write(', ');
-      }
-      first = false;
-
-      if (element is FoundVariable) {
-        // Variables without type converters are written as:
-        // `Variable<int>(x)`. When there's a type converter, we instead use
-        // `Variable<int>(typeConverter.mapToSql(x))`.
-        // Finally, if we're dealing with a list, we use a collection for to
-        // write all the variables sequentially.
-        String constructVar(String dartExpr) {
-          // No longer an array here, we apply a for loop if necessary
-          final type =
-              element.variableTypeCodeWithoutArray(scope.generationOptions);
-          final buffer = StringBuffer('Variable<$type>(');
-
-          if (element.typeConverter != null) {
-            // Apply the converter
-            buffer.write(
-                '${_converter(element.typeConverter!)}.mapToSql($dartExpr)');
-
-            final needsNullAssertion =
-                !element.nullable && scope.generationOptions.nnbd;
-            if (needsNullAssertion) {
-              buffer.write('!');
-            }
-          } else {
-            buffer.write(dartExpr);
-          }
-
-          buffer.write(')');
-          return buffer.toString();
-        }
-
-        final name = element.dartParameterName;
-
-        if (element.isArray) {
-          final constructor = constructVar(r'$');
-          _buffer.write('for (var \$ in $name) $constructor');
-        } else {
-          _buffer.write('${constructVar(name)}');
-        }
-      } else if (element is FoundDartPlaceholder) {
-        _buffer
-            .write('...${placeholderContextName(element)}.introducedVariables');
-      }
-    }
-
-    _buffer.write(']');
+    _ExpandedVariableWriter(query, scope, _buffer).writeVariables();
   }
 
   /// Returns a Dart string literal representing the query after variables have
@@ -732,5 +543,321 @@ class QueryWriter {
     } else if (_update.isOnlyUpdate) {
       _buffer.write(', updateKind: UpdateKind.update');
     }
+  }
+}
+
+/// Returns code to load an instance of the [converter] at runtime.
+String _converter(UsedTypeConverter converter) {
+  final infoName = converter.table!.entityInfoName;
+  final field = '$infoName.${converter.fieldName}';
+
+  return field;
+}
+
+class _ExpandedDeclarationWriter {
+  final SqlQuery query;
+  final MoorOptions options;
+  final StringBuffer _buffer;
+
+  bool indexCounterWasDeclared = false;
+  bool needsIndexCounter = false;
+  int highestIndexBeforeArray = 0;
+
+  _ExpandedDeclarationWriter(this.query, this.options, this._buffer);
+
+  void writeExpandedDeclarations() {
+    if (options.newSqlCodeGeneration) {
+      _writeExpandedDeclarationsForNewQueryCode();
+    } else {
+      _writeLegacyExpandedDeclarations();
+    }
+  }
+
+  // Some notes on parameters and generating query code:
+  // We expand array parameters to multiple variables at runtime (see the
+  // documentation of FoundVariable and SqlQuery for further discussion).
+  // To do this. we have to rewrite the sql. Consider this query:
+  // SELECT * FROM t WHERE a = ?1 AND b IN :vars OR c IN :vars AND d = ?
+  // When expanding an array variable, we write the expanded sql into a local
+  // var called "expanded$Name", e.g. when we bind "vars" to [1, 2, 3] in the
+  // query, then `expandedVars` would be "(?2, ?3, ?4)".
+  // We use explicit indexes when expanding so that we don't have to expand the
+  // "vars" variable twice. To do this, a local var called "$currentVarIndex"
+  // keeps track of the highest variable number assigned.
+  // We can use the same mechanism for runtime Dart placeholders, where we
+  // generate a GenerationContext, write the placeholder and finally extract the
+  // variables
+  //
+  // For the new query generation mode, we instead give every regular variable
+  // an explicit index and then append arrays and other constructs after these
+  // indices have been written.
+
+  void _writeIndexCounterIfNeeded() {
+    if (indexCounterWasDeclared || !needsIndexCounter) {
+      return; // already written or not necessary at all
+    }
+
+    // we only need the index counter when the query contains an expanded
+    // element.
+    // add +1 because that's going to be the first index of this element.
+    final firstVal = highestIndexBeforeArray + 1;
+    _buffer.write('var $highestAssignedIndexVar = $firstVal;');
+    indexCounterWasDeclared = true;
+  }
+
+  void _increaseIndexCounter(String by) {
+    if (needsIndexCounter) {
+      _buffer
+        ..write('$highestAssignedIndexVar += ')
+        ..write(by)
+        ..write(';\n');
+    }
+  }
+
+  void _writeLegacyExpandedDeclarations() {
+    for (final variable in query.variables) {
+      // Variables use an explicit index, we need to know the start index at
+      // runtime (can be dynamic when placeholders or other arrays appear before
+      // this one)
+      if (variable.isArray) {
+        needsIndexCounter = true;
+        break;
+      }
+
+      highestIndexBeforeArray = max(highestIndexBeforeArray, variable.index);
+    }
+
+    // query.elements are guaranteed to be sorted in the order in which they're
+    // going to have an effect when expanded. See TypeMapper.extractElements for
+    // the gory details.
+    for (final element in query.elements) {
+      if (element is FoundVariable) {
+        if (element.isArray) {
+          _writeArrayVariable(element);
+        }
+      } else if (element is FoundDartPlaceholder) {
+        _writeDartPlaceholder(element);
+      }
+    }
+  }
+
+  void _writeExpandedDeclarationsForNewQueryCode() {
+    // In the new code generation, each variable is given an explicit index,
+    // regardless of how it was declared. in the source. We then start writing
+    // expanded declarations with higher indices, but otherwise in order.
+    var index = 0;
+    for (final variable in query.variables) {
+      if (!variable.isArray) {
+        // Re-assign continous indices to non-array variables
+        highestIndexBeforeArray = variable.index = ++index;
+      }
+    }
+
+    needsIndexCounter = true;
+    for (final element in query.elements) {
+      if (element is FoundVariable) {
+        if (element.isArray) {
+          _writeArrayVariable(element);
+        }
+      } else if (element is FoundDartPlaceholder) {
+        _writeDartPlaceholder(element);
+      }
+    }
+  }
+
+  void _writeDartPlaceholder(FoundDartPlaceholder element) {
+    String useExpression() {
+      if (element.writeAsScopedFunction(options)) {
+        // The parameter is a function type that needs to be evaluated first
+        final args = element.availableResultSets.map((e) {
+          final table = 'this.${e.entity.dbGetterName}';
+          final needsAlias = e.name != e.entity.displayName;
+
+          if (needsAlias) {
+            return 'alias($table, ${asDartLiteral(e.name)})';
+          } else {
+            return table;
+          }
+        }).join(', ');
+        return '${element.dartParameterName}($args)';
+      } else {
+        // We can just use the parameter directly
+        return element.dartParameterName;
+      }
+    }
+
+    _writeIndexCounterIfNeeded();
+    _buffer
+      ..write('final ')
+      ..write(placeholderContextName(element))
+      ..write(' = ');
+
+    final type = element.type;
+    if (type is InsertableDartPlaceholderType) {
+      final table = type.table;
+
+      _buffer
+        ..write(r'$writeInsertable(this.')
+        ..write(table?.dbGetterName)
+        ..write(', ')
+        ..write(useExpression());
+
+      if (options.newSqlCodeGeneration) {
+        _buffer.write(', startIndex: $highestAssignedIndexVar');
+      }
+      _buffer.write(');\n');
+    } else {
+      _buffer
+        ..write(r'$write(')
+        ..write(useExpression());
+      if (query.hasMultipleTables) {
+        _buffer.write(', hasMultipleTables: true');
+      }
+      if (options.newSqlCodeGeneration) {
+        _buffer.write(', startIndex: $highestAssignedIndexVar');
+      }
+
+      _buffer.write(');\n');
+    }
+
+    // similar to the case for expanded array variables, we need to
+    // increase the index
+    _increaseIndexCounter(
+        '${placeholderContextName(element)}.amountOfVariables');
+  }
+
+  void _writeArrayVariable(FoundVariable element) {
+    assert(element.isArray);
+
+    _writeIndexCounterIfNeeded();
+
+    // final expandedvar1 = $expandVar(<startIndex>, <amount>);
+    _buffer
+      ..write('final ')
+      ..write(expandedName(element))
+      ..write(' = ')
+      ..write(r'$expandVar(')
+      ..write(highestAssignedIndexVar)
+      ..write(', ')
+      ..write(element.dartParameterName)
+      ..write('.length);\n');
+
+    // increase highest index for the next expanded element
+    _increaseIndexCounter('${element.dartParameterName}.length');
+  }
+}
+
+class _ExpandedVariableWriter {
+  final SqlQuery query;
+  final Scope scope;
+  final StringBuffer _buffer;
+
+  _ExpandedVariableWriter(this.query, this.scope, this._buffer);
+
+  void writeVariables() {
+    _buffer.write('variables: [');
+
+    if (scope.options.newSqlCodeGeneration) {
+      _writeNewVariables();
+    } else {
+      _writeLegacyVariables();
+    }
+
+    _buffer.write(']');
+  }
+
+  void _writeNewVariables() {
+    // In the new generation mode, we first write all non-array variables in
+    // a continous block, then we proceed to add arrays and other expanded
+    // declarations.
+    var first = true;
+
+    for (final variable in query.variables) {
+      if (!variable.isArray) {
+        if (!first) {
+          _buffer.write(', ');
+        }
+
+        _writeElement(variable);
+        first = false;
+      }
+    }
+
+    for (final element in query.elements) {
+      final shouldBeWritten = element is! FoundVariable || element.isArray;
+
+      if (shouldBeWritten) {
+        if (!first) {
+          _buffer.write(', ');
+        }
+
+        _writeElement(element);
+        first = false;
+      }
+    }
+  }
+
+  void _writeLegacyVariables() {
+    var first = true;
+    for (final element in query.elements) {
+      if (!first) {
+        _buffer.write(', ');
+      }
+      first = false;
+
+      _writeElement(element);
+    }
+  }
+
+  void _writeElement(FoundElement element) {
+    if (element is FoundVariable) {
+      _writeVariable(element);
+    } else if (element is FoundDartPlaceholder) {
+      _writeDartPlaceholder(element);
+    }
+  }
+
+  void _writeVariable(FoundVariable element) {
+    // Variables without type converters are written as:
+    // `Variable<int>(x)`. When there's a type converter, we instead use
+    // `Variable<int>(typeConverter.mapToSql(x))`.
+    // Finally, if we're dealing with a list, we use a collection for to
+    // write all the variables sequentially.
+    String constructVar(String dartExpr) {
+      // No longer an array here, we apply a for loop if necessary
+      final type =
+          element.variableTypeCodeWithoutArray(scope.generationOptions);
+      final buffer = StringBuffer('Variable<$type>(');
+
+      if (element.typeConverter != null) {
+        // Apply the converter
+        buffer
+            .write('${_converter(element.typeConverter!)}.mapToSql($dartExpr)');
+
+        final needsNullAssertion =
+            !element.nullable && scope.generationOptions.nnbd;
+        if (needsNullAssertion) {
+          buffer.write('!');
+        }
+      } else {
+        buffer.write(dartExpr);
+      }
+
+      buffer.write(')');
+      return buffer.toString();
+    }
+
+    final name = element.dartParameterName;
+
+    if (element.isArray) {
+      final constructor = constructVar(r'$');
+      _buffer.write('for (var \$ in $name) $constructor');
+    } else {
+      _buffer.write('${constructVar(name)}');
+    }
+  }
+
+  void _writeDartPlaceholder(FoundDartPlaceholder element) {
+    _buffer.write('...${placeholderContextName(element)}.introducedVariables');
   }
 }
