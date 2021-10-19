@@ -158,7 +158,7 @@ class UseRowClass {
   /// Generate a companion constructor mapping the referenced [type] to a
   /// companion.
   ///
-  /// When this option is set (it defaults to `false`), moor generates a
+  /// When this option is set (it defaults to `false`), drift generates a
   /// constructor in the matching companion class of this table mapping an
   /// instance of [type] to a suitable companion.
   /// This can be useful when a custom data class should be used for inserts or

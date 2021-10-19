@@ -230,7 +230,7 @@ class TableParser {
 class _DataClassInformation {
   final String enforcedName;
   final ExistingRowClass? existingClass;
-  bool generateToCompanion;
+  final bool generateToCompanion;
 
   _DataClassInformation(
       this.enforcedName, this.existingClass, this.generateToCompanion);
