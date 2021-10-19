@@ -15,8 +15,12 @@ class FoundDartClass {
   FoundDartClass(this.classElement, this.instantiation);
 }
 
-ExistingRowClass? validateExistingClass(Iterable<MoorColumn> columns,
-    FoundDartClass dartClass, String constructor, ErrorSink errors) {
+ExistingRowClass? validateExistingClass(
+    Iterable<MoorColumn> columns,
+    FoundDartClass dartClass,
+    String constructor,
+    bool generateToCompanion,
+    ErrorSink errors) {
   final desiredClass = dartClass.classElement;
   ConstructorElement? ctor;
 
@@ -63,7 +67,8 @@ ExistingRowClass? validateExistingClass(Iterable<MoorColumn> columns,
     }
   }
 
-  return ExistingRowClass(desiredClass, ctor, columnsToParameter,
+  return ExistingRowClass(
+      desiredClass, ctor, columnsToParameter, generateToCompanion,
       typeInstantiation: dartClass.instantiation ?? const []);
 }
 

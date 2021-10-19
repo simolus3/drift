@@ -181,7 +181,7 @@ class CreateTableReader {
           ));
         } else {
           existingRowClass = validateExistingClass(
-              foundColumns.values, clazz, '', step.errors);
+              foundColumns.values, clazz, '', false, step.errors);
           dataClassName = existingRowClass?.targetClass.name;
         }
       } else if (overriddenNames.contains('/')) {

@@ -30,7 +30,7 @@ class UpdateCompanionWriter {
 
     _buffer.write('}\n');
 
-    if (table.generateToCompanion) {
+    if (table.existingRowClass?.generateToCompanion ?? false) {
       _writeToCompanionExtension();
     }
   }

@@ -51,9 +51,6 @@ class MoorTable extends MoorEntityWithResultSet {
   @override
   final String dartTypeName;
 
-  /// Generate toCompanion for data class
-  final bool generateToCompanion;
-
   /// The getter name used for this table in a generated database or dao class.
   @override
   String get dbGetterName => dbFieldName(_baseName);
@@ -141,7 +138,6 @@ class MoorTable extends MoorEntityWithResultSet {
     this.columns = const [],
     required this.sqlName,
     required this.dartTypeName,
-    this.generateToCompanion = false,
     this.primaryKey,
     String? overriddenName,
     this.overrideWithoutRowId,
