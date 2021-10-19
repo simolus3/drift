@@ -1054,6 +1054,16 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   }
 }
 
+extension CustomRowClassToCompanion on CustomRowClass {
+  TableWithoutPKCompanion toCompanion() {
+    return TableWithoutPKCompanion(
+      notReallyAnId: Value(notReallyAnId),
+      someFloat: Value(someFloat),
+      custom: Value(custom),
+    );
+  }
+}
+
 class $TableWithoutPKTable extends TableWithoutPK
     with TableInfo<$TableWithoutPKTable, CustomRowClass> {
   final GeneratedDatabase _db;

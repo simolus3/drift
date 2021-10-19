@@ -58,7 +58,7 @@ class SharedTodos extends Table {
 
 const _uuid = Uuid();
 
-@UseRowClass(CustomRowClass, constructor: 'map')
+@UseRowClass(CustomRowClass, constructor: 'map', generateToCompanion: true)
 class TableWithoutPK extends Table {
   IntColumn get notReallyAnId => integer()();
   RealColumn get someFloat => real()();
@@ -74,6 +74,8 @@ class CustomRowClass implements Insertable<CustomRowClass> {
 
   final String? notFromDb;
 
+  double get someFloat => anotherName;
+
   CustomRowClass._(
       this.notReallyAnId, this.anotherName, this.custom, this.notFromDb);
 
@@ -84,11 +86,7 @@ class CustomRowClass implements Insertable<CustomRowClass> {
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
-    return TableWithoutPKCompanion(
-      notReallyAnId: Value(notReallyAnId),
-      someFloat: Value(anotherName),
-      custom: Value(custom),
-    ).toColumns(nullToAbsent);
+    return toCompanion().toColumns(nullToAbsent);
   }
 }
 

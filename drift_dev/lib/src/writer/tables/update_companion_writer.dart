@@ -236,14 +236,12 @@ class UpdateCompanionWriter {
     final named = <MoorColumn, String>{};
 
     info.mapping.forEach((column, parameter) {
-      if (parameter.isNamed) {
-        named[column] = parameter.name;
-      }
+      named[column] = parameter.name;
     });
 
     for (final field in named.values) {
       final column = table.columns
-          .firstWhereOrNull((element) => element.name.name == field);
+          .firstWhereOrNull((element) => element.dartGetterName == field);
 
       if (column == null) break;
 

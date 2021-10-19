@@ -56,8 +56,21 @@ ExistingRowClass? validateExistingClass(
   for (final parameter in ctor.parameters) {
     final column = unmatchedColumnsByName.remove(parameter.name);
     if (column != null) {
-      columnsToParameter[column] = parameter;
-      _checkType(parameter, column, errors);
+      final matchField = !generateToCompanion ||
+          dartClass.classElement.fields
+              .any((field) => field.name == parameter.name);
+      if (matchField) {
+        columnsToParameter[column] = parameter;
+        _checkType(parameter, column, errors);
+      } else {
+        errors.report(ErrorInDartCode(
+            affectedElement: parameter,
+            severity: Severity.error,
+            message: 'Constructor parameter ${parameter.name} has no matching '
+                'field. When "generateToCompanion" enabled, all constructor '
+                'parameter must have a matching field. Alternatively, you can '
+                'declare a getter field.'));
+      }
     } else if (!parameter.isOptional) {
       errors.report(ErrorInDartCode(
         affectedElement: parameter,
