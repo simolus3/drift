@@ -30,7 +30,7 @@ class UpdateCompanionWriter {
 
     _buffer.write('}\n');
 
-    if (table.existingRowClass?.generateToCompanion ?? false) {
+    if (table.existingRowClass?.generateInsertable ?? false) {
       _writeToCompanionExtension();
     }
   }
@@ -222,33 +222,33 @@ class UpdateCompanionWriter {
     if (info == null) return;
 
     final companionName = table.getNameForCompanionClass(scope.options);
+    final className = table.dartTypeName;
+    final insertableClass = '_\$${className}Insertable';
 
-    _buffer.write('\n');
-    _buffer.write('extension ${table.dartTypeName}ToCompanion');
-    _buffer.write(' on ${table.dartTypeName} {');
-    _buffer.write('$companionName toCompanion() {');
+    _buffer.write('class $insertableClass implements '
+        'Insertable<$className> {\n'
+        '$className _object;\n\n'
+        '$insertableClass(this._object);\n\n'
+        '@override\n'
+        'Map<String, Expression> toColumns(bool nullToAbsent) {\n'
+        'return $companionName(\n');
 
-    _buffer
-      ..write('return ')
-      ..write(table.getNameForCompanionClass(scope.options))
-      ..write('(');
+    for (final field in info.mapping.values) {
+      final column =
+          table.columns.firstWhereOrNull((e) => e.dartGetterName == field.name);
 
-    final named = <MoorColumn, String>{};
-
-    info.mapping.forEach((column, parameter) {
-      named[column] = parameter.name;
-    });
-
-    for (final field in named.values) {
-      final column = table.columns
-          .firstWhereOrNull((element) => element.dartGetterName == field);
-
-      if (column == null) break;
-
-      final dartName = column.dartGetterName;
-      _buffer.write('$dartName: Value ($dartName),');
+      if (column != null) {
+        final dartName = column.dartGetterName;
+        _buffer.write('$dartName: Value (_object.$dartName),\n');
+      }
     }
 
-    _buffer.writeln(');\n}}\n');
+    _buffer
+      ..write(').toColumns(false);\n}\n}\n\n')
+      ..write('extension ${table.dartTypeName}ToInsertable '
+          'on ${table.dartTypeName} {')
+      ..write('$insertableClass toInsertable() {\n')
+      ..write('return _\$${className}Insertable(this);\n')
+      ..write('}\n}\n');
   }
 }

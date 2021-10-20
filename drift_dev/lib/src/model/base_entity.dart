@@ -70,10 +70,10 @@ class ExistingRowClass {
   final Map<MoorColumn, ParameterElement> mapping;
 
   /// Generate toCompanion for data class
-  final bool generateToCompanion;
+  final bool generateInsertable;
 
-  ExistingRowClass(this.targetClass, this.constructor, this.mapping,
-      this.generateToCompanion,
+  ExistingRowClass(
+      this.targetClass, this.constructor, this.mapping, this.generateInsertable,
       {this.typeInstantiation = const []});
 
   String dartType([GenerationOptions options = const GenerationOptions()]) {

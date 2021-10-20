@@ -19,7 +19,7 @@ ExistingRowClass? validateExistingClass(
     Iterable<MoorColumn> columns,
     FoundDartClass dartClass,
     String constructor,
-    bool generateToCompanion,
+    bool generateInsertable,
     ErrorSink errors) {
   final desiredClass = dartClass.classElement;
   ConstructorElement? ctor;
@@ -56,20 +56,21 @@ ExistingRowClass? validateExistingClass(
   for (final parameter in ctor.parameters) {
     final column = unmatchedColumnsByName.remove(parameter.name);
     if (column != null) {
-      final matchField = !generateToCompanion ||
+      final matchField = !generateInsertable ||
           dartClass.classElement.fields
               .any((field) => field.name == parameter.name);
       if (matchField) {
         columnsToParameter[column] = parameter;
         _checkType(parameter, column, errors);
       } else {
-        errors.report(ErrorInDartCode(
+        final error = ErrorInDartCode(
             affectedElement: parameter,
-            severity: Severity.error,
+            severity: Severity.criticalError,
             message: 'Constructor parameter ${parameter.name} has no matching '
-                'field. When "generateToCompanion" enabled, all constructor '
+                'field. When "generateInsertable" enabled, all constructor '
                 'parameter must have a matching field. Alternatively, you can '
-                'declare a getter field.'));
+                'declare a getter field.');
+        throw Exception(error);
       }
     } else if (!parameter.isOptional) {
       errors.report(ErrorInDartCode(
@@ -81,7 +82,7 @@ ExistingRowClass? validateExistingClass(
   }
 
   return ExistingRowClass(
-      desiredClass, ctor, columnsToParameter, generateToCompanion,
+      desiredClass, ctor, columnsToParameter, generateInsertable,
       typeInstantiation: dartClass.instantiation ?? const []);
 }
 

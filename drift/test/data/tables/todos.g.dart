@@ -1054,13 +1054,24 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   }
 }
 
-extension CustomRowClassToCompanion on CustomRowClass {
-  TableWithoutPKCompanion toCompanion() {
+class _$CustomRowClassInsertable implements Insertable<CustomRowClass> {
+  CustomRowClass _object;
+
+  _$CustomRowClassInsertable(this._object);
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
     return TableWithoutPKCompanion(
-      notReallyAnId: Value(notReallyAnId),
-      someFloat: Value(someFloat),
-      custom: Value(custom),
-    );
+      notReallyAnId: Value(_object.notReallyAnId),
+      someFloat: Value(_object.someFloat),
+      custom: Value(_object.custom),
+    ).toColumns(false);
+  }
+}
+
+extension CustomRowClassToInsertable on CustomRowClass {
+  _$CustomRowClassInsertable toInsertable() {
+    return _$CustomRowClassInsertable(this);
   }
 }
 
