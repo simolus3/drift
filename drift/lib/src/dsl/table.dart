@@ -155,9 +155,17 @@ class UseRowClass {
   /// used to map database rows to the desired row class.
   final String constructor;
 
+  /// Generate a `toInsertable()` extension function for [type] mapping all
+  /// fields to an insertable object.
+  ///
+  /// This can be useful when a custom data class should be used for inserts or
+  /// updates.
+  final bool generateInsertable;
+
   /// Customize the class used by drift to hold an instance of an annotated
   /// table.
   ///
   /// For details, see the overall documentation on [UseRowClass].
-  const UseRowClass(this.type, {this.constructor = ''});
+  const UseRowClass(this.type,
+      {this.constructor = '', this.generateInsertable = false});
 }

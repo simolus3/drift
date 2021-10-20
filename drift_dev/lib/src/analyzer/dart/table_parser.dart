@@ -70,6 +70,7 @@ class TableParser {
     String name;
     FoundDartClass? existingClass;
     String? constructorInExistingClass;
+    bool? generateInsertable;
 
     if (dataClassName != null) {
       name = dataClassName.getField('name')!.toStringValue()!;
@@ -81,6 +82,8 @@ class TableParser {
       final type = useRowClass.getField('type')!.toTypeValue();
       constructorInExistingClass =
           useRowClass.getField('constructor')!.toStringValue()!;
+      generateInsertable =
+          useRowClass.getField('generateInsertable')!.toBoolValue()!;
 
       if (type is InterfaceType) {
         existingClass = FoundDartClass(type.element, type.typeArguments);
@@ -96,7 +99,7 @@ class TableParser {
     final verified = existingClass == null
         ? null
         : validateExistingClass(columns, existingClass,
-            constructorInExistingClass!, base.step.errors);
+            constructorInExistingClass!, generateInsertable!, base.step.errors);
     return _DataClassInformation(name, verified);
   }
 

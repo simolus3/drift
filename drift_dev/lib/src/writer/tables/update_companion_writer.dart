@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/utils/override_toString.dart';
@@ -28,6 +29,10 @@ class UpdateCompanionWriter {
     _writeToString();
 
     _buffer.write('}\n');
+
+    if (table.existingRowClass?.generateInsertable ?? false) {
+      _writeToCompanionExtension();
+    }
   }
 
   void _writeFields() {
@@ -210,5 +215,40 @@ class UpdateCompanionWriter {
       [for (final column in table.columns) column.dartGetterName],
       _buffer,
     );
+  }
+
+  void _writeToCompanionExtension() {
+    final info = table.existingRowClass;
+    if (info == null) return;
+
+    final companionName = table.getNameForCompanionClass(scope.options);
+    final className = table.dartTypeName;
+    final insertableClass = '_\$${className}Insertable';
+
+    _buffer.write('class $insertableClass implements '
+        'Insertable<$className> {\n'
+        '$className _object;\n\n'
+        '$insertableClass(this._object);\n\n'
+        '@override\n'
+        'Map<String, Expression> toColumns(bool nullToAbsent) {\n'
+        'return $companionName(\n');
+
+    for (final field in info.mapping.values) {
+      final column =
+          table.columns.firstWhereOrNull((e) => e.dartGetterName == field.name);
+
+      if (column != null) {
+        final dartName = column.dartGetterName;
+        _buffer.write('$dartName: Value (_object.$dartName),\n');
+      }
+    }
+
+    _buffer
+      ..write(').toColumns(false);\n}\n}\n\n')
+      ..write('extension ${table.dartTypeName}ToInsertable '
+          'on ${table.dartTypeName} {')
+      ..write('$insertableClass toInsertable() {\n')
+      ..write('return _\$${className}Insertable(this);\n')
+      ..write('}\n}\n');
   }
 }

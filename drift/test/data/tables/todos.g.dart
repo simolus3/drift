@@ -1054,6 +1054,27 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   }
 }
 
+class _$CustomRowClassInsertable implements Insertable<CustomRowClass> {
+  CustomRowClass _object;
+
+  _$CustomRowClassInsertable(this._object);
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    return TableWithoutPKCompanion(
+      notReallyAnId: Value(_object.notReallyAnId),
+      someFloat: Value(_object.someFloat),
+      custom: Value(_object.custom),
+    ).toColumns(false);
+  }
+}
+
+extension CustomRowClassToInsertable on CustomRowClass {
+  _$CustomRowClassInsertable toInsertable() {
+    return _$CustomRowClassInsertable(this);
+  }
+}
+
 class $TableWithoutPKTable extends TableWithoutPK
     with TableInfo<$TableWithoutPKTable, CustomRowClass> {
   final GeneratedDatabase _db;
