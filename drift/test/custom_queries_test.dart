@@ -21,13 +21,13 @@ void main() {
   });
 
   group('compiled custom queries', () {
-    // defined query: SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1
+    // defined query: SELECT * FROM todos WHERE title = @2 OR id IN ? OR title = @1
     test('work with arrays', () async {
       await db.withIn('one', 'two', [1, 2, 3]).get();
 
       verify(
         executor.runSelect(
-          'SELECT * FROM todos WHERE title = ?2 OR id IN (?3, ?4, ?5) OR title = ?1',
+          'SELECT * FROM todos WHERE title = @2 OR id IN (@3, @4, @5) OR title = @1',
           ['one', 'two', 1, 2, 3],
         ),
       );

@@ -63,7 +63,7 @@ void crudTests(TestExecutor executor) {
 
     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
     await db.customStatement(
-        'INSERT INTO friendships (first_user, second_user) VALUES (?, ?)',
+        'INSERT INTO friendships (first_user, second_user) VALUES (@1, @2)',
         <int>[1, 2]);
 
     expect(await db.friendsOf(1).get(), isNotEmpty);

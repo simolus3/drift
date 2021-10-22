@@ -80,5 +80,8 @@ enum SqlDialect {
   sqlite,
 
   /// (currently unsupported)
-  mysql
+  mysql,
+
+  /// PostgreSQL
+  postgres,
 }

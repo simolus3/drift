@@ -124,7 +124,12 @@ class InsertStatement<T extends Table, D> {
       final columnName = column.$name;
 
       if (rawValues.containsKey(columnName)) {
-        map[columnName] = rawValues[columnName]!;
+        final value = rawValues[columnName]!;
+        // Postgres must skip null values;
+        /* if (database.executor.dialect == SqlDialect.postgres &&
+            value is Variable &&
+            value.value == null) continue;*/
+        map[columnName] = value;
       } else {
         if (column.clientDefault != null) {
           map[columnName] = column._evaluateClientDefault();
@@ -137,7 +142,8 @@ class InsertStatement<T extends Table, D> {
 
     final ctx = GenerationContext.fromDb(database);
     ctx.buffer
-      ..write(_insertKeywords[mode])
+      ..write(_insertKeywords[
+          ctx.dialect == SqlDialect.postgres ? InsertMode.insert : mode])
       ..write(' INTO ')
       ..write(table.$tableName)
       ..write(' ');
@@ -189,6 +195,13 @@ class InsertStatement<T extends Table, D> {
 
       first = true;
       for (final update in updateSet.entries) {
+        /*
+        if (database.executor.dialect == SqlDialect.postgres &&
+            conflictTarget.any((element) =>
+                (element as GeneratedColumn).$name == update.key)) {
+          continue;
+        }
+         */
         final column = escapeIfNeeded(update.key);
 
         if (!first) ctx.buffer.write(', ');
@@ -212,8 +225,18 @@ class InsertStatement<T extends Table, D> {
       onConflict.clauses.forEach(writeDoUpdate);
     }
 
-    if (returning) {
-      ctx.buffer.write(' RETURNING *');
+    if (ctx.dialect == SqlDialect.postgres &&
+        mode == InsertMode.insertOrIgnore) {
+      ctx.buffer.write(' ON CONFLICT DO NOTHING');
+    }
+
+    if (ctx.dialect == SqlDialect.postgres) {
+      //TODO: handle multiple primary key
+      ctx.buffer.write(' RETURNING ${table.$primaryKey.first.$name}');
+    } else {
+      if (returning) {
+        ctx.buffer.write(' RETURNING *');
+      }
     }
 
     return ctx;

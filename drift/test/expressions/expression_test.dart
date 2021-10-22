@@ -32,7 +32,7 @@ void main() {
 
     expect(expr.cast<String>(), generates('CAST(c AS TEXT)'));
     expect(expr.cast<int>(), generates('CAST(c AS INTEGER)'));
-    expect(expr.cast<bool>(), generates('CAST(c AS INTEGER)'));
+    expect(expr.cast<bool>(), generates('CAST(c AS BOOLEAN)'));
     expect(expr.cast<DateTime>(), generates('CAST(c AS INTEGER)'));
     expect(expr.cast<double>(), generates('CAST(c AS REAL)'));
     expect(expr.cast<Uint8List>(), generates('CAST(c AS BLOB)'));

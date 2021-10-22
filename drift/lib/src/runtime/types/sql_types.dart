@@ -40,7 +40,7 @@ class BoolType extends SqlType<bool> {
   const BoolType();
 
   @override
-  String get sqlName => 'INTEGER';
+  String get sqlName => 'BOOLEAN';
 
   @override
   bool? mapFromDatabaseResponse(dynamic response) {

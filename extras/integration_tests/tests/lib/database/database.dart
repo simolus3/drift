@@ -77,15 +77,15 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
     'amountOfGoodFriends':
         'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
-            '(f.first_user = :user OR f.second_user = :user)',
+            '(f.first_user = @1 OR f.second_user = @1)',
     'friendshipsOf': ''' SELECT 
           f.really_good_friends, user.**
        FROM friendships f
          INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND
              user.id != :user
-       WHERE (f.first_user = :user OR f.second_user = :user)''',
+       WHERE (f.first_user = @1 OR f.second_user = @1)''',
     'userCount': 'SELECT COUNT(id) FROM users',
-    'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
+    'settingsFor': 'SELECT preferences FROM users WHERE id = @1',
     'usersById': 'SELECT * FROM users WHERE id IN ?',
     'returning': 'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
   },

@@ -107,7 +107,7 @@ void main() {
             OrderBy([OrderingTerm(expression: config.configKey)])).get();
 
     verify(mock.runSelect(
-      'SELECT * FROM config WHERE config_key IN (?1, ?2) '
+      'SELECT * FROM config WHERE config_key IN (@1, @2) '
       'ORDER BY config_key ASC',
       ['a', 'b'],
     ));
@@ -123,7 +123,7 @@ void main() {
         .getSingle();
 
     verify(
-        mock.runSelect('SELECT * FROM config WHERE config_key = ?1', ['key']));
+        mock.runSelect('SELECT * FROM config WHERE config_key = @1', ['key']));
     expect(parsed, Config(configKey: 'key', configValue: 'value'));
   });
 
@@ -136,7 +136,7 @@ void main() {
   test('columns use table names in queries with multiple tables', () async {
     await db.multiple(predicate: (d, c) => d.a.equals('foo')).get();
 
-    verify(mock.runSelect(argThat(contains('d.a = ?')), any));
+    verify(mock.runSelect(argThat(contains('d.a = @1')), any));
   });
 
   test('order by-params are ignored by default', () async {
@@ -231,8 +231,8 @@ void main() {
         [SyncType.locallyUpdated, SyncType.synchronized]).get();
 
     verify(mock.runSelect(
-        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ?1 '
-        'OR sync_state_implicit IN (?2, ?3))',
+        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = @1 '
+        'OR sync_state_implicit IN (@2, @3))',
         [0, 1, 2]));
   });
 
