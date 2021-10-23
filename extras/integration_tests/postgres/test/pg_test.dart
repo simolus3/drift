@@ -1,5 +1,8 @@
+@Timeout(Duration(seconds: 60))
+
 import 'package:drift/postgres.dart';
 import 'package:postgres/postgres.dart';
+import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 
 class PgExecutor extends TestExecutor {
