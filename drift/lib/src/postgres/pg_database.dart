@@ -39,7 +39,6 @@ class _PgDelegate extends DatabaseDelegate {
 
   _PgDelegate(this._db, this._ec) : closeUnderlyingWhenClosed = true;
 
-  bool _hasCreatedDatabase = false;
   bool _isOpen = false;
 
   final bool closeUnderlyingWhenClosed;
@@ -55,13 +54,10 @@ class _PgDelegate extends DatabaseDelegate {
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    if (!_hasCreatedDatabase) {
-      _createDatabase();
-      _initializeDatabase();
-    }
-
     versionDelegate = _PgVersionDelegate(_db);
     await _db.open();
+
+    await _initializeDatabase();
 
     _isOpen = true;
     return Future.value();
@@ -73,17 +69,17 @@ class _PgDelegate extends DatabaseDelegate {
     }
   }
 
-  void _createDatabase() {
-// TODO: check database existence
-    assert(!_hasCreatedDatabase);
-    _hasCreatedDatabase = true;
-  }
+  Future<void> _initializeDatabase() async {
+    // TODO: Do we need create these functions?
+    //_db.useMoorVersions();
+    //setup?.call(_db);
 
-  void _initializeDatabase() {
-// TODO: Do we need create these functions?
-// TODO: run query on fresh db: CREATE DOMAIN BLOB AS BYTEA;
-//_db.useMoorVersions();
-//setup?.call(_db);
+    try {
+      await _db.execute('CREATE DOMAIN BLOB AS BYTEA');
+    } catch (e) {
+      // already initialized
+    }
+
     versionDelegate = _PgVersionDelegate(_db);
   }
 
