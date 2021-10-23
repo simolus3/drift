@@ -146,6 +146,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: cedx/setup-dart@v2
@@ -161,10 +163,7 @@ jobs:
           chmod a+x /tmp/sqlite/out/sqlite3
           echo "/tmp/sqlite/out" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
-      - name: Run integration test
-        env:
-          POSTGRES_HOST: postgres
-        run: tool/misc_integration_test.sh
+      - run: tool/misc_integration_test.sh
 
 #  upload_coverage:
 #    runs-on: ubuntu-20.04

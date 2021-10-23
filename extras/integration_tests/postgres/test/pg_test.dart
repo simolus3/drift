@@ -11,7 +11,7 @@ class PgExecutor extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(PgDatabase.open(
-        Platform.environment['POSTGRES_HOST']!, 5432, 'postgres',
+        'localhost', 5432, 'postgres',
         username: 'postgres', password: 'postgres'));
   }
 
