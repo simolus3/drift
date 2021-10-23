@@ -23,3 +23,9 @@ UsersCompanion florian = UsersCompanion(
       'Florian, the fluffy Ferret from Florida familiar with Flutter'),
   birthDate: Value(DateTime(2015, 4, 29)),
 );
+
+UsersCompanion marcell = UsersCompanion(
+  id: const Value(1),
+  name: const Value('Marcell'),
+  birthDate: Value(DateTime(1989, 12, 31)),
+);

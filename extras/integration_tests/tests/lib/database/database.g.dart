@@ -599,7 +599,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+        'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *;',
         variables: [
           Variable<int>(var1),
           Variable<int>(var2),

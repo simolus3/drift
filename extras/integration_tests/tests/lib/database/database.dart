@@ -87,7 +87,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
     'usersById': 'SELECT * FROM users WHERE id IN ?',
-    'returning': 'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+    'returning': 'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *;',
   },
 )
 class Database extends _$Database {
@@ -184,7 +184,7 @@ class Database extends _$Database {
       reallyGoodFriends: friendsValue,
     );
 
-    await into(friendships).insert(companion, mode: InsertMode.insertOrReplace);
+    await into(friendships).insert(companion, mode: InsertMode.insertOrIgnore);
   }
 
   Future<void> updateSettings(int userId, Preferences c) async {

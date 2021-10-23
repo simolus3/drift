@@ -4,7 +4,7 @@ import 'package:tests/tests.dart';
 
 class PgExecutor extends TestExecutor {
   @override
-  bool get supportsReturning => false;
+  bool get supportsReturning => true;
 
   @override
   DatabaseConnection createConnection() {

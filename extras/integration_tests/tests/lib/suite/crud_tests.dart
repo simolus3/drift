@@ -1,6 +1,9 @@
 import 'package:test/test.dart';
+import 'package:tests/data/sample_data.dart';
 import 'package:tests/database/database.dart';
 import 'package:tests/suite/suite.dart';
+
+import '../tests.dart';
 
 void crudTests(TestExecutor executor) {
   test('inserting updates a select stream', () async {
@@ -19,6 +22,50 @@ void crudTests(TestExecutor executor) {
     await expectation;
 
     await db.close();
+  });
+
+  test('update row', () async {
+    final db = Database(executor.createConnection());
+
+    await db.update(db.users)
+      ..where((tbl) => tbl.id.equals(1))
+      ..write(UsersCompanion(name: Value("Jack")));
+
+    final updatedUser = await db.getUserById(1);
+    expect(updatedUser.name, equals('Jack'));
+
+    await db.close();
+  });
+
+  test('insert duplicate', () async {
+    final db = Database(executor.createConnection());
+
+    await expectLater(
+        db.into(db.users).insert(marcell),
+        throwsA(toString(
+            matches(RegExp(r'unique constraint', caseSensitive: false)))));
+
+    await db.close();
+  });
+
+  test('insert on conflict update', () async {
+    final db = Database(executor.createConnection());
+
+    await db.into(db.users).insertOnConflictUpdate(marcell);
+
+    final updatedUser = await db.getUserById(1);
+    expect(updatedUser.name, equals('Marcell'));
+
+    await db.close();
+  });
+
+  test('insert mode', () async {
+    final db = Database(executor.createConnection());
+    if (db.executor.dialect == SqlDialect.postgres) {
+      await expectLater(
+          db.into(db.users).insert(marcell, mode: InsertMode.insertOrReplace),
+          throwsA(isA<ArgumentError>()));
+    }
   });
 
   test('supports RETURNING', () async {
