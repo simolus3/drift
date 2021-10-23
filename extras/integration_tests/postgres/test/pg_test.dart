@@ -9,7 +9,7 @@ class PgExecutor extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(
-        PgDatabase.open('localhost', 5432, 'postgres', username: 'postgres'));
+        PgDatabase.open('postgres', 5432, 'postgres', username: 'postgres'));
   }
 
   @override

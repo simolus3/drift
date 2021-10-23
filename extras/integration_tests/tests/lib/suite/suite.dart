@@ -23,9 +23,9 @@ void runAllTests(TestExecutor executor) {
   });
 
   crudTests(executor);
-  //migrationTests(executor);
-  //customObjectTests(executor);
-  //transactionTests(executor);
+  migrationTests(executor);
+  customObjectTests(executor);
+  transactionTests(executor);
 
   test('can close database without interacting with it', () async {
     final connection = executor.createConnection();

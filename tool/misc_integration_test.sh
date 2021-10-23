@@ -8,6 +8,12 @@ dart pub upgrade
 dart test || EXIT_CODE=$?
 popd
 
+pushd extras/integration_tests/postgres
+echo "Running integration tests with moor_ffi & VM"
+dart pub upgrade
+dart test || EXIT_CODE=$?
+popd
+
 pushd extras/with_built_value
 echo "Running build runner in with_built_value"
 dart pub upgrade
