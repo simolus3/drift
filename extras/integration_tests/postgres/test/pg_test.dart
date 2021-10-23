@@ -1,4 +1,4 @@
-@Timeout(Duration(seconds: 60))
+@Timeout(Duration(seconds: 10))
 
 import 'package:drift/postgres.dart';
 import 'package:postgres/postgres.dart';

@@ -37,7 +37,7 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   SqlDialect get dialect => SqlDialect.postgres;
 
-  _PgDelegate(this._db, this._ec) : closeUnderlyingWhenClosed = true;
+  _PgDelegate(this._db, this._ec) : closeUnderlyingWhenClosed = false;
 
   bool _isOpen = false;
 
