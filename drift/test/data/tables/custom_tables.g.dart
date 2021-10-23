@@ -1629,7 +1629,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = @1 OR sync_state_implicit IN ($expandedvar2))',
+        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           ...generatedpred.introducedVariables,

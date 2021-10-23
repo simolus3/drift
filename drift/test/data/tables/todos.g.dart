@@ -1339,7 +1339,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelect(
-        'SELECT * FROM todos WHERE title = @2 OR id IN ($expandedvar3) OR title = @1',
+        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
           Variable<String?>(var1),
           Variable<String?>(var2),
