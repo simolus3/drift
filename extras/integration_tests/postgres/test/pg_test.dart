@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/postgres.dart';
 import 'package:postgres/postgres.dart';
 import 'package:tests/tests.dart';
@@ -9,7 +11,7 @@ class PgExecutor extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(PgDatabase.open(
-        'postgres', 5432, 'postgres',
+        Platform.environment['POSTGRES_HOST']!, 5432, 'postgres',
         username: 'postgres', password: 'postgres'));
   }
 

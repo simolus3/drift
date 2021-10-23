@@ -9,7 +9,7 @@ dart test || EXIT_CODE=$?
 popd
 
 pushd extras/integration_tests/postgres
-echo "Running integration tests with moor_ffi & VM"
+echo "Running integration tests with Postgres"
 dart pub upgrade
 dart test || EXIT_CODE=$?
 popd

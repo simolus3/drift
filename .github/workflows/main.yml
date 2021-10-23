@@ -161,7 +161,10 @@ jobs:
           chmod a+x /tmp/sqlite/out/sqlite3
           echo "/tmp/sqlite/out" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/tmp/sqlite/out" >> $GITHUB_ENV
-      - run: tool/misc_integration_test.sh
+      - name: Run integration test
+        env:
+          POSTGRES_HOST: postgres
+        run: tool/misc_integration_test.sh
 
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
