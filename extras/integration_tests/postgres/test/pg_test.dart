@@ -1,8 +1,4 @@
-@Timeout(Duration(seconds: 10))
-
 import 'package:drift/postgres.dart';
-import 'package:postgres/postgres.dart';
-import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 
 class PgExecutor extends TestExecutor {
@@ -17,16 +13,16 @@ class PgExecutor extends TestExecutor {
   }
 
   @override
-  Future deleteData() async {
-    final connection = PostgreSQLConnection('localhost', 5432, 'postgres',
-        username: 'postgres', password: null);
-    await connection.open();
-    await connection.query('DROP SCHEMA public CASCADE;');
-    await connection.query('CREATE SCHEMA public;');
-    await connection.query('GRANT ALL ON SCHEMA public TO postgres;');
-    await connection.query('GRANT ALL ON SCHEMA public TO public;');
-    await connection.close();
+  Future clearDatabaseAndClose(Database db) async {
+    await db.customStatement('DROP SCHEMA public CASCADE;');
+    await db.customStatement('CREATE SCHEMA public;');
+    await db.customStatement('GRANT ALL ON SCHEMA public TO postgres;');
+    await db.customStatement('GRANT ALL ON SCHEMA public TO public;');
+    await db.close();
   }
+
+  @override
+  Future deleteData() async {}
 }
 
 void main() {

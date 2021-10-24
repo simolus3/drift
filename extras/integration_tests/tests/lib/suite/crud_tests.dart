@@ -15,13 +15,10 @@ void crudTests(TestExecutor executor) {
 
     expect(await friends.first, isEmpty);
 
-    // after we called makeFriends(a,b)
-    final expectation = expectLater(friends, emits(equals(<User>[b])));
-
     await db.makeFriends(a, b);
-    await expectation;
+    await expectLater(friends, emits(equals(<User>[b])));
 
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('update row', () async {
@@ -30,11 +27,10 @@ void crudTests(TestExecutor executor) {
     await db.update(db.users)
       ..where((tbl) => tbl.id.equals(1))
       ..write(UsersCompanion(name: Value("Jack")));
-
     final updatedUser = await db.getUserById(1);
-    expect(updatedUser.name, equals('Jack'));
 
-    await db.close();
+    expect(updatedUser.name, equals('Jack'));
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('insert duplicate', () async {
@@ -44,19 +40,17 @@ void crudTests(TestExecutor executor) {
         db.into(db.users).insert(marcell),
         throwsA(toString(
             matches(RegExp(r'unique constraint', caseSensitive: false)))));
-
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('insert on conflict update', () async {
     final db = Database(executor.createConnection());
 
     await db.into(db.users).insertOnConflictUpdate(marcell);
-
     final updatedUser = await db.getUserById(1);
-    expect(updatedUser.name, equals('Marcell'));
 
-    await db.close();
+    expect(updatedUser.name, equals('Marcell'));
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('insert mode', () async {
@@ -66,15 +60,16 @@ void crudTests(TestExecutor executor) {
           db.into(db.users).insert(marcell, mode: InsertMode.insertOrReplace),
           throwsA(isA<ArgumentError>()));
     }
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('supports RETURNING', () async {
     final db = Database(executor.createConnection());
     final result = await db.returning(1, 2, true);
+
     expect(result,
         [Friendship(firstUser: 1, secondUser: 2, reallyGoodFriends: true)]);
-
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   },
       skip: executor.supportsReturning
           ? null
@@ -83,12 +78,10 @@ void crudTests(TestExecutor executor) {
   test('IN ? expressions can be expanded', () async {
     // regression test for https://github.com/simolus3/moor/issues/156
     final db = Database(executor.createConnection());
-
     final result = await db.usersById([1, 2, 3]).get();
 
     expect(result.map((u) => u.name), ['Dash', 'Duke', 'Go Gopher']);
-
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('nested results', () async {
@@ -101,7 +94,7 @@ void crudTests(TestExecutor executor) {
     final result = await db.friendshipsOf(a.id).getSingle();
 
     expect(result, FriendshipsOfResult(reallyGoodFriends: true, user: b));
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('runCustom with args', () async {
@@ -114,6 +107,6 @@ void crudTests(TestExecutor executor) {
         <int>[1, 2]);
 
     expect(await db.friendsOf(1).get(), isNotEmpty);
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 }

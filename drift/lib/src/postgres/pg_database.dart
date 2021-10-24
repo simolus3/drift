@@ -74,10 +74,13 @@ class _PgDelegate extends DatabaseDelegate {
     //_db.useMoorVersions();
     //setup?.call(_db);
 
-    try {
+    final blob = await _db.query('SELECT COUNT(*) FROM pg_catalog.pg_type '
+        'JOIN pg_catalog.pg_namespace '
+        'ON pg_namespace.oid = pg_type.typnamespace '
+        "WHERE typname = 'blob' and nspname = 'public'");
+
+    if (blob[0][0] == 0) {
       await _db.execute('CREATE DOMAIN BLOB AS BYTEA');
-    } catch (e) {
-      // already initialized
     }
 
     versionDelegate = _PgVersionDelegate(_db);
