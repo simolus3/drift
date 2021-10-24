@@ -11,6 +11,7 @@ dependencies:
   tests:
     path: ../tests
   postgres: ^2.4.1+2
+  drift_postgres: ^1.0.0
 
 dev_dependencies:
   test: ^1.16.0
@@ -20,3 +21,5 @@ dependency_overrides:
     path: ../../../drift
   moor:
     path: ../../../moor
+  drift_postgres:
+    path: ../../../extras/drift_postgres

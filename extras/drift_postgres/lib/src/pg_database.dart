@@ -1,6 +1,5 @@
+import 'package:drift/backends.dart';
 import 'package:postgres/postgres.dart';
-
-import '../../backends.dart';
 
 ///
 class PgDatabase extends DelegatedDatabase {

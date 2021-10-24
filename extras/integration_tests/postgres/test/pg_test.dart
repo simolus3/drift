@@ -1,4 +1,4 @@
-import 'package:drift/postgres.dart';
+import 'package:drift_postgres/postgres.dart';
 import 'package:tests/tests.dart';
 
 class PgExecutor extends TestExecutor {

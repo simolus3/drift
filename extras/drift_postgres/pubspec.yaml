@@ -1,0 +1,16 @@
+name: drift_postgres
+description: Postgres support for drift
+version: 1.0.0
+
+environment:
+  sdk: '>=2.12.0-0 <3.0.0'
+
+dependencies:
+  drift: ^1.0.1
+  postgres: ^2.4.1+2
+
+dependency_overrides:
+  drift:
+    path: ../../drift
+  moor:
+    path: ../../moor
