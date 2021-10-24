@@ -3,9 +3,9 @@ import 'package:test/test.dart';
 
 void main() {
   final nullable =
-      GeneratedColumn<DateTime>('name', 'table', true, typeName: 'INTEGER');
+      GeneratedColumn<DateTime>('name', 'table', true, type: const IntType());
   final nonNull =
-      GeneratedColumn<DateTime>('name', 'table', false, typeName: 'INTEGER');
+      GeneratedColumn<DateTime>('name', 'table', false, type: const IntType());
 
   test('should write column definition', () {
     final nonNullQuery = GenerationContext.fromDb(null);

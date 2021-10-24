@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:json_annotation/json_annotation.dart' as j;
-import 'package:moor/moor.dart';
 
 import 'package:tests/data/sample_data.dart' as people;
 
@@ -69,22 +69,22 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
   }
 }
 
-@UseMoor(
+@DriftDatabase(
   tables: [Users, Friendships],
   queries: {
     'mostPopularUsers': 'SELECT * FROM users u '
-        'ORDER BY (SELECT COUNT(*) FROM friendships '
+        'ORDER BY (SELECT COUNT(*) count FROM friendships '
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-    'amountOfGoodFriends':
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
-            '(f.first_user = :user OR f.second_user = :user)',
+    'amountOfGoodFriends': 'SELECT COUNT(*) count FROM friendships f '
+        'WHERE f.really_good_friends = 1 AND (f.first_user = :user '
+        'OR f.second_user = :user)',
     'friendshipsOf': ''' SELECT 
           f.really_good_friends, user.**
        FROM friendships f
-         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND
-             "user".id != :user
+         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) 
+         AND "user".id != :user
        WHERE (f.first_user = :user OR f.second_user = :user)''',
-    'userCount': 'SELECT COUNT(id) FROM users',
+    'userCount': 'SELECT COUNT(id) count FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
     'usersById': 'SELECT * FROM users WHERE id IN ?',
     'returning': 'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *;',

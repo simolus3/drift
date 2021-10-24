@@ -15,6 +15,6 @@ void customObjectTests(TestExecutor executor) {
 
     expect(preferences?.receiveEmails, true);
 
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 }

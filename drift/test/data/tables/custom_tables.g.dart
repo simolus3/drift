@@ -212,18 +212,20 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedColumn<String?> configKey = GeneratedColumn<String?>(
       'config_key', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'not null primary key');
   final VerificationMeta _configValueMeta =
       const VerificationMeta('configValue');
   late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
       'config_value', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _syncStateMeta = const VerificationMeta('syncState');
   late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
       GeneratedColumn<int?>('sync_state', aliasedName, true,
-              typeName: 'INTEGER',
+              type: const IntType(),
               requiredDuringInsert: false,
               $customConstraints: '')
           .withConverter<SyncType>(ConfigTable.$converter0);
@@ -232,7 +234,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
       syncStateImplicit = GeneratedColumn<int?>(
               'sync_state_implicit', aliasedName, true,
-              typeName: 'INTEGER',
+              type: const IntType(),
               requiredDuringInsert: false,
               $customConstraints: '')
           .withConverter<SyncType?>(ConfigTable.$converter1);
@@ -419,14 +421,14 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
       'a', aliasedName, true,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT \'something\'',
       defaultValue: const CustomExpression<String>('\'something\''));
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int?> b = GeneratedColumn<int?>(
       'b', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       $customConstraints: 'UNIQUE');
   @override
@@ -513,7 +515,7 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedColumn<Uint8List?> payload = GeneratedColumn<Uint8List?>(
       'payload', aliasedName, false,
-      typeName: 'BLOB',
+      type: const BlobType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL PRIMARY KEY');
   @override
@@ -716,17 +718,21 @@ class WithConstraints extends Table
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
       'a', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _bMeta = const VerificationMeta('b');
   late final GeneratedColumn<int?> b = GeneratedColumn<int?>(
       'b', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _cMeta = const VerificationMeta('c');
   late final GeneratedColumn<double?> c = GeneratedColumn<double?>(
       'c', aliasedName, true,
-      typeName: 'REAL', requiredDuringInsert: false, $customConstraints: '');
+      type: const RealType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [a, b, c];
   @override
@@ -964,22 +970,28 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int?> someid = GeneratedColumn<int?>(
       'someid', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _sometextMeta = const VerificationMeta('sometext');
   late final GeneratedColumn<String?> sometext = GeneratedColumn<String?>(
       'sometext', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _isInsertingMeta =
       const VerificationMeta('isInserting');
   late final GeneratedColumn<bool?> isInserting = GeneratedColumn<bool?>(
       'is_inserting', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
+      type: const BoolType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   final VerificationMeta _somedateMeta = const VerificationMeta('somedate');
   late final GeneratedColumn<DateTime?> somedate = GeneratedColumn<DateTime?>(
       'somedate', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false, $customConstraints: '');
+      type: const IntType(),
+      requiredDuringInsert: false,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns =>
       [someid, sometext, isInserting, somedate];
@@ -1186,15 +1198,21 @@ class Email extends Table
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedColumn<String?> sender = GeneratedColumn<String?>(
       'sender', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: true,
+      $customConstraints: '');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: true,
+      $customConstraints: '');
   final VerificationMeta _bodyMeta = const VerificationMeta('body');
   late final GeneratedColumn<String?> body = GeneratedColumn<String?>(
       'body', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true, $customConstraints: '');
+      type: const StringType(),
+      requiredDuringInsert: true,
+      $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [sender, title, body];
   @override
@@ -1378,13 +1396,13 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedColumn<int?> sqlClass = GeneratedColumn<int?>(
       'class', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _textColumnMeta = const VerificationMeta('textColumn');
   late final GeneratedColumn<String?> textColumn = GeneratedColumn<String?>(
       'text', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   @override
@@ -1535,18 +1553,18 @@ class MyView extends View<MyView, MyViewData> {
 
   late final GeneratedColumn<String?> configKey = GeneratedColumn<String?>(
       'config_key', aliasedName, false,
-      typeName: 'TEXT');
+      type: const StringType());
   late final GeneratedColumn<String?> configValue = GeneratedColumn<String?>(
       'config_value', aliasedName, true,
-      typeName: 'TEXT');
+      type: const StringType());
   late final GeneratedColumnWithTypeConverter<SyncType, int?> syncState =
       GeneratedColumn<int?>('sync_state', aliasedName, true,
-              typeName: 'INTEGER')
+              type: const IntType())
           .withConverter<SyncType>(ConfigTable.$converter0);
   late final GeneratedColumnWithTypeConverter<SyncType?, int?>
       syncStateImplicit = GeneratedColumn<int?>(
               'sync_state_implicit', aliasedName, true,
-              typeName: 'INTEGER')
+              type: const IntType())
           .withConverter<SyncType?>(ConfigTable.$converter1);
 }
 

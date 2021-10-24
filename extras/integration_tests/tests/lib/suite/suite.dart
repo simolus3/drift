@@ -1,4 +1,4 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 import 'package:tests/suite/crud_tests.dart';
 import 'package:tests/suite/transactions.dart';
@@ -22,7 +22,7 @@ abstract class TestExecutor {
 }
 
 void runAllTests(TestExecutor executor) {
-  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   tearDown(() async {
     await executor.deleteData();
@@ -30,7 +30,7 @@ void runAllTests(TestExecutor executor) {
 
   crudTests(executor);
   //migrationTests(executor);
-  //customObjectTests(executor);
+  customObjectTests(executor);
   //transactionTests(executor);
 
   test('can close database without interacting with it', () async {

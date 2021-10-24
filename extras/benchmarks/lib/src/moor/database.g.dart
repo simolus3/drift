@@ -11,8 +11,7 @@ class KeyValue extends DataClass implements Insertable<KeyValue> {
   final String key;
   final String value;
   KeyValue({required this.key, required this.value});
-  factory KeyValue.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory KeyValue.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return KeyValue(
       key: const StringType()
@@ -133,11 +132,11 @@ class $KeyValuesTable extends KeyValues
   final VerificationMeta _keyMeta = const VerificationMeta('key');
   late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
       'key', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _valueMeta = const VerificationMeta('value');
   late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
       'value', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [key, value];
   @override
@@ -168,7 +167,7 @@ class $KeyValuesTable extends KeyValues
   Set<GeneratedColumn> get $primaryKey => {key};
   @override
   KeyValue map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return KeyValue.fromData(data, _db,
+    return KeyValue.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

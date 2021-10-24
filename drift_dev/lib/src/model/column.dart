@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
@@ -149,18 +150,20 @@ class MoorColumn implements HasDeclaration, HasType {
     return options.nnbd ? '$code?' : code;
   }
 
-  String sqlTypeName() {
+  SqlType sqlType() {
     switch (type) {
       case ColumnType.integer:
+        return const IntType();
       case ColumnType.boolean:
+        return const BoolType();
       case ColumnType.datetime:
-        return 'INTEGER';
+        return const IntType();
       case ColumnType.text:
-        return 'TEXT';
+        return const StringType();
       case ColumnType.blob:
-        return 'BLOB';
+        return const BlobType();
       case ColumnType.real:
-        return 'REAL';
+        return const RealType();
     }
   }
 

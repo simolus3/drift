@@ -11,8 +11,7 @@ class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
   User({required this.id, required this.name});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType()
@@ -131,13 +130,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: false,
       defaultValue: const Constant('name'));
   @override
@@ -165,7 +164,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -185,8 +184,7 @@ class Group extends DataClass implements Insertable<Group> {
       required this.title,
       this.deleted,
       required this.owner});
-  factory Group.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Group.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Group(
       id: const IntType()
@@ -354,26 +352,26 @@ class Groups extends Table with TableInfo<Groups, Group> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   final VerificationMeta _deletedMeta = const VerificationMeta('deleted');
   late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
       'deleted', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
   final VerificationMeta _ownerMeta = const VerificationMeta('owner');
   late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
       'owner', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -413,7 +411,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Group.fromData(data, _db,
+    return Group.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

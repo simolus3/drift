@@ -13,9 +13,8 @@ class Foo extends DataClass implements Insertable<Foo> {
   factory Foo.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return Foo(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
     );
   }
   @override
@@ -25,6 +24,12 @@ class Foo extends DataClass implements Insertable<Foo> {
       map['id'] = Variable<int>(id);
     }
     return map;
+  }
+
+  FoosCompanion toCompanion(bool nullToAbsent) {
+    return FoosCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+    );
   }
 
   factory Foo.fromJson(Map<String, dynamic> json,
@@ -47,13 +52,16 @@ class Foo extends DataClass implements Insertable<Foo> {
       );
   @override
   String toString() {
-    return (StringBuffer('Foo(')..write('id: $id')..write(')')).toString();
+    return (StringBuffer('Foo(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
   }
 
   @override
-  int get hashCode => $mrjf(id.hashCode);
+  int get hashCode => id.hashCode;
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) || (other is Foo && other.id == this.id);
 }
 
@@ -87,6 +95,14 @@ class FoosCompanion extends UpdateCompanion<Foo> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('FoosCompanion(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
@@ -94,22 +110,19 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   final String _alias;
   $FoosTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
+  GeneratedColumn<int> _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  GeneratedColumn<int> get id =>
+      _id ??= GeneratedColumn<int>('id', aliasedName, false,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  $FoosTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'foos';
   @override
-  String get $tableName => _alias ?? 'foos';
-  @override
-  final String actualTableName = 'foos';
+  String get actualTableName => 'foos';
   @override
   VerificationContext validateIntegrity(Insertable<Foo> instance,
       {bool isInserting = false}) {
@@ -125,8 +138,8 @@ class $FoosTable extends Foos with TableInfo<$FoosTable, Foo> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Foo map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Foo.fromData(data, _db, prefix: effectivePrefix);
+    return Foo.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
@@ -141,9 +154,8 @@ class Bar extends DataClass implements Insertable<Bar> {
   factory Bar.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
     return Bar(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: const IntType().mapFromDatabaseResponse(data['${effectivePrefix}id']),
     );
   }
   @override
@@ -153,6 +165,12 @@ class Bar extends DataClass implements Insertable<Bar> {
       map['id'] = Variable<int>(id);
     }
     return map;
+  }
+
+  BarsCompanion toCompanion(bool nullToAbsent) {
+    return BarsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+    );
   }
 
   factory Bar.fromJson(Map<String, dynamic> json,
@@ -175,13 +193,16 @@ class Bar extends DataClass implements Insertable<Bar> {
       );
   @override
   String toString() {
-    return (StringBuffer('Bar(')..write('id: $id')..write(')')).toString();
+    return (StringBuffer('Bar(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
   }
 
   @override
-  int get hashCode => $mrjf(id.hashCode);
+  int get hashCode => id.hashCode;
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       identical(this, other) || (other is Bar && other.id == this.id);
 }
 
@@ -215,6 +236,14 @@ class BarsCompanion extends UpdateCompanion<Bar> {
     }
     return map;
   }
+
+  @override
+  String toString() {
+    return (StringBuffer('BarsCompanion(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
+  }
 }
 
 class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
@@ -222,22 +251,19 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   final String _alias;
   $BarsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
+  GeneratedColumn<int> _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
+  GeneratedColumn<int> get id =>
+      _id ??= GeneratedColumn<int>('id', aliasedName, false,
+          typeName: 'INTEGER',
+          requiredDuringInsert: false,
+          defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   @override
   List<GeneratedColumn> get $columns => [id];
   @override
-  $BarsTable get asDslTable => this;
+  String get aliasedName => _alias ?? 'bars';
   @override
-  String get $tableName => _alias ?? 'bars';
-  @override
-  final String actualTableName = 'bars';
+  String get actualTableName => 'bars';
   @override
   VerificationContext validateIntegrity(Insertable<Bar> instance,
       {bool isInserting = false}) {
@@ -253,8 +279,8 @@ class $BarsTable extends Bars with TableInfo<$BarsTable, Bar> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Bar map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Bar.fromData(data, _db, prefix: effectivePrefix);
+    return Bar.fromData(data, _db,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override

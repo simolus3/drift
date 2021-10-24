@@ -42,7 +42,7 @@ class GeneratedColumn<T> extends Column<T> {
   final VerificationResult Function(T, VerificationMeta)? additionalChecks;
 
   /// The sql type name, such as TEXT for texts.
-  final String typeName;
+  final SqlType type;
 
   /// Whether a value is required for this column when inserting a new row.
   final bool requiredDuringInsert;
@@ -61,7 +61,7 @@ class GeneratedColumn<T> extends Column<T> {
     this.tableName,
     this.$nullable, {
     this.clientDefault,
-    required this.typeName,
+    required this.type,
     String? defaultConstraints,
     this.$customConstraints,
     this.defaultValue,
@@ -80,7 +80,7 @@ class GeneratedColumn<T> extends Column<T> {
       tableName,
       $nullable,
       clientDefault,
-      typeName,
+      type,
       _defaultConstraints,
       $customConstraints,
       defaultValue,
@@ -94,13 +94,13 @@ class GeneratedColumn<T> extends Column<T> {
   /// buffer.
   void writeColumnDefinition(GenerationContext into) {
     final isSerial = into.dialect == SqlDialect.postgres &&
-        typeName == 'INTEGER' &&
+        type is IntType &&
         _defaultConstraints == 'PRIMARY KEY AUTOINCREMENT';
 
     if (isSerial) {
-      into.buffer.write('$escapedName SERIAL PRIMARY KEY NOT NULL');
+      into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
     } else {
-      into.buffer.write('$escapedName $typeName');
+      into.buffer.write('$escapedName ${type.sqlName(into.dialect)}');
     }
 
     if ($customConstraints == null) {
@@ -225,7 +225,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     String tableName,
     bool nullable,
     S Function()? clientDefault,
-    String typeName,
+    SqlType type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,
@@ -236,7 +236,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
           tableName,
           nullable,
           clientDefault: clientDefault,
-          typeName: typeName,
+          type: type,
           defaultConstraints: defaultConstraints,
           $customConstraints: customConstraints,
           defaultValue: defaultValue,

@@ -8,20 +8,18 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  moor: ^4.0.0
+  drift: ^1.0.1
   json_annotation: ^4.0.0
 dev_dependencies:
   build_runner: ^2.0.0
-  moor_generator: ^4.0.0
+  drift_dev: ^1.0.2
   json_serializable: ^5.0.0
   test:
 
 dependency_overrides:
   drift:
     path: ../../../drift
-  moor:
-    path: ../../../moor
-  moor_generator:
-    path: ../../../moor_generator
+  drift_dev:
+    path: ../../../drift_dev
   sqlparser:
     path: ../../../sqlparser

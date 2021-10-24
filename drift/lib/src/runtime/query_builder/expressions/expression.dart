@@ -400,7 +400,7 @@ class _CastInSqlExpression<D1, D2> extends Expression<D2> {
 
     context.buffer.write('CAST(');
     inner.writeInto(context);
-    context.buffer.write(' AS ${type.sqlName})');
+    context.buffer.write(' AS ${type.sqlName(context.dialect)})');
   }
 }
 

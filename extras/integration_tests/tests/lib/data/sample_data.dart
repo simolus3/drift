@@ -1,4 +1,4 @@
-import 'package:moor/moor.dart';
+import 'package:drift/drift.dart';
 import 'package:tests/database/database.dart';
 
 const int dashId = 1, dukeId = 2, gopherId = 3;
