@@ -13,7 +13,7 @@ void migrationTests(TestExecutor executor) {
     final count = await database.userCount().getSingle();
     expect(count, 3);
 
-    await database.close();
+    await executor.clearDatabaseAndClose(database);
   });
 
   test('saves and restores database', () async {
@@ -29,7 +29,7 @@ void migrationTests(TestExecutor executor) {
     expect(database.schemaVersionChangedFrom, 1);
     expect(database.schemaVersionChangedTo, 2);
 
-    await database.close();
+    await executor.clearDatabaseAndClose(database);
   });
 
   test('can use destructive migration', () async {
@@ -43,6 +43,8 @@ void migrationTests(TestExecutor executor) {
     // No users now, we deleted everything
     final count = await database.userCount().getSingle();
     expect(count, 0);
+
+    await executor.clearDatabaseAndClose(database);
   });
 
   test('runs the migrator when downgrading', () async {
@@ -56,7 +58,7 @@ void migrationTests(TestExecutor executor) {
     expect(database.schemaVersionChangedFrom, 2);
     expect(database.schemaVersionChangedTo, 1);
 
-    await database.close();
+    await executor.clearDatabaseAndClose(database);
   });
 
   test('does not apply schema version when migration throws', () async {
@@ -79,9 +81,17 @@ void migrationTests(TestExecutor executor) {
 
     // Open it one last time, the schema version should still be at 1
     database = Database(executor.createConnection(), schemaVersion: 1);
-    final result =
-        await database.customSelect('PRAGMA user_version').getSingle();
+
+    QueryRow result;
+    if (database.executor.dialect == SqlDialect.sqlite) {
+      result = await database.customSelect('PRAGMA user_version').getSingle();
+    } else {
+      result = await database
+          .customSelect('SELECT version FROM __schema')
+          .getSingle();
+    }
     expect(result.data.values.single, 1);
-    await database.close();
+
+    await executor.clearDatabaseAndClose(database);
   });
 }

@@ -53,13 +53,14 @@ class _PgDelegate extends DatabaseDelegate {
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    versionDelegate = _PgVersionDelegate(_db);
-    await _db.open();
+    final pgVersionDelegate = _PgVersionDelegate(_db);
 
+    await _db.open();
+    await pgVersionDelegate.init();
     await _initializeDatabase();
 
+    versionDelegate = pgVersionDelegate;
     _isOpen = true;
-    return Future.value();
   }
 
   Future _ensureOpen() async {
@@ -70,10 +71,7 @@ class _PgDelegate extends DatabaseDelegate {
 
   Future<void> _initializeDatabase() async {
     // TODO: Do we need create these functions?
-    //_db.useMoorVersions();
     //setup?.call(_db);
-
-    versionDelegate = _PgVersionDelegate(_db);
   }
 
   final _regexIndexed = RegExp(r'\?(\d+)');
@@ -93,28 +91,14 @@ class _PgDelegate extends DatabaseDelegate {
   Future<void> runBatched(BatchedStatements statements) async {
     await _ensureOpen();
 
-    if (_ec == _db) {
-      await _db.transaction((connection) async {
-        for (final row in statements.arguments) {
-          final stmt = statements.statements[row.statementIndex];
-          final args = row.arguments;
+    for (final row in statements.arguments) {
+      final stmt = statements.statements[row.statementIndex];
+      final args = row.arguments;
 
-          await connection.execute(_convertStatement(stmt),
-              substitutionValues: args
-                  .asMap()
-                  .map((key, value) => MapEntry((key + 1).toString(), value)));
-        }
-      });
-    } else {
-      for (final row in statements.arguments) {
-        final stmt = statements.statements[row.statementIndex];
-        final args = row.arguments;
-
-        await _ec.execute(_convertStatement(stmt),
-            substitutionValues: args
-                .asMap()
-                .map((key, value) => MapEntry((key + 1).toString(), value)));
-      }
+      await _ec.execute(_convertStatement(stmt),
+          substitutionValues: args
+              .asMap()
+              .map((key, value) => MapEntry((key + 1).toString(), value)));
     }
 
     return Future.value();
@@ -122,6 +106,7 @@ class _PgDelegate extends DatabaseDelegate {
 
   Future<int> _runWithArgs(String statement, List<Object?> args) async {
     await _ensureOpen();
+
     if (args.isEmpty) {
       return _ec.execute(statement);
     } else {
@@ -178,28 +163,40 @@ class _PgDelegate extends DatabaseDelegate {
   }
 }
 
-/// TODO: create migrate version table
 class _PgVersionDelegate extends DynamicVersionDelegate {
   final PostgreSQLConnection database;
 
   _PgVersionDelegate(this.database);
 
   @override
-  Future<int> get schemaVersion => Future.value(0);
+  Future<int> get schemaVersion async {
+    final result = await database.query('SELECT version FROM __schema');
+    return result[0][0] as int;
+  }
+
+  Future init() async {
+    await database.query('CREATE TABLE IF NOT EXISTS __schema ('
+        'version integer NOT NULL DEFAULT 0)');
+    final count = await database.query('SELECT COUNT(*) FROM __schema');
+    if (count[0][0] as int == 0) {
+      await database.query('INSERT INTO __schema (version) VALUES (0)');
+    }
+  }
 
   @override
-  Future<void> setSchemaVersion(int version) {
-    return Future.value();
+  Future<void> setSchemaVersion(int version) async {
+    await database.query('UPDATE __schema SET version = @1',
+        substitutionValues: {'1': version});
   }
 }
 
-class _PgTransactionDelegate extends SupportedTransactionDelegate {
+class _PgTransactionDelegate extends WrappedTransactionDelegate {
   final PostgreSQLConnection _db;
 
   const _PgTransactionDelegate(this._db);
 
   @override
-  void startTransaction(Future Function(QueryDelegate p1) run) {
-    _db.transaction((connection) => run(_PgDelegate(_db, connection)));
+  Future runInTransaction(Future Function(QueryDelegate p1) run) async {
+    await _db.transaction((connection) => run(_PgDelegate(_db, connection)));
   }
 }

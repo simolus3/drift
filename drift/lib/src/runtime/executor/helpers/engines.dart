@@ -206,6 +206,17 @@ class _TransactionExecutor extends _BaseExecutor
         // that until send() was called.
         await _sendCalled.future;
       });
+    } else if (transactionManager is WrappedTransactionDelegate) {
+      unawaited(_db._synchronized(() async {
+        try {
+          await transactionManager.runInTransaction((transaction) async {
+            impl = transaction;
+            _sendFakeErrorOnRollback = true;
+            transactionStarted.complete();
+            await _sendCalled.future;
+          });
+        } catch (_) {}
+      }));
     } else {
       throw Exception('Invalid delegate: Has unknown transaction delegate');
     }
