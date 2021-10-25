@@ -150,9 +150,6 @@ the regular implementation.
 
 The following example is meant to be used with a regular Dart web app, compiled using
 [build_web_compilers](https://pub.dev/packages/build_web_compilers).
-Flutter users will have to use a different approach to compile service workers.
-As long as you can compile a separate Dart file (with a `main` function that's not your app)
-into a JS file, you can use that as a worker too.
 
 To write a web worker that will serve requests for drift, create a file called `worker.dart` in 
 the `web/` folder of your app. It could have the following content:
@@ -204,3 +201,38 @@ For more information on the `DatabaseConnection` class, see the documentation on
 
 A small, but working example is available under [extras/web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/web_worker_example)
 in the drift repository.
+
+### Flutter
+Flutter users will have to use a different approach to compile service workers.
+
+Example is available under [extras/flutter_web_worker_example](https://github.com/simolus3/moor/tree/develop/extras/flutter_web_worker_example)
+in the drift repository.
+
+Add [build_web_compilers](https://pub.dev/packages/build_web_compilers) to the project
+```yaml
+dev_dependencies:
+  build_web_compilers: ^3.2.1
+```
+
+Add these lines to `build.yaml`
+```yaml
+targets:
+  $default:
+    builders:
+      build_web_compilers:entrypoint:
+        generate_for:
+          - web/**.dart
+        options:
+          compiler: dart2js
+          dart2js_args:
+            - --no-minify #For debugging. Remove this line when build in release mode
+```
+
+Run compiler
+```shell
+rm -f web/worker.dart.*
+dart run build_runner build --delete-conflicting-outputs
+cp -f .dart_tool/build/generated/app_name/web/worker* web/
+```
+
+

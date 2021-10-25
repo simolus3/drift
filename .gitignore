@@ -13,3 +13,4 @@ benchmark_results.json
 flutter_export_environment.sh
 # Local Netlify folder
 .netlify
+extras/flutter_web_worker_example/build

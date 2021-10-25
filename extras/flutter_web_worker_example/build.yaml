@@ -1,0 +1,18 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          generate_connect_constructor: true
+          compact_query_methods: true
+          apply_converters_on_variables: true
+          generate_values_in_copy_with: true
+          named_parameters: true
+          new_sql_code_generation: true
+      build_web_compilers:entrypoint:
+        generate_for:
+          - web/**.dart
+        options:
+          compiler: dart2js
+          dart2js_args:
+            - --no-minify
