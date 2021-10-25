@@ -224,15 +224,39 @@ targets:
           - web/**.dart
         options:
           compiler: dart2js
+        dev_options:
           dart2js_args:
-            - --no-minify #For debugging. Remove this line when build in release mode
+            - --no-minify
+        release_options:
+          dart2js_args:
+            - -O4
 ```
 
-Run compiler
+Run compiler and copy resulting JS files to web folder:
 ```shell
-rm -f web/worker.dart.js
-dart run build_runner build --delete-conflicting-outputs
-cp -f .dart_tool/build/generated/app_name/web/worker.dart.js web/
+#Debug mode
+flutter pub run build_runner build --delete-conflicting-outputs -o web:build/web/
+cp -f build/web/worker.dart.js web/worker.dart.js
+```
+```shell
+#Release mode
+flutter pub run build_runner build --release --delete-conflicting-outputs -o web:build/web/
+cp -f build/web/worker.dart.js web/worker.dart.min.js
 ```
 
+Finally, connect to worker:
+```dart
+import 'dart:html';
 
+import 'package:drift/drift.dart';
+import 'package:drift/remote.dart';
+import 'package:drift/web.dart';
+import 'package:flutter/foundation.dart';
+
+DatabaseConnection connectToWorker(String databaseName) {
+  final worker = SharedWorker(
+      kReleaseMode ? 'worker.dart.min.js' : 'worker.dart.js', databaseName);
+  return remote(worker.port!.channel());
+}
+```
+You can pass that DatabaseConnection to your database by enabling the `generate_connect_constructor` build option.
