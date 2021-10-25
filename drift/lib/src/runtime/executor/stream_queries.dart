@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/utils/start_with_value_transformer.dart';
 import 'package:meta/meta.dart';
 
 import '../cancellation_zone.dart';
@@ -163,12 +162,7 @@ class StreamQueryStore {
     _isShuttingDown = true;
 
     for (final stream in _activeKeyStreams.values) {
-      // Note: StreamController.close waits until the done event has been
-      // received by a subscriber. If there is a paused StreamSubscription on
-      // a query stream, this would pause forever. In particular, this is
-      // causing deadlocks in tests.
-      // https://github.com/dart-lang/test/issues/1183#issuecomment-588357154
-      unawaited(stream._controller.close());
+      stream.close();
     }
     // awaiting this is fine - the stream is never exposed to users and we don't
     // pause any subscriptions on it.
@@ -182,33 +176,72 @@ class StreamQueryStore {
   }
 }
 
+typedef _Row = List<Map<String, Object?>>;
+
 class QueryStream {
   final QueryStreamFetcher _fetcher;
   final StreamQueryStore _store;
 
-  late final StreamController<List<Map<String, Object?>>> _controller =
-      StreamController.broadcast(
-    onListen: _onListen,
-    onCancel: _onCancel,
+  final List<MultiStreamController<_Row>> _activeListeners = [];
+  int _pausedListeners = 0;
+
+  // We're using a Stream.multi to implement a broadcast-ish stream with per-
+  // subscription pauses.
+  late final Stream<_Row> stream = Stream.multi(
+    (listener) {
+      if (_isClosed) {
+        listener.closeSync();
+        return;
+      }
+
+      var isPaused = false;
+
+      // When this callback is called we have a new listener, so invoke the
+      // handler now.
+      _activeListeners.add(listener);
+      _onListenOrResume(listener);
+
+      listener
+        ..onPause = () {
+          assert(!isPaused);
+          isPaused = true;
+          _pausedListeners++;
+
+          _activeListeners.remove(listener);
+          _onCancelOrPause();
+        }
+        ..onCancel = () {
+          if (isPaused) {
+            _pausedListeners--;
+          }
+
+          _activeListeners.remove(listener);
+          _onCancelOrPause();
+        }
+        ..onResume = () {
+          assert(isPaused);
+          isPaused = false;
+          _pausedListeners--;
+
+          _activeListeners.add(listener);
+          _onListenOrResume(listener);
+        };
+    },
+    isBroadcast: true,
   );
+
   StreamSubscription? _tablesChangedSubscription;
 
   List<Map<String, Object?>>? _lastData;
   final List<CancellationToken> _runningOperations = [];
-
-  Stream<List<Map<String, Object?>>> get stream {
-    return _controller.stream.transform(StartWithValueTransformer(_cachedData));
-  }
+  bool _isClosed = false;
 
   bool get hasKey => _fetcher.key != null;
 
   QueryStream(this._fetcher, this._store);
 
-  /// Called when we have a new listener, makes the stream query behave similar
-  /// to an `BehaviorSubject` from rxdart.
-  List<Map<String, Object?>>? _cachedData() => _lastData;
-
-  void _onListen() {
+  void _onListenOrResume(MultiStreamController<_Row> newListener) {
+    // First listener, start fetching data
     _store.markAsOpened(this);
 
     // fetch new data whenever any table referenced in this stream updates.
@@ -223,27 +256,45 @@ class QueryStream {
           _store.updatesForSync(_fetcher.readsFrom).listen((_) {
         // table has changed, invalidate cache
         _lastData = null;
-        fetchAndEmitData();
+
+        // It could be that we have no active, but some paused listeners. In
+        // that case, we still want to invalidate cached data but there's no
+        // point in fetching new data now. We'll load the query again after
+        // a listener unpauses.
+        if (_activeListeners.isNotEmpty) {
+          fetchAndEmitData();
+        }
       });
+    } else if (_lastData == null) {
+      if (_runningOperations.isEmpty) {
+        // We have a new listener, no cached data and we're not in the process
+        // of fetching data either. Let's run the query then!
+        fetchAndEmitData();
+      }
+    } else {
+      // Push the current snapshot of pending data to the listener
+      newListener.add(_lastData!);
     }
   }
 
-  void _onCancel() {
-    _store.markAsClosed(this, () {
-      // last listener gone, dispose
-      _tablesChangedSubscription?.cancel();
+  void _onCancelOrPause() {
+    if (_activeListeners.isEmpty && _pausedListeners == 0) {
+      _store.markAsClosed(this, () {
+        // last listener gone, dispose
+        _tablesChangedSubscription?.cancel();
 
-      // we don't listen for table updates anymore, and we're guaranteed to
-      // re-fetch data after a new listener comes in. We can't know if the table
-      // was updated in the meantime, but let's delete the cached data just in
-      // case
-      _lastData = null;
-      _tablesChangedSubscription = null;
+        // we don't listen for table updates anymore, and we're guaranteed to
+        // re-fetch data after a new listener comes in. We can't know if the
+        // table was updated in the meantime, but let's delete the cached data
+        // just in case.
+        _lastData = null;
+        _tablesChangedSubscription = null;
 
-      for (final op in _runningOperations) {
-        op.cancel();
-      }
-    });
+        for (final op in _runningOperations) {
+          op.cancel();
+        }
+      });
+    }
   }
 
   Future<void> fetchAndEmitData() async {
@@ -255,12 +306,12 @@ class QueryStream {
       if (data == null) return;
 
       _lastData = data;
-      if (!_controller.isClosed) {
-        _controller.add(data);
+      for (final listener in _activeListeners) {
+        listener.add(data);
       }
     } catch (e, s) {
-      if (!_controller.isClosed) {
-        _controller.addError(e, s);
+      for (final listener in _activeListeners) {
+        listener.addError(e, s);
       }
     } finally {
       _runningOperations.remove(operation);
@@ -268,7 +319,11 @@ class QueryStream {
   }
 
   void close() {
-    _controller.close();
+    _isClosed = true;
+    for (final listener in _activeListeners) {
+      listener.close();
+    }
+    _activeListeners.clear();
   }
 }
 
