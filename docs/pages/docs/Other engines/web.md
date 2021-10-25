@@ -230,9 +230,9 @@ targets:
 
 Run compiler
 ```shell
-rm -f web/worker.dart.*
+rm -f web/worker.dart.js
 dart run build_runner build --delete-conflicting-outputs
-cp -f .dart_tool/build/generated/app_name/web/worker* web/
+cp -f .dart_tool/build/generated/app_name/web/worker.dart.js web/
 ```
 
 
