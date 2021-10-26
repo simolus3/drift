@@ -14,12 +14,14 @@ import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+import 'package:sqlparser/sqlparser.dart'
+    show CreateViewStatement, ReferenceAction, SqlEngine;
 
 import '../custom_row_class.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';
+part 'view_parser.dart';
 part 'use_dao_parser.dart';
 part 'use_moor_parser.dart';
 

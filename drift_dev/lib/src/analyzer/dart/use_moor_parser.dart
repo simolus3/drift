@@ -38,13 +38,19 @@ class UseMoorParser {
     final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
     final daoTypes = _readDaoTypes(annotation);
 
-    return Database(
+    final database = Database(
       declaration: DatabaseOrDaoDeclaration(element, step.file),
       declaredTables: parsedTables,
       daos: daoTypes,
       declaredIncludes: includes,
       declaredQueries: parsedQueries,
     );
+
+    /*for (final table in parsedTables) {
+      database.entities.addAll(table.views);
+    }*/
+
+    return database;
   }
 
   List<DartType> _readDaoTypes(ConstantReader annotation) {

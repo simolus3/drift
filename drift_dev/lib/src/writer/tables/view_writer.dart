@@ -39,9 +39,10 @@ class ViewWriter extends TableOrViewWriter {
     buffer
       ..write('{\n')
       ..write('${view.entityInfoName}(): super(')
-      ..write(asDartLiteral(view.name))
+      ..write(asDartLiteral(view.tableName))
       ..write(',')
-      ..write(asDartLiteral(view.createSql(scope.options)))
+      ..write(
+          view.virtual ? null : asDartLiteral(view.createSql(scope.options)))
       ..write(');');
 
     writeGetColumnsOverride();

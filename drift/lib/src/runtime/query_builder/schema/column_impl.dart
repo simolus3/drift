@@ -55,6 +55,9 @@ class GeneratedColumn<T> extends Column<T> {
   @override
   String get name => $name;
 
+  /// Virtual column
+  final String? virtualSql;
+
   /// Used by generated code.
   GeneratedColumn(
     this.$name,
@@ -67,6 +70,7 @@ class GeneratedColumn<T> extends Column<T> {
     this.defaultValue,
     this.additionalChecks,
     this.requiredDuringInsert = false,
+    this.virtualSql,
   }) : _defaultConstraints = defaultConstraints;
 
   /// Applies a type converter to this column.
@@ -126,12 +130,16 @@ class GeneratedColumn<T> extends Column<T> {
 
   @override
   void writeInto(GenerationContext context, {bool ignoreEscape = false}) {
-    if (context.hasMultipleTables) {
-      context.buffer
-        ..write(tableName)
-        ..write('.');
+    if (virtualSql != null) {
+      context.buffer.write(virtualSql!);
+    } else {
+      if (context.hasMultipleTables) {
+        context.buffer
+          ..write(tableName)
+          ..write('.');
+      }
+      context.buffer.write(ignoreEscape ? $name : escapedName);
     }
-    context.buffer.write(ignoreEscape ? $name : escapedName);
   }
 
   /// Checks whether the given value fits into this column. The default

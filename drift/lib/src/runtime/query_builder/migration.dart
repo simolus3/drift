@@ -181,7 +181,7 @@ class Migrator {
 
       context.buffer.write('INSERT INTO $temporaryName (');
       var first = true;
-      for (final column in table.$columns) {
+      for (final column in table.$nvColumns) {
         final transformer = migration.columnTransformer[column];
 
         if (transformer != null || !migration.newColumns.contains(column)) {
@@ -235,15 +235,16 @@ class Migrator {
         '${escapeIfNeeded(table.$tableName)} (');
 
     var hasAutoIncrement = false;
-    for (var i = 0; i < table.$columns.length; i++) {
-      final column = table.$columns[i];
+    final columns = table.$nvColumns;
+    for (var i = 0; i < columns.length; i++) {
+      final column = columns[i];
       if (column.hasAutoIncrement) {
         hasAutoIncrement = true;
       }
 
       column.writeColumnDefinition(context);
 
-      if (i < table.$columns.length - 1) context.buffer.write(', ');
+      if (i < columns.length - 1) context.buffer.write(', ');
     }
 
     final dslTable = table.asDslTable;
@@ -305,8 +306,10 @@ class Migrator {
   }
 
   /// Executes a `CREATE VIEW` statement to create the [view].
-  Future<void> createView(View view) {
-    return _issueCustomQuery(view.createViewStmt, const []);
+  Future<void> createView(View view) async {
+    if (view.createViewStmt != null) {
+      await _issueCustomQuery(view.createViewStmt!, const []);
+    }
   }
 
   /// Drops a table, trigger or index.

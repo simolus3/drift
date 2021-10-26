@@ -242,6 +242,9 @@ extension BuildColumn<T> on ColumnBuilder<T> {
     _isGenerated();
   }
 
+  /// Virtual column
+  ColumnBuilder<T> virtual(String sql) => _isGenerated();
+
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, the generator will take a look at your
   /// source code to figure out your table structure.

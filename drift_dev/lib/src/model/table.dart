@@ -2,6 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/model/used_type_converter.dart';
+import 'package:drift_dev/src/model/view.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -40,9 +41,16 @@ class MoorTable extends MoorEntityWithResultSet {
   @override
   String get dslName => fromClass?.name ?? entityInfoName;
 
-  /// The columns declared in this table.
+  /// All columns declared in this table.
   @override
   final List<MoorColumn> columns;
+
+  /// Non-virtual columns declared in this table.
+  List<MoorColumn> get sqlColumns =>
+      columns.where((c) => c.virtualSql == null).toList();
+
+  /// The columns declared in this table.
+  final List<MoorView> views;
 
   /// The name of this table when stored in the database
   final String sqlName;
@@ -136,6 +144,7 @@ class MoorTable extends MoorEntityWithResultSet {
   MoorTable({
     this.fromClass,
     this.columns = const [],
+    this.views = const [],
     required this.sqlName,
     required this.dartTypeName,
     this.primaryKey,
@@ -169,7 +178,8 @@ class MoorTable extends MoorEntityWithResultSet {
 
     if (column.defaultArgument != null ||
         column.clientDefaultCode != null ||
-        column.nullable) {
+        column.nullable ||
+        column.virtualSql != null) {
       // default value would be applied, so it's not required for inserts
       return false;
     }

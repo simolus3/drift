@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/sqlite_keywords.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/utils/extensions.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
@@ -29,21 +30,18 @@ part 'expressions/in.dart';
 part 'expressions/null_check.dart';
 part 'expressions/text.dart';
 part 'expressions/variables.dart';
-
+part 'generation_context.dart';
+part 'migration.dart';
 part 'schema/column_impl.dart';
 part 'schema/entities.dart';
 part 'schema/table_info.dart';
-
-part 'statements/select/custom_select.dart';
-part 'statements/select/select.dart';
-part 'statements/select/select_with_join.dart';
 part 'statements/delete.dart';
 part 'statements/insert.dart';
 part 'statements/query.dart';
+part 'statements/select/custom_select.dart';
+part 'statements/select/select.dart';
+part 'statements/select/select_with_join.dart';
 part 'statements/update.dart';
-
-part 'generation_context.dart';
-part 'migration.dart';
 
 /// A component is anything that can appear in a sql query.
 abstract class Component {

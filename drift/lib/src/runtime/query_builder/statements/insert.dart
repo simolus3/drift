@@ -120,7 +120,7 @@ class InsertStatement<T extends Table, D> {
 
     // apply default values for columns that have one
     final map = <String, Expression>{};
-    for (final column in table.$columns) {
+    for (final column in table.$nvColumns) {
       final columnName = column.$name;
 
       if (rawValues.containsKey(columnName)) {

@@ -11,8 +11,7 @@ class Entrie extends DataClass implements Insertable<Entrie> {
   final int id;
   final String value;
   Entrie({required this.id, required this.value});
-  factory Entrie.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Entrie.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Entrie(
       id: const IntType()
@@ -167,7 +166,7 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Entrie map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Entrie.fromData(data, _db,
+    return Entrie.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

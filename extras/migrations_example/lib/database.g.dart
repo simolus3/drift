@@ -11,8 +11,7 @@ class User extends DataClass implements Insertable<User> {
   final int id;
   final String name;
   User({required this.id, required this.name});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType()
@@ -165,7 +164,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -185,8 +184,7 @@ class Group extends DataClass implements Insertable<Group> {
       required this.title,
       this.deleted,
       required this.owner});
-  factory Group.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Group.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Group(
       id: const IntType()
@@ -413,7 +411,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Group map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Group.fromData(data, _db,
+    return Group.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 

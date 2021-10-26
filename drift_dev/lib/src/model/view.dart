@@ -23,6 +23,8 @@ class MoorView extends MoorEntityWithResultSet {
 
   final String name;
 
+  final String tableName;
+
   @override
   List<MoorSchemaEntity> references = [];
 
@@ -38,12 +40,16 @@ class MoorView extends MoorEntityWithResultSet {
   @override
   ExistingRowClass? existingRowClass;
 
+  final bool virtual;
+
   MoorView({
     this.declaration,
     required this.name,
+    required this.tableName,
     required this.dartTypeName,
     required this.entityInfoName,
     this.existingRowClass,
+    this.virtual = false,
   });
 
   @override
@@ -73,6 +79,7 @@ class MoorView extends MoorEntityWithResultSet {
     return MoorView(
       declaration: MoorViewDeclaration(stmt, file),
       name: stmt.viewName,
+      tableName: stmt.viewName,
       dartTypeName: dataClassName,
       entityInfoName: entityInfoName,
     );

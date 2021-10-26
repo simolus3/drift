@@ -6,11 +6,9 @@ part of 'database.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Preferences _$PreferencesFromJson(Map<String, dynamic> json) {
-  return Preferences(
-    json['receiveEmails'] as bool,
-  );
-}
+Preferences _$PreferencesFromJson(Map<String, dynamic> json) => Preferences(
+      json['receiveEmails'] as bool,
+    );
 
 Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
     <String, dynamic>{
@@ -134,12 +132,8 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          name.hashCode,
-          $mrjc(birthDate.hashCode,
-              $mrjc(profilePicture.hashCode, preferences.hashCode)))));
+  int get hashCode =>
+      Object.hash(id, name, birthDate, profilePicture, preferences);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -264,9 +258,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           typeName: 'BLOB', requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
-  late final GeneratedColumn<String?> preferences = GeneratedColumn<String?>(
-      'preferences', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumnWithTypeConverter<Preferences, String?>
+      preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
+              typeName: 'TEXT', requiredDuringInsert: false)
+          .withConverter<Preferences>($UsersTable.$converter0);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
@@ -395,8 +390,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(firstUser.hashCode,
-      $mrjc(secondUser.hashCode, reallyGoodFriends.hashCode)));
+  int get hashCode => Object.hash(firstUser, secondUser, reallyGoodFriends);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -548,8 +542,13 @@ abstract class _$Database extends GeneratedDatabase {
   Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
         'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-        variables: [Variable<int>(amount)],
-        readsFrom: {users, friendships}).map(users.mapFromRow);
+        variables: [
+          Variable<int>(amount)
+        ],
+        readsFrom: {
+          users,
+          friendships,
+        }).map(users.mapFromRow);
   }
 
   Selectable<int> amountOfGoodFriends(int user) {
@@ -559,15 +558,20 @@ abstract class _$Database extends GeneratedDatabase {
           Variable<int>(user)
         ],
         readsFrom: {
-          friendships
+          friendships,
         }).map((QueryRow row) => row.read<int>('COUNT(*)'));
   }
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
         'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND\n             user.id != :user\n       WHERE (f.first_user = :user OR f.second_user = :user)',
-        variables: [Variable<int>(user)],
-        readsFrom: {friendships, users}).map((QueryRow row) {
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          friendships,
+          users,
+        }).map((QueryRow row) {
       return FriendshipsOfResult(
         reallyGoodFriends: row.read<bool>('really_good_friends'),
         user: users.mapFromRow(row, tablePrefix: 'nested_0'),
@@ -578,14 +582,20 @@ abstract class _$Database extends GeneratedDatabase {
   Selectable<int> userCount() {
     return customSelect('SELECT COUNT(id) FROM users',
         variables: [],
-        readsFrom: {users}).map((QueryRow row) => row.read<int>('COUNT(id)'));
+        readsFrom: {
+          users,
+        }).map((QueryRow row) => row.read<int>('COUNT(id)'));
   }
 
   Selectable<Preferences?> settingsFor(int user) {
     return customSelect('SELECT preferences FROM users WHERE id = :user',
-            variables: [Variable<int>(user)], readsFrom: {users})
-        .map((QueryRow row) => $UsersTable.$converter0
-            .mapToDart(row.read<String?>('preferences')));
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          users,
+        }).map((QueryRow row) =>
+        $UsersTable.$converter0.mapToDart(row.read<String?>('preferences')));
   }
 
   Selectable<User> usersById(List<int> var1) {
@@ -593,8 +603,12 @@ abstract class _$Database extends GeneratedDatabase {
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
     return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
-        variables: [for (var $ in var1) Variable<int>($)],
-        readsFrom: {users}).map(users.mapFromRow);
+        variables: [
+          for (var $ in var1) Variable<int>($)
+        ],
+        readsFrom: {
+          users,
+        }).map(users.mapFromRow);
   }
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
@@ -624,7 +638,7 @@ class FriendshipsOfResult {
     required this.user,
   });
   @override
-  int get hashCode => $mrjf($mrjc(reallyGoodFriends.hashCode, user.hashCode));
+  int get hashCode => Object.hash(reallyGoodFriends, user);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

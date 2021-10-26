@@ -35,7 +35,7 @@ class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
   Set<ResultSetImplementation> get watchedTables => {table};
 
   @override
-  int get _returnedColumnCount => table.$columns.length;
+  int get _returnedColumnCount => table.$nvColumns.length;
 
   @override
   void writeStartPart(GenerationContext ctx) {

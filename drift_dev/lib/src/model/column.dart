@@ -106,6 +106,9 @@ class MoorColumn implements HasDeclaration, HasType {
   /// Stored as a multi line string with leading triple-slashes `///` for every line
   final String? documentationComment;
 
+  /// Virtual column
+  final String? virtualSql;
+
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
@@ -180,6 +183,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.typeConverter,
     this.declaration,
     this.documentationComment,
+    this.virtualSql,
   });
 }
 

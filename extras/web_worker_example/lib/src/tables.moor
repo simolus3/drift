@@ -1,8 +1,0 @@
-CREATE TABLE entries(
-  id INTEGER PRIMARY KEY,
-  text TEXT AS value NOT NULL
-);
-
-allEntries: SELECT * FROM entries;
-addEntry: INSERT INTO entries (text) VALUES (?);
-clearEntries: DELETE FROM entries;

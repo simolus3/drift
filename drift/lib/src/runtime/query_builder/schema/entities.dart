@@ -62,7 +62,7 @@ abstract class View<Self, Row> extends ResultSetImplementation<Self, Row>
   final String entityName;
 
   /// The `CREATE VIEW` sql statement that can be used to create this view.
-  final String createViewStmt;
+  final String? createViewStmt;
 
   /// Creates an view model by the [createViewStmt] and its [entityName].
   /// Mainly used by generated code.

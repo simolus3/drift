@@ -97,6 +97,10 @@ abstract class TableOrViewWriter {
       additionalParams['clientDefault'] = column.clientDefaultCode!;
     }
 
+    if (column.virtualSql != null) {
+      additionalParams['virtualSql'] = asDartLiteral(column.virtualSql!);
+    }
+
     final innerType = column.innerColumnType(options);
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer

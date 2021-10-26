@@ -53,6 +53,10 @@ abstract class Table extends HasResultSet {
   @visibleForOverriding
   Set<Column>? get primaryKey => null;
 
+  ///
+  @visibleForOverriding
+  List<ViewDefinition> get views => [];
+
   /// Custom table constraints that should be added to the table.
   ///
   /// See also:
@@ -116,6 +120,17 @@ abstract class Table extends HasResultSet {
   /// ```
   @protected
   ColumnBuilder<double> real() => _isGenerated();
+
+  ///
+  @protected
+  ViewDefinition view(String name, {required List<Column> columns}) =>
+      _isGenerated();
+
+  ///
+  @protected
+  ViewDefinition viewClass(Type type,
+          {String? constructor, required List<Column> columns}) =>
+      _isGenerated();
 }
 
 /// A class to be used as an annotation on [Table] classes to customize the
@@ -169,3 +184,6 @@ class UseRowClass {
   const UseRowClass(this.type,
       {this.constructor = '', this.generateInsertable = false});
 }
+
+///
+class ViewDefinition {}

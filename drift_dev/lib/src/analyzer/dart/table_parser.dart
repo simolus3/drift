@@ -12,12 +12,13 @@ class TableParser {
 
     final columns = (await _parseColumns(element)).toList();
     final primaryKey = await _readPrimaryKey(element, columns);
-
     final dataClassInfo = _readDataClassInformation(columns, element);
+    final views = await _readViews(element, columns, sqlName);
 
     final table = MoorTable(
       fromClass: element,
       columns: columns,
+      views: views ?? const [],
       sqlName: escapeIfNeeded(sqlName),
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
@@ -172,6 +173,11 @@ class TableParser {
     }
 
     return parsedPrimaryKey;
+  }
+
+  Future<List<MoorView>?> _readViews(
+      ClassElement element, List<MoorColumn> columns, String tableName) {
+    return ViewParser().parseView(element, columns, tableName, base);
   }
 
   Future<bool?> _overrideWithoutRowId(ClassElement element) async {

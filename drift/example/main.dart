@@ -8,10 +8,72 @@ part 'main.g.dart';
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
-  TextColumn get content => text().nullable()();
+  TextColumn get content => text()();
+  IntColumn get priority => integer()();
+  IntColumn get groupId => integer().references(TodoGroups, #id)();
+
+  // Non-nullable virtual columns are included in queries by default
+  TextColumn get titleWithContent =>
+      text().virtual("todo_items.title || ': ' || todo_items.content")();
+
+  // Nullable virtual columns are not included in queries by default
+  // You must use 'addColumns' to add virtual columns to queries
+  TextColumn get titleWithPriority => text()
+      .virtual("todo_items.title || ' (' || todo_items.priority || ')'")
+      .nullable()();
+
+  // You can use virtual columns for join statements
+  TextColumn get groupName => text().virtual('todo_groups.title').nullable()();
+
+  // You can use auto-generated and custom class views too
+  @override
+  List<ViewDefinition> get views => [
+        view('TodoPriorityListItem', columns: [id, titleWithPriority]),
+        viewClass(TodoListItemWithGroupName, columns: [title, groupName]),
+      ];
 }
 
-@DriftDatabase(tables: [TodoItems])
+@UseRowClass(TodoGroupModel)
+class TodoGroups extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
+
+  // You can use virtual column for groupBy statements
+  // It is better than ".count()" expression, because you get the
+  // count value in the model
+  IntColumn get itemCount =>
+      integer().virtual('COUNT(todo_items.id)').nullable()();
+
+  @override
+  List<ViewDefinition> get views => [
+        view('TodoGroupWithCount', columns: [id, itemCount])
+      ];
+}
+
+class TodoGroupModel {
+  final int id;
+  final String title;
+  final int? itemCount;
+
+  TodoGroupModel(this.id, this.title, this.itemCount);
+
+  @override
+  String toString() => 'TodoGroupModel(id: $id, title: $title,'
+      ' itemCount: $itemCount)';
+}
+
+class TodoListItemWithGroupName {
+  final String title;
+  final String? groupName;
+
+  TodoListItemWithGroupName(this.title, this.groupName);
+
+  @override
+  String toString() => 'TodoListItemWithGroupName(title: $title,'
+      ' groupName: $groupName)';
+}
+
+@DriftDatabase(tables: [TodoItems, TodoGroups])
 class Database extends _$Database {
   Database(QueryExecutor e) : super(e);
 
@@ -24,14 +86,26 @@ class Database extends _$Database {
       onCreate: (m) async {
         await m.createAll();
 
+        await batch((b) async {
+          const groupComp = TodoGroupsCompanion(title: Value('ToDo Group'));
+          b.insert(todoGroups, groupComp);
+        });
+
         // Add a bunch of default items in a batch
-        await batch((b) {
+        await batch((b) async {
+          final group = await select(todoGroups).getSingle();
           b.insertAll(todoItems, [
-            TodoItemsCompanion.insert(title: 'A first entry'),
+            TodoItemsCompanion.insert(
+                title: 'A first entry',
+                content: 'Content of first entry',
+                priority: 3,
+                groupId: group.id),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
-              content: const Value('Drift is a persistence library for Dart '
-                  'and Flutter applications.'),
+              content: 'Drift is a persistence library for Dart '
+                  'and Flutter applications.',
+              priority: 6,
+              groupId: group.id,
             ),
           ]);
         });
@@ -43,7 +117,8 @@ class Database extends _$Database {
   // table description.
   //
   // In drift, queries can be watched by using .watch() in the end.
-  // For more information on queries, see https://drift.simonbinder.eu/docs/getting-started/writing_queries/
+  // For more information on queries,
+  // see https://drift.simonbinder.eu/docs/getting-started/writing_queries/
   Stream<List<TodoItem>> get allItems => select(todoItems).watch();
 }
 
@@ -51,14 +126,78 @@ Future<void> main() async {
   // Create an in-memory instance of the database with todo items.
   final db = Database(NativeDatabase.memory());
 
-  db.allItems.listen((event) {
-    print('Todo-item in database: $event');
-  });
+  final group = await db.select(db.todoGroups).getSingle();
 
   // Add another entry
-  await db
-      .into(db.todoItems)
-      .insert(TodoItemsCompanion.insert(title: 'Another entry added later'));
+  await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
+      title: 'Another entry added later',
+      content: 'Content of another entry',
+      priority: 1,
+      groupId: group.id));
+
+  // You have to use JoinedSelectStatement for virtual columns
+  print('-- Simple query without titleWithPriority --');
+  final query1 = db.select(db.todoItems).join([]);
+  for (final row in await query1.get()) {
+    print(row.readTable(db.todoItems));
+  }
+
+  print('\n-- Simple query with titleWithPriority --');
+  final query2 =
+      db.select(db.todoItems).addColumns([db.todoItems.titleWithPriority]);
+  for (final row in await query2.get()) {
+    print(row.readTable(db.todoItems));
+  }
+
+  print('\n-- Todo view query with titleWithPriority --');
+  final query3 = db
+      .select(db.todoPriorityListItem)
+      .addColumns([db.todoItems.titleWithPriority]);
+  for (final row in await query3.get()) {
+    print(row.readTable(db.todoPriorityListItem));
+  }
+
+  print('\n-- Todo view query with group name --');
+  final query4 = db.select(db.todoListItemWithGroupName).join([
+    innerJoin(
+      db.todoGroups,
+      db.todoGroups.id.equalsExp(db.todoItems.groupId),
+      useColumns: false,
+    )
+  ])
+    ..addColumns([db.todoItems.groupName]);
+
+  for (final row in await query4.get()) {
+    print(row.readTable(db.todoListItemWithGroupName));
+  }
+
+  print('\n-- Todo group query with todo count --');
+  final query5 = db.select(db.todoGroupWithCount).join([
+    innerJoin(
+      db.todoItems,
+      db.todoItems.groupId.equalsExp(db.todoGroups.id),
+      useColumns: false,
+    )
+  ])
+    ..addColumns([db.todoGroups.itemCount]);
+
+  for (final row in await query5.get()) {
+    print(row.readTable(db.todoGroupWithCount));
+  }
+
+  // You can use simple selects when all virtual columns are nullable
+  print('\n-- Simple select group list --');
+  final allGroups = await db.select(db.todoGroups).get();
+  allGroups.forEach(print);
+
+  // You can't use simple selects if you have non-nullable virtual columns!
+  print('\n-- Simple select todo list --');
+  try {
+    final allItems = await db.select(db.todoItems).get();
+    allItems.forEach(print);
+  } catch (e) {
+    print(e);
+  }
 
   // Delete all todo items
   await db.delete(db.todoItems).go();

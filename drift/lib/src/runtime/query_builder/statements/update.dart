@@ -123,7 +123,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here
-    for (final column in table.$columns) {
+    for (final column in table.$nvColumns) {
       // if a default value exists and no value is set, apply the default
       if (column.defaultValue != null &&
           !_updatedFields.containsKey(column.$name)) {

@@ -44,7 +44,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   int get _returnedColumnCount {
     return _joins.fold(_selectedColumns.length, (prev, join) {
       if (join.includeInResult) {
-        return prev + join.table.$columns.length;
+        return prev + join.table.$rvColumns.length;
       }
       return prev;
     });
@@ -71,7 +71,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   void writeStartPart(GenerationContext ctx) {
     // use all columns across all tables as result column for this query
     _selectedColumns.insertAll(
-        0, _queriedTables(true).expand((t) => t.$columns).cast<Expression>());
+        0, _queriedTables(true).expand((t) => t.$rvColumns).cast<Expression>());
 
     ctx.hasMultipleTables = true;
     ctx.buffer
@@ -235,7 +235,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       for (final table in _queriedTables(true)) {
         final prefix = '${table.aliasedName}.';
         // if all columns of this table are null, skip the table
-        if (table.$columns.any((c) => row[prefix + c.$name] != null)) {
+        if (table.$rvColumns.any((c) => row[prefix + c.$name] != null)) {
           readTables[table] = table.map(row, tablePrefix: table.aliasedName);
         }
       }

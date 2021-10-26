@@ -27,6 +27,7 @@ const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
+const String _methodVirtual = 'virtual';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -66,6 +67,7 @@ class ColumnParser {
     String? foundStartMethod;
     String? foundExplicitName;
     String? foundCustomConstraint;
+    String? foundVirtualSql;
     Expression? foundDefaultExpression;
     Expression? clientDefaultExpression;
     Expression? createdTypeConverter;
@@ -249,6 +251,32 @@ class ColumnParser {
           createdTypeConverter = expression;
           typeConverterRuntime = type;
           break;
+        case _methodVirtual:
+          if (foundVirtualSql != null) {
+            base.step.reportError(
+              ErrorInDartCode(
+                severity: Severity.warning,
+                affectedElement: getter.declaredElement,
+                message:
+                    "You're setting more than one virtual here, the first will "
+                    'be used',
+              ),
+            );
+          }
+
+          foundVirtualSql = base.readStringLiteral(
+              remainingExpr.argumentList.arguments.first, () {
+            base.step.reportError(
+              ErrorInDartCode(
+                severity: Severity.error,
+                affectedElement: getter.declaredElement,
+                message:
+                    'This table name is cannot be resolved! Please only use '
+                    'a constant string as parameter for .virtual().',
+              ),
+            );
+          });
+          break;
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -322,6 +350,7 @@ class ColumnParser {
       typeConverter: converter,
       declaration: DartColumnDeclaration(element, base.step.file),
       documentationComment: docString,
+      virtualSql: foundVirtualSql,
     );
   }
 

@@ -30,6 +30,9 @@ class AnalyzeDartStep extends AnalyzingStep {
 
         // Not a Dart table that we already included - add it now
         unsortedEntities.add(declaredHere);
+        if (declaredHere is MoorTable) {
+          declaredHere.views.forEach(unsortedEntities.add);
+        }
         if (declaration is DartTableDeclaration) {
           tableDartClasses[declaration.element] = declaredHere;
         }
