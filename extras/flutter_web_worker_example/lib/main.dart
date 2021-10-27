@@ -39,19 +39,25 @@ class _DatabaseSampleState extends State<_DatabaseSample> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          SizedBox(
             width: 200,
             child: TextField(
               controller: editController,
-              decoration: InputDecoration(border: OutlineInputBorder()),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
           ),
-          SizedBox(height: 20),
-          ElevatedButton(onPressed: addPressed, child: Text('Add')),
-          SizedBox(height: 20),
-          Text('Entries',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child:
+                ElevatedButton(onPressed: addPressed, child: const Text('Add')),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              'Entries',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
           for (var e in allItems) Text(e.value),
         ],
       ),

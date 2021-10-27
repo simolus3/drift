@@ -1,4 +1,4 @@
-This example demonstrates how a shared web worker can be used with Flutter. 
+This example demonstrates how a shared web worker can be used with Drift and Flutter. 
 
 To run this example:
 - Run `./generate_js.sh` 
