@@ -24,6 +24,8 @@ part 'database.g.dart';
   include: {'tables.drift'},
 )
 class MyDb extends _$MyDb {
+  // This example creates a simple in-memory database (without actual persistence).
+  // To actually store data, see the database setups from other "Getting started" guides.
   MyDb() : super(NativeDatabase.memory());
 
   @override
