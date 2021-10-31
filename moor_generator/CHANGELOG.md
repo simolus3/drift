@@ -7,6 +7,8 @@ At the next breaking release, moor will  be discontinued in favor of the `drift`
 Please consider migrating to `drift` at a suitable opportunity.
 Automated migration tooling exists! See https://drift.simonbinder.eu/name for details.
 
+Version 4.6.0+1 adds information about the name change to the README.
+
 ## 4.5.1
 
 - Fix generating parameters when `named_parameters_always_required` is enabled.
