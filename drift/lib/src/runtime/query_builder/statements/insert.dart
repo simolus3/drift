@@ -141,7 +141,7 @@ class InsertStatement<T extends Table, D> {
     if (ctx.dialect == SqlDialect.postgres &&
         mode != InsertMode.insert &&
         mode != InsertMode.insertOrIgnore) {
-      throw ArgumentError('$mode not supported');
+      throw ArgumentError('$mode not supported on postgres');
     }
 
     ctx.buffer
