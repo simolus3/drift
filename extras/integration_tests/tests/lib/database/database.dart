@@ -75,14 +75,14 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'mostPopularUsers': 'SELECT * FROM users u '
         'ORDER BY (SELECT COUNT(*) FROM friendships '
         'WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-    'amountOfGoodFriends':
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND '
-            '(f.first_user = :user OR f.second_user = :user)',
+    'amountOfGoodFriends': 'SELECT COUNT(*) FROM friendships f WHERE '
+        'f.really_good_friends = 1 AND '
+        '(f.first_user = :user OR f.second_user = :user)',
     'friendshipsOf': ''' SELECT 
-          f.really_good_friends, user.**
+          f.really_good_friends, "user".**
        FROM friendships f
-         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND
-             user.id != :user
+         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND
+             "user".id != :user
        WHERE (f.first_user = :user OR f.second_user = :user)''',
     'userCount': 'SELECT COUNT(id) FROM users',
     'settingsFor': 'SELECT preferences FROM users WHERE id = :user',
@@ -184,7 +184,13 @@ class Database extends _$Database {
       reallyGoodFriends: friendsValue,
     );
 
-    await into(friendships).insert(companion, mode: InsertMode.insertOrReplace);
+    if (connection.executor.dialect == SqlDialect.sqlite) {
+      await into(friendships)
+          .insert(companion, mode: InsertMode.insertOrReplace);
+    } else if (connection.executor.dialect == SqlDialect.postgres) {
+      await into(friendships)
+          .insert(companion, mode: InsertMode.insertOrIgnore);
+    }
   }
 
   Future<void> updateSettings(int userId, Preferences c) async {
