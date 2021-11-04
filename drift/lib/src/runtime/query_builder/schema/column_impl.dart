@@ -97,9 +97,7 @@ class GeneratedColumn<T> extends Column<T> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(GenerationContext into) {
-    final isSerial = into.dialect == SqlDialect.postgres &&
-        type is IntType &&
-        _defaultConstraints == 'PRIMARY KEY AUTOINCREMENT';
+    final isSerial = into.dialect == SqlDialect.postgres && hasAutoIncrement;
 
     if (isSerial) {
       into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
