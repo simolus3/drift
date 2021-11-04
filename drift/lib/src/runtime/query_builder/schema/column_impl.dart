@@ -41,8 +41,12 @@ class GeneratedColumn<T> extends Column<T> {
   /// Additional checks performed on values before inserts or updates.
   final VerificationResult Function(T, VerificationMeta)? additionalChecks;
 
-  /// The sql type name, such as TEXT for texts.
+  /// The sql type, such as `StringType` for texts.
   final SqlType type;
+
+  /// The sql type name, such as `TEXT` for texts.
+  @Deprecated('Use type.sqlName instead')
+  String get typeName => type.sqlName(SqlDialect.sqlite);
 
   /// Whether a value is required for this column when inserting a new row.
   final bool requiredDuringInsert;
