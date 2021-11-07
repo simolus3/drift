@@ -231,8 +231,8 @@ class InsertStatement<T extends Table, D> {
     } else if (ctx.dialect == SqlDialect.postgres) {
       if (table.$primaryKey.length == 1) {
         final id = table.$primaryKey.firstOrNull;
-        if (id is IntType) {
-          ctx.buffer.write(' RETURNING $id');
+        if (id != null && id.type is IntType) {
+          ctx.buffer.write(' RETURNING ${id.name}');
         }
       }
     }
