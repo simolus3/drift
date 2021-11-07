@@ -15,5 +15,12 @@ dart format -o none --set-exit-if-changed .
 dart analyze --fatal-infos --fatal-warnings
 dart test
 
+cd ../sqlparser
+rm -rf .dart_tool
+dart pub get
+dart format -o none --set-exit-if-changed .
+dart analyze --fatal-infos --fatal-warnings
+dart test
+
 cd ..
 ./tool/misc_integration_test.sh
