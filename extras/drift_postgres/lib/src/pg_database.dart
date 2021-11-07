@@ -76,15 +76,30 @@ class _PgDelegate extends DatabaseDelegate {
 
   final _regexIndexed = RegExp(r'\?(\d+)');
   final _regexNamed = RegExp(r':(\w+)');
+  final _escapeChar = String.fromCharCode(0x0);
 
   String _convertStatement(String statement) {
     final argMap = {};
     return statement
-        .replaceAllMapped(_regexIndexed, (match) => '@${match[1]}')
-        .replaceAllMapped(_regexNamed, (match) {
-      final index = argMap.putIfAbsent(match[1], () => argMap.length + 1);
-      return '@$index';
-    });
+        .replaceAll("''", _escapeChar)
+        .split("'")
+        .asMap()
+        .map((index, value) {
+          if (index.isOdd) {
+            return MapEntry(index, value.replaceAll(_escapeChar, "''"));
+          } else {
+            final replaced = value
+                .replaceAllMapped(_regexIndexed, (match) => '@${match[1]}')
+                .replaceAllMapped(_regexNamed, (match) {
+              final index =
+                  argMap.putIfAbsent(match[1], () => argMap.length + 1);
+              return '@$index';
+            });
+            return MapEntry(index, replaced);
+          }
+        })
+        .values
+        .join("'");
   }
 
   @override
