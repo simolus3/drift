@@ -123,3 +123,16 @@ class MyDatabase extends _$MyDatabase {
 Congratulations! You're now ready to use all of drift. See the articles below for further reading.
 The ["Writing queries"]({{ "writing_queries.md" | pageUrl }}) article contains everything you need
 to know to write selects, updates and inserts in drift!
+
+{% block "blocks/alert" title="Using the database" %}
+> The database class from this guide is ready to be used with your app.
+  For Flutter apps, a Drift database class is typically instantiated at the top of your widget tree
+  and then passed down with `provider` or `riverpod`.
+  See [using the database]({{ '../faq.md#using-the-database' | pageUrl }}) for ideas on how to integrate
+  Drift into your app's state management.
+
+  The setup in this guide uses [platform channels](https://flutter.dev/docs/development/platform-integration/platform-channels),
+  which are only available after running `runApp` by default.
+  When using drift before your app is initialized, please call `WidgetsFlutterBinding.ensureInitialized()` before using
+  the database to ensure that platform channels are ready.
+{% endblock %}

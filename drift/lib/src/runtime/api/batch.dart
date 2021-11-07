@@ -58,7 +58,7 @@ class Batch {
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
   void insertAll<T extends Table, D>(
-      TableInfo<T, D> table, List<Insertable<D>> rows,
+      TableInfo<T, D> table, Iterable<Insertable<D>> rows,
       {InsertMode? mode, UpsertClause<T, D>? onConflict}) {
     for (final row in rows) {
       insert<T, D>(table, row, mode: mode, onConflict: onConflict);
@@ -68,7 +68,7 @@ class Batch {
   /// Equivalent of [InsertStatement.insertOnConflictUpdate] for multiple rows
   /// that will be inserted in this batch.
   void insertAllOnConflictUpdate<T extends Table, D>(
-      TableInfo<T, D> table, List<Insertable<D>> rows) {
+      TableInfo<T, D> table, Iterable<Insertable<D>> rows) {
     for (final row in rows) {
       insert<T, D>(table, row, onConflict: DoUpdate((_) => row));
     }
@@ -107,7 +107,7 @@ class Batch {
 
   /// Helper that calls [replace] for all [rows].
   void replaceAll<T extends Table, D>(
-      TableInfo<T, D> table, List<Insertable<D>> rows) {
+      TableInfo<T, D> table, Iterable<Insertable<D>> rows) {
     for (final row in rows) {
       replace(table, row);
     }

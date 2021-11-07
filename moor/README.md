@@ -1,4 +1,10 @@
 # Moor
+
+__Important notice__: Moor has been renamed to Drift.
+This package will continue to be supported for a while, but we encourage users to migrate to `drift`.
+Automated tooling to help you make the switch is available! For more information, see [the documentation](https://drift.simonbinder.eu/name/).
+Thanks yor your understanding!
+
 ## Proudly Sponsored by [Stream 💙](https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/simolus3/moor&utm_medium=github&utm_content=developer&utm_term=flutter)
 
 <p align="center">

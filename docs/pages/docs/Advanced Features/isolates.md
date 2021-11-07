@@ -18,10 +18,13 @@ targets:
         options:
           generate_connect_constructor: true
 ```
+
 Next, re-run the build. You can now add another constructor to the generated database class:
+
 ```dart
 @DriftDatabase(...)
 class TodoDb extends _$TodoDb {
+  // Your existing constructor, whatever it may be...
   TodoDb() : super(NativeDatabase.memory());
 
   // this is the new constructor

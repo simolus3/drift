@@ -227,6 +227,42 @@ void main() {
 
       verifyNever(executor.runSelect(any, any));
     });
+
+    test('when all listeners are paused', () async {
+      when(executor.runSelect(any, any)).thenAnswer((i) => Future.value([]));
+      final isPaused = Completer();
+
+      final subscription = db.select(db.categories).watch().listen(null);
+      subscription.onData((rows) {
+        expect(rows, isEmpty);
+        subscription.pause();
+
+        isPaused.complete();
+      });
+
+      // Wait for the first result, then pause
+      await isPaused.future;
+      await pumpEventQueue();
+
+      // Return a new row on the next select
+      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+            {'id': 1, 'desc': 'd', 'priority': 0}
+          ]));
+      db.markTablesUpdated([db.categories]);
+      await pumpEventQueue();
+      final hadData = Completer();
+
+      subscription.onData((rows) {
+        expect(rows, hasLength(1));
+        hadData.complete();
+      });
+
+      subscription.resume();
+      await hadData.future;
+
+      await subscription.cancel();
+      verify(executor.runSelect(any, any)).called(2);
+    });
   });
 
   // note: There's a trigger on config inserts that updates with_defaults

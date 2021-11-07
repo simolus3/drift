@@ -303,7 +303,7 @@ You can put this test code whereever you want, but it makes sense to put it in a
 If we wanted to write them to `test/generated_migrations/`, we could use
 
 ```
-$ dart run drift_dev schema generate drift_schemas/ test/generated/
+$ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
 ```
 
 ### Writing tests
@@ -317,7 +317,7 @@ import 'package:test/test.dart';
 import 'package:drift_dev/api/migrations.dart';
 
 // The generated directory from before.
-import 'generated/schema.dart';
+import 'generated_migrations/schema.dart';
 
 void main() {
   SchemaVerifier verifier;
@@ -375,8 +375,8 @@ command.
 Then, you can import the generated classes with an alias:
 
 ```dart
-import 'generated/schema_v1.dart' as v1;
-import 'generated/schema_v2.dart' as v2;
+import 'generated_migrations/schema_v1.dart' as v1;
+import 'generated_migrations/schema_v2.dart' as v2;
 ```
 
 This can then be used to manually create and verify data at a specific version:

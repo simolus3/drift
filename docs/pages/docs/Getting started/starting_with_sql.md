@@ -171,3 +171,16 @@ further guides to help you learn more:
   [expressions]({{ "../Advanced Features/expressions.md" | pageUrl }}) in Dart
 - A more [in-depth guide]({{ "../Using SQL/moor_files.md" | pageUrl }}) 
   on `drift` files, which explains `import` statements and the Dart-SQL interop.
+
+{% block "blocks/alert" title="Using the database" %}
+> The database class from this guide is ready to be used with your app.
+  For Flutter apps, a Drift database class is typically instantiated at the top of your widget tree
+  and then passed down with `provider` or `riverpod`.
+  See [using the database]({{ '../faq.md#using-the-database' | pageUrl }}) for ideas on how to integrate
+  Drift into your app's state management.
+
+  The setup in this guide uses [platform channels](https://flutter.dev/docs/development/platform-integration/platform-channels),
+  which are only available after running `runApp` by default.
+  When using drift before your app is initialized, please call `WidgetsFlutterBinding.ensureInitialized()` before using
+  the database to ensure that platform channels are ready.
+{% endblock %}
