@@ -2,6 +2,10 @@
 
 EXIT_CODE=0
 
+pushd extras/integration_tests
+find . -type d -name .dart_tool -exec rm -rf {} \;
+popd
+
 pushd extras/integration_tests/vm
 echo "Running integration tests with moor_ffi & VM"
 dart pub upgrade
