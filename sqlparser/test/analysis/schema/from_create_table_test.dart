@@ -64,6 +64,28 @@ void main() {
     expect(table.tableConstraints, hasLength(2));
   });
 
+  test('reads isGenerated', () {
+    final engine = SqlEngine();
+    final stmt = engine.parse('''
+      CREATE TABLE tbl (
+        a TEXT,
+        b TEXT GENERATED ALWAYS AS (UPPER(b))
+      );
+    ''').rootNode;
+
+    final table =
+        const SchemaFromCreateTable().read(stmt as CreateTableStatement);
+
+    expect(
+      table.findColumn('a'),
+      isA<TableColumn>().having((e) => e.isGenerated, 'isGenerated', isFalse),
+    );
+    expect(
+      table.findColumn('b'),
+      isA<TableColumn>().having((e) => e.isGenerated, 'isGenerated', isTrue),
+    );
+  });
+
   test('supports booleans when moor extensions are enabled', () {
     final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
     final stmt = engine.parse('''

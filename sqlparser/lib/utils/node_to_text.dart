@@ -175,48 +175,54 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _identifier(e.name!);
     }
 
-    e.when(
-      primaryKey: (primaryKey) {
-        _keyword(TokenType.primary);
-        _keyword(TokenType.key);
-        _orderingMode(primaryKey.mode);
-        _conflictClause(primaryKey.onConflict);
-        if (primaryKey.autoIncrement) _keyword(TokenType.autoincrement);
-      },
-      notNull: (notNull) {
-        _keyword(TokenType.not);
-        _keyword(TokenType.$null);
-        _conflictClause(notNull.onConflict);
-      },
-      unique: (unique) {
-        _keyword(TokenType.unique);
-        _conflictClause(unique.onConflict);
-      },
-      check: (check) {
-        _keyword(TokenType.check);
+    e.when(primaryKey: (primaryKey) {
+      _keyword(TokenType.primary);
+      _keyword(TokenType.key);
+      _orderingMode(primaryKey.mode);
+      _conflictClause(primaryKey.onConflict);
+      if (primaryKey.autoIncrement) _keyword(TokenType.autoincrement);
+    }, notNull: (notNull) {
+      _keyword(TokenType.not);
+      _keyword(TokenType.$null);
+      _conflictClause(notNull.onConflict);
+    }, unique: (unique) {
+      _keyword(TokenType.unique);
+      _conflictClause(unique.onConflict);
+    }, check: (check) {
+      _keyword(TokenType.check);
+      _symbol('(', spaceBefore: true);
+      visit(check.expression, arg);
+      _symbol(')', spaceAfter: true);
+    }, isDefault: (def) {
+      _keyword(TokenType.$default);
+      final expr = def.expression;
+      if (expr is Literal) {
+        visit(expr, arg);
+      } else {
         _symbol('(', spaceBefore: true);
-        visit(check.expression, arg);
+        visit(expr, arg);
         _symbol(')', spaceAfter: true);
-      },
-      isDefault: (def) {
-        _keyword(TokenType.$default);
-        final expr = def.expression;
-        if (expr is Literal) {
-          visit(expr, arg);
-        } else {
-          _symbol('(', spaceBefore: true);
-          visit(expr, arg);
-          _symbol(')', spaceAfter: true);
-        }
-      },
-      collate: (collate) {
-        _keyword(TokenType.collate);
-        _identifier(collate.collation);
-      },
-      foreignKey: (foreignKey) {
-        visit(foreignKey.clause, arg);
-      },
-    );
+      }
+    }, collate: (collate) {
+      _keyword(TokenType.collate);
+      _identifier(collate.collation);
+    }, foreignKey: (foreignKey) {
+      visit(foreignKey.clause, arg);
+    }, generatedAs: (generatedAs) {
+      _keyword(TokenType.generated);
+      _keyword(TokenType.always);
+      _keyword(TokenType.as);
+
+      _symbol('(', spaceBefore: true);
+      visit(generatedAs.expression, arg);
+      _symbol(')', spaceAfter: true);
+
+      if (generatedAs.stored) {
+        _keyword(TokenType.stored);
+      } else {
+        _keyword(TokenType.virtual);
+      }
+    });
   }
 
   @override

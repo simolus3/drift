@@ -1,3 +1,7 @@
+## 0.19.0-dev
+
+- Support generated columns
+
 ## 0.18.0
 
 - Fix unecessary errors around `fts5` tables

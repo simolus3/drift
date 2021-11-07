@@ -123,6 +123,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
           e);
     } else if (e is JsonKey) {
       _assert(current is JsonKey && current.jsonKey == e.jsonKey, e);
+    } else if (e is GeneratedAs) {
+      _assert(current is GeneratedAs && current.stored == e.stored, e);
     } else {
       _assert(current.runtimeType == e.runtimeType, e);
     }

@@ -2452,11 +2452,32 @@ class Parser {
       return CollateConstraint(resolvedName, collation.identifier)
         ..setSpan(first, _previous);
     }
+    if (_matchOne(TokenType.generated)) {
+      _consume(TokenType.always);
+      _consume(TokenType.as);
+
+      _consume(TokenType.leftParen);
+      final expr = expression();
+      _consume(TokenType.rightParen);
+      bool isStored;
+
+      if (_matchOne(TokenType.stored)) {
+        isStored = true;
+      } else if (_matchOne(TokenType.virtual)) {
+        isStored = false;
+      } else {
+        isStored = false;
+      }
+
+      return GeneratedAs(expr, name: resolvedName, stored: isStored)
+        ..setSpan(first, _previous);
+    }
     if (_peek.type == TokenType.references) {
       final clause = _foreignKeyClause();
       return ForeignKeyColumnConstraint(resolvedName, clause)
         ..setSpan(first, _previous);
     }
+
     if (enableMoorExtensions && _matchOne(TokenType.mapped)) {
       _consume(TokenType.by, 'Expected a MAPPED BY constraint');
 

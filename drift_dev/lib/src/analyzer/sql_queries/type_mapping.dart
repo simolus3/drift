@@ -34,7 +34,8 @@ class TypeMapper {
       final type = resolveForColumnType(specified.type, overrideHint: hint)
           .withNullable(specified.nullable);
 
-      final column = TableColumn(specified.name.name, type);
+      final column = TableColumn(specified.name.name, type,
+          isGenerated: specified.isGenerated);
       column.setMeta<MoorColumn>(specified);
 
       columns.add(column);

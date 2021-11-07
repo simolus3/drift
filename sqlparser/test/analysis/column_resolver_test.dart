@@ -4,8 +4,12 @@ import 'package:test/test.dart';
 import 'data.dart';
 
 void main() {
-  final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
-  engine.registerTable(demoTable);
+  late SqlEngine engine;
+
+  setUp(() {
+    engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
+    engine.registerTable(demoTable);
+  });
 
   group('CREATE TRIGGER statements', () {
     group('delete', () {
@@ -210,5 +214,28 @@ INSERT INTO demo VALUES (?, ?)
               (e) => e.type, 'type', AnalysisErrorType.starColumnWithoutTable)
           .having((e) => e.source?.span?.text, 'source.span?.text', '*'),
     );
+  });
+
+  group('resolves target columns of INSERT', () {
+    test('for regular tables', () {
+      final root = engine.analyze('INSERT INTO demo VALUES (?, ?)').root
+          as InsertStatement;
+
+      expect(root.resolvedTargetColumns, hasLength(2));
+    });
+
+    test('when there are generated columns', () {
+      engine.registerTableFromSql('''
+        CREATE TABLE x (
+          a TEXT NOT NULL,
+          b TEXT GENERATED ALWAYS AS (a)
+        );
+      ''');
+
+      final root =
+          engine.analyze('INSERT INTO x VALUES (?, ?)').root as InsertStatement;
+
+      expect(root.resolvedTargetColumns, hasLength(1));
+    });
   });
 }

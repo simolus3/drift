@@ -60,7 +60,9 @@ class UnresolvedReferenceError extends AnalysisError {
 }
 
 enum AnalysisErrorType {
+  allColumnsAreGenerated,
   duplicatePrimaryKeyDeclaration,
+  writeToGeneratedColumn,
   referencedUnknownTable,
   referencedUnknownColumn,
   ambiguousReference,

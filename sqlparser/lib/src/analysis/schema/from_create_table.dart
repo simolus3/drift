@@ -83,6 +83,7 @@ class SchemaFromCreateTable {
       definition.columnName,
       resolvedType,
       definition: definition,
+      isGenerated: definition.constraints.any((c) => c is GeneratedAs),
     );
   }
 

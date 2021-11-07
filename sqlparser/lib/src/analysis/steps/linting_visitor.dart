@@ -28,6 +28,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final schemaReader =
         SchemaFromCreateTable(moorExtensions: options.useMoorExtensions);
+    var hasNonGeneratedColumn = false;
     var hasPrimaryKeyDeclaration = false;
     var isStrict = false;
 
@@ -78,7 +79,11 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         }
       }
 
+      var isGenerated = false;
+
       for (final constraint in column.constraints) {
+        isGenerated = isGenerated || constraint is GeneratedAs;
+
         if (constraint is PrimaryKeyColumn) {
           handlePrimaryKeyNode(constraint);
 
@@ -93,6 +98,10 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
             ));
           }
         }
+      }
+
+      if (!isGenerated) {
+        hasNonGeneratedColumn = true;
       }
     }
 
@@ -133,7 +142,25 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       );
     }
 
+    if (!hasNonGeneratedColumn) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.allColumnsAreGenerated,
+          message: 'This table is missing a non-generated column',
+          relevantNode: e.tableNameToken ?? e,
+        ),
+      );
+    }
+
     visitChildren(e, arg);
+  }
+
+  @override
+  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
+    final topLevelBefore = _isTopLevelStatement;
+    _isTopLevelStatement = false;
+    visitChildren(e, arg);
+    _isTopLevelStatement = topLevelBefore;
   }
 
   @override
@@ -159,6 +186,25 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitInsertStatement(InsertStatement e, void arg) {
+    for (final target in e.targetColumns) {
+      final resolved = target.resolvedColumn;
+      if (resolved is TableColumn && resolved.isGenerated) {
+        context.reportError(
+          AnalysisError(
+            type: AnalysisErrorType.writeToGeneratedColumn,
+            message: "This column is generated, and generated columns can't "
+                'be inserted.',
+            relevantNode: target,
+          ),
+        );
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInvocation(SqlInvocation e, void arg) {
     final lowercaseCall = e.name.toLowerCase();
     if (options.addedFunctions.containsKey(lowercaseCall)) {
@@ -166,6 +212,17 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, arg);
+  }
+
+  @override
+  void visitRaiseExpression(RaiseExpression e, void arg) {
+    if (_isTopLevelStatement) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.raiseMisuse,
+        relevantNode: e,
+        message: 'RAISE can only be used in a trigger.',
+      ));
+    }
   }
 
   @override
@@ -234,6 +291,24 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitSetComponent(SetComponent e, void arg) {
+    final target = e.column.resolvedColumn;
+
+    if (target is TableColumn && target.isGenerated) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.writeToGeneratedColumn,
+          message: 'This column is generated, and generated columns cannot be '
+              'updated explicitly.',
+          relevantNode: e.column,
+        ),
+      );
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitTableConstraint(TableConstraint e, void arg) {
     if (e is KeyClause && e.isPrimaryKey) {
       // Primary key clauses may only include simple columns
@@ -250,14 +325,6 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, arg);
-  }
-
-  @override
-  void visitCreateTriggerStatement(CreateTriggerStatement e, void arg) {
-    final topLevelBefore = _isTopLevelStatement;
-    _isTopLevelStatement = false;
-    visitChildren(e, arg);
-    _isTopLevelStatement = topLevelBefore;
   }
 
   @override
@@ -355,16 +422,5 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, arg);
-  }
-
-  @override
-  void visitRaiseExpression(RaiseExpression e, void arg) {
-    if (_isTopLevelStatement) {
-      context.reportError(AnalysisError(
-        type: AnalysisErrorType.raiseMisuse,
-        relevantNode: e,
-        message: 'RAISE can only be used in a trigger.',
-      ));
-    }
   }
 }
