@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/backends.dart';
 import 'package:postgres/postgres.dart';
 
@@ -149,8 +150,7 @@ class _PgDelegate extends DatabaseDelegate {
               .asMap()
               .map((key, value) => MapEntry((key + 1).toString(), value)));
     }
-    final id = result[0][0];
-    return id as int;
+    return result.firstOrNull?[0] as int? ?? 0;
   }
 
   @override
