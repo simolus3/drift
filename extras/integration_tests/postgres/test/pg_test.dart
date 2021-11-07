@@ -1,4 +1,5 @@
 import 'package:drift_postgres/postgres.dart';
+import 'package:postgres/postgres.dart';
 import 'package:tests/tests.dart';
 
 class PgExecutor extends TestExecutor {
@@ -7,9 +8,9 @@ class PgExecutor extends TestExecutor {
 
   @override
   DatabaseConnection createConnection() {
-    return DatabaseConnection.fromExecutor(PgDatabase.open(
-        'localhost', 5432, 'postgres',
-        username: 'postgres', password: 'postgres'));
+    final pgConnection = PostgreSQLConnection('localhost', 5432, 'postgres',
+        username: 'postgres', password: 'postgres');
+    return DatabaseConnection.fromExecutor(PgDatabase(pgConnection));
   }
 
   @override

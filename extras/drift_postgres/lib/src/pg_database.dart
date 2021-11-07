@@ -8,28 +8,8 @@ class PgDatabase extends DelegatedDatabase {
   PgDatabase(PostgreSQLConnection connection)
       : super(_PgDelegate(connection, connection),
             isSequential: true, logStatements: true);
-
-  ///
-  factory PgDatabase.open(String host, int port, String databaseName,
-      {String? username,
-      String? password,
-      int timeoutInSeconds = 30,
-      int queryTimeoutInSeconds = 30,
-      String timeZone = 'UTC',
-      bool useSSL = false,
-      bool isUnixSocket = false}) {
-    return PgDatabase(PostgreSQLConnection(host, port, databaseName,
-        username: username,
-        password: password,
-        timeoutInSeconds: timeoutInSeconds,
-        queryTimeoutInSeconds: queryTimeoutInSeconds,
-        timeZone: timeZone,
-        useSSL: useSSL,
-        isUnixSocket: isUnixSocket));
-  }
 }
 
-///
 class _PgDelegate extends DatabaseDelegate {
   final PostgreSQLConnection _db;
   final PostgreSQLExecutionContext _ec;
@@ -58,7 +38,6 @@ class _PgDelegate extends DatabaseDelegate {
 
     await _db.open();
     await pgVersionDelegate.init();
-    await _initializeDatabase();
 
     versionDelegate = pgVersionDelegate;
     _isOpen = true;
@@ -68,11 +47,6 @@ class _PgDelegate extends DatabaseDelegate {
     if (_db.isClosed) {
       await _db.open();
     }
-  }
-
-  Future<void> _initializeDatabase() async {
-    // TODO: Do we need create these functions?
-    //setup?.call(_db);
   }
 
   final _regexIndexed = RegExp(r'\?(\d+)');
