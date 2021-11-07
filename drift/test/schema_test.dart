@@ -30,7 +30,10 @@ void main() {
           'CREATE TABLE IF NOT EXISTS categories '
           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"desc" TEXT NOT NULL UNIQUE, '
-          'priority INTEGER NOT NULL DEFAULT 0);',
+          'priority INTEGER NOT NULL DEFAULT 0, '
+          'description_in_upper_case TEXT NOT NULL GENERATED ALWAYS AS '
+          '(UPPER("desc")) VIRTUAL'
+          ');',
           []));
 
       verify(mockExecutor.runCustom(

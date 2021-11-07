@@ -107,6 +107,7 @@ void main() {
         id: 1,
         description: 'Description',
         priority: CategoryPriority.low,
+        descriptionInUpperCase: 'DESCRIPTION',
       ),
     );
   }, skip: ifOlderThanSqlite335());

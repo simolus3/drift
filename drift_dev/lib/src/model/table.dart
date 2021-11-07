@@ -169,7 +169,8 @@ class MoorTable extends MoorEntityWithResultSet {
 
     if (column.defaultArgument != null ||
         column.clientDefaultCode != null ||
-        column.nullable) {
+        column.nullable ||
+        column.isGenerated) {
       // default value would be applied, so it's not required for inserts
       return false;
     }

@@ -35,20 +35,15 @@ void main() {
   });
 
   test('can convert a companion to a row class', () {
-    const companion = CategoriesCompanion(
-      id: Value(3),
-      description: Value('description'),
-      priority: Value(CategoryPriority.low),
+    const companion = SharedTodosCompanion(
+      todo: Value(3),
+      user: Value(4),
     );
 
-    final user = db.categories.mapFromCompanion(companion);
+    final user = db.sharedTodos.mapFromCompanion(companion);
     expect(
       user,
-      Category(
-        id: 3,
-        description: 'description',
-        priority: CategoryPriority.low,
-      ),
+      SharedTodo(todo: 3, user: 4),
     );
   });
 

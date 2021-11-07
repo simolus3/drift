@@ -27,6 +27,7 @@ const String _methodCustomConstraint = 'customConstraint';
 const String _methodDefault = 'withDefault';
 const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
+const String _methodGenerated = 'generatedAs';
 
 const String _errorMessage = 'This getter does not create a valid column that '
     'can be parsed by moor. Please refer to the readme from moor to see how '
@@ -70,6 +71,7 @@ class ColumnParser {
     Expression? clientDefaultExpression;
     Expression? createdTypeConverter;
     DartType? typeConverterRuntime;
+    ColumnGeneratedAs? generatedAs;
     var nullable = false;
 
     final foundFeatures = <ColumnFeature>[];
@@ -249,6 +251,32 @@ class ColumnParser {
           createdTypeConverter = expression;
           typeConverterRuntime = type;
           break;
+        case _methodGenerated:
+          Expression? generatedExpression;
+          var stored = false;
+
+          for (final expr in remainingExpr.argumentList.arguments) {
+            if (expr is NamedExpression && expr.name.label.name == 'stored') {
+              final storedValue = expr.expression;
+              if (storedValue is BooleanLiteral) {
+                stored = storedValue.value;
+              } else {
+                base.step.reportError(ErrorInDartCode(
+                  message: 'Must be a boolean literal',
+                  affectedNode: expr,
+                  affectedElement: element,
+                ));
+              }
+            } else {
+              generatedExpression = expr;
+            }
+          }
+
+          if (generatedExpression != null) {
+            final code = element.source!.contents.data
+                .substring(generatedExpression.offset, generatedExpression.end);
+            generatedAs = ColumnGeneratedAs(code, stored);
+          }
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -322,10 +350,11 @@ class ColumnParser {
       typeConverter: converter,
       declaration: DartColumnDeclaration(element, base.step.file),
       documentationComment: docString,
+      generatedAs: generatedAs,
     );
   }
 
-  ColumnType _startMethodToColumnType(String startMethod) {
+  ColumnType _startMethodToColumnType(String name) {
     return const {
       startBool: ColumnType.boolean,
       startString: ColumnType.text,
@@ -334,7 +363,7 @@ class ColumnParser {
       startDateTime: ColumnType.datetime,
       startBlob: ColumnType.blob,
       startReal: ColumnType.real,
-    }[startMethod]!;
+    }[name]!;
   }
 
   String? _readJsonKey(Element getter) {

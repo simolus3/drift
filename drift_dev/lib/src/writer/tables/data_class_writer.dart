@@ -211,6 +211,9 @@ class DataClassWriter {
       ..write('final map = <String, Expression> {};');
 
     for (final column in table.columns) {
+      // Generated column - cannot be used for inserts or updates
+      if (column.isGenerated) continue;
+
       // We include all columns that are not null. If nullToAbsent is false, we
       // also include null columns. When generating NNBD code, we can include
       // non-nullable columns without an additional null check.
@@ -266,6 +269,9 @@ class DataClassWriter {
       ..write('(');
 
     for (final column in table.columns) {
+      // Generated columns are not parts of companions.
+      if (column.isGenerated) continue;
+
       final dartName = column.dartGetterName;
       _buffer
         ..write(dartName)

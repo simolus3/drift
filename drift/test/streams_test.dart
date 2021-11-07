@@ -88,7 +88,12 @@ void main() {
       await first.first; // subscribe to first stream, then drop subscription
 
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {'id': 1, 'desc': 'd', 'priority': 0}
+            {
+              'id': 1,
+              'desc': 'd',
+              'description_in_upper_case': 'D',
+              'priority': 0,
+            }
           ]));
       await db
           .into(db.categories)
@@ -104,7 +109,12 @@ void main() {
       final subscription = first.listen((_) {});
 
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {'id': 1, 'desc': 'd', 'priority': 0}
+            {
+              'id': 1,
+              'desc': 'd',
+              'description_in_upper_case': 'D',
+              'priority': 0,
+            }
           ]));
       await db
           .into(db.categories)
@@ -246,7 +256,12 @@ void main() {
 
       // Return a new row on the next select
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {'id': 1, 'desc': 'd', 'priority': 0}
+            {
+              'id': 1,
+              'desc': 'd',
+              'description_in_upper_case': 'D',
+              'priority': 0,
+            }
           ]));
       db.markTablesUpdated([db.categories]);
       await pumpEventQueue();

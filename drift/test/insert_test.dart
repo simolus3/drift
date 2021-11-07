@@ -386,6 +386,7 @@ void main() {
         {
           'id': 1,
           'desc': 'description',
+          'description_in_upper_case': 'DESCRIPTION',
           'priority': 1,
         },
       ]),

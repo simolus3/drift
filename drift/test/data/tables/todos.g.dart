@@ -11,8 +11,12 @@ class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String description;
   final CategoryPriority priority;
+  final String descriptionInUpperCase;
   Category(
-      {required this.id, required this.description, required this.priority});
+      {required this.id,
+      required this.description,
+      required this.priority,
+      required this.descriptionInUpperCase});
   factory Category.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Category(
@@ -22,6 +26,8 @@ class Category extends DataClass implements Insertable<Category> {
           .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converter0.mapToDart(const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
+      descriptionInUpperCase: const StringType().mapFromDatabaseResponse(
+          data['${effectivePrefix}description_in_upper_case'])!,
     );
   }
   @override
@@ -51,6 +57,8 @@ class Category extends DataClass implements Insertable<Category> {
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
       priority: serializer.fromJson<CategoryPriority>(json['priority']),
+      descriptionInUpperCase:
+          serializer.fromJson<String>(json['descriptionInUpperCase']),
     );
   }
   factory Category.fromJsonString(String encodedJson,
@@ -65,35 +73,45 @@ class Category extends DataClass implements Insertable<Category> {
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
       'priority': serializer.toJson<CategoryPriority>(priority),
+      'descriptionInUpperCase':
+          serializer.toJson<String>(descriptionInUpperCase),
     };
   }
 
   Category copyWith(
-          {int? id, String? description, CategoryPriority? priority}) =>
+          {int? id,
+          String? description,
+          CategoryPriority? priority,
+          String? descriptionInUpperCase}) =>
       Category(
         id: id ?? this.id,
         description: description ?? this.description,
         priority: priority ?? this.priority,
+        descriptionInUpperCase:
+            descriptionInUpperCase ?? this.descriptionInUpperCase,
       );
   @override
   String toString() {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
           ..write('description: $description, ')
-          ..write('priority: $priority')
+          ..write('priority: $priority, ')
+          ..write('descriptionInUpperCase: $descriptionInUpperCase')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, description, priority);
+  int get hashCode =>
+      Object.hash(id, description, priority, descriptionInUpperCase);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
           other.description == this.description &&
-          other.priority == this.priority);
+          other.priority == this.priority &&
+          other.descriptionInUpperCase == this.descriptionInUpperCase);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
@@ -185,8 +203,16 @@ class $CategoriesTable extends Categories
               requiredDuringInsert: false,
               defaultValue: const Constant(0))
           .withConverter<CategoryPriority>($CategoriesTable.$converter0);
+  final VerificationMeta _descriptionInUpperCaseMeta =
+      const VerificationMeta('descriptionInUpperCase');
+  late final GeneratedColumn<String?> descriptionInUpperCase =
+      GeneratedColumn<String?>('description_in_upper_case', aliasedName, false,
+          typeName: 'TEXT',
+          requiredDuringInsert: false,
+          generatedAs: GeneratedAs(description.upper(), false));
   @override
-  List<GeneratedColumn> get $columns => [id, description, priority];
+  List<GeneratedColumn> get $columns =>
+      [id, description, priority, descriptionInUpperCase];
   @override
   String get aliasedName => _alias ?? 'categories';
   @override
@@ -206,6 +232,12 @@ class $CategoriesTable extends Categories
       context.missing(_descriptionMeta);
     }
     context.handle(_priorityMeta, const VerificationResult.success());
+    if (data.containsKey('description_in_upper_case')) {
+      context.handle(
+          _descriptionInUpperCaseMeta,
+          descriptionInUpperCase.isAcceptableOrUnknown(
+              data['description_in_upper_case']!, _descriptionInUpperCaseMeta));
+    }
     return context;
   }
 
