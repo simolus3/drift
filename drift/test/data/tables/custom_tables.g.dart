@@ -287,6 +287,98 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   bool get dontWriteConstraints => true;
 }
 
+class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
+  final Value<Uint8List> payload;
+  const NoIdsCompanion({
+    this.payload = const Value.absent(),
+  });
+  NoIdsCompanion.insert({
+    required Uint8List payload,
+  }) : payload = Value(payload);
+  static Insertable<NoIdRow> custom({
+    Expression<Uint8List>? payload,
+  }) {
+    return RawValuesInsertable({
+      if (payload != null) 'payload': payload,
+    });
+  }
+
+  NoIdsCompanion copyWith({Value<Uint8List>? payload}) {
+    return NoIdsCompanion(
+      payload: payload ?? this.payload,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (payload.present) {
+      map['payload'] = Variable<Uint8List>(payload.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NoIdsCompanion(')
+          ..write('payload: $payload')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
+  final GeneratedDatabase _db;
+  final String? _alias;
+  NoIds(this._db, [this._alias]);
+  final VerificationMeta _payloadMeta = const VerificationMeta('payload');
+  late final GeneratedColumn<Uint8List?> payload = GeneratedColumn<Uint8List?>(
+      'payload', aliasedName, false,
+      type: const BlobType(),
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL PRIMARY KEY');
+  @override
+  List<GeneratedColumn> get $columns => [payload];
+  @override
+  String get aliasedName => _alias ?? 'no_ids';
+  @override
+  String get actualTableName => 'no_ids';
+  @override
+  VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('payload')) {
+      context.handle(_payloadMeta,
+          payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta));
+    } else if (isInserting) {
+      context.missing(_payloadMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {payload};
+  @override
+  NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NoIdRow(
+      const BlobType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
+    );
+  }
+
+  @override
+  NoIds createAlias(String alias) {
+    return NoIds(_db, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get dontWriteConstraints => true;
+}
+
 class WithDefault extends DataClass implements Insertable<WithDefault> {
   final String? a;
   final int? b;
@@ -464,98 +556,6 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
     return WithDefaults(_db, alias);
   }
 
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
-  final Value<Uint8List> payload;
-  const NoIdsCompanion({
-    this.payload = const Value.absent(),
-  });
-  NoIdsCompanion.insert({
-    required Uint8List payload,
-  }) : payload = Value(payload);
-  static Insertable<NoIdRow> custom({
-    Expression<Uint8List>? payload,
-  }) {
-    return RawValuesInsertable({
-      if (payload != null) 'payload': payload,
-    });
-  }
-
-  NoIdsCompanion copyWith({Value<Uint8List>? payload}) {
-    return NoIdsCompanion(
-      payload: payload ?? this.payload,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (payload.present) {
-      map['payload'] = Variable<Uint8List>(payload.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('NoIdsCompanion(')
-          ..write('payload: $payload')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
-  final GeneratedDatabase _db;
-  final String? _alias;
-  NoIds(this._db, [this._alias]);
-  final VerificationMeta _payloadMeta = const VerificationMeta('payload');
-  late final GeneratedColumn<Uint8List?> payload = GeneratedColumn<Uint8List?>(
-      'payload', aliasedName, false,
-      type: const BlobType(),
-      requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL PRIMARY KEY');
-  @override
-  List<GeneratedColumn> get $columns => [payload];
-  @override
-  String get aliasedName => _alias ?? 'no_ids';
-  @override
-  String get actualTableName => 'no_ids';
-  @override
-  VerificationContext validateIntegrity(Insertable<NoIdRow> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('payload')) {
-      context.handle(_payloadMeta,
-          payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta));
-    } else if (isInserting) {
-      context.missing(_payloadMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {payload};
-  @override
-  NoIdRow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return NoIdRow(
-      const BlobType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}payload'])!,
-    );
-  }
-
-  @override
-  NoIds createAlias(String alias) {
-    return NoIds(_db, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
   @override
   bool get dontWriteConstraints => true;
 }
@@ -1574,12 +1574,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final ConfigTable config = ConfigTable(this);
   late final Index valueIdx = Index('value_idx',
       'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)');
-  late final WithDefaults withDefaults = WithDefaults(this);
   late final Trigger myTrigger = Trigger(
-      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN END',
       'my_trigger');
   late final MyView myView = MyView();
   late final NoIds noIds = NoIds(this);
+  late final WithDefaults withDefaults = WithDefaults(this);
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);
   late final Email email = Email(this);
@@ -1802,12 +1802,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         config,
         valueIdx,
-        withDefaults,
         myTrigger,
         myView,
         OnCreateQuery(
             'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')'),
         noIds,
+        withDefaults,
         withConstraints,
         mytable,
         email,
@@ -1819,9 +1819,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           WritePropagation(
             on: TableUpdateQuery.onTableName('config',
                 limitUpdateKind: UpdateKind.insert),
-            result: [
-              TableUpdate('with_defaults', kind: UpdateKind.insert),
-            ],
+            result: [],
           ),
         ],
       );

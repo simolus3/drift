@@ -1442,7 +1442,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
-        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = ?1',
         variables: [
           Variable<int>(user)
         ],
