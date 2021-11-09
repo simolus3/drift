@@ -55,6 +55,7 @@ class CreateTableReader {
       UsedTypeConverter? converter;
       String? defaultValue;
       String? overriddenJsonKey;
+      ColumnGeneratedAs? generatedAs;
 
       final typeName = column.definition?.typeName;
 
@@ -158,6 +159,7 @@ class CreateTableReader {
         typeConverter: converter,
         overriddenJsonName: overriddenJsonKey,
         declaration: declaration,
+        generatedAs: generatedAs,
       );
 
       foundColumns[column.name] = parsed;

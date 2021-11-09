@@ -81,6 +81,7 @@ void main() {
       id: 3,
       description: 'description',
       priority: CategoryPriority.low,
+      descriptionInUpperCase: 'ignored',
     );
     final companion = entry.toCompanion(false);
 

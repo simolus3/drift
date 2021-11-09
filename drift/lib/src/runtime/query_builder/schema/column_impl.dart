@@ -48,6 +48,10 @@ class GeneratedColumn<T> extends Column<T> {
   @Deprecated('Use type.sqlName instead')
   String get typeName => type.sqlName(SqlDialect.sqlite);
 
+  /// If this column is generated (that is, it is a SQL expression of other)
+  /// columns, contains information about how to generate this column.
+  final GeneratedAs? generatedAs;
+
   /// Whether a value is required for this column when inserting a new row.
   final bool requiredDuringInsert;
 
@@ -71,6 +75,7 @@ class GeneratedColumn<T> extends Column<T> {
     this.defaultValue,
     this.additionalChecks,
     this.requiredDuringInsert = false,
+    this.generatedAs,
   }) : _defaultConstraints = defaultConstraints;
 
   /// Applies a type converter to this column.
@@ -90,6 +95,7 @@ class GeneratedColumn<T> extends Column<T> {
       defaultValue,
       additionalChecks,
       requiredDuringInsert,
+      generatedAs,
     );
   }
 
@@ -121,6 +127,15 @@ class GeneratedColumn<T> extends Column<T> {
         if (writeBrackets) into.buffer.write('(');
         defaultValue.writeInto(into);
         if (writeBrackets) into.buffer.write(')');
+      }
+
+      final generated = generatedAs;
+      if (generated != null) {
+        into.buffer.write(' GENERATED ALWAYS AS (');
+        generated.generatedAs.writeInto(into);
+        into.buffer
+          ..write(') ')
+          ..write(generated.stored ? 'STORED' : 'VIRTUAL');
       }
 
       // these custom constraints refer to builtin constraints from drift
@@ -233,6 +248,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     Expression<S>? defaultValue,
     VerificationResult Function(S, VerificationMeta)? additionalChecks,
     bool requiredDuringInsert,
+    GeneratedAs? generatedAs,
   ) : super(
           name,
           tableName,
@@ -244,6 +260,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
           defaultValue: defaultValue,
           additionalChecks: additionalChecks,
           requiredDuringInsert: requiredDuringInsert,
+          generatedAs: generatedAs,
         );
 
   /// Compares this column against the mapped [dartValue].
@@ -252,4 +269,18 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
   Expression<bool> equalsValue(D? dartValue) {
     return equals(converter.mapToSql(dartValue) as S);
   }
+}
+
+/// Information filled out by the generator to support generated or virtual
+/// columns.
+class GeneratedAs {
+  /// The expression that this column evaluates to.
+  final Expression generatedAs;
+
+  /// Wehter this column is stored in the database, as opposed to being
+  /// `VIRTUAL` and evaluated on each read.
+  final bool stored;
+
+  /// Creates a [GeneratedAs] clause.
+  GeneratedAs(this.generatedAs, this.stored);
 }

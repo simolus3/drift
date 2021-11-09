@@ -107,6 +107,10 @@ class MoorColumn implements HasDeclaration, HasType {
   /// Stored as a multi line string with leading triple-slashes `///` for every line
   final String? documentationComment;
 
+  final ColumnGeneratedAs? generatedAs;
+
+  bool get isGenerated => generatedAs != null;
+
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.
@@ -183,6 +187,7 @@ class MoorColumn implements HasDeclaration, HasType {
     this.typeConverter,
     this.declaration,
     this.documentationComment,
+    this.generatedAs,
   });
 }
 
@@ -258,4 +263,11 @@ class ResolvedDartForeignKeyReference extends ColumnFeature {
 
   ResolvedDartForeignKeyReference(
       this.otherTable, this.otherColumn, this.onUpdate, this.onDelete);
+}
+
+class ColumnGeneratedAs {
+  final String? dartExpression;
+  final bool stored;
+
+  ColumnGeneratedAs(this.dartExpression, this.stored);
 }

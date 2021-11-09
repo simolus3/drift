@@ -62,32 +62,22 @@ typedef BlobColumn = Column<Uint8List?>;
 /// A column that stores floating point numeric values.
 typedef RealColumn = Column<double?>;
 
+class _BaseColumnBuilder<T> {}
+
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, the generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
-class ColumnBuilder<T> {}
+class ColumnBuilder<T> extends _BaseColumnBuilder<T> {}
+
+/// A column builder for virtual, generated columns.
+///
+/// This is a different class so that some methods are not available
+class VirtualColumnBuilder<T> extends _BaseColumnBuilder<T> {}
 
 /// DSL extension to define a column inside a drift table.
 extension BuildColumn<T> on ColumnBuilder<T> {
-  /// By default, the field name will be used as the column name, e.g.
-  /// `IntColumn get id = integer()` will have "id" as its associated name.
-  /// Columns made up of multiple words are expected to be in camelCase and will
-  /// be converted to snake_case (e.g. a getter called accountCreationDate will
-  /// result in an SQL column called account_creation_date).
-  /// To change this default behavior, use something like
-  /// `IntColumn get id = integer((c) => c.named('user_id'))`.
-  ///
-  /// Note that using [named] __does not__ have an effect on the json key of an
-  /// object. To change the json key, annotate this column getter with
-  /// [JsonKey].
-  ColumnBuilder<T> named(String name) => _isGenerated();
-
-  /// Marks this column as nullable. Nullable columns should not appear in a
-  /// primary key. Columns are non-null by default.
-  ColumnBuilder<T?> nullable() => _isGenerated();
-
   /// Tells drift to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
   ///
@@ -164,45 +154,6 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   /// apply the default value.
   ColumnBuilder<T> clientDefault(T Function() onInsert) => _isGenerated();
 
-  /// Uses a custom [converter] to store custom Dart objects in a single column
-  /// and automatically mapping them from and to sql.
-  ///
-  /// An example might look like this:
-  /// ```dart
-  ///  // this is the custom object with we want to store in a column. It
-  ///  // can be as complex as you want it to be
-  ///  class MyCustomObject {
-  ///   final String data;
-  ///   MyCustomObject(this.data);
-  /// }
-  ///
-  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
-  ///   // this class is responsible for turning a custom object into a string.
-  ///   // this is easy here, but more complex objects could be serialized using
-  ///   // json or any other method of your choice.
-  ///   const CustomConverter();
-  ///   @override
-  ///   MyCustomObject mapToDart(String fromDb) {
-  ///     return fromDb == null ? null : MyCustomObject(fromDb);
-  ///   }
-  ///
-  ///   @override
-  ///   String mapToSql(MyCustomObject value) {
-  ///     return value?.data;
-  ///   }
-  /// }
-  ///
-  /// ```
-  ///
-  /// In that case, you could have a table with this column
-  /// ```dart
-  /// TextColumn get custom => text().map(const CustomConverter())();
-  /// ```
-  /// The generated row class will then use a `MyFancyClass` instead of a
-  /// `String`, which would usually be used for [Table.text] columns.
-  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T> converter) =>
-      _isGenerated();
-
   /// Adds a foreign-key reference from this column.
   ///
   /// The [table] type must be a Dart class name defining a drift table.
@@ -241,6 +192,104 @@ extension BuildColumn<T> on ColumnBuilder<T> {
   }) {
     _isGenerated();
   }
+
+  /// Declare a generated column.
+  ///
+  /// Generated columns are backed by an expression, declared with
+  /// [generatedAs]:
+  ///
+  /// ```dart
+  /// class Products extends Table {
+  ///   TextColumn get name => text()();
+  ///
+  ///   RealColumn get price => real()();
+  ///   RealColumn get discount => real()();
+  ///   RealColumn get tax => real()();
+  ///   RealColumn get netPrice => real().generatedAs(
+  ///     price * (Constant(1) - discount) * (Constant(1) + tax))();
+  /// }
+  /// ```
+  ///
+  /// Generated columns can either be `VIRTUAL` (the default) or `STORED`
+  /// (enabled with the [stored] parameter). Stored generated columns are
+  /// computed on each update and are stored in the database. Virtual columns
+  /// consume less space, but are re-computed on each read.
+  ///
+  /// Generated columns can't be updated or inserted (neither with the Dart API
+  /// or though SQL queries), so they are not represented in companions.
+  ///
+  /// __Important__: When a generated column can be nullable, don't forget to
+  /// call [BuildGeneralColumn.nullable] on it to reflect this in the generated
+  /// code.
+  /// Also, note that generated columns are part of your databases schema and
+  /// cannot be updated easily. When changing the [generatedAs] expression for a
+  /// column, you need to re-generate the table with a [TableMigration].
+  ///
+  /// Note that generated columns are only available in sqlite3 version
+  /// `3.31.0`. When using `sqlite3_flutter_libs` or a web database, this is not
+  /// a problem.
+  VirtualColumnBuilder<T> generatedAs(Expression<T?> generatedAs,
+          {bool stored = false}) =>
+      _isGenerated();
+}
+
+/// Column builders available for both virtual and non-virtual columns.
+extension BuildGeneralColumn<T> on _BaseColumnBuilder<T> {
+  /// By default, the field name will be used as the column name, e.g.
+  /// `IntColumn get id = integer()` will have "id" as its associated name.
+  /// Columns made up of multiple words are expected to be in camelCase and will
+  /// be converted to snake_case (e.g. a getter called accountCreationDate will
+  /// result in an SQL column called account_creation_date).
+  /// To change this default behavior, use something like
+  /// `IntColumn get id = integer((c) => c.named('user_id'))`.
+  ///
+  /// Note that using [named] __does not__ have an effect on the json key of an
+  /// object. To change the json key, annotate this column getter with
+  /// [JsonKey].
+  ColumnBuilder<T> named(String name) => _isGenerated();
+
+  /// Marks this column as nullable. Nullable columns should not appear in a
+  /// primary key. Columns are non-null by default.
+  ColumnBuilder<T?> nullable() => _isGenerated();
+
+  /// Uses a custom [converter] to store custom Dart objects in a single column
+  /// and automatically mapping them from and to sql.
+  ///
+  /// An example might look like this:
+  /// ```dart
+  ///  // this is the custom object with we want to store in a column. It
+  ///  // can be as complex as you want it to be
+  ///  class MyCustomObject {
+  ///   final String data;
+  ///   MyCustomObject(this.data);
+  /// }
+  ///
+  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
+  ///   // this class is responsible for turning a custom object into a string.
+  ///   // this is easy here, but more complex objects could be serialized using
+  ///   // json or any other method of your choice.
+  ///   const CustomConverter();
+  ///   @override
+  ///   MyCustomObject mapToDart(String fromDb) {
+  ///     return fromDb == null ? null : MyCustomObject(fromDb);
+  ///   }
+  ///
+  ///   @override
+  ///   String mapToSql(MyCustomObject value) {
+  ///     return value?.data;
+  ///   }
+  /// }
+  ///
+  /// ```
+  ///
+  /// In that case, you could have a table with this column
+  /// ```dart
+  /// TextColumn get custom => text().map(const CustomConverter())();
+  /// ```
+  /// The generated row class will then use a `MyFancyClass` instead of a
+  /// `String`, which would usually be used for [Table.text] columns.
+  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T> converter) =>
+      _isGenerated();
 
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, the generator will take a look at your

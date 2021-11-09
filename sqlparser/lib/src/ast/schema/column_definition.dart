@@ -61,6 +61,7 @@ abstract class ColumnConstraint extends AstNode {
     T Function(CollateConstraint)? collate,
     T Function(ForeignKeyColumnConstraint)? foreignKey,
     T Function(MappedBy)? mappedBy,
+    T Function(GeneratedAs)? generatedAs,
   }) {
     if (this is NotNull) {
       return notNull?.call(this as NotNull);
@@ -80,6 +81,8 @@ abstract class ColumnConstraint extends AstNode {
       return foreignKey?.call(this as ForeignKeyColumnConstraint);
     } else if (this is MappedBy) {
       return mappedBy?.call(this as MappedBy);
+    } else if (this is GeneratedAs) {
+      return generatedAs?.call(this as GeneratedAs);
     } else {
       throw Exception('Did not expect $runtimeType as a ColumnConstraint');
     }
@@ -195,6 +198,22 @@ class ForeignKeyColumnConstraint extends ColumnConstraint {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     clause = transformer.transformChild(clause, this, arg);
+  }
+}
+
+class GeneratedAs extends ColumnConstraint {
+  Expression expression;
+  bool stored;
+
+  GeneratedAs(this.expression, {this.stored = false, String? name})
+      : super(name);
+
+  @override
+  Iterable<AstNode> get childNodes => [expression];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    expression = transformer.transformChild(expression, this, arg);
   }
 }
 

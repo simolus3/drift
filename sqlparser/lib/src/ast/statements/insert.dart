@@ -35,8 +35,11 @@ class InsertStatement extends CrudStatement
     if (targetColumns.isNotEmpty) {
       return targetColumns.map((c) => c.resolvedColumn).toList();
     } else {
-      // no columns declared - assume all columns from the table
-      return table.resultSet?.resolvedColumns;
+      // no columns declared - assume all columns from the table that are not
+      // generated.
+      return table.resultSet?.resolvedColumns
+          ?.where((c) => c is! TableColumn || !c.isGenerated)
+          .toList();
     }
   }
 

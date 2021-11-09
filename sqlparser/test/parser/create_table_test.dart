@@ -147,6 +147,41 @@ void main() {
     );
   });
 
+  test('parses GENERATED AS', () {
+    final expr = FunctionExpression(
+      name: 'UPPER',
+      parameters: ExprFunctionParameters(
+        parameters: [Reference(columnName: 'a')],
+      ),
+    );
+
+    testStatement(
+      '''
+        CREATE TABLE a (
+          a TEXT,
+          b TEXT GENERATED ALWAYS AS (UPPER(a)) STORED,
+          c TEXT GENERATED ALWAYS AS (UPPER(a)) VIRTUAL,
+          d TEXT GENERATED ALWAYS AS (UPPER(a))
+        )
+      ''',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(columnName: 'a', typeName: 'TEXT'),
+          ColumnDefinition(columnName: 'b', typeName: 'TEXT', constraints: [
+            GeneratedAs(expr, stored: true),
+          ]),
+          ColumnDefinition(columnName: 'c', typeName: 'TEXT', constraints: [
+            GeneratedAs(expr, stored: false),
+          ]),
+          ColumnDefinition(columnName: 'd', typeName: 'TEXT', constraints: [
+            GeneratedAs(expr, stored: false),
+          ])
+        ],
+      ),
+    );
+  });
+
   test('parses MAPPED BY constraints when in moor mode', () {
     testStatement(
       'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)',

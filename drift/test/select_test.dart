@@ -175,6 +175,7 @@ void main() {
         {
           'id': 1,
           'desc': 'description',
+          'description_in_upper_case': 'DESCRIPTION',
           'priority': 2,
         }
       ]);
@@ -187,6 +188,7 @@ void main() {
       Category(
         id: 1,
         description: 'description',
+        descriptionInUpperCase: 'DESCRIPTION',
         priority: CategoryPriority.high,
       ),
     );

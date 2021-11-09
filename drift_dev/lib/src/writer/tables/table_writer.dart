@@ -97,6 +97,16 @@ abstract class TableOrViewWriter {
       additionalParams['clientDefault'] = column.clientDefaultCode!;
     }
 
+    if (column.generatedAs != null) {
+      final generateAs = column.generatedAs!;
+      final code = generateAs.dartExpression;
+
+      if (code != null) {
+        additionalParams['generatedAs'] =
+            'GeneratedAs($code, ${generateAs.stored})';
+      }
+    }
+
     final innerType = column.innerColumnType(options);
     var type = 'GeneratedColumn<$innerType>';
     expressionBuffer

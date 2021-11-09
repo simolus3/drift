@@ -10,7 +10,7 @@ class DartColumnDeclaration implements DartDeclaration, ColumnDeclaration {
   @override
   final SourceRange declaration;
 
-  /// In the Dart api, columns declared via getters.
+  /// In the Dart api, columns are declared via getters.
   @override
   final Element element;
 

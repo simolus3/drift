@@ -38,6 +38,9 @@ class Categories extends Table with AutoIncrement {
       text().named('desc').customConstraint('NOT NULL UNIQUE')();
   IntColumn get priority =>
       intEnum<CategoryPriority>().withDefault(const Constant(0))();
+
+  TextColumn get descriptionInUpperCase =>
+      text().generatedAs(description.upper())();
 }
 
 enum CategoryPriority { low, medium, high }

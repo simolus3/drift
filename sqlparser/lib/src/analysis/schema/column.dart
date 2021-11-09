@@ -35,6 +35,12 @@ class TableColumn extends Column implements ColumnWithType {
   @override
   final String name;
 
+  /// Whether this column was created with a `GENERATED ALWAYS AS` column
+  /// constraint.
+  ///
+  /// Generated columns can't be inserted or updated.
+  final bool isGenerated;
+
   @override
   ResultSet? get containingSet => table;
 
@@ -63,7 +69,8 @@ class TableColumn extends Column implements ColumnWithType {
 
   late final bool _isAliasForRowId = _computeIsAliasForRowId();
 
-  TableColumn(this.name, this._type, {this.definition});
+  TableColumn(this.name, this._type,
+      {this.definition, this.isGenerated = false});
 
   /// Applies a type hint to this column.
   ///

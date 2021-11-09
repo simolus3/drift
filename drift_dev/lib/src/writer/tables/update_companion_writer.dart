@@ -10,6 +10,11 @@ class UpdateCompanionWriter {
 
   late StringBuffer _buffer;
 
+  late final List<MoorColumn> columns = [
+    for (final column in table.columns)
+      if (!column.isGenerated) column,
+  ];
+
   UpdateCompanionWriter(this.table, this.scope) {
     _buffer = scope.leaf();
   }
@@ -36,7 +41,7 @@ class UpdateCompanionWriter {
   }
 
   void _writeFields() {
-    for (final column in table.columns) {
+    for (final column in columns) {
       final modifier = scope.options.fieldModifier;
       final type = column.dartTypeCode(scope.generationOptions);
       _buffer.write('$modifier Value<$type> ${column.dartGetterName};\n');
@@ -49,7 +54,7 @@ class UpdateCompanionWriter {
     }
     _buffer.write('${table.getNameForCompanionClass(scope.options)}({');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       _buffer.write('this.${column.dartGetterName} = const Value.absent(),');
     }
 
@@ -73,7 +78,7 @@ class UpdateCompanionWriter {
     //    @required String b}): a = Value(a), b = Value(b);
     // We don't need to use this. for the initializers, Dart figures that out.
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       final param = column.dartGetterName;
 
       if (table.isColumnRequiredForInsert(column)) {
@@ -106,18 +111,17 @@ class UpdateCompanionWriter {
   void _writeCustomConstructor() {
     // Prefer a .custom constructor, unless there already is a field called
     // "custom", in which case we'll use createCustom
-    final constructorName = table.columns
-            .map((e) => e.dartGetterName)
-            .any((name) => name == 'custom')
-        ? 'createCustom'
-        : 'custom';
+    final constructorName =
+        columns.map((e) => e.dartGetterName).any((name) => name == 'custom')
+            ? 'createCustom'
+            : 'custom';
 
     final dartTypeName = table.dartTypeCode(scope.generationOptions);
     _buffer
       ..write('static Insertable<$dartTypeName> $constructorName')
       ..write('({');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       // todo (breaking change): This should not consider type converters.
       final typeName = column.dartTypeCode(scope.generationOptions);
       final type = scope.nullableType('Expression<$typeName>');
@@ -128,7 +132,7 @@ class UpdateCompanionWriter {
       ..write('}) {\n')
       ..write('return RawValuesInsertable({');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       _buffer
         ..write('if (${column.dartGetterName} != null)')
         ..write(asDartLiteral(column.name.name))
@@ -143,7 +147,7 @@ class UpdateCompanionWriter {
       ..write(table.getNameForCompanionClass(scope.options))
       ..write(' copyWith({');
     var first = true;
-    for (final column in table.columns) {
+    for (final column in columns) {
       if (!first) {
         _buffer.write(', ');
       }
@@ -157,7 +161,7 @@ class UpdateCompanionWriter {
     _buffer
       ..write('}) {\n') //
       ..write('return ${table.getNameForCompanionClass(scope.options)}(');
-    for (final column in table.columns) {
+    for (final column in columns) {
       final name = column.dartGetterName;
       _buffer.write('$name: $name ?? this.$name,');
     }
@@ -173,7 +177,7 @@ class UpdateCompanionWriter {
 
     const locals = {'map', 'nullToAbsent', 'converter'};
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       final getterName = column.thisIfNeeded(locals);
 
       _buffer.write('if ($getterName.present) {');
@@ -212,7 +216,7 @@ class UpdateCompanionWriter {
   void _writeToString() {
     overrideToString(
       table.getNameForCompanionClass(scope.options),
-      [for (final column in table.columns) column.dartGetterName],
+      [for (final column in columns) column.dartGetterName],
       _buffer,
     );
   }
@@ -237,7 +241,7 @@ class UpdateCompanionWriter {
       final column =
           table.columns.firstWhereOrNull((e) => e.dartGetterName == field.name);
 
-      if (column != null) {
+      if (column != null && !column.isGenerated) {
         final dartName = column.dartGetterName;
         _buffer.write('$dartName: Value (_object.$dartName),\n');
       }
