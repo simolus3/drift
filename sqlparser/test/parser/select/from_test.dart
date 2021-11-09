@@ -160,8 +160,8 @@ void main() {
     test('table valued function', () {
       testStatement(
         '''
-SELECT DISTINCT user.name
-  FROM user, json_each(user.phone)
+SELECT DISTINCT "user".name
+  FROM "user", json_each("user".phone)
 WHERE json_each.value LIKE '704-%';
         ''',
         SelectStatement(

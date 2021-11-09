@@ -8,7 +8,7 @@ void main() {
     ));
     // add user (name, phone) table
     final table = engine.schemaReader.read(
-      engine.parse('CREATE TABLE user (name TEXT, phone TEXT)').rootNode
+      engine.parse('CREATE TABLE "user" (name TEXT, phone TEXT)').rootNode
           as TableInducingStatement,
     );
     engine.registerTable(table);
@@ -63,8 +63,8 @@ void main() {
 
     test('can use table-valued functions', () {
       final result = engine.analyze('''
-SELECT DISTINCT user.name
-  FROM user, json_each(user.phone)
+SELECT DISTINCT "user".name
+  FROM "user", json_each("user".phone)
  WHERE json_each.value LIKE '704-%';
     ''');
 
