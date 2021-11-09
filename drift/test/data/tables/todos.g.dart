@@ -207,7 +207,7 @@ class $CategoriesTable extends Categories
       const VerificationMeta('descriptionInUpperCase');
   late final GeneratedColumn<String?> descriptionInUpperCase =
       GeneratedColumn<String?>('description_in_upper_case', aliasedName, false,
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: false,
           generatedAs: GeneratedAs(description.upper(), false));
   @override
