@@ -57,6 +57,6 @@ void transactionTests(TestExecutor executor) {
   test('can use no-op transactions', () async {
     final db = Database(executor.createConnection());
     await db.transaction(() => Future.value(null));
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 }
