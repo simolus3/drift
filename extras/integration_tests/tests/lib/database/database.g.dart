@@ -539,7 +539,7 @@ abstract class _$Database extends GeneratedDatabase {
   late final $FriendshipsTable friendships = $FriendshipsTable(this);
   Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
-        'SELECT * FROM "users" AS "u" ORDER BY (SELECT "COUNT"(*) FROM "friendships" WHERE "first_user" = "u"."id" OR "second_user" = "u"."id") DESC LIMIT @1',
+        'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT @1',
         variables: [
           Variable<int>(amount)
         ],
@@ -551,7 +551,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
-        'SELECT "COUNT"(*) AS "_c0" FROM "friendships" AS "f" WHERE "f"."really_good_friends" = 1 AND("f"."first_user" = @1 OR "f"."second_user" = @1)',
+        'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = 1 AND(f.first_user = @1 OR f.second_user = @1)',
         variables: [
           Variable<int>(user)
         ],
@@ -562,7 +562,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
-        'SELECT "f"."really_good_friends","user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM "friendships" AS "f" INNER JOIN "users" AS "user" ON "user"."id" IN ("f"."first_user", "f"."second_user") AND "user"."id" != @1 WHERE("f"."first_user" = @1 OR "f"."second_user" = @1)',
+        'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS "user" ON "user".id IN (f.first_user, f.second_user) AND "user".id != @1 WHERE(f.first_user = @1 OR f.second_user = @1)',
         variables: [
           Variable<int>(user)
         ],
@@ -578,7 +578,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<int> userCount() {
-    return customSelect('SELECT "COUNT"("id") AS "_c0" FROM "users"',
+    return customSelect('SELECT COUNT(id) AS _c0 FROM users',
         variables: [],
         readsFrom: {
           users,
@@ -586,7 +586,7 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<Preferences?> settingsFor(int user) {
-    return customSelect('SELECT "preferences" FROM "users" WHERE "id" = @1',
+    return customSelect('SELECT preferences FROM users WHERE id = @1',
         variables: [
           Variable<int>(user)
         ],
@@ -600,7 +600,7 @@ abstract class _$Database extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    return customSelect('SELECT * FROM "users" WHERE "id" IN ($expandedvar1)',
+    return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
         variables: [
           for (var $ in var1) Variable<int>($)
         ],
@@ -611,7 +611,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        'INSERT INTO "friendships" VALUES (@1, @2, @3) RETURNING *',
+        'INSERT INTO friendships VALUES (@1, @2, @3) RETURNING *',
         variables: [
           Variable<int>(var1),
           Variable<int>(var2),

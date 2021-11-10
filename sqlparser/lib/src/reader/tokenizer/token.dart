@@ -427,6 +427,10 @@ bool isKeyword(TokenType type) => reverseKeywords.containsKey(type);
 /// Returns true if [name] is a reserved keyword in sqlite.
 bool isKeywordLexeme(String name) => keywords.containsKey(name.toUpperCase());
 
+/// Returns true if [name] is a reserved keyword in postgres.
+bool isPostgresKeywordLexeme(String name) =>
+    postgresKeywords.containsKey(name.toUpperCase());
+
 class Token implements SyntacticEntity {
   final TokenType type;
 

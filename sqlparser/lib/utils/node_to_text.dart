@@ -1261,8 +1261,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   void _identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (compatibleMode ||
-        isKeywordLexeme(identifier) ||
+    if (isKeywordLexeme(identifier) ||
+        (compatibleMode && isPostgresKeywordLexeme(identifier)) ||
         identifier.contains(' ')) {
       identifier = '"$identifier"';
     }
