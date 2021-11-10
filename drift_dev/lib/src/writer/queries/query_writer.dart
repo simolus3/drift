@@ -329,7 +329,7 @@ class QueryWriter {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
             final sql = kind.defaultValue!
-                .toSql(escapeIdentifiers: options.compatibleModeGeneration);
+                .toSql(compatibleMode: options.compatibleModeGeneration);
             final defaultSql = "'(${escapeForDart(sql)})'";
             defaultCode = 'const CustomExpression($defaultSql)';
           } else if (kind is SimpleDartPlaceholderType &&
@@ -743,7 +743,9 @@ class _ExpandedDeclarationWriter {
       ..write(highestAssignedIndexVar)
       ..write(', ')
       ..write(element.dartParameterName)
-      ..write('.length);\n');
+      ..write('.length')
+      ..write(options.compatibleModeGeneration ? ', true' : '')
+      ..write(');\n');
 
     // increase highest index for the next expanded element
     _increaseIndexCounter('${element.dartParameterName}.length');

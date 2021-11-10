@@ -40,7 +40,7 @@ class SpecialQuery implements MoorSchemaEntity {
     final decl = declaration;
     if (decl is MoorSpecialQueryDeclaration && options.newSqlCodeGeneration) {
       return decl.node.statement
-          .toSql(escapeIdentifiers: options.compatibleModeGeneration);
+          .toSql(compatibleMode: options.compatibleModeGeneration);
     }
     return sql;
   }

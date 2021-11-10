@@ -1342,10 +1342,9 @@ extension NodeToText on AstNode {
   /// ways to represent an equivalent node (e.g. the no-op `FOR EACH ROW` on
   /// triggers).
   ///
-  /// [escapeIdentifiers] force escaping all identifiers for better
-  /// compatibility
-  String toSql({bool escapeIdentifiers = false}) {
-    final builder = NodeSqlBuilder();
+  /// [compatibleMode] escaping more SQL keywords than SQLite standard
+  String toSql({bool compatibleMode = false}) {
+    final builder = NodeSqlBuilder(null, compatibleMode);
     builder.visit(this, null);
     return builder.buffer.toString();
   }

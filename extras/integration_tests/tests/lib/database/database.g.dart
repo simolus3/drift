@@ -598,7 +598,7 @@ abstract class _$Database extends GeneratedDatabase {
 
   Selectable<User> usersById(List<int> var1) {
     var $arrayStartIndex = 1;
-    final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
+    final expandedvar1 = $expandVar($arrayStartIndex, var1.length, true);
     $arrayStartIndex += var1.length;
     return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
         variables: [

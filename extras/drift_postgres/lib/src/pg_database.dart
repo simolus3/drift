@@ -49,34 +49,6 @@ class _PgDelegate extends DatabaseDelegate {
     }
   }
 
-  final _regexIndexed = RegExp(r'\?(\d+)');
-  final _regexNamed = RegExp(r':(\w+)');
-  final _escapeChar = String.fromCharCode(0x0);
-
-  String _convertStatement(String statement) {
-    final argMap = {};
-    return statement
-        .replaceAll("''", _escapeChar)
-        .split("'")
-        .asMap()
-        .map((index, value) {
-          if (index.isOdd) {
-            return MapEntry(index, value.replaceAll(_escapeChar, "''"));
-          } else {
-            final replaced = value
-                .replaceAllMapped(_regexIndexed, (match) => '@${match[1]}')
-                .replaceAllMapped(_regexNamed, (match) {
-              final index =
-                  argMap.putIfAbsent(match[1], () => argMap.length + 1);
-              return '@$index';
-            });
-            return MapEntry(index, replaced);
-          }
-        })
-        .values
-        .join("'");
-  }
-
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     await _ensureOpen();
@@ -85,7 +57,7 @@ class _PgDelegate extends DatabaseDelegate {
       final stmt = statements.statements[row.statementIndex];
       final args = row.arguments;
 
-      await _ec.execute(_convertStatement(stmt),
+      await _ec.execute(stmt,
           substitutionValues: args
               .asMap()
               .map((key, value) => MapEntry((key + 1).toString(), value)));
@@ -100,7 +72,7 @@ class _PgDelegate extends DatabaseDelegate {
     if (args.isEmpty) {
       return _ec.execute(statement);
     } else {
-      return _ec.execute(_convertStatement(statement),
+      return _ec.execute(statement,
           substitutionValues: args
               .asMap()
               .map((key, value) => MapEntry((key + 1).toString(), value)));
@@ -119,7 +91,7 @@ class _PgDelegate extends DatabaseDelegate {
     if (args.isEmpty) {
       result = await _ec.query(statement);
     } else {
-      result = await _ec.query(_convertStatement(statement),
+      result = await _ec.query(statement,
           substitutionValues: args
               .asMap()
               .map((key, value) => MapEntry((key + 1).toString(), value)));
@@ -135,7 +107,7 @@ class _PgDelegate extends DatabaseDelegate {
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
     await _ensureOpen();
-    final result = await _ec.query(_convertStatement(statement),
+    final result = await _ec.query(statement,
         substitutionValues: args
             .asMap()
             .map((key, value) => MapEntry((key + 1).toString(), value)));
