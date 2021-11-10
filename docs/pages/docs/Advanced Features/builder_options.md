@@ -80,6 +80,9 @@ At the moment, drift supports these options:
 * `new_sql_code_generation`: Generates SQL statements from the parsed AST instead of replacing substrings. This will also remove
   unnecessary whitespace and comments. 
   If enabling this option breaks your queries, please file an issue!
+* `compatible_mode_generation`: Generates more compatible SQL queries (escapes all identifier) from the parsed AST.
+  It is required to use the Postgres extension. It is also necessary to enable `new_sql_code_generation` option for this setting.
+  Enabling this option may break your current custom queries!
 * `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/moor_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.

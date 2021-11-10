@@ -12,8 +12,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   /// Whether we need to insert a space before writing the next identifier.
   bool needsSpace = false;
+  // Escaping all identifiers regardless of it is keyword or not
+  bool compatibleMode;
 
-  NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
+  NodeSqlBuilder([StringSink? buffer, this.compatibleMode = false])
+      : buffer = buffer ?? StringBuffer();
 
   /// Writes a space character if [needsSpace] is set.
   ///
@@ -1258,7 +1261,9 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
 
   void _identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
+    if (compatibleMode ||
+        isKeywordLexeme(identifier) ||
+        identifier.contains(' ')) {
       identifier = '"$identifier"';
     }
 
@@ -1336,7 +1341,10 @@ extension NodeToText on AstNode {
   /// output to have more than just whitespace changes if there are multiple
   /// ways to represent an equivalent node (e.g. the no-op `FOR EACH ROW` on
   /// triggers).
-  String toSql() {
+  ///
+  /// [escapeIdentifiers] force escaping all identifiers for better
+  /// compatibility
+  String toSql({bool escapeIdentifiers = false}) {
     final builder = NodeSqlBuilder();
     builder.visit(this, null);
     return builder.buffer.toString();

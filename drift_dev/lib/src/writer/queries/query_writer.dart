@@ -328,8 +328,9 @@ class QueryWriter {
               kind.defaultValue != null) {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
-            final defaultSql =
-                "'(${escapeForDart(kind.defaultValue!.toSql())})'";
+            final sql = kind.defaultValue!
+                .toSql(escapeIdentifiers: options.compatibleModeGeneration);
+            final defaultSql = "'(${escapeForDart(sql)})'";
             defaultCode = 'const CustomExpression($defaultSql)';
           } else if (kind is SimpleDartPlaceholderType &&
               kind.kind == SimpleDartPlaceholderKind.orderBy) {
@@ -424,7 +425,9 @@ class QueryWriter {
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode() {
     if (scope.options.newSqlCodeGeneration) {
-      return SqlWriter(query).write();
+      return SqlWriter(query,
+              compatibleMode: scope.options.compatibleModeGeneration)
+          .write();
     } else {
       return _legacyQueryCode();
     }

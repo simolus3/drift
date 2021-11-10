@@ -40,7 +40,7 @@ abstract class MoorDeclaration extends Declaration {
 extension ToSql on MoorDeclaration {
   String exportSql(MoorOptions options) {
     if (options.newSqlCodeGeneration) {
-      return node.toSql();
+      return node.toSql(escapeIdentifiers: options.compatibleModeGeneration);
     } else {
       return node.span!.text;
     }

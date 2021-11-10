@@ -26,11 +26,12 @@ class SqlWriter extends NodeSqlBuilder {
   final SqlQuery query;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  SqlWriter._(this.query, this._starColumnToResolved, StringBuffer out)
+  SqlWriter._(this.query, this._starColumnToResolved, StringBuffer out,
+      bool compatibleMode)
       : _out = out,
-        super(_DartEscapingSink(out));
+        super(_DartEscapingSink(out), compatibleMode);
 
-  factory SqlWriter(SqlQuery query) {
+  factory SqlWriter(SqlQuery query, {bool compatibleMode = false}) {
     // Index nested results by their syntactic origin for faster lookups later
     var doubleStarColumnToResolvedTable =
         const <NestedStarResultColumn, NestedResultTable>{};
@@ -41,7 +42,8 @@ class SqlWriter extends NodeSqlBuilder {
           nestedResult.from: nestedResult
       };
     }
-    return SqlWriter._(query, doubleStarColumnToResolvedTable, StringBuffer());
+    return SqlWriter._(
+        query, doubleStarColumnToResolvedTable, StringBuffer(), compatibleMode);
   }
 
   String write() {
@@ -61,7 +63,8 @@ class SqlWriter extends NodeSqlBuilder {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      _writeRawInSpaces('?${variable.index}');
+      final mark = compatibleMode ? '\$' : '?';
+      _writeRawInSpaces('$mark${variable.index}');
     }
   }
 

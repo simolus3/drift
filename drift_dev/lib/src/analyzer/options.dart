@@ -94,6 +94,9 @@ class MoorOptions {
   @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
   final bool newSqlCodeGeneration;
 
+  @JsonKey(name: 'compatible_mode_generation', defaultValue: false)
+  final bool compatibleModeGeneration;
+
   @JsonKey(name: 'scoped_dart_components', defaultValue: false)
   final bool scopedDartComponents;
 
@@ -115,6 +118,7 @@ class MoorOptions {
     this.generateNamedParameters = false,
     this.namedParametersAlwaysRequired = false,
     this.newSqlCodeGeneration = false,
+    this.compatibleModeGeneration = false,
     this.scopedDartComponents = false,
     this.modules = const [],
     this.sqliteAnalysisOptions,
@@ -137,6 +141,7 @@ class MoorOptions {
     required this.generateNamedParameters,
     required this.namedParametersAlwaysRequired,
     required this.newSqlCodeGeneration,
+    required this.compatibleModeGeneration,
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
