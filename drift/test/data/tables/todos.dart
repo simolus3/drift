@@ -55,7 +55,7 @@ class SharedTodos extends Table {
   @override
   List<String> get customConstraints => [
         'FOREIGN KEY (todo) REFERENCES todos(id)',
-        'FOREIGN KEY (user) REFERENCES users(id)'
+        'FOREIGN KEY ("user") REFERENCES users(id)'
       ];
 }
 

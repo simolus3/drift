@@ -153,6 +153,27 @@ const sqliteKeywords = {
   'WINDOW',
   'WITH',
   'WITHOUT',
+  // Additional Postgres keywords
+  'ANY',
+  'ARRAY',
+  'ASYMMETRIC',
+  'BINARY',
+  'BOTH',
+  'CURRENT_USER',
+  'ILIKE',
+  'LEADING',
+  'LOCALTIME',
+  'LOCALTIMESTAMP',
+  'GRANT',
+  'ONLY',
+  'OVERLAPS',
+  'PLACING',
+  'SESSION_USER',
+  'SIMILAR',
+  'SOME',
+  'SYMMETRIC',
+  'TRAILING',
+  'USER',
 };
 
 /// Returns whether [s] is an sql keyword by comparing it to the

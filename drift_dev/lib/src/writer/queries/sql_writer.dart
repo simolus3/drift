@@ -63,7 +63,7 @@ class SqlWriter extends NodeSqlBuilder {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      final mark = compatibleMode ? '\$' : '?';
+      final mark = compatibleMode ? '@' : '?';
       _writeRawInSpaces('$mark${variable.index}');
     }
   }

@@ -49,10 +49,10 @@ void main() {
       verify(mockExecutor.runCustom(
           'CREATE TABLE IF NOT EXISTS shared_todos ('
           'todo INTEGER NOT NULL, '
-          'user INTEGER NOT NULL, '
-          'PRIMARY KEY (todo, user), '
+          '"user" INTEGER NOT NULL, '
+          'PRIMARY KEY (todo, "user"), '
           'FOREIGN KEY (todo) REFERENCES todos(id), '
-          'FOREIGN KEY (user) REFERENCES users(id)'
+          'FOREIGN KEY ("user") REFERENCES users(id)'
           ');',
           []));
 
