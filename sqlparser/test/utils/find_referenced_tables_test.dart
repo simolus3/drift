@@ -45,7 +45,7 @@ void main() {
     oldUsers = addViewFromStmt('''
       CREATE VIEW old_users AS
         SELECT u.* FROM users u
-          WHERE (SELECT MAX(timestamp) FROM logins WHERE "user" = u.id) < 10000;
+          WHERE (SELECT MAX(timestamp) FROM logins WHERE user = u.id) < 10000;
     ''');
   });
 
@@ -64,7 +64,7 @@ void main() {
   test('resolves aliased tables', () {
     final ctx = engine.analyze('''
       CREATE TRIGGER foo AFTER INSERT ON users BEGIN
-        INSERT INTO logins ("user", timestamp) VALUES (new.id, 0);
+        INSERT INTO logins (user, timestamp) VALUES (new.id, 0);
       END;
     ''');
     final body = (ctx.root as CreateTriggerStatement).action;

@@ -29,10 +29,10 @@ CREATE VIRTUAL TABLE email USING fts5(sender, title, body);
 
 CREATE TABLE group_members (
   "group" INT NOT NULL REFERENCES "groups"(id),
-  "user" INT NOT NULL REFERENCES users(id),
+  user INT NOT NULL REFERENCES users(id),
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   
-  PRIMARY KEY ("group", "user") ON CONFLICT REPLACE
+  PRIMARY KEY ("group", user) ON CONFLICT REPLACE
 );
 
 CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN
@@ -230,7 +230,7 @@ const expected = r'''
             ],
             "is_virtual":false,
             "constraints":[
-               "PRIMARY KEY (\"group\", \"user\") ON CONFLICT REPLACE"
+               "PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE"
             ],
             "explicit_pk":[
                "group",
