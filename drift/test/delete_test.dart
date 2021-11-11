@@ -40,7 +40,7 @@ void main() {
       await db.delete(db.sharedTodos).delete(SharedTodo(todo: 3, user: 2));
 
       verify(executor.runDelete(
-          'DELETE FROM shared_todos WHERE todo = ? AND "user" = ?;', [3, 2]));
+          'DELETE FROM shared_todos WHERE todo = ? AND user = ?;', [3, 2]));
     });
   });
 

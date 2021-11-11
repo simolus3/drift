@@ -40,7 +40,7 @@ abstract class MoorDeclaration extends Declaration {
 extension ToSql on MoorDeclaration {
   String exportSql(MoorOptions options) {
     if (options.newSqlCodeGeneration) {
-      final writer = SqlWriter(options);
+      final writer = SqlWriter(options, escapeForDart: false);
       return writer.writeSql(node);
     } else {
       return node.span!.text;

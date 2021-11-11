@@ -232,7 +232,7 @@ class Migrator {
 
   void _writeCreateTable(TableInfo table, GenerationContext context) {
     context.buffer.write('CREATE TABLE IF NOT EXISTS '
-        '${escapeIfNeeded(table.$tableName)} (');
+        '${escapeIfNeeded(table.$tableName, context.dialect)} (');
 
     var hasAutoIncrement = false;
     for (var i = 0; i < table.$columns.length; i++) {

@@ -57,15 +57,12 @@ At the moment, drift supports these options:
 * `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a 
   `.moor` (or `.drift`) file from and to json, use their sql name instead of the generated Dart getter name
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).
-  You can always override the json key by using a `JSON KEY` column constraint 
-  (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`)
+  You can always override the json key by using a `JSON KEY` column constraint
+  (e.g. `user_name VARCHAR NOT NULL JSON KEY userName`).
 * `generate_connect_constructor`: Generate necessary code to support the [isolate runtime]({{ "isolates.md" | pageUrl }}).
   This is a build option because isolates are still experimental. This will be the default option eventually.
-* `sqlite_modules`: This list can be used to enable sqlite extensions, like those for json or full-text search.
-  Modules have to be enabled explicitly because they're not supported on all platforms. See the following section for
-  details.
 * `eagerly_load_dart_ast`: Drift's builder will load the resolved AST whenever it encounters a Dart file,
-  instead of lazily when it reads a table. This is used to investigate rare builder crashes. 
+  instead of lazily when it reads a table. This is used to investigate rare builder crashes.
 * `data_class_to_companions` (defaults to `true`): Controls whether drift will write the `toCompanion` method in generated
    data classes.
 * `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
@@ -78,19 +75,19 @@ At the moment, drift supports these options:
 * `named_parameters`: Generates named parameters for named variables in SQL queries.
 * `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
 * `new_sql_code_generation`: Generates SQL statements from the parsed AST instead of replacing substrings. This will also remove
-  unnecessary whitespace and comments. 
+  unnecessary whitespace and comments.
   If enabling this option breaks your queries, please file an issue!
-* `compatible_mode_generation`: Generates more compatible SQL queries (escapes all identifier) from the parsed AST.
-  It is required to use the Postgres extension. It is also necessary to enable `new_sql_code_generation` option for this setting.
-  Enabling this option may break your current custom queries!
 * `scoped_dart_components`: Generates a function parameter for [Dart placeholders]({{ '../Using SQL/moor_files.md#dart-components-in-sql' | pageUrl }}) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 
-## Assumed sqlite environment
+## Assumed SQL environment
 
-You can configure the assumed sqlite version and available extensions.
-These options are used during analysis only and don't have an impact on the
+You can configure the SQL dialect you want to target with the `sql` build option.
+When using sqlite, you can further configure the assumed sqlite3 version and enabled
+extensions for more accurate analysis.
+
+Note that these options are used for static analysis only and don't have an impact on the
 actual sqlite version at runtime.
 
 To define the sqlite version to use, set `sqlite.version` to the `major.minor`
@@ -102,8 +99,10 @@ targets:
     builders:
       drift_dev:
         options:
-          sqlite:
-            version: "3.34"
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.34"
 ```
 
 With that option, the generator will emit warnings when using newer sqlite version.
@@ -125,11 +124,13 @@ targets:
     builders:
       drift_dev:
         options:
-          sqlite:
-            modules:
-              - json1
-              - fts5
-              - moor_ffi
+          sql:
+            options:
+              dialect: sqlite
+              modules:
+                - json1
+                - fts5
+                - moor_ffi
 ```
 
 We currently support the following extensions:

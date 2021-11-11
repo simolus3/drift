@@ -168,9 +168,18 @@ class MoorOptions {
 
   factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
 
+  SqliteAnalysisOptions? get sqliteOptions {
+    final dialect = this.dialect;
+    if (dialect != null) {
+      return dialect.dialect == SqlDialect.sqlite ? dialect.options : null;
+    }
+
+    return sqliteAnalysisOptions;
+  }
+
   /// All enabled sqlite modules from these options.
   List<SqlModule> get effectiveModules {
-    return sqliteAnalysisOptions?.modules ?? modules;
+    return sqliteOptions?.modules ?? modules;
   }
 
   /// Whether the [module] has been enabled in this configuration.
@@ -183,7 +192,7 @@ class MoorOptions {
 
   /// The assumed sqlite version used when analyzing queries.
   SqliteVersion get sqliteVersion {
-    return sqliteAnalysisOptions?.version ?? _defaultSqliteVersion;
+    return sqliteOptions?.version ?? _defaultSqliteVersion;
   }
 }
 
@@ -193,6 +202,8 @@ class DialectOptions {
   final SqliteAnalysisOptions? options;
 
   const DialectOptions(this.dialect, this.options);
+
+  factory DialectOptions.fromJson(Map json) => _$DialectOptionsFromJson(json);
 }
 
 @JsonSerializable()

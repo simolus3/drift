@@ -32,12 +32,13 @@ class SqlWriter extends NodeSqlBuilder {
 
   bool get _isPostgres => options.effectiveDialect == SqlDialect.postgres;
 
-  SqlWriter._(
-      this.query, this.options, this._starColumnToResolved, StringBuffer out)
+  SqlWriter._(this.query, this.options, this._starColumnToResolved,
+      StringBuffer out, bool escapeForDart)
       : _out = out,
-        super(_DartEscapingSink(out));
+        super(escapeForDart ? _DartEscapingSink(out) : out);
 
-  factory SqlWriter(MoorOptions options, {SqlQuery? query}) {
+  factory SqlWriter(MoorOptions options,
+      {SqlQuery? query, bool escapeForDart = true}) {
     // Index nested results by their syntactic origin for faster lookups later
     var doubleStarColumnToResolvedTable =
         const <NestedStarResultColumn, NestedResultTable>{};
@@ -48,8 +49,8 @@ class SqlWriter extends NodeSqlBuilder {
           nestedResult.from: nestedResult
       };
     }
-    return SqlWriter._(
-        query, options, doubleStarColumnToResolvedTable, StringBuffer());
+    return SqlWriter._(query, options, doubleStarColumnToResolvedTable,
+        StringBuffer(), escapeForDart);
   }
 
   String write() {
