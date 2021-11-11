@@ -2,9 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:drift/backends.dart';
 import 'package:postgres/postgres.dart';
 
-///
+/// A drift database implementation that talks to a postgres database.
 class PgDatabase extends DelegatedDatabase {
-  ///
+  /// Creates a drift database implementation from a postgres database
+  /// [connection].
   PgDatabase(PostgreSQLConnection connection)
       : super(_PgDelegate(connection, connection),
             isSequential: true, logStatements: true);

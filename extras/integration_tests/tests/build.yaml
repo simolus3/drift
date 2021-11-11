@@ -6,6 +6,7 @@ targets:
           generate_connect_constructor: true
           override_hash_and_equals_in_result_sets: true
           new_sql_code_generation: true
-          compatible_mode_generation: true
-          sqlite:
-            version: "3.35"
+          sql:
+            dialect: postgres # using postgres because sqlite3 understands that too
+            options:
+              version: "3.35"

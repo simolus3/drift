@@ -169,12 +169,7 @@ class MoorOptions {
   factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
 
   SqliteAnalysisOptions? get sqliteOptions {
-    final dialect = this.dialect;
-    if (dialect != null) {
-      return dialect.dialect == SqlDialect.sqlite ? dialect.options : null;
-    }
-
-    return sqliteAnalysisOptions;
+    return dialect?.options ?? sqliteAnalysisOptions;
   }
 
   /// All enabled sqlite modules from these options.
