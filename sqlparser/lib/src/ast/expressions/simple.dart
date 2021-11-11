@@ -195,13 +195,11 @@ class InExpression extends Expression {
 }
 
 class Parentheses extends Expression {
-  final Token openingLeft;
+  Token? openingLeft;
+  Token? closingRight;
   Expression expression;
-  final Token closingRight;
 
-  Parentheses(this.openingLeft, this.expression, this.closingRight) {
-    setSpan(openingLeft, closingRight);
-  }
+  Parentheses(this.expression);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

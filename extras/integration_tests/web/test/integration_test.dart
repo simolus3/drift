@@ -36,7 +36,7 @@ class WebExecutorIndexedDb extends TestExecutor {
 
   @override
   Future deleteData() async {
-    await window.indexedDB.deleteDatabase('moor_databases');
+    await window.indexedDB?.deleteDatabase('moor_databases');
   }
 }
 

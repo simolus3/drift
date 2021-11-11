@@ -1,6 +1,6 @@
 library tests;
 
-export 'package:moor/moor.dart';
+export 'package:drift/drift.dart';
 
 export 'data/sample_data.dart';
 export 'database/database.dart';

@@ -18,7 +18,7 @@ abstract class SqlType<T> {
   const SqlType();
 
   /// The name of this type in sql, such as `TEXT`.
-  String get sqlName;
+  String sqlName(SqlDialect dialect);
 
   /// Maps the [content] to a value that we can send together with a prepared
   /// statement to represent the given value.
@@ -40,7 +40,8 @@ class BoolType extends SqlType<bool> {
   const BoolType();
 
   @override
-  String get sqlName => 'INTEGER';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'INTEGER' : 'integer';
 
   @override
   bool? mapFromDatabaseResponse(dynamic response) {
@@ -74,7 +75,8 @@ class StringType extends SqlType<String> {
   const StringType();
 
   @override
-  String get sqlName => 'TEXT';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'TEXT' : 'text';
 
   @override
   String? mapFromDatabaseResponse(dynamic response) => response?.toString();
@@ -103,7 +105,8 @@ class IntType extends SqlType<int> {
   const IntType();
 
   @override
-  String get sqlName => 'INTEGER';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'INTEGER' : 'bigint';
 
   @override
   int? mapFromDatabaseResponse(dynamic response) {
@@ -127,7 +130,8 @@ class DateTimeType extends SqlType<DateTime> {
   const DateTimeType();
 
   @override
-  String get sqlName => 'INTEGER';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'INTEGER' : 'integer';
 
   @override
   DateTime? mapFromDatabaseResponse(dynamic response) {
@@ -161,7 +165,8 @@ class BlobType extends SqlType<Uint8List> {
   const BlobType();
 
   @override
-  String get sqlName => 'BLOB';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'BLOB' : 'bytea';
 
   @override
   Uint8List? mapFromDatabaseResponse(dynamic response) {
@@ -187,7 +192,8 @@ class RealType extends SqlType<double> {
   const RealType();
 
   @override
-  String get sqlName => 'REAL';
+  String sqlName(SqlDialect dialect) =>
+      dialect == SqlDialect.sqlite ? 'REAL' : 'float8';
 
   @override
   double? mapFromDatabaseResponse(dynamic response) {

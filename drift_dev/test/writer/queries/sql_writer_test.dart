@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/writer/queries/sql_writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
@@ -11,7 +12,8 @@ void main() {
     final query = SqlSelectQuery(
         'name', context, [], [], InferredResultSet(null, []), null);
 
-    final result = SqlWriter(query).write();
+    final result =
+        SqlWriter(const MoorOptions.defaults(), query: query).write();
 
     expect(result, expectedDart);
   }

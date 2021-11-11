@@ -17,5 +17,4 @@ export 'src/runtime/executor/connection_pool.dart';
 export 'src/runtime/executor/executor.dart';
 export 'src/runtime/query_builder/query_builder.dart';
 export 'src/runtime/types/sql_types.dart';
-export 'src/utils/expand_variables.dart';
 export 'src/utils/lazy_database.dart';

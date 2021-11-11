@@ -25,7 +25,7 @@ void transactionTests(TestExecutor executor) {
         await db.amountOfGoodFriends(people.dashId).getSingle();
     expect(friendsResult, 1);
 
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('transaction is rolled back then an exception occurs', () async {
@@ -51,12 +51,12 @@ void transactionTests(TestExecutor executor) {
         await db.amountOfGoodFriends(people.dashId).getSingle();
     expect(friendsResult, 0); // no friendship was inserted
 
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 
   test('can use no-op transactions', () async {
     final db = Database(executor.createConnection());
     await db.transaction(() => Future.value(null));
-    await db.close();
+    await executor.clearDatabaseAndClose(db);
   });
 }

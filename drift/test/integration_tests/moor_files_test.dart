@@ -136,7 +136,7 @@ void main() {
   test('columns use table names in queries with multiple tables', () async {
     await db.multiple(predicate: (d, c) => d.a.equals('foo')).get();
 
-    verify(mock.runSelect(argThat(contains('d.a = ?')), any));
+    verify(mock.runSelect(argThat(contains('d.a = ?1')), any));
   });
 
   test('order by-params are ignored by default', () async {

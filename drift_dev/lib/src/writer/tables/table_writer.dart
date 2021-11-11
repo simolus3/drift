@@ -72,7 +72,7 @@ abstract class TableOrViewWriter {
       final name = escapeIfNeeded(column.name.name);
       defaultConstraints.add('CHECK ($name IN (0, 1))');
     }
-    additionalParams['typeName'] = asDartLiteral(column.sqlTypeName());
+    additionalParams['type'] = 'const ${column.sqlType().runtimeType}()';
 
     if (tableOrView is MoorTable) {
       additionalParams['requiredDuringInsert'] = (tableOrView as MoorTable)

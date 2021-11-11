@@ -9,7 +9,7 @@ void main() {
       'foo',
       'tbl',
       false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
     );
 
@@ -22,7 +22,7 @@ void main() {
 
   test('int column writes PRIMARY KEY constraint', () {
     final column = GeneratedColumn<int>('foo', 'tbl', false,
-        typeName: 'INTEGER', $customConstraints: 'NOT NULL PRIMARY KEY');
+        type: const IntType(), $customConstraints: 'NOT NULL PRIMARY KEY');
 
     final context = GenerationContext.fromDb(TodoDb());
     column.writeColumnDefinition(context);

@@ -1,10 +1,12 @@
 /// Provides utilities around sql keywords, like optional escaping etc.
 library drift.sqlite_keywords;
 
-/// Contains a set of all sqlite keywords, according to
-/// https://www.sqlite.org/lang_keywords.html. Drift will use this list to
-/// escape keywords.
-const sqliteKeywords = {
+import 'package:drift/drift.dart';
+
+/// A set of SQL keywords.
+///
+/// Drift will escape column names and identifiers that appear in this set.
+const baseKeywords = {
   'ADD',
   'ABORT',
   'ACTION',
@@ -155,6 +157,40 @@ const sqliteKeywords = {
   'WITHOUT',
 };
 
+/// Contains a set of all sqlite keywords, according to
+/// https://www.sqlite.org/lang_keywords.html. Drift will use this list to
+/// escape keywords.
+const sqliteKeywords = baseKeywords;
+
+/// A set of keywords that need to be escaped on sqlite and aren't contained
+/// in [baseKeywords].
+const additionalSqliteKeywords = <String>{};
+
+/// A set of keywords that need to be escaped on postgres and aren't contained
+/// in [baseKeywords].
+const additionalPostgresKeywords = <String>{
+  'ANY',
+  'ARRAY',
+  'ASYMMETRIC',
+  'BINARY',
+  'BOTH',
+  'CURRENT_USER',
+  'ILIKE',
+  'LEADING',
+  'LOCALTIME',
+  'LOCALTIMESTAMP',
+  'GRANT',
+  'ONLY',
+  'OVERLAPS',
+  'PLACING',
+  'SESSION_USER',
+  'SIMILAR',
+  'SOME',
+  'SYMMETRIC',
+  'TRAILING',
+  'USER',
+};
+
 /// Returns whether [s] is an sql keyword by comparing it to the
 /// [sqliteKeywords].
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
@@ -162,7 +198,14 @@ bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 final _whitespace = RegExp(r'\s');
 
 /// Escapes [s] by wrapping it in backticks if it's an sqlite keyword.
-String escapeIfNeeded(String s) {
-  if (isSqliteKeyword(s) || s.contains(_whitespace)) return '"$s"';
+String escapeIfNeeded(String s, [SqlDialect dialect = SqlDialect.sqlite]) {
+  final inUpperCase = s.toUpperCase();
+  var isKeyword = baseKeywords.contains(inUpperCase);
+
+  if (dialect == SqlDialect.postgres) {
+    isKeyword |= additionalPostgresKeywords.contains(inUpperCase);
+  }
+
+  if (isKeyword || s.contains(_whitespace)) return '"$s"';
   return s;
 }

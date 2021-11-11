@@ -130,13 +130,13 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       $customConstraints: 'PRIMARY KEY');
   final VerificationMeta _valueMeta = const VerificationMeta('value');
   late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
       'text', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   @override

@@ -134,14 +134,14 @@ class Users extends Table with TableInfo<Users, User> {
   GeneratedColumn<int> _id;
   GeneratedColumn<int> get id =>
       _id ??= GeneratedColumn<int>('id', aliasedName, false,
-          typeName: 'INTEGER',
+          type: const IntType(),
           requiredDuringInsert: false,
           $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   GeneratedColumn<String> _name;
   GeneratedColumn<String> get name =>
       _name ??= GeneratedColumn<String>('name', aliasedName, false,
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: true,
           $customConstraints: 'NOT NULL');
   @override

@@ -41,8 +41,12 @@ class GeneratedColumn<T> extends Column<T> {
   /// Additional checks performed on values before inserts or updates.
   final VerificationResult Function(T, VerificationMeta)? additionalChecks;
 
-  /// The sql type name, such as TEXT for texts.
-  final String typeName;
+  /// The sql type, such as `StringType` for texts.
+  final SqlType type;
+
+  /// The sql type name, such as `TEXT` for texts.
+  @Deprecated('Use type.sqlName instead')
+  String get typeName => type.sqlName(SqlDialect.sqlite);
 
   /// If this column is generated (that is, it is a SQL expression of other)
   /// columns, contains information about how to generate this column.
@@ -65,7 +69,7 @@ class GeneratedColumn<T> extends Column<T> {
     this.tableName,
     this.$nullable, {
     this.clientDefault,
-    required this.typeName,
+    required this.type,
     String? defaultConstraints,
     this.$customConstraints,
     this.defaultValue,
@@ -85,7 +89,7 @@ class GeneratedColumn<T> extends Column<T> {
       tableName,
       $nullable,
       clientDefault,
-      typeName,
+      type,
       _defaultConstraints,
       $customConstraints,
       defaultValue,
@@ -99,10 +103,18 @@ class GeneratedColumn<T> extends Column<T> {
   /// [here](https://www.sqlite.org/syntax/column-def.html), into the given
   /// buffer.
   void writeColumnDefinition(GenerationContext into) {
-    into.buffer.write('$escapedName $typeName');
+    final isSerial = into.dialect == SqlDialect.postgres && hasAutoIncrement;
+
+    if (isSerial) {
+      into.buffer.write('$escapedName bigserial PRIMARY KEY NOT NULL');
+    } else {
+      into.buffer.write('$escapedName ${type.sqlName(into.dialect)}');
+    }
 
     if ($customConstraints == null) {
-      into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
+      if (!isSerial) {
+        into.buffer.write($nullable ? ' NULL' : ' NOT NULL');
+      }
 
       final defaultValue = this.defaultValue;
       if (defaultValue != null) {
@@ -127,7 +139,7 @@ class GeneratedColumn<T> extends Column<T> {
       }
 
       // these custom constraints refer to builtin constraints from drift
-      if (_defaultConstraints != null) {
+      if (!isSerial && _defaultConstraints != null) {
         into.buffer
           ..write(' ')
           ..write(_defaultConstraints);
@@ -230,7 +242,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
     String tableName,
     bool nullable,
     S Function()? clientDefault,
-    String typeName,
+    SqlType type,
     String? defaultConstraints,
     String? customConstraints,
     Expression<S>? defaultValue,
@@ -242,7 +254,7 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
           tableName,
           nullable,
           clientDefault: clientDefault,
-          typeName: typeName,
+          type: type,
           defaultConstraints: defaultConstraints,
           $customConstraints: customConstraints,
           defaultValue: defaultValue,

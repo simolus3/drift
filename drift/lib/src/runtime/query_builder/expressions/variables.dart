@@ -60,15 +60,21 @@ class Variable<T> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    final explicitStart = context.explicitVariableIndex;
+    var explicitStart = context.explicitVariableIndex;
+
+    var mark = '?';
+    if (context.dialect == SqlDialect.postgres) {
+      explicitStart = 1;
+      mark = '@';
+    }
 
     if (explicitStart != null) {
       context.buffer
-        ..write('?')
+        ..write(mark)
         ..write(explicitStart + context.amountOfVariables);
       context.introduceVariable(this, mapToSimpleValue(context));
     } else if (value != null) {
-      context.buffer.write('?');
+      context.buffer.write(mark);
       context.introduceVariable(this, mapToSimpleValue(context));
     } else {
       context.buffer.write('NULL');

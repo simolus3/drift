@@ -14,3 +14,5 @@ echo "- Generate web_worker_example"
 (cd ../extras/web_worker_example && dart pub get && dart run build_runner build --delete-conflicting-outputs)
 echo "- Generate with_built_value"
 (cd ../extras/with_built_value && dart pub get && dart run build_runner build --delete-conflicting-outputs)
+echo "- Generate flutter_web_worker_example"
+(cd ../extras/flutter_web_worker_example && dart pub get && dart run build_runner build --delete-conflicting-outputs)

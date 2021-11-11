@@ -186,20 +186,20 @@ class $CategoriesTable extends Categories
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'desc', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL UNIQUE');
   final VerificationMeta _priorityMeta = const VerificationMeta('priority');
   late final GeneratedColumnWithTypeConverter<CategoryPriority, int?> priority =
       GeneratedColumn<int?>('priority', aliasedName, false,
-              typeName: 'INTEGER',
+              type: const IntType(),
               requiredDuringInsert: false,
               defaultValue: const Constant(0))
           .withConverter<CategoryPriority>($CategoriesTable.$converter0);
@@ -207,7 +207,7 @@ class $CategoriesTable extends Categories
       const VerificationMeta('descriptionInUpperCase');
   late final GeneratedColumn<String?> descriptionInUpperCase =
       GeneratedColumn<String?>('description_in_upper_case', aliasedName, false,
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: false,
           generatedAs: GeneratedAs(description.upper(), false));
   @override
@@ -476,7 +476,7 @@ class $TodosTableTable extends TodosTable
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -484,20 +484,20 @@ class $TodosTableTable extends TodosTable
       'title', aliasedName, true,
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
   late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
       'content', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
   late final GeneratedColumn<DateTime?> targetDate = GeneratedColumn<DateTime?>(
       'target_date', aliasedName, true,
-      typeName: 'INTEGER', requiredDuringInsert: false);
+      type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
   late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
       'category', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'REFERENCES categories (id)');
   @override
@@ -759,7 +759,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -767,12 +767,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       'name', aliasedName, false,
       additionalChecks:
           GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true);
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
   late final GeneratedColumn<bool?> isAwesome = GeneratedColumn<bool?>(
       'is_awesome', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (is_awesome IN (0, 1))',
       defaultValue: const Constant(true));
@@ -780,12 +780,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       const VerificationMeta('profilePicture');
   late final GeneratedColumn<Uint8List?> profilePicture =
       GeneratedColumn<Uint8List?>('profile_picture', aliasedName, false,
-          typeName: 'BLOB', requiredDuringInsert: true);
+          type: const BlobType(), requiredDuringInsert: true);
   final VerificationMeta _creationTimeMeta =
       const VerificationMeta('creationTime');
   late final GeneratedColumn<DateTime?> creationTime =
       GeneratedColumn<DateTime?>('creation_time', aliasedName, false,
-          typeName: 'INTEGER',
+          type: const IntType(),
           requiredDuringInsert: false,
           defaultValue: currentDateAndTime);
   @override
@@ -976,11 +976,11 @@ class $SharedTodosTable extends SharedTodos
   final VerificationMeta _todoMeta = const VerificationMeta('todo');
   late final GeneratedColumn<int?> todo = GeneratedColumn<int?>(
       'todo', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _userMeta = const VerificationMeta('user');
   late final GeneratedColumn<int?> user = GeneratedColumn<int?>(
       'user', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [todo, user];
   @override
@@ -1116,15 +1116,15 @@ class $TableWithoutPKTable extends TableWithoutPK
       const VerificationMeta('notReallyAnId');
   late final GeneratedColumn<int?> notReallyAnId = GeneratedColumn<int?>(
       'not_really_an_id', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _someFloatMeta = const VerificationMeta('someFloat');
   late final GeneratedColumn<double?> someFloat = GeneratedColumn<double?>(
       'some_float', aliasedName, false,
-      typeName: 'REAL', requiredDuringInsert: true);
+      type: const RealType(), requiredDuringInsert: true);
   final VerificationMeta _customMeta = const VerificationMeta('custom');
   late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> custom =
       GeneratedColumn<String?>('custom', aliasedName, false,
-              typeName: 'TEXT',
+              type: const StringType(),
               requiredDuringInsert: false,
               clientDefault: _uuid.v4)
           .withConverter<MyCustomObject>($TableWithoutPKTable.$converter0);
@@ -1293,7 +1293,7 @@ class $PureDefaultsTable extends PureDefaults
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
   late final GeneratedColumn<String?> txt = GeneratedColumn<String?>(
       'insert', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+      type: const StringType(), requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [txt];
   @override

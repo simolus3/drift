@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart' show SqliteVersion;
@@ -65,6 +66,9 @@ class MoorOptions {
   @JsonKey(name: 'sqlite')
   final SqliteAnalysisOptions? sqliteAnalysisOptions;
 
+  @JsonKey(name: 'sql')
+  final DialectOptions? dialect;
+
   @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
   final bool eagerlyLoadDartAst;
 
@@ -118,6 +122,7 @@ class MoorOptions {
     this.scopedDartComponents = false,
     this.modules = const [],
     this.sqliteAnalysisOptions,
+    this.dialect = const DialectOptions(SqlDialect.sqlite, null),
   });
 
   MoorOptions({
@@ -140,6 +145,7 @@ class MoorOptions {
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
+    this.dialect,
   }) {
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
       throw ArgumentError.value(
@@ -149,13 +155,26 @@ class MoorOptions {
             'Try moving modules into the sqlite block.',
       );
     }
+
+    if (dialect != null && sqliteAnalysisOptions != null) {
+      throw ArgumentError.value(
+        sqliteAnalysisOptions,
+        'sqlite',
+        'The sqlite field cannot be used together the `sql` option. '
+            'Try moving it to `sql.options`.',
+      );
+    }
   }
 
   factory MoorOptions.fromJson(Map json) => _$MoorOptionsFromJson(json);
 
+  SqliteAnalysisOptions? get sqliteOptions {
+    return dialect?.options ?? sqliteAnalysisOptions;
+  }
+
   /// All enabled sqlite modules from these options.
   List<SqlModule> get effectiveModules {
-    return sqliteAnalysisOptions?.modules ?? modules;
+    return sqliteOptions?.modules ?? modules;
   }
 
   /// Whether the [module] has been enabled in this configuration.
@@ -164,19 +183,25 @@ class MoorOptions {
   /// Checks whether a deprecated option is enabled.
   bool get enabledDeprecatedOption => eagerlyLoadDartAst;
 
+  SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
+
   /// The assumed sqlite version used when analyzing queries.
   SqliteVersion get sqliteVersion {
-    return sqliteAnalysisOptions?.version ?? _defaultSqliteVersion;
+    return sqliteOptions?.version ?? _defaultSqliteVersion;
   }
 }
 
-@JsonSerializable(
-  checked: true,
-  anyMap: true,
-  disallowUnrecognizedKeys: true,
-  fieldRename: FieldRename.snake,
-  createToJson: false,
-)
+@JsonSerializable()
+class DialectOptions {
+  final SqlDialect dialect;
+  final SqliteAnalysisOptions? options;
+
+  const DialectOptions(this.dialect, this.options);
+
+  factory DialectOptions.fromJson(Map json) => _$DialectOptionsFromJson(json);
+}
+
+@JsonSerializable()
 class SqliteAnalysisOptions {
   @JsonKey(name: 'modules', defaultValue: [])
   final List<SqlModule> modules;

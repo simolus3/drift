@@ -159,6 +159,19 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
   void startTransaction(Future Function(QueryDelegate) run);
 }
 
+/// A [TransactionDelegate] for database APIs that have it's own transaction
+/// function
+abstract class WrappedTransactionDelegate extends TransactionDelegate {
+  /// Constant constructor on superclass
+  const WrappedTransactionDelegate();
+
+  /// Start a transaction, which we assume implements [QueryDelegate], and call
+  /// [run] with the transaction.
+  ///
+  /// If [run] completes with an error, rollback. Otherwise, commit.
+  Future runInTransaction(Future Function(QueryDelegate) run);
+}
+
 /// An interface that supports setting the database version.
 ///
 /// Clients may not extend, implement or mix-in this class directly.

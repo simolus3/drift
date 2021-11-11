@@ -167,6 +167,6 @@ extension RowIdExtension on TableInfo {
     }
 
     return GeneratedColumn<int?>('_rowid_', aliasedName, false,
-        typeName: 'INTEGER');
+        type: const IntType());
   }
 }

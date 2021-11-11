@@ -6,11 +6,9 @@ part of 'database.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Preferences _$PreferencesFromJson(Map<String, dynamic> json) {
-  return Preferences(
-    json['receiveEmails'] as bool,
-  );
-}
+Preferences _$PreferencesFromJson(Map<String, dynamic> json) => Preferences(
+      json['receiveEmails'] as bool,
+    );
 
 Map<String, dynamic> _$PreferencesToJson(Preferences instance) =>
     <String, dynamic>{
@@ -39,8 +37,7 @@ class User extends DataClass implements Insertable<User> {
       required this.birthDate,
       this.profilePicture,
       this.preferences});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType()
@@ -87,7 +84,7 @@ class User extends DataClass implements Insertable<User> {
 
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -98,7 +95,7 @@ class User extends DataClass implements Insertable<User> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -134,12 +131,8 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          name.hashCode,
-          $mrjc(birthDate.hashCode,
-              $mrjc(profilePicture.hashCode, preferences.hashCode)))));
+  int get hashCode =>
+      Object.hash(id, name, birthDate, profilePicture, preferences);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -246,27 +239,28 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _birthDateMeta = const VerificationMeta('birthDate');
   late final GeneratedColumn<DateTime?> birthDate = GeneratedColumn<DateTime?>(
       'birth_date', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   late final GeneratedColumn<Uint8List?> profilePicture =
       GeneratedColumn<Uint8List?>('profile_picture', aliasedName, true,
-          typeName: 'BLOB', requiredDuringInsert: false);
+          type: const BlobType(), requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
-  late final GeneratedColumn<String?> preferences = GeneratedColumn<String?>(
-      'preferences', aliasedName, true,
-      typeName: 'TEXT', requiredDuringInsert: false);
+  late final GeneratedColumnWithTypeConverter<Preferences, String?>
+      preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
+              type: const StringType(), requiredDuringInsert: false)
+          .withConverter<Preferences>($UsersTable.$converter0);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
@@ -308,7 +302,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -329,8 +323,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
       {required this.firstUser,
       required this.secondUser,
       required this.reallyGoodFriends});
-  factory Friendship.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Friendship.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Friendship(
       firstUser: const IntType()
@@ -360,7 +353,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
 
   factory Friendship.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Friendship(
       firstUser: serializer.fromJson<int>(json['firstUser']),
       secondUser: serializer.fromJson<int>(json['secondUser']),
@@ -369,7 +362,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'firstUser': serializer.toJson<int>(firstUser),
       'secondUser': serializer.toJson<int>(secondUser),
@@ -395,8 +388,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(firstUser.hashCode,
-      $mrjc(secondUser.hashCode, reallyGoodFriends.hashCode)));
+  int get hashCode => Object.hash(firstUser, secondUser, reallyGoodFriends);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -478,16 +470,16 @@ class $FriendshipsTable extends Friendships
   final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
   late final GeneratedColumn<int?> firstUser = GeneratedColumn<int?>(
       'first_user', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _secondUserMeta = const VerificationMeta('secondUser');
   late final GeneratedColumn<int?> secondUser = GeneratedColumn<int?>(
       'second_user', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
   late final GeneratedColumn<bool?> reallyGoodFriends = GeneratedColumn<bool?>(
       'really_good_friends', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       defaultConstraints: 'CHECK (really_good_friends IN (0, 1))',
       defaultValue: const Constant(false));
@@ -530,7 +522,7 @@ class $FriendshipsTable extends Friendships
   Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
   @override
   Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Friendship.fromData(data, _db,
+    return Friendship.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -547,27 +539,37 @@ abstract class _$Database extends GeneratedDatabase {
   late final $FriendshipsTable friendships = $FriendshipsTable(this);
   Selectable<User> mostPopularUsers(int amount) {
     return customSelect(
-        'SELECT * FROM users u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT :amount',
-        variables: [Variable<int>(amount)],
-        readsFrom: {users, friendships}).map(users.mapFromRow);
+        'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT @1',
+        variables: [
+          Variable<int>(amount)
+        ],
+        readsFrom: {
+          users,
+          friendships,
+        }).map(users.mapFromRow);
   }
 
   Selectable<int> amountOfGoodFriends(int user) {
     return customSelect(
-        'SELECT COUNT(*) FROM friendships f WHERE f.really_good_friends AND (f.first_user = :user OR f.second_user = :user)',
+        'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = 1 AND(f.first_user = @1 OR f.second_user = @1)',
         variables: [
           Variable<int>(user)
         ],
         readsFrom: {
-          friendships
-        }).map((QueryRow row) => row.read<int>('COUNT(*)'));
+          friendships,
+        }).map((QueryRow row) => row.read<int>('_c0'));
   }
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
     return customSelect(
-        'SELECT \n          f.really_good_friends, "user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences"\n       FROM friendships f\n         INNER JOIN users user ON user.id IN (f.first_user, f.second_user) AND\n             user.id != :user\n       WHERE (f.first_user = :user OR f.second_user = :user)',
-        variables: [Variable<int>(user)],
-        readsFrom: {friendships, users}).map((QueryRow row) {
+        'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS "user" ON "user".id IN (f.first_user, f.second_user) AND "user".id != @1 WHERE(f.first_user = @1 OR f.second_user = @1)',
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          friendships,
+          users,
+        }).map((QueryRow row) {
       return FriendshipsOfResult(
         reallyGoodFriends: row.read<bool>('really_good_friends'),
         user: users.mapFromRow(row, tablePrefix: 'nested_0'),
@@ -576,16 +578,22 @@ abstract class _$Database extends GeneratedDatabase {
   }
 
   Selectable<int> userCount() {
-    return customSelect('SELECT COUNT(id) FROM users',
+    return customSelect('SELECT COUNT(id) AS _c0 FROM users',
         variables: [],
-        readsFrom: {users}).map((QueryRow row) => row.read<int>('COUNT(id)'));
+        readsFrom: {
+          users,
+        }).map((QueryRow row) => row.read<int>('_c0'));
   }
 
   Selectable<Preferences?> settingsFor(int user) {
-    return customSelect('SELECT preferences FROM users WHERE id = :user',
-            variables: [Variable<int>(user)], readsFrom: {users})
-        .map((QueryRow row) => $UsersTable.$converter0
-            .mapToDart(row.read<String?>('preferences')));
+    return customSelect('SELECT preferences FROM users WHERE id = @1',
+        variables: [
+          Variable<int>(user)
+        ],
+        readsFrom: {
+          users,
+        }).map((QueryRow row) =>
+        $UsersTable.$converter0.mapToDart(row.read<String?>('preferences')));
   }
 
   Selectable<User> usersById(List<int> var1) {
@@ -593,13 +601,17 @@ abstract class _$Database extends GeneratedDatabase {
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
     return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
-        variables: [for (var $ in var1) Variable<int>($)],
-        readsFrom: {users}).map(users.mapFromRow);
+        variables: [
+          for (var $ in var1) Variable<int>($)
+        ],
+        readsFrom: {
+          users,
+        }).map(users.mapFromRow);
   }
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
+        'INSERT INTO friendships VALUES (@1, @2, @3) RETURNING *',
         variables: [
           Variable<int>(var1),
           Variable<int>(var2),
@@ -624,7 +636,7 @@ class FriendshipsOfResult {
     required this.user,
   });
   @override
-  int get hashCode => $mrjf($mrjc(reallyGoodFriends.hashCode, user.hashCode));
+  int get hashCode => Object.hash(reallyGoodFriends, user);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

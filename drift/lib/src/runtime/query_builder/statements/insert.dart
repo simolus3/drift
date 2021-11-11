@@ -124,7 +124,8 @@ class InsertStatement<T extends Table, D> {
       final columnName = column.$name;
 
       if (rawValues.containsKey(columnName)) {
-        map[columnName] = rawValues[columnName]!;
+        final value = rawValues[columnName]!;
+        map[columnName] = value;
       } else {
         if (column.clientDefault != null) {
           map[columnName] = column._evaluateClientDefault();
@@ -136,8 +137,16 @@ class InsertStatement<T extends Table, D> {
     }
 
     final ctx = GenerationContext.fromDb(database);
+
+    if (ctx.dialect == SqlDialect.postgres &&
+        mode != InsertMode.insert &&
+        mode != InsertMode.insertOrIgnore) {
+      throw ArgumentError('$mode not supported on postgres');
+    }
+
     ctx.buffer
-      ..write(_insertKeywords[mode])
+      ..write(_insertKeywords[
+          ctx.dialect == SqlDialect.postgres ? InsertMode.insert : mode])
       ..write(' INTO ')
       ..write(table.$tableName)
       ..write(' ');
@@ -185,24 +194,29 @@ class InsertStatement<T extends Table, D> {
         first = false;
       }
 
-      ctx.buffer.write(') DO UPDATE SET ');
+      if (ctx.dialect == SqlDialect.postgres &&
+          mode == InsertMode.insertOrIgnore) {
+        ctx.buffer.write(') DO NOTHING ');
+      } else {
+        ctx.buffer.write(') DO UPDATE SET ');
 
-      first = true;
-      for (final update in updateSet.entries) {
-        final column = escapeIfNeeded(update.key);
+        first = true;
+        for (final update in updateSet.entries) {
+          final column = escapeIfNeeded(update.key);
 
-        if (!first) ctx.buffer.write(', ');
-        ctx.buffer.write('$column = ');
-        update.value.writeInto(ctx);
+          if (!first) ctx.buffer.write(', ');
+          ctx.buffer.write('$column = ');
+          update.value.writeInto(ctx);
 
-        first = false;
-      }
+          first = false;
+        }
 
-      if (onConflict._where != null) {
-        ctx.writeWhitespace();
-        final where = onConflict._where!(
-            table.asDslTable, table.createAlias('excluded').asDslTable);
-        where.writeInto(ctx);
+        if (onConflict._where != null) {
+          ctx.writeWhitespace();
+          final where = onConflict._where!(
+              table.asDslTable, table.createAlias('excluded').asDslTable);
+          where.writeInto(ctx);
+        }
       }
     }
 
@@ -214,6 +228,13 @@ class InsertStatement<T extends Table, D> {
 
     if (returning) {
       ctx.buffer.write(' RETURNING *');
+    } else if (ctx.dialect == SqlDialect.postgres) {
+      if (table.$primaryKey.length == 1) {
+        final id = table.$primaryKey.firstOrNull;
+        if (id != null && id.type is IntType) {
+          ctx.buffer.write(' RETURNING ${id.name}');
+        }
+      }
     }
 
     return ctx;

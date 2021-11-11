@@ -8,7 +8,6 @@ import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
-import 'package:sqlparser/utils/node_to_text.dart';
 
 import 'sql_writer.dart';
 
@@ -328,9 +327,9 @@ class QueryWriter {
               kind.defaultValue != null) {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
-            final defaultSql =
-                "'(${escapeForDart(kind.defaultValue!.toSql())})'";
-            defaultCode = 'const CustomExpression($defaultSql)';
+            final sql = SqlWriter(scope.options)
+                .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
+            defaultCode = 'const CustomExpression($sql)';
           } else if (kind is SimpleDartPlaceholderType &&
               kind.kind == SimpleDartPlaceholderKind.orderBy) {
             defaultCode = 'const OrderBy.nothing()';
@@ -424,7 +423,7 @@ class QueryWriter {
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode() {
     if (scope.options.newSqlCodeGeneration) {
-      return SqlWriter(query).write();
+      return SqlWriter(scope.options, query: query).write();
     } else {
       return _legacyQueryCode();
     }

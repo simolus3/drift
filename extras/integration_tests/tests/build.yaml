@@ -1,9 +1,12 @@
 targets:
   $default:
     builders:
-      moor_generator:
+      drift_dev:
         options:
           generate_connect_constructor: true
           override_hash_and_equals_in_result_sets: true
-          sqlite:
-            version: "3.35"
+          new_sql_code_generation: true
+          sql:
+            dialect: postgres # using postgres because sqlite3 understands that too
+            options:
+              version: "3.35"
