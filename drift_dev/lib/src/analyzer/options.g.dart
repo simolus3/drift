@@ -22,6 +22,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'generate_connect_constructor',
             'sqlite_modules',
             'sqlite',
+            'sql',
             'eagerly_load_dart_ast',
             'data_class_to_companions',
             'mutable_classes',
@@ -31,8 +32,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters',
             'named_parameters_always_required',
             'new_sql_code_generation',
-            'compatible_mode_generation',
-            'scoped_dart_components',
+            'scoped_dart_components'
           ],
         );
         final val = MoorOptions(
@@ -70,8 +70,6 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
               'named_parameters_always_required', (v) => v as bool? ?? false),
           newSqlCodeGeneration: $checkedConvert(
               'new_sql_code_generation', (v) => v as bool? ?? false),
-          compatibleModeGeneration: $checkedConvert(
-              'compatible_mode_generation', (v) => v as bool? ?? false),
           scopedDartComponents: $checkedConvert(
               'scoped_dart_components', (v) => v as bool? ?? false),
           modules: $checkedConvert(
@@ -85,6 +83,8 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
               'sqlite',
               (v) =>
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
+          dialect: $checkedConvert('sql',
+              (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
         );
         return val;
       },
@@ -108,10 +108,10 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
         'generateNamedParameters': 'named_parameters',
         'namedParametersAlwaysRequired': 'named_parameters_always_required',
         'newSqlCodeGeneration': 'new_sql_code_generation',
-        'compatibleModeGeneration': 'compatible_mode_generation',
         'scopedDartComponents': 'scoped_dart_components',
         'modules': 'sqlite_modules',
-        'sqliteAnalysisOptions': 'sqlite'
+        'sqliteAnalysisOptions': 'sqlite',
+        'dialect': 'sql'
       },
     );
 
@@ -146,6 +146,32 @@ const _$SqlModuleEnumMap = {
   SqlModule.fts5: 'fts5',
   SqlModule.moor_ffi: 'moor_ffi',
   SqlModule.math: 'math',
+};
+
+DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
+      'DialectOptions',
+      json,
+      ($checkedConvert) {
+        $checkKeys(
+          json,
+          allowedKeys: const ['dialect', 'options'],
+        );
+        final val = DialectOptions(
+          $checkedConvert(
+              'dialect', (v) => _$enumDecode(_$SqlDialectEnumMap, v)),
+          $checkedConvert(
+              'options',
+              (v) =>
+                  v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
+        );
+        return val;
+      },
+    );
+
+const _$SqlDialectEnumMap = {
+  SqlDialect.sqlite: 'sqlite',
+  SqlDialect.mysql: 'mysql',
+  SqlDialect.postgres: 'postgres',
 };
 
 SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>

@@ -783,7 +783,10 @@ class Parser {
         }
 
         _consume(TokenType.rightParen, 'Expected a closing bracket');
-        return Parentheses(left, expr, _previous)..setSpan(left, _previous);
+        return Parentheses(expr)
+          ..openingLeft = left
+          ..closingRight = _previous
+          ..setSpan(left, _previous);
       }
     } else if (_matchOne(TokenType.dollarSignVariable)) {
       if (enableMoorExtensions) {

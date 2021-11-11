@@ -78,7 +78,7 @@ class PreferenceConverter extends TypeConverter<Preferences, String> {
     'amountOfGoodFriends': 'SELECT COUNT(*) FROM friendships f WHERE '
         'f.really_good_friends = 1 AND '
         '(f.first_user = :user OR f.second_user = :user)',
-    'friendshipsOf': ''' SELECT 
+    'friendshipsOf': ''' SELECT
           f.really_good_friends, "user".**
        FROM friendships f
          INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND

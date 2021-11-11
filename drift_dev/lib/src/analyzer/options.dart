@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart' show SqliteVersion;
@@ -65,6 +66,9 @@ class MoorOptions {
   @JsonKey(name: 'sqlite')
   final SqliteAnalysisOptions? sqliteAnalysisOptions;
 
+  @JsonKey(name: 'sql')
+  final DialectOptions? dialect;
+
   @JsonKey(name: 'eagerly_load_dart_ast', defaultValue: false)
   final bool eagerlyLoadDartAst;
 
@@ -94,9 +98,6 @@ class MoorOptions {
   @JsonKey(name: 'new_sql_code_generation', defaultValue: false)
   final bool newSqlCodeGeneration;
 
-  @JsonKey(name: 'compatible_mode_generation', defaultValue: false)
-  final bool compatibleModeGeneration;
-
   @JsonKey(name: 'scoped_dart_components', defaultValue: false)
   final bool scopedDartComponents;
 
@@ -118,10 +119,10 @@ class MoorOptions {
     this.generateNamedParameters = false,
     this.namedParametersAlwaysRequired = false,
     this.newSqlCodeGeneration = false,
-    this.compatibleModeGeneration = false,
     this.scopedDartComponents = false,
     this.modules = const [],
     this.sqliteAnalysisOptions,
+    this.dialect = const DialectOptions(SqlDialect.sqlite, null),
   });
 
   MoorOptions({
@@ -141,10 +142,10 @@ class MoorOptions {
     required this.generateNamedParameters,
     required this.namedParametersAlwaysRequired,
     required this.newSqlCodeGeneration,
-    required this.compatibleModeGeneration,
     required this.scopedDartComponents,
     required this.modules,
     required this.sqliteAnalysisOptions,
+    this.dialect,
   }) {
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
       throw ArgumentError.value(
@@ -152,6 +153,15 @@ class MoorOptions {
         'modules',
         'May not be set when sqlite options are present. \n'
             'Try moving modules into the sqlite block.',
+      );
+    }
+
+    if (dialect != null && sqliteAnalysisOptions != null) {
+      throw ArgumentError.value(
+        sqliteAnalysisOptions,
+        'sqlite',
+        'The sqlite field cannot be used together the `sql` option. '
+            'Try moving it to `sql.options`.',
       );
     }
   }
@@ -169,19 +179,23 @@ class MoorOptions {
   /// Checks whether a deprecated option is enabled.
   bool get enabledDeprecatedOption => eagerlyLoadDartAst;
 
+  SqlDialect get effectiveDialect => dialect?.dialect ?? SqlDialect.sqlite;
+
   /// The assumed sqlite version used when analyzing queries.
   SqliteVersion get sqliteVersion {
     return sqliteAnalysisOptions?.version ?? _defaultSqliteVersion;
   }
 }
 
-@JsonSerializable(
-  checked: true,
-  anyMap: true,
-  disallowUnrecognizedKeys: true,
-  fieldRename: FieldRename.snake,
-  createToJson: false,
-)
+@JsonSerializable()
+class DialectOptions {
+  final SqlDialect dialect;
+  final SqliteAnalysisOptions? options;
+
+  const DialectOptions(this.dialect, this.options);
+}
+
+@JsonSerializable()
 class SqliteAnalysisOptions {
   @JsonKey(name: 'modules', defaultValue: [])
   final List<SqlModule> modules;

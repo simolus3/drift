@@ -2,8 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/model/sources.dart';
+import 'package:drift_dev/src/writer/queries/sql_writer.dart';
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/utils/node_to_text.dart';
 
 part 'columns.dart';
 part 'database.dart';
@@ -40,7 +40,8 @@ abstract class MoorDeclaration extends Declaration {
 extension ToSql on MoorDeclaration {
   String exportSql(MoorOptions options) {
     if (options.newSqlCodeGeneration) {
-      return node.toSql(compatibleMode: options.compatibleModeGeneration);
+      final writer = SqlWriter(options);
+      return writer.writeSql(node);
     } else {
       return node.span!.text;
     }

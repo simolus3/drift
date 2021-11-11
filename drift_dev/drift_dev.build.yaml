@@ -1,3 +1,13 @@
 # Build config without drift-specific builders. When running a build in this directory, this file replaces build.yaml,
 # which is what we want! Our builders depend on generated code, so they break the generated build script at the start of
 # a build.
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          checked: true
+          any_map: true
+          disallow_unrecognized_keys: true
+          field_rename: snake
+          create_to_json: false

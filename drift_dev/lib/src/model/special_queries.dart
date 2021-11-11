@@ -1,7 +1,7 @@
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
+import 'package:drift_dev/src/writer/queries/sql_writer.dart';
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/utils/node_to_text.dart';
 
 import 'model.dart';
 
@@ -39,8 +39,8 @@ class SpecialQuery implements MoorSchemaEntity {
   String formattedSql(MoorOptions options) {
     final decl = declaration;
     if (decl is MoorSpecialQueryDeclaration && options.newSqlCodeGeneration) {
-      return decl.node.statement
-          .toSql(compatibleMode: options.compatibleModeGeneration);
+      final writer = SqlWriter(options);
+      return writer.writeSql(decl.node.statement);
     }
     return sql;
   }

@@ -8,7 +8,6 @@ import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
-import 'package:sqlparser/utils/node_to_text.dart';
 
 import 'sql_writer.dart';
 
@@ -328,10 +327,9 @@ class QueryWriter {
               kind.defaultValue != null) {
             // Wrap the default expression in parentheses to avoid issues with
             // the surrounding precedence in SQL.
-            final sql = kind.defaultValue!
-                .toSql(compatibleMode: options.compatibleModeGeneration);
-            final defaultSql = "'(${escapeForDart(sql)})'";
-            defaultCode = 'const CustomExpression($defaultSql)';
+            final sql = SqlWriter(scope.options)
+                .writeNodeIntoStringLiteral(Parentheses(kind.defaultValue!));
+            defaultCode = 'const CustomExpression($sql)';
           } else if (kind is SimpleDartPlaceholderType &&
               kind.kind == SimpleDartPlaceholderKind.orderBy) {
             defaultCode = 'const OrderBy.nothing()';
@@ -425,9 +423,7 @@ class QueryWriter {
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode() {
     if (scope.options.newSqlCodeGeneration) {
-      return SqlWriter(query,
-              compatibleMode: scope.options.compatibleModeGeneration)
-          .write();
+      return SqlWriter(scope.options, query: query).write();
     } else {
       return _legacyQueryCode();
     }
@@ -743,9 +739,7 @@ class _ExpandedDeclarationWriter {
       ..write(highestAssignedIndexVar)
       ..write(', ')
       ..write(element.dartParameterName)
-      ..write('.length')
-      ..write(options.compatibleModeGeneration ? ', true' : '')
-      ..write(');\n');
+      ..write('.length);\n');
 
     // increase highest index for the next expanded element
     _increaseIndexCounter('${element.dartParameterName}.length');

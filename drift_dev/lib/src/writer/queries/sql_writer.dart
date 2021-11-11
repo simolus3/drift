@@ -1,6 +1,9 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
@@ -23,15 +26,18 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 
 class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
-  final SqlQuery query;
+  final SqlQuery? query;
+  final MoorOptions options;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  SqlWriter._(this.query, this._starColumnToResolved, StringBuffer out,
-      bool compatibleMode)
-      : _out = out,
-        super(_DartEscapingSink(out), compatibleMode);
+  bool get _isPostgres => options.effectiveDialect == SqlDialect.postgres;
 
-  factory SqlWriter(SqlQuery query, {bool compatibleMode = false}) {
+  SqlWriter._(
+      this.query, this.options, this._starColumnToResolved, StringBuffer out)
+      : _out = out,
+        super(_DartEscapingSink(out));
+
+  factory SqlWriter(MoorOptions options, {SqlQuery? query}) {
     // Index nested results by their syntactic origin for faster lookups later
     var doubleStarColumnToResolvedTable =
         const <NestedStarResultColumn, NestedResultTable>{};
@@ -43,27 +49,43 @@ class SqlWriter extends NodeSqlBuilder {
       };
     }
     return SqlWriter._(
-        query, doubleStarColumnToResolvedTable, StringBuffer(), compatibleMode);
+        query, options, doubleStarColumnToResolvedTable, StringBuffer());
   }
 
   String write() {
+    return writeNodeIntoStringLiteral(query!.fromContext!.root);
+  }
+
+  String writeNodeIntoStringLiteral(AstNode node) {
     _out.write("'");
-    visit(query.fromContext!.root, null);
+    visit(node, null);
     _out.write("'");
 
     return _out.toString();
   }
 
+  String writeSql(AstNode node) {
+    visit(node, null);
+    return _out.toString();
+  }
+
   FoundVariable? _findMoorVar(Variable target) {
-    return query.variables.firstWhereOrNull(
+    return query!.variables.firstWhereOrNull(
         (f) => f.variable.resolvedIndex == target.resolvedIndex);
+  }
+
+  @override
+  void identifier(String identifier,
+      {bool spaceBefore = true, bool spaceAfter = true}) {
+    final escaped = escapeIfNeeded(identifier, options.effectiveDialect);
+    symbol(escaped, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
   }
 
   void _writeMoorVariable(FoundVariable variable) {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      final mark = compatibleMode ? '@' : '?';
+      final mark = _isPostgres ? '@' : '?';
       _writeRawInSpaces('$mark${variable.index}');
     }
   }
@@ -121,7 +143,7 @@ class SqlWriter extends NodeSqlBuilder {
       }
     } else if (e is DartPlaceholder) {
       final moorPlaceholder =
-          query.placeholders.singleWhere((p) => p.astNode == e);
+          query!.placeholders.singleWhere((p) => p.astNode == e);
 
       _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
     } else {
