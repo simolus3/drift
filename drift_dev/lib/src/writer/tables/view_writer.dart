@@ -29,7 +29,7 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     buffer = scope.leaf();
 
-    buffer.write('class ${view.entityInfoName} extends View');
+    buffer.write('class ${view.entityInfoName} extends ViewInfo');
     if (scope.generationOptions.writeDataClasses) {
       buffer.write('<${view.entityInfoName}, '
           '${view.dartTypeCode(scope.generationOptions)}>');

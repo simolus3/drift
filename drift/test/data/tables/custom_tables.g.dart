@@ -1536,7 +1536,7 @@ class MyViewData extends DataClass {
           other.syncStateImplicit == this.syncStateImplicit);
 }
 
-class MyView extends View<MyView, MyViewData> {
+class MyView extends ViewInfo<MyView, MyViewData> {
   MyView()
       : super('my_view',
             'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');

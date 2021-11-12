@@ -56,7 +56,7 @@ class Index extends DatabaseSchemaEntity {
 ///
 /// [sqlite-docs]: https://www.sqlite.org/lang_createview.html
 /// [sql-tut]: https://www.sqlitetutorial.net/sqlite-create-view/
-abstract class View<Self, Row> extends ResultSetImplementation<Self, Row>
+abstract class ViewInfo<Self, Row> extends ResultSetImplementation<Self, Row>
     implements HasResultSet {
   @override
   final String entityName;
@@ -66,7 +66,7 @@ abstract class View<Self, Row> extends ResultSetImplementation<Self, Row>
 
   /// Creates an view model by the [createViewStmt] and its [entityName].
   /// Mainly used by generated code.
-  View(this.entityName, this.createViewStmt);
+  ViewInfo(this.entityName, this.createViewStmt);
 }
 
 /// An internal schema entity to run an sql statement when the database is

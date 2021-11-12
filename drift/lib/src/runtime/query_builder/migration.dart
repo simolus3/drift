@@ -73,7 +73,7 @@ class Migrator {
         await createIndex(entity);
       } else if (entity is OnCreateQuery) {
         await _issueCustomQuery(entity.sql, const []);
-      } else if (entity is View) {
+      } else if (entity is ViewInfo) {
         await createView(entity);
       } else {
         throw AssertionError('Unknown entity: $entity');
@@ -305,7 +305,7 @@ class Migrator {
   }
 
   /// Executes a `CREATE VIEW` statement to create the [view].
-  Future<void> createView(View view) {
+  Future<void> createView(ViewInfo view) {
     return _issueCustomQuery(view.createViewStmt, const []);
   }
 
