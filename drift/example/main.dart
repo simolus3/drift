@@ -5,13 +5,54 @@ import 'package:drift/native.dart';
 
 part 'main.g.dart';
 
+class TodoCategories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
   TextColumn get content => text().nullable()();
+  IntColumn get categoryId => integer().references(TodoCategories, #id)();
 }
 
-@DriftDatabase(tables: [TodoItems])
+class TodoCategoryItemCount extends View {
+  late $TodoItemsTable todoItems;
+  late TodoCategories todoCategories;
+
+  IntColumn get itemCount => integer().generatedAs(todoItems.id.count())();
+
+  @override
+  Query as() =>
+      select([todoCategories.name, itemCount]).from(todoCategories).join([
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
+      ]);
+}
+
+class TodoItemWithCategoryName extends View {
+  late TodoItems todoItems;
+  late $TodoCategoriesTable todoCategories;
+
+  TextColumn get title => text().generatedAs(todoItems.title +
+      const Constant(' (') +
+      todoCategories.name +
+      const Constant(')'))();
+
+  @override
+  Query as() => select([todoItems.id, title]).from(todoItems).join([
+        innerJoin(
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
+      ]);
+}
+
+@DriftDatabase(tables: [
+  TodoItems,
+  TodoCategories,
+], views: [
+  TodoCategoryItemCount,
+  TodoItemWithCategoryName,
+])
 class Database extends _$Database {
   Database(QueryExecutor e) : super(e);
 
@@ -27,11 +68,12 @@ class Database extends _$Database {
         // Add a bunch of default items in a batch
         await batch((b) {
           b.insertAll(todoItems, [
-            TodoItemsCompanion.insert(title: 'A first entry'),
+            TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
               content: const Value('Drift is a persistence library for Dart '
                   'and Flutter applications.'),
+              categoryId: 0,
             ),
           ]);
         });
@@ -55,10 +97,14 @@ Future<void> main() async {
     print('Todo-item in database: $event');
   });
 
+  // Add category
+  final categoryId = await db
+      .into(db.todoCategories)
+      .insert(TodoCategoriesCompanion.insert(name: 'Category'));
+
   // Add another entry
-  await db
-      .into(db.todoItems)
-      .insert(TodoItemsCompanion.insert(title: 'Another entry added later'));
+  await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
+      title: 'Another entry added later', categoryId: categoryId));
 
   // Delete all todo items
   await db.delete(db.todoItems).go();
