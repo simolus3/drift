@@ -1536,13 +1536,20 @@ class MyViewData extends DataClass {
           other.syncStateImplicit == this.syncStateImplicit);
 }
 
-class MyView extends ViewInfo<MyView, MyViewData> {
-  MyView()
-      : super('my_view',
-            'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
+class MyView extends View with ViewInfo<MyView, MyViewData> {
+  final _$CustomTablesDb _db;
+  final String? _alias;
+  MyView(this._db, [this._alias]);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
+  @override
+  String get aliasedName => _alias ?? actualViewName;
+  @override
+  String get actualViewName => 'my_view';
+  @override
+  String get createViewStmt =>
+      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2';
   @override
   MyView get asDslTable => this;
   @override
@@ -1566,6 +1573,13 @@ class MyView extends ViewInfo<MyView, MyViewData> {
               'sync_state_implicit', aliasedName, true,
               type: const IntType())
           .withConverter<SyncType?>(ConfigTable.$converter1);
+  @override
+  MyView createAlias(String alias) {
+    return MyView(_db, alias);
+  }
+
+  @override
+  Query<MyView, MyViewData> as() => _db.select(_db.myView);
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
@@ -1578,7 +1592,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Trigger myTrigger = Trigger(
       'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
       'my_trigger');
-  late final MyView myView = MyView();
+  late final MyView myView = MyView(this);
   late final NoIds noIds = NoIds(this);
   late final WithConstraints withConstraints = WithConstraints(this);
   late final Mytable mytable = Mytable(this);

@@ -17,21 +17,23 @@ class TodoItems extends Table {
   IntColumn get categoryId => integer().references(TodoCategories, #id)();
 }
 
-class TodoCategoryItemCount extends View {
-  late $TodoItemsTable todoItems;
-  late TodoCategories todoCategories;
+abstract class TodoCategoryItemCount extends View {
+  $TodoItemsTable get todoItems;
+  $TodoCategoriesTable get todoCategories;
 
   IntColumn get itemCount => integer().generatedAs(todoItems.id.count())();
 
   @override
-  Query as() =>
-      select([todoCategories.name, itemCount]).from(todoCategories).join([
+  Query as() => select([
+        todoCategories.name,
+        itemCount,
+      ]).from(todoCategories).join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
 }
 
 class TodoItemWithCategoryName extends View {
-  late TodoItems todoItems;
+  late $TodoItemsTable todoItems;
   late $TodoCategoriesTable todoCategories;
 
   TextColumn get title => text().generatedAs(todoItems.title +
