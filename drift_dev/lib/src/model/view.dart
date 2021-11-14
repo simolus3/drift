@@ -13,7 +13,7 @@ import 'model.dart';
 /// A parsed view
 class MoorView extends MoorEntityWithResultSet {
   @override
-  final MoorViewDeclaration? declaration;
+  final ViewDeclaration? declaration;
 
   /// The associated view to use for the sqlparser package when analyzing
   /// sql queries. Note that this field is set lazily.
@@ -38,12 +38,18 @@ class MoorView extends MoorEntityWithResultSet {
   @override
   ExistingRowClass? existingRowClass;
 
+  final List<String> staticReferences;
+
+  final ViewQueryInformation? viewQuery;
+
   MoorView({
     this.declaration,
     required this.name,
     required this.dartTypeName,
     required this.entityInfoName,
     this.existingRowClass,
+    this.staticReferences = const [],
+    this.viewQuery,
   });
 
   @override
@@ -80,7 +86,7 @@ class MoorView extends MoorEntityWithResultSet {
 
   /// The `CREATE VIEW` statement that can be used to create this view.
   String createSql(MoorOptions options) {
-    final decl = declaration;
+    final decl = declaration as MoorViewDeclaration?;
     if (decl == null) {
       throw StateError('Cannot show SQL for views without a declaration');
     }
@@ -93,4 +99,12 @@ class MoorView extends MoorEntityWithResultSet {
 
   @override
   String get displayName => name;
+}
+
+class ViewQueryInformation {
+  final List<MoorColumn> columns;
+  final String from;
+  final String query;
+
+  ViewQueryInformation(this.columns, this.from, this.query);
 }

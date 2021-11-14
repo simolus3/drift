@@ -22,10 +22,13 @@ class ViewAnalyzer extends BaseAnalyzer {
   Future<void> resolve(Iterable<MoorView> viewsToAnalyze) async {
     // Going through the topologically sorted list and analyzing each view.
     for (final view in viewsToAnalyze) {
-      final ctx = engine.analyzeNode(
-          view.declaration!.node, view.file!.parseResult.sql);
+      if (view.declaration is! MoorViewDeclaration) continue;
+      final viewDeclaration = view.declaration as MoorViewDeclaration;
+
+      final ctx =
+          engine.analyzeNode(viewDeclaration.node, view.file!.parseResult.sql);
       lintContext(ctx, view.name);
-      final declaration = view.declaration!.creatingStatement;
+      final declaration = viewDeclaration.creatingStatement;
 
       final parserView = view.parserView =
           const SchemaFromCreateTable(moorExtensions: true)
@@ -76,7 +79,7 @@ class ViewAnalyzer extends BaseAnalyzer {
       }
 
       engine.registerView(mapper.extractView(view));
-      view.references = findReferences(view.declaration!.node).toList();
+      view.references = findReferences(viewDeclaration.node).toList();
     }
   }
 }

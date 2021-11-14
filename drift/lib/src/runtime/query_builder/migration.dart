@@ -305,8 +305,17 @@ class Migrator {
   }
 
   /// Executes a `CREATE VIEW` statement to create the [view].
-  Future<void> createView(ViewInfo view) {
-    return _issueCustomQuery(view.createViewStmt, const []);
+  Future<void> createView(ViewInfo view) async {
+    final stmt = view.createViewStmt;
+    if (stmt != null) {
+      await _issueCustomQuery(stmt, const []);
+    } else if (view.query != null) {
+      final context = GenerationContext.fromDb(_db);
+      context.generatingForView = view.actualViewName;
+      context.buffer.write('CREATE VIEW ${view.actualViewName} AS ');
+      view.query!.writeInto(context);
+      await _issueCustomQuery(context.sql, const []);
+    }
   }
 
   /// Drops a table, trigger or index.

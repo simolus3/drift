@@ -95,6 +95,9 @@ class DriftAccessor {
   /// The tables accessed by this DAO.
   final List<Type> tables;
 
+  /// The views to include in the database
+  final List<Type> views;
+
   /// {@macro drift_compile_queries_param}
   final Map<String, String> queries;
 
@@ -105,6 +108,7 @@ class DriftAccessor {
   /// the referenced documentation on how to use daos with drift.
   const DriftAccessor({
     this.tables = const [],
+    this.views = const [],
     this.queries = const {},
     this.include = const {},
   });

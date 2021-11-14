@@ -187,11 +187,13 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   final String title;
   final String? content;
   final int categoryId;
+  final String? generatedText;
   TodoItem(
       {required this.id,
       required this.title,
       this.content,
-      required this.categoryId});
+      required this.categoryId,
+      this.generatedText});
   factory TodoItem.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return TodoItem(
@@ -203,6 +205,8 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           .mapFromDatabaseResponse(data['${effectivePrefix}content']),
       categoryId: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}category_id'])!,
+      generatedText: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}generated_text']),
     );
   }
   @override
@@ -236,6 +240,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String?>(json['content']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
+      generatedText: serializer.fromJson<String?>(json['generatedText']),
     );
   }
   factory TodoItem.fromJsonString(String encodedJson,
@@ -251,6 +256,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String?>(content),
       'categoryId': serializer.toJson<int>(categoryId),
+      'generatedText': serializer.toJson<String?>(generatedText),
     };
   }
 
@@ -258,12 +264,15 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           {int? id,
           String? title,
           Value<String?> content = const Value.absent(),
-          int? categoryId}) =>
+          int? categoryId,
+          Value<String?> generatedText = const Value.absent()}) =>
       TodoItem(
         id: id ?? this.id,
         title: title ?? this.title,
         content: content.present ? content.value : this.content,
         categoryId: categoryId ?? this.categoryId,
+        generatedText:
+            generatedText.present ? generatedText.value : this.generatedText,
       );
   @override
   String toString() {
@@ -271,13 +280,15 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
-          ..write('categoryId: $categoryId')
+          ..write('categoryId: $categoryId, ')
+          ..write('generatedText: $generatedText')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, content, categoryId);
+  int get hashCode =>
+      Object.hash(id, title, content, categoryId, generatedText);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -285,7 +296,8 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
           other.id == this.id &&
           other.title == this.title &&
           other.content == this.content &&
-          other.categoryId == this.categoryId);
+          other.categoryId == this.categoryId &&
+          other.generatedText == this.generatedText);
 }
 
 class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
@@ -388,8 +400,17 @@ class $TodoItemsTable extends TodoItems
       type: const IntType(),
       requiredDuringInsert: true,
       defaultConstraints: 'REFERENCES todo_categories (id)');
+  final VerificationMeta _generatedTextMeta =
+      const VerificationMeta('generatedText');
+  late final GeneratedColumn<String?> generatedText = GeneratedColumn<String?>(
+      'generated_text', aliasedName, true,
+      type: const StringType(),
+      requiredDuringInsert: false,
+      generatedAs: GeneratedAs(
+          title + const Constant(' (') + content + const Constant(')'), false));
   @override
-  List<GeneratedColumn> get $columns => [id, title, content, categoryId];
+  List<GeneratedColumn> get $columns =>
+      [id, title, content, categoryId, generatedText];
   @override
   String get aliasedName => _alias ?? 'todo_items';
   @override
@@ -420,6 +441,12 @@ class $TodoItemsTable extends TodoItems
     } else if (isInserting) {
       context.missing(_categoryIdMeta);
     }
+    if (data.containsKey('generated_text')) {
+      context.handle(
+          _generatedTextMeta,
+          generatedText.isAcceptableOrUnknown(
+              data['generated_text']!, _generatedTextMeta));
+    }
     return context;
   }
 
@@ -437,14 +464,227 @@ class $TodoItemsTable extends TodoItems
   }
 }
 
+class TodoCategoryItemCountData extends DataClass {
+  final String name;
+  final int itemCount;
+  TodoCategoryItemCountData({required this.name, required this.itemCount});
+  factory TodoCategoryItemCountData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return TodoCategoryItemCountData(
+      name: const StringType().mapFromDatabaseResponse(
+          data['${effectivePrefix}todo_categories.name'])!,
+      itemCount: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
+    );
+  }
+  factory TodoCategoryItemCountData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoCategoryItemCountData(
+      name: serializer.fromJson<String>(json['name']),
+      itemCount: serializer.fromJson<int>(json['itemCount']),
+    );
+  }
+  factory TodoCategoryItemCountData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TodoCategoryItemCountData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'name': serializer.toJson<String>(name),
+      'itemCount': serializer.toJson<int>(itemCount),
+    };
+  }
+
+  TodoCategoryItemCountData copyWith({String? name, int? itemCount}) =>
+      TodoCategoryItemCountData(
+        name: name ?? this.name,
+        itemCount: itemCount ?? this.itemCount,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TodoCategoryItemCountData(')
+          ..write('name: $name, ')
+          ..write('itemCount: $itemCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(name, itemCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoCategoryItemCountData &&
+          other.name == this.name &&
+          other.itemCount == this.itemCount);
+}
+
+class $TodoCategoryItemCountView
+    extends ViewInfo<$TodoCategoryItemCountView, TodoCategoryItemCountData>
+    implements HasResultSet {
+  final _$Database _db;
+  final String? _alias;
+  $TodoCategoryItemCountView(this._db, [this._alias]);
+  $TodoItemsTable get todoItems => _db.todoItems;
+  $TodoCategoriesTable get todoCategories => _db.todoCategories;
+  @override
+  List<GeneratedColumn> get $columns => [todoCategories.name, itemCount];
+  @override
+  String get aliasedName => _alias ?? actualViewName;
+  @override
+  String get actualViewName => 'todo_category_item_count';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $TodoCategoryItemCountView get asDslTable => this;
+  @override
+  TodoCategoryItemCountData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return TodoCategoryItemCountData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
+      'item_count', aliasedName, false,
+      type: const IntType(),
+      generatedAs: GeneratedAs(todoItems.id.count(), false));
+  @override
+  $TodoCategoryItemCountView createAlias(String alias) {
+    return $TodoCategoryItemCountView(_db, alias);
+  }
+
+  @override
+  Query? get query =>
+      (_db.selectOnly(todoCategories)..addColumns($columns)).join([
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id),
+            useColumns: false)
+      ]);
+}
+
+class TodoItemWithCategoryNameViewData extends DataClass {
+  final int id;
+  final String title;
+  TodoItemWithCategoryNameViewData({required this.id, required this.title});
+  factory TodoItemWithCategoryNameViewData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return TodoItemWithCategoryNameViewData(
+      id: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}todo_items.id'])!,
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}title'])!,
+    );
+  }
+  factory TodoItemWithCategoryNameViewData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoItemWithCategoryNameViewData(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+    );
+  }
+  factory TodoItemWithCategoryNameViewData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TodoItemWithCategoryNameViewData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+    };
+  }
+
+  TodoItemWithCategoryNameViewData copyWith({int? id, String? title}) =>
+      TodoItemWithCategoryNameViewData(
+        id: id ?? this.id,
+        title: title ?? this.title,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TodoItemWithCategoryNameViewData(')
+          ..write('id: $id, ')
+          ..write('title: $title')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, title);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoItemWithCategoryNameViewData &&
+          other.id == this.id &&
+          other.title == this.title);
+}
+
+class $TodoItemWithCategoryNameViewView extends ViewInfo<
+    $TodoItemWithCategoryNameViewView,
+    TodoItemWithCategoryNameViewData> implements HasResultSet {
+  final _$Database _db;
+  final String? _alias;
+  $TodoItemWithCategoryNameViewView(this._db, [this._alias]);
+  $TodoItemsTable get todoItems => _db.todoItems;
+  $TodoCategoriesTable get todoCategories => _db.todoCategories;
+  @override
+  List<GeneratedColumn> get $columns => [todoItems.id, title];
+  @override
+  String get aliasedName => _alias ?? actualViewName;
+  @override
+  String get actualViewName => 'customViewName';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $TodoItemWithCategoryNameViewView get asDslTable => this;
+  @override
+  TodoItemWithCategoryNameViewData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return TodoItemWithCategoryNameViewData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, false,
+      type: const StringType(),
+      generatedAs: GeneratedAs(
+          todoItems.title +
+              const Constant('(') +
+              todoCategories.name +
+              const Constant(')'),
+          false));
+  @override
+  $TodoItemWithCategoryNameViewView createAlias(String alias) {
+    return $TodoItemWithCategoryNameViewView(_db, alias);
+  }
+
+  @override
+  Query? get query => (_db.selectOnly(todoItems)..addColumns($columns)).join([
+        innerJoin(
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId),
+            useColumns: false)
+      ]);
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$Database.connect(DatabaseConnection c) : super.connect(c);
   late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable(this);
   late final $TodoItemsTable todoItems = $TodoItemsTable(this);
+  late final $TodoCategoryItemCountView todoCategoryItemCount =
+      $TodoCategoryItemCountView(this);
+  late final $TodoItemWithCategoryNameViewView customViewName =
+      $TodoItemWithCategoryNameViewView(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [todoCategories, todoItems];
+      [todoCategories, todoItems, todoCategoryItemCount, customViewName];
 }

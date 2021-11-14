@@ -9,7 +9,7 @@ part of '../query_builder.dart';
 ///
 /// [sqlite-docs]: https://www.sqlite.org/lang_createview.html
 /// [sql-tut]: https://www.sqlitetutorial.net/sqlite-create-view/
-mixin ViewInfo<Self, Row> on View
+abstract class ViewInfo<Self extends HasResultSet, Row>
     implements ResultSetImplementation<Self, Row> {
   ///
   String get actualViewName;
@@ -18,5 +18,8 @@ mixin ViewInfo<Self, Row> on View
   String get entityName => actualViewName;
 
   /// The `CREATE VIEW` sql statement that can be used to create this view.
-  String get createViewStmt;
+  String? get createViewStmt;
+
+  /// Predefined query from View.as()
+  Query? get query;
 }

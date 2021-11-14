@@ -129,22 +129,12 @@ abstract class View extends ColumnDefinition {
   /// Defines a view to be used with drift.
   const View();
 
-  /// The sql view name to be used. By default, drift will use the snake_case
-  /// representation of your class name as the sql view name. For instance, a
-  /// [View] class named `LocalSettings` will be called `local_settings` by
-  /// default.
-  /// You can change that behavior by overriding this method to use a custom
-  /// name. Please note that you must directly return a string literal by using
-  /// a getter. For instance `@override String get viewName => 'my_view';` is
-  /// valid, whereas `@override final String viewName = 'my_view';` or
-  /// `@override String get viewName => createMyViewName();` is not.
-  @visibleForOverriding
-  String? get viewName => null;
-
   ///
+  @protected
   View select(List<Column> columns) => _isGenerated();
 
   ///
+  @protected
   SimpleSelectStatement from(Table table) => _isGenerated();
 
   ///
@@ -202,4 +192,37 @@ class UseRowClass {
   /// For details, see the overall documentation on [UseRowClass].
   const UseRowClass(this.type,
       {this.constructor = '', this.generateInsertable = false});
+}
+
+/// An annotation specifying view properties
+@Target({TargetKind.classType})
+class DriftView {
+  /// The sql view name to be used. By default, drift will use the snake_case
+  /// representation of your class name as the sql view name. For instance, a
+  /// [View] class named `UserView` will be called `user_view` by
+  /// default.
+  final String? name;
+
+  /// The name for the data class that will be generated for the view class.
+  /// The data class is a dart object that will be used to represent a result of
+  /// the view.
+  /// {@template drift_custom_data_class}
+  /// By default, drift will attempt to use the view name followed by "Data"
+  /// when naming data classes (e.g. a view named "UserView" will generate a
+  /// data class called "UserViewData").
+  /// {@macro drift_custom_data_class}
+  final String? dataClassName;
+
+  /// Customize view name and data class name
+  const DriftView({this.name, this.dataClassName});
+}
+
+///
+@Target({TargetKind.getter})
+class Reference {
+  ///
+  final Type type;
+
+  ///
+  const Reference(this.type);
 }

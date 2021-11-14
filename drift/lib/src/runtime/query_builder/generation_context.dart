@@ -12,6 +12,10 @@ class GenerationContext {
   /// explicit indices starting at [explicitVariableIndex].
   int? explicitVariableIndex;
 
+  /// When set to an entity name (view or table), generated column in that
+  /// entity definition will written into query as expression
+  String? generatingForView;
+
   /// All tables that the generated query reads from.
   final List<ResultSetImplementation> watchedTables = [];
 

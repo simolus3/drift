@@ -22,6 +22,13 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// that.
   final List<MoorTable> declaredTables;
 
+  /// All views that have been declared on this accessor directly.
+  ///
+  /// This contains the `views` field from a `DriftDatabase` or `UseDao`
+  /// annotation, but not tables that are declared in imported moor files.
+  /// Use [views] for that.
+  final List<MoorView> declaredViews;
+
   /// The `includes` field from the `UseMoor` or `UseDao` annotation.
   final List<String> declaredIncludes;
 
@@ -48,7 +55,7 @@ abstract class BaseMoorAccessor implements HasDeclaration {
   /// Resolved imports from this file.
   List<FoundFile>? imports = [];
 
-  BaseMoorAccessor._(this.declaration, this.declaredTables,
+  BaseMoorAccessor._(this.declaration, this.declaredTables, this.declaredViews,
       this.declaredIncludes, this.declaredQueries);
 }
 
@@ -60,9 +67,11 @@ class Database extends BaseMoorAccessor {
     this.daos = const [],
     DatabaseOrDaoDeclaration? declaration,
     List<MoorTable> declaredTables = const [],
+    List<MoorView> declaredViews = const [],
     List<String> declaredIncludes = const [],
     List<DeclaredQuery> declaredQueries = const [],
-  }) : super._(declaration, declaredTables, declaredIncludes, declaredQueries);
+  }) : super._(declaration, declaredTables, declaredViews, declaredIncludes,
+            declaredQueries);
 }
 
 /// A dao, declared via an `UseDao` annotation on a Dart class.
@@ -74,7 +83,9 @@ class Dao extends BaseMoorAccessor {
     required this.dbClass,
     DatabaseOrDaoDeclaration? declaration,
     required List<MoorTable> declaredTables,
+    List<MoorView> declaredViews = const [],
     required List<String> declaredIncludes,
     required List<DeclaredQuery> declaredQueries,
-  }) : super._(declaration, declaredTables, declaredIncludes, declaredQueries);
+  }) : super._(declaration, declaredTables, declaredViews, declaredIncludes,
+            declaredQueries);
 }

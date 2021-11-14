@@ -31,13 +31,14 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     buffer = scope.leaf();
 
-    buffer.write('class ${view.entityInfoName} extends View with ViewInfo');
+    buffer.write('class ${view.entityInfoName} extends ViewInfo');
     if (scope.generationOptions.writeDataClasses) {
       buffer.write('<${view.entityInfoName}, '
           '${view.dartTypeCode(scope.generationOptions)}>');
     } else {
       buffer.write('<${view.entityInfoName}, Never>');
     }
+    buffer.write(' implements HasResultSet');
 
     buffer
       ..write('{\n')
@@ -46,14 +47,32 @@ class ViewWriter extends TableOrViewWriter {
       ..write('final ${scope.nullableType('String')} _alias;\n')
       ..write('${view.entityInfoName}(this._db, [this._alias]);\n');
 
-    writeGetColumnsOverride();
+    for (final ref in view.staticReferences) {
+      buffer.write('$ref\n');
+    }
+
+    if (view.viewQuery == null) {
+      writeGetColumnsOverride();
+    } else {
+      final columns = view.viewQuery!.columns
+          .map((col) => col.getterNameWithTable)
+          .join(', ');
+      buffer.write('@override\nList<GeneratedColumn> get \$columns => '
+          '[$columns];\n');
+    }
+
     buffer
       ..write('@override\nString get aliasedName => '
           '_alias ?? actualViewName;\n')
       ..write('@override\n String get actualViewName =>'
-          ' ${asDartLiteral(view.name)};\n')
-      ..write('@override\n String get createViewStmt =>'
+          ' ${asDartLiteral(view.name)};\n');
+
+    if (view.declaration is MoorViewDeclaration) {
+      buffer.write('@override\n String get createViewStmt =>'
           ' ${asDartLiteral(view.createSql(scope.options))};\n');
+    } else {
+      buffer.write('@override\n String? get createViewStmt => null;\n');
+    }
 
     writeAsDslTable();
     writeMappingMethod(scope);
@@ -63,7 +82,7 @@ class ViewWriter extends TableOrViewWriter {
     }
 
     _writeAliasGenerator();
-    _writeAs();
+    _writeQuery();
 
     buffer.writeln('}');
   }
@@ -78,10 +97,14 @@ class ViewWriter extends TableOrViewWriter {
       ..write('}');
   }
 
-  void _writeAs() {
-    buffer
-      ..write('@override\n')
-      ..write('Query<${view.entityInfoName}, ${view.dartTypeName}> as() =>\n')
-      ..write('_db.select(_db.${view.dbGetterName});\n');
+  void _writeQuery() {
+    buffer.write('@override\nQuery? get query => ');
+    final query = view.viewQuery;
+    if (query != null) {
+      buffer.write('(_db.selectOnly(${query.from})..addColumns(\$columns))'
+          '${query.query};');
+    } else {
+      buffer.write('null;\n');
+    }
   }
 }

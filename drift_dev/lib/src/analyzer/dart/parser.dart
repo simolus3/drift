@@ -20,6 +20,7 @@ import '../custom_row_class.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';
+part 'view_parser.dart';
 part 'use_dao_parser.dart';
 part 'use_moor_parser.dart';
 
@@ -28,14 +29,21 @@ class MoorDartParser {
 
   late ColumnParser _columnParser;
   late TableParser _tableParser;
+  late ViewParser _viewParser;
 
   MoorDartParser(this.step) {
     _columnParser = ColumnParser(this);
     _tableParser = TableParser(this);
+    _viewParser = ViewParser(this);
   }
 
   Future<MoorTable?> parseTable(ClassElement classElement) {
     return _tableParser.parseTable(classElement);
+  }
+
+  Future<MoorView?> parseView(
+      ClassElement classElement, List<MoorTable> tables) {
+    return _viewParser.parseView(classElement, tables);
   }
 
   /// Attempts to parse the column created from the Dart getter.

@@ -15,6 +15,9 @@ class TodoItems extends Table {
   TextColumn get title => text()();
   TextColumn get content => text().nullable()();
   IntColumn get categoryId => integer().references(TodoCategories, #id)();
+
+  TextColumn get generatedText => text().nullable().generatedAs(
+      title + const Constant(' (') + content + const Constant(')'))();
 }
 
 abstract class TodoCategoryItemCount extends View {
@@ -28,23 +31,26 @@ abstract class TodoCategoryItemCount extends View {
         todoCategories.name,
         itemCount,
       ]).from(todoCategories).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id),
+            useColumns: false)
       ]);
 }
 
-class TodoItemWithCategoryName extends View {
-  late $TodoItemsTable todoItems;
-  late $TodoCategoriesTable todoCategories;
+@DriftView(name: 'customViewName')
+abstract class TodoItemWithCategoryNameView extends View {
+  $TodoItemsTable get todoItems;
+  $TodoCategoriesTable get todoCategories;
 
   TextColumn get title => text().generatedAs(todoItems.title +
-      const Constant(' (') +
+      const Constant('(') +
       todoCategories.name +
       const Constant(')'))();
 
   @override
   Query as() => select([todoItems.id, title]).from(todoItems).join([
         innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId),
+            useColumns: false)
       ]);
 }
 
@@ -53,13 +59,13 @@ class TodoItemWithCategoryName extends View {
   TodoCategories,
 ], views: [
   TodoCategoryItemCount,
-  TodoItemWithCategoryName,
+  TodoItemWithCategoryNameView,
 ])
 class Database extends _$Database {
   Database(QueryExecutor e) : super(e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -70,7 +76,7 @@ class Database extends _$Database {
         // Add a bunch of default items in a batch
         await batch((b) {
           b.insertAll(todoItems, [
-            TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
+            TodoItemsCompanion.insert(title: 'Aasd first entry', categoryId: 0),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
               content: const Value('Drift is a persistence library for Dart '
@@ -107,6 +113,9 @@ Future<void> main() async {
   // Add another entry
   await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
       title: 'Another entry added later', categoryId: categoryId));
+
+  (await db.select(db.customViewName).get()).forEach(print);
+  (await db.select(db.todoCategoryItemCount).get()).forEach(print);
 
   // Delete all todo items
   await db.delete(db.todoItems).go();

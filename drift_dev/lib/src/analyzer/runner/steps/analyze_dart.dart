@@ -18,6 +18,12 @@ class AnalyzeDartStep extends AnalyzingStep {
             (entry.declaration as DartTableDeclaration).element: entry
       };
 
+      final viewDartClasses = {
+        for (final entry in unsortedEntities)
+          if (entry.declaration is DartViewDeclaration)
+            (entry.declaration as DartViewDeclaration).element: entry
+      };
+
       for (final declaredHere in accessor.declaredTables) {
         // See issue #447: The table added to an accessor might already be
         // included through a transitive moor file. In that case, we just ignore
@@ -35,6 +41,23 @@ class AnalyzeDartStep extends AnalyzingStep {
         }
       }
       _resolveDartColumnReferences(tableDartClasses);
+
+      for (final declaredHere in accessor.declaredViews) {
+        // See issue #447: The view added to an accessor might already be
+        // included through a transitive moor file. In that case, we just ignore
+        // it to avoid duplicates.
+        final declaration = declaredHere.declaration;
+        if (declaration is DartViewDeclaration &&
+            viewDartClasses.containsKey(declaration.element)) {
+          continue;
+        }
+
+        // Not a Dart view that we already included - add it now
+        unsortedEntities.add(declaredHere);
+        if (declaration is DartViewDeclaration) {
+          viewDartClasses[declaration.element] = declaredHere;
+        }
+      }
 
       List<MoorSchemaEntity>? availableEntities;
 

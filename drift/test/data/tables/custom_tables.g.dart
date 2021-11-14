@@ -1536,7 +1536,7 @@ class MyViewData extends DataClass {
           other.syncStateImplicit == this.syncStateImplicit);
 }
 
-class MyView extends View with ViewInfo<MyView, MyViewData> {
+class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   final _$CustomTablesDb _db;
   final String? _alias;
   MyView(this._db, [this._alias]);
@@ -1579,7 +1579,7 @@ class MyView extends View with ViewInfo<MyView, MyViewData> {
   }
 
   @override
-  Query<MyView, MyViewData> as() => _db.select(_db.myView);
+  Query? get query => null;
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {
