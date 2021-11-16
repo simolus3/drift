@@ -27,7 +27,7 @@ class Join<T extends HasResultSet, D> extends Component {
   final _JoinType type;
 
   /// The [TableInfo] that will be added to the query
-  final ResultSetImplementation<T, D> table;
+  final Table table;
 
   /// For joins that aren't [_JoinType.cross], contains an additional predicate
   /// that must be matched for the join.
@@ -42,15 +42,23 @@ class Join<T extends HasResultSet, D> extends Component {
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
   Join._(this.type, this.table, this.on, {bool? includeInResult})
-      : includeInResult = includeInResult ?? true;
+      : includeInResult = includeInResult ?? true {
+    if (table is! ResultSetImplementation<T, D>) {
+      throw ArgumentError(
+          'Invalid table parameter. You must provide the table reference from '
+              'generated database object.',
+          'table');
+    }
+  }
 
   @override
   void writeInto(GenerationContext context) {
     context.buffer.write(_joinKeywords[type]);
     context.buffer.write(' JOIN ');
 
-    context.buffer.write(table.tableWithAlias);
-    context.watchedTables.add(table);
+    final resultSet = table as ResultSetImplementation<T, D>;
+    context.buffer.write(resultSet.tableWithAlias);
+    context.watchedTables.add(resultSet);
 
     if (type != _JoinType.cross) {
       context.buffer.write(' ON ');
@@ -70,8 +78,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin<T extends HasResultSet, D>(
-    ResultSetImplementation<T, D> other, Expression<bool?> on,
+Join innerJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
@@ -84,8 +91,7 @@ Join innerJoin<T extends HasResultSet, D>(
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin<T extends HasResultSet, D>(
-    ResultSetImplementation<T, D> other, Expression<bool?> on,
+Join leftOuterJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
     {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
@@ -98,7 +104,6 @@ Join leftOuterJoin<T extends HasResultSet, D>(
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin<T extends HasResultSet, D>(ResultSetImplementation<T, D> other,
-    {bool? useColumns}) {
+Join crossJoin<T extends HasResultSet, D>(Table other, {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }

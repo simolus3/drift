@@ -44,7 +44,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   int get _returnedColumnCount {
     return _joins.fold(_selectedColumns.length, (prev, join) {
       if (join.includeInResult) {
-        return prev + join.table.$columns.length;
+        return prev + (join.table as ResultSetImplementation).$columns.length;
       }
       return prev;
     });
@@ -63,7 +63,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     for (final join in _joins) {
       if (onlyResults && !join.includeInResult) continue;
 
-      yield join.table;
+      yield join.table as ResultSetImplementation;
     }
   }
 

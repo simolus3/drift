@@ -530,8 +530,6 @@ class $TodoCategoryItemCountView
   final _$Database _db;
   final String? _alias;
   $TodoCategoryItemCountView(this._db, [this._alias]);
-  $TodoItemsTable get todoItems => _db.todoItems;
-  $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
   List<GeneratedColumn> get $columns => [todoCategories.name, itemCount];
   @override
@@ -632,8 +630,6 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   final _$Database _db;
   final String? _alias;
   $TodoItemWithCategoryNameViewView(this._db, [this._alias]);
-  $TodoItemsTable get todoItems => _db.todoItems;
-  $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
   List<GeneratedColumn> get $columns => [todoItems.id, title];
   @override

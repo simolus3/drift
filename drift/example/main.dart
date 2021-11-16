@@ -21,8 +21,8 @@ class TodoItems extends Table {
 }
 
 abstract class TodoCategoryItemCount extends View {
-  $TodoItemsTable get todoItems;
-  $TodoCategoriesTable get todoCategories;
+  TodoItems get todoItems;
+  TodoCategories get todoCategories;
 
   IntColumn get itemCount => integer().generatedAs(todoItems.id.count())();
 
@@ -38,8 +38,8 @@ abstract class TodoCategoryItemCount extends View {
 
 @DriftView(name: 'customViewName')
 abstract class TodoItemWithCategoryNameView extends View {
-  $TodoItemsTable get todoItems;
-  $TodoCategoriesTable get todoCategories;
+  TodoItems get todoItems;
+  TodoCategories get todoCategories;
 
   TextColumn get title => text().generatedAs(todoItems.title +
       const Constant('(') +
