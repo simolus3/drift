@@ -1,5 +1,5 @@
 name: moor
-description: Moor is a safe and reactive persistence library for Dart applications
+description: Moor has been renamed to Drift.
 version: 4.6.1
 repository: https://github.com/simolus3/moor
 homepage: https://moor.simonbinder.eu/
