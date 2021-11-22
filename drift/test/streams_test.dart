@@ -81,6 +81,50 @@ void main() {
     verifyNever(executor.runSelect(any, any));
   });
 
+  test('does not emit cached data when resuming and data did not change',
+      () async {
+    final stream = db.select(db.users).watch();
+    final completer = Completer();
+
+    final subscription = stream.listen(expectAsync1((data) {
+      completer.complete();
+    }));
+
+    // The stream should emit a first event as we have a new subscription
+    await completer.future;
+
+    subscription.pause();
+    await pumpEventQueue();
+
+    // Resume and wait for a bit. The stream should not emit a second event.
+    subscription.resume();
+    await pumpEventQueue();
+    await subscription.cancel();
+  });
+
+  test('emits new data if it changed during a paused subscription', () async {
+    final stream = db.select(db.users).watch();
+    final completer = Completer();
+
+    final subscription = stream.listen(expectAsync1((data) {
+      if (!completer.isCompleted) completer.complete();
+    }, count: 2));
+
+    // The stream should emit a first event as we have a new subscription
+    await completer.future;
+
+    subscription.pause();
+    await pumpEventQueue();
+    db.markTablesUpdated({db.users});
+    await pumpEventQueue();
+
+    // Resume and wait for a bit. The stream should update as one of its sources
+    // has changed.
+    subscription.resume();
+    await pumpEventQueue();
+    await subscription.cancel();
+  });
+
   group('updating clears cached data', () {
     test('when an older stream is no longer listened to', () async {
       when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
