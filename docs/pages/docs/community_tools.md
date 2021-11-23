@@ -13,16 +13,17 @@ or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 
 ## Moor inspector
 
-[Chimerapps](https://github.com/Chimerapps) wrote the `moor_inspector` package and plugin for IntelliJ
+[Chimerapps](https://github.com/Chimerapps) wrote the `drift_inspector` (and `moor_inspector`) package and plugin for IntelliJ
 and Android Studio. You can use it to inspect a moor or drift database right from your IDE!
 
 - The [`moor_inspector` package](https://pub.dev/packages/moor_inspector) on pub
-- The [IntelliJ plugin](https://plugins.jetbrains.com/plugin/15364-moor-inspector)
-- The [project on GitHub](https://github.com/Chimerapps/moor_inspector)
+- The [`drift_inspector` package](https://pub.dev/packages/drift_inspector) on pub
+- The [IntelliJ plugin](https://plugins.jetbrains.com/plugin/15364-drift-database-inspector)
+- The [project on GitHub](https://github.com/Chimerapps/drift_inspector)
 
 ## moor_db_viewer
 
-[moor_db_viewer](https://pub.dev/packages/moor_db_viewer) by [Koen Van Looveren](https://github.com/vanlooverenkoen)
+[drift_db_viewer](https://pub.dev/packages/drift_db_viewer) (and [moor_db_viewer](https://pub.dev/packages/moor_db_viewer)) by [Koen Van Looveren](https://github.com/vanlooverenkoen)
 is a package to view a moor or drift database in your Flutter app directly.
 It includes a graphical user interface showing you all rows for each table. You can also filter
 rows by columns that you've added to your tables.
