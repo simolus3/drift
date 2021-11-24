@@ -14,17 +14,17 @@ void main() {
     state = TestState.withContent({
       'foo|lib/main.dart': '''
         import 'package:drift/drift.dart';
-      
+
         enum Fruits {
           apple, orange, banana
         }
-        
+
         class NotAnEnum {}
-        
+
         class ValidUsage extends Table {
           IntColumn get fruit => intEnum<Fruits>()();
         }
-        
+
         class InvalidNoEnum extends Table {
           IntColumn get fruit => intEnum<NotAnEnum>()();
         }

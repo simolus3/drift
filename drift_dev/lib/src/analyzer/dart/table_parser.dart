@@ -158,9 +158,19 @@ class TableParser {
     if (expression is SetOrMapLiteral) {
       for (final entry in expression.elements) {
         if (entry is Identifier) {
-          final column = columns
-              .singleWhere((column) => column.dartGetterName == entry.name);
-          parsedPrimaryKey.add(column);
+          final column = columns.singleWhereOrNull(
+              (column) => column.dartGetterName == entry.name);
+          if (column == null) {
+            base.step.reportError(
+              ErrorInDartCode(
+                affectedElement: primaryKeyGetter,
+                affectedNode: entry,
+                message: 'Column not found in this table',
+              ),
+            );
+          } else {
+            parsedPrimaryKey.add(column);
+          }
         } else {
           print('Unexpected entry in expression.elements: $entry');
         }

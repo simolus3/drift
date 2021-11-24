@@ -21,13 +21,13 @@ void main() {
     backend = TestBackend({
       AssetId.parse('test_lib|lib/main.dart'): r'''
       import 'package:drift/drift.dart';
-      
+
       class TableWithCustomName extends Table {
         @override String get tableName => 'my-fancy-table';
-        
+
         @override bool get withoutRowId => true;
       }
-      
+
       class Users extends Table {
         /// The user id
         IntColumn get id => integer().autoIncrement()();
@@ -36,60 +36,60 @@ void main() {
         /// The username must be between 6-32 characters
         TextColumn get name => text().named("user_name").withLength(min: 6, max: 32)();
         TextColumn get onlyMax => text().withLength(max: 100)();
-        
+
         DateTimeColumn get defaults => dateTime().withDefault(currentDate)();
       }
-      
+
       class CustomPrimaryKey extends Table {
         IntColumn get partA => integer()();
         IntColumn get partB => integer().customConstraint('custom')();
-        
+
         @override
         Set<Column> get primaryKey => {partA, partB};
       }
-      
+
       class WrongName extends Table {
          String constructTableName() => 'my-table-name';
          String get tableName => constructTableName();
       }
-      
+
       mixin IntIdTable on Table {
         IntColumn get id => integer().autoIncrement()();
       }
-      
+
       abstract class HasNameTable extends Table {
         TextColumn get name => text()();
       }
-      
+
       class Foos extends HasNameTable with IntIdTable {
         TextColumn get name => text().nullable()();
       }
-      
+
       class Socks extends Table {
         TextColumn get name => text()();
         IntColumn get id => integer()();
-        
+
         @override
         Set<Column> get primaryKey => {id};
       }
-      
+
       class ArchivedSocks extends Socks {
         TextColumn get archivedBy => text()();
         DateTimeColumn get archivedOn => dateTime()();
       }
-      
+
       class WithAliasForRowId extends Table {
         IntColumn get id => integer()();
         TextColumn get name => text()();
-        
+
         @override
         Set<Column> get primaryKey => {id};
       }
-      
+
       class PrimaryKeyAndAutoIncrement extends Table {
         IntColumn get id => integer().autoIncrement()();
         TextColumn get other => text()();
-        
+
         @override
         Set<Column> get primaryKey => {other};
       }

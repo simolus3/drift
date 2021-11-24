@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       SQLITE_VERSION: "3350500"
-    
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -53,7 +53,7 @@ jobs:
     steps:
       # setup
       - uses: actions/checkout@v2
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - name: Download sqlite3
         uses: actions/download-artifact@v2
         with:
@@ -90,7 +90,7 @@ jobs:
     steps:
     # setup
     - uses: actions/checkout@v2
-    - uses: cedx/setup-dart@v2
+    - uses: dart-lang/setup-dart@v1
     - run: dart pub upgrade
     # analysis
     - run: dart format -o none --set-exit-if-changed .
@@ -106,7 +106,7 @@ jobs:
     steps:
       # setup
       - uses: actions/checkout@v2
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
       - name: Download sqlite3
         uses: actions/download-artifact@v2
         with:
@@ -150,7 +150,7 @@ jobs:
           - 5432:5432
     steps:
       - uses: actions/checkout@v2
-      - uses: cedx/setup-dart@v2
+      - uses: dart-lang/setup-dart@v1
         with:
           release-channel: beta
       - name: Download sqlite3
@@ -170,7 +170,7 @@ jobs:
 #    needs: [moor, sqlparser]
 #    steps:
 #      - uses: actions/checkout@v2
-#      - uses: cedx/setup-dart@v2
+#      - uses: dart-lang/setup-dart@v1
 #      - run: dart pub upgrade
 #        name: "Setup coverage processor"
 #        working-directory: extras/tooling

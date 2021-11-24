@@ -27,6 +27,17 @@ void main() {
     expect(expr, generates('(???) = (???)'));
   });
 
+  test('generates parentheses for OR in AND', () {
+    final c =
+        GeneratedColumn<String>('c', 't', false, type: const StringType());
+    final expr =
+        (c.equals('A') | c.equals('B')) & (c.equals('C') | c.equals(''));
+    expect(
+        expr,
+        generates(
+            '(c = ? OR c = ?) AND (c = ? OR c = ?)', ['A', 'B', 'C', '']));
+  });
+
   test('generates cast expressions', () {
     const expr = CustomExpression<int>('c');
 
