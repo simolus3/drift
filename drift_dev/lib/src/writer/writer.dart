@@ -121,12 +121,15 @@ class GenerationOptions {
   /// new `drift` package.
   final bool writeForMoorPackage;
 
+  final bool nullAwareTypeConverters;
+
   const GenerationOptions({
     this.forSchema,
     this.nnbd = false,
     this.writeDataClasses = true,
     this.writeCompanions = true,
     this.writeForMoorPackage = false,
+    this.nullAwareTypeConverters = false,
   });
 
   /// Whether, instead of generating the full database code, we're only

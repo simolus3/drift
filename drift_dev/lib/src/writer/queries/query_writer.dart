@@ -94,7 +94,7 @@ class QueryWriter {
     if (resultSet.singleColumn) {
       final column = resultSet.columns.single;
       _buffer.write('(QueryRow row) => '
-          '${readingCode(column, scope.generationOptions)}');
+          '${readingCode(column, scope.generationOptions, options)}');
     } else if (resultSet.matchingTable != null) {
       // note that, even if the result set has a matching table, we can't just
       // use the mapFromRow() function of that table - the column names might
@@ -128,8 +128,8 @@ class QueryWriter {
 
       for (final column in resultSet.columns) {
         final fieldName = resultSet.dartNameFor(column);
-        _buffer.write(
-            '$fieldName: ${readingCode(column, scope.generationOptions)},');
+        _buffer.write('$fieldName: '
+            '${readingCode(column, scope.generationOptions, options)},');
       }
       for (final nested in resultSet.nestedResults) {
         final prefix = resultSet.nestedPrefixFor(nested);
@@ -151,7 +151,8 @@ class QueryWriter {
   /// Returns Dart code that, given a variable of type `QueryRow` named `row`
   /// in the same scope, reads the [column] from that row and brings it into a
   /// suitable type.
-  String readingCode(ResultColumn column, GenerationOptions generationOptions) {
+  String readingCode(ResultColumn column, GenerationOptions generationOptions,
+      MoorOptions moorOptions) {
     var rawDartType = dartTypeNames[column.type];
     if (column.nullable && generationOptions.nnbd) {
       rawDartType = '$rawDartType?';
@@ -166,7 +167,10 @@ class QueryWriter {
     var code = 'row.read<$rawDartType>($dartLiteral)';
 
     if (column.typeConverter != null) {
-      final needsAssert = !column.nullable && generationOptions.nnbd;
+      final nullableDartType = moorOptions.nullAwareTypeConverters
+          ? column.typeConverter!.hasNullableDartType
+          : column.nullable;
+      final needsAssert = !nullableDartType && generationOptions.nnbd;
 
       final converter = column.typeConverter;
       code = '${_converter(converter!)}.mapToDart($code)';
