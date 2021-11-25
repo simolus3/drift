@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
+import 'package:drift_dev/src/analyzer/runner/steps.dart';
 
 class FoundDartClass {
   final ClassElement classElement;
@@ -20,7 +21,8 @@ ExistingRowClass? validateExistingClass(
     FoundDartClass dartClass,
     String constructor,
     bool generateInsertable,
-    ErrorSink errors) {
+    Step step) {
+  final errors = step.errors;
   final desiredClass = dartClass.classElement;
   ConstructorElement? ctor;
 
@@ -61,7 +63,7 @@ ExistingRowClass? validateExistingClass(
               .any((field) => field.name == parameter.name);
       if (matchField) {
         columnsToParameter[column] = parameter;
-        _checkType(parameter, column, errors);
+        _checkType(parameter, column, step);
       } else {
         final error = ErrorInDartCode(
             affectedElement: parameter,
@@ -86,21 +88,26 @@ ExistingRowClass? validateExistingClass(
       typeInstantiation: dartClass.instantiation ?? const []);
 }
 
-void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
+void _checkType(ParameterElement element, MoorColumn column, Step step) {
   final type = element.type;
   final library = element.library!;
   final typesystem = library.typeSystem;
   final provider = library.typeProvider;
 
   void error(String message) {
-    errors.report(ErrorInDartCode(
+    step.errors.report(ErrorInDartCode(
       affectedElement: element,
       message: message,
     ));
   }
 
+  final nullAware = step.task.session.options.nullAwareTypeConverters;
+  final nullableDartType = nullAware && column.typeConverter != null
+      ? column.typeConverter!.hasNullableDartType
+      : column.nullableInDart;
+
   if (library.isNonNullableByDefault &&
-      column.nullableInDart &&
+      nullableDartType &&
       !typesystem.isNullable(type) &&
       element.isNotOptional) {
     error('Expected this parameter to be nullable');

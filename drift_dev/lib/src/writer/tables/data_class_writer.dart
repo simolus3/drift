@@ -1,4 +1,5 @@
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
@@ -46,7 +47,12 @@ class DataClassWriter {
       ..write(table.dartTypeName)
       ..write('({')
       ..write(table.columns.map((column) {
-        if (column.nullable) {
+        final nullableDartType = column.typeConverter != null &&
+                scope.options.nullAwareTypeConverters
+            ? column.typeConverter!.hasNullableDartType
+            : column.nullable;
+
+        if (nullableDartType) {
           return 'this.${column.dartGetterName}';
         } else {
           return '${scope.required} this.${column.dartGetterName}';
@@ -100,6 +106,7 @@ class DataClassWriter {
       {for (final column in table.columns) column: column.dartGetterName},
       table,
       scope.generationOptions,
+      scope.options,
     );
 
     _buffer.write('return $dataClassName');
@@ -318,8 +325,10 @@ class RowMappingWriter {
   final Map<MoorColumn, String> named;
   final MoorEntityWithResultSet table;
   final GenerationOptions options;
+  final MoorOptions moorOptions;
 
-  RowMappingWriter(this.positional, this.named, this.table, this.options);
+  RowMappingWriter(
+      this.positional, this.named, this.table, this.options, this.moorOptions);
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {
@@ -337,8 +346,12 @@ class RowMappingWriter {
         loadType = '$loaded.mapToDart($loadType)';
       }
 
-      if (!column.nullable && options.nnbd) {
-        loadType = '$loadType!';
+      final nullableDartType =
+          column.typeConverter != null && moorOptions.nullAwareTypeConverters
+              ? column.typeConverter!.hasNullableDartType
+              : column.nullable;
+      if (!nullableDartType && options.nnbd) {
+        loadType += '!';
       }
 
       return loadType;

@@ -198,6 +198,7 @@ abstract class TableOrViewWriter {
         named,
         tableOrView,
         scope.generationOptions,
+        scope.options,
       );
 
       final classElement = info.targetClass;

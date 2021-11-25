@@ -32,7 +32,8 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters',
             'named_parameters_always_required',
             'new_sql_code_generation',
-            'scoped_dart_components'
+            'scoped_dart_components',
+            'null_aware_type_converters',
           ],
         );
         final val = MoorOptions(
@@ -85,6 +86,8 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
                   v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
+          nullAwareTypeConverters: $checkedConvert(
+              'null_aware_type_converters', (v) => v as bool? ?? false),
         );
         return val;
       },
@@ -108,6 +111,7 @@ MoorOptions _$MoorOptionsFromJson(Map json) => $checkedCreate(
         'generateNamedParameters': 'named_parameters',
         'namedParametersAlwaysRequired': 'named_parameters_always_required',
         'newSqlCodeGeneration': 'new_sql_code_generation',
+        'nullAwareTypeConverters': 'null_aware_type_converters',
         'scopedDartComponents': 'scoped_dart_components',
         'modules': 'sqlite_modules',
         'sqliteAnalysisOptions': 'sqlite',

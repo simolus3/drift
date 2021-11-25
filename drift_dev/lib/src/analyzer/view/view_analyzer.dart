@@ -64,7 +64,7 @@ class ViewAnalyzer extends BaseAnalyzer {
             ));
           } else {
             final rowClass = view.existingRowClass =
-                validateExistingClass(columns, clazz, '', false, step.errors);
+                validateExistingClass(columns, clazz, '', false, step);
             final newName = rowClass?.targetClass.name;
             if (newName != null) {
               view.dartTypeName = rowClass!.targetClass.name;
