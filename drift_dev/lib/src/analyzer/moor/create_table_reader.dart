@@ -264,7 +264,18 @@ class CreateTableReader {
         (type) => isFromMoor(type) && type.element.name == 'TypeConverter');
 
     // TypeConverter<D, S>, where D is the type in Dart
-    final typeInDart = asTypeConverter.typeArguments.first;
+    final typeInDart = asTypeConverter.typeArguments[0];
+    final typeInSql = asTypeConverter.typeArguments[1];
+
+    if (!nullable && typeInSql.nullabilitySuffix != NullabilitySuffix.none) {
+      step.reportError(
+        ErrorInMoorFile(
+            span: mapper.span!,
+            message: 'The column declared as not null, '
+                'but TypeConverter SQL type argument is nullable'),
+      );
+      return null;
+    }
 
     return UsedTypeConverter(
         expression: code,
