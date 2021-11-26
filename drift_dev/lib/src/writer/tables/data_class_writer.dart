@@ -1,5 +1,4 @@
 import 'package:drift_dev/moor_generator.dart';
-import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/utils/override_toString.dart';
 import 'package:drift_dev/writer.dart';
@@ -47,8 +46,7 @@ class DataClassWriter {
       ..write(table.dartTypeName)
       ..write('({')
       ..write(table.columns.map((column) {
-        final nullableDartType = column.typeConverter != null &&
-                scope.options.nullAwareTypeConverters
+        final nullableDartType = column.typeConverter != null
             ? column.typeConverter!.hasNullableDartType
             : column.nullable;
 
@@ -106,7 +104,6 @@ class DataClassWriter {
       {for (final column in table.columns) column: column.dartGetterName},
       table,
       scope.generationOptions,
-      scope.options,
     );
 
     _buffer.write('return $dataClassName');
@@ -325,16 +322,22 @@ class RowMappingWriter {
   final Map<MoorColumn, String> named;
   final MoorEntityWithResultSet table;
   final GenerationOptions options;
-  final MoorOptions moorOptions;
 
-  RowMappingWriter(
-      this.positional, this.named, this.table, this.options, this.moorOptions);
+  RowMappingWriter(this.positional, this.named, this.table, this.options);
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {
       final rawData = "data['\${effectivePrefix}${column.name.name}']";
       final sqlType = 'const ${sqlTypes[column.type]}()';
       var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
+
+      final nullableDartType = column.typeConverter != null
+          ? column.typeConverter!.hasNullableDartType
+          : column.nullable;
+
+      if (!nullableDartType && options.nnbd) {
+        loadType += '!';
+      }
 
       // run the loaded expression though the custom converter for the final
       // result.
@@ -344,14 +347,6 @@ class RowMappingWriter {
         final loaded =
             '${converter.table!.entityInfoName}.${converter.fieldName}';
         loadType = '$loaded.mapToDart($loadType)';
-      }
-
-      final nullableDartType =
-          column.typeConverter != null && moorOptions.nullAwareTypeConverters
-              ? column.typeConverter!.hasNullableDartType
-              : column.nullable;
-      if (!nullableDartType && options.nnbd) {
-        loadType += '!';
       }
 
       return loadType;

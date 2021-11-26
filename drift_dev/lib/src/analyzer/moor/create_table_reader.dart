@@ -117,7 +117,8 @@ class CreateTableReader {
             continue;
           }
 
-          converter = await _readTypeConverter(moorType, constraint);
+          converter = await _readTypeConverter(
+              moorType, constraint, column.type.nullable != false);
           // don't write MAPPED BY constraints when creating the table, they're
           // a convenience feature by the compiler
           continue;
@@ -183,7 +184,7 @@ class CreateTableReader {
           ));
         } else {
           existingRowClass = validateExistingClass(
-              foundColumns.values, clazz, '', false, step);
+              foundColumns.values, clazz, '', false, step.errors);
           dataClassName = existingRowClass?.targetClass.name;
         }
       } else if (overriddenNames.contains('/')) {
@@ -238,7 +239,7 @@ class CreateTableReader {
   }
 
   Future<UsedTypeConverter?> _readTypeConverter(
-      ColumnType sqlType, MappedBy mapper) async {
+      ColumnType sqlType, MappedBy mapper, bool nullable) async {
     final code = mapper.mapper.dartCode;
 
     DartType type;
@@ -266,7 +267,10 @@ class CreateTableReader {
     final typeInDart = asTypeConverter.typeArguments.first;
 
     return UsedTypeConverter(
-        expression: code, mappedType: typeInDart, sqlType: sqlType);
+        expression: code,
+        mappedType: typeInDart,
+        sqlType: sqlType,
+        nullable: nullable);
   }
 
   Future<DartType?> _readDartType(String typeIdentifier) async {

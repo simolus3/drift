@@ -23,9 +23,7 @@ mixin MoorBuilder on Builder {
   Writer createWriter({bool nnbd = false}) {
     return Writer(options,
         generationOptions: GenerationOptions(
-            nnbd: nnbd,
-            writeForMoorPackage: !isForNewDriftPackage,
-            nullAwareTypeConverters: options.nullAwareTypeConverters));
+            nnbd: nnbd, writeForMoorPackage: !isForNewDriftPackage));
   }
 
   Future<ParsedDartFile> analyzeDartFile(BuildStep step) async {

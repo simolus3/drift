@@ -26,6 +26,9 @@ class UsedTypeConverter {
   /// The type that will be written to the database.
   final ColumnType sqlType;
 
+  /// Is column nullable?
+  final bool nullable;
+
   /// Type converters are stored as static fields in the table that created
   /// them. This will be the field name for this converter.
   String get fieldName => '\$converter$index';
@@ -37,6 +40,7 @@ class UsedTypeConverter {
     required this.expression,
     required this.mappedType,
     required this.sqlType,
+    required this.nullable,
   });
 
   bool get hasNullableDartType =>
@@ -53,21 +57,26 @@ class UsedTypeConverter {
     }
 
     final className = creatingClass.name;
+    final nullablePrefix = nullable ? 'Nullable' : '';
 
     return UsedTypeConverter(
-      expression: 'const EnumIndexConverter<$className>($className.values)',
+      expression: 'const ${nullablePrefix}EnumIndexConverter<$className>'
+          '($className.values)',
       mappedType: creatingClass.instantiate(
           typeArguments: const [],
           nullabilitySuffix:
               nullable ? NullabilitySuffix.question : NullabilitySuffix.none),
       sqlType: ColumnType.integer,
+      nullable: nullable,
     );
   }
 
   /// A suitable typename to store an instance of the type converter used here.
   String converterNameInCode(GenerationOptions options) {
     final sqlDartType = dartTypeNames[sqlType];
-    return 'TypeConverter<${mappedType.codeString(options)}, $sqlDartType>';
+    final needSuffix = nullable ? '?' : '';
+    return 'TypeConverter<${mappedType.codeString(options)}, '
+        '$sqlDartType$needSuffix>';
   }
 }
 

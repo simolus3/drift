@@ -17,6 +17,7 @@ class TodosTable extends Table with AutoIncrement {
 
   TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
   TextColumn get content => text()();
+
   @JsonKey('target_date')
   DateTimeColumn get targetDate => dateTime().nullable()();
 
@@ -107,13 +108,13 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   const CustomConverter();
 
   @override
-  MyCustomObject? mapToDart(String? fromDb) {
-    return fromDb == null ? null : MyCustomObject(fromDb);
+  MyCustomObject mapToDart(String fromDb) {
+    return MyCustomObject(fromDb);
   }
 
   @override
-  String? mapToSql(MyCustomObject? value) {
-    return value?.data;
+  String mapToSql(MyCustomObject value) {
+    return value.data;
   }
 }
 

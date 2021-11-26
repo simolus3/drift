@@ -266,8 +266,8 @@ class GeneratedColumnWithTypeConverter<D, S> extends GeneratedColumn<S> {
   /// Compares this column against the mapped [dartValue].
   ///
   /// The value will be mapped using the [converter] applied to this column.
-  Expression<bool> equalsValue(D? dartValue) {
-    return equals(converter.mapToSql(dartValue) as S);
+  Expression<bool> equalsValue(D dartValue) {
+    return equals(converter.mapToSql(dartValue));
   }
 }
 

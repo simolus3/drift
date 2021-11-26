@@ -298,7 +298,8 @@ class ColumnParser {
       converter = UsedTypeConverter(
           expression: createdTypeConverter.toSource(),
           mappedType: typeConverterRuntime,
-          sqlType: columnType);
+          sqlType: columnType,
+          nullable: nullable);
     }
 
     if (foundStartMethod == startEnum) {

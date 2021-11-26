@@ -60,14 +60,8 @@ extension OperationOnTypes on HasType {
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]) {
     final converter = typeConverter;
     if (converter != null) {
-      final needsSuffix = options.nnbd &&
-          (options.nullAwareTypeConverters
-              ? converter.hasNullableDartType
-              : (nullable && !converter.hasNullableDartType));
       final baseType = converter.mappedType.codeString(options);
-
-      final inner = needsSuffix ? '$baseType?' : baseType;
-      return isArray ? 'List<$inner>' : inner;
+      return isArray ? 'List<$baseType>' : baseType;
     }
 
     return variableTypeCode(options);

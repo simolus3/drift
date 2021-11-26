@@ -194,12 +194,7 @@ abstract class TableOrViewWriter {
             (a, b) => positionalToIndex[a]!.compareTo(positionalToIndex[b]!));
 
       final writer = RowMappingWriter(
-        positional,
-        named,
-        tableOrView,
-        scope.generationOptions,
-        scope.options,
-      );
+          positional, named, tableOrView, scope.generationOptions);
 
       final classElement = info.targetClass;
       final ctor = info.constructor;

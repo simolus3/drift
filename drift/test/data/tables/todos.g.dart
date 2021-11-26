@@ -25,7 +25,7 @@ class Category extends DataClass implements Insertable<Category> {
       description: const StringType()
           .mapFromDatabaseResponse(data['${effectivePrefix}desc'])!,
       priority: $CategoriesTable.$converter0.mapToDart(const IntType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}priority']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}priority'])!),
       descriptionInUpperCase: const StringType().mapFromDatabaseResponse(
           data['${effectivePrefix}description_in_upper_case'])!,
     );
@@ -1168,7 +1168,7 @@ class $TableWithoutPKTable extends TableWithoutPK
       const RealType()
           .mapFromDatabaseResponse(data['${effectivePrefix}some_float'])!,
       custom: $TableWithoutPKTable.$converter0.mapToDart(const StringType()
-          .mapFromDatabaseResponse(data['${effectivePrefix}custom']))!,
+          .mapFromDatabaseResponse(data['${effectivePrefix}custom'])!),
     );
   }
 

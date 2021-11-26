@@ -23,7 +23,7 @@ class Users extends Table {
   BlobColumn get profilePicture => blob().nullable()();
 
   TextColumn get preferences =>
-      text().map(const PreferenceConverter()).nullable()();
+      text().nullable().map(const PreferenceConverter())();
 }
 
 class Friendships extends Table {
@@ -49,8 +49,9 @@ class Preferences {
   Map<String, dynamic> toJson() => _$PreferencesToJson(this);
 }
 
-class PreferenceConverter extends TypeConverter<Preferences, String> {
+class PreferenceConverter extends TypeConverter<Preferences?, String?> {
   const PreferenceConverter();
+
   @override
   Preferences? mapToDart(String? fromDb) {
     if (fromDb == null) {
@@ -151,7 +152,7 @@ class Database extends _$Database {
           .go();
 
       if (fail) {
-        throw Exception('oh no, the query misteriously failed!');
+        throw Exception('oh no, hquery misteriously failed!');
       }
 
       await delete(users).delete(user);

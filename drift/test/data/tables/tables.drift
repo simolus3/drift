@@ -21,7 +21,7 @@ CREATE TABLE with_constraints (
 create table config (
     config_key TEXT not null primary key,
     config_value TEXT,
-    sync_state INTEGER MAPPED BY `const SyncTypeConverter()`,
+    sync_state INTEGER MAPPED BY `const NullableSyncTypeConverter()`,
     sync_state_implicit ENUM(SyncType)
 ) AS "Config";
 

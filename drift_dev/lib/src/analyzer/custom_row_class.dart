@@ -4,7 +4,6 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
-import 'package:drift_dev/src/analyzer/runner/steps.dart';
 
 class FoundDartClass {
   final ClassElement classElement;
@@ -21,8 +20,7 @@ ExistingRowClass? validateExistingClass(
     FoundDartClass dartClass,
     String constructor,
     bool generateInsertable,
-    Step step) {
-  final errors = step.errors;
+    ErrorSink errors) {
   final desiredClass = dartClass.classElement;
   ConstructorElement? ctor;
 
@@ -63,7 +61,7 @@ ExistingRowClass? validateExistingClass(
               .any((field) => field.name == parameter.name);
       if (matchField) {
         columnsToParameter[column] = parameter;
-        _checkType(parameter, column, step);
+        _checkType(parameter, column, errors);
       } else {
         final error = ErrorInDartCode(
             affectedElement: parameter,
@@ -88,21 +86,20 @@ ExistingRowClass? validateExistingClass(
       typeInstantiation: dartClass.instantiation ?? const []);
 }
 
-void _checkType(ParameterElement element, MoorColumn column, Step step) {
+void _checkType(ParameterElement element, MoorColumn column, ErrorSink errors) {
   final type = element.type;
   final library = element.library!;
   final typesystem = library.typeSystem;
   final provider = library.typeProvider;
 
   void error(String message) {
-    step.errors.report(ErrorInDartCode(
+    errors.report(ErrorInDartCode(
       affectedElement: element,
       message: message,
     ));
   }
 
-  final nullAware = step.task.session.options.nullAwareTypeConverters;
-  final nullableDartType = nullAware && column.typeConverter != null
+  final nullableDartType = column.typeConverter != null
       ? column.typeConverter!.hasNullableDartType
       : column.nullableInDart;
 

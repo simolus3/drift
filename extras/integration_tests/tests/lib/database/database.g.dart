@@ -257,10 +257,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           type: const BlobType(), requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
-  late final GeneratedColumnWithTypeConverter<Preferences, String?>
+  late final GeneratedColumnWithTypeConverter<Preferences?, String?>
       preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
               type: const StringType(), requiredDuringInsert: false)
-          .withConverter<Preferences>($UsersTable.$converter0);
+          .withConverter<Preferences?>($UsersTable.$converter0);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, birthDate, profilePicture, preferences];
@@ -311,7 +311,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     return $UsersTable(_db, alias);
   }
 
-  static TypeConverter<Preferences, String> $converter0 =
+  static TypeConverter<Preferences?, String?> $converter0 =
       const PreferenceConverter();
 }
 

@@ -6,8 +6,8 @@ enum SyncType {
   synchronized,
 }
 
-class SyncTypeConverter extends TypeConverter<SyncType, int> {
-  const SyncTypeConverter();
+class NullableSyncTypeConverter extends TypeConverter<SyncType?, int?> {
+  const NullableSyncTypeConverter();
 
   @override
   SyncType? mapToDart(int? fromDb) {
@@ -22,11 +22,11 @@ class SyncTypeConverter extends TypeConverter<SyncType, int> {
   }
 }
 
-class NullAwareSyncTypeConverter extends NullAwareTypeConverter<SyncType, int> {
-  const NullAwareSyncTypeConverter();
+class SyncTypeConverter extends TypeConverter<SyncType, int> {
+  const SyncTypeConverter();
 
   @override
-  SyncType requireMapToDart(int fromDb) {
+  SyncType mapToDart(int fromDb) {
     const values = SyncType.values;
     if (fromDb < 0 || fromDb >= values.length) {
       return SyncType.locallyCreated;
@@ -35,7 +35,7 @@ class NullAwareSyncTypeConverter extends NullAwareTypeConverter<SyncType, int> {
   }
 
   @override
-  int requireMapToSql(SyncType value) {
+  int mapToSql(SyncType value) {
     return value.index;
   }
 }
