@@ -467,7 +467,7 @@ class $TodoItemsTable extends TodoItems
 class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int itemCount;
-  TodoCategoryItemCountData({required this.name, required this.itemCount});
+  TodoCategoryItemCountData({required this.itemCount});
   factory TodoCategoryItemCountData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -567,7 +567,7 @@ class $TodoCategoryItemCountView
 class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
   final String title;
-  TodoItemWithCategoryNameViewData({required this.id, required this.title});
+  TodoItemWithCategoryNameViewData({required this.title});
   factory TodoItemWithCategoryNameViewData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';

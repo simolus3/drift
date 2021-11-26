@@ -80,7 +80,7 @@ class ViewParser {
     final verified = existingClass == null
         ? null
         : validateExistingClass(columns, existingClass,
-            constructorInExistingClass!, generateInsertable!, base.step.errors);
+            constructorInExistingClass!, generateInsertable!, base.step);
     return _DataClassInformation(name, verified);
   }
 
