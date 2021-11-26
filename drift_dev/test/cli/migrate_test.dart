@@ -203,6 +203,38 @@ class MyDao {}
     ]).validate();
   });
 
+  _test('patches `.moor.dart` part statements', () async {
+    await _setup([
+      d.file('a.dart', r'''
+import 'package:moor/moor.dart';
+
+part 'a.moor.dart';
+
+@UseDao(
+  include: {
+    'package:foo_app/db/foo_queries.moor',
+  },
+)
+class FooDao with _$FooDaoMixin {}
+'''),
+    ]);
+
+    await _apply();
+
+    await d.dir('app/lib', [
+      d.file('a.dart', r'''
+import 'package:drift/drift.dart';
+
+part 'a.drift.dart';
+
+@DriftAccessor(
+  include: {'package:foo_app/db/foo_queries.drift'},
+)
+class FooDao with _$FooDaoMixin {}
+'''),
+    ]).validate();
+  });
+
   _test('updates pubspec.yaml', () async {
     await _setup(const [], pubspec: '''
 name: app
@@ -272,7 +304,7 @@ targets:
       "moor_generator:foo":
         options:
           bar: baz
-  
+
   another_target:
     builders:
       moor_generator|moor_generator_not_shared:
@@ -296,7 +328,7 @@ targets:
       drift_dev|foo:
         options:
           bar: baz
-  
+
   another_target:
     builders:
       drift_dev|not_shared:

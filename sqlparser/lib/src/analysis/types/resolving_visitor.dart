@@ -564,6 +564,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     session.context.reportError(AnalysisError(
       type: AnalysisErrorType.unknownFunction,
       message: 'Function ${e.name} could not be found',
+      relevantNode: e,
     ));
     return null;
   }

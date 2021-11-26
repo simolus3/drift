@@ -352,8 +352,30 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
   }
 
   @override
-  void visitUriBasedDirective(UriBasedDirective node) {
+  void visitImportDirective(ImportDirective node) {
     _rewriteImportString(node.uri);
+  }
+
+  @override
+  void visitExportDirective(ExportDirective node) {
+    _rewriteImportString(node.uri);
+  }
+
+  @override
+  void visitPartDirective(PartDirective node) {
+    // For users of the not_shared builder, generated files switch from
+    // `.moor.dart` to `.drift.dart`.
+    final uri = node.uri;
+    final imported = uri.stringValue;
+    if (imported == null || !imported.endsWith('.moor.dart')) {
+      return;
+    }
+
+    final withoutExtension =
+        imported.substring(0, imported.length - '.moor.dart'.length);
+
+    final newImport = '$withoutExtension.drift.dart';
+    _writer.replace(uri.offset, uri.length, asDartLiteral(newImport));
   }
 
   @override
