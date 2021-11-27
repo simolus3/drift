@@ -63,8 +63,8 @@ class ViewWriter extends TableOrViewWriter {
 
     buffer
       ..write('@override\nString get aliasedName => '
-          '_alias ?? actualViewName;\n')
-      ..write('@override\n String get actualViewName =>'
+          '_alias ?? entityName;\n')
+      ..write('@override\n String get entityName=>'
           ' ${asDartLiteral(view.name)};\n');
 
     if (view.declaration is MoorViewDeclaration) {
@@ -77,7 +77,7 @@ class ViewWriter extends TableOrViewWriter {
     writeAsDslTable();
     writeMappingMethod(scope);
 
-    for (final column in view.columns) {
+    for (final column in view.viewQuery?.columns ?? view.columns) {
       writeColumnGetter(column, scope.generationOptions, false);
     }
 

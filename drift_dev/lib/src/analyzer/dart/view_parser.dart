@@ -107,7 +107,7 @@ class ViewParser {
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
-            isColumn(field.type) &&
+            isExpression(field.type) &&
             field.getter != null &&
             !field.getter!.isSynthetic)
         .map((field) => field.name)
@@ -117,16 +117,50 @@ class ViewParser {
       final getter = element.getGetter(name) ??
           element.lookUpInheritedConcreteGetter(name, element.library);
       return getter!.variable;
-    });
+    }).toList();
 
     final results = await Future.wait(fields.map((field) async {
+      final dartType = (field.type as InterfaceType).typeArguments[0];
+      final typeName = dartType.element!.name!;
+      final sqlType = _dartTypeToColumnType(typeName);
+
+      if (sqlType == null) {
+        final String errorMessage;
+        if (typeName == 'dynamic') {
+          errorMessage = 'You must specify Expression<?> type argument';
+        } else {
+          errorMessage =
+              'Invalid Expression<?> type argument `$typeName` found. '
+              'Must be one of: '
+              'bool, String, int, DateTime, Uint8List, double';
+        }
+        throw analysisError(base.step, field, errorMessage);
+      }
+
       final node =
           await base.loadElementDeclaration(field.getter!) as MethodDeclaration;
+      final expression = (node.body as ExpressionFunctionBody).expression;
 
-      return await base.parseColumn(node, field.getter!);
-    }));
+      return MoorColumn(
+          type: sqlType,
+          dartGetterName: field.name,
+          name: ColumnName.implicitly(ReCase(field.name).snakeCase),
+          nullable: dartType.nullabilitySuffix == NullabilitySuffix.question,
+          generatedAs: ColumnGeneratedAs(expression.toString(), false));
+    }).toList());
 
     return results.whereType();
+  }
+
+  ColumnType? _dartTypeToColumnType(String name) {
+    return const {
+      'bool': ColumnType.boolean,
+      'String': ColumnType.text,
+      'int': ColumnType.integer,
+      'DateTime': ColumnType.datetime,
+      'Uint8List': ColumnType.blob,
+      'double': ColumnType.real,
+    }[name];
   }
 
   Future<List<String>> _parseStaticReferences(
@@ -147,10 +181,11 @@ class ViewParser {
         final node = await base.loadElementDeclaration(field.getter!);
         if (node is MethodDeclaration && node.body is EmptyFunctionBody) {
           final type = tables.firstWhereOrNull(
-              (tbl) => tbl.entityInfoName == node.returnType.toString());
+              (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
             final name = node.name.toString();
-            return '${node.returnType} get $name => _db.${type.dbGetterName};';
+            return '${type.entityInfoName} get $name => '
+                '_db.${type.dbGetterName};';
           }
         }
       } catch (_) {}
@@ -177,7 +212,8 @@ class ViewParser {
         }
 
         if (target.methodName.toString() != 'select') {
-          throw _throwError(
+          throw analysisError(
+              base.step,
               element,
               'The `as()` query declaration must be started '
               'with `select(columns).from(table)');
@@ -201,7 +237,8 @@ class ViewParser {
 
         target = target.parent as MethodInvocation;
         if (target.methodName.toString() != 'from') {
-          throw _throwError(
+          throw analysisError(
+              base.step,
               element,
               'The `as()` query declaration must be started '
               'with `select(columns).from(table)');
@@ -218,20 +255,11 @@ class ViewParser {
         return ViewQueryInformation(columnList.toList(), from, query);
       } catch (e) {
         print(e);
-        throw _throwError(element, 'Failed to parse view `as()` query');
+        throw analysisError(
+            base.step, element, 'Failed to parse view `as()` query');
       }
     }
 
-    throw _throwError(element, 'Missing `as()` query declaration');
-  }
-
-  Exception _throwError(ClassElement element, String message) {
-    final error = ErrorInDartCode(
-      message: message,
-      severity: Severity.criticalError,
-      affectedElement: element,
-    );
-    base.step.reportError(error);
-    return Exception(error.toString());
+    throw analysisError(base.step, element, 'Missing `as()` query declaration');
   }
 }

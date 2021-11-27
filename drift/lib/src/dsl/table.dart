@@ -131,7 +131,7 @@ abstract class View extends ColumnDefinition {
 
   ///
   @protected
-  View select(List<Column> columns) => _isGenerated();
+  View select(List<Expression> columns) => _isGenerated();
 
   ///
   @protected

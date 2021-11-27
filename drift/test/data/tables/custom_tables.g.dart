@@ -1544,9 +1544,9 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
   @override
-  String get aliasedName => _alias ?? actualViewName;
+  String get aliasedName => _alias ?? entityName;
   @override
-  String get actualViewName => 'my_view';
+  String get entityName => 'my_view';
   @override
   String get createViewStmt =>
       'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2';

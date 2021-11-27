@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 
 part 'main.g.dart';
 
+@DataClassName('TodoCategory')
 class TodoCategories extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -24,7 +25,7 @@ abstract class TodoCategoryItemCount extends View {
   TodoItems get todoItems;
   TodoCategories get todoCategories;
 
-  IntColumn get itemCount => integer().generatedAs(todoItems.id.count())();
+  Expression<int> get itemCount => todoItems.id.count();
 
   @override
   Query as() => select([
@@ -41,10 +42,11 @@ abstract class TodoItemWithCategoryNameView extends View {
   TodoItems get todoItems;
   TodoCategories get todoCategories;
 
-  TextColumn get title => text().generatedAs(todoItems.title +
+  Expression<String> get title =>
+      todoItems.title +
       const Constant('(') +
       todoCategories.name +
-      const Constant(')'))();
+      const Constant(')');
 
   @override
   Query as() => select([todoItems.id, title]).from(todoItems).join([
@@ -76,7 +78,7 @@ class Database extends _$Database {
         // Add a bunch of default items in a batch
         await batch((b) {
           b.insertAll(todoItems, [
-            TodoItemsCompanion.insert(title: 'Aasd first entry', categoryId: 0),
+            TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
               content: const Value('Drift is a persistence library for Dart '

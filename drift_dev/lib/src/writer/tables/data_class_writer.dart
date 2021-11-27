@@ -55,7 +55,7 @@ class DataClassWriter {
     _buffer
       ..write(table.dartTypeName)
       ..write('({')
-      ..write(table.columns.map((column) {
+      ..write(columns.map((column) {
         final nullableDartType = column.typeConverter != null &&
                 scope.options.nullAwareTypeConverters
             ? column.typeConverter!.hasNullableDartType

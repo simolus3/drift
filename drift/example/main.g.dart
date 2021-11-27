@@ -7,13 +7,13 @@ part of 'main.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
-class TodoCategorie extends DataClass implements Insertable<TodoCategorie> {
+class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
-  TodoCategorie({required this.id, required this.name});
-  factory TodoCategorie.fromData(Map<String, dynamic> data, {String? prefix}) {
+  TodoCategory({required this.id, required this.name});
+  factory TodoCategory.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
-    return TodoCategorie(
+    return TodoCategory(
       id: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       name: const StringType()
@@ -35,17 +35,17 @@ class TodoCategorie extends DataClass implements Insertable<TodoCategorie> {
     );
   }
 
-  factory TodoCategorie.fromJson(Map<String, dynamic> json,
+  factory TodoCategory.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TodoCategorie(
+    return TodoCategory(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
     );
   }
-  factory TodoCategorie.fromJsonString(String encodedJson,
+  factory TodoCategory.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
-      TodoCategorie.fromJson(
+      TodoCategory.fromJson(
           DataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
@@ -57,13 +57,13 @@ class TodoCategorie extends DataClass implements Insertable<TodoCategorie> {
     };
   }
 
-  TodoCategorie copyWith({int? id, String? name}) => TodoCategorie(
+  TodoCategory copyWith({int? id, String? name}) => TodoCategory(
         id: id ?? this.id,
         name: name ?? this.name,
       );
   @override
   String toString() {
-    return (StringBuffer('TodoCategorie(')
+    return (StringBuffer('TodoCategory(')
           ..write('id: $id, ')
           ..write('name: $name')
           ..write(')'))
@@ -75,12 +75,10 @@ class TodoCategorie extends DataClass implements Insertable<TodoCategorie> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TodoCategorie &&
-          other.id == this.id &&
-          other.name == this.name);
+      (other is TodoCategory && other.id == this.id && other.name == this.name);
 }
 
-class TodoCategoriesCompanion extends UpdateCompanion<TodoCategorie> {
+class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
   final Value<int> id;
   final Value<String> name;
   const TodoCategoriesCompanion({
@@ -91,7 +89,7 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategorie> {
     this.id = const Value.absent(),
     required String name,
   }) : name = Value(name);
-  static Insertable<TodoCategorie> custom({
+  static Insertable<TodoCategory> custom({
     Expression<int>? id,
     Expression<String>? name,
   }) {
@@ -131,7 +129,7 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategorie> {
 }
 
 class $TodoCategoriesTable extends TodoCategories
-    with TableInfo<$TodoCategoriesTable, TodoCategorie> {
+    with TableInfo<$TodoCategoriesTable, TodoCategory> {
   final GeneratedDatabase _db;
   final String? _alias;
   $TodoCategoriesTable(this._db, [this._alias]);
@@ -152,7 +150,7 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   String get actualTableName => 'todo_categories';
   @override
-  VerificationContext validateIntegrity(Insertable<TodoCategorie> instance,
+  VerificationContext validateIntegrity(Insertable<TodoCategory> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -171,8 +169,8 @@ class $TodoCategoriesTable extends TodoCategories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TodoCategorie map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return TodoCategorie.fromData(data,
+  TodoCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    return TodoCategory.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
@@ -467,7 +465,7 @@ class $TodoItemsTable extends TodoItems
 class TodoCategoryItemCountData extends DataClass {
   final String name;
   final int itemCount;
-  TodoCategoryItemCountData({required this.itemCount});
+  TodoCategoryItemCountData({required this.name, required this.itemCount});
   factory TodoCategoryItemCountData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -530,12 +528,14 @@ class $TodoCategoryItemCountView
   final _$Database _db;
   final String? _alias;
   $TodoCategoryItemCountView(this._db, [this._alias]);
+  $TodoItemsTable get todoItems => _db.todoItems;
+  $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
   List<GeneratedColumn> get $columns => [todoCategories.name, itemCount];
   @override
-  String get aliasedName => _alias ?? actualViewName;
+  String get aliasedName => _alias ?? entityName;
   @override
-  String get actualViewName => 'todo_category_item_count';
+  String get entityName => 'todo_category_item_count';
   @override
   String? get createViewStmt => null;
   @override
@@ -547,6 +547,9 @@ class $TodoCategoryItemCountView
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      type: const StringType());
   late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
       'item_count', aliasedName, false,
       type: const IntType(),
@@ -567,7 +570,7 @@ class $TodoCategoryItemCountView
 class TodoItemWithCategoryNameViewData extends DataClass {
   final int id;
   final String title;
-  TodoItemWithCategoryNameViewData({required this.title});
+  TodoItemWithCategoryNameViewData({required this.id, required this.title});
   factory TodoItemWithCategoryNameViewData.fromData(Map<String, dynamic> data,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -630,12 +633,14 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   final _$Database _db;
   final String? _alias;
   $TodoItemWithCategoryNameViewView(this._db, [this._alias]);
+  $TodoItemsTable get todoItems => _db.todoItems;
+  $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
   List<GeneratedColumn> get $columns => [todoItems.id, title];
   @override
-  String get aliasedName => _alias ?? actualViewName;
+  String get aliasedName => _alias ?? entityName;
   @override
-  String get actualViewName => 'customViewName';
+  String get entityName => 'customViewName';
   @override
   String? get createViewStmt => null;
   @override
@@ -647,6 +652,9 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
+  late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
+      'id', aliasedName, false,
+      type: const IntType(), defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
       type: const StringType(),

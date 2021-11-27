@@ -11,11 +11,8 @@ part of '../query_builder.dart';
 /// [sql-tut]: https://www.sqlitetutorial.net/sqlite-create-view/
 abstract class ViewInfo<Self extends HasResultSet, Row>
     implements ResultSetImplementation<Self, Row> {
-  ///
-  String get actualViewName;
-
   @override
-  String get entityName => actualViewName;
+  String get entityName;
 
   /// The `CREATE VIEW` sql statement that can be used to create this view.
   String? get createViewStmt;
