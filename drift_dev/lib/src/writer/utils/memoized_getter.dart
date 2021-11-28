@@ -22,6 +22,9 @@ void writeMemoizedGetter(
     required GenerationOptions options,
     bool hasOverride = false}) {
   if (options.nnbd) {
+    if (hasOverride) {
+      buffer.write('@override\n');
+    }
     buffer.writeln('late final $returnType $getterName = $code;');
   } else {
     buffer.write('$returnType _$getterName;\n');
