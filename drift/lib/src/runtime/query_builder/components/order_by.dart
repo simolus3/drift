@@ -8,7 +8,7 @@ enum OrderingMode {
   /// Descending ordering mode (highest items first)
   desc,
 
-  /// Random ordering mode
+  /// Descending ordering mode (highest items first)
   random,
 }
 
