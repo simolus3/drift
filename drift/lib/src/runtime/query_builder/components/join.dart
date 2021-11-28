@@ -78,8 +78,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
-Join innerJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
-    {bool? useColumns}) {
+Join innerJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
 
@@ -91,8 +90,7 @@ Join innerJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
-Join leftOuterJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
-    {bool? useColumns}) {
+Join leftOuterJoin(Table other, Expression<bool?> on, {bool? useColumns}) {
   return Join._(_JoinType.leftOuter, other, on, includeInResult: useColumns);
 }
 
@@ -104,6 +102,6 @@ Join leftOuterJoin<T extends HasResultSet, D>(Table other, Expression<bool?> on,
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
-Join crossJoin<T extends HasResultSet, D>(Table other, {bool? useColumns}) {
+Join crossJoin(Table other, {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }
