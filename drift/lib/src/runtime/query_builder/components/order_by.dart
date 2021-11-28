@@ -6,33 +6,26 @@ enum OrderingMode {
   asc,
 
   /// Descending ordering mode (highest items first)
-  desc,
-
-  /// Descending ordering mode (highest items first)
-  random,
+  desc
 }
 
 const _modeToString = {
   OrderingMode.asc: 'ASC',
   OrderingMode.desc: 'DESC',
-  OrderingMode.random: 'RANDOM()',
 };
 
 /// A single term in a [OrderBy] clause. The priority of this term is determined
 /// by its position in [OrderBy.terms].
 class OrderingTerm extends Component {
   /// The expression after which the ordering should happen
-  final Expression? _expression;
+  final Expression expression;
 
   /// The ordering mode (ascending or descending).
   final OrderingMode mode;
 
   /// Creates an ordering term by the [expression] and the [mode] (defaults to
   /// ascending).
-  ///
-  /// When [mode] is [OrderingMode.random], the [expression] will be ignored
-  OrderingTerm({required Expression expression, this.mode = OrderingMode.asc})
-      : _expression = expression;
+  OrderingTerm({required this.expression, this.mode = OrderingMode.asc});
 
   /// Creates an ordering term that sorts for ascending values of [expression].
   factory OrderingTerm.asc(Expression expression) {
@@ -46,16 +39,14 @@ class OrderingTerm extends Component {
 
   /// Creates an ordering term  to get a number of random rows
   /// using sqlite random function.
-  OrderingTerm.random()
-      : _expression = null,
-        mode = OrderingMode.random;
+  factory OrderingTerm.random() {
+    return OrderingTerm(expression: FunctionCallExpression('random', []));
+  }
 
   @override
   void writeInto(GenerationContext context) {
-    if (mode != OrderingMode.random) {
-      _expression!.writeInto(context);
-      context.writeWhitespace();
-    }
+    expression.writeInto(context);
+    context.writeWhitespace();
     context.buffer.write(_modeToString[mode]);
   }
 }
