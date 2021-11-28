@@ -34,7 +34,10 @@ class AnalyzeDartStep extends AnalyzingStep {
           tableDartClasses[declaration.element] = declaredHere;
         }
       }
-      _resolveDartColumnReferences(tableDartClasses);
+
+      if (accessor is Database) {
+        _resolveDartColumnReferences(tableDartClasses);
+      }
 
       List<MoorSchemaEntity>? availableEntities;
 
