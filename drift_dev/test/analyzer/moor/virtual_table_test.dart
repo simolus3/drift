@@ -1,4 +1,5 @@
 import 'package:drift_dev/src/analyzer/options.dart';
+import 'package:test/scaffolding.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
@@ -20,6 +21,7 @@ CREATE VIRTUAL TABLE example_table_search
     );
 ''',
         'a|lib/queries.moor': '''
+import 'table.moor';
 
 exampleSearch: SELECT example_table.**, s.* FROM example_table
     INNER JOIN (
