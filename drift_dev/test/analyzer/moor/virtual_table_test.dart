@@ -43,7 +43,7 @@ exampleSearch: SELECT example_table.**, s.* FROM example_table
     expect(result.errors.errors, isEmpty);
   });
 
-  test('query virtual tables with unknown fucntion', () async {
+  test('query virtual tables with unknown function', () async {
     final state = TestState.withContent(
       {
         'a|lib/table.moor': '''
