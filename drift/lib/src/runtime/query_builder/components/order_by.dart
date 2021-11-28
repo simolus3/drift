@@ -54,9 +54,9 @@ class OrderingTerm extends Component {
   void writeInto(GenerationContext context) {
     if (mode != OrderingMode.random) {
       _expression!.writeInto(context);
+      context.writeWhitespace();
     }
     context.buffer.write(_modeToString[mode]);
-    context.writeWhitespace();
   }
 }
 

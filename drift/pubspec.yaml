@@ -11,7 +11,7 @@ environment:
 dependencies:
   async: ^2.5.0
   convert: ^3.0.0
-  collection: ^1.15.0
+  collection: ^1.15.0K
   meta: ^1.3.0
   stream_channel: ^2.1.0
   sqlite3: ^1.0.0
