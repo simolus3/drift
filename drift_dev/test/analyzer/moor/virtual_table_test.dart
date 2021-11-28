@@ -1,5 +1,4 @@
 import 'package:drift_dev/src/analyzer/options.dart';
-import 'package:test/scaffolding.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';
