@@ -13,6 +13,8 @@ void main() {
     db = TodoDb(NativeDatabase.memory());
   });
 
+  tearDown(() => db.close());
+
   test('insertOnConflictUpdate', () async {
     await db.into(db.categories).insert(
         CategoriesCompanion.insert(description: 'original description'));

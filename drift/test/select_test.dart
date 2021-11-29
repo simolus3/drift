@@ -70,6 +70,14 @@ void main() {
           argThat(isEmpty)));
     });
 
+    test('with random order by clause', () async {
+      await (db.select(db.users)..orderBy([(u) => OrderingTerm.random()]))
+          .get();
+
+      verify(executor.runSelect(
+          'SELECT * FROM users ORDER BY random() ASC;', argThat(isEmpty)));
+    });
+
     test('with complex predicates', () async {
       await (db.select(db.users)
             ..where((u) =>
