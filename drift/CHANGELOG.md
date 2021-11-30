@@ -8,6 +8,7 @@
 - Allow the generator to emit correct SQL code when using arrays with the
   `new_sql_code_generation` option in specific scenarios.
 - Add the `generatedAs` method to declare generated columns for Dart tables.
+- Add `OrderingTerm.random` to fetch rows in a random order.
 - Improved support for pausing query stream subscriptions. Instead of buffering events,
   query streams will suspend fetching data if all listeners are paused.
 

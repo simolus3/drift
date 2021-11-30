@@ -20,6 +20,7 @@ CREATE VIRTUAL TABLE example_table_search
     );
 ''',
         'a|lib/queries.moor': '''
+import 'table.moor';
 
 exampleSearch: SELECT example_table.**, s.* FROM example_table
     INNER JOIN (
@@ -41,7 +42,7 @@ exampleSearch: SELECT example_table.**, s.* FROM example_table
     expect(result.errors.errors, isEmpty);
   });
 
-  test('query virtual tables with unknown fucntion', () async {
+  test('query virtual tables with unknown function', () async {
     final state = TestState.withContent(
       {
         'a|lib/table.moor': '''

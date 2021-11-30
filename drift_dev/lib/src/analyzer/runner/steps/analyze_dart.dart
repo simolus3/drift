@@ -40,7 +40,10 @@ class AnalyzeDartStep extends AnalyzingStep {
           tableDartClasses[declaration.element] = declaredHere;
         }
       }
-      _resolveDartColumnReferences(tableDartClasses);
+
+      if (accessor is Database) {
+        _resolveDartColumnReferences(tableDartClasses);
+      }
 
       for (final declaredHere in accessor.declaredViews) {
         // See issue #447: The view added to an accessor might already be
