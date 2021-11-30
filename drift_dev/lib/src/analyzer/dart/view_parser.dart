@@ -13,7 +13,7 @@ class ViewParser {
     final staticReferences =
         (await _parseStaticReferences(element, tables)).toList();
     final dataClassInfo = _readDataClassInformation(columns, element);
-    final query = await _parseQuery(element, tables, columns);
+    final query = await _parseQuery(element, staticReferences, columns);
 
     final view = MoorView(
       declaration: DartViewDeclaration(element, base.step.file),
@@ -21,7 +21,7 @@ class ViewParser {
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       entityInfoName: '\$${element.name}View',
-      staticReferences: staticReferences,
+      staticReferences: staticReferences.map((ref) => ref.declaration).toList(),
       viewQuery: query,
     );
 
@@ -163,18 +163,18 @@ class ViewParser {
     }[name];
   }
 
-  Future<List<String>> _parseStaticReferences(
+  Future<List<_TableReference>> _parseStaticReferences(
       ClassElement element, List<MoorTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
             .map((t) => t.element)
             .followedBy([element]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field, tables))
         .where((ref) => ref != null)
-        .cast<String>()
+        .cast<_TableReference>()
         .toList();
   }
 
-  Future<String?> _getStaticReference(
+  Future<_TableReference?> _getStaticReference(
       FieldElement field, List<MoorTable> tables) async {
     if (field.getter != null) {
       try {
@@ -184,8 +184,9 @@ class ViewParser {
               (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
             final name = node.name.toString();
-            return '${type.entityInfoName} get $name => '
+            final declaration = '${type.entityInfoName} get $name => '
                 '_db.${type.dbGetterName};';
+            return _TableReference(type, name, declaration);
           }
         }
       } catch (_) {}
@@ -194,7 +195,7 @@ class ViewParser {
   }
 
   Future<ViewQueryInformation> _parseQuery(ClassElement element,
-      List<MoorTable> tables, List<MoorColumn> columns) async {
+      List<_TableReference> references, List<MoorColumn> columns) async {
     final as =
         element.methods.where((method) => method.name == 'as').firstOrNull;
 
@@ -225,15 +226,26 @@ class ViewParser {
             columnListLiteral.elements.map((col) => col.toString()).map((col) {
           final parts = col.split('.');
           if (parts.length > 1) {
-            final table =
-                tables.firstWhere((tbl) => tbl.dbGetterName == parts[0]);
-            final column = table.columns
+            final reference =
+                references.firstWhereOrNull((ref) => ref.name == parts[0]);
+            if (reference == null) {
+              throw analysisError(
+                  base.step,
+                  element,
+                  'Table named `${parts[0]}` not found! Maybe not included in '
+                  '@DriftDatabase or not belongs to this database');
+            }
+            final column = reference.table.columns
                 .firstWhere((col) => col.dartGetterName == parts[1]);
-            column.table = table;
-            return column;
+            column.table = reference.table;
+            return MapEntry(
+                '${reference.name}.${column.dartGetterName}', column);
           }
-          return columns.firstWhere((col) => col.dartGetterName == parts[0]);
+          final column =
+              columns.firstWhere((col) => col.dartGetterName == parts[0]);
+          return MapEntry('${column.dartGetterName}', column);
         });
+        final columnMap = Map.fromEntries(columnList);
 
         target = target.parent as MethodInvocation;
         if (target.methodName.toString() != 'from') {
@@ -252,7 +264,7 @@ class ViewParser {
           query = target.toString().substring(target.target!.toString().length);
         }
 
-        return ViewQueryInformation(columnList.toList(), from, query);
+        return ViewQueryInformation(columnMap, from, query);
       } catch (e) {
         print(e);
         throw analysisError(
@@ -262,4 +274,12 @@ class ViewParser {
 
     throw analysisError(base.step, element, 'Missing `as()` query declaration');
   }
+}
+
+class _TableReference {
+  MoorTable table;
+  String name;
+  String declaration;
+
+  _TableReference(this.table, this.name, this.declaration);
 }

@@ -51,9 +51,6 @@ class MoorColumn implements HasDeclaration, HasType {
   /// and in the generated data class that will be generated for each table.
   final String dartGetterName;
 
-  String get getterNameWithTable =>
-      table == null ? dartGetterName : '${table!.dbGetterName}.$dartGetterName';
-
   /// The declaration of this column, contains information about where this
   /// column was created in source code.
   @override

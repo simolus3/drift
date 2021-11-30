@@ -54,9 +54,7 @@ class ViewWriter extends TableOrViewWriter {
     if (view.viewQuery == null) {
       writeGetColumnsOverride();
     } else {
-      final columns = view.viewQuery!.columns
-          .map((col) => col.getterNameWithTable)
-          .join(', ');
+      final columns = view.viewQuery!.columns.keys.join(', ');
       buffer.write('@override\nList<GeneratedColumn> get \$columns => '
           '[$columns];\n');
     }
@@ -77,7 +75,7 @@ class ViewWriter extends TableOrViewWriter {
     writeAsDslTable();
     writeMappingMethod(scope);
 
-    for (final column in view.viewQuery?.columns ?? view.columns) {
+    for (final column in view.viewQuery?.columns.values ?? view.columns) {
       writeColumnGetter(column, scope.generationOptions, false);
     }
 

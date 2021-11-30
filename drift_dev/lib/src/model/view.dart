@@ -102,7 +102,7 @@ class MoorView extends MoorEntityWithResultSet {
 }
 
 class ViewQueryInformation {
-  final List<MoorColumn> columns;
+  final Map<String, MoorColumn> columns;
   final String from;
   final String query;
 
