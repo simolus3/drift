@@ -561,9 +561,10 @@ class $TodoCategoryItemCountView
 
   @override
   Query? get query =>
-      (_db.selectOnly(todoCategories)..addColumns($columns)).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id),
-            useColumns: false)
+      (_db.selectOnly(todoCategories, includeJoinedTableColumns: false)
+            ..addColumns($columns))
+          .join([
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
 }
 
@@ -670,10 +671,12 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
   }
 
   @override
-  Query? get query => (_db.selectOnly(todoItems)..addColumns($columns)).join([
+  Query? get query =>
+      (_db.selectOnly(todoItems, includeJoinedTableColumns: false)
+            ..addColumns($columns))
+          .join([
         innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId),
-            useColumns: false)
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);
 }
 

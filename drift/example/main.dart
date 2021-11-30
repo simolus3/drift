@@ -32,8 +32,7 @@ abstract class TodoCategoryItemCount extends View {
         todoCategories.name,
         itemCount,
       ]).from(todoCategories).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id),
-            useColumns: false)
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
 }
 
@@ -51,8 +50,7 @@ abstract class TodoItemWithCategoryNameView extends View {
   @override
   Query as() => select([todoItems.id, title]).from(todoItems).join([
         innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId),
-            useColumns: false)
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);
 }
 

@@ -64,6 +64,39 @@ void main() {
           'custom TEXT NOT NULL'
           ');',
           []));
+
+      verify(mockExecutor
+          .runCustom('DROP VIEW IF EXISTS category_todo_count_view', []));
+
+      verify(mockExecutor.runCustom(
+          'CREATE VIEW category_todo_count_view AS SELECT '
+          'todos.id AS "todos.id", todos.title AS "todos.title", '
+          'todos.content AS "todos.content", '
+          'todos.target_date AS "todos.target_date", '
+          'todos.category AS "todos.category", '
+          'categories."desc" AS "categories.desc", '
+          'COUNT(todos.id) AS "item_count" '
+          'FROM categories '
+          'INNER JOIN todos '
+          'ON todos.category = categories.id',
+          []));
+
+      verify(mockExecutor
+          .runCustom('DROP VIEW IF EXISTS todo_with_category_view', []));
+
+      verify(mockExecutor.runCustom(
+          'CREATE VIEW todo_with_category_view AS SELECT '
+          'categories.id AS "categories.id", '
+          'categories."desc" AS "categories.desc", '
+          'categories.priority AS "categories.priority", '
+          'categories.description_in_upper_case '
+          'AS "categories.description_in_upper_case", '
+          'todos.title AS "todos.title", '
+          'categories."desc" AS "categories.desc" '
+          'FROM todos '
+          'INNER JOIN categories '
+          'ON categories.id = todos.category',
+          []));
     });
 
     test('creates individual tables', () async {

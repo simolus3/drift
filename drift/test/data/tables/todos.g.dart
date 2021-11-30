@@ -1326,6 +1326,215 @@ class $PureDefaultsTable extends PureDefaults
   }
 }
 
+class CategoryTodoCountViewData extends DataClass {
+  final String description;
+  final int itemCount;
+  CategoryTodoCountViewData(
+      {required this.description, required this.itemCount});
+  factory CategoryTodoCountViewData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return CategoryTodoCountViewData(
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+      itemCount: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
+    );
+  }
+  factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryTodoCountViewData(
+      description: serializer.fromJson<String>(json['description']),
+      itemCount: serializer.fromJson<int>(json['itemCount']),
+    );
+  }
+  factory CategoryTodoCountViewData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      CategoryTodoCountViewData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'description': serializer.toJson<String>(description),
+      'itemCount': serializer.toJson<int>(itemCount),
+    };
+  }
+
+  CategoryTodoCountViewData copyWith({String? description, int? itemCount}) =>
+      CategoryTodoCountViewData(
+        description: description ?? this.description,
+        itemCount: itemCount ?? this.itemCount,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('CategoryTodoCountViewData(')
+          ..write('description: $description, ')
+          ..write('itemCount: $itemCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(description, itemCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryTodoCountViewData &&
+          other.description == this.description &&
+          other.itemCount == this.itemCount);
+}
+
+class $CategoryTodoCountViewView
+    extends ViewInfo<$CategoryTodoCountViewView, CategoryTodoCountViewData>
+    implements HasResultSet {
+  final _$TodoDb _db;
+  final String? _alias;
+  $CategoryTodoCountViewView(this._db, [this._alias]);
+  $TodosTableTable get todos => _db.todosTable;
+  $CategoriesTable get categories => _db.categories;
+  @override
+  List<GeneratedColumn> get $columns => [categories.description, itemCount];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'category_todo_count_view';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $CategoryTodoCountViewView get asDslTable => this;
+  @override
+  CategoryTodoCountViewData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return CategoryTodoCountViewData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+      'desc', aliasedName, false,
+      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+  late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
+      'item_count', aliasedName, false,
+      type: const IntType(), generatedAs: GeneratedAs(todos.id.count(), false));
+  @override
+  $CategoryTodoCountViewView createAlias(String alias) {
+    return $CategoryTodoCountViewView(_db, alias);
+  }
+
+  @override
+  Query? get query =>
+      (_db.selectOnly(categories, includeJoinedTableColumns: false)
+            ..addColumns($columns))
+          .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+}
+
+class TodoWithCategoryViewData extends DataClass {
+  final String? title;
+  final String description;
+  TodoWithCategoryViewData({this.title, required this.description});
+  factory TodoWithCategoryViewData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return TodoWithCategoryViewData(
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}todos.title']),
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+    );
+  }
+  factory TodoWithCategoryViewData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoWithCategoryViewData(
+      title: serializer.fromJson<String?>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
+    );
+  }
+  factory TodoWithCategoryViewData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TodoWithCategoryViewData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'title': serializer.toJson<String?>(title),
+      'description': serializer.toJson<String>(description),
+    };
+  }
+
+  TodoWithCategoryViewData copyWith(
+          {Value<String?> title = const Value.absent(), String? description}) =>
+      TodoWithCategoryViewData(
+        title: title.present ? title.value : this.title,
+        description: description ?? this.description,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TodoWithCategoryViewData(')
+          ..write('title: $title, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(title, description);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoWithCategoryViewData &&
+          other.title == this.title &&
+          other.description == this.description);
+}
+
+class $TodoWithCategoryViewView
+    extends ViewInfo<$TodoWithCategoryViewView, TodoWithCategoryViewData>
+    implements HasResultSet {
+  final _$TodoDb _db;
+  final String? _alias;
+  $TodoWithCategoryViewView(this._db, [this._alias]);
+  $TodosTableTable get todos => _db.todosTable;
+  $CategoriesTable get categories => _db.categories;
+  @override
+  List<GeneratedColumn> get $columns => [todos.title, categories.description];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'todo_with_category_view';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $TodoWithCategoryViewView get asDslTable => this;
+  @override
+  TodoWithCategoryViewData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return TodoWithCategoryViewData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
+      type: const StringType());
+  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+      'desc', aliasedName, false,
+      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+  @override
+  $TodoWithCategoryViewView createAlias(String alias) {
+    return $TodoWithCategoryViewView(_db, alias);
+  }
+
+  @override
+  Query? get query => (_db.selectOnly(todos, includeJoinedTableColumns: false)
+        ..addColumns($columns))
+      .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$TodoDb.connect(DatabaseConnection c) : super.connect(c);
@@ -1335,6 +1544,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $SharedTodosTable sharedTodos = $SharedTodosTable(this);
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable(this);
   late final $PureDefaultsTable pureDefaults = $PureDefaultsTable(this);
+  late final $CategoryTodoCountViewView categoryTodoCountView =
+      $CategoryTodoCountViewView(this);
+  late final $TodoWithCategoryViewView todoWithCategoryView =
+      $TodoWithCategoryViewView(this);
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
@@ -1412,7 +1625,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
         users,
         sharedTodos,
         tableWithoutPK,
-        pureDefaults
+        pureDefaults,
+        categoryTodoCountView,
+        todoWithCategoryView
       ];
 }
 
