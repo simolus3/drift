@@ -105,7 +105,7 @@ void main() {
 
     for (var i = 0; i < 4; i++) {
       filter.add(i);
-      await pumpEventQueue(times: 5);
+      await pumpEventQueue(times: 10);
     }
 
     final values = await db
