@@ -34,10 +34,12 @@ class Join<T extends HasResultSet, D> extends Component {
   final Expression<bool?>? on;
 
   /// Whether [table] should appear in the result set (defaults to true).
+  /// Default value can be changed by `includeJoinedTableColumns` in
+  /// `selectOnly` statements.
   ///
   /// It can be useful to exclude some tables. Sometimes, tables are used in a
   /// join only to run aggregate functions on them.
-  final bool includeInResult;
+  final bool? includeInResult;
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
