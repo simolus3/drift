@@ -128,12 +128,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
       type: const StringType(),

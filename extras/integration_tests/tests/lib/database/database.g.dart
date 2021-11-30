@@ -237,26 +237,31 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _birthDateMeta = const VerificationMeta('birthDate');
+  @override
   late final GeneratedColumn<DateTime?> birthDate = GeneratedColumn<DateTime?>(
       'birth_date', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
+  @override
   late final GeneratedColumn<Uint8List?> profilePicture =
       GeneratedColumn<Uint8List?>('profile_picture', aliasedName, true,
           type: const BlobType(), requiredDuringInsert: false);
   final VerificationMeta _preferencesMeta =
       const VerificationMeta('preferences');
+  @override
   late final GeneratedColumnWithTypeConverter<Preferences, String?>
       preferences = GeneratedColumn<String?>('preferences', aliasedName, true,
               type: const StringType(), requiredDuringInsert: false)
@@ -468,15 +473,18 @@ class $FriendshipsTable extends Friendships
   final String? _alias;
   $FriendshipsTable(this._db, [this._alias]);
   final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
+  @override
   late final GeneratedColumn<int?> firstUser = GeneratedColumn<int?>(
       'first_user', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _secondUserMeta = const VerificationMeta('secondUser');
+  @override
   late final GeneratedColumn<int?> secondUser = GeneratedColumn<int?>(
       'second_user', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _reallyGoodFriendsMeta =
       const VerificationMeta('reallyGoodFriends');
+  @override
   late final GeneratedColumn<bool?> reallyGoodFriends = GeneratedColumn<bool?>(
       'really_good_friends', aliasedName, false,
       type: const BoolType(),

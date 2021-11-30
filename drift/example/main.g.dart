@@ -134,12 +134,14 @@ class $TodoCategoriesTable extends TodoCategories
   final String? _alias;
   $TodoCategoriesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
@@ -379,20 +381,24 @@ class $TodoItemsTable extends TodoItems
   final String? _alias;
   $TodoItemsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
+  @override
   late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
       'content', aliasedName, true,
       type: const StringType(), requiredDuringInsert: false);
   final VerificationMeta _categoryIdMeta = const VerificationMeta('categoryId');
+  @override
   late final GeneratedColumn<int?> categoryId = GeneratedColumn<int?>(
       'category_id', aliasedName, false,
       type: const IntType(),
@@ -400,6 +406,7 @@ class $TodoItemsTable extends TodoItems
       defaultConstraints: 'REFERENCES todo_categories (id)');
   final VerificationMeta _generatedTextMeta =
       const VerificationMeta('generatedText');
+  @override
   late final GeneratedColumn<String?> generatedText = GeneratedColumn<String?>(
       'generated_text', aliasedName, true,
       type: const StringType(),
