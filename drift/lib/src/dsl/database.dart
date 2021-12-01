@@ -95,7 +95,7 @@ class DriftAccessor {
   /// The tables accessed by this DAO.
   final List<Type> tables;
 
-  /// The views to include in the database
+  /// The views to make accessible in this DAO.
   final List<Type> views;
 
   /// {@macro drift_compile_queries_param}
