@@ -16,15 +16,21 @@ class VerifierImplementation implements SchemaVerifier {
   @override
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
       {bool validateDropped = false}) async {
+    final virtualTables = <String>[
+      for (final table in db.allTables)
+        if (table is VirtualTableInfo) table.entityName,
+    ];
+
     // Open the database to collect its schema. Put a delegate in between
     // claiming that the actual version is what we expect.
     await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
-    final actualSchema = await db.executor.collectSchemaInput();
+    final actualSchema = await db.executor.collectSchemaInput(virtualTables);
 
     // Open another connection to instantiate and extract the reference schema.
     final otherConnection = await startAt(expectedVersion);
     await otherConnection.executor.ensureOpen(_DelegatingUser(expectedVersion));
-    final referenceSchema = await otherConnection.executor.collectSchemaInput();
+    final referenceSchema =
+        await otherConnection.executor.collectSchemaInput(virtualTables);
     await otherConnection.executor.close();
 
     final result =
@@ -80,13 +86,16 @@ class VerifierImplementation implements SchemaVerifier {
 }
 
 extension on QueryExecutor {
-  Future<List<Input>> collectSchemaInput() async {
+  Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
     final result = await runSelect('SELECT * FROM sqlite_master;', const []);
 
     final inputs = <Input>[];
     for (final row in result) {
       final name = row['name'] as String;
+
+      // Skip sqlite-internal tables
       if (name.startsWith('sqlite_autoindex')) continue;
+      if (virtualTables.any((v) => name.startsWith('${v}_'))) continue;
 
       inputs.add(Input(name, row['sql'] as String));
     }

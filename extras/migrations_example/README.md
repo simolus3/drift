@@ -19,5 +19,5 @@ Replace `_v2` with the current `schemaVersion`.
 Run
 
 ```
-dart run drift_dev schema generate moor_migrations/ test/generated/ --data-classes --companions
+dart run drift_dev schema generate drift_migrations/ test/generated/ --data-classes --companions
 ```
