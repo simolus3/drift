@@ -300,4 +300,26 @@ void main() {
       ),
     );
   });
+
+  test('parses DEFAULT with a negative literal', () {
+    // regression test for https://github.com/simolus3/moor/discussions/1550
+    testStatement(
+      'CREATE TABLE a (b INTEGER NOT NULL DEFAULT -1);',
+      CreateTableStatement(
+        tableName: 'a',
+        columns: [
+          ColumnDefinition(columnName: 'b', typeName: 'INTEGER', constraints: [
+            NotNull(null),
+            Default(
+              null,
+              UnaryExpression(
+                Token(TokenType.minus, fakeSpan('-')),
+                NumericLiteral(1, NumericToken(fakeSpan('1'))),
+              ),
+            )
+          ])
+        ],
+      ),
+    );
+  });
 }

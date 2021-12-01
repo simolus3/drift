@@ -716,9 +716,8 @@ class Parser {
     final token = _peek;
 
     Literal? _parseInner() {
-      if (_matchOne(TokenType.numberLiteral)) {
-        final number = token as NumericToken;
-        return NumericLiteral(number.parsedNumber, token);
+      if (_check(TokenType.numberLiteral)) {
+        return _numericLiteral();
       }
       if (_matchOne(TokenType.stringLiteral)) {
         return StringLiteral(token as StringLiteralToken);
@@ -750,6 +749,12 @@ class Parser {
     final literal = _parseInner();
     literal?.setSpan(token, token);
     return literal;
+  }
+
+  NumericLiteral _numericLiteral() {
+    final number = _consume(TokenType.numberLiteral, 'Expected a number here')
+        as NumericToken;
+    return NumericLiteral(number.parsedNumber, number)..setSpan(number, number);
   }
 
   Expression _primary() {
@@ -2442,10 +2447,17 @@ class Parser {
       return CheckColumn(resolvedName, expr)..setSpan(first, _previous);
     }
     if (_matchOne(TokenType.$default)) {
-      Expression? expr = _literalOrNull();
+      Expression expr;
 
-      // when not a literal, expect an expression in parentheses
-      expr ??= _expressionInParentheses();
+      if (_match(const [TokenType.plus, TokenType.minus])) {
+        // Signed number
+        final operator = _previous;
+        expr = UnaryExpression(operator, _numericLiteral())
+          ..setSpan(operator, _previous);
+      } else {
+        // Literal or an expression in parentheses
+        expr = _literalOrNull() ?? _expressionInParentheses();
+      }
 
       return Default(resolvedName, expr)..setSpan(first, _previous);
     }
