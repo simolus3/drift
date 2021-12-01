@@ -29,11 +29,11 @@ class LazyDatabase extends QueryExecutor {
       return _openDelegate!.future;
     } else {
       final delegate = _openDelegate = Completer();
-      Future.value(opener()).then((database) {
+      Future.sync(opener).then((database) {
         _delegate = database;
         _delegateAvailable = true;
         delegate.complete();
-      });
+      }, onError: delegate.completeError);
       return delegate.future;
     }
   }

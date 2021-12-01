@@ -95,4 +95,12 @@ void main() {
 
     verify(inner.close());
   });
+
+  test('throws when opening method throws', () {
+    final exception = Exception('expected');
+    final lazy = LazyDatabase(() => throw exception);
+    final user = _LazyQueryUserForTest();
+
+    expect(lazy.ensureOpen(user), throwsA(exception));
+  });
 }
