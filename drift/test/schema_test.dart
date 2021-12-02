@@ -65,9 +65,6 @@ void main() {
           ');',
           []));
 
-      verify(mockExecutor
-          .runCustom('DROP VIEW IF EXISTS category_todo_count_view', []));
-
       verify(mockExecutor.runCustom(
           'CREATE VIEW category_todo_count_view AS SELECT '
           'todos.id AS "todos.id", todos.title AS "todos.title", '
@@ -80,9 +77,6 @@ void main() {
           'INNER JOIN todos '
           'ON todos.category = categories.id',
           []));
-
-      verify(mockExecutor
-          .runCustom('DROP VIEW IF EXISTS todo_with_category_view', []));
 
       verify(mockExecutor.runCustom(
           'CREATE VIEW todo_with_category_view AS SELECT '

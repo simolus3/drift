@@ -74,19 +74,19 @@ class Migrator {
       } else if (entity is OnCreateQuery) {
         await _issueCustomQuery(entity.sql, const []);
       } else if (entity is ViewInfo) {
-        // Skip
+        await createView(entity);
       } else {
         throw AssertionError('Unknown entity: $entity');
       }
     }
-    // Create views after all other entities are created
-    await recreateAllViews();
   }
 
   /// Drop and recreate all views. You should call it on every upgrade
   Future<void> recreateAllViews() async {
     for (final entity in _db.allSchemaEntities) {
       if (entity is ViewInfo) {
+        await _issueCustomQuery(
+            'DROP VIEW IF EXISTS ${entity.entityName}', const []);
         await createView(entity);
       }
     }
@@ -325,8 +325,6 @@ class Migrator {
       context.generatingForView = view.entityName;
       context.buffer.write('CREATE VIEW ${view.entityName} AS ');
       view.query!.writeInto(context);
-      await _issueCustomQuery(
-          'DROP VIEW IF EXISTS ${view.entityName}', const []);
       await _issueCustomQuery(context.sql, const []);
     }
   }
