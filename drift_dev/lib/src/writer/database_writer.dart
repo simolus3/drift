@@ -18,7 +18,7 @@ class DatabaseWriter {
 
   DatabaseWriter(this.db, this.scope);
 
-  String get _dbClassName {
+  String get dbClassName {
     if (scope.generationOptions.isGeneratingForSchema) {
       return 'DatabaseAtV${scope.generationOptions.forSchema}';
     }
@@ -32,13 +32,13 @@ class DatabaseWriter {
       TableWriter(table, scope.child()).writeInto();
     }
     for (final view in db.views) {
-      ViewWriter(view, scope.child()).write();
+      ViewWriter(view, scope.child(), this).write();
     }
 
     // Write the database class
     final dbScope = scope.child();
 
-    final className = _dbClassName;
+    final className = dbClassName;
     final firstLeaf = dbScope.leaf();
     final isAbstract = !scope.generationOptions.isGeneratingForSchema;
     if (isAbstract) {
@@ -95,7 +95,7 @@ class DatabaseWriter {
           buffer: dbScope.leaf(),
           getterName: entity.dbGetterName,
           returnType: entity.entityInfoName,
-          code: '${entity.entityInfoName}()',
+          code: '${entity.entityInfoName}(this)',
           options: scope.generationOptions,
         );
       }

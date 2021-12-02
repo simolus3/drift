@@ -18,6 +18,12 @@ bool isColumn(DartType type) {
       !name.contains('Builder');
 }
 
+bool isExpression(DartType type) {
+  final name = type.element?.name ?? '';
+
+  return isFromMoor(type) && name.startsWith('Expression');
+}
+
 extension TypeUtils on DartType {
   String get userVisibleName => getDisplayString(withNullability: true);
 

@@ -153,12 +153,16 @@ class GeneratedColumn<T> extends Column<T> {
 
   @override
   void writeInto(GenerationContext context, {bool ignoreEscape = false}) {
-    if (context.hasMultipleTables) {
-      context.buffer
-        ..write(tableName)
-        ..write('.');
+    if (generatedAs != null && context.generatingForView == tableName) {
+      generatedAs!.generatedAs.writeInto(context);
+    } else {
+      if (context.hasMultipleTables) {
+        context.buffer
+          ..write(tableName)
+          ..write('.');
+      }
+      context.buffer.write(ignoreEscape ? $name : escapedName);
     }
-    context.buffer.write(ignoreEscape ? $name : escapedName);
   }
 
   /// Checks whether the given value fits into this column. The default

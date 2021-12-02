@@ -117,6 +117,28 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
   }
 }
 
+abstract class CategoryTodoCountView extends View {
+  TodosTable get todos;
+  Categories get categories;
+
+  Expression<int> get itemCount => todos.id.count();
+
+  @override
+  Query as() => select([categories.description, itemCount])
+      .from(categories)
+      .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+}
+
+abstract class TodoWithCategoryView extends View {
+  TodosTable get todos;
+  Categories get categories;
+
+  @override
+  Query as() => select([todos.title, categories.description])
+      .from(todos)
+      .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+}
+
 @DriftDatabase(
   tables: [
     TodosTable,
@@ -125,6 +147,10 @@ class CustomConverter extends TypeConverter<MyCustomObject, String> {
     SharedTodos,
     TableWithoutPK,
     PureDefaults,
+  ],
+  views: [
+    CategoryTodoCountView,
+    TodoWithCategoryView,
   ],
   daos: [SomeDao],
   queries: {

@@ -8,6 +8,7 @@ part of '../steps.dart';
 /// Notably, this step does not analyze defined queries.
 class ParseDartStep extends Step {
   static const _tableTypeChecker = TypeChecker.fromRuntime(Table);
+  static const _viewTypeChecker = TypeChecker.fromRuntime(View);
   static const _generatedInfoChecker = TypeChecker.fromRuntime(TableInfo);
   static const _useMoorChecker = TypeChecker.fromRuntime(DriftDatabase);
   static const _useDaoChecker = TypeChecker.fromRuntime(DriftAccessor);
@@ -18,6 +19,7 @@ class ParseDartStep extends Step {
   MoorDartParser get parser => _parser;
 
   final Map<ClassElement, MoorTable> _tables = {};
+  final Map<ClassElement, MoorView> _views = {};
 
   ParseDartStep(Task task, FoundFile file, this.library) : super(task, file) {
     _parser = MoorDartParser(this);
@@ -66,6 +68,18 @@ class ParseDartStep extends Step {
     return _tables[element];
   }
 
+  Future<MoorView?> _parseView(
+      ClassElement element, List<MoorTable> tables) async {
+    if (!_views.containsKey(element)) {
+      final view = await parser.parseView(element, tables);
+
+      if (view != null) {
+        _views[element] = view;
+      }
+    }
+    return _views[element];
+  }
+
   void _lintDartTable(MoorTable table, ClassElement from) {
     if (table.primaryKey != null) {
       final hasAdditional = table.columns.any((c) {
@@ -101,8 +115,8 @@ class ParseDartStep extends Step {
 
   /// Resolves a [MoorTable] for the class of each [DartType] in [types].
   /// The [initializedBy] element should be the piece of code that caused the
-  /// parsing (e.g. the database class that is annotated with `@UseMoor`). This
-  /// will allow for more descriptive error messages.
+  /// parsing (e.g. the database class that is annotated with `@DriftDatabase`).
+  /// This will allow for more descriptive error messages.
   Future<List<MoorTable>> parseTables(
       Iterable<DartType> types, Element initializedBy) {
     return Future.wait(types.map((type) {
@@ -115,6 +129,29 @@ class ParseDartStep extends Step {
         return Future.value(null);
       } else {
         return _parseTable(type.element as ClassElement);
+      }
+    })).then((list) {
+      // only keep tables that were resolved successfully
+      return List.from(list.where((t) => t != null));
+    });
+  }
+
+  /// Resolves a [MoorView] for the class of each [DartType] in [types].
+  /// The [initializedBy] element should be the piece of code that caused the
+  /// parsing (e.g. the database class that is annotated with `@DriftDatabase`).
+  /// This will allow for more descriptive error messages.
+  Future<List<MoorView>> parseViews(
+      Iterable<DartType> types, Element initializedBy, List<MoorTable> tables) {
+    return Future.wait(types.map((type) {
+      if (!_viewTypeChecker.isAssignableFrom(type.element!)) {
+        reportError(ErrorInDartCode(
+          severity: Severity.criticalError,
+          message: 'The type $type is not a drift view',
+          affectedElement: initializedBy,
+        ));
+        return Future.value(null);
+      } else {
+        return _parseView(type.element as ClassElement, tables);
       }
     })).then((list) {
       // only keep tables that were resolved successfully

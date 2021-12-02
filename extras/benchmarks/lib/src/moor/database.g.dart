@@ -130,10 +130,12 @@ class $KeyValuesTable extends KeyValues
   final String? _alias;
   $KeyValuesTable(this._db, [this._alias]);
   final VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
   late final GeneratedColumn<String?> key = GeneratedColumn<String?>(
       'key', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
   late final GeneratedColumn<String?> value = GeneratedColumn<String?>(
       'value', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);

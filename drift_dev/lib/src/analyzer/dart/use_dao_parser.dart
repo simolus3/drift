@@ -40,6 +40,13 @@ class UseDaoParser {
         const [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
 
+    final viewTypes = annotation
+            .peek('views')
+            ?.listValue
+            .map((obj) => obj.toTypeValue())
+            .whereType<DartType>() ??
+        const [];
+
     final includes = annotation
             .read('include')
             .objectValue
@@ -50,12 +57,14 @@ class UseDaoParser {
         [];
 
     final parsedTables = await step.parseTables(tableTypes, element);
+    final parsedViews = await step.parseViews(viewTypes, element, parsedTables);
     final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
 
     return Dao(
       declaration: DatabaseOrDaoDeclaration(element, step.file),
       dbClass: dbImpl,
       declaredTables: parsedTables,
+      declaredViews: parsedViews,
       declaredIncludes: includes,
       declaredQueries: parsedQueries,
     );

@@ -23,6 +23,13 @@ class UseMoorParser {
       ));
     }
 
+    final viewTypes = annotation
+            .peek('views')
+            ?.listValue
+            .map((obj) => obj.toTypeValue())
+            .whereType<DartType>() ??
+        const [];
+
     final tableTypes = tablesOrNull ?? [];
     final queryStrings = annotation.peek('queries')?.mapValue ?? {};
     final includes = annotation
@@ -34,13 +41,14 @@ class UseMoorParser {
         [];
 
     final parsedTables = await step.parseTables(tableTypes, element);
-
+    final parsedViews = await step.parseViews(viewTypes, element, parsedTables);
     final parsedQueries = step.readDeclaredQueries(queryStrings.cast());
     final daoTypes = _readDaoTypes(annotation);
 
     return Database(
       declaration: DatabaseOrDaoDeclaration(element, step.file),
       declaredTables: parsedTables,
+      declaredViews: parsedViews,
       daos: daoTypes,
       declaredIncludes: includes,
       declaredQueries: parsedQueries,

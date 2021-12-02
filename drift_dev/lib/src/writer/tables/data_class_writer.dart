@@ -7,6 +7,7 @@ import 'package:drift_dev/writer.dart';
 class DataClassWriter {
   final MoorEntityWithResultSet table;
   final Scope scope;
+  final columns = <MoorColumn>[];
 
   bool get isInsertable => table is MoorTable;
 
@@ -32,8 +33,16 @@ class DataClassWriter {
       _buffer.writeln('{');
     }
 
+    // write view columns
+    final view = table;
+    if (view is MoorView && view.viewQuery != null) {
+      columns.addAll(view.viewQuery!.columns.values);
+    } else {
+      columns.addAll(table.columns);
+    }
+
     // write individual fields
-    for (final column in table.columns) {
+    for (final column in columns) {
       if (column.documentationComment != null) {
         _buffer.write('${column.documentationComment}\n');
       }
@@ -46,7 +55,7 @@ class DataClassWriter {
     _buffer
       ..write(table.dartTypeName)
       ..write('({')
-      ..write(table.columns.map((column) {
+      ..write(columns.map((column) {
         final nullableDartType = column.typeConverter != null &&
                 scope.options.nullAwareTypeConverters
             ? column.typeConverter!.hasNullableDartType
@@ -80,8 +89,8 @@ class DataClassWriter {
     _writeToString();
     _writeHashCode();
 
-    overrideEquals(table.columns.map((c) => c.dartGetterName),
-        table.dartTypeName, _buffer);
+    overrideEquals(
+        columns.map((c) => c.dartGetterName), table.dartTypeName, _buffer);
 
     // finish class declaration
     _buffer.write('}');
@@ -103,7 +112,7 @@ class DataClassWriter {
 
     final writer = RowMappingWriter(
       const [],
-      {for (final column in table.columns) column: column.dartGetterName},
+      {for (final column in columns) column: column.dartGetterName},
       table,
       scope.generationOptions,
       scope.options,
@@ -124,7 +133,7 @@ class DataClassWriter {
       ..write('serializer ??= $_runtimeOptions.defaultSerializer;\n')
       ..write('return $dataClassName(');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       final getter = column.dartGetterName;
       final jsonKey = column.getJsonKey(scope.options);
       final type = column.dartTypeCode(scope.generationOptions);
@@ -150,7 +159,7 @@ class DataClassWriter {
         'serializer ??= $_runtimeOptions.defaultSerializer;\n'
         'return <String, dynamic>{\n');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       final name = column.getJsonKey(scope.options);
       final getter = column.dartGetterName;
       final needsThis = getter == 'serializer';
@@ -168,9 +177,9 @@ class DataClassWriter {
     final wrapNullableInValue = scope.options.generateValuesInCopyWith;
 
     _buffer.write('$dataClassName copyWith({');
-    for (var i = 0; i < table.columns.length; i++) {
-      final column = table.columns[i];
-      final last = i == table.columns.length - 1;
+    for (var i = 0; i < columns.length; i++) {
+      final column = columns[i];
+      final last = i == columns.length - 1;
       final isNullable = column.nullableInDart;
 
       final typeName = column.dartTypeCode(scope.generationOptions);
@@ -194,7 +203,7 @@ class DataClassWriter {
 
     _buffer.write('}) => $dataClassName(');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       // We also have a method parameter called like the getter, so we can use
       // field: field ?? this.field. If we wrapped the parameter in a `Value`,
       // we can use field.present ? field.value : this.field
@@ -217,7 +226,7 @@ class DataClassWriter {
           '(bool nullToAbsent) {\n')
       ..write('final map = <String, Expression> {};');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       // Generated column - cannot be used for inserts or updates
       if (column.isGenerated) continue;
 
@@ -275,7 +284,7 @@ class DataClassWriter {
       ..write(asTable.getNameForCompanionClass(scope.options))
       ..write('(');
 
-    for (final column in table.columns) {
+    for (final column in columns) {
       // Generated columns are not parts of companions.
       if (column.isGenerated) continue;
 
@@ -304,7 +313,7 @@ class DataClassWriter {
   void _writeToString() {
     overrideToString(
       table.dartTypeName,
-      [for (final column in table.columns) column.dartGetterName],
+      [for (final column in columns) column.dartGetterName],
       _buffer,
     );
   }
@@ -312,7 +321,7 @@ class DataClassWriter {
   void _writeHashCode() {
     _buffer.write('@override\n int get hashCode => ');
 
-    final fields = table.columns.map((c) => c.dartGetterName).toList();
+    final fields = columns.map((c) => c.dartGetterName).toList();
     const HashCodeWriter().writeHashCode(fields, _buffer);
     _buffer.write(';');
   }
@@ -332,7 +341,11 @@ class RowMappingWriter {
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(MoorColumn column) {
-      final rawData = "data['\${effectivePrefix}${column.name.name}']";
+      var columnName = column.name.name;
+      if (column.table != null && column.table != table) {
+        columnName = '${column.table!.sqlName}.${column.name.name}';
+      }
+      final rawData = "data['\${effectivePrefix}$columnName']";
       final sqlType = 'const ${sqlTypes[column.type]}()';
       var loadType = '$sqlType.mapFromDatabaseResponse($rawData)';
 

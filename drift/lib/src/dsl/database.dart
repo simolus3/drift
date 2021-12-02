@@ -19,6 +19,9 @@ class DriftDatabase {
   /// The tables to include in the database
   final List<Type> tables;
 
+  /// The views to include in the database
+  final List<Type> views;
+
   /// Optionally, the list of daos to use. A dao can also make queries like a
   /// regular database class, making is suitable to extract parts of your
   /// database logic into smaller components.
@@ -58,6 +61,7 @@ class DriftDatabase {
   /// class should be generated using the specified [DriftDatabase.tables].
   const DriftDatabase({
     this.tables = const [],
+    this.views = const [],
     this.daos = const [],
     this.queries = const {},
     this.include = const {},
@@ -91,6 +95,9 @@ class DriftAccessor {
   /// The tables accessed by this DAO.
   final List<Type> tables;
 
+  /// The views to make accessible in this DAO.
+  final List<Type> views;
+
   /// {@macro drift_compile_queries_param}
   final Map<String, String> queries;
 
@@ -101,6 +108,7 @@ class DriftAccessor {
   /// the referenced documentation on how to use daos with drift.
   const DriftAccessor({
     this.tables = const [],
+    this.views = const [],
     this.queries = const {},
     this.include = const {},
   });

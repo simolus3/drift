@@ -33,6 +33,7 @@ part 'expressions/variables.dart';
 part 'schema/column_impl.dart';
 part 'schema/entities.dart';
 part 'schema/table_info.dart';
+part 'schema/view_info.dart';
 
 part 'statements/select/custom_select.dart';
 part 'statements/select/select.dart';

@@ -73,10 +73,21 @@ class Migrator {
         await createIndex(entity);
       } else if (entity is OnCreateQuery) {
         await _issueCustomQuery(entity.sql, const []);
-      } else if (entity is View) {
+      } else if (entity is ViewInfo) {
         await createView(entity);
       } else {
         throw AssertionError('Unknown entity: $entity');
+      }
+    }
+  }
+
+  /// Drop and recreate all views. You should call it on every upgrade
+  Future<void> recreateAllViews() async {
+    for (final entity in _db.allSchemaEntities) {
+      if (entity is ViewInfo) {
+        await _issueCustomQuery(
+            'DROP VIEW IF EXISTS ${entity.entityName}', const []);
+        await createView(entity);
       }
     }
   }
@@ -305,8 +316,17 @@ class Migrator {
   }
 
   /// Executes a `CREATE VIEW` statement to create the [view].
-  Future<void> createView(View view) {
-    return _issueCustomQuery(view.createViewStmt, const []);
+  Future<void> createView(ViewInfo view) async {
+    final stmt = view.createViewStmt;
+    if (stmt != null) {
+      await _issueCustomQuery(stmt, const []);
+    } else if (view.query != null) {
+      final context = GenerationContext.fromDb(_db);
+      context.generatingForView = view.entityName;
+      context.buffer.write('CREATE VIEW ${view.entityName} AS ');
+      view.query!.writeInto(context);
+      await _issueCustomQuery(context.sql, const []);
+    }
   }
 
   /// Drops a table, trigger or index.

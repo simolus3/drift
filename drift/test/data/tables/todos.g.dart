@@ -184,6 +184,7 @@ class $CategoriesTable extends Categories
   final String? _alias;
   $CategoriesTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
@@ -191,12 +192,14 @@ class $CategoriesTable extends Categories
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
+  @override
   late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
       'desc', aliasedName, false,
       type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL UNIQUE');
   final VerificationMeta _priorityMeta = const VerificationMeta('priority');
+  @override
   late final GeneratedColumnWithTypeConverter<CategoryPriority, int?> priority =
       GeneratedColumn<int?>('priority', aliasedName, false,
               type: const IntType(),
@@ -205,6 +208,7 @@ class $CategoriesTable extends Categories
           .withConverter<CategoryPriority>($CategoriesTable.$converter0);
   final VerificationMeta _descriptionInUpperCaseMeta =
       const VerificationMeta('descriptionInUpperCase');
+  @override
   late final GeneratedColumn<String?> descriptionInUpperCase =
       GeneratedColumn<String?>('description_in_upper_case', aliasedName, false,
           type: const StringType(),
@@ -474,12 +478,14 @@ class $TodosTableTable extends TodosTable
   final String? _alias;
   $TodosTableTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, true,
       additionalChecks:
@@ -487,14 +493,17 @@ class $TodosTableTable extends TodosTable
       type: const StringType(),
       requiredDuringInsert: false);
   final VerificationMeta _contentMeta = const VerificationMeta('content');
+  @override
   late final GeneratedColumn<String?> content = GeneratedColumn<String?>(
       'content', aliasedName, false,
       type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _targetDateMeta = const VerificationMeta('targetDate');
+  @override
   late final GeneratedColumn<DateTime?> targetDate = GeneratedColumn<DateTime?>(
       'target_date', aliasedName, true,
       type: const IntType(), requiredDuringInsert: false);
   final VerificationMeta _categoryMeta = const VerificationMeta('category');
+  @override
   late final GeneratedColumn<int?> category = GeneratedColumn<int?>(
       'category', aliasedName, true,
       type: const IntType(),
@@ -757,12 +766,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final String? _alias;
   $UsersTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
       type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
       additionalChecks:
@@ -770,6 +781,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       type: const StringType(),
       requiredDuringInsert: true);
   final VerificationMeta _isAwesomeMeta = const VerificationMeta('isAwesome');
+  @override
   late final GeneratedColumn<bool?> isAwesome = GeneratedColumn<bool?>(
       'is_awesome', aliasedName, false,
       type: const BoolType(),
@@ -778,11 +790,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       defaultValue: const Constant(true));
   final VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
+  @override
   late final GeneratedColumn<Uint8List?> profilePicture =
       GeneratedColumn<Uint8List?>('profile_picture', aliasedName, false,
           type: const BlobType(), requiredDuringInsert: true);
   final VerificationMeta _creationTimeMeta =
       const VerificationMeta('creationTime');
+  @override
   late final GeneratedColumn<DateTime?> creationTime =
       GeneratedColumn<DateTime?>('creation_time', aliasedName, false,
           type: const IntType(),
@@ -974,10 +988,12 @@ class $SharedTodosTable extends SharedTodos
   final String? _alias;
   $SharedTodosTable(this._db, [this._alias]);
   final VerificationMeta _todoMeta = const VerificationMeta('todo');
+  @override
   late final GeneratedColumn<int?> todo = GeneratedColumn<int?>(
       'todo', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _userMeta = const VerificationMeta('user');
+  @override
   late final GeneratedColumn<int?> user = GeneratedColumn<int?>(
       'user', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
@@ -1114,14 +1130,17 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable(this._db, [this._alias]);
   final VerificationMeta _notReallyAnIdMeta =
       const VerificationMeta('notReallyAnId');
+  @override
   late final GeneratedColumn<int?> notReallyAnId = GeneratedColumn<int?>(
       'not_really_an_id', aliasedName, false,
       type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _someFloatMeta = const VerificationMeta('someFloat');
+  @override
   late final GeneratedColumn<double?> someFloat = GeneratedColumn<double?>(
       'some_float', aliasedName, false,
       type: const RealType(), requiredDuringInsert: true);
   final VerificationMeta _customMeta = const VerificationMeta('custom');
+  @override
   late final GeneratedColumnWithTypeConverter<MyCustomObject, String?> custom =
       GeneratedColumn<String?>('custom', aliasedName, false,
               type: const StringType(),
@@ -1291,6 +1310,7 @@ class $PureDefaultsTable extends PureDefaults
   final String? _alias;
   $PureDefaultsTable(this._db, [this._alias]);
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
+  @override
   late final GeneratedColumn<String?> txt = GeneratedColumn<String?>(
       'insert', aliasedName, true,
       type: const StringType(), requiredDuringInsert: false);
@@ -1326,6 +1346,215 @@ class $PureDefaultsTable extends PureDefaults
   }
 }
 
+class CategoryTodoCountViewData extends DataClass {
+  final String description;
+  final int itemCount;
+  CategoryTodoCountViewData(
+      {required this.description, required this.itemCount});
+  factory CategoryTodoCountViewData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return CategoryTodoCountViewData(
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+      itemCount: const IntType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}item_count'])!,
+    );
+  }
+  factory CategoryTodoCountViewData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CategoryTodoCountViewData(
+      description: serializer.fromJson<String>(json['description']),
+      itemCount: serializer.fromJson<int>(json['itemCount']),
+    );
+  }
+  factory CategoryTodoCountViewData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      CategoryTodoCountViewData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'description': serializer.toJson<String>(description),
+      'itemCount': serializer.toJson<int>(itemCount),
+    };
+  }
+
+  CategoryTodoCountViewData copyWith({String? description, int? itemCount}) =>
+      CategoryTodoCountViewData(
+        description: description ?? this.description,
+        itemCount: itemCount ?? this.itemCount,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('CategoryTodoCountViewData(')
+          ..write('description: $description, ')
+          ..write('itemCount: $itemCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(description, itemCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CategoryTodoCountViewData &&
+          other.description == this.description &&
+          other.itemCount == this.itemCount);
+}
+
+class $CategoryTodoCountViewView
+    extends ViewInfo<$CategoryTodoCountViewView, CategoryTodoCountViewData>
+    implements HasResultSet {
+  final _$TodoDb _db;
+  final String? _alias;
+  $CategoryTodoCountViewView(this._db, [this._alias]);
+  $TodosTableTable get todos => _db.todosTable;
+  $CategoriesTable get categories => _db.categories;
+  @override
+  List<GeneratedColumn> get $columns => [categories.description, itemCount];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'category_todo_count_view';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $CategoryTodoCountViewView get asDslTable => this;
+  @override
+  CategoryTodoCountViewData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return CategoryTodoCountViewData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+      'desc', aliasedName, false,
+      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+  late final GeneratedColumn<int?> itemCount = GeneratedColumn<int?>(
+      'item_count', aliasedName, false,
+      type: const IntType(), generatedAs: GeneratedAs(todos.id.count(), false));
+  @override
+  $CategoryTodoCountViewView createAlias(String alias) {
+    return $CategoryTodoCountViewView(_db, alias);
+  }
+
+  @override
+  Query? get query =>
+      (_db.selectOnly(categories, includeJoinedTableColumns: false)
+            ..addColumns($columns))
+          .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+}
+
+class TodoWithCategoryViewData extends DataClass {
+  final String? title;
+  final String description;
+  TodoWithCategoryViewData({this.title, required this.description});
+  factory TodoWithCategoryViewData.fromData(Map<String, dynamic> data,
+      {String? prefix}) {
+    final effectivePrefix = prefix ?? '';
+    return TodoWithCategoryViewData(
+      title: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}todos.title']),
+      description: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}categories.desc'])!,
+    );
+  }
+  factory TodoWithCategoryViewData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoWithCategoryViewData(
+      title: serializer.fromJson<String?>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
+    );
+  }
+  factory TodoWithCategoryViewData.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      TodoWithCategoryViewData.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'title': serializer.toJson<String?>(title),
+      'description': serializer.toJson<String>(description),
+    };
+  }
+
+  TodoWithCategoryViewData copyWith(
+          {Value<String?> title = const Value.absent(), String? description}) =>
+      TodoWithCategoryViewData(
+        title: title.present ? title.value : this.title,
+        description: description ?? this.description,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('TodoWithCategoryViewData(')
+          ..write('title: $title, ')
+          ..write('description: $description')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(title, description);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoWithCategoryViewData &&
+          other.title == this.title &&
+          other.description == this.description);
+}
+
+class $TodoWithCategoryViewView
+    extends ViewInfo<$TodoWithCategoryViewView, TodoWithCategoryViewData>
+    implements HasResultSet {
+  final _$TodoDb _db;
+  final String? _alias;
+  $TodoWithCategoryViewView(this._db, [this._alias]);
+  $TodosTableTable get todos => _db.todosTable;
+  $CategoriesTable get categories => _db.categories;
+  @override
+  List<GeneratedColumn> get $columns => [todos.title, categories.description];
+  @override
+  String get aliasedName => _alias ?? entityName;
+  @override
+  String get entityName => 'todo_with_category_view';
+  @override
+  String? get createViewStmt => null;
+  @override
+  $TodoWithCategoryViewView get asDslTable => this;
+  @override
+  TodoWithCategoryViewData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    return TodoWithCategoryViewData.fromData(data,
+        prefix: tablePrefix != null ? '$tablePrefix.' : null);
+  }
+
+  late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
+      'title', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 4, maxTextLength: 16),
+      type: const StringType());
+  late final GeneratedColumn<String?> description = GeneratedColumn<String?>(
+      'desc', aliasedName, false,
+      type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
+  @override
+  $TodoWithCategoryViewView createAlias(String alias) {
+    return $TodoWithCategoryViewView(_db, alias);
+  }
+
+  @override
+  Query? get query => (_db.selectOnly(todos, includeJoinedTableColumns: false)
+        ..addColumns($columns))
+      .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+}
+
 abstract class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   _$TodoDb.connect(DatabaseConnection c) : super.connect(c);
@@ -1335,6 +1564,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $SharedTodosTable sharedTodos = $SharedTodosTable(this);
   late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable(this);
   late final $PureDefaultsTable pureDefaults = $PureDefaultsTable(this);
+  late final $CategoryTodoCountViewView categoryTodoCountView =
+      $CategoryTodoCountViewView(this);
+  late final $TodoWithCategoryViewView todoWithCategoryView =
+      $TodoWithCategoryViewView(this);
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
@@ -1412,7 +1645,9 @@ abstract class _$TodoDb extends GeneratedDatabase {
         users,
         sharedTodos,
         tableWithoutPK,
-        pureDefaults
+        pureDefaults,
+        categoryTodoCountView,
+        todoWithCategoryView
       ];
 }
 

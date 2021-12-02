@@ -223,17 +223,24 @@ abstract class DatabaseConnectionUser {
   /// The [distinct] parameter (defaults to false) can be used to remove
   /// duplicate rows from the result set.
   ///
+  /// The [includeJoinedTableColumns] parameter (defaults to true) can be used
+  /// to determinate join statement's `useColumns` parameter default value. Set
+  /// it to false if you don't want to include joined table columns by default.
+  /// If you leave it on true and don't set `useColumns` parameter to false in
+  /// join declarations, all columns of joined table will be included in query
+  /// by default.
+  ///
   /// For simple queries, use [select].
   ///
   /// See also:
   ///  - the documentation on [aggregate expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   JoinedSelectStatement<T, R> selectOnly<T extends HasResultSet, R>(
-    ResultSetImplementation<T, R> table, {
-    bool distinct = false,
-  }) {
+      ResultSetImplementation<T, R> table,
+      {bool distinct = false,
+      bool includeJoinedTableColumns = true}) {
     return JoinedSelectStatement<T, R>(
-        resolvedEngine, table, [], distinct, false);
+        resolvedEngine, table, [], distinct, false, includeJoinedTableColumns);
   }
 
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.

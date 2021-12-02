@@ -111,6 +111,9 @@ class MoorColumn implements HasDeclaration, HasType {
 
   bool get isGenerated => generatedAs != null;
 
+  /// Parent table
+  MoorTable? table;
+
   /// The column type from the dsl library. For instance, if a table has
   /// declared an `IntColumn`, the matching dsl column name would also be an
   /// `IntColumn`.

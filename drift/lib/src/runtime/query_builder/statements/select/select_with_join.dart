@@ -12,13 +12,16 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// instead.
   JoinedSelectStatement(DatabaseConnectionUser database,
       ResultSetImplementation<FirstT, FirstD> table, this._joins,
-      [this.distinct = false, this._includeMainTableInResult = true])
+      [this.distinct = false,
+      this._includeMainTableInResult = true,
+      this._includeJoinedTablesInResult = true])
       : super(database, table);
 
   /// Whether to generate a `SELECT DISTINCT` query that will remove duplicate
   /// rows from the result set.
   final bool distinct;
   final bool _includeMainTableInResult;
+  final bool _includeJoinedTablesInResult;
   final List<Join> _joins;
 
   /// All columns that we're selecting from.
@@ -43,8 +46,8 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   @override
   int get _returnedColumnCount {
     return _joins.fold(_selectedColumns.length, (prev, join) {
-      if (join.includeInResult) {
-        return prev + join.table.$columns.length;
+      if (join.includeInResult ?? _includeJoinedTablesInResult) {
+        return prev + (join.table as ResultSetImplementation).$columns.length;
       }
       return prev;
     });
@@ -61,9 +64,10 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
     }
 
     for (final join in _joins) {
-      if (onlyResults && !join.includeInResult) continue;
+      if (onlyResults &&
+          !(join.includeInResult ?? _includeJoinedTablesInResult)) continue;
 
-      yield join.table;
+      yield join.table as ResultSetImplementation;
     }
   }
 
@@ -86,7 +90,11 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
       final column = _selectedColumns[i];
       String chosenAlias;
       if (column is GeneratedColumn) {
-        chosenAlias = '${column.tableName}.${column.$name}';
+        if (ctx.generatingForView == column.tableName) {
+          chosenAlias = '${column.$name}';
+        } else {
+          chosenAlias = '${column.tableName}.${column.$name}';
+        }
       } else {
         chosenAlias = 'c$i';
       }

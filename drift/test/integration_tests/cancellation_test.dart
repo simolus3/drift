@@ -105,7 +105,7 @@ void main() {
 
     for (var i = 0; i < 4; i++) {
       filter.add(i);
-      await pumpEventQueue(times: 10);
+      await pumpEventQueue();
     }
 
     final values = await db
@@ -113,6 +113,6 @@ void main() {
         .map((row) => row.read<String>('r'))
         .getSingle();
 
-    expect(values, anyOf('0,3', '3'));
+    expect(values, anyOf('0,3', '3', '1,3'));
   });
 }

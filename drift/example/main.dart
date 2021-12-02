@@ -5,18 +5,67 @@ import 'package:drift/native.dart';
 
 part 'main.g.dart';
 
+@DataClassName('TodoCategory')
+class TodoCategories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text()();
   TextColumn get content => text().nullable()();
+  IntColumn get categoryId => integer().references(TodoCategories, #id)();
+
+  TextColumn get generatedText => text().nullable().generatedAs(
+      title + const Constant(' (') + content + const Constant(')'))();
 }
 
-@DriftDatabase(tables: [TodoItems])
+abstract class TodoCategoryItemCount extends View {
+  TodoItems get todoItems;
+  TodoCategories get todoCategories;
+
+  Expression<int> get itemCount => todoItems.id.count();
+
+  @override
+  Query as() => select([
+        todoCategories.name,
+        itemCount,
+      ]).from(todoCategories).join([
+        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
+      ]);
+}
+
+@DriftView(name: 'customViewName')
+abstract class TodoItemWithCategoryNameView extends View {
+  TodoItems get todoItems;
+  TodoCategories get todoCategories;
+
+  Expression<String> get title =>
+      todoItems.title +
+      const Constant('(') +
+      todoCategories.name +
+      const Constant(')');
+
+  @override
+  Query as() => select([todoItems.id, title]).from(todoItems).join([
+        innerJoin(
+            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
+      ]);
+}
+
+@DriftDatabase(tables: [
+  TodoItems,
+  TodoCategories,
+], views: [
+  TodoCategoryItemCount,
+  TodoItemWithCategoryNameView,
+])
 class Database extends _$Database {
   Database(QueryExecutor e) : super(e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -27,11 +76,12 @@ class Database extends _$Database {
         // Add a bunch of default items in a batch
         await batch((b) {
           b.insertAll(todoItems, [
-            TodoItemsCompanion.insert(title: 'A first entry'),
+            TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
             TodoItemsCompanion.insert(
               title: 'Todo: Checkout drift',
               content: const Value('Drift is a persistence library for Dart '
                   'and Flutter applications.'),
+              categoryId: 0,
             ),
           ]);
         });
@@ -55,10 +105,17 @@ Future<void> main() async {
     print('Todo-item in database: $event');
   });
 
+  // Add category
+  final categoryId = await db
+      .into(db.todoCategories)
+      .insert(TodoCategoriesCompanion.insert(name: 'Category'));
+
   // Add another entry
-  await db
-      .into(db.todoItems)
-      .insert(TodoItemsCompanion.insert(title: 'Another entry added later'));
+  await db.into(db.todoItems).insert(TodoItemsCompanion.insert(
+      title: 'Another entry added later', categoryId: categoryId));
+
+  (await db.select(db.customViewName).get()).forEach(print);
+  (await db.select(db.todoCategoryItemCount).get()).forEach(print);
 
   // Delete all todo items
   await db.delete(db.todoItems).go();

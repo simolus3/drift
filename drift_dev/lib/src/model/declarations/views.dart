@@ -10,6 +10,23 @@ abstract class ViewDeclarationWithSql implements ViewDeclaration {
   CreateViewStatement get creatingStatement;
 }
 
+class DartViewDeclaration implements ViewDeclaration, DartDeclaration {
+  @override
+  final SourceRange declaration;
+
+  @override
+  final ClassElement element;
+
+  DartViewDeclaration._(this.declaration, this.element);
+
+  factory DartViewDeclaration(ClassElement element, FoundFile file) {
+    return DartViewDeclaration._(
+      SourceRange.fromElementAndFile(element, file),
+      element,
+    );
+  }
+}
+
 class MoorViewDeclaration
     implements ViewDeclaration, MoorDeclaration, ViewDeclarationWithSql {
   @override
