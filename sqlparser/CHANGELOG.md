@@ -1,3 +1,7 @@
+## 0.18.1
+
+- Fix the AST comparator missing errors for different amount of children.
+
 ## 0.18.0
 
 - Fix unecessary errors around `fts5` tables
