@@ -38,8 +38,11 @@ void testMoorFile(String moorFile, MoorFile expected) {
 }
 
 void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
-  final parsed =
-      SqlEngine(EngineOptions(useMoorExtensions: moorMode)).parse(sql).rootNode;
+  final result =
+      SqlEngine(EngineOptions(useMoorExtensions: moorMode)).parse(sql);
+  expect(result.errors, isEmpty);
+
+  final parsed = result.rootNode;
   enforceHasSpan(parsed);
   enforceEqual(parsed, expected);
 }
