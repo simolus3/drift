@@ -113,6 +113,6 @@ void main() {
         .map((row) => row.read<String>('r'))
         .getSingle();
 
-    expect(values, anyOf('0,3', '3', '1,3'));
+    expect(values.split(',').length, lessThan(4), reason: 'Read all $values');
   });
 }
