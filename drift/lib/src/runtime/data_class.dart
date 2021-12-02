@@ -158,7 +158,7 @@ class Value<T> {
   const Value.ofNullable(T? value)
       : assert(
           value != null || null is! T,
-          "Value.absentIfNull(null) can't be used for a nullable T, since the "
+          "Value.ofNullable(null) can't be used for a nullable T, since the "
           'null value could be both absent and present.',
         ),
         _value = value,

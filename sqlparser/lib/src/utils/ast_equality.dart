@@ -10,12 +10,17 @@ void enforceEqualIterable(Iterable<AstNode> a, Iterable<AstNode> b) {
   final childrenA = a.iterator;
   final childrenB = b.iterator;
 
+  var movedA = false;
+  var movedB = false;
+
   // always move both iterators
-  while (childrenA.moveNext() & childrenB.moveNext()) {
+  // need to store the result so it can be compared afterwards
+  // since it does not get reverted if only one moved
+  while ((movedA = childrenA.moveNext()) & (movedB = childrenB.moveNext())) {
     enforceEqual(childrenA.current, childrenB.current);
   }
 
-  if (childrenA.moveNext() || childrenB.moveNext()) {
+  if (movedA || movedB) {
     throw ArgumentError("$a and $b don't have an equal amount of children");
   }
 }
