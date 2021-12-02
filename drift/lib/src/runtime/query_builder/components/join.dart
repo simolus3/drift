@@ -43,8 +43,7 @@ class Join<T extends HasResultSet, D> extends Component {
 
   /// Constructs a [Join] by providing the relevant fields. [on] is optional for
   /// [_JoinType.cross].
-  Join._(this.type, this.table, this.on, {bool? includeInResult})
-      : includeInResult = includeInResult ?? true {
+  Join._(this.type, this.table, this.on, {this.includeInResult}) {
     if (table is! ResultSetImplementation<T, D>) {
       throw ArgumentError(
           'Invalid table parameter. You must provide the table reference from '
