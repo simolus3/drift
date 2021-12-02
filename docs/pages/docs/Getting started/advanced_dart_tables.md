@@ -167,3 +167,66 @@ Applying a `customConstraint` will override all other constraints that would be 
 particular, that means that we need to also include the `NOT NULL` constraint again.
 
 You can also add table-wide constraints by overriding the `customConstraints` getter in your table class.
+
+## References
+
+[Foreign key references](https://www.sqlite.org/foreignkeys.html) can be expressed
+in Dart tables with the `references()` method when building a column:
+
+```dart
+class Todos extends Table {
+  // ...
+  IntColumn get category => integer().nullable().references(Categories, #id)();
+}
+
+@DataClassName("Category")
+class Categories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  // and more columns...
+}
+```
+
+The first parameter to `references` points to the table on which a reference should be created.
+The second parameter is a [symbol](https://dart.dev/guides/language/language-tour#symbols) of the column to use for the reference.
+
+Optionally, the `onUpdate` and `onDelete` parameters can be used to describe what
+should happen when the target row gets updated or deleted.
+
+Be aware that, in sqlite3, foreign key references aren't enabled by default.
+They need to be enabled with `PRAGMA foreign_keys = ON`.
+A suitable place to issue that pragma with drift is in a [post-migration callback]({{ '../Advanced Features/migrations.md#post-migration-callbacks' | pageUrl }}).
+
+## Views
+
+It is also possible to define [SQL views](https://www.sqlite.org/lang_createview.html)
+as Dart classes.
+To do so, write an abstract class extending `View`. This example declares a view reading
+the amount of todo-items added to a category in the schema from [the example]({{ 'index.md' | pageUrl }}):
+
+```dart
+abstract class CategoryTodoCount extends View {
+  TodosTable get todos;
+  Categories get categories;
+
+  Expression<int> get itemCount => todos.id.count();
+
+  @override
+  Query as() => select([categories.description, itemCount])
+      .from(categories)
+      .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+}
+```
+
+Inside a Dart view, use
+
+- abstract getters to declare tables that you'll read from (e.g. `TodosTable get todos`)
+- `Expression` getters to add columns: (e.g. `itemCount => todos.id.count()`);
+- the overridden `as` method to define the select statement backing the view
+
+Finally, a view needs to be added to a database or accessor by including it in the
+`views` parameter:
+
+```dart
+@DriftDatabase(tables: [Todos, Categories], views: [CategoryTodoCount])
+class MyDatabase extends _$MyDatabase {
+```
