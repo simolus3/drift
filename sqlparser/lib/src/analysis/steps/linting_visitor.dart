@@ -86,17 +86,6 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
         if (constraint is PrimaryKeyColumn) {
           handlePrimaryKeyNode(constraint);
-
-          // A primary key in a STRICT table must be annoted with "NOT NULL"
-          if (isStrict && !column.isNonNullable) {
-            context.reportError(AnalysisError(
-              type: AnalysisErrorType.nullableColumnInStrictPrimaryKey,
-              message:
-                  'The column is used as a `PRIMARY KEY` in a `STRICT` table, '
-                  'which means that is must be marked as `NOT NULL`',
-              relevantNode: constraint,
-            ));
-          }
         }
       }
 
@@ -108,27 +97,6 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     for (final constraint in e.tableConstraints) {
       if (constraint is KeyClause && constraint.isPrimaryKey) {
         handlePrimaryKeyNode(constraint);
-
-        if (isStrict) {
-          for (final columnName in constraint.columns) {
-            final expr = columnName.expression;
-            if (expr is! Reference) continue;
-
-            final column = e.columns.firstWhereOrNull((c) =>
-                c.columnName.toLowerCase() == expr.columnName.toLowerCase());
-            if (column != null && !column.isNonNullable) {
-              context.reportError(
-                AnalysisError(
-                  type: AnalysisErrorType.nullableColumnInStrictPrimaryKey,
-                  message:
-                      'This column must be marked as `NOT NULL` to be used in '
-                      'a `PRIMARY KEY` clause of a `STRICT` table.',
-                  relevantNode: columnName,
-                ),
-              );
-            }
-          }
-        }
       }
     }
 

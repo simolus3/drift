@@ -64,18 +64,55 @@ class SchemaFromCreateTable {
   }
 
   Table _readCreateTable(CreateTableStatement stmt) {
+    final primaryKey = _primaryKeyOf(stmt);
+
     return Table(
       name: stmt.tableName,
-      resolvedColumns: [for (var def in stmt.columns) _readColumn(def)],
+      resolvedColumns: [
+        for (var def in stmt.columns)
+          _readColumn(def,
+              primaryKeyColumnsInStrictTable: stmt.isStrict ? primaryKey : null)
+      ],
       withoutRowId: stmt.withoutRowId,
       tableConstraints: stmt.tableConstraints,
       definition: stmt,
     );
   }
 
-  TableColumn _readColumn(ColumnDefinition definition) {
+  Set<String> _primaryKeyOf(CreateTableStatement stmt) {
+    final columnsInPk = <String>{};
+
+    for (final tableConstraint
+        in stmt.tableConstraints.whereType<KeyClause>()) {
+      if (tableConstraint.isPrimaryKey) {
+        for (final ref in tableConstraint.columns) {
+          final expr = ref.expression;
+          if (expr is Reference) {
+            columnsInPk.add(expr.columnName);
+          }
+        }
+      }
+    }
+
+    for (final column in stmt.columns) {
+      for (final constraint in column.constraints) {
+        if (constraint is PrimaryKeyColumn) {
+          columnsInPk.add(column.columnName);
+        }
+      }
+    }
+
+    return columnsInPk;
+  }
+
+  TableColumn _readColumn(ColumnDefinition definition,
+      {Set<String>? primaryKeyColumnsInStrictTable}) {
     final type = resolveColumnType(definition.typeName);
-    final nullable = !definition.constraints.any((c) => c is NotNull);
+
+    // Column is nullable if it doesn't contain a `NotNull` constraint and it's
+    // not part of a PK in a strict table.
+    final nullable = !definition.constraints.any((c) => c is NotNull) &&
+        primaryKeyColumnsInStrictTable?.contains(definition.columnName) != true;
 
     final resolvedType = type.withNullable(nullable);
 

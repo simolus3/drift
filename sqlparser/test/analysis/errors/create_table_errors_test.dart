@@ -17,43 +17,6 @@ void main() {
     });
 
     test(
-      'with a nullable primary key column',
-      () {
-        const stmt = 'CREATE TABLE a (c INTEGER PRIMARY KEY) STRICT;';
-
-        engine.analyze(stmt).expectError('PRIMARY KEY',
-            type: AnalysisErrorType.nullableColumnInStrictPrimaryKey);
-      },
-    );
-
-    test(
-      'with a nullable primary key table constraint',
-      () {
-        final errors = engine.analyze(
-          '''
-            CREATE TABLE a (
-              c INTEGER, 
-              c2 INTEGER NOT NULL,
-              c3 INTEGER,
-              PRIMARY KEY (c, c2, c3)
-            ) STRICT;''',
-        ).errors;
-
-        expect(
-          errors,
-          containsAll([
-            analysisErrorWith(
-                lexeme: 'c',
-                type: AnalysisErrorType.nullableColumnInStrictPrimaryKey),
-            analysisErrorWith(
-                lexeme: 'c3',
-                type: AnalysisErrorType.nullableColumnInStrictPrimaryKey),
-          ]),
-        );
-      },
-    );
-
-    test(
       'without a column type',
       () {
         engine

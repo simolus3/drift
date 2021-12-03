@@ -77,7 +77,6 @@ enum AnalysisErrorType {
   notSupportedInDesiredVersion,
   illegalUseOfReturning,
   raiseMisuse,
-  nullableColumnInStrictPrimaryKey,
   missingPrimaryKey,
   noTypeNameInStrictTable,
   invalidTypeNameInStrictTable,

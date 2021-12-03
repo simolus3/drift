@@ -2,6 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../data.dart';
+import 'utils.dart';
 
 void main() {
   final minimumEngine = SqlEngine()..registerTable(demoTable);
@@ -55,6 +56,17 @@ void main() {
       isA<AnalysisError>().having((e) => e.message, 'message',
           'RETURNING requires sqlite version 3.35 or later'),
     );
+
+    expect(currentEngine.analyze(sql).errors, isEmpty);
+  });
+
+  test('reports error for STRICT on an old sqlite3 version', () {
+    const sql = 'CREATE TABLE a (b TEXT) STRICT';
+
+    final context = minimumEngine.analyze(sql);
+    expect(context.errors, hasLength(1));
+    context.expectError('STRICT',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
 
     expect(currentEngine.analyze(sql).errors, isEmpty);
   });

@@ -159,4 +159,35 @@ void main() {
     expect(table.resolvedColumns.single.type,
         const ResolvedType(type: BasicType.int, nullable: false));
   });
+
+  group('the primary key of a STRICT table is non-nullable', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
+
+    test('when declared on the column', () {
+      final stmt = engine
+          .parse('CREATE TABLE foo (bar TEXT PRIMARY KEY) STRICT;')
+          .rootNode;
+
+      final table = engine.schemaReader.read(stmt as CreateTableStatement);
+      expect(table.resolvedColumns.single.type.nullable, isFalse);
+    });
+
+    test('when declared on the table', () {
+      final stmt = engine
+          .parse('CREATE TABLE foo (bar TEXT, PRIMARY KEY (bar)) STRICT;')
+          .rootNode;
+
+      final table = engine.schemaReader.read(stmt as CreateTableStatement);
+      expect(table.resolvedColumns.single.type.nullable, isFalse);
+    });
+
+    test('even when it has a NULL constraint', () {
+      final stmt = engine
+          .parse('CREATE TABLE foo (bar TEXT NULL, PRIMARY KEY (bar)) STRICT;')
+          .rootNode;
+
+      final table = engine.schemaReader.read(stmt as CreateTableStatement);
+      expect(table.resolvedColumns.single.type.nullable, isFalse);
+    });
+  });
 }
