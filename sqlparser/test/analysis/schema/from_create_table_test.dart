@@ -190,4 +190,34 @@ void main() {
       expect(table.resolvedColumns.single.type.nullable, isFalse);
     });
   });
+
+  group('sets withoutRowid and isStrict', () {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
+
+    void testWith(String suffix, bool withoutRowid, bool strict) {
+      final stmt =
+          engine.parse('CREATE TABLE foo (bar TEXT) $suffix;').rootNode;
+
+      final table = engine.schemaReader.read(stmt as CreateTableStatement);
+      expect(table.withoutRowId, withoutRowid);
+      expect(table.isStrict, strict);
+    }
+
+    test('when the table is neither', () {
+      testWith('', false, false);
+    });
+
+    test('when the table is without rowid', () {
+      testWith('WITHOUT ROWID', true, false);
+    });
+
+    test('when the table is strict', () {
+      testWith('STRICT', false, true);
+    });
+
+    test('when the table is both', () {
+      testWith('WITHOUT ROWID, STRICT', true, true);
+      testWith('STRICT, WITHOUT ROWID', true, true);
+    });
+  });
 }

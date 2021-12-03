@@ -25,6 +25,8 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
   /// Whether this table was created with an "WITHOUT ROWID" modifier
   final bool withoutRowId;
 
+  final bool isStrict;
+
   /// Additional constraints set on this table.
   final List<TableConstraint> tableConstraints;
 
@@ -44,6 +46,7 @@ class Table extends NamedResultSet with HasMetaMixin implements HumanReadable {
     required this.name,
     required this.resolvedColumns,
     this.withoutRowId = false,
+    this.isStrict = false,
     this.tableConstraints = const [],
     this.definition,
     this.isVirtual = false,

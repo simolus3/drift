@@ -22,7 +22,7 @@ const _createConfig = 'CREATE TABLE IF NOT EXISTS config ('
     'config_key TEXT not null primary key, '
     'config_value TEXT, '
     'sync_state INTEGER, '
-    'sync_state_implicit INTEGER);';
+    'sync_state_implicit INTEGER) STRICT;';
 
 const _createMyTable = 'CREATE TABLE IF NOT EXISTS mytable ('
     'someid INTEGER NOT NULL, '

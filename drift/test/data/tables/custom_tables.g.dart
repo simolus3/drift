@@ -284,6 +284,8 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
   static TypeConverter<SyncType?, int> $converter1 =
       const EnumIndexConverter<SyncType>(SyncType.values);
   @override
+  bool get isStrict => true;
+  @override
   bool get dontWriteConstraints => true;
 }
 

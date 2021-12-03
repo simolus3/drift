@@ -444,6 +444,12 @@ class TableWriter extends TableOrViewWriter {
         ..write('bool get withoutRowId => $value;\n');
     }
 
+    if (table.isStrict) {
+      buffer
+        ..write('@override\n')
+        ..write('bool get isStrict => true;\n');
+    }
+
     if (table.overrideTableConstraints != null) {
       final value =
           table.overrideTableConstraints!.map(asDartLiteral).join(', ');

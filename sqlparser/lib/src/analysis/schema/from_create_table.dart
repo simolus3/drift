@@ -74,6 +74,7 @@ class SchemaFromCreateTable {
               primaryKeyColumnsInStrictTable: stmt.isStrict ? primaryKey : null)
       ],
       withoutRowId: stmt.withoutRowId,
+      isStrict: stmt.isStrict,
       tableConstraints: stmt.tableConstraints,
       definition: stmt,
     );
@@ -167,11 +168,13 @@ class SchemaFromCreateTable {
   bool isValidTypeNameForStrictTable(String typeName) {
     // See https://www.sqlite.org/draft/stricttables.html
     const allowed = {'INT', 'INTEGER', 'REAL', 'TEXT', 'BLOB', 'ANY'};
-    const alsoAllowedInMoor = {'ENUM', 'BOOL', 'DATE'};
+    const alsoAllowedInMoor = {'BOOL', 'DATE'};
 
-    if (allowed.contains(typeName.toUpperCase()) ||
+    final upper = typeName.toUpperCase();
+
+    if (allowed.contains(upper) ||
         (moorExtensions &&
-            alsoAllowedInMoor.contains(typeName.toUpperCase()))) {
+            (alsoAllowedInMoor.contains(upper) || upper.contains('ENUM')))) {
       return true;
     }
 

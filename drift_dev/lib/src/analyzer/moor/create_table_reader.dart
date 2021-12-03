@@ -228,6 +228,7 @@ class CreateTableReader {
       overrideDontWriteConstraints: true,
       declaration: MoorTableDeclaration(stmt, step.file),
       existingRowClass: existingRowClass,
+      isStrict: table.isStrict,
     )..parserTable = table;
 
     // Having a mapping from parser table to moor tables helps with IDE features

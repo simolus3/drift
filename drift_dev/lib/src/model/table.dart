@@ -103,6 +103,10 @@ class MoorTable extends MoorEntityWithResultSet {
   /// getter on the table class with this value.
   final bool? overrideWithoutRowId;
 
+  /// Whether this table is defined as `STRICT`. Support for strict tables has
+  /// been added in sqlite 3.37.
+  final bool isStrict;
+
   /// When non-null, the generated table class will override the
   /// `dontWriteConstraint` getter on the table class with this value.
   final bool? overrideDontWriteConstraints;
@@ -145,6 +149,7 @@ class MoorTable extends MoorEntityWithResultSet {
     this.overrideDontWriteConstraints,
     this.declaration,
     this.existingRowClass,
+    this.isStrict = false,
   }) : _overriddenName = overriddenName {
     _attachToConverters();
   }

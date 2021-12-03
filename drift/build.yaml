@@ -17,7 +17,7 @@ targets:
           sql:
             dialect: sqlite
             options:
-              version: "3.35"
+              version: "3.37"
               modules:
                 - json1
                 - fts5

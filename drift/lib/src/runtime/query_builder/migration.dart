@@ -289,8 +289,11 @@ class Migrator {
     context.buffer.write(')');
 
     // == true because of nullability
-    if (dslTable.withoutRowId == true) {
+    if (dslTable.withoutRowId) {
       context.buffer.write(' WITHOUT ROWID');
+    }
+    if (dslTable.isStrict) {
+      context.buffer.write(' STRICT');
     }
 
     context.buffer.write(';');

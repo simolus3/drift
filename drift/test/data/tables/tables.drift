@@ -23,7 +23,7 @@ create table config (
     config_value TEXT,
     sync_state INTEGER MAPPED BY `const SyncTypeConverter()`,
     sync_state_implicit ENUM(SyncType)
-) AS "Config";
+) STRICT AS "Config";
 
 CREATE INDEX IF NOT EXISTS value_idx ON config (config_value);
 

@@ -34,6 +34,13 @@ abstract class Table extends HasResultSet {
   /// This is intended to be used by generated code only.
   bool get dontWriteConstraints => false;
 
+  /// Whether this table is `STRICT`.
+  ///
+  /// Strict tables enforce stronger type constraints for inserts and updates.
+  /// Support for strict tables was added in sqlite3 version 37.
+  /// This field is intended to be used by generated code only.
+  bool get isStrict => false;
+
   /// Override this to specify custom primary keys:
   /// ```dart
   /// class IngredientInRecipes extends Table {
