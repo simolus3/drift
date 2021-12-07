@@ -19,6 +19,7 @@ class ServerImplementation implements DriftServer {
 
   final Map<int, QueryExecutor> _managedExecutors = {};
   int _currentExecutorId = 0;
+  int _knownSchemaVersion = 0;
 
   final Map<int, CancellationToken> _cancellableOperations = {};
 
@@ -32,8 +33,6 @@ class ServerImplementation implements DriftServer {
   final List<int> _executorBacklog = [];
   final StreamController<void> _backlogUpdated =
       StreamController.broadcast(sync: true);
-
-  late final _ServerDbUser _dbUser = _ServerDbUser(this);
 
   bool _isShuttingDown = false;
   final Set<DriftCommunication> _activeChannels = {};
@@ -51,7 +50,9 @@ class ServerImplementation implements DriftServer {
       throw StateError('Cannot add new channels after shutdown() was called');
     }
 
-    final comm = DriftCommunication(channel)..setRequestHandler(_handleRequest);
+    final comm = DriftCommunication(channel);
+    comm.setRequestHandler((request) => _handleRequest(comm, request));
+
     _activeChannels.add(comm);
     comm.closed.then((_) => _activeChannels.remove(comm));
   }
@@ -66,16 +67,7 @@ class ServerImplementation implements DriftServer {
     return done;
   }
 
-  DriftCommunication? get _anyClient {
-    final iterator = _activeChannels.iterator;
-    if (iterator.moveNext()) {
-      return iterator.current;
-    }
-
-    return null;
-  }
-
-  dynamic _handleRequest(Request request) {
+  dynamic _handleRequest(DriftCommunication comms, Request request) {
     final payload = request.payload;
 
     if (payload is NoArgsRequest) {
@@ -93,7 +85,7 @@ class ServerImplementation implements DriftServer {
           break;
       }
     } else if (payload is EnsureOpen) {
-      return _handleEnsureOpen(payload);
+      return _handleEnsureOpen(comms, payload);
     } else if (payload is ExecuteQuery) {
       final token = runCancellable(() => _runQuery(
           payload.method, payload.sql, payload.args, payload.executorId));
@@ -107,18 +99,20 @@ class ServerImplementation implements DriftServer {
         connected.request(payload);
       }
     } else if (payload is RunTransactionAction) {
-      return _transactionControl(payload.control, payload.executorId);
+      return _transactionControl(comms, payload.control, payload.executorId);
     } else if (payload is RequestCancellation) {
       _cancellableOperations[payload.originalRequestId]?.cancel();
       return null;
     }
   }
 
-  Future<bool> _handleEnsureOpen(EnsureOpen open) async {
-    _dbUser.schemaVersion = open.schemaVersion;
+  Future<bool> _handleEnsureOpen(
+      DriftCommunication comms, EnsureOpen open) async {
     final executor = await _loadExecutor(open.executorId);
+    _knownSchemaVersion = open.schemaVersion;
 
-    return await executor.ensureOpen(_dbUser);
+    return await executor
+        .ensureOpen(_ServerDbUser(this, comms, open.schemaVersion));
   }
 
   Future<dynamic> _runQuery(StatementMethod method, String sql,
@@ -153,11 +147,12 @@ class ServerImplementation implements DriftServer {
         : connection.executor;
   }
 
-  Future<int> _spawnTransaction(int? executor) async {
+  Future<int> _spawnTransaction(DriftCommunication comm, int? executor) async {
     final transaction = (await _loadExecutor(executor)).beginTransaction();
     final id = _putExecutor(transaction, beforeCurrent: true);
 
-    await transaction.ensureOpen(_dbUser);
+    await transaction
+        .ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
     return id;
   }
 
@@ -174,10 +169,10 @@ class ServerImplementation implements DriftServer {
     return id;
   }
 
-  Future<dynamic> _transactionControl(
+  Future<dynamic> _transactionControl(DriftCommunication comm,
       TransactionControl action, int? executorId) async {
     if (action == TransactionControl.begin) {
-      return await _spawnTransaction(executorId);
+      return await _spawnTransaction(comm, executorId);
     }
 
     final executor = _managedExecutors[executorId];
@@ -238,18 +233,18 @@ class ServerImplementation implements DriftServer {
 
 class _ServerDbUser implements QueryExecutorUser {
   final ServerImplementation _server;
-
+  final DriftCommunication connection;
   @override
-  int schemaVersion = 0;
+  final int schemaVersion;
 
-  _ServerDbUser(this._server); // will be overridden by client requests
+  _ServerDbUser(this._server, this.connection, this.schemaVersion);
 
   @override
   Future<void> beforeOpen(
       QueryExecutor executor, OpeningDetails details) async {
     final id = _server._putExecutor(executor, beforeCurrent: true);
     try {
-      await _server._anyClient!.request(RunBeforeOpen(details, id));
+      await connection.request(RunBeforeOpen(details, id));
     } finally {
       _server._releaseExecutor(id);
     }
