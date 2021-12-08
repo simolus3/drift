@@ -5,3 +5,17 @@
    padding: 10px;
    background-color: rgba(0, 0, 0, 0.08);
 }
+
+.flutter_favorite {
+   display: none;
+}
+
+@media (min-width: 992px) {
+   .flutter_favorite {
+      display: block;
+      position: fixed;
+      right: 150px;
+      top: 4rem;
+      width: 70px;
+   }
+}
