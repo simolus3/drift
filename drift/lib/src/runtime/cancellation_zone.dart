@@ -25,7 +25,7 @@ CancellationToken<T> runCancellable<T>(
 /// child zone.
 @internal
 class CancellationToken<T> {
-  final Completer<T> _resultCompleter = Completer();
+  final Completer<T> _resultCompleter = Completer.sync();
   final List<void Function()> _cancellationCallbacks = [];
   bool _cancellationRequested = false;
 

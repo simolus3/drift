@@ -83,7 +83,7 @@ void main() {
       final db = EmptyDb.connect(await isolate.connect());
       await runTest(db);
     });
-  });
+  }, skip: 'todo: Cancellations are currently broken on Dart 2.15');
 
   test('together with switchMap', () async {
     String slowQuery(int i) => '''

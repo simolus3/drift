@@ -28,8 +28,8 @@ class DriftClient {
   late QueryExecutorUser _connectedDb;
 
   /// Starts relaying database operations over the request channel.
-  DriftClient(StreamChannel<Object?> channel, bool debugLog)
-      : _channel = DriftCommunication(channel, debugLog) {
+  DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize)
+      : _channel = DriftCommunication(channel, debugLog, serialize) {
     _channel.setRequestHandler(_handleRequest);
   }
 

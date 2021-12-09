@@ -91,11 +91,15 @@ abstract class DriftServer {
   /// requests. Drift assumes full control over the [channel]. Manually sending
   /// messages over it, or closing it prematurely, can disrupt the server.
   ///
+  /// If [serialize] is true, drift will only send [bool], [int], [double],
+  /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
+  /// the message may be any Dart object.
+  ///
   /// __Warning__: As long as this library is marked experimental, the protocol
   /// might change with every drift version. For this reason, make sure that
   /// your server and clients are using the exact same version of the drift
   /// package to avoid conflicts.
-  void serve(StreamChannel<Object?> channel);
+  void serve(StreamChannel<Object?> channel, {bool serialize = true});
 
   /// Shuts this server down.
   ///
@@ -111,11 +115,17 @@ abstract class DriftServer {
 /// On the remote side, the corresponding [channel] must have been passed to
 /// [DriftServer.serve] for this setup to work.
 ///
+/// If [serialize] is true, drift will only send [bool], [int], [double],
+/// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
+/// the message may be any Dart object.
+/// The value of [serialize] for [remote] should be the same value passed to
+/// [DriftServer.serve].
+///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
 DatabaseConnection remote(StreamChannel<Object?> channel,
-    {bool debugLog = false}) {
-  final client = DriftClient(channel, debugLog);
+    {bool debugLog = false, bool serialize = true}) {
+  final client = DriftClient(channel, debugLog, serialize);
   return client.connection;
 }
 
@@ -124,7 +134,7 @@ DatabaseConnection remote(StreamChannel<Object?> channel,
 /// On the remote side, the corresponding channel must have been passed to
 /// [DriftServer.serve] for this setup to work.
 /// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
-Future<void> shutdown(StreamChannel<Object?> channel) {
-  final comm = DriftCommunication(channel);
+Future<void> shutdown(StreamChannel<Object?> channel, {bool serialize = true}) {
+  final comm = DriftCommunication(channel, false, serialize);
   return comm.request(NoArgsRequest.terminateAll);
 }

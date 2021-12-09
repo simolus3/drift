@@ -12,6 +12,8 @@
 - Add `OrderingTerm.random` to fetch rows in a random order.
 - Improved support for pausing query stream subscriptions. Instead of buffering events,
   query streams will suspend fetching data if all listeners are paused.
+- Drift isolates no longer serialize messages into a primitive format. This will reduce
+  the overhead of using isolates with Drift.
 
 ## 1.0.0
 

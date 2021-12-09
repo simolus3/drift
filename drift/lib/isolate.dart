@@ -51,11 +51,9 @@ class DriftIsolate {
         StreamChannelController(allowForeignErrors: false, sync: true);
     receive.listen((message) {
       if (message is SendPort) {
-        controller.local.stream
-            .map(prepareForTransport)
-            .listen(message.send, onDone: receive.close);
+        controller.local.stream.listen(message.send, onDone: receive.close);
       } else {
-        controller.local.sink.add(decodeAfterTransport(message));
+        controller.local.sink.add(message);
       }
     });
 
@@ -67,9 +65,9 @@ class DriftIsolate {
   /// All operations on the returned [DatabaseConnection] will be executed on a
   /// background isolate. Setting the [isolateDebugLog] is only helpful when
   /// debugging drift itself.
-  // todo: breaking: Make synchronous in drift 5
+  // todo: breaking: Make synchronous in drift 2
   Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
-    return remote(_open(), debugLog: isolateDebugLog);
+    return remote(_open(), debugLog: isolateDebugLog, serialize: false);
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s
@@ -77,7 +75,7 @@ class DriftIsolate {
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
   Future<void> shutdownAll() {
-    return shutdown(_open());
+    return shutdown(_open(), serialize: false);
   }
 
   /// Creates a new [DriftIsolate] on a background thread.

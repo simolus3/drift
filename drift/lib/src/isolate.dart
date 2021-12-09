@@ -1,6 +1,5 @@
 import 'dart:isolate';
 
-import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/isolate_channel.dart';
 
@@ -29,15 +28,9 @@ class RunningDriftServer {
         final receiveForConnection =
             ReceivePort('drift channel #${_counter++}');
         message.send(receiveForConnection.sendPort);
-        final channel = IsolateChannel(receiveForConnection, message)
-            .changeStream((source) => source.map(decodeAfterTransport))
-            .transformSink(
-              StreamSinkTransformer.fromHandlers(
-                  handleData: (data, sink) =>
-                      sink.add(prepareForTransport(data))),
-            );
+        final channel = IsolateChannel(receiveForConnection, message);
 
-        server.serve(channel);
+        server.serve(channel, serialize: false);
       }
     });
 
@@ -46,25 +39,5 @@ class RunningDriftServer {
       connectPort.close();
       if (killIsolateWhenDone) self.kill();
     });
-  }
-}
-
-Object? prepareForTransport(Object? source) {
-  if (source is! List) return source;
-
-  if (source is Uint8List) {
-    return TransferableTypedData.fromList([source]);
-  }
-
-  return source.map(prepareForTransport).toList();
-}
-
-Object? decodeAfterTransport(Object? source) {
-  if (source is TransferableTypedData) {
-    return source.materialize().asUint8List();
-  } else if (source is List) {
-    return source.map(decodeAfterTransport).toList();
-  } else {
-    return source;
   }
 }

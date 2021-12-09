@@ -13,6 +13,7 @@ class DriftCommunication {
 
   final StreamChannel<Object?> _channel;
   final bool _debugLog;
+  final bool _serialize;
 
   StreamSubscription? _inputSubscription;
 
@@ -25,7 +26,8 @@ class DriftCommunication {
       StreamController(sync: true);
 
   /// Starts a drift communication channel over a raw [StreamChannel].
-  DriftCommunication(this._channel, [this._debugLog = false]) {
+  DriftCommunication(this._channel,
+      [this._debugLog = false, this._serialize = true]) {
     _inputSubscription = _channel.stream.listen(
       _handleMessage,
       onDone: _closeCompleter.complete,
@@ -63,7 +65,7 @@ class DriftCommunication {
   }
 
   void _handleMessage(Object? msg) {
-    msg = _protocol.deserialize(msg!);
+    if (_serialize) msg = _protocol.deserialize(msg!);
 
     if (_debugLog) {
       driftRuntimeOptions.debugPrint('[IN]: $msg');
@@ -111,7 +113,8 @@ class DriftCommunication {
     if (_debugLog) {
       driftRuntimeOptions.debugPrint('[OUT]: $msg');
     }
-    _channel.sink.add(_protocol.serialize(msg));
+
+    _channel.sink.add(_serialize ? _protocol.serialize(msg) : msg);
   }
 
   /// Sends a response for a handled [Request].
