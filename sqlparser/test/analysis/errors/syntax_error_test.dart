@@ -1,8 +1,6 @@
 // tests for syntax errors revealed during static analysis.
 
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/analysis/analysis.dart';
-import 'package:sqlparser/src/engine/sql_engine.dart';
 import 'package:test/test.dart';
 
 import '../data.dart';

@@ -7,7 +7,6 @@ import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/src/utils/meta.dart';
 
 import 'ast.dart'; // todo: Remove this import after untangling the library
-import 'visitor.dart';
 
 /// A node in the abstract syntax tree of an SQL statement.
 abstract class AstNode with HasMetaMixin implements SyntacticEntity {

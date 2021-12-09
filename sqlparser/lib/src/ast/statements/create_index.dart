@@ -1,8 +1,5 @@
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../node.dart';
-import '../visitor.dart';
-import 'statement.dart';
 
 class CreateIndexStatement extends Statement
     implements CreatingStatement, StatementWithWhere {

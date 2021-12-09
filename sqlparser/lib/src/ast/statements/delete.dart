@@ -1,9 +1,5 @@
 import '../../analysis/analysis.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../clauses/returning.dart';
-import '../node.dart';
-import '../visitor.dart';
-import 'statement.dart';
 
 class DeleteStatement extends CrudStatement
     implements StatementWithWhere, StatementReturningColumns, HasPrimarySource {

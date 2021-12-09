@@ -3,7 +3,6 @@ import 'dart:math' show max;
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';

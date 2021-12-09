@@ -1,5 +1,4 @@
 import 'package:sqlparser/src/reader/tokenizer/scanner.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:test/test.dart';
 
 import '../parser/utils.dart';

@@ -2,7 +2,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:test/scaffolding.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

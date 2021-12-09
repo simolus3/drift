@@ -1,5 +1,4 @@
 import 'package:sqlparser/src/analysis/analysis.dart';
-import 'package:sqlparser/src/analysis/types/data.dart';
 import 'package:sqlparser/src/ast/ast.dart';
 import 'package:sqlparser/src/engine/options.dart';
 import 'package:sqlparser/src/engine/sql_engine.dart';

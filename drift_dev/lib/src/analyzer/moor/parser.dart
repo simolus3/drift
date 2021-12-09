@@ -3,7 +3,6 @@ import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/moor/create_table_reader.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class MoorParser {

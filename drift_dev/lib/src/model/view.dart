@@ -6,8 +6,6 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../writer.dart';
-import 'base_entity.dart';
-import 'declarations/declaration.dart';
 import 'model.dart';
 
 /// A parsed view

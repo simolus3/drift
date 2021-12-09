@@ -8,8 +8,6 @@ import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
-import 'package:drift_dev/src/model/declarations/declaration.dart';
-import 'package:drift_dev/src/model/used_type_converter.dart';
 import 'package:drift_dev/src/utils/exception.dart';
 import 'package:drift_dev/src/utils/names.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';

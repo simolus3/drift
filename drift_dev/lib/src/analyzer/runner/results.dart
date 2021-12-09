@@ -1,8 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
-import 'package:drift_dev/src/model/view.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 abstract class FileResult {

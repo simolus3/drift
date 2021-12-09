@@ -1,4 +1,3 @@
-import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
 
 /// A query executor for drift that delegates work to multiple executors.

@@ -2,10 +2,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
-
-import 'declarations/declaration.dart';
-import 'table.dart';
 
 /// Abstract class for database and dao elements.
 abstract class BaseMoorAccessor implements HasDeclaration {

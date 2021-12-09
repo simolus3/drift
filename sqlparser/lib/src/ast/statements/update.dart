@@ -1,10 +1,6 @@
-import 'package:sqlparser/sqlparser.dart';
-
+import '../../analysis/analysis.dart';
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../node.dart';
-import '../visitor.dart';
-import 'statement.dart';
 
 enum FailureMode {
   rollback,

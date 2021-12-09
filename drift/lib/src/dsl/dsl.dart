@@ -1,5 +1,3 @@
-import 'dart:typed_data' show Uint8List;
-
 import 'package:drift/drift.dart';
 import 'package:drift/sqlite_keywords.dart';
 import 'package:meta/meta.dart';

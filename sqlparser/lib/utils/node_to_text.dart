@@ -5,7 +5,6 @@ library utils.node_to_text;
 
 import 'package:charcode/charcode.dart';
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 class NodeSqlBuilder extends AstVisitor<void, void> {
   final StringSink buffer;

@@ -1,7 +1,5 @@
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart';
-import '../node.dart';
-import '../visitor.dart';
 
 /// An inline Dart component that appears in a compiled sql query. Inline Dart
 /// components can be bound with complex expressions at runtime by using moor's

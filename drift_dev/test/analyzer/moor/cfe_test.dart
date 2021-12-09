@@ -5,7 +5,6 @@ import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 import 'package:drift_dev/src/analyzer/runner/task.dart';
 import 'package:drift_dev/src/analyzer/session.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:test/test.dart';
 
 import '../../utils/test_backend.dart';

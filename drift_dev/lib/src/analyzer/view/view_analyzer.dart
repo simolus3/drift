@@ -3,8 +3,6 @@ import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/moor/find_dart_class.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
-import 'package:drift_dev/src/model/table.dart';
-import 'package:drift_dev/src/model/view.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';

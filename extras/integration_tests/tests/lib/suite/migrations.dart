@@ -1,9 +1,6 @@
 import 'package:test/test.dart';
 import 'package:tests/data/sample_data.dart' as people;
-import 'package:tests/database/database.dart';
 import 'package:tests/tests.dart';
-
-import 'suite.dart';
 
 void migrationTests(TestExecutor executor) {
   test('creates users table when opening version 1', () async {

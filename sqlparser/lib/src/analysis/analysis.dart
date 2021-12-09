@@ -5,11 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 // hiding because of http://dartbug.com/39263
 import 'package:sqlparser/sqlparser.dart' hide ExpandParameters;
-import 'package:sqlparser/src/engine/options.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
 import 'package:sqlparser/src/utils/meta.dart';
-
-import 'types/types.dart';
 
 export 'types/data.dart';
 export 'types/types.dart' show TypeInferenceResults;

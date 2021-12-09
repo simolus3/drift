@@ -1,9 +1,6 @@
 import '../../analysis/analysis.dart';
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../node.dart';
-import '../visitor.dart';
-import 'statement.dart';
 
 abstract class BaseSelectStatement extends CrudStatement with ResultSet {
   /// The resolved list of columns returned by this select statements. Not

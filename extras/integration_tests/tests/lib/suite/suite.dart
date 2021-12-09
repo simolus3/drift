@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 import 'package:tests/suite/crud_tests.dart';
 import 'package:tests/suite/transactions.dart';

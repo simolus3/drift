@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:moor/ffi.dart';
 import 'package:moor/isolate.dart';
-import 'package:moor_flutter/moor_flutter.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:sqlite3/sqlite3.dart' as raw;

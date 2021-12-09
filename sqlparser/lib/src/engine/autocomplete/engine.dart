@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
 
 part 'descriptions/description.dart';
 part 'descriptions/references.dart';

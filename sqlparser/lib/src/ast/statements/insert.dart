@@ -1,11 +1,5 @@
-import 'package:sqlparser/sqlparser.dart';
-
 import '../../analysis/analysis.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../clauses/upsert.dart';
-import '../node.dart';
-import '../visitor.dart';
-import 'statement.dart';
 
 enum InsertMode {
   insert,

@@ -4,7 +4,6 @@ import 'package:drift/drift.dart';
 
 import '../../../utils/synchronized.dart';
 import '../../cancellation_zone.dart';
-import '../executor.dart';
 import 'delegates.dart';
 
 abstract class _BaseExecutor extends QueryExecutor {

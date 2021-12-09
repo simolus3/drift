@@ -3,7 +3,6 @@
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

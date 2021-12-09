@@ -1,5 +1,4 @@
 import 'package:sqlparser/sqlparser.dart';
-import 'package:sqlparser/src/ast/ast.dart';
 import 'package:test/test.dart';
 
 import '../common_data.dart';

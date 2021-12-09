@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:convert/convert.dart';
 import 'package:drift/drift.dart';
 

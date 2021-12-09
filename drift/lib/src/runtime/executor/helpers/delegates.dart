@@ -1,5 +1,4 @@
 import 'dart:async' show FutureOr;
-import 'dart:typed_data' show Uint8List;
 
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/helpers/results.dart';

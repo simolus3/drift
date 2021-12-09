@@ -1,7 +1,5 @@
 import 'package:sqlparser/sqlparser.dart';
 
-import 'join_analysis.dart';
-
 part 'expectation.dart';
 part 'graph/relationships.dart';
 part 'graph/type_graph.dart';

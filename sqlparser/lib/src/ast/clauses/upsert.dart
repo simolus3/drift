@@ -1,6 +1,4 @@
 import '../ast.dart'; // todo: Remove this import
-import '../node.dart';
-import '../statements/create_index.dart' show IndexedColumn;
 
 class UpsertClause extends AstNode {
   List<UpsertClauseEntry> entries;

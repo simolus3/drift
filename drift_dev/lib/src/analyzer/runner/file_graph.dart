@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
 
 import '../errors.dart';

@@ -15,8 +15,6 @@ import 'package:drift_dev/src/analyzer/sql_queries/custom_result_class.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/query_analyzer.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/analyzer/view/view_analyzer.dart';
-import 'package:drift_dev/src/model/sql_query.dart';
-import 'package:drift_dev/src/model/view.dart';
 import 'package:drift_dev/src/utils/entity_reference_sorter.dart';
 import 'package:source_gen/source_gen.dart';
 

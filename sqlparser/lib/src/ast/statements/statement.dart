@@ -3,7 +3,6 @@ import 'package:meta/meta.dart';
 import '../../analysis/analysis.dart';
 import '../../reader/tokenizer/token.dart';
 import '../ast.dart'; // todo: Remove this import
-import '../node.dart';
 
 abstract class Statement extends AstNode {
   Token? semicolon;
