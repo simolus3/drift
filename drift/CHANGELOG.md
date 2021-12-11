@@ -1,4 +1,4 @@
-## 1.1.0-dev
+## 1.1.0
 
 - Add the `references` method to `BuildColumn` to reference a column declared
   in another Dart table.

@@ -1,6 +1,7 @@
-## 0.19.0-dev
+## 0.19.0
 
 - Support generated columns
+- Support features introduced in sqlite version 3.37, most notably `STRICT` tables
 
 ## 0.18.0
 
