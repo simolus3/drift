@@ -27,7 +27,7 @@ dependencies:
   # Moor-specific analysis and apis
   drift: '>=1.1.0 <1.2.0'
   sqlite3: '>=0.1.6 <2.0.0'
-  sqlparser: ^0.18.0
+  sqlparser: ^0.19.0
 
   # Dart analysis
   analyzer: "^2.1.0"
