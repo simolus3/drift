@@ -1,7 +1,11 @@
 ## 0.19.0
 
-- Support generated columns
-- Support features introduced in sqlite version 3.37, most notably `STRICT` tables
+- Support generated columns.
+- Support features introduced in sqlite version 3.37, most notably `STRICT` tables.
+
+## 0.18.1
+
+- Fix the AST comparator missing errors for different amount of children.
 
 ## 0.18.0
 

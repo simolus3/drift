@@ -3,7 +3,7 @@ part of '../query_builder.dart';
 /// Returns the amount of rows in the current group matching the optional
 /// [filter].
 ///
-/// {@templace drift_aggregate_filter}
+/// {@template drift_aggregate_filter}
 /// To only consider rows matching a predicate, you can set the optional
 /// [filter]. Note that [filter] is only available from sqlite 3.30, released on
 /// 2019-10-04. Most devices will use an older sqlite version.

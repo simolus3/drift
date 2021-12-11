@@ -478,7 +478,7 @@ extension DestructiveMigrationExtension on GeneratedDatabase {
 }
 
 /// Contains instructions needed to run a complex migration on a table, using
-/// the steps described in [Making other kinds of table schema changes][https://www.sqlite.org/lang_altertable.html#otheralter].
+/// the steps described in [Making other kinds of table schema changes](https://www.sqlite.org/lang_altertable.html#otheralter).
 ///
 /// For examples and more details, see [the documentation](https://drift.simonbinder.eu/docs/advanced-features/migrations/#complex-migrations).
 @experimental

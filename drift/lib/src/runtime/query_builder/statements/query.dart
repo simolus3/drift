@@ -58,8 +58,7 @@ abstract class Query<T extends HasResultSet, D> extends Component {
   /// Constructs the query that can then be sent to the database executor.
   ///
   /// This is used internally by drift to run the query. Users should use the
-  /// other methods explained in the [documentation][drift-docs].
-  /// [drift-docs]: https://drift.simonbinder.eu/docs/getting-started/writing_queries/
+  /// other methods explained in the [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/).
   GenerationContext constructQuery() {
     final ctx = GenerationContext.fromDb(database);
     writeInto(ctx);
