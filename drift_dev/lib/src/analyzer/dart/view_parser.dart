@@ -107,7 +107,7 @@ class ViewParser {
         .followedBy([element])
         .expand((e) => e.fields)
         .where((field) =>
-            isExpression(field.type) &&
+            (isExpression(field.type) || isColumn(field.type)) &&
             field.getter != null &&
             !field.getter!.isSynthetic)
         .map((field) => field.name)
