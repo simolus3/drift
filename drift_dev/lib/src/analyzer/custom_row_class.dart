@@ -49,6 +49,10 @@ ExistingRowClass? validateExistingClass(
     return null;
   }
 
+  // Note: It's ok if not all columns are present in the custom row class, we
+  // just won't load them in that case.
+  // However, when we're supposed to generate an insertable, all columns must
+  // appear as getters in the target class.
   final unmatchedColumnsByName = {
     for (final column in columns) column.dartGetterName: column
   };
@@ -58,27 +62,38 @@ ExistingRowClass? validateExistingClass(
   for (final parameter in ctor.parameters) {
     final column = unmatchedColumnsByName.remove(parameter.name);
     if (column != null) {
-      final matchField = !generateInsertable ||
-          dartClass.classElement.fields
-              .any((field) => field.name == parameter.name);
-      if (matchField) {
-        columnsToParameter[column] = parameter;
-        _checkType(parameter, column, step);
-      } else {
-        final error = ErrorInDartCode(
-            affectedElement: parameter,
-            severity: Severity.criticalError,
-            message: 'Constructor parameter ${parameter.name} has no matching '
-                'field. When "generateInsertable" enabled, all constructor '
-                'parameter must have a matching field. Alternatively, you can '
-                'declare a getter field.');
-        throw Exception(error);
-      }
+      columnsToParameter[column] = parameter;
+      _checkType(parameter, column, step);
     } else if (!parameter.isOptional) {
       errors.report(ErrorInDartCode(
         affectedElement: parameter,
         message: 'Unexpected parameter ${parameter.name} which has no matching '
             'column.',
+      ));
+    }
+  }
+
+  if (generateInsertable) {
+    // Go through all columns, make sure that the class has getters for them.
+    final missingGetters = <String>[];
+
+    for (final column in columns) {
+      final matchingField = dartClass.classElement
+          .lookUpGetter(column.dartGetterName, dartClass.classElement.library);
+
+      if (matchingField == null) {
+        missingGetters.add(column.dartGetterName);
+      }
+    }
+
+    if (missingGetters.isNotEmpty) {
+      errors.report(ErrorInDartCode(
+        affectedElement: dartClass.classElement,
+        severity: Severity.criticalError,
+        message:
+            'This class used as a custom row class for which an insertable '
+            'is generated. This means that it must define getters for all '
+            'columns, but some are missing: ${missingGetters.join(', ')}',
       ));
     }
   }

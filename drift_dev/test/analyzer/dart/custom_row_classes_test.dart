@@ -11,7 +11,7 @@ void main() {
   late TestState state;
 
   setUpAll(() {
-    state = TestState.withContent({
+    state = TestState.withContent(const {
       'a|lib/invalid_no_unnamed_constructor.dart': '''
 import 'package:drift/drift.dart';
 
@@ -113,6 +113,42 @@ class Cls {
   Cls(Uint8List foo, List<int> bar, Bytes baz) {}
 }
       ''',
+      'a|lib/insertable_missing.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(Cls, generateInsertable: true)
+class Tbl extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+class Cls {
+  final String foo;
+
+  Cls(this.foo, int bar);
+}
+''',
+      'a|lib/insertable_valid.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(Cls, generateInsertable: true)
+class Tbl extends Table {
+  TextColumn get foo => text()();
+  IntColumn get bar => integer()();
+}
+
+class HasBar {
+  final int bar;
+
+  HasBar(this.bar);
+}
+
+class Cls extends HasBar {
+  final String foo;
+
+  Cls(this.foo, int bar): super(bar);
+}
+''',
     });
   });
 
@@ -168,6 +204,16 @@ class Cls {
             .having((e) => e.message, 'message', 'Parameter must accept int')),
       );
     });
+
+    test('when a getter is missing with generateInsertable: true', () async {
+      final file = await state.analyze('package:a/insertable_missing.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having((e) => e.message, 'message',
+            contains('but some are missing: bar'))),
+      );
+    });
   });
 
   test('supports generic row classes', () async {
@@ -215,6 +261,11 @@ class Cls {
 
   test('handles blob columns', () async {
     final file = await state.analyze('package:a/blob.dart');
+    expect(file.errors.errors, isEmpty);
+  });
+
+  test('considers inheritance when checking expected getters', () async {
+    final file = await state.analyze('package:a/insertable_valid.dart');
     expect(file.errors.errors, isEmpty);
   });
 }
