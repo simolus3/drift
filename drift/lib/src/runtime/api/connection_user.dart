@@ -434,8 +434,13 @@ abstract class DatabaseConnectionUser {
           rethrow;
         } finally {
           if (success) {
-            // complete() will also take care of committing the transaction
-            await transaction.complete();
+            try {
+              await transaction.complete();
+            } catch (e) {
+              // Couldn't commit -> roll back then.
+              await transactionExecutor.rollback();
+              rethrow;
+            }
           }
           await transaction.disposeChildStreams();
         }

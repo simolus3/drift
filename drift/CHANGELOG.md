@@ -1,3 +1,7 @@
+## unreleased
+
+- Rollback transactions when a commit fails.
+
 ## 1.1.0
 
 - Add the `references` method to `BuildColumn` to reference a column declared

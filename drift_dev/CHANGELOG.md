@@ -1,3 +1,7 @@
+## unreleased
+
+- Improve error handling around custom row classes.
+
 ## 1.1.0
 
 - Consider `drift`-named files when generating schema migrations ([#1486](https://github.com/simolus3/moor/issues/1486))
