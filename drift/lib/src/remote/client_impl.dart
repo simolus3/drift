@@ -29,7 +29,8 @@ class DriftClient {
 
   /// Starts relaying database operations over the request channel.
   DriftClient(StreamChannel<Object?> channel, bool debugLog, bool serialize)
-      : _channel = DriftCommunication(channel, debugLog, serialize) {
+      : _channel = DriftCommunication(channel,
+            debugLog: debugLog, serialize: serialize) {
     _channel.setRequestHandler(_handleRequest);
   }
 

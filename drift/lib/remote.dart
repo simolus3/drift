@@ -135,6 +135,6 @@ DatabaseConnection remote(StreamChannel<Object?> channel,
 /// [DriftServer.serve] for this setup to work.
 /// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
 Future<void> shutdown(StreamChannel<Object?> channel, {bool serialize = true}) {
-  final comm = DriftCommunication(channel, false, serialize);
+  final comm = DriftCommunication(channel, serialize: serialize);
   return comm.request(NoArgsRequest.terminateAll);
 }

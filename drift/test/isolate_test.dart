@@ -13,20 +13,34 @@ void main() {
   // Using the DriftIsolate apis without actually running on a background
   // isolate is pointless, but we can't collect coverage for background
   // isolates: https://github.com/dart-lang/test/issues/1108
+
   group('in same isolate', () {
-    DriftIsolate spawnInSame() {
-      return DriftIsolate.inCurrent(_backgroundConnection);
+    DriftIsolate spawnInSame(bool serialize) {
+      return DriftIsolate.inCurrent(_backgroundConnection,
+          serialize: serialize);
     }
 
-    _runTests(spawnInSame, false);
+    group('with explicit serialization', () {
+      _runTests(() => spawnInSame(true), false, true);
+    });
+
+    group('without explicit serialization', () {
+      _runTests(() => spawnInSame(false), false, false);
+    });
   });
 
   group('in background isolate', () {
-    Future<DriftIsolate> spawnBackground() {
-      return DriftIsolate.spawn(_backgroundConnection);
+    Future<DriftIsolate> spawnBackground(bool serialize) {
+      return DriftIsolate.spawn(_backgroundConnection, serialize: serialize);
     }
 
-    _runTests(spawnBackground, true);
+    group('with explicit serialization', () {
+      _runTests(() => spawnBackground(true), true, true);
+    });
+
+    group('without explicit serialization', () {
+      _runTests(() => spawnBackground(false), true, false);
+    });
   }, tags: 'background_isolate');
 
   test('stream queries across isolates', () async {
@@ -93,8 +107,8 @@ void main() {
   }, tags: 'background_isolate');
 }
 
-void _runTests(
-    FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate) {
+void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
+    bool serialize) {
   late DriftIsolate isolate;
   late TodoDb database;
 
@@ -102,7 +116,8 @@ void _runTests(
     isolate = await spawner();
 
     database = TodoDb.connect(
-      DatabaseConnection.delayed(isolate.connect(isolateDebugLog: false)),
+      DatabaseConnection.delayed(
+          isolate.connect(isolateDebugLog: false, serialize: serialize)),
     );
   });
 
@@ -110,7 +125,7 @@ void _runTests(
     await database.close();
 
     if (terminateIsolate) {
-      await isolate.shutdownAll();
+      await isolate.shutdownAll(serialize: serialize);
     }
   });
 

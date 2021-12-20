@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift/remote.dart';
+import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../runtime/cancellation_zone.dart';
@@ -10,6 +11,7 @@ import 'protocol.dart';
 
 /// The implementation of a drift server, manging remote channels to send
 /// database requests.
+@internal
 class ServerImplementation implements DriftServer {
   /// The Underlying database connection that will be used.
   final DatabaseConnection connection;
@@ -50,7 +52,7 @@ class ServerImplementation implements DriftServer {
       throw StateError('Cannot add new channels after shutdown() was called');
     }
 
-    final comm = DriftCommunication(channel, serialize, serialize);
+    final comm = DriftCommunication(channel, serialize: serialize);
     comm.setRequestHandler((request) => _handleRequest(comm, request));
 
     _activeChannels.add(comm);

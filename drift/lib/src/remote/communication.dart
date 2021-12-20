@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/src/runtime/api/runtime_api.dart';
+import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../runtime/cancellation_zone.dart';
@@ -8,6 +9,7 @@ import 'protocol.dart';
 
 /// Wrapper around a two-way communication channel to support requests and
 /// responses.
+@internal
 class DriftCommunication {
   static const _protocol = DriftProtocol();
 
@@ -27,7 +29,9 @@ class DriftCommunication {
 
   /// Starts a drift communication channel over a raw [StreamChannel].
   DriftCommunication(this._channel,
-      [this._debugLog = false, this._serialize = true]) {
+      {bool debugLog = false, bool serialize = true})
+      : _debugLog = debugLog,
+        _serialize = serialize {
     _inputSubscription = _channel.stream.listen(
       _handleMessage,
       onDone: _closeCompleter.complete,

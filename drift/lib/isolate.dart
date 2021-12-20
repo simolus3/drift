@@ -65,17 +65,38 @@ class DriftIsolate {
   /// All operations on the returned [DatabaseConnection] will be executed on a
   /// background isolate. Setting the [isolateDebugLog] is only helpful when
   /// debugging drift itself.
+  ///
+  /// {@template drift_isolate_serialize}
+  /// Internally, drift uses ports from `dart:isolate` to send commands to an
+  /// internal server dispatching database actions.
+  /// In most setups, those ports can send and receive almost any Dart object.
+  /// In special cases though, the platform only supports sending simple types
+  /// across send types. In particular, isolates across different Flutter
+  /// engines (such as the ones spawned by the `workmanager` package) are
+  /// unable to handle most objects.
+  /// To support those setups, drift can serialize its internal communication
+  /// channel to only send simple types across isolates. The [serialize]
+  /// parameter, which is enabled by default, controls this behavior.
+  ///
+  /// In most scenarios, [serialize] can be disabled for a considerable
+  /// performance improvement.
+  /// Please note that the value of [serialize] __must__ be the same across the
+  /// methods [spawn], [inCurrent], [connect] and [shutdownAll].
+  /// {@endtemplate}
   // todo: breaking: Make synchronous in drift 2
-  Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
-    return remote(_open(), debugLog: isolateDebugLog, serialize: false);
+  Future<DatabaseConnection> connect(
+      {bool isolateDebugLog = false, bool serialize = true}) async {
+    return remote(_open(), debugLog: isolateDebugLog, serialize: serialize);
   }
 
   /// Stops the background isolate and disconnects all [DatabaseConnection]s
   /// created.
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
-  Future<void> shutdownAll() {
-    return shutdown(_open(), serialize: false);
+  ///
+  /// {@macro drift_isolate_serialize}
+  Future<void> shutdownAll({bool serialize = true}) {
+    return shutdown(_open(), serialize: serialize);
   }
 
   /// Creates a new [DriftIsolate] on a background thread.
@@ -89,11 +110,15 @@ class DriftIsolate {
   /// it must either be a top-level member or a static class method.
   ///
   /// To close the isolate later, use [shutdownAll].
-  static Future<DriftIsolate> spawn(DatabaseOpener opener) async {
+  ///
+  /// {@macro drift_isolate_serialize}
+  static Future<DriftIsolate> spawn(DatabaseOpener opener,
+      {bool serialize = true}) async {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 
-    await Isolate.spawn(_startDriftIsolate, [receiveServer.sendPort, opener]);
+    await Isolate.spawn(
+        _startDriftIsolate, [receiveServer.sendPort, opener, serialize]);
     final key = await keyFuture as SendPort;
     return DriftIsolate.fromConnectPort(key);
   }
@@ -106,10 +131,12 @@ class DriftIsolate {
   /// When [killIsolateWhenDone] is enabled (it defaults to `false`) and
   /// [shutdownAll] is called on the returned [DriftIsolate], the isolate used
   /// to call [DriftIsolate.inCurrent] will be killed.
+  ///
+  /// {@macro drift_isolate_serialize}
   factory DriftIsolate.inCurrent(DatabaseOpener opener,
-      {bool killIsolateWhenDone = false}) {
+      {bool killIsolateWhenDone = false, bool serialize = true}) {
     final server = RunningDriftServer(Isolate.current, opener(),
-        killIsolateWhenDone: killIsolateWhenDone);
+        killIsolateWhenDone: killIsolateWhenDone, serialize: serialize);
     return DriftIsolate.fromConnectPort(server.portToOpenConnection);
   }
 }
@@ -124,7 +151,9 @@ class DriftIsolate {
 void _startDriftIsolate(List args) {
   final sendPort = args[0] as SendPort;
   final opener = args[1] as DatabaseOpener;
+  final serialize = args[2] as bool;
 
-  final server = RunningDriftServer(Isolate.current, opener());
+  final server =
+      RunningDriftServer(Isolate.current, opener(), serialize: serialize);
   sendPort.send(server.portToOpenConnection);
 }

@@ -1,6 +1,8 @@
 ## unreleased
 
 - Rollback transactions when a commit fails.
+- Revert a change from 1.1.0 to stop serializing messages over isolates.
+  Instead, please set the `serialize` parameter to `false` on the `DriftIsolate` methods.
 
 ## 1.1.0
 
