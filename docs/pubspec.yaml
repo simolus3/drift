@@ -21,6 +21,9 @@ dev_dependencies:
       url: https://simonbinder.eu
       name: built_site
     version: ^0.2.3
+  linkcheck: ^2.0.19
+  shelf: ^1.2.0
+  shelf_static: ^1.1.0
 
   moor:
   moor_generator:
