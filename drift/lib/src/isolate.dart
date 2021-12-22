@@ -13,7 +13,6 @@ import '../remote.dart';
 class RunningDriftServer {
   final Isolate self;
   final bool killIsolateWhenDone;
-  final bool serialize;
 
   final DriftServer server;
   final ReceivePort connectPort = ReceivePort('drift connect');
@@ -22,14 +21,16 @@ class RunningDriftServer {
   SendPort get portToOpenConnection => connectPort.sendPort;
 
   RunningDriftServer(this.self, DatabaseConnection connection,
-      {this.killIsolateWhenDone = true, required this.serialize})
+      {this.killIsolateWhenDone = true})
       : server = DriftServer(connection, allowRemoteShutdown: true) {
     final subscription = connectPort.listen((message) {
-      if (message is SendPort) {
+      if (message is List && message.length == 2) {
+        final sendPort = message[0]! as SendPort;
+        final serialize = message[1]! as bool;
         final receiveForConnection =
             ReceivePort('drift channel #${_counter++}');
-        message.send(receiveForConnection.sendPort);
-        final channel = IsolateChannel(receiveForConnection, message);
+        sendPort.send(receiveForConnection.sendPort);
+        final channel = IsolateChannel(receiveForConnection, sendPort);
 
         server.serve(channel, serialize: serialize);
       }

@@ -39,13 +39,33 @@ class DriftIsolate {
   /// can reconstruct a [DriftIsolate] by using [DriftIsolate.fromConnectPort].
   final SendPort connectPort;
 
+  /// The flag indicating whether messages between this [DriftIsolate]
+  /// and the [DriftServer] should be serialized.
+  final bool serialize;
+
   /// Creates a [DriftIsolate] talking to another isolate by using the
   /// [connectPort].
-  DriftIsolate.fromConnectPort(this.connectPort);
+  ///
+  /// {@template drift_isolate_serialize}
+  /// Internally, drift uses ports from `dart:isolate` to send commands to an
+  /// internal server dispatching database actions.
+  /// In most setups, those ports can send and receive almost any Dart object.
+  /// In special cases though, the platform only supports sending simple types
+  /// across send types. In particular, isolates across different Flutter
+  /// engines (such as the ones spawned by the `workmanager` package) are
+  /// unable to handle most objects.
+  /// To support those setups, drift can serialize its internal communication
+  /// channel to only send simple types across isolates. The [serialize]
+  /// parameter, which is enabled by default, controls this behavior.
+  ///
+  /// In most scenarios, [serialize] can be disabled for a considerable
+  /// performance improvement.
+  /// {@endtemplate}
+  DriftIsolate.fromConnectPort(this.connectPort, {this.serialize = true});
 
   StreamChannel _open() {
     final receive = ReceivePort('drift client receive');
-    connectPort.send(receive.sendPort);
+    connectPort.send([receive.sendPort, serialize]);
 
     final controller =
         StreamChannelController(allowForeignErrors: false, sync: true);
@@ -65,27 +85,8 @@ class DriftIsolate {
   /// All operations on the returned [DatabaseConnection] will be executed on a
   /// background isolate. Setting the [isolateDebugLog] is only helpful when
   /// debugging drift itself.
-  ///
-  /// {@template drift_isolate_serialize}
-  /// Internally, drift uses ports from `dart:isolate` to send commands to an
-  /// internal server dispatching database actions.
-  /// In most setups, those ports can send and receive almost any Dart object.
-  /// In special cases though, the platform only supports sending simple types
-  /// across send types. In particular, isolates across different Flutter
-  /// engines (such as the ones spawned by the `workmanager` package) are
-  /// unable to handle most objects.
-  /// To support those setups, drift can serialize its internal communication
-  /// channel to only send simple types across isolates. The [serialize]
-  /// parameter, which is enabled by default, controls this behavior.
-  ///
-  /// In most scenarios, [serialize] can be disabled for a considerable
-  /// performance improvement.
-  /// Please note that the value of [serialize] __must__ be the same across the
-  /// methods [spawn], [inCurrent], [connect] and [shutdownAll].
-  /// {@endtemplate}
   // todo: breaking: Make synchronous in drift 2
-  Future<DatabaseConnection> connect(
-      {bool isolateDebugLog = false, bool serialize = true}) async {
+  Future<DatabaseConnection> connect({bool isolateDebugLog = false}) async {
     return remote(_open(), debugLog: isolateDebugLog, serialize: serialize);
   }
 
@@ -93,9 +94,7 @@ class DriftIsolate {
   /// created.
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
-  ///
-  /// {@macro drift_isolate_serialize}
-  Future<void> shutdownAll({bool serialize = true}) {
+  Future<void> shutdownAll() {
     return shutdown(_open(), serialize: serialize);
   }
 
@@ -113,14 +112,13 @@ class DriftIsolate {
   ///
   /// {@macro drift_isolate_serialize}
   static Future<DriftIsolate> spawn(DatabaseOpener opener,
-      {bool serialize = true}) async {
+      {bool serialize = false}) async {
     final receiveServer = ReceivePort();
     final keyFuture = receiveServer.first;
 
-    await Isolate.spawn(
-        _startDriftIsolate, [receiveServer.sendPort, opener, serialize]);
+    await Isolate.spawn(_startDriftIsolate, [receiveServer.sendPort, opener]);
     final key = await keyFuture as SendPort;
-    return DriftIsolate.fromConnectPort(key);
+    return DriftIsolate.fromConnectPort(key, serialize: serialize);
   }
 
   /// Creates a [DriftIsolate] in the [Isolate.current] isolate. The returned
@@ -134,10 +132,13 @@ class DriftIsolate {
   ///
   /// {@macro drift_isolate_serialize}
   factory DriftIsolate.inCurrent(DatabaseOpener opener,
-      {bool killIsolateWhenDone = false, bool serialize = true}) {
+      {bool killIsolateWhenDone = false, bool serialize = false}) {
     final server = RunningDriftServer(Isolate.current, opener(),
-        killIsolateWhenDone: killIsolateWhenDone, serialize: serialize);
-    return DriftIsolate.fromConnectPort(server.portToOpenConnection);
+        killIsolateWhenDone: killIsolateWhenDone);
+    return DriftIsolate.fromConnectPort(
+      server.portToOpenConnection,
+      serialize: serialize,
+    );
   }
 }
 
@@ -151,9 +152,7 @@ class DriftIsolate {
 void _startDriftIsolate(List args) {
   final sendPort = args[0] as SendPort;
   final opener = args[1] as DatabaseOpener;
-  final serialize = args[2] as bool;
 
-  final server =
-      RunningDriftServer(Isolate.current, opener(), serialize: serialize);
+  final server = RunningDriftServer(Isolate.current, opener());
   sendPort.send(server.portToOpenConnection);
 }
