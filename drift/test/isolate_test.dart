@@ -116,8 +116,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
     isolate = await spawner();
 
     database = TodoDb.connect(
-      DatabaseConnection.delayed(
-          isolate.connect(isolateDebugLog: false, serialize: serialize)),
+      DatabaseConnection.delayed(isolate.connect()),
     );
   });
 
@@ -125,7 +124,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
     await database.close();
 
     if (terminateIsolate) {
-      await isolate.shutdownAll(serialize: serialize);
+      await isolate.shutdownAll();
     }
   });
 
