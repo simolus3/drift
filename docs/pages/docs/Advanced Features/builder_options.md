@@ -126,8 +126,8 @@ targets:
       drift_dev:
         options:
           sql:
+            dialect: sqlite
             options:
-              dialect: sqlite
               modules:
                 - json1
                 - fts5
