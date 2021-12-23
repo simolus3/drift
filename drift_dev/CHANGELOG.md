@@ -1,4 +1,4 @@
-## unreleased
+## 1.1.1
 
 - Improve error handling around custom row classes.
 

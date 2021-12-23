@@ -1,6 +1,6 @@
 name: drift_dev
 description: Dev-dependency for users of drift. Contains a the generator and development tools.
-version: 1.1.0
+version: 1.1.1
 repository: https://github.com/simolus3/moor
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues
@@ -24,7 +24,7 @@ dependencies:
   yaml: ^3.1.0
   io: ^1.0.3
 
-  # Moor-specific analysis and apis
+  # Drift-specific analysis and apis
   drift: '>=1.1.0 <1.2.0'
   sqlite3: '>=0.1.6 <2.0.0'
   sqlparser: ^0.19.0

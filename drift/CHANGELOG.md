@@ -1,4 +1,4 @@
-## unreleased
+## 1.1.1
 
 - Rollback transactions when a commit fails.
 - Revert a change from 1.1.0 to stop serializing messages over isolates.
