@@ -62,6 +62,9 @@ class EntityHandler extends BaseAnalyzer {
         _lint(node, 'special @create table');
         entity.references.addAll(_findTables(node.statement));
       }
+
+      // Views are handled separately in view_analyzer.dart because they're
+      // resolved after other entities are known already.
     }
   }
 

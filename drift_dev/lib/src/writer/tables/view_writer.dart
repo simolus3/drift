@@ -47,8 +47,11 @@ class ViewWriter extends TableOrViewWriter {
       ..write('final ${scope.nullableType('String')} _alias;\n')
       ..write('${view.entityInfoName}(this._db, [this._alias]);\n');
 
-    for (final ref in view.staticReferences) {
-      buffer.write('$ref\n');
+    final declaration = view.declaration;
+    if (declaration is DartViewDeclaration) {
+      for (final ref in declaration.staticReferences) {
+        buffer.write('${ref.declaration}\n');
+      }
     }
 
     if (view.viewQuery == null) {
@@ -81,6 +84,14 @@ class ViewWriter extends TableOrViewWriter {
 
     _writeAliasGenerator();
     _writeQuery();
+
+    final readTables = view.transitiveTableReferences
+        .map((e) => asDartLiteral(e.sqlName))
+        .join(', ');
+    buffer.writeln('''
+      @override
+      Set<String> get readTables => const {$readTables};
+    ''');
 
     buffer.writeln('}');
   }

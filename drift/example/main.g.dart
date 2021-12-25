@@ -573,6 +573,8 @@ class $TodoCategoryItemCountView
           .join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
       ]);
+  @override
+  Set<String> get readTables => const {'todo_items', 'todo_categories'};
 }
 
 class TodoItemWithCategoryNameViewData extends DataClass {
@@ -685,6 +687,8 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
         innerJoin(
             todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
       ]);
+  @override
+  Set<String> get readTables => const {'todo_items', 'todo_categories'};
 }
 
 abstract class _$Database extends GeneratedDatabase {

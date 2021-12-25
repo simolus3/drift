@@ -15,8 +15,18 @@ abstract class ViewInfo<Self extends HasResultSet, Row>
   String get entityName;
 
   /// The `CREATE VIEW` sql statement that can be used to create this view.
+  ///
+  /// This will be null if the view was defined in Dart.
   String? get createViewStmt;
 
   /// Predefined query from `View.as()`
+  ///
+  /// This will be null if the view was defined in a `.drift` file.
   Query? get query;
+
+  /// All tables that this view reads from.
+  ///
+  /// If this view reads from other views, the [readTables] of that view are
+  /// also included in this [readTables] set.
+  Set<String> get readTables;
 }

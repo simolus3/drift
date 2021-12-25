@@ -5,6 +5,8 @@ import 'package:drift_dev/src/model/sources.dart';
 import 'package:drift_dev/src/writer/queries/sql_writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../table.dart';
+
 part 'columns.dart';
 part 'database.dart';
 part 'index.dart';
@@ -57,4 +59,10 @@ extension ToSqlIfAvailable on Declaration {
 
     return null;
   }
+}
+
+extension DeclarationUtils on HasDeclaration {
+  bool get isDeclaredInDart => declaration is DartDeclaration;
+
+  bool get isDeclaredInDriftFile => declaration is MoorDeclaration;
 }

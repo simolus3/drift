@@ -1,6 +1,6 @@
 name: drift
 description: Drift is a reactive library to store relational data in Dart and Flutter applications.
-version: 1.1.1
+version: 1.2.0-dev
 repository: https://github.com/simolus3/moor
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/moor/issues

@@ -138,6 +138,13 @@ abstract class TableUpdateQuery {
   /// to a certain kind.
   factory TableUpdateQuery.onTable(ResultSetImplementation table,
       {UpdateKind? limitUpdateKind}) {
+    if (table is ViewInfo) {
+      return TableUpdateQuery.allOf([
+        for (final table in table.readTables)
+          TableUpdateQuery.onTableName(table)
+      ]);
+    }
+
     return TableUpdateQuery.onTableName(
       table.entityName,
       limitUpdateKind: limitUpdateKind,
@@ -148,7 +155,14 @@ abstract class TableUpdateQuery {
   factory TableUpdateQuery.onAllTables(
       Iterable<ResultSetImplementation> tables) {
     return TableUpdateQuery.allOf(
-      [for (final table in tables) TableUpdateQuery.onTable(table)],
+      [
+        for (final table in tables)
+          if (table is ViewInfo)
+            for (final table in table.readTables)
+              TableUpdateQuery.onTableName(table)
+          else
+            TableUpdateQuery.onTable(table),
+      ],
     );
   }
 

@@ -1448,6 +1448,8 @@ class $CategoryTodoCountViewView
       (_db.selectOnly(categories, includeJoinedTableColumns: false)
             ..addColumns($columns))
           .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
+  @override
+  Set<String> get readTables => const {'todos', 'categories'};
 }
 
 class TodoWithCategoryViewData extends DataClass {
@@ -1553,6 +1555,8 @@ class $TodoWithCategoryViewView
   Query? get query => (_db.selectOnly(todos, includeJoinedTableColumns: false)
         ..addColumns($columns))
       .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+  @override
+  Set<String> get readTables => const {'todos', 'categories'};
 }
 
 abstract class _$TodoDb extends GeneratedDatabase {

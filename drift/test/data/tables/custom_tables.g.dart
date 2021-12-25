@@ -1582,6 +1582,8 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
 
   @override
   Query? get query => null;
+  @override
+  Set<String> get readTables => const {'config'};
 }
 
 abstract class _$CustomTablesDb extends GeneratedDatabase {

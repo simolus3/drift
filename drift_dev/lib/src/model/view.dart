@@ -36,8 +36,6 @@ class MoorView extends MoorEntityWithResultSet {
   @override
   ExistingRowClass? existingRowClass;
 
-  final List<String> staticReferences;
-
   final ViewQueryInformation? viewQuery;
 
   MoorView({
@@ -46,7 +44,6 @@ class MoorView extends MoorEntityWithResultSet {
     required this.dartTypeName,
     required this.entityInfoName,
     this.existingRowClass,
-    this.staticReferences = const [],
     this.viewQuery,
   });
 

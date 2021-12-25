@@ -77,7 +77,10 @@ class ViewAnalyzer extends BaseAnalyzer {
       }
 
       engine.registerView(mapper.extractView(view));
-      view.references = findReferences(viewDeclaration.node).toList();
+
+      if (view.isDeclaredInDriftFile) {
+        view.references = findReferences(viewDeclaration.node).toList();
+      }
     }
   }
 }

@@ -201,4 +201,14 @@ void main() {
       ),
     );
   });
+
+  test('watching a view will update when a referenced table updates', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final stream = db.select(db.categoryTodoCountView).watch();
+    expect(stream, emitsInOrder([isEmpty, isEmpty]));
+
+    await pumpEventQueue();
+    db.markTablesUpdated([db.categories]);
+  });
 }

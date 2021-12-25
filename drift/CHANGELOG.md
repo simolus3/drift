@@ -1,3 +1,7 @@
+## 1.2.0-dev
+
+- Properly support stream update queries on views.
+
 ## 1.1.1
 
 - Rollback transactions when a commit fails.

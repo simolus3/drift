@@ -10,20 +10,23 @@ class ViewParser {
       ClassElement element, List<MoorTable> tables) async {
     final name = await _parseViewName(element);
     final columns = (await _parseColumns(element)).toList();
-    final staticReferences =
-        (await _parseStaticReferences(element, tables)).toList();
+    final staticReferences = await _parseStaticReferences(element, tables);
     final dataClassInfo = _readDataClassInformation(columns, element);
     final query = await _parseQuery(element, staticReferences, columns);
 
     final view = MoorView(
-      declaration: DartViewDeclaration(element, base.step.file),
+      declaration:
+          DartViewDeclaration(element, base.step.file, staticReferences),
       name: name,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       entityInfoName: '\$${element.name}View',
-      staticReferences: staticReferences.map((ref) => ref.declaration).toList(),
       viewQuery: query,
     );
+
+    view.references = [
+      for (final staticRef in staticReferences) staticRef.table,
+    ];
 
     view.columns = columns;
     return view;
@@ -163,18 +166,18 @@ class ViewParser {
     }[name];
   }
 
-  Future<List<_TableReference>> _parseStaticReferences(
+  Future<List<TableReferenceInDartView>> _parseStaticReferences(
       ClassElement element, List<MoorTable> tables) async {
     return await Stream.fromIterable(element.allSupertypes
             .map((t) => t.element)
             .followedBy([element]).expand((e) => e.fields))
         .asyncMap((field) => _getStaticReference(field, tables))
         .where((ref) => ref != null)
-        .cast<_TableReference>()
+        .cast<TableReferenceInDartView>()
         .toList();
   }
 
-  Future<_TableReference?> _getStaticReference(
+  Future<TableReferenceInDartView?> _getStaticReference(
       FieldElement field, List<MoorTable> tables) async {
     if (field.getter != null) {
       try {
@@ -186,7 +189,7 @@ class ViewParser {
             final name = node.name.toString();
             final declaration = '${type.entityInfoName} get $name => '
                 '_db.${type.dbGetterName};';
-            return _TableReference(type, name, declaration);
+            return TableReferenceInDartView(type, name, declaration);
           }
         }
       } catch (_) {}
@@ -194,8 +197,10 @@ class ViewParser {
     return null;
   }
 
-  Future<ViewQueryInformation> _parseQuery(ClassElement element,
-      List<_TableReference> references, List<MoorColumn> columns) async {
+  Future<ViewQueryInformation> _parseQuery(
+      ClassElement element,
+      List<TableReferenceInDartView> references,
+      List<MoorColumn> columns) async {
     final as =
         element.methods.where((method) => method.name == 'as').firstOrNull;
 
@@ -274,12 +279,4 @@ class ViewParser {
 
     throw analysisError(base.step, element, 'Missing `as()` query declaration');
   }
-}
-
-class _TableReference {
-  MoorTable table;
-  String name;
-  String declaration;
-
-  _TableReference(this.table, this.name, this.declaration);
 }

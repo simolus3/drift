@@ -17,14 +17,26 @@ class DartViewDeclaration implements ViewDeclaration, DartDeclaration {
   @override
   final ClassElement element;
 
-  DartViewDeclaration._(this.declaration, this.element);
+  final List<TableReferenceInDartView> staticReferences;
 
-  factory DartViewDeclaration(ClassElement element, FoundFile file) {
+  DartViewDeclaration._(this.declaration, this.element, this.staticReferences);
+
+  factory DartViewDeclaration(ClassElement element, FoundFile file,
+      List<TableReferenceInDartView> staticReferences) {
     return DartViewDeclaration._(
       SourceRange.fromElementAndFile(element, file),
       element,
+      staticReferences,
     );
   }
+}
+
+class TableReferenceInDartView {
+  final MoorTable table;
+  final String name;
+  final String declaration;
+
+  TableReferenceInDartView(this.table, this.name, this.declaration);
 }
 
 class MoorViewDeclaration
