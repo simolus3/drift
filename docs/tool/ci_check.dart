@@ -37,7 +37,7 @@ Future<void> main() async {
 
   for (final result in results.destinations) {
     if (result.isBroken) {
-      print('Broken: $result');
+      print('Broken: $result (${result.toMap()})');
       hasBrokenLinks = true;
     }
   }
