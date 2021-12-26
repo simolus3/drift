@@ -168,7 +168,8 @@ class BlobType extends SqlType<Uint8List> {
 
   @override
   Uint8List? mapFromDatabaseResponse(dynamic response) {
-    return response as Uint8List?;
+    var list = response.codeUnits;
+    return Uint8List.fromList(list);
   }
 
   @override
