@@ -41,7 +41,7 @@ your sources without further confirmation. When using git, it is sufficient to e
 
 To apply the migration, run `dart run moor_generator migrate` in your project's directory.
 When using Flutter, run `flutter pub run moor_generator migrate` instead.
-The migration tool with transform your pubspec, `build.yaml` files and Dart source files. It will also rename `.moor` files to
+The migration tool will transform your pubspec, `build.yaml` files and Dart source files. It will also rename `.moor` files to
 `.drift` and patch imports as needed.
 
 After running the migration, please verify the changes to ensure that they match what you expect.
