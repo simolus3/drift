@@ -22,8 +22,15 @@ void main() {
     final controller = StreamController<List<int>>();
     final stream = controller.stream.transform(singleElements());
 
-    expectLater(stream,
-        emitsInOrder([1, emitsError(anything), 2, emitsError(anything)]));
+    expectLater(
+      stream,
+      emitsInOrder([
+        1,
+        emitsError(_stateErrorWithTrace),
+        2,
+        emitsError(_stateErrorWithTrace)
+      ]),
+    );
 
     controller
       ..add([1])
@@ -38,3 +45,6 @@ void main() {
     expect(stream.transform(singleElementsOrNull()), emits(isNull));
   });
 }
+
+Matcher _stateErrorWithTrace =
+    isStateError.having((e) => e.stackTrace, 'stackTrace', isNotNull);
