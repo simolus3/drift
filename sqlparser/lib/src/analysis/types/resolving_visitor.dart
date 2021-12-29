@@ -455,6 +455,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   ResolvedType? _resolveInvocation(ExpressionInvocation e) {
     final params = e.expandParameters();
+
     void nullableIfChildIs() {
       session._addRelation(NullableIfSomeOtherIs(e, params));
     }
@@ -484,9 +485,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'substr':
       case 'trim':
       case 'upper':
-      case 'group_concat':
         nullableIfChildIs();
         return _textType;
+      case 'group_concat':
+        return _textType.withNullable(true);
       case 'date':
       case 'time':
       case 'datetime':

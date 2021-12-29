@@ -42,6 +42,8 @@ const Map<String, ResolvedType?> _types = {
       ResolvedType.bool(),
   'INSERT INTO demo DEFAULT VALUES ON CONFLICT DO UPDATE SET id = id WHERE ?':
       ResolvedType.bool(),
+  'SELECT GROUP_CONCAT(content) = ? FROM demo;':
+      ResolvedType(type: BasicType.text, nullable: true),
 };
 
 SqlEngine _spawnEngine() {
