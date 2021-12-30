@@ -1,3 +1,7 @@
+## 1.2.0
+
+- Generate code needed to support streams of views.
+
 ## 1.1.1
 
 - Improve error handling around custom row classes.

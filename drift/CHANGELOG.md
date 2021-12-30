@@ -1,6 +1,9 @@
-## 1.2.0-dev
+## 1.2.0
 
 - Properly support stream update queries on views.
+- Reading blobs from the database is more lenient now.
+- Provide a stack trace when `getSingle()` or `watchSingle()` is used on a
+  query emitting more than one row.
 
 ## 1.1.1
 
