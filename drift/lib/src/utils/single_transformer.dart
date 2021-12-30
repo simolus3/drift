@@ -4,16 +4,17 @@ import 'dart:async';
 /// that each list is a singleton or empty.
 StreamTransformer<List<T>, T?> singleElementsOrNull<T>() {
   return StreamTransformer.fromHandlers(handleData: (data, sink) {
+    T? result;
+
     try {
-      if (data.isEmpty) {
-        sink.add(null);
-      } else {
-        sink.add(data.single);
+      if (data.isNotEmpty) {
+        result = data.single;
       }
     } catch (e) {
-      sink.addError(
-          StateError('Expected exactly one element, but got ${data.length}'));
+      throw StateError('Expected exactly one element, but got ${data.length}');
     }
+
+    sink.add(result);
   });
 }
 
@@ -21,11 +22,14 @@ StreamTransformer<List<T>, T?> singleElementsOrNull<T>() {
 /// that each list is a singleton.
 StreamTransformer<List<T>, T> singleElements<T>() {
   return StreamTransformer.fromHandlers(handleData: (data, sink) {
+    T single;
+
     try {
-      sink.add(data.single);
+      single = data.single;
     } catch (e) {
-      sink.addError(
-          StateError('Expected exactly one element, but got ${data.length}'));
+      throw StateError('Expected exactly one element, but got ${data.length}');
     }
+
+    sink.add(single);
   });
 }

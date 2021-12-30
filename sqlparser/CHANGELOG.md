@@ -1,3 +1,7 @@
+## 0.19.1
+
+- Make the result of `group_concat` nullable.
+
 ## 0.19.0
 
 - Support generated columns.
