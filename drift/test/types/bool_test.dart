@@ -2,18 +2,17 @@ import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('maps without transformation', () {
+  test('bool with underlying string', () {
     const type = BoolType();
-    const data = false;
 
-    expect(type.mapToSqlVariable(data), 0);
-    expect(type.mapFromDatabaseResponse(data), data);
+    expect(type.mapFromDatabaseResponse('FALSE'), false);
+    expect(type.mapFromDatabaseResponse('TRUE'), true);
   });
 
   test('writes bool literals', () {
     const type = BoolType();
-    const data = false;
 
-    expect(type.mapToSqlConstant(data), '0');
+    expect(type.mapToSqlConstant(false), '0');
+    expect(type.mapToSqlConstant(true), '1');
   });
 }

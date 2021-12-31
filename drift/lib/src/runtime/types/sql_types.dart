@@ -45,6 +45,9 @@ class BoolType extends SqlType<bool> {
   bool? mapFromDatabaseResponse(dynamic response) {
     // ignore: avoid_returning_null
     if (response == null) return null;
+    if (response is String) {
+      return response.toUpperCase().compareTo('TRUE') == 0;
+    }
     return response != 0;
   }
 
