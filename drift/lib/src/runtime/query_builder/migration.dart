@@ -326,7 +326,7 @@ class Migrator {
     } else if (view.query != null) {
       final context = GenerationContext.fromDb(_db);
       context.generatingForView = view.entityName;
-      context.buffer.write('CREATE VIEW ${view.entityName} AS ');
+      context.buffer.write('CREATE VIEW IF NOT EXISTS ${view.entityName} AS ');
       view.query!.writeInto(context);
       await _issueCustomQuery(context.sql, const []);
     }
