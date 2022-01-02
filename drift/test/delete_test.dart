@@ -70,4 +70,26 @@ void main() {
       verifyNever(streamQueries.handleTableUpdates(any));
     });
   });
+
+  group('delete with from()', () {
+    test('delete()', () async {
+      await db.from(db.users).delete().go();
+
+      verify(executor.runDelete('DELETE FROM users;', []));
+    });
+
+    test('deleteOne()', () async {
+      await db.from(db.users).deleteOne(const UsersCompanion(id: Value(3)));
+
+      verify(executor.runDelete('DELETE FROM users WHERE id = ?;', [3]));
+    });
+
+    test('deleteWhere', () async {
+      await db
+          .from(db.users)
+          .deleteWhere((tbl) => tbl.id.isSmallerThanValue(3));
+
+      verify(executor.runDelete('DELETE FROM users WHERE id < ?;', [3]));
+    });
+  });
 }

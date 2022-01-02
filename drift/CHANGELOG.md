@@ -1,3 +1,8 @@
+## 1.3.0
+
+- Add the `from(table)` method to generated databases. It can be used to write
+  common queries more concisely.
+
 ## 1.2.0
 
 - Properly support stream update queries on views.
