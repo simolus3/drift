@@ -21,7 +21,9 @@ Future<void> main() async {
         Uri.parse('http://localhost:8080/api/')
       ],
       {'http://localhost:8080/**'},
-      true,
+      // todo: Re-enable. Current problem is that we link new pages to their
+      // final url (under drift.simonbinder.eu) before they're deployed.
+      false,
       UrlSkipper(
           '', ['github.com', 'pub.dev', 'api.dart.dev', 'fonts.gstatic.com']),
       false,
