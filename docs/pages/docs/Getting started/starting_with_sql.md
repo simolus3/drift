@@ -149,7 +149,7 @@ Let's take a look at what drift generated during the build:
   - a `Selectable<Todo> todosInCategory(int)` method, which runs the
     `todosInCategory` query declared above. Drift has determined that the
     type of the variable in that query is `int`, because that's the type
-    of the `category` column we're comparing it to.   
+    of the `category` column we're comparing it to.
     The method returns a `Selectable` to indicate that it can both be
     used as a regular query (`Selectable.get` returns a `Future<List<Todo>>`)
     or as an auto-updating stream (by using `.watch` instead of `.get()`).
@@ -169,7 +169,7 @@ further guides to help you learn more:
 - [Schema migrations]({{ "../Advanced Features/migrations.md" | pageUrl }})
 - Writing [queries]({{ "writing_queries.md" | pageUrl }}) and
   [expressions]({{ "../Advanced Features/expressions.md" | pageUrl }}) in Dart
-- A more [in-depth guide]({{ "../Using SQL/moor_files.md" | pageUrl }}) 
+- A more [in-depth guide]({{ "../Using SQL/drift_files.md" | pageUrl }})
   on `drift` files, which explains `import` statements and the Dart-SQL interop.
 
 {% block "blocks/alert" title="Using the database" %}

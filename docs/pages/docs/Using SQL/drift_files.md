@@ -6,6 +6,8 @@ data:
 
 aliases:
   - /docs/using-sql/custom_tables/  # Redirect from outdated "custom tables" page which has been deleted
+  - /docs/using-sql/moor_files/
+
 template: layouts/docs/single
 ---
 
@@ -174,27 +176,27 @@ CREATE TABLE saved_routes (
   id INTEGER NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   "from" INTEGER NOT NULL REFERENCES coordinates (id),
-  to INTEGER NOT NULL REFERENCES coordinates (id)
+  "to" INTEGER NOT NULL REFERENCES coordinates (id)
 );
 
 routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
   INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON t.id = r.to;
+  INNER JOIN coordinates t ON t.id = r."to";
 ```
 
-To match the returned column names while avoiding name clashes in Dart, drift 
+To match the returned column names while avoiding name clashes in Dart, drift
 will generate a class having an `id`, `name`,  `id1`, `lat`, `long`, `lat1` and
 a `long1` field.
-Of course, that's not helpful at all - was `lat1` coming from `from` or `to` 
+Of course, that's not helpful at all - was `lat1` coming from `from` or `to`
 again? Let's rewrite the query, this time using nested results:
 
 ```sql
 routesWithNestedPoints: SELECT r.id, r.name, f.**, t.** FROM routes r
   INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON t.id = r.to;
+  INNER JOIN coordinates t ON t.id = r."to";
 ```
 
-As you can see, we can nest a result simply by using the drift-specific 
+As you can see, we can nest a result simply by using the drift-specific
 `table.**` syntax.
 For this query, drift will generate the following class:
 ```dart
@@ -207,7 +209,7 @@ class RoutesWithNestedPointsResult {
 }
 ```
 
-Great! This class matches our intent much better than the flat result class 
+Great! This class matches our intent much better than the flat result class
 from before.
 
 At the moment, there are some limitations with this approach:

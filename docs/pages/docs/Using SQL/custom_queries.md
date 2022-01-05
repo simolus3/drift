@@ -47,11 +47,11 @@ To use this feature, it's helpful to know how Dart tables are named in sql. For 
 override `tableName`, the name in sql will be the `snake_case` of the class name. So a Dart table
 called `Categories` will be named `categories`, a table called `UserAddressInformation` would be
 called `user_address_information`. The same rule applies to column getters without an explicit name.
-Tables and columns declared in [Drift files]({{ "moor_files.md" | pageUrl }}) will always have the
+Tables and columns declared in [Drift files]({{ "drift_files.md" | pageUrl }}) will always have the
 name you specified.
 {% endblock %}
 
-You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for 
+You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for
 [daos]({{ "../Advanced Features/daos.md" | pageUrl }}),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
 writing to.
@@ -60,7 +60,7 @@ writing to.
 If you don't want to use the statements with an generated api, you can
 still send custom queries by calling `customSelect` for a one-time query or
 `customSelectStream` for a query stream that automatically emits a new set of items when
-the underlying data changes. Using the todo example introduced in the 
+the underlying data changes. Using the todo example introduced in the
 [getting started guide]({{ "../Getting started/index.md" | pageUrl }}), we can
 write this query which will load the amount of todo entries in each category:
 ```dart
@@ -90,7 +90,7 @@ Stream<List<CategoryWithCount>> categoriesWithCount() {
 ```
 For custom selects, you should use the `readsFrom` parameter to specify from which tables the query is
 reading. When using a `Stream`, drift will be able to know after which updates the stream should emit
-items. 
+items.
 
 You can also bind SQL variables by using question-mark placeholders and the `variables` parameter:
 
@@ -104,7 +104,7 @@ Stream<int> amountOfTodosInCategory(int id) {
 }
 ```
 
-Of course, you can also use indexed variables (like `?12`) - for more information on them, see 
+Of course, you can also use indexed variables (like `?12`) - for more information on them, see
 [the sqlite3 documentation](https://sqlite.org/lang_expr.html#varparam).
 
 ## Custom update statements
