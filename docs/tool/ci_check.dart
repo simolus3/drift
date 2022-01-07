@@ -38,7 +38,8 @@ Future<void> main() async {
   var hasBrokenLinks = false;
 
   for (final result in results.destinations) {
-    if (result.isBroken) {
+    // todo: Remove !result.isExternal after external links work again
+    if (result.isBroken && !result.isExternal) {
       print('Broken: $result (${result.toMap()})');
       hasBrokenLinks = true;
     }
