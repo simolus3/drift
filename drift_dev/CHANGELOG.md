@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Support the latest `analyzer` and `analyzer_plugin` packages.
+
 ## 1.2.0
 
 - Generate code needed to support streams of views.
