@@ -1,5 +1,5 @@
 @TestOn('vm')
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
 
@@ -137,6 +137,16 @@ void main() {
 
     expect(eval(match), completion(isTrue));
     expect(eval(noMatch), completion(isFalse));
+  });
+
+  test('groupConcat is nullable', () async {
+    final ids = db.users.id.groupConcat();
+    final query = db.selectOnly(db.users)
+      ..where(db.users.id.equals(999))
+      ..addColumns([ids]);
+
+    final result = await query.getSingle();
+    expect(result.read(ids), isNull);
   });
 
   test('subqueries cause updates to stream queries', () async {

@@ -1,7 +1,11 @@
-## 1.3.0
+## (unreleased)
 
 - Add the `from(table)` method to generated databases. It can be used to write
   common queries more concisely.
+- Make `groupConcat` nullable in the Dart API.
+- Throw an exception in a `NativeDatabase` when multiple statements are run in
+  a single call. In previous versions, parts of the SQL string would otherwise
+  be ignored.
 
 ## 1.2.0
 
