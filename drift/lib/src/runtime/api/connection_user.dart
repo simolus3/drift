@@ -386,10 +386,6 @@ abstract class DatabaseConnectionUser {
   }
 
   /// Executes the custom sql [statement] on the database.
-  ///
-  /// [statement] should contain exactly one SQL statement. Attempting to run
-  /// multiple statements with a single [customStatement] may not be fully
-  /// supported on all platforms.
   Future<void> customStatement(String statement, [List<dynamic>? args]) {
     final engine = resolvedEngine;
 

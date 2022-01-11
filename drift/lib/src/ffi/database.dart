@@ -182,8 +182,7 @@ class _VmDelegate extends DatabaseDelegate {
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     final prepared = [
-      for (final stmt in statements.statements)
-        _db.prepare(stmt, checkNoTail: true),
+      for (final stmt in statements.statements) _db.prepare(stmt),
     ];
 
     for (final application in statements.arguments) {
@@ -203,7 +202,7 @@ class _VmDelegate extends DatabaseDelegate {
     if (args.isEmpty) {
       _db.execute(statement);
     } else {
-      final stmt = _db.prepare(statement, checkNoTail: true);
+      final stmt = _db.prepare(statement);
       stmt.execute(args);
       stmt.dispose();
     }
@@ -228,7 +227,7 @@ class _VmDelegate extends DatabaseDelegate {
 
   @override
   Future<QueryResult> runSelect(String statement, List<Object?> args) async {
-    final stmt = _db.prepare(statement, checkNoTail: true);
+    final stmt = _db.prepare(statement);
     final result = stmt.select(args);
     stmt.dispose();
 
