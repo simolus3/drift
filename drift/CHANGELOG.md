@@ -6,6 +6,7 @@
 - Throw an exception in a `NativeDatabase` when multiple statements are run in
   a single call. In previous versions, parts of the SQL string would otherwise
   be ignored.
+- Close the underlying database when an isolate is shut down.
 
 ## 1.2.0
 

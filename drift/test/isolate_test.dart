@@ -5,9 +5,11 @@ import 'dart:isolate';
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'data/tables/todos.dart';
+import 'data/utils/mocks.dart';
 
 void main() {
   // Using the DriftIsolate apis without actually running on a background
@@ -105,6 +107,15 @@ void main() {
     final drift = await spawned.first as DriftIsolate;
     await drift.shutdownAll();
   }, tags: 'background_isolate');
+
+  test('shutting down will close the underlying executor', () async {
+    final mockExecutor = MockExecutor();
+    final isolate = DriftIsolate.inCurrent(
+        () => DatabaseConnection.fromExecutor(mockExecutor));
+    await isolate.shutdownAll();
+
+    verify(mockExecutor.close());
+  });
 }
 
 void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
