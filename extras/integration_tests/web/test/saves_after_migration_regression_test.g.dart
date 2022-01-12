@@ -34,14 +34,14 @@ class Foo extends DataClass implements Insertable<Foo> {
 
   factory Foo.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Foo(
       id: serializer.fromJson<int>(json['id']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
     };
@@ -175,14 +175,14 @@ class Bar extends DataClass implements Insertable<Bar> {
 
   factory Bar.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Bar(
       id: serializer.fromJson<int>(json['id']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
     };

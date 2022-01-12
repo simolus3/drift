@@ -93,8 +93,15 @@ class SqlJsDatabase {
 
   /// Calls `run(sql, args)` on the underlying js api
   void runWithArgs(String sql, List<dynamic> args) {
-    final ar = JsArray.from(args);
-    _obj.callMethod('run', [sql, ar]);
+    if (args.isEmpty) {
+      // Call run without providing arguments. sql.js will then use sqlite3_exec
+      // internally, which supports running multiple statements at once. This
+      // matches the behavior from a `NativeDatabase`.
+      _obj.callMethod('run', [sql]);
+    } else {
+      final ar = JsArray.from(args);
+      _obj.callMethod('run', [sql, ar]);
+    }
   }
 
   /// Returns the amount of rows affected by the most recent INSERT, UPDATE or

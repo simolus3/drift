@@ -11,14 +11,12 @@ dev_dependencies:
   test: ^1.5.0
   build_runner:
   build_web_compilers:
-  moor_generator:
+  drift_dev: ^1.0.0
 
 dependency_overrides:
   drift:
     path: ../../../drift
-  moor:
-    path: ../../../moor
-  moor_generator:
-    path: ../../../moor_generator
+  drift_dev:
+    path: ../../../drift_dev
   sqlparser:
     path: ../../../sqlparser

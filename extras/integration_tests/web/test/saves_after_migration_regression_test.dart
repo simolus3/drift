@@ -1,8 +1,8 @@
 @TestOn('browser')
 import 'dart:html';
 
-import 'package:moor/moor.dart';
-import 'package:moor/moor_web.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/web.dart';
 import 'package:test/test.dart';
 
 part 'saves_after_migration_regression_test.g.dart';
@@ -17,7 +17,7 @@ class Bars extends Table {
   IntColumn get id => integer().autoIncrement()();
 }
 
-@UseMoor(
+@DriftDatabase(
   tables: [Foos, Bars],
 )
 class _FakeDb extends _$_FakeDb {
