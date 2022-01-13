@@ -271,7 +271,7 @@ class QueryWriter {
     _writeVariables();
     _buffer.write(',');
     _writeUpdates();
-    _writeUpdateKind();
+    if(!_update.isInsert) _writeUpdateKind();
   }
 
   void _writeParameters() {
