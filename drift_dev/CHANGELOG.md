@@ -1,3 +1,7 @@
+## 1.3.0
+
+- Support `drift` version `1.3.x`.
+
 ## 1.2.0
 
 - Generate code needed to support streams of views.
