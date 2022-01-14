@@ -1,7 +1,7 @@
 @TestOn('browser')
 import 'dart:html';
 
-import 'package:moor/moor_web.dart';
+import 'package:drift/web.dart';
 import 'package:test/test.dart';
 import 'package:tests/tests.dart';
 
@@ -30,7 +30,7 @@ class WebExecutorIndexedDb extends TestExecutor {
   @override
   DatabaseConnection createConnection() {
     return DatabaseConnection.fromExecutor(
-      WebDatabase.withStorage(MoorWebStorage.indexedDb('foo')),
+      WebDatabase.withStorage(DriftWebStorage.indexedDb('foo')),
     );
   }
 
@@ -47,5 +47,16 @@ void main() {
 
   group('using IndexedDb', () {
     runAllTests(WebExecutorIndexedDb());
+  });
+
+  test('can run multiple statements in one call', () async {
+    final db = Database(DatabaseConnection.fromExecutor(
+        WebDatabase.withStorage(DriftWebStorage.volatile())));
+    addTearDown(db.close);
+
+    await db.customStatement(
+        'CREATE TABLE x1 (a INTEGER); INSERT INTO x1 VALUES (1);');
+    final results = await db.customSelect('SELECT * FROM x1;').get();
+    expect(results.length, 1);
   });
 }

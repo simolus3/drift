@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:moor/moor.dart';
-import 'package:moor/moor_web.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/web.dart';
 
 import 'package:test/test.dart';
 
@@ -184,23 +184,23 @@ AAAAAAAAAAAAAAAAAAAAAAANAQIjaGVsbG8gd29ybGQ=
 
 void main() {
   test('can initialize database when absent', () async {
-    await _testWith(const MoorWebStorage('name'));
+    await _testWith(const DriftWebStorage('name'));
   });
 
   test('can initialize database when absent - IndexedDB', () async {
     await _testWith(
-        MoorWebStorage.indexedDb('name', migrateFromLocalStorage: false));
+        DriftWebStorage.indexedDb('name', migrateFromLocalStorage: false));
   });
 }
 
-Future<void> _testWith(MoorWebStorage storage) async {
+Future<void> _testWith(DriftWebStorage storage) async {
   var didCallInitializer = false;
   final executor = WebDatabase.withStorage(storage, initializer: () async {
     didCallInitializer = true;
     return base64.decode(_rawDataBase64.replaceAll('\n', ''));
   });
 
-  moorRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   final attachedDb = _FakeDatabase(executor);
 
   await executor.ensureOpen(attachedDb);

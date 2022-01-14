@@ -211,4 +211,17 @@ void main() {
     await pumpEventQueue();
     db.markTablesUpdated([db.categories]);
   });
+
+  test('can create select statements with from()', () async {
+    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
+
+    final result = await db.from(db.todosTable).select().get();
+    expect(result, isEmpty);
+
+    final anotherResult = await db.from(db.todosTable).selectOnly().get();
+    expect(anotherResult, isEmpty);
+
+    verify(executor.runSelect('SELECT * FROM todos;', []));
+    verify(executor.runSelect('SELECT  FROM todos;', []));
+  });
 }

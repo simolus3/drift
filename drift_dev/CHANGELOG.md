@@ -1,3 +1,7 @@
+## 1.3.0
+
+- Support `drift` version `1.3.x`.
+
 ## 1.2.1
 
 - Support the latest `analyzer` and `analyzer_plugin` packages.

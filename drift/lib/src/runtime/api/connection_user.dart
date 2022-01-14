@@ -154,6 +154,17 @@ abstract class DatabaseConnectionUser {
     return executor.ensureOpen(attachedDatabase).then((_) => fn(executor));
   }
 
+  /// Captures a [table] or view for easier subsequent operations.
+  ///
+  /// The [TableOrViewOperations] class (or the [TableOperations] extension
+  /// for tables) provides convenience methods that make common operations
+  /// easier to write than using the methods from this class directly.
+  @experimental
+  TableOrViewOperations<T, D> from<T extends HasResultSet, D>(
+      ResultSetImplementation<T, D> table) {
+    return TableOrViewOperations._(this, table);
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   InsertStatement<T, D> into<T extends Table, D>(TableInfo<T, D> table) {
@@ -375,6 +386,10 @@ abstract class DatabaseConnectionUser {
   }
 
   /// Executes the custom sql [statement] on the database.
+  ///
+  /// [statement] should contain exactly one SQL statement. Attempting to run
+  /// multiple statements with a single [customStatement] may not be fully
+  /// supported on all platforms.
   Future<void> customStatement(String statement, [List<dynamic>? args]) {
     final engine = resolvedEngine;
 
@@ -537,5 +552,127 @@ abstract class DatabaseConnectionUser {
     }
 
     return buffer.toString();
+  }
+}
+
+/// A capture of a table and a generated database.
+///
+/// Table operations can be captured with [DatabaseConnectionUser.from], which
+/// may make some common operations easier to write:
+///
+/// - Use `from(table).select()` or `from(table).selectOnly()` instead of
+///   `select(table)` or `selectOnly(table)`, respectively.
+/// - Use `from(table).insert()` instead of `insert(table)`. You can also use
+///  `from(table).insertOne`, or [TableOperations.insertOnConflictUpdate] to
+///   insert rows directly.
+/// - Use `from(table).update()` instead of `update(table)`. You can also use
+///   `from(table).replace()` to replace an existing row.
+/// - Use `from(table).delete()`, `from(table).deleteOne()` or
+///  `from(table).deleteWhere` to delete rows easily.
+@sealed
+class TableOrViewOperations<Tbl extends HasResultSet, Row> {
+  final DatabaseConnectionUser _user;
+  final ResultSetImplementation<Tbl, Row> _sourceSet;
+
+  TableOrViewOperations._(this._user, this._sourceSet);
+
+  /// Composes a `SELECT` statement on the captured table or view.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.select].
+  SimpleSelectStatement<Tbl, Row> select({bool distinct = false}) {
+    return _user.select(_sourceSet, distinct: distinct);
+  }
+
+  /// Composes a `SELECT` statement only selecting a subset of columns.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
+  JoinedSelectStatement<Tbl, Row> selectOnly(
+      {bool distinct = false, bool includeJoinedTableColumns = true}) {
+    return _user.selectOnly(_sourceSet,
+        distinct: distinct,
+        includeJoinedTableColumns: includeJoinedTableColumns);
+  }
+}
+
+/// Additional methods for a [TableOrViewOperations] that are only available on
+/// tables.
+extension TableOperations<Tbl extends Table, Row>
+    on TableOrViewOperations<Tbl, Row> {
+  TableInfo<Tbl, Row> get _table => _sourceSet as TableInfo<Tbl, Row>;
+
+  /// Creates an insert statment to be used to compose an insert on the captured
+  /// table.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.into] on the
+  /// captured table. See that method for more information.
+  InsertStatement<Tbl, Row> insert() => _user.into(_table);
+
+  /// Inserts one row into the captured table.
+  ///
+  /// This is equivalent to calling [InsertStatement.insert] - see that method
+  /// for more information.
+  Future<int> insertOne(
+    Insertable<Row> row, {
+    InsertMode? mode,
+    UpsertClause<Tbl, Row>? onConflict,
+  }) {
+    return insert().insert(row, mode: mode, onConflict: onConflict);
+  }
+
+  /// Inserts one row into the captured table, replacing an existing row if it
+  /// exists already.
+  ///
+  /// Please note that this method is only available on recent sqlite3 versions.
+  /// See also [InsertStatement.insertOnConflictUpdate].
+  Future<int> insertOnConflictUpdate(Insertable<Row> row) {
+    return insert().insertOnConflictUpdate(row);
+  }
+
+  /// Inserts one row into the captured table and returns it, along with auto-
+  /// generated fields.
+  ///
+  /// Please note that this method is only available on recent sqlite3 versions.
+  /// See also [InsertStatement.insertReturning].
+  Future<Row> insertReturning(
+    Insertable<Row> row, {
+    InsertMode? mode,
+    UpsertClause<Tbl, Row>? onConflict,
+  }) {
+    return insert().insertReturning(
+      row,
+      mode: mode,
+      onConflict: onConflict,
+    );
+  }
+
+  /// Creates a statement to compose an `UPDATE` into the database.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.update] with the
+  /// captured table.
+  UpdateStatement<Tbl, Row> update() => _user.update(_table);
+
+  /// Replaces a single row with an update statement.
+  ///
+  /// See also [UpdateStatement.replace].
+  Future<void> replace(Insertable<Row> row) {
+    return update().replace(row);
+  }
+
+  /// Creates a statement to compose a `DELETE` from the database.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.delete] with the
+  /// captured table.
+  DeleteStatement<Tbl, Row> delete() => _user.delete(_table);
+
+  /// Deletes the [row] from the captured table.
+  Future<bool> deleteOne(Insertable<Row> row) async {
+    return await (delete()..whereSamePrimaryKey(row)).go() != 0;
+  }
+
+  /// Deletes all rows matching the [filter] from the table.
+  ///
+  /// See also [SingleTableQueryMixin.where].
+  Future<int> deleteWhere(Expression<bool?> Function(Tbl tbl) filter) {
+    return (delete()..where(filter)).go();
   }
 }

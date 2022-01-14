@@ -25,6 +25,40 @@ void main() {
       underlying.dispose();
     });
   });
+
+  group('checks for trailing statement content', () {
+    late NativeDatabase db;
+
+    setUp(() async {
+      db = NativeDatabase.memory();
+      await db.ensureOpen(_FakeExecutorUser());
+    });
+
+    tearDown(() => db.close());
+
+    test('multiple statements are allowed for runCustom without args', () {
+      return db.runCustom('SELECT 1; SELECT 2;');
+    });
+
+    test('throws for runCustom with args', () async {
+      expect(db.runCustom('SELECT ?; SELECT ?;', [1, 2]), throwsArgumentError);
+    });
+
+    test('in runSelect', () async {
+      expect(db.runSelect('SELECT ?; SELECT ?;', [1, 2]), throwsArgumentError);
+    });
+
+    test('in runBatched', () {
+      expect(
+        db.runBatched(BatchedStatements([
+          'SELECT ?; SELECT ?;'
+        ], [
+          ArgumentsForBatchedStatement(0, []),
+        ])),
+        throwsArgumentError,
+      );
+    });
+  });
 }
 
 class _FakeExecutorUser extends QueryExecutorUser {

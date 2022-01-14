@@ -160,4 +160,24 @@ void main() {
           {const TableUpdate('users'), const TableUpdate('todos')}));
     });
   });
+
+  group('update with from()', () {
+    test('update()', () async {
+      await db
+          .from(db.users)
+          .update()
+          .write(const UsersCompanion(id: Value(3)));
+
+      verify(executor.runUpdate('UPDATE users SET id = ?;', [3]));
+    });
+
+    test('replace', () async {
+      await db.from(db.categories).replace(const CategoriesCompanion(
+          id: Value(3), description: Value('new name')));
+
+      verify(executor.runUpdate(
+          'UPDATE categories SET "desc" = ?, priority = 0 WHERE id = ?;',
+          ['new name', 3]));
+    });
+  });
 }

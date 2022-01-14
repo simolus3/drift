@@ -33,12 +33,13 @@ extension BaseAggregate<DT> on Expression<DT> {
   /// Returns the concatenation of all non-null values in the current group,
   /// joined by the [separator].
   ///
-  /// The order of the concatenated elements is arbitrary.
+  /// The order of the concatenated elements is arbitrary. If no non-null values
+  /// exist in the group, `NULL` is returned.
   ///
   /// See also:
   ///  - the sqlite documentation: https://www.sqlite.org/lang_aggfunc.html#groupconcat
   ///  - the conceptually similar [Iterable.join]
-  Expression<String> groupConcat({String separator = ','}) {
+  Expression<String?> groupConcat({String separator = ','}) {
     const sqliteDefaultSeparator = ',';
     if (separator == sqliteDefaultSeparator) {
       return _AggregateExpression('GROUP_CONCAT', this);

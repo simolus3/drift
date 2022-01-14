@@ -62,7 +62,7 @@ class ServerImplementation implements DriftServer {
   @override
   Future<void> shutdown() {
     if (!_isShuttingDown) {
-      _done.complete();
+      _done.complete(connection.executor.close());
       _isShuttingDown = true;
     }
 
