@@ -320,6 +320,8 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         });
 
         if (target != null) resultColumn.resultSet = target.resultSet.resultSet;
+      } else if (resultColumn is NestedQueryColumn) {
+        _resolveSelect(resultColumn.select);
       }
     }
 

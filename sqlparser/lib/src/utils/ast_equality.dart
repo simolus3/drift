@@ -443,6 +443,12 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
+  void visitMoorNestedQueryColumn(NestedQueryColumn e, void arg) {
+    final current = _currentAs<NestedQueryColumn>(e);
+    _assert(current.as == e.as, e);
+    _checkChildren(e);
+  }
+
   @override
   void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
@@ -459,6 +465,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
       return visitMoorStatementParameter(e, arg);
     } else if (e is MoorTableName) {
       return visitMoorTableName(e, arg);
+    } else if (e is NestedQueryColumn) {
+      return visitMoorNestedQueryColumn(e, arg);
     }
   }
 

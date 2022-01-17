@@ -18,6 +18,7 @@ export 'moor/declared_statement.dart';
 export 'moor/import_statement.dart';
 export 'moor/inline_dart.dart';
 export 'moor/moor_file.dart';
+export 'moor/nested_query_column.dart';
 export 'moor/nested_star_result_column.dart';
 export 'node.dart';
 export 'statements/block.dart';

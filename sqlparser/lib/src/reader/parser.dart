@@ -1933,6 +1933,34 @@ class Parser {
       _current = positionBefore;
     }
 
+    // parsing for the nested query column
+    if (enableMoorExtensions && _matchOne(TokenType.list)) {
+      final list = _previous;
+
+      _consume(
+        TokenType.leftParen,
+        'Expected opening parenthesis after LIST',
+      );
+
+      // or _fullSelect but I don't think with support is required here because
+      // with statements can be added to the main select statement
+      final statement = select();
+      if (statement == null || statement is! SelectStatement) {
+        _error(
+          'Expected a select statement but found ${statement?.toString()}',
+        );
+      }
+
+      _consume(
+        TokenType.rightParen,
+        'Expected closing parenthesis to finish LIST expression',
+      );
+
+      final as = _as();
+      return NestedQueryColumn(select: statement, as: as?.identifier)
+        ..setSpan(list, _previous);
+    }
+
     final tokenBefore = _peek;
 
     final expr = expression();
