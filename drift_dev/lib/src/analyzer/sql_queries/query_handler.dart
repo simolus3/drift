@@ -219,8 +219,12 @@ class QueryHandler {
         final moorTable = mapper.viewOrTableToMoor(result)!;
         final isNullable =
             analysis == null || analysis.isNullableTable(originalResult!);
-        nestedTables.add(NestedResultTable(column, column.tableName, moorTable,
-            isNullable: isNullable));
+        nestedTables.add(NestedResultTable(
+          column,
+          column.as ?? column.tableName,
+          moorTable,
+          isNullable: isNullable,
+        ));
       }
     }
 

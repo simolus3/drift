@@ -1918,8 +1918,12 @@ class Parser {
           return StarResultColumn(identifier.identifier)
             ..setSpan(identifier, _previous);
         } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
-          return NestedStarResultColumn(identifier.identifier)
-            ..setSpan(identifier, _previous);
+          final as = _as();
+
+          return NestedStarResultColumn(
+            tableName: identifier.identifier,
+            as: as?.identifier,
+          )..setSpan(identifier, _previous);
         }
       }
 

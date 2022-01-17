@@ -1,5 +1,5 @@
 import '../../analysis/analysis.dart';
-import '../ast.dart' show StarResultColumn, ResultColumn;
+import '../ast.dart' show StarResultColumn, ResultColumn, Renamable;
 import '../node.dart';
 import '../visitor.dart';
 import 'moor_file.dart';
@@ -9,11 +9,15 @@ import 'moor_file.dart';
 /// Nested star result columns behave similar to a regular [StarResultColumn]
 /// when the query is actually run. However, they will affect generated code
 /// when using moor.
-class NestedStarResultColumn extends ResultColumn implements MoorSpecificNode {
+class NestedStarResultColumn extends ResultColumn
+    implements MoorSpecificNode, Renamable {
   final String tableName;
   ResultSet? resultSet;
 
-  NestedStarResultColumn(this.tableName);
+  @override
+  final String? as;
+
+  NestedStarResultColumn({required this.tableName, this.as});
 
   @override
   Iterable<AstNode> get childNodes => const [];

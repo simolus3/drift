@@ -58,6 +58,35 @@ void main() {
     );
   });
 
+  test('generates correct name for renamed nested star columns', () async {
+    final state = TestState.withContent({
+      'a|lib/main.moor': '''
+        CREATE TABLE tbl (
+          id INTEGER NULL
+        );
+
+        query: SELECT t.** AS tableName FROM tbl AS t;
+      ''',
+    }, enableAnalyzer: false);
+    addTearDown(state.close);
+
+    final file = await state.analyze('package:a/main.moor');
+    final fileState = file.currentResult as ParsedMoorFile;
+
+    final writer = Writer(
+        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        generationOptions: const GenerationOptions(nnbd: true));
+    QueryWriter(fileState.resolvedQueries!.single, writer.child()).write();
+
+    expect(
+      writer.writeGenerated(),
+      allOf(
+        contains('SELECT"t"."id" AS "nested_0.id"'),
+        contains('final TblData tableName;'),
+      ),
+    );
+  });
+
   group('generates correct code for expanded arrays', () {
     late TestState state;
 

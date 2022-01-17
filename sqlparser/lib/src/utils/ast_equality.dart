@@ -439,6 +439,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
     final current = _currentAs<NestedStarResultColumn>(e);
     _assert(current.tableName == e.tableName, e);
+    _assert(current.as == e.as, e);
     _checkChildren(e);
   }
 
