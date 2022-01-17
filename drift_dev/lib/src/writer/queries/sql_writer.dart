@@ -147,6 +147,8 @@ class SqlWriter extends NodeSqlBuilder {
           query!.placeholders.singleWhere((p) => p.astNode == e);
 
       _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+    } else if (e is NestedQueryColumn) {
+      _out.write('0');
     } else {
       return super.visitMoorSpecificNode(e, arg);
     }

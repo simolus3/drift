@@ -70,9 +70,9 @@ class QueryWriter {
 
   String _nameOfCreationMethod(SqlSelectQuery select) {
     if (!select.declaredInMoorFile && !options.compactQueryMethods) {
-      return select.name;
-    } else {
       return '${select.name}Query';
+    } else {
+      return select.name;
     }
   }
 
@@ -149,7 +149,7 @@ class QueryWriter {
 
           _writeCustomSelectStatement(nested.query);
 
-          _buffer.write('.get()');
+          _buffer.write('.get(),');
         }
       }
       _buffer.write(');\n}');
