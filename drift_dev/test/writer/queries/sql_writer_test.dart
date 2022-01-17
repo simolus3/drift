@@ -9,8 +9,8 @@ void main() {
   void check(String sql, String expectedDart) {
     final engine = SqlEngine();
     final context = engine.analyze(sql);
-    final query = SqlSelectQuery(
-        'name', context, [], [], InferredResultSet(null, []), null);
+    final query = SqlSelectQuery('name', context, context.root, [], [],
+        InferredResultSet(null, []), null);
 
     final result =
         SqlWriter(const MoorOptions.defaults(), query: query).write();

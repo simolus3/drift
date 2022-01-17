@@ -17,7 +17,7 @@ void main() {
 
   test('warns when a result column is unresolved', () {
     final result = engine.analyze('SELECT ?;');
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('unknown type')));
@@ -25,7 +25,7 @@ void main() {
 
   test('warns when the result depends on a Dart template', () {
     final result = engine.analyze(r"SELECT 'string' = $expr;");
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('Dart template')));
@@ -33,7 +33,7 @@ void main() {
 
   test('warns when nested results refer to table-valued functions', () {
     final result = engine.analyze("SELECT json_each.** FROM json_each('')");
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(
       moorQuery.lints,
@@ -95,7 +95,7 @@ in: INSERT INTO foo (id) $placeholder;
   group('warns about wrong types in subexpressions', () {
     test('strings in arithmetic', () {
       final result = engine.analyze("SELECT 'foo' + 3;");
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(
         moorQuery.lints,
@@ -106,14 +106,14 @@ in: INSERT INTO foo (id) $placeholder;
 
     test('allows numerics in arithmetic', () {
       final result = engine.analyze('SELECT 3.6 * 3;');
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(moorQuery.lints, isEmpty);
     });
 
     test('real in binary', () {
       final result = engine.analyze('SELECT 3.5 | 3;');
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(
         moorQuery.lints,

@@ -24,7 +24,7 @@ void main() {
     final writer = Writer(
         const MoorOptions.defaults(generateNamedParameters: true),
         generationOptions: const GenerationOptions(nnbd: true));
-    QueryWriter(fileState.resolvedQueries!.single, writer.child()).write();
+    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(writer.writeGenerated(), contains('required List<int?> idList'));
   });
@@ -47,7 +47,7 @@ void main() {
     final writer = Writer(
         const MoorOptions.defaults(newSqlCodeGeneration: true),
         generationOptions: const GenerationOptions(nnbd: true));
-    QueryWriter(fileState.resolvedQueries!.single, writer.child()).write();
+    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
       writer.writeGenerated(),
@@ -76,7 +76,7 @@ void main() {
     final writer = Writer(
         const MoorOptions.defaults(newSqlCodeGeneration: true),
         generationOptions: const GenerationOptions(nnbd: true));
-    QueryWriter(fileState.resolvedQueries!.single, writer.child()).write();
+    QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
     expect(
       writer.writeGenerated(),
@@ -116,7 +116,7 @@ void main() {
         options,
         generationOptions: const GenerationOptions(nnbd: true),
       );
-      QueryWriter(fileState.resolvedQueries!.single, writer.child()).write();
+      QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
 
       expect(writer.writeGenerated(), expectation);
     }

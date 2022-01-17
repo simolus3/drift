@@ -250,28 +250,29 @@ abstract class Selectable<T>
   ///
   /// Each entry emitted by this [Selectable] will be transformed by the
   /// [mapper] and then emitted to the selectable returned.
-  Selectable<N> map<N>(N Function(T) mapper) {
+  Selectable<N> map<N>(FutureOr<N> Function(T) mapper) {
     return _MappedSelectable<T, N>(this, mapper);
   }
 }
 
 class _MappedSelectable<S, T> extends Selectable<T> {
   final Selectable<S> _source;
-  final T Function(S) _mapper;
+  final FutureOr<T> Function(S) _mapper;
 
   _MappedSelectable(this._source, this._mapper);
 
   @override
-  Future<List<T>> get() {
+  Future<List<T>> get() async {
     return _source.get().then(_mapResults);
   }
 
   @override
   Stream<List<T>> watch() {
-    return _source.watch().map(_mapResults);
+    return _source.watch().asyncMap(_mapResults);
   }
 
-  List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
+  Future<List<T>> _mapResults(List<S> results) async =>
+      [for (final result in results) await _mapper(result)];
 }
 
 /// Mixin for a [Query] that operates on a single primary table only.

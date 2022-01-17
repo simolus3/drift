@@ -46,7 +46,7 @@ class SqlWriter extends NodeSqlBuilder {
     if (query is SqlSelectQuery) {
       doubleStarColumnToResolvedTable = {
         for (final nestedResult in query.resultSet.nestedResults)
-          nestedResult.from: nestedResult
+          if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
       };
     }
     return SqlWriter._(query, options, doubleStarColumnToResolvedTable,
@@ -54,7 +54,7 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   String write() {
-    return writeNodeIntoStringLiteral(query!.fromContext!.root);
+    return writeNodeIntoStringLiteral(query!.root!);
   }
 
   String writeNodeIntoStringLiteral(AstNode node) {

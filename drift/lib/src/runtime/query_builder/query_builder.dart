@@ -1,6 +1,8 @@
 // Mega compilation unit that includes all Dart apis related to generating SQL
 // at runtime.
 
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/sqlite_keywords.dart';

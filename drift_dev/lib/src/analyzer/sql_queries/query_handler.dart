@@ -11,7 +11,6 @@ import 'required_variables.dart';
 /// generator package by determining its type, return columns, variables and so
 /// on.
 class QueryHandler {
-  final DeclaredQuery source;
   final AnalysisContext context;
   final TypeMapper mapper;
   final RequiredVariables requiredVariables;
@@ -23,19 +22,30 @@ class QueryHandler {
   Iterable<FoundVariable> get _foundVariables =>
       _foundElements.whereType<FoundVariable>();
 
-  BaseSelectStatement get _select => context.root as BaseSelectStatement;
+  QueryHandler(
+    this.context,
+    this.mapper, {
+    this.requiredVariables = RequiredVariables.empty,
+  });
 
-  QueryHandler(this.source, this.context, this.mapper,
-      {this.requiredVariables = RequiredVariables.empty});
-
-  String get name => source.name;
-
-  SqlQuery handle() {
+  SqlQuery handle(DeclaredQuery source) {
     _foundElements =
         mapper.extractElements(context, required: requiredVariables);
 
     _verifyNoSkippedIndexes();
-    final query = _mapToMoor();
+
+    final String? requestedResultClass;
+    if (source is DeclaredMoorQuery) {
+      requestedResultClass = source.astNode.as;
+    } else {
+      requestedResultClass = null;
+    }
+
+    final query = _mapToMoor(
+      queryName: source.name,
+      requestedResultClass: requestedResultClass,
+      root: context.root,
+    );
 
     final linter = Linter.forHandler(this);
     linter.reportLints();
@@ -44,14 +54,21 @@ class QueryHandler {
     return query;
   }
 
-  SqlQuery _mapToMoor() {
-    final root = context.root;
+  SqlQuery _mapToMoor({
+    required String queryName,
+    required String? requestedResultClass,
+    required AstNode root,
+  }) {
     if (root is BaseSelectStatement) {
-      return _handleSelect();
+      return _handleSelect(
+        queryName: queryName,
+        requestedResultClass: requestedResultClass,
+        select: root,
+      );
     } else if (root is UpdateStatement ||
         root is DeleteStatement ||
         root is InsertStatement) {
-      return _handleUpdate();
+      return _handleUpdate(queryName, root);
     } else {
       throw StateError('Unexpected sql: Got $root, expected insert, select, '
           'update or delete');
@@ -63,25 +80,25 @@ class QueryHandler {
     _foundViews = visitor.foundViews;
   }
 
-  UpdatingQuery _handleUpdate() {
+  UpdatingQuery _handleUpdate(String queryName, AstNode root) {
     final updatedFinder = UpdatedTablesVisitor();
-    context.root.acceptWithoutArg(updatedFinder);
+    root.acceptWithoutArg(updatedFinder);
     _applyFoundTables(updatedFinder);
 
-    final root = context.root;
     final isInsert = root is InsertStatement;
 
     InferredResultSet? resultSet;
     if (root is StatementReturningColumns) {
       final columns = root.returnedResultSet?.resolvedColumns;
       if (columns != null) {
-        resultSet = _inferResultSet(columns);
+        resultSet = _inferResultSet(root, columns);
       }
     }
 
     return UpdatingQuery(
-      name,
+      queryName,
       context,
+      root,
       _foundElements,
       updatedFinder.writtenTables
           .map(mapper.writtenToMoor)
@@ -93,9 +110,14 @@ class QueryHandler {
     );
   }
 
-  SqlSelectQuery _handleSelect() {
+  SqlSelectQuery _handleSelect({
+    required String queryName,
+    required String? requestedResultClass,
+    required BaseSelectStatement select,
+  }) {
     final tableFinder = ReferencedTablesVisitor();
-    _select.acceptWithoutArg(tableFinder);
+    select.acceptWithoutArg(tableFinder);
+    // fine
     _applyFoundTables(tableFinder);
 
     final moorTables =
@@ -105,22 +127,18 @@ class QueryHandler {
 
     final moorEntities = [...moorTables, ...moorViews];
 
-    String? requestedName;
-    if (source is DeclaredMoorQuery) {
-      requestedName = (source as DeclaredMoorQuery).astNode.as;
-    }
-
     return SqlSelectQuery(
-      name,
+      queryName,
       context,
+      select,
       _foundElements,
       moorEntities,
-      _inferResultSet(_select.resolvedColumns!),
-      requestedName,
+      _inferResultSet(select, select.resolvedColumns!),
+      requestedResultClass,
     );
   }
 
-  InferredResultSet _inferResultSet(List<Column> rawColumns) {
+  InferredResultSet _inferResultSet(AstNode select, List<Column> rawColumns) {
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
@@ -140,7 +158,7 @@ class QueryHandler {
       candidatesForSingleTable.removeWhere((t) => t != resultSet);
     }
 
-    final nestedResults = _findNestedResultTables();
+    final nestedResults = _findNestedResultTables(select);
     if (nestedResults.isNotEmpty) {
       // The single table optimization doesn't make sense when nested result
       // sets are present.
@@ -202,12 +220,11 @@ class QueryHandler {
     return InferredResultSet(null, columns, nestedResults: nestedResults);
   }
 
-  List<NestedResultTable> _findNestedResultTables() {
-    final query = context.root;
+  List<NestedResult> _findNestedResultTables(AstNode query) {
     // We don't currently support nested results for compound statements
     if (query is! SelectStatement) return const [];
 
-    final nestedTables = <NestedResultTable>[];
+    final nestedTables = <NestedResult>[];
     final analysis = JoinModel.of(query);
 
     for (final column in query.columns) {
@@ -224,6 +241,15 @@ class QueryHandler {
           column.as ?? column.tableName,
           moorTable,
           isNullable: isNullable,
+        ));
+      } else if (column is NestedQueryColumn) {
+        nestedTables.add(NestedResultQuery(
+          from: column,
+          query: _handleSelect(
+            queryName: 'nested',
+            requestedResultClass: column.as,
+            select: column.select,
+          ),
         ));
       }
     }

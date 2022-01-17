@@ -68,6 +68,7 @@ abstract class SqlQuery {
   final String name;
 
   AnalysisContext? get fromContext;
+  AstNode? get root;
   List<AnalysisError>? lints;
 
   /// Whether this query was declared in a `.moor` file.
@@ -165,6 +166,8 @@ class SqlSelectQuery extends SqlQuery {
   final InferredResultSet resultSet;
   @override
   final AnalysisContext fromContext;
+  @override
+  final AstNode root;
 
   /// The name of the result class, as requested by the user.
   // todo: Allow custom result classes for RETURNING as well?
@@ -173,6 +176,7 @@ class SqlSelectQuery extends SqlQuery {
   SqlSelectQuery(
     String name,
     this.fromContext,
+    this.root,
     List<FoundElement> elements,
     this.readsFrom,
     this.resultSet,
@@ -196,6 +200,7 @@ class SqlSelectQuery extends SqlQuery {
     return SqlSelectQuery(
       name,
       fromContext,
+      root,
       elements,
       readsFrom,
       resultSet,
@@ -211,6 +216,8 @@ class UpdatingQuery extends SqlQuery {
   final InferredResultSet? resultSet;
   @override
   final AnalysisContext fromContext;
+  @override
+  final AstNode root;
 
   bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
 
@@ -219,6 +226,7 @@ class UpdatingQuery extends SqlQuery {
   UpdatingQuery(
     String name,
     this.fromContext,
+    this.root,
     List<FoundElement> elements,
     this.updates, {
     this.isInsert = false,
@@ -239,6 +247,9 @@ class InTransactionQuery extends SqlQuery {
 
   @override
   AnalysisContext? get fromContext => null;
+
+  @override
+  AstNode? get root => null;
 }
 
 class InferredResultSet {
@@ -249,9 +260,9 @@ class InferredResultSet {
 
   /// Tables in the result set that should appear as a class.
   ///
-  /// See [NestedResultTable] for further discussion and examples.
-  final List<NestedResultTable> nestedResults;
-  Map<NestedResultTable, String>? _expandedNestedPrefixes;
+  /// See [NestedResult] for further discussion and examples.
+  final List<NestedResult> nestedResults;
+  Map<NestedResult, String>? _expandedNestedPrefixes;
 
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
@@ -293,7 +304,7 @@ class InferredResultSet {
   bool get singleColumn =>
       matchingTable == null && nestedResults.isEmpty && columns.length == 1;
 
-  String? nestedPrefixFor(NestedResultTable table) {
+  String? nestedPrefixFor(NestedResult table) {
     if (_expandedNestedPrefixes == null) {
       var index = 0;
       _expandedNestedPrefixes = {
@@ -329,12 +340,17 @@ class InferredResultSet {
     });
   }
 
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode => Object.hash(
+        Object.hashAll(columns.map((e) => e.compatibilityHashCode)),
+        Object.hashAll(nestedResults.map((e) => e.compatibilityHashCode)),
+      );
+
   /// Checks whether this and the [other] result set have the same columns and
   /// nested result sets.
   bool isCompatibleTo(InferredResultSet other) {
     const columnsEquality = UnorderedIterableEquality(_ResultColumnEquality());
-    const nestedEquality =
-        UnorderedIterableEquality(_NestedResultTableEquality());
+    const nestedEquality = UnorderedIterableEquality(_NestedResultEquality());
 
     return columnsEquality.equals(columns, other.columns) &&
         nestedEquality.equals(nestedResults, other.nestedResults);
@@ -406,6 +422,15 @@ class ResultColumn implements HasType {
   }
 }
 
+/// A nested result, could either be a NestedResultTable or a NestedQueryResult.
+abstract class NestedResult {
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode;
+
+  /// Checks whether this is compatible to the [other] nested result.
+  bool isCompatibleTo(NestedResult other);
+}
+
 /// A nested table extracted from a `**` column.
 ///
 /// For instance, consider this query:
@@ -432,7 +457,7 @@ class ResultColumn implements HasType {
 ///
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
-class NestedResultTable {
+class NestedResultTable extends NestedResult {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
@@ -443,17 +468,65 @@ class NestedResultTable {
   String get dartFieldName => ReCase(name).camelCase;
 
   /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  @override
   int get compatibilityHashCode {
     return Object.hash(name, table);
   }
 
   /// Checks whether this is compatible to the [other] nested result, which is
   /// the case iff they have the same and read from the same table.
-  bool isCompatibleTo(NestedResultTable other) {
+  @override
+  bool isCompatibleTo(NestedResult other) {
+    if (other is! NestedResultTable) return false;
+
     return other.name == name &&
         other.table == table &&
         other.isNullable == isNullable;
   }
+}
+
+class NestedResultQuery extends NestedResult {
+  final NestedQueryColumn from;
+
+  final SqlSelectQuery query;
+
+  NestedResultQuery({
+    required this.from,
+    required this.query,
+  });
+
+  String filedName(String? nestedPrefix) {
+    if (from.as != null) {
+      return from.as!;
+    }
+
+    final name = ReCase(query.resultClassName).camelCase;
+
+    if (nestedPrefix != null) {
+      return name + nestedPrefix;
+    }
+
+    return name;
+  }
+
+  String resultTypeCode(String parentResultClassName) {
+    if (query.resultSet.needsOwnClass) {
+      return parentResultClassName + query.resultClassName;
+    } else {
+      return query.resultTypeCode();
+    }
+  }
+
+  // Every query should be unique.
+
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  @override
+  int get compatibilityHashCode => hashCode;
+
+  /// Checks whether this is compatible to the [other] nested result, which is
+  /// the case iff they have the same and read from the same table.
+  @override
+  bool isCompatibleTo(NestedResult other) => this == other;
 }
 
 /// Something in the query that needs special attention when generating code,
@@ -742,16 +815,16 @@ class _ResultColumnEquality implements Equality<ResultColumn> {
   bool isValidKey(Object? e) => e is ResultColumn;
 }
 
-class _NestedResultTableEquality implements Equality<NestedResultTable> {
-  const _NestedResultTableEquality();
+class _NestedResultEquality implements Equality<NestedResult> {
+  const _NestedResultEquality();
 
   @override
-  bool equals(NestedResultTable e1, NestedResultTable e2) {
+  bool equals(NestedResult e1, NestedResult e2) {
     return e1.isCompatibleTo(e2);
   }
 
   @override
-  int hash(NestedResultTable e) => e.compatibilityHashCode;
+  int hash(NestedResult e) => e.compatibilityHashCode;
 
   @override
   bool isValidKey(Object? e) => e is NestedResultTable;
