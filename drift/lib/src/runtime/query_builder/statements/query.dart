@@ -250,19 +250,45 @@ abstract class Selectable<T>
   ///
   /// Each entry emitted by this [Selectable] will be transformed by the
   /// [mapper] and then emitted to the selectable returned.
-  Selectable<N> map<N>(FutureOr<N> Function(T) mapper) {
+  Selectable<N> map<N>(N Function(T) mapper) {
     return _MappedSelectable<T, N>(this, mapper);
+  }
+
+  /// Maps this selectable by the [mapper] function.
+  ///
+  /// Like [map] just async.
+  Selectable<N> asyncMap<N>(Future<N> Function(T) mapper) {
+    return _AsyncMappedSelectable<T, N>(this, mapper);
   }
 }
 
 class _MappedSelectable<S, T> extends Selectable<T> {
   final Selectable<S> _source;
-  final FutureOr<T> Function(S) _mapper;
+  final T Function(S) _mapper;
 
   _MappedSelectable(this._source, this._mapper);
 
   @override
-  Future<List<T>> get() async {
+  Future<List<T>> get() {
+    return _source.get().then(_mapResults);
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    return _source.watch().map(_mapResults);
+  }
+
+  List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
+}
+
+class _AsyncMappedSelectable<S, T> extends Selectable<T> {
+  final Selectable<S> _source;
+  final Future<T> Function(S) _mapper;
+
+  _AsyncMappedSelectable(this._source, this._mapper);
+
+  @override
+  Future<List<T>> get() {
     return _source.get().then(_mapResults);
   }
 

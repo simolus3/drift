@@ -195,6 +195,10 @@ class SqlSelectQuery extends SqlQuery {
   // todo: Allow custom result classes for RETURNING as well?
   final String? requestedResultClass;
 
+  /// Whether this query contains nested queries or not
+  bool get hasNestedQuery =>
+      resultSet.nestedResults.any((e) => e is NestedResultQuery);
+
   SqlSelectQuery(
     String name,
     this.fromContext,

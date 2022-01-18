@@ -111,7 +111,11 @@ class QueryWriter {
         _buffer.write('})');
       }
     } else {
-      _buffer.write('(QueryRow row) async { return ${query.resultClassName}(');
+      _buffer.write('(QueryRow row) ');
+      if (query is SqlSelectQuery && query.hasNestedQuery) {
+        _buffer.write('async ');
+      }
+      _buffer.write('{ return ${query.resultClassName}(');
 
       if (options.rawResultSetData) {
         _buffer.write('row: row,\n');
@@ -211,7 +215,11 @@ class QueryWriter {
     _buffer.write(', ');
     _writeReadsFrom(select);
 
-    _buffer.write(').map(');
+    if (select.hasNestedQuery) {
+      _buffer.write(').asyncMap(');
+    } else {
+      _buffer.write(').map(');
+    }
     _writeMappingLambda(select);
     _buffer.write(')');
   }
