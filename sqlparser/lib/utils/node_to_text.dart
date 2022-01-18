@@ -835,6 +835,11 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
+  void visitNestedQueryVariable(NestedQueryVariable e, void arg) {
+    visitNamedVariable(e, arg);
+  }
+
+  @override
   void visitNullLiteral(NullLiteral e, void arg) {
     _keyword(TokenType.$null);
   }

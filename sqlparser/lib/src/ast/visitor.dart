@@ -88,6 +88,7 @@ abstract class AstVisitor<A, R> {
 
   R visitNumberedVariable(NumberedVariable e, A arg);
   R visitNamedVariable(ColonNamedVariable e, A arg);
+  R visitNestedQueryVariable(NestedQueryVariable e, A arg);
 
   R visitBlock(Block block, A arg);
   R visitBeginTransaction(BeginTransactionStatement e, A arg);
@@ -539,6 +540,11 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitNamedVariable(ColonNamedVariable e, A arg) {
+    return visitVariable(e, arg);
+  }
+
+  @override
+  R? visitNestedQueryVariable(NestedQueryVariable e, A arg) {
     return visitVariable(e, arg);
   }
 

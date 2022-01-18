@@ -7,6 +7,22 @@ import 'package:sqlparser/utils/find_referenced_tables.dart';
 import 'lints/linter.dart';
 import 'required_variables.dart';
 
+/// The context contains all data that is required to create an [SqlQuery]. This
+/// class is simply there to bundle the data.
+class _QueryHandlerContext {
+  final List<FoundElement> foundElements;
+  final AstNode root;
+  final String queryName;
+  final String? requestedResultClass;
+
+  _QueryHandlerContext({
+    required List<FoundElement> foundElements,
+    required this.root,
+    required this.queryName,
+    this.requestedResultClass,
+  }) : foundElements = List.unmodifiable(foundElements);
+}
+
 /// Maps an [AnalysisContext] from the sqlparser to a [SqlQuery] from this
 /// generator package by determining its type, return columns, variables and so
 /// on.
@@ -15,24 +31,29 @@ class QueryHandler {
   final TypeMapper mapper;
   final RequiredVariables requiredVariables;
 
+  /// Found tables and views found need to be shared between the query and
+  /// all subqueries to not muss any updates when watching query.
   late Set<Table> _foundTables;
   late Set<View> _foundViews;
-  late List<FoundElement> _foundElements;
 
-  Iterable<FoundVariable> get _foundVariables =>
-      _foundElements.whereType<FoundVariable>();
+  /// Used to create a unique name for every nested query. This needs to be
+  /// shared between queries, therefore this should not be part of the
+  /// context.
+  int nestedQueryCounter;
 
   QueryHandler(
     this.context,
     this.mapper, {
     this.requiredVariables = RequiredVariables.empty,
-  });
+  }) : nestedQueryCounter = 0;
 
   SqlQuery handle(DeclaredQuery source) {
-    _foundElements =
-        mapper.extractElements(context, required: requiredVariables);
-
-    _verifyNoSkippedIndexes();
+    final foundElements = mapper.extractElements(
+      context,
+      context.root,
+      required: requiredVariables,
+    );
+    _verifyNoSkippedIndexes(foundElements);
 
     final String? requestedResultClass;
     if (source is DeclaredMoorQuery) {
@@ -41,11 +62,12 @@ class QueryHandler {
       requestedResultClass = null;
     }
 
-    final query = _mapToMoor(
+    final query = _mapToMoor(_QueryHandlerContext(
+      foundElements: foundElements,
       queryName: source.name,
       requestedResultClass: requestedResultClass,
       root: context.root,
-    );
+    ));
 
     final linter = Linter.forHandler(this);
     linter.reportLints();
@@ -54,23 +76,16 @@ class QueryHandler {
     return query;
   }
 
-  SqlQuery _mapToMoor({
-    required String queryName,
-    required String? requestedResultClass,
-    required AstNode root,
-  }) {
-    if (root is BaseSelectStatement) {
-      return _handleSelect(
-        queryName: queryName,
-        requestedResultClass: requestedResultClass,
-        select: root,
-      );
-    } else if (root is UpdateStatement ||
-        root is DeleteStatement ||
-        root is InsertStatement) {
-      return _handleUpdate(queryName, root);
+  SqlQuery _mapToMoor(_QueryHandlerContext queryContext) {
+    if (queryContext.root is BaseSelectStatement) {
+      return _handleSelect(queryContext);
+    } else if (queryContext.root is UpdateStatement ||
+        queryContext.root is DeleteStatement ||
+        queryContext.root is InsertStatement) {
+      return _handleUpdate(queryContext);
     } else {
-      throw StateError('Unexpected sql: Got $root, expected insert, select, '
+      throw StateError(
+          'Unexpected sql: Got ${queryContext.root}, expected insert, select, '
           'update or delete');
     }
   }
@@ -80,7 +95,9 @@ class QueryHandler {
     _foundViews = visitor.foundViews;
   }
 
-  UpdatingQuery _handleUpdate(String queryName, AstNode root) {
+  UpdatingQuery _handleUpdate(_QueryHandlerContext queryContext) {
+    final root = queryContext.root;
+
     final updatedFinder = UpdatedTablesVisitor();
     root.acceptWithoutArg(updatedFinder);
     _applyFoundTables(updatedFinder);
@@ -91,15 +108,15 @@ class QueryHandler {
     if (root is StatementReturningColumns) {
       final columns = root.returnedResultSet?.resolvedColumns;
       if (columns != null) {
-        resultSet = _inferResultSet(root, columns);
+        resultSet = _inferResultSet(queryContext, columns);
       }
     }
 
     return UpdatingQuery(
-      queryName,
+      queryContext.queryName,
       context,
       root,
-      _foundElements,
+      queryContext.foundElements,
       updatedFinder.writtenTables
           .map(mapper.writtenToMoor)
           .whereType<WrittenMoorTable>()
@@ -110,14 +127,10 @@ class QueryHandler {
     );
   }
 
-  SqlSelectQuery _handleSelect({
-    required String queryName,
-    required String? requestedResultClass,
-    required BaseSelectStatement select,
-  }) {
+  SqlSelectQuery _handleSelect(_QueryHandlerContext queryContext) {
     final tableFinder = ReferencedTablesVisitor();
-    select.acceptWithoutArg(tableFinder);
-    // fine
+    queryContext.root.acceptWithoutArg(tableFinder);
+
     _applyFoundTables(tableFinder);
 
     final moorTables =
@@ -128,17 +141,23 @@ class QueryHandler {
     final moorEntities = [...moorTables, ...moorViews];
 
     return SqlSelectQuery(
-      queryName,
+      queryContext.queryName,
       context,
-      select,
-      _foundElements,
+      queryContext.root,
+      queryContext.foundElements,
       moorEntities,
-      _inferResultSet(select, select.resolvedColumns!),
-      requestedResultClass,
+      _inferResultSet(
+        queryContext,
+        (queryContext.root as SelectStatement).resolvedColumns!,
+      ),
+      queryContext.requestedResultClass,
     );
   }
 
-  InferredResultSet _inferResultSet(AstNode select, List<Column> rawColumns) {
+  InferredResultSet _inferResultSet(
+    _QueryHandlerContext queryContext,
+    List<Column> rawColumns,
+  ) {
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
@@ -158,7 +177,7 @@ class QueryHandler {
       candidatesForSingleTable.removeWhere((t) => t != resultSet);
     }
 
-    final nestedResults = _findNestedResultTables(select);
+    final nestedResults = _findNestedResultTables(queryContext);
     if (nestedResults.isNotEmpty) {
       // The single table optimization doesn't make sense when nested result
       // sets are present.
@@ -220,9 +239,11 @@ class QueryHandler {
     return InferredResultSet(null, columns, nestedResults: nestedResults);
   }
 
-  List<NestedResult> _findNestedResultTables(AstNode query) {
+  List<NestedResult> _findNestedResultTables(
+      _QueryHandlerContext queryContext) {
     // We don't currently support nested results for compound statements
-    if (query is! SelectStatement) return const [];
+    if (queryContext.root is! SelectStatement) return const [];
+    final query = queryContext.root as SelectStatement;
 
     final nestedTables = <NestedResult>[];
     final analysis = JoinModel.of(query);
@@ -243,13 +264,24 @@ class QueryHandler {
           isNullable: isNullable,
         ));
       } else if (column is NestedQueryColumn) {
+        final foundElements = mapper.extractElements(
+          context,
+          column.select,
+          required: requiredVariables,
+        );
+        _verifyNoSkippedIndexes(foundElements);
+
+        final name = 'nested_query_${nestedQueryCounter++}';
+        column.queryName = name;
+
         nestedTables.add(NestedResultQuery(
           from: column,
-          query: _handleSelect(
-            queryName: 'nested',
+          query: _handleSelect(_QueryHandlerContext(
+            queryName: name,
             requestedResultClass: column.as,
-            select: column.select,
-          ),
+            root: column.select,
+            foundElements: foundElements,
+          )),
         ));
       }
     }
@@ -295,8 +327,8 @@ class QueryHandler {
   /// We verify that no variable numbers are skipped in the query. For instance,
   /// `SELECT * FROM tbl WHERE a = ?2 AND b = ?` would fail this check because
   /// the index 1 is never used.
-  void _verifyNoSkippedIndexes() {
-    final variables = List.of(_foundVariables)
+  void _verifyNoSkippedIndexes(List<FoundElement> foundElements) {
+    final variables = List.of(foundElements.whereType<FoundVariable>())
       ..sort((a, b) => a.index.compareTo(b.index));
 
     var currentExpectedIndex = 1;

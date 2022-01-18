@@ -1,9 +1,16 @@
-import '../../analysis/analysis.dart';
 import '../ast.dart'
     show StarResultColumn, ResultColumn, Renamable, SelectStatement;
 import '../node.dart';
 import '../visitor.dart';
 import 'moor_file.dart';
+
+/// To wrap the query name into its own type, to avoid conflicts when using
+/// the [AstNode] metadata.
+class _NestedColumnNameMetadata {
+  final String? name;
+
+  _NestedColumnNameMetadata(this.name);
+}
 
 /// A nested query column, denoted by `LIST(...)` in user queries.
 ///
@@ -12,7 +19,7 @@ import 'moor_file.dart';
 /// top level select query, because the result of them can only be computed
 /// in dart.
 class NestedQueryColumn extends ResultColumn
-    implements MoorSpecificNode, Renamable, Referencable {
+    implements MoorSpecificNode, Renamable {
   @override
   final String? as;
 
@@ -33,7 +40,9 @@ class NestedQueryColumn extends ResultColumn
     return visitor.visitMoorSpecificNode(this, arg);
   }
 
-  // idk is this required?
-  @override
-  bool get visibleToChildren => false;
+  /// The unique name for this query. Used to identify it and it's variables in
+  /// the AST tree.
+  set queryName(String? name) => setMeta(_NestedColumnNameMetadata(name));
+
+  String? get queryName => meta<_NestedColumnNameMetadata>()?.name;
 }

@@ -120,14 +120,17 @@ class TypeMapper {
   ///    a Dart placeholder, its indexed is LOWER than that element. This means
   ///    that elements can be expanded into multiple variables without breaking
   ///    variables that appear after them.
-  List<FoundElement> extractElements(AnalysisContext ctx,
+  List<FoundElement> extractElements(AnalysisContext ctx, AstNode root,
       {RequiredVariables required = RequiredVariables.empty}) {
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
-    final variables = ctx.root.allDescendants.whereType<Variable>().toList();
+    final collector = _VariableCollector();
+    root.accept(collector, null);
+
+    final variables = collector.result;
     final placeholders =
-        ctx.root.allDescendants.whereType<DartPlaceholder>().toList();
+        root.allDescendants.whereType<DartPlaceholder>().toList();
 
     final merged = _mergeVarsAndPlaceholders(variables, placeholders);
 
@@ -152,6 +155,18 @@ class TypeMapper {
             (used is NumberedVariable) ? used.explicitIndex : null;
         final internalType = ctx.typeOf(used);
         final type = resolvedToMoor(internalType.type);
+
+        if (used is NestedQueryVariable) {
+          foundElements.add(FoundVariable.nestedQuery(
+            index: currentIndex,
+            name: used.name,
+            type: type,
+            variable: used,
+          ));
+
+          continue;
+        }
+
         final isArray = internalType.type?.isArray ?? false;
         final isRequired = required.requiredNamedVariables.contains(name) ||
             required.requiredNumberedVariables.contains(used.resolvedIndex);
@@ -338,5 +353,29 @@ class TypeMapper {
     if (moorTable != null) {
       return WrittenMoorTable(moorTable, moorKind);
     }
+  }
+}
+
+/// Because nested variables should not be included when extracting all
+/// FoundElements allDescendants.whereType<Variable>() no longer works.
+class _VariableCollector extends RecursiveVisitor<void, void> {
+  final List<Variable> result;
+
+  _VariableCollector() : result = [];
+
+  @override
+  void visitVariable(Variable e, void arg) {
+    result.add(e);
+
+    super.visitVariable(e, arg);
+  }
+
+  @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is NestedQueryColumn) {
+      return;
+    }
+
+    super.visitMoorSpecificNode(e, arg);
   }
 }
