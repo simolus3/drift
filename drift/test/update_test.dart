@@ -189,7 +189,7 @@ void main() {
     });
 
     test('replace', () async {
-      await db.categories.replace(const CategoriesCompanion(
+      await db.categories.replaceOne(const CategoriesCompanion(
           id: Value(3), description: Value('new name')));
 
       verify(executor.runUpdate(
