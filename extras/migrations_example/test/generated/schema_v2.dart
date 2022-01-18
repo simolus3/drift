@@ -119,17 +119,18 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
 }
 
 class Users extends Table with TableInfo<Users, UsersData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Users(this._db, [this._alias]);
+  Users(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -146,7 +147,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
 
   @override
   Users createAlias(String alias) {
-    return Users(_db, alias);
+    return Users(attachedDatabase, alias);
   }
 
   @override

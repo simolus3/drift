@@ -127,9 +127,10 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class Users extends Table with TableInfo<Users, User> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String _alias;
-  Users(this._db, [this._alias]);
+  Users(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedColumn<int> _id;
   GeneratedColumn<int> get id =>
@@ -177,7 +178,7 @@ class Users extends Table with TableInfo<Users, User> {
 
   @override
   Users createAlias(String alias) {
-    return Users(_db, alias);
+    return Users(attachedDatabase, alias);
   }
 
   @override

@@ -233,9 +233,10 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this._db, [this._alias]);
+  $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -313,7 +314,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   $UsersTable createAlias(String alias) {
-    return $UsersTable(_db, alias);
+    return $UsersTable(attachedDatabase, alias);
   }
 
   static TypeConverter<Preferences, String> $converter0 =
@@ -469,9 +470,10 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
 
 class $FriendshipsTable extends Friendships
     with TableInfo<$FriendshipsTable, Friendship> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FriendshipsTable(this._db, [this._alias]);
+  $FriendshipsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _firstUserMeta = const VerificationMeta('firstUser');
   @override
   late final GeneratedColumn<int?> firstUser = GeneratedColumn<int?>(
@@ -536,7 +538,7 @@ class $FriendshipsTable extends Friendships
 
   @override
   $FriendshipsTable createAlias(String alias) {
-    return $FriendshipsTable(_db, alias);
+    return $FriendshipsTable(attachedDatabase, alias);
   }
 }
 

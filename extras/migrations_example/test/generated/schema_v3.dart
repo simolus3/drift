@@ -119,17 +119,18 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
 }
 
 class Users extends Table with TableInfo<Users, UsersData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Users(this._db, [this._alias]);
+  Users(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -146,7 +147,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
 
   @override
   Users createAlias(String alias) {
-    return Users(_db, alias);
+    return Users(attachedDatabase, alias);
   }
 
   @override
@@ -326,28 +327,29 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
 }
 
 class Groups extends Table with TableInfo<Groups, GroupsData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Groups(this._db, [this._alias]);
+  Groups(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       $customConstraints: 'NOT NULL');
   late final GeneratedColumn<String?> title = GeneratedColumn<String?>(
       'title', aliasedName, false,
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
   late final GeneratedColumn<bool?> deleted = GeneratedColumn<bool?>(
       'deleted', aliasedName, true,
-      typeName: 'INTEGER',
+      type: const BoolType(),
       requiredDuringInsert: false,
       $customConstraints: 'DEFAULT FALSE',
       defaultValue: const CustomExpression<bool>('FALSE'));
   late final GeneratedColumn<int?> owner = GeneratedColumn<int?>(
       'owner', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL REFERENCES users (id)');
   @override
@@ -366,7 +368,7 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
 
   @override
   Groups createAlias(String alias) {
-    return Groups(_db, alias);
+    return Groups(attachedDatabase, alias);
   }
 
   @override

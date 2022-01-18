@@ -76,6 +76,10 @@ class OnCreateQuery extends DatabaseSchemaEntity {
 /// and the user-defined [Table] class. [Row] is the class used to hold a result
 /// row.
 abstract class ResultSetImplementation<Tbl, Row> extends DatabaseSchemaEntity {
+  /// The generated database instance that this view or table is attached too.
+  @internal
+  DatabaseConnectionUser get attachedDatabase;
+
   /// The (potentially aliased) name of this table or view.
   ///
   /// If no alias is active, this is the same as [entityName].
@@ -102,6 +106,9 @@ class _AliasResultSet<Tbl, Row> extends ResultSetImplementation<Tbl, Row> {
   final ResultSetImplementation<Tbl, Row> _inner;
 
   _AliasResultSet(this._alias, this._inner);
+
+  @override
+  DatabaseConnectionUser get attachedDatabase => _inner.attachedDatabase;
 
   @override
   List<GeneratedColumn> get $columns => _inner.$columns;

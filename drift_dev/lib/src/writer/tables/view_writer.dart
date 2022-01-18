@@ -43,9 +43,9 @@ class ViewWriter extends TableOrViewWriter {
     buffer
       ..write('{\n')
       // write the generated database reference that is set in the constructor
-      ..write('final ${databaseWriter.dbClassName} _db;\n')
       ..write('final ${scope.nullableType('String')} _alias;\n')
-      ..write('${view.entityInfoName}(this._db, [this._alias]);\n');
+      ..write('${view.entityInfoName}(DatabaseConnectionUser db, '
+          '[this._alias]): super(db);\n');
 
     final declaration = view.declaration;
     if (declaration is DartViewDeclaration) {
@@ -102,7 +102,7 @@ class ViewWriter extends TableOrViewWriter {
     buffer
       ..write('@override\n')
       ..write('$typeName createAlias(String alias) {\n')
-      ..write('return $typeName(_db, alias);')
+      ..write('return $typeName(attachedDatabase, alias);')
       ..write('}');
   }
 
@@ -110,7 +110,7 @@ class ViewWriter extends TableOrViewWriter {
     buffer.write('@override\nQuery? get query => ');
     final query = view.viewQuery;
     if (query != null) {
-      buffer.write('(_db.selectOnly(${query.from}, '
+      buffer.write('(attachedDatabase.selectOnly(${query.from}, '
           'includeJoinedTableColumns: false)..addColumns(\$columns))'
           '${query.query};');
     } else {

@@ -218,7 +218,7 @@ abstract class TableOrViewWriter {
       final hasDbParameter = scope.generationOptions.writeForMoorPackage &&
           tableOrView is MoorTable;
       if (hasDbParameter) {
-        buffer.write('return $dataClassName.fromData(data, _db, '
+        buffer.write('return $dataClassName.fromData(data, attachedDatabase, '
             "prefix: tablePrefix != null ? '\$tablePrefix.' : null);\n");
       } else {
         buffer.write('return $dataClassName.fromData(data, '
@@ -300,11 +300,12 @@ class TableWriter extends TableOrViewWriter {
     }
 
     buffer
-      ..write('{\n')
+      ..writeln('{')
       // write a GeneratedDatabase reference that is set in the constructor
-      ..write('final GeneratedDatabase _db;\n')
-      ..write('final ${scope.nullableType('String')} _alias;\n')
-      ..write('${table.entityInfoName}(this._db, [this._alias]);\n');
+      ..writeln('@override final GeneratedDatabase attachedDatabase;')
+      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln(
+          '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
 
     // Generate the columns
     for (final column in table.columns) {
@@ -431,7 +432,7 @@ class TableWriter extends TableOrViewWriter {
     buffer
       ..write('@override\n')
       ..write('$typeName createAlias(String alias) {\n')
-      ..write('return $typeName(_db, alias);')
+      ..write('return $typeName(attachedDatabase, alias);')
       ..write('}');
   }
 

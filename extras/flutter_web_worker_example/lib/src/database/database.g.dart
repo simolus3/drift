@@ -124,9 +124,10 @@ class EntriesCompanion extends UpdateCompanion<Entrie> {
 }
 
 class Entries extends Table with TableInfo<Entries, Entrie> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Entries(this._db, [this._alias]);
+  Entries(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
@@ -172,7 +173,7 @@ class Entries extends Table with TableInfo<Entries, Entrie> {
 
   @override
   Entries createAlias(String alias) {
-    return Entries(_db, alias);
+    return Entries(attachedDatabase, alias);
   }
 
   @override

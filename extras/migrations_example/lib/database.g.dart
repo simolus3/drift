@@ -124,9 +124,10 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this._db, [this._alias]);
+  $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -172,7 +173,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   $UsersTable createAlias(String alias) {
-    return $UsersTable(_db, alias);
+    return $UsersTable(attachedDatabase, alias);
   }
 }
 
@@ -348,9 +349,10 @@ class GroupsCompanion extends UpdateCompanion<Group> {
 }
 
 class Groups extends Table with TableInfo<Groups, Group> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Groups(this._db, [this._alias]);
+  Groups(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
@@ -419,7 +421,7 @@ class Groups extends Table with TableInfo<Groups, Group> {
 
   @override
   Groups createAlias(String alias) {
-    return Groups(_db, alias);
+    return Groups(attachedDatabase, alias);
   }
 
   @override

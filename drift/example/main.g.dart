@@ -130,9 +130,10 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
 
 class $TodoCategoriesTable extends TodoCategories
     with TableInfo<$TodoCategoriesTable, TodoCategory> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TodoCategoriesTable(this._db, [this._alias]);
+  $TodoCategoriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -178,7 +179,7 @@ class $TodoCategoriesTable extends TodoCategories
 
   @override
   $TodoCategoriesTable createAlias(String alias) {
-    return $TodoCategoriesTable(_db, alias);
+    return $TodoCategoriesTable(attachedDatabase, alias);
   }
 }
 
@@ -377,9 +378,10 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
 
 class $TodoItemsTable extends TodoItems
     with TableInfo<$TodoItemsTable, TodoItem> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TodoItemsTable(this._db, [this._alias]);
+  $TodoItemsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -465,7 +467,7 @@ class $TodoItemsTable extends TodoItems
 
   @override
   $TodoItemsTable createAlias(String alias) {
-    return $TodoItemsTable(_db, alias);
+    return $TodoItemsTable(attachedDatabase, alias);
   }
 }
 
@@ -532,9 +534,9 @@ class TodoCategoryItemCountData extends DataClass {
 class $TodoCategoryItemCountView
     extends ViewInfo<$TodoCategoryItemCountView, TodoCategoryItemCountData>
     implements HasResultSet {
-  final _$Database _db;
   final String? _alias;
-  $TodoCategoryItemCountView(this._db, [this._alias]);
+  $TodoCategoryItemCountView(DatabaseConnectionUser db, [this._alias])
+      : super(db);
   $TodoItemsTable get todoItems => _db.todoItems;
   $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
@@ -563,12 +565,12 @@ class $TodoCategoryItemCountView
       generatedAs: GeneratedAs(todoItems.id.count(), false));
   @override
   $TodoCategoryItemCountView createAlias(String alias) {
-    return $TodoCategoryItemCountView(_db, alias);
+    return $TodoCategoryItemCountView(attachedDatabase, alias);
   }
 
   @override
-  Query? get query =>
-      (_db.selectOnly(todoCategories, includeJoinedTableColumns: false)
+  Query? get query => (attachedDatabase.selectOnly(todoCategories,
+              includeJoinedTableColumns: false)
             ..addColumns($columns))
           .join([
         innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
@@ -640,9 +642,9 @@ class TodoItemWithCategoryNameViewData extends DataClass {
 class $TodoItemWithCategoryNameViewView extends ViewInfo<
     $TodoItemWithCategoryNameViewView,
     TodoItemWithCategoryNameViewData> implements HasResultSet {
-  final _$Database _db;
   final String? _alias;
-  $TodoItemWithCategoryNameViewView(this._db, [this._alias]);
+  $TodoItemWithCategoryNameViewView(DatabaseConnectionUser db, [this._alias])
+      : super(db);
   $TodoItemsTable get todoItems => _db.todoItems;
   $TodoCategoriesTable get todoCategories => _db.todoCategories;
   @override
@@ -676,12 +678,12 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
           false));
   @override
   $TodoItemWithCategoryNameViewView createAlias(String alias) {
-    return $TodoItemWithCategoryNameViewView(_db, alias);
+    return $TodoItemWithCategoryNameViewView(attachedDatabase, alias);
   }
 
   @override
   Query? get query =>
-      (_db.selectOnly(todoItems, includeJoinedTableColumns: false)
+      (attachedDatabase.selectOnly(todoItems, includeJoinedTableColumns: false)
             ..addColumns($columns))
           .join([
         innerJoin(

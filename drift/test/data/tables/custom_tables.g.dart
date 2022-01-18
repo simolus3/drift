@@ -206,9 +206,10 @@ class ConfigCompanion extends UpdateCompanion<Config> {
 }
 
 class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  ConfigTable(this._db, [this._alias]);
+  ConfigTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _configKeyMeta = const VerificationMeta('configKey');
   late final GeneratedColumn<String?> configKey = GeneratedColumn<String?>(
       'config_key', aliasedName, false,
@@ -277,7 +278,7 @@ class ConfigTable extends Table with TableInfo<ConfigTable, Config> {
 
   @override
   ConfigTable createAlias(String alias) {
-    return ConfigTable(_db, alias);
+    return ConfigTable(attachedDatabase, alias);
   }
 
   static TypeConverter<SyncType, int> $converter0 = const SyncTypeConverter();
@@ -417,9 +418,10 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
 }
 
 class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  WithDefaults(this._db, [this._alias]);
+  WithDefaults(this.attachedDatabase, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
       'a', aliasedName, true,
@@ -463,7 +465,7 @@ class WithDefaults extends Table with TableInfo<WithDefaults, WithDefault> {
 
   @override
   WithDefaults createAlias(String alias) {
-    return WithDefaults(_db, alias);
+    return WithDefaults(attachedDatabase, alias);
   }
 
   @override
@@ -511,9 +513,10 @@ class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
 }
 
 class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  NoIds(this._db, [this._alias]);
+  NoIds(this.attachedDatabase, [this._alias]);
   final VerificationMeta _payloadMeta = const VerificationMeta('payload');
   late final GeneratedColumn<Uint8List?> payload = GeneratedColumn<Uint8List?>(
       'payload', aliasedName, false,
@@ -553,7 +556,7 @@ class NoIds extends Table with TableInfo<NoIds, NoIdRow> {
 
   @override
   NoIds createAlias(String alias) {
-    return NoIds(_db, alias);
+    return NoIds(attachedDatabase, alias);
   }
 
   @override
@@ -714,9 +717,10 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
 
 class WithConstraints extends Table
     with TableInfo<WithConstraints, WithConstraint> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  WithConstraints(this._db, [this._alias]);
+  WithConstraints(this.attachedDatabase, [this._alias]);
   final VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<String?> a = GeneratedColumn<String?>(
       'a', aliasedName, true,
@@ -770,7 +774,7 @@ class WithConstraints extends Table
 
   @override
   WithConstraints createAlias(String alias) {
-    return WithConstraints(_db, alias);
+    return WithConstraints(attachedDatabase, alias);
   }
 
   @override
@@ -966,9 +970,10 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
 }
 
 class Mytable extends Table with TableInfo<Mytable, MytableData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Mytable(this._db, [this._alias]);
+  Mytable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _someidMeta = const VerificationMeta('someid');
   late final GeneratedColumn<int?> someid = GeneratedColumn<int?>(
       'someid', aliasedName, false,
@@ -1038,7 +1043,7 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   @override
   Mytable createAlias(String alias) {
-    return Mytable(_db, alias);
+    return Mytable(attachedDatabase, alias);
   }
 
   @override
@@ -1194,9 +1199,10 @@ class EmailCompanion extends UpdateCompanion<EMail> {
 
 class Email extends Table
     with TableInfo<Email, EMail>, VirtualTableInfo<Email, EMail> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  Email(this._db, [this._alias]);
+  Email(this.attachedDatabase, [this._alias]);
   final VerificationMeta _senderMeta = const VerificationMeta('sender');
   late final GeneratedColumn<String?> sender = GeneratedColumn<String?>(
       'sender', aliasedName, false,
@@ -1257,7 +1263,7 @@ class Email extends Table
 
   @override
   Email createAlias(String alias) {
-    return Email(_db, alias);
+    return Email(attachedDatabase, alias);
   }
 
   @override
@@ -1392,9 +1398,10 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
 }
 
 class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  WeirdTable(this._db, [this._alias]);
+  WeirdTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _sqlClassMeta = const VerificationMeta('sqlClass');
   late final GeneratedColumn<int?> sqlClass = GeneratedColumn<int?>(
       'class', aliasedName, false,
@@ -1443,7 +1450,7 @@ class WeirdTable extends Table with TableInfo<WeirdTable, WeirdData> {
 
   @override
   WeirdTable createAlias(String alias) {
-    return WeirdTable(_db, alias);
+    return WeirdTable(attachedDatabase, alias);
   }
 
   @override
@@ -1539,9 +1546,8 @@ class MyViewData extends DataClass {
 }
 
 class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
-  final _$CustomTablesDb _db;
   final String? _alias;
-  MyView(this._db, [this._alias]);
+  MyView(DatabaseConnectionUser db, [this._alias]) : super(db);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];
@@ -1577,7 +1583,7 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
           .withConverter<SyncType?>(ConfigTable.$converter1);
   @override
   MyView createAlias(String alias) {
-    return MyView(_db, alias);
+    return MyView(attachedDatabase, alias);
   }
 
   @override

@@ -180,9 +180,10 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
 
 class $CategoriesTable extends Categories
     with TableInfo<$CategoriesTable, Category> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CategoriesTable(this._db, [this._alias]);
+  $CategoriesTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -255,7 +256,7 @@ class $CategoriesTable extends Categories
 
   @override
   $CategoriesTable createAlias(String alias) {
-    return $CategoriesTable(_db, alias);
+    return $CategoriesTable(attachedDatabase, alias);
   }
 
   static TypeConverter<CategoryPriority, int> $converter0 =
@@ -474,9 +475,10 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
 
 class $TodosTableTable extends TodosTable
     with TableInfo<$TodosTableTable, TodoEntry> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TodosTableTable(this._db, [this._alias]);
+  $TodosTableTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -557,7 +559,7 @@ class $TodosTableTable extends TodosTable
 
   @override
   $TodosTableTable createAlias(String alias) {
-    return $TodosTableTable(_db, alias);
+    return $TodosTableTable(attachedDatabase, alias);
   }
 }
 
@@ -762,9 +764,10 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this._db, [this._alias]);
+  $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
@@ -854,7 +857,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   $UsersTable createAlias(String alias) {
-    return $UsersTable(_db, alias);
+    return $UsersTable(attachedDatabase, alias);
   }
 }
 
@@ -984,9 +987,10 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
 
 class $SharedTodosTable extends SharedTodos
     with TableInfo<$SharedTodosTable, SharedTodo> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $SharedTodosTable(this._db, [this._alias]);
+  $SharedTodosTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _todoMeta = const VerificationMeta('todo');
   @override
   late final GeneratedColumn<int?> todo = GeneratedColumn<int?>(
@@ -1033,7 +1037,7 @@ class $SharedTodosTable extends SharedTodos
 
   @override
   $SharedTodosTable createAlias(String alias) {
-    return $SharedTodosTable(_db, alias);
+    return $SharedTodosTable(attachedDatabase, alias);
   }
 }
 
@@ -1125,9 +1129,10 @@ extension CustomRowClassToInsertable on CustomRowClass {
 
 class $TableWithoutPKTable extends TableWithoutPK
     with TableInfo<$TableWithoutPKTable, CustomRowClass> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TableWithoutPKTable(this._db, [this._alias]);
+  $TableWithoutPKTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _notReallyAnIdMeta =
       const VerificationMeta('notReallyAnId');
   @override
@@ -1193,7 +1198,7 @@ class $TableWithoutPKTable extends TableWithoutPK
 
   @override
   $TableWithoutPKTable createAlias(String alias) {
-    return $TableWithoutPKTable(_db, alias);
+    return $TableWithoutPKTable(attachedDatabase, alias);
   }
 
   static TypeConverter<MyCustomObject, String> $converter0 =
@@ -1306,9 +1311,10 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
 
 class $PureDefaultsTable extends PureDefaults
     with TableInfo<$PureDefaultsTable, PureDefault> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $PureDefaultsTable(this._db, [this._alias]);
+  $PureDefaultsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _txtMeta = const VerificationMeta('txt');
   @override
   late final GeneratedColumn<String?> txt = GeneratedColumn<String?>(
@@ -1342,7 +1348,7 @@ class $PureDefaultsTable extends PureDefaults
 
   @override
   $PureDefaultsTable createAlias(String alias) {
-    return $PureDefaultsTable(_db, alias);
+    return $PureDefaultsTable(attachedDatabase, alias);
   }
 }
 
@@ -1410,9 +1416,9 @@ class CategoryTodoCountViewData extends DataClass {
 class $CategoryTodoCountViewView
     extends ViewInfo<$CategoryTodoCountViewView, CategoryTodoCountViewData>
     implements HasResultSet {
-  final _$TodoDb _db;
   final String? _alias;
-  $CategoryTodoCountViewView(this._db, [this._alias]);
+  $CategoryTodoCountViewView(DatabaseConnectionUser db, [this._alias])
+      : super(db);
   $TodosTableTable get todos => _db.todosTable;
   $CategoriesTable get categories => _db.categories;
   @override
@@ -1440,12 +1446,12 @@ class $CategoryTodoCountViewView
       type: const IntType(), generatedAs: GeneratedAs(todos.id.count(), false));
   @override
   $CategoryTodoCountViewView createAlias(String alias) {
-    return $CategoryTodoCountViewView(_db, alias);
+    return $CategoryTodoCountViewView(attachedDatabase, alias);
   }
 
   @override
   Query? get query =>
-      (_db.selectOnly(categories, includeJoinedTableColumns: false)
+      (attachedDatabase.selectOnly(categories, includeJoinedTableColumns: false)
             ..addColumns($columns))
           .join([innerJoin(todos, todos.category.equalsExp(categories.id))]);
   @override
@@ -1516,9 +1522,9 @@ class TodoWithCategoryViewData extends DataClass {
 class $TodoWithCategoryViewView
     extends ViewInfo<$TodoWithCategoryViewView, TodoWithCategoryViewData>
     implements HasResultSet {
-  final _$TodoDb _db;
   final String? _alias;
-  $TodoWithCategoryViewView(this._db, [this._alias]);
+  $TodoWithCategoryViewView(DatabaseConnectionUser db, [this._alias])
+      : super(db);
   $TodosTableTable get todos => _db.todosTable;
   $CategoriesTable get categories => _db.categories;
   @override
@@ -1548,11 +1554,12 @@ class $TodoWithCategoryViewView
       type: const StringType(), $customConstraints: 'NOT NULL UNIQUE');
   @override
   $TodoWithCategoryViewView createAlias(String alias) {
-    return $TodoWithCategoryViewView(_db, alias);
+    return $TodoWithCategoryViewView(attachedDatabase, alias);
   }
 
   @override
-  Query? get query => (_db.selectOnly(todos, includeJoinedTableColumns: false)
+  Query? get query => (attachedDatabase.selectOnly(todos,
+          includeJoinedTableColumns: false)
         ..addColumns($columns))
       .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
   @override
