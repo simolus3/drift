@@ -5,6 +5,7 @@ tags:
     skip: "Skipping outside of CI"
   # tests that might run as part of https://github.com/dart-lang/build/issues/3236
   for_build_community_test:
+    timeout: 3m
 
 platforms:
   - vm
