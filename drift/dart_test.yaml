@@ -1,6 +1,10 @@
 tags:
   integration:
   background_isolate:
+  skip_during_development:
+    skip: "Skipping outside of CI"
+  # tests that might run as part of https://github.com/dart-lang/build/issues/3236
+  for_build_community_test:
 
 platforms:
   - vm
@@ -11,6 +15,15 @@ presets:
     platforms:
       - chrome
       - firefox
+  build_community_tests:
+    include_tags: for_build_community_test
+    tags:
+      skip_during_development:
+        skip: false
+  ci_unit_tests:
+    tags:
+      skip_during_development:
+        skip: false
 
 override_platforms:
   firefox:

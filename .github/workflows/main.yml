@@ -96,7 +96,7 @@ jobs:
     - run: dart format -o none --set-exit-if-changed .
       name: dartfmt
     - run: dart analyze --fatal-infos --fatal-warnings
-    - run: dart test
+    - run: dart test --preset ci_unit_tests
       name: test
 
   sqlparser:
