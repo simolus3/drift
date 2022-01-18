@@ -543,14 +543,13 @@ class NestedResultQuery extends NestedResult {
     }
   }
 
-  // Every query should be unique.
+  // Because it is currently not possible to reuse result classes from queries
+  // that use nested queries, every instance should be different. Therefore
+  // the object hashCode and equality operator is just fine.
 
-  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
   @override
   int get compatibilityHashCode => hashCode;
 
-  /// Checks whether this is compatible to the [other] nested result, which is
-  /// the case iff they have the same and read from the same table.
   @override
   bool isCompatibleTo(NestedResult other) => this == other;
 }
