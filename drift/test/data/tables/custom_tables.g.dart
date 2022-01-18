@@ -1547,7 +1547,9 @@ class MyViewData extends DataClass {
 
 class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   final String? _alias;
-  MyView(DatabaseConnectionUser db, [this._alias]) : super(db);
+  @override
+  final _$CustomTablesDb attachedDatabase;
+  MyView(this.attachedDatabase, [this._alias]);
   @override
   List<GeneratedColumn> get $columns =>
       [configKey, configValue, syncState, syncStateImplicit];

@@ -187,9 +187,7 @@ class ViewParser {
               (tbl) => tbl.fromClass!.name == node.returnType.toString());
           if (type != null) {
             final name = node.name.toString();
-            final declaration = '${type.entityInfoName} get $name => '
-                '_db.${type.dbGetterName};';
-            return TableReferenceInDartView(type, name, declaration);
+            return TableReferenceInDartView(type, name);
           }
         }
       } catch (_) {}

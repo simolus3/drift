@@ -12,6 +12,8 @@ import 'package:meta/meta.dart';
 // split up.
 import 'expressions/case_when.dart';
 
+export 'on_table.dart';
+
 part 'components/group_by.dart';
 part 'components/join.dart';
 part 'components/limit.dart';

@@ -12,13 +12,6 @@ part of '../query_builder.dart';
 abstract class ViewInfo<Self extends HasResultSet, Row>
     implements ResultSetImplementation<Self, Row> {
   @override
-  final DatabaseConnectionUser attachedDatabase;
-
-  /// Constructor for a view implementation, used by drift-generated code.
-  @internal
-  ViewInfo(this.attachedDatabase);
-
-  @override
   String get entityName;
 
   /// The `CREATE VIEW` sql statement that can be used to create this view.

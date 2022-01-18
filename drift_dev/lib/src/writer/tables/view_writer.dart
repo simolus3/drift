@@ -38,19 +38,21 @@ class ViewWriter extends TableOrViewWriter {
     } else {
       buffer.write('<${view.entityInfoName}, Never>');
     }
-    buffer.write(' implements HasResultSet');
+    buffer.writeln(' implements HasResultSet {');
 
     buffer
-      ..write('{\n')
-      // write the generated database reference that is set in the constructor
-      ..write('final ${scope.nullableType('String')} _alias;\n')
-      ..write('${view.entityInfoName}(DatabaseConnectionUser db, '
-          '[this._alias]): super(db);\n');
+      ..writeln('final ${scope.nullableType('String')} _alias;')
+      ..writeln(
+          '@override final ${databaseWriter.dbClassName} attachedDatabase;')
+      ..writeln('${view.entityInfoName}(this.attachedDatabase, '
+          '[this._alias]);');
 
     final declaration = view.declaration;
     if (declaration is DartViewDeclaration) {
       for (final ref in declaration.staticReferences) {
-        buffer.write('${ref.declaration}\n');
+        final declaration = '${ref.table.entityInfoName} get ${ref.name} => '
+            'attachedDatabase.${ref.table.dbGetterName};';
+        buffer.writeln(declaration);
       }
     }
 

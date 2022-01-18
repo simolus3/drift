@@ -34,9 +34,8 @@ class DartViewDeclaration implements ViewDeclaration, DartDeclaration {
 class TableReferenceInDartView {
   final MoorTable table;
   final String name;
-  final String declaration;
 
-  TableReferenceInDartView(this.table, this.name, this.declaration);
+  TableReferenceInDartView(this.table, this.name);
 }
 
 class MoorViewDeclaration

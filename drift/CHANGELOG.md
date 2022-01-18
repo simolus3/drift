@@ -1,3 +1,11 @@
+## 1.4.0
+
+- Most methods to compose statements are now available as an extension on
+  tables. As an alternative to `update(todos).replace(newEntry)`, you can
+  now write `todos.replaceOne(newEntry)`.
+- Deprecate the `from(table)` API introduced in 1.3.0. Having the methods on
+  the table instances turned out to be even easier!
+
 ## 1.3.0
 
 - Add the `from(table)` method to generated databases. It can be used to write

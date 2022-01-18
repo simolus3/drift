@@ -1417,10 +1417,11 @@ class $CategoryTodoCountViewView
     extends ViewInfo<$CategoryTodoCountViewView, CategoryTodoCountViewData>
     implements HasResultSet {
   final String? _alias;
-  $CategoryTodoCountViewView(DatabaseConnectionUser db, [this._alias])
-      : super(db);
-  $TodosTableTable get todos => _db.todosTable;
-  $CategoriesTable get categories => _db.categories;
+  @override
+  final _$TodoDb attachedDatabase;
+  $CategoryTodoCountViewView(this.attachedDatabase, [this._alias]);
+  $TodosTableTable get todos => attachedDatabase.todosTable;
+  $CategoriesTable get categories => attachedDatabase.categories;
   @override
   List<GeneratedColumn> get $columns => [categories.description, itemCount];
   @override
@@ -1523,10 +1524,11 @@ class $TodoWithCategoryViewView
     extends ViewInfo<$TodoWithCategoryViewView, TodoWithCategoryViewData>
     implements HasResultSet {
   final String? _alias;
-  $TodoWithCategoryViewView(DatabaseConnectionUser db, [this._alias])
-      : super(db);
-  $TodosTableTable get todos => _db.todosTable;
-  $CategoriesTable get categories => _db.categories;
+  @override
+  final _$TodoDb attachedDatabase;
+  $TodoWithCategoryViewView(this.attachedDatabase, [this._alias]);
+  $TodosTableTable get todos => attachedDatabase.todosTable;
+  $CategoriesTable get categories => attachedDatabase.categories;
   @override
   List<GeneratedColumn> get $columns => [todos.title, categories.description];
   @override

@@ -159,7 +159,11 @@ abstract class DatabaseConnectionUser {
   /// The [TableOrViewOperations] class (or the [TableOperations] extension
   /// for tables) provides convenience methods that make common operations
   /// easier to write than using the methods from this class directly.
-  @experimental
+  ///
+  /// This method is deprecated. For an even easier access, the methods that
+  /// were made available here are now available on the [table] or view instance
+  /// directly.
+  @Deprecated('Experiment ended - use the methods on the [table] direclty')
   TableOrViewOperations<T, D> from<T extends HasResultSet, D>(
       ResultSetImplementation<T, D> table) {
     return TableOrViewOperations._(this, table);
