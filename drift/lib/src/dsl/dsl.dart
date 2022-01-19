@@ -15,9 +15,9 @@ part 'table.dart';
 /// }
 /// ```
 /// Neither [Table.integer], [BuildIntColumn.autoIncrement] or
-/// [BuildColumn.call] will be called at runtime. Instead, the generator will
-/// take a look at the written Dart code to recognize that `id` is a column of
-/// type int that has auto increment (and is thus the primary key). It will
+/// [BuildGeneralColumn.call]  will be called at runtime. Instead, the generator
+/// will take a look at the written Dart code to recognize that `id` is a column
+/// of type int that has auto increment (and is thus the primary key). It will
 /// generate a subclass of `MyTable` which looks like this:
 /// ```dart
 /// class _$MyTable extends MyTable {
