@@ -24,4 +24,10 @@ dart pub upgrade
 dart run build_runner build --delete-conflicting-outputs || EXIT_CODE=$?
 popd
 
+pushd extras/migrations_example
+echo "Testing migrations in migrations_example"
+dart pub upgrade
+dart test
+popd
+
 exit $EXIT_CODE

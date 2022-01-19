@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import 'tables.dart';
+import 'src/generated/schema_v2.dart' as v2;
 
 part 'database.g.dart';
 
@@ -19,13 +20,15 @@ class Database extends _$Database {
           if (target == 2) {
             // Migration from 1 to 2: Add name column in users. Use "no name"
             // as a default value.
+            final usersAtV2 = v2.Users(this);
+
             await m.alterTable(
               TableMigration(
-                users,
+                usersAtV2,
                 columnTransformer: {
                   users.name: const Constant<String>('no name'),
                 },
-                newColumns: [users.name],
+                newColumns: [usersAtV2.name],
               ),
             );
           } else if (target == 3) {
