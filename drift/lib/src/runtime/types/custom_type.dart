@@ -6,7 +6,7 @@ part of 'sql_types.dart';
 /// Dart currently supports [DateTime], [double], [int], [Uint8List], [bool]
 /// and [String] for [S].
 ///
-/// Also see [BuildColumn.map] for details.
+/// Also see [BuildGeneralColumn.map] for details.
 abstract class TypeConverter<D, S> {
   /// Empty constant constructor so that subclasses can have a constant
   /// constructor.
