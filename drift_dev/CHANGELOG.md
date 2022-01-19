@@ -1,3 +1,7 @@
+## 1.4.0-dev
+
+- Fix imported views in `.drift` files not being available in all cases.
+
 ## 1.3.0
 
 - Support `drift` version `1.3.x`.

@@ -56,8 +56,20 @@ class Task {
     final moorFiles = _analyzedFiles.where((f) => f.type == FileType.moor);
     final otherFiles = _analyzedFiles.where((f) => f.type != FileType.moor);
 
+    for (final moorFile in moorFiles) {
+      moorFile.errors.clearNonParsingErrors();
+
+      // Resolve views before anything else. This ensures that views from
+      // imports can be accessed.
+      await AnalyzeViewsInDriftFileStep(this, moorFile).analyze();
+    }
+
     for (final file in moorFiles.followedBy(otherFiles)) {
-      file.errors.clearNonParsingErrors();
+      if (file.type == FileType.dartLibrary) {
+        // Drift file errors are already cleared before analyzing views.
+        file.errors.clearNonParsingErrors();
+      }
+
       await _analyze(file);
     }
 

@@ -45,16 +45,16 @@ abstract class AnalyzingStep extends Step {
   @override
   final bool isParsing = false;
 
-  Iterable<MoorSchemaEntity> _availableEntities(List<FoundFile> imports) {
+  Iterable<MoorSchemaEntity> _availableEntities(Iterable<FoundFile> imports) {
     return imports.expand<MoorSchemaEntity>((file) =>
         file.currentResult?.declaredEntities ?? const Iterable.empty());
   }
 
-  Iterable<MoorTable> _availableTables(List<FoundFile> imports) {
+  Iterable<MoorTable> _availableTables(Iterable<FoundFile> imports) {
     return _availableEntities(imports).whereType<MoorTable>();
   }
 
-  Iterable<MoorView> _availableViews(List<FoundFile> imports) {
+  Iterable<MoorView> _availableViews(Iterable<FoundFile> imports) {
     return _availableEntities(imports).whereType<MoorView>();
   }
 }

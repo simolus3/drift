@@ -12,9 +12,8 @@ import '../custom_row_class.dart';
 class ViewAnalyzer extends BaseAnalyzer {
   final List<ImportStatement> imports;
 
-  ViewAnalyzer(
-      Step step, List<MoorTable> tables, List<MoorView> views, this.imports)
-      : super(tables, views, step);
+  ViewAnalyzer(Step step, List<MoorTable> tables, this.imports)
+      : super(tables, const [], step);
 
   /// Resolves all the views in topological order.
   Future<void> resolve(Iterable<MoorView> viewsToAnalyze) async {

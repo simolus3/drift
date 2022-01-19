@@ -1,5 +1,26 @@
 part of '../steps.dart';
 
+class AnalyzeViewsInDriftFileStep extends AnalyzingStep {
+  AnalyzeViewsInDriftFileStep(Task task, FoundFile file) : super(task, file);
+
+  Future<void> analyze() async {
+    if (file.currentResult == null) {
+      // Error during parsing, ignore.
+      return;
+    }
+
+    final parseResult = file.currentResult as ParsedMoorFile;
+    final availableTables =
+        _availableTables(task.crawlImports(parseResult.resolvedImports!.values))
+            .followedBy(parseResult.declaredTables)
+            .toList();
+
+    await ViewAnalyzer(this, availableTables, parseResult.imports)
+        .resolve(parseResult.declaredViews);
+    file.errors.consume(errors);
+  }
+}
+
 class AnalyzeMoorStep extends AnalyzingStep {
   AnalyzeMoorStep(Task task, FoundFile file) : super(task, file);
 
@@ -28,14 +49,9 @@ class AnalyzeMoorStep extends AnalyzingStep {
     final availableTables = _availableTables(transitiveImports)
         .followedBy(parseResult.declaredTables)
         .toList();
-
     final importedViews = _availableViews(transitiveImports).toList();
 
     EntityHandler(this, parseResult, availableTables).handle();
-
-    await ViewAnalyzer(
-            this, availableTables, importedViews, parseResult.imports)
-        .resolve(parseResult.declaredViews);
 
     final availableViews =
         importedViews.followedBy(parseResult.declaredViews).toList();
