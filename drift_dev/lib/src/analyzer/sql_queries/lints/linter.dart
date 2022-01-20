@@ -83,6 +83,8 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
       return visitDartPlaceholder(e, arg);
     } else if (e is NestedStarResultColumn) {
       return visitResultColumn(e, arg);
+    } else if (e is NestedQueryColumn) {
+      return visitResultColumn(e, arg);
     }
 
     visitChildren(e, arg);
@@ -156,6 +158,20 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           message: 'Nested star columns must refer to a table directly. They '
               "can't refer to a table-valued function or another select "
               'statement.',
+          relevantNode: e,
+        ));
+      }
+    }
+
+    if (e is NestedQueryColumn) {
+      // check that a LIST(...) column only appears in a top-level select
+      // statement
+      if (!linter.contextRootIsQuery || e.parent != linter.context.root) {
+        linter.lints.add(AnalysisError(
+          type: AnalysisErrorType.other,
+          message: 'Nested query may only appear in a top-level select '
+              "query. They're not supported in compound selects or select "
+              'expressions',
           relevantNode: e,
         ));
       }

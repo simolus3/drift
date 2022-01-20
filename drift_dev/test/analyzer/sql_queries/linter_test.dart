@@ -123,9 +123,11 @@ in: INSERT INTO foo (id) $placeholder;
     });
   });
 
-  test('warns when nested results appear in compound statements', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+  test(
+    'warns when nested results appear in compound statements',
+    () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
   content VARCHAR
@@ -133,20 +135,51 @@ CREATE TABLE foo (
 
 all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
       ''',
-    });
+      });
 
-    final result = await state.analyze('package:foo/a.moor');
-    state.close();
+      final result = await state.analyze('package:foo/a.moor');
+      state.close();
 
-    expect(
-      result.errors.errors,
-      contains(isA<MoorError>().having(
-        (e) => e.message,
-        'message',
-        contains('may only appear in a top-level select'),
-      )),
-    );
-  });
+      expect(
+        result.errors.errors,
+        contains(isA<MoorError>().having(
+          (e) => e.message,
+          'message',
+          contains('columns may only appear in a top-level select'),
+        )),
+      );
+    },
+    timeout: Timeout.none,
+  );
+
+  test(
+    'warns when nested query appear in nested query',
+    () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY,
+  content VARCHAR
+);
+
+all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
+      ''',
+      });
+
+      final result = await state.analyze('package:foo/a.moor');
+      state.close();
+
+      expect(
+        result.errors.errors,
+        contains(isA<MoorError>().having(
+          (e) => e.message,
+          'message',
+          contains('query may only appear in a top-level select'),
+        )),
+      );
+    },
+    timeout: Timeout.none,
+  );
 
   group('warns about insert column count mismatch', () {
     TestState state;

@@ -138,6 +138,7 @@ class ReferenceResolver extends RecursiveVisitor<void, void> {
         column = AvailableColumn(column, source);
       }
       ref.resolved = column;
+      ref.resultEntity = source;
     }
   }
 

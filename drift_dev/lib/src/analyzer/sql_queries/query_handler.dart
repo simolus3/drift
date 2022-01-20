@@ -148,7 +148,7 @@ class QueryHandler {
       moorEntities,
       _inferResultSet(
         queryContext,
-        (queryContext.root as SelectStatement).resolvedColumns!,
+        (queryContext.root as BaseSelectStatement).resolvedColumns!,
       ),
       queryContext.requestedResultClass,
     );
