@@ -45,7 +45,8 @@ class QueryWriter {
     // We do this transformation so late because it shouldn't have an impact on
     // analysis, Dart getter names stay the same.
     if (resultSet != null && options.newSqlCodeGeneration) {
-      ExplicitAliasTransformer().rewrite(query.root!);
+      _transformer = ExplicitAliasTransformer();
+      _transformer.rewrite(query.root!);
       NestedQueryTransformer().rewrite(query.root!);
     }
 
@@ -61,6 +62,12 @@ class QueryWriter {
   }
 
   void _writeSelect(SqlSelectQuery select) {
+    if (select.hasNestedQuery && !scope.options.newSqlCodeGeneration) {
+      throw UnsupportedError(
+        'To use nested result queries enable new_sql_code_generation',
+      );
+    }
+
     _writeSelectStatementCreator(select);
 
     if (!select.declaredInMoorFile && !options.compactQueryMethods) {
@@ -140,16 +147,7 @@ class QueryWriter {
           _buffer.write('$fieldName: $tableGetter.$mappingMethod(row, '
               'tablePrefix: ${asDartLiteral(prefix)}),');
         } else if (nested is NestedResultQuery) {
-          if (!scope.options.newSqlCodeGeneration) {
-            throw UnsupportedError(
-              'To use nested result queries enable new_sql_code_generation',
-            );
-          }
-
-          final prefix = resultSet.nestedPrefixFor(nested);
-          if (prefix == null) continue;
-
-          final fieldName = nested.filedName(prefix);
+          final fieldName = nested.filedName();
           _buffer.write('$fieldName: await ');
 
           _writeCustomSelectStatement(nested.query);
@@ -554,7 +552,9 @@ class QueryWriter {
       _buffer.write('${table.dbGetterName},');
     }
 
-    for (final element in select.elements.whereType<FoundDartPlaceholder>()) {
+    for (final element in select
+        .elementsWithNestedQueries()
+        .whereType<FoundDartPlaceholder>()) {
       _buffer.write('...${placeholderContextName(element)}.watchedTables,');
     }
 
@@ -686,7 +686,7 @@ class _ExpandedDeclarationWriter {
     }
 
     needsIndexCounter = true;
-    for (final element in query.elements) {
+    for (final element in query.elementsWithNestedQueries()) {
       if (element is FoundVariable) {
         if (element.isArray) {
           _writeArrayVariable(element);

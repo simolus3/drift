@@ -34,8 +34,7 @@ class _NestedQueryTransformer extends Transformer<void> {
   AstNode? visitReference(Reference e, void arg) {
     // if the scope of the nested query cannot resolve the reference, the
     // reference needs to be retrieved from the parent query
-    if (e.entityName != null &&
-        e.scope.resolve(e.entityName!, includeParents: false) == null) {
+    if (e.resultEntity != null && e.resultEntity!.origin.scope != e.scope) {
       final result = e.scope.resolve(e.entityName!);
 
       if (result == null) {
@@ -62,7 +61,7 @@ class _NestedQueryTransformer extends Transformer<void> {
 
       return e;
     } else {
-      super.visitMoorSpecificNode(e, arg);
+      return super.visitMoorSpecificNode(e, arg);
     }
   }
 }

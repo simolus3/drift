@@ -52,8 +52,7 @@ class ResultSetWriter {
         fieldNames.add(fieldName);
         if (!nested.isNullable) nonNullableFields.add(fieldName);
       } else if (nested is NestedResultQuery) {
-        final nestedPrefix = resultSet.nestedPrefixFor(nested);
-        final fieldName = nested.filedName(nestedPrefix);
+        final fieldName = nested.filedName();
         final typeName = nested.resultTypeCode(className);
 
         if (nested.query.resultSet.needsOwnClass) {

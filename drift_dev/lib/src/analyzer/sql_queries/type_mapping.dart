@@ -107,11 +107,11 @@ class TypeMapper {
     return engineView;
   }
 
-  /// Extracts variables and Dart templates from the [ctx]. Variables are
-  /// sorted by their ascending index. Placeholders are sorted by the position
-  /// they have in the query. When comparing variables and placeholders, the
-  /// variable comes first if the first variable with the same index appears
-  /// before the placeholder.
+  /// Extracts variables and Dart templates from the AST tree starting at
+  /// [root], but nested queries are excluded. Variables are sorted by their
+  /// ascending index. Placeholders are sorted by the position they have in the
+  /// query. When comparing variables and placeholders, the variable comes first
+  /// if the first variable with the same index appears before the placeholder.
   ///
   /// Additionally, the following assumptions can be made if this method returns
   /// without throwing:
@@ -125,14 +125,16 @@ class TypeMapper {
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
-    final collector = _VariableCollector();
-    root.accept(collector, null);
+    final variableCollector = _ElementCollector<Variable>();
+    final placeholderCollector = _ElementCollector<DartPlaceholder>();
 
-    final variables = collector.result;
-    final placeholders =
-        root.allDescendants.whereType<DartPlaceholder>().toList();
+    root.accept(variableCollector, null);
+    root.accept(placeholderCollector, null);
 
-    final merged = _mergeVarsAndPlaceholders(variables, placeholders);
+    final merged = _mergeVarsAndPlaceholders(
+      variableCollector.result,
+      placeholderCollector.result,
+    );
 
     final foundElements = <FoundElement>[];
     // we don't allow variables with an explicit index after an array. For
@@ -356,16 +358,24 @@ class TypeMapper {
   }
 }
 
-/// Because nested variables should not be included when extracting all
-/// FoundElements allDescendants.whereType<Variable>() no longer works.
-class _VariableCollector extends RecursiveVisitor<void, void> {
-  final List<Variable> result;
+/// Because FoundElements from nested queries should not be added to the parent
+/// query, it is necessary to use a visitor to decide when to stop collection
+/// elements.
+///
+/// [T] can either be a [Variable] or [DartPlaceholder]. If the type is anything
+/// else the result list will be empty.
+class _ElementCollector<T> extends RecursiveVisitor<void, void> {
+  final List<T> result;
 
-  _VariableCollector() : result = [];
+  _ElementCollector()
+      : result = [],
+        assert(T == Variable || T == DartPlaceholder, 'T is: $T');
 
   @override
   void visitVariable(Variable e, void arg) {
-    result.add(e);
+    if (T == Variable) {
+      result.add(e as T);
+    }
 
     super.visitVariable(e, arg);
   }
@@ -373,7 +383,12 @@ class _VariableCollector extends RecursiveVisitor<void, void> {
   @override
   void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
     if (e is NestedQueryColumn) {
+      // If the node ist a nested query, return to avoid collecting elements
+      // inside of it
       return;
+    }
+    if (e is DartPlaceholder && T == DartPlaceholder) {
+      result.add(e as T);
     }
 
     super.visitMoorSpecificNode(e, arg);

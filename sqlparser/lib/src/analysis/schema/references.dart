@@ -100,11 +100,7 @@ class ReferenceScope {
   ///
   /// If [includeParents] is set to false, resolve will only search the current
   /// scope.
-  T? resolve<T extends Referencable>(
-    String name, {
-    Function()? orElse,
-    bool includeParents = true,
-  }) {
+  T? resolve<T extends Referencable>(String name, {Function()? orElse}) {
     ReferenceScope? scope = this;
     var isAtParent = false;
     final upper = name.toUpperCase();
@@ -122,8 +118,6 @@ class ReferenceScope {
 
       scope = scope.parent;
       isAtParent = true;
-
-      if (!includeParents) break;
     }
 
     if (orElse != null) orElse();

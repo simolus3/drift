@@ -521,18 +521,12 @@ class NestedResultQuery extends NestedResult {
     required this.query,
   });
 
-  String filedName(String? nestedPrefix) {
+  String filedName() {
     if (from.as != null) {
       return from.as!;
     }
 
-    final name = ReCase(query.resultClassName).camelCase;
-
-    if (nestedPrefix != null) {
-      return name + nestedPrefix;
-    }
-
-    return name;
+    return ReCase(query.name).camelCase;
   }
 
   String resultTypeCode(String parentResultClassName) {
