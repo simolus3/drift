@@ -3,24 +3,20 @@ description: Documentation of the moor packages
 publish_to: none
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
 
 dependencies:
   docsy:
-    hosted:
-      url: https://simonbinder.eu
-      name: docsy
-    version: ^0.2.0
+    hosted: https://simonbinder.eu
+    version: ^0.2.1
 
 dev_dependencies:
   build: ^2.1.0
   build_runner: ^2.0.5
   build_web_compilers: ^3.2.0
   built_site:
-    hosted:
-      url: https://simonbinder.eu
-      name: built_site
-    version: ^0.2.3
+    hosted: https://simonbinder.eu
+    version: ^0.2.4
   linkcheck: ^2.0.19
   shelf: ^1.2.0
   shelf_static: ^1.1.0
