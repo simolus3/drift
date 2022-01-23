@@ -529,13 +529,7 @@ class NestedResultQuery extends NestedResult {
     return ReCase(query.name).camelCase;
   }
 
-  String resultTypeCode(String parentResultClassName) {
-    if (query.resultSet.needsOwnClass) {
-      return parentResultClassName + query.resultClassName;
-    } else {
-      return query.resultTypeCode();
-    }
-  }
+  String resultTypeCode() => query.resultTypeCode();
 
   // Because it is currently not possible to reuse result classes from queries
   // that use nested queries, every instance should be different. Therefore

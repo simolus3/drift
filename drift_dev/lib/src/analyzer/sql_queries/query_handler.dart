@@ -1,6 +1,7 @@
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
+import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
@@ -236,7 +237,12 @@ class QueryHandler {
       }
     }
 
-    return InferredResultSet(null, columns, nestedResults: nestedResults);
+    return InferredResultSet(
+      null,
+      columns,
+      nestedResults: nestedResults,
+      resultClassName: queryContext.requestedResultClass,
+    );
   }
 
   List<NestedResult> _findNestedResultTables(
@@ -271,14 +277,23 @@ class QueryHandler {
         );
         _verifyNoSkippedIndexes(foundElements);
 
-        final name = 'nested_query_${nestedQueryCounter++}';
+        final queryIndex = nestedQueryCounter++;
+
+        final name = 'nested_query_$queryIndex';
         column.queryName = name;
+
+        var resultClassName = ReCase(queryContext.queryName).pascalCase;
+        if (column.as != null) {
+          resultClassName += ReCase(column.as!).pascalCase;
+        } else {
+          resultClassName += 'NestedQuery$queryIndex';
+        }
 
         nestedTables.add(NestedResultQuery(
           from: column,
           query: _handleSelect(_QueryHandlerContext(
             queryName: name,
-            requestedResultClass: column.as,
+            requestedResultClass: resultClassName,
             root: column.select,
             foundElements: foundElements,
           )),

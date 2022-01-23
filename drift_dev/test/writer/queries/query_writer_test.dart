@@ -147,4 +147,76 @@ void main() {
       );
     });
   });
+
+  group('generates correct code for nested queries', () {
+    late TestState state;
+
+    setUp(() {
+      state = TestState.withContent({
+        'a|lib/main.moor': '''
+          CREATE TABLE tbl (
+            a TEXT,
+            b TEXT,
+            c TEXT
+          );
+
+          query: SELECT a, LIST(SELECT b, c FROM tbl WHERE a = :a AND b = :b) FROM tbl WHERE a = :a;
+        ''',
+      });
+    });
+
+    tearDown(() => state.close());
+
+    Future<void> _runTest(
+        MoorOptions options, List<Matcher> expectation) async {
+      final file = await state.analyze('package:a/main.moor');
+      final fileState = file.currentResult as ParsedMoorFile;
+
+      expect(file.errors.errors, isEmpty);
+
+      final writer = Writer(
+        options,
+        generationOptions: const GenerationOptions(nnbd: true),
+      );
+      QueryWriter(writer.child()).write(fileState.resolvedQueries!.single);
+
+      final result = writer.writeGenerated();
+      for (final e in expectation) {
+        expect(result, e);
+      }
+    }
+
+    test('should error with old generator', () async {
+      final file = await state.analyze('package:a/main.moor');
+      final fileState = file.currentResult as ParsedMoorFile;
+
+      expect(file.errors.errors, isEmpty);
+
+      final writer = Writer(
+        const MoorOptions.defaults(newSqlCodeGeneration: false),
+        generationOptions: const GenerationOptions(nnbd: true),
+      );
+
+      expect(
+        () => QueryWriter(writer.child())
+            .write(fileState.resolvedQueries!.single),
+        throwsA(isA<UnsupportedError>()),
+      );
+    });
+
+    test('with the new query generator', () {
+      return _runTest(
+        const MoorOptions.defaults(newSqlCodeGeneration: true),
+        [
+          contains('SELECT a FROM tbl WHERE a = ?1'),
+          contains('SELECT b, c FROM tbl WHERE a = ?1 AND b = ?2'),
+          contains('nestedQuery0: await'),
+          contains('variables: [Variable<String?>(a), Variable<String?>(b)]'),
+          contains('b: row.read<String?>(\'b\')'),
+          contains('c: row.read<String?>(\'c\')'),
+          contains('class QueryNestedQuery0'),
+        ],
+      );
+    });
+  });
 }

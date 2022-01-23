@@ -53,7 +53,7 @@ class ResultSetWriter {
         if (!nested.isNullable) nonNullableFields.add(fieldName);
       } else if (nested is NestedResultQuery) {
         final fieldName = nested.filedName();
-        final typeName = nested.resultTypeCode(className);
+        final typeName = nested.resultTypeCode();
 
         if (nested.query.resultSet.needsOwnClass) {
           ResultSetWriter(nested.query, scope).write();
