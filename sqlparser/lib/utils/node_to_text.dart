@@ -437,9 +437,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.import);
       _stringLiteral(e.importedFile);
       symbol(';', spaceAfter: true);
-    } else if (e is NestedStarResultColumn) {
-      identifier(e.tableName);
-      symbol('.**', spaceAfter: true);
     } else if (e is StatementParameter) {
       if (e is VariableTypeHint) {
         if (e.isRequired) _keyword(TokenType.required);
@@ -468,6 +465,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (e is NestedStarResultColumn) {
       identifier(e.tableName);
       symbol('.**', spaceAfter: true);
+    } else if (e is NestedQueryColumn) {
+      symbol('LIST(');
+      visit(e.select, arg);
+      symbol(')', spaceAfter: true);
     } else if (e is TransactionBlock) {
       visit(e.begin, arg);
       _writeStatements(e.innerStatements);
@@ -943,7 +944,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.distinct);
     }
 
-    _join(e.columns, ',');
+    _join(e.columns.where((e) => e is! NestedQueryColumn), ',');
 
     _from(e.from);
     _where(e.where);

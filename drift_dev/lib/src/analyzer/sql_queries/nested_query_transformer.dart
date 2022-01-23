@@ -10,6 +10,7 @@ class NestedQueryTransformer extends Transformer<void> {
   AstNode? visitSelectStatement(SelectStatement e, void arg) {
     final collector = _NestedQueryVariableCollector();
     e.accept(collector, null);
+    e.columns.removeWhere((e) => e is NestedQueryColumn);
 
     for (final result in collector.results) {
       e.columns.add(

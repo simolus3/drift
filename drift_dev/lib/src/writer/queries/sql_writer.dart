@@ -148,7 +148,12 @@ class SqlWriter extends NodeSqlBuilder {
 
       _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
     } else if (e is NestedQueryColumn) {
-      _out.write('0');
+      assert(
+        false,
+        'This should be unreachable, because all NestedQueryColumns are '
+        'replaced in the NestedQueryTransformer with there required input '
+        'variables (or just removed if no variables are required)',
+      );
     } else {
       return super.visitMoorSpecificNode(e, arg);
     }
