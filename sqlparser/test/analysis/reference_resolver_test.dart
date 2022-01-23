@@ -112,6 +112,25 @@ void main() {
     );
   });
 
+  test('resolves columns in nested queries', () {
+    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+      ..registerTable(demoTable);
+
+    final context =
+        engine.analyze('SELECT content, LIST(SELECT id FROM demo) FROM demo');
+
+    expect(context.errors, isEmpty);
+
+    final select = context.root as SelectStatement;
+    final nestedQuery = select.columns[1] as NestedQueryColumn;
+
+    expect(nestedQuery.select.columns, hasLength(1));
+    expect(
+      context.typeOf(nestedQuery.select.resolvedColumns!.single).type!.type,
+      BasicType.int,
+    );
+  });
+
   group('reports correct column name for rowid aliases', () {
     final engine = SqlEngine()
       ..registerTable(demoTable)
