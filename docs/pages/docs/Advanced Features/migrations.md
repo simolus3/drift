@@ -45,8 +45,12 @@ We can now change the `database` class like this:
 ```
 
 You can also add individual tables or drop them - see the reference of [Migrator](https://pub.dev/documentation/drift/latest/drift/Migrator-class.html)
-for all the available options. You can't use the high-level query API in migrations - calling `select` or similar
-methods will throw.
+for all the available options.
+
+You can also use higher-level query APIs like `select`, `update` or `delete` inside a migration callback.
+However, be aware that drift expects the latest schema when creating SQL statements or mapping results.
+For instance, when adding a new column to your database, you shouldn't run a `select` on that table before
+you've actually added the column. In general, try to avoid running queries in migration callbacks if possible.
 
 `sqlite` can feel a bit limiting when it comes to migrations - there only are methods to create tables and columns.
 Existing columns can't be altered or removed. A workaround is described [here](https://stackoverflow.com/a/805508), it
