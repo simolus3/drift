@@ -43,7 +43,9 @@ class MoorDriver {
   }
 
   bool _ownsFile(String path) =>
-      path.endsWith('.moor') || path.endsWith('.dart');
+      path.endsWith('.moor') ||
+      path.endsWith('.drift') ||
+      path.endsWith('.dart');
 
   FoundFile pathToFoundFile(String path) {
     final uri = _resourceProvider.pathContext.toUri(path);
@@ -99,21 +101,34 @@ class MoorDriver {
 
   /// Waits for the file at [path] to be parsed. If the file is neither a Dart
   /// or a moor file, returns `null`.
-  Future<FoundFile> waitFileParsed(String path) {
+  Future<FoundFile> waitFileParsed(String path) async {
     if (!_ownsFile(path)) {
-      return Future.value(null);
+      return null;
     }
 
     final found = pathToFoundFile(path);
 
     if (found.isParsed) {
-      return Future.value(found);
+      return found;
     } else {
-      _runTask(path);
+      final result = Completer<FoundFile>();
 
-      return session
+      unawaited(session
           .completedFiles()
-          .firstWhere((file) => file == found && file.isParsed);
+          .firstWhere((file) => file == found && file.isParsed)
+          .then((file) {
+        if (!result.isCompleted) {
+          result.complete(file);
+        }
+      }));
+
+      try {
+        await _runTask(path);
+      } on Exception {
+        result.complete(null);
+      }
+
+      return result.future;
     }
   }
 
