@@ -97,9 +97,6 @@ class ReferenceScope {
   /// Resolves to a [Referencable] with the given [name] and of the type [T].
   /// If the reference couldn't be found, null is returned and [orElse] will be
   /// called.
-  ///
-  /// If [includeParents] is set to false, resolve will only search the current
-  /// scope.
   T? resolve<T extends Referencable>(String name, {Function()? orElse}) {
     ReferenceScope? scope = this;
     var isAtParent = false;

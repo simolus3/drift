@@ -1,5 +1,4 @@
-import '../ast.dart'
-    show StarResultColumn, ResultColumn, Renamable, SelectStatement;
+import '../ast.dart' show ResultColumn, Renamable, SelectStatement;
 import '../node.dart';
 import '../visitor.dart';
 import 'moor_file.dart';
