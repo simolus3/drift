@@ -135,6 +135,11 @@ class SchemaFromCreateTable {
       return const ResolvedType(type: BasicType.blob);
     }
 
+    return _handleColumnTypeWithoutDefault(typeName) ??
+        const ResolvedType(type: BasicType.real);
+  }
+
+  ResolvedType? _handleColumnTypeWithoutDefault(String typeName) {
     final upper = typeName.toUpperCase();
     if (upper.contains('INT')) {
       return const ResolvedType(type: BasicType.int);
@@ -161,24 +166,20 @@ class SchemaFromCreateTable {
         return const ResolvedType(type: BasicType.int);
       }
     }
-
-    return const ResolvedType(type: BasicType.real);
   }
 
   bool isValidTypeNameForStrictTable(String typeName) {
-    // See https://www.sqlite.org/draft/stricttables.html
-    const allowed = {'INT', 'INTEGER', 'REAL', 'TEXT', 'BLOB', 'ANY'};
-    const alsoAllowedInMoor = {'BOOL', 'DATE'};
+    if (moorExtensions) {
+      // Anything accepted by drift_dev goes, the generated table will have
+      // a correct column type for that either way (it's transformed).
+      return _handleColumnTypeWithoutDefault(typeName) != null;
+    } else {
+      // See https://www.sqlite.org/draft/stricttables.html
+      const allowed = {'INT', 'INTEGER', 'REAL', 'TEXT', 'BLOB', 'ANY'};
+      final upper = typeName.toUpperCase();
 
-    final upper = typeName.toUpperCase();
-
-    if (allowed.contains(upper) ||
-        (moorExtensions &&
-            (alsoAllowedInMoor.contains(upper) || upper.contains('ENUM')))) {
-      return true;
+      return allowed.contains(upper);
     }
-
-    return false;
   }
 
   /// Looks up the correct column affinity for a declared type name with the

@@ -6,6 +6,8 @@ import 'utils.dart';
 void main() {
   final oldEngine = SqlEngine(EngineOptions(version: SqliteVersion.v3_35));
   final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_37));
+  final engineInDriftMode = SqlEngine(
+      EngineOptions(version: SqliteVersion.v3_37, useMoorExtensions: true));
 
   group('using STRICT', () {
     test('with an old sqlite3 version', () {
@@ -34,6 +36,13 @@ void main() {
             );
       },
     );
+
+    test('with a type that is only valid in drift mode', () {
+      // https://github.com/simolus3/moor/discussions/1651
+      engineInDriftMode
+          .analyze('CREATE TABLE a (c IS_DATETIME) STRICT;')
+          .expectNoError();
+    });
   });
 
   test('using WITHOUT ROWID and then not declaring a primary key', () {

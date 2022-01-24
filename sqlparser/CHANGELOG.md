@@ -1,3 +1,7 @@
+## 0.19.2
+
+- Improve handling of drift-specific column types in `STRICT` tables.
+
 ## 0.19.1
 
 - Make the result of `group_concat` nullable.
