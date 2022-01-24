@@ -39,7 +39,7 @@ class DatabaseConnection {
   /// class MyDatabase extends _$MyDatabase {
   ///   MyDatabase._connect(DatabaseConnection c): super.connect(c);
   ///
-  ///   factory MyDatabase.fromIsolate(DriftDatabase isolate) {
+  ///   factory MyDatabase.fromIsolate(DriftIsolate isolate) {
   ///     return MyDatabase._connect(
   ///       // isolate.connect() returns a future, but we can still return a
   ///       // database synchronously thanks to DatabaseConnection.delayed!
