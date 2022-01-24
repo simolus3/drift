@@ -5,6 +5,14 @@ data:
 template: layouts/docs/single
 ---
 
+Drift can transparently run your queries in a background isolate to keep the foreground
+free for other tasks. This is especially helpful for Flutter, where using a background isolate
+helps reduce skipped frames.
+
+With Drift's isolate setup, you only need to change how you _open_ your database. Internally,
+Drift will apply its magic and send all database operations to an internal server running on
+a background isolate. Zero code changes are needed for queries!
+
 ## Preparations
 
 To use the isolate api, first enable the appropriate [build option]({{ "builder_options.md" | pageUrl }}) by
@@ -85,11 +93,10 @@ immediately. Internally, drift will connect when the first query is sent to the 
 
 ### Initialization on the main thread
 
-Platform channels are not available on background isolates, but sometimes you might want to use
-a function like `getApplicationDocumentsDirectory` from `path_provider` to construct the database
-path. As this function uses a method channel internally, we have to use a trick to initialize the
-database.
-We're going to start the isolate running the database manually. This allows us to pass additional
+At the moment, Flutter's platform channels are [not available on background isolates](https://github.com/flutter/flutter/issues/13937).
+If you want to use functions like `getApplicationDocumentsDirectory` from `path_provider` to
+construct the database's path, we'll have to use some tricks to avoid using platforms channels.
+Here, we're going to start the isolate running the database manually. This allows us to pass additional
 data that we calculated on the main thread.
 
 ```dart
@@ -162,8 +169,9 @@ isolate.
 
 ### Shutting down the isolate
 
-Since multiple `DatabaseConnection`s can exist to a specific `DriftIsolate`, simply calling
-`Database.close` won't stop the isolate. You can use the `DriftIsolate.shutdownAll()` for that.
+Since multiple `DatabaseConnection`s across isolates can connect to a single `DriftIsolate`,
+simply calling `Database.close` on one of them won't stop the isolate.
+You can use the `DriftIsolate.shutdownAll()` for that.
 It will disconnect all databases and then close the background isolate, releasing all resources.
 
 ## Common operation modes
@@ -217,16 +225,17 @@ All drift features are supported on background isolates and work out of the box.
 - Custom statements or those generated from an sql api
 
 Please note that, while using a background isolate can reduce lag on the UI thread, the overall
-database is going to be slower! There's a overhead involved in sending data between
+database is going to be slightly slower! There's a overhead involved in sending data between
 isolates, and that's exactly what drift has to do internally. If you're not running into dropped
 frames because of drift, using a background isolate is probably not necessary for your app.
+However, isolate performance has dramatically improved in recent Dart and Flutter versions.
 
 Internally, drift uses the following model to implement this api:
 
 - __A server isolate__: A single isolate that executes all queries and broadcasts tables updates.
   This is the isolate created by `DriftIsolate.spawn`. It supports any number of clients via an
   rpc-like connection model. Connections are established via `SendPort`s and `ReceivePort`s.
-  Internally, the `DriftIsolate` class only contains a reference to a `SendPort` that can be used to 
+  Internally, the `DriftIsolate` class only contains a reference to a `SendPort` that can be used to
   establish a connection to the background isolate. This lets users share the `DriftIsolate`
   object across many isolates and connect multiple times. The actual server logic that listens on
   the port is in a private `RunningDriftServer` class.

@@ -3,6 +3,7 @@ data:
   title: Getting started
   description: Simple guide to get a drift project up and running
   weight: 1
+  hide_section_index: true
 template: layouts/docs/list
 aliases:
   - /getting-started/  # Used to have this url
@@ -120,6 +121,8 @@ class MyDatabase extends _$MyDatabase {
 }
 ```
 
+## Next steps
+
 Congratulations! You're now ready to use all of drift. See the articles below for further reading.
 The ["Writing queries"]({{ "writing_queries.md" | pageUrl }}) article contains everything you need
 to know to write selects, updates and inserts in drift!
@@ -136,3 +139,10 @@ to know to write selects, updates and inserts in drift!
   When using drift before your app is initialized, please call `WidgetsFlutterBinding.ensureInitialized()` before using
   the database to ensure that platform channels are ready.
 {% endblock %}
+
+- The articles on [writing queries]({{ 'writing_queries.md' | pageUrl }}) and [Dart tables]({{ 'advanced_dart_tables.md' | pageUrl }}) introduce important concepts of the Dart API used to write queries.
+- The setup shown here uses the `sqlite3` package to run queries synchronously on the main isolate.
+ With a bit of additional setup, drift can transparently run in a background isolate without
+ you having to adapt your query code. See [Isolates]({{ '../Advanced Features/isolates.md' | pageUrl }}) for more on that.
+- Drift has excellent support for custom SQL statements, including a static analyzer and code-generation tools. See [Getting started with sql]({{ 'starting_with_sql.md' | pageUrl }})
+  or [Using SQL]({{ '../Using SQL/index.md' | pageUrl }}) for everything there is to now.
