@@ -135,11 +135,6 @@ class SchemaFromCreateTable {
       return const ResolvedType(type: BasicType.blob);
     }
 
-    return _handleColumnTypeWithoutDefault(typeName) ??
-        const ResolvedType(type: BasicType.real);
-  }
-
-  ResolvedType? _handleColumnTypeWithoutDefault(String typeName) {
     final upper = typeName.toUpperCase();
     if (upper.contains('INT')) {
       return const ResolvedType(type: BasicType.int);
@@ -166,15 +161,18 @@ class SchemaFromCreateTable {
         return const ResolvedType(type: BasicType.int);
       }
     }
+
+    return const ResolvedType(type: BasicType.real);
   }
 
   bool isValidTypeNameForStrictTable(String typeName) {
     if (moorExtensions) {
-      // Anything accepted by drift_dev goes, the generated table will have
-      // a correct column type for that either way (it's transformed).
-      return _handleColumnTypeWithoutDefault(typeName) != null;
+      // Drift_dev will use resolveColumnType to analyze the actual type of the
+      // column, and the generated code will always use a valid type name for
+      // that type. So, anything goes!
+      return true;
     } else {
-      // See https://www.sqlite.org/draft/stricttables.html
+      // See https://www.sqlite.org/stricttables.html
       const allowed = {'INT', 'INTEGER', 'REAL', 'TEXT', 'BLOB', 'ANY'};
       final upper = typeName.toUpperCase();
 
