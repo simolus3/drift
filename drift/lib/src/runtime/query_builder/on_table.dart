@@ -48,6 +48,10 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   ///
   /// Please note that this method is only available on recent sqlite3 versions.
   /// See also [InsertStatement.insertOnConflictUpdate].
+  /// By default, only the primary key is used for detect uniqueness violations.
+  /// If you have further uniqueness constraints, please use the general
+  /// [insertOne] method with a [DoUpdate] including those columns in its
+  /// [DoUpdate.target].
   Future<int> insertOnConflictUpdate(Insertable<Row> row) {
     return insert().insertOnConflictUpdate(row);
   }

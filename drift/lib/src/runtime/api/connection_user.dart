@@ -163,7 +163,7 @@ abstract class DatabaseConnectionUser {
   /// This method is deprecated. For an even easier access, the methods that
   /// were made available here are now available on the [table] or view instance
   /// directly.
-  @Deprecated('Experiment ended - use the methods on the [table] direclty')
+  @Deprecated('Experiment ended - use the methods on the [table] directly')
   TableOrViewOperations<T, D> from<T extends HasResultSet, D>(
       ResultSetImplementation<T, D> table) {
     return TableOrViewOperations._(this, table);

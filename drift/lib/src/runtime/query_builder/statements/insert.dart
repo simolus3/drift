@@ -51,6 +51,10 @@ class InsertStatement<T extends Table, D> {
   /// Be aware that upsert clauses and [onConflict] are not available on older
   /// sqlite versions.
   ///
+  /// By default, the [onConflict] clause will only consider the table's primary
+  /// key. If you have additional columns with uniqueness constraints, you have
+  /// to manually add them to the clause's [DoUpdate.target].
+  ///
   /// Returns the `rowid` of the inserted row. For tables with an auto-increment
   /// column, the `rowid` is the generated value of that column. The returned
   /// value can be inaccurate when [onConflict] is set and the insert behaved
@@ -104,6 +108,10 @@ class InsertStatement<T extends Table, D> {
   ///
   /// Be aware that [insertOnConflictUpdate] uses an upsert clause, which is not
   /// available on older sqlite implementations.
+  /// Note: By default, only the primary key is used for detect uniqueness
+  /// violations. If you have further uniqueness constraints, please use the
+  /// general [insert] method with a [DoUpdate] including those columns in its
+  /// [DoUpdate.target].
   Future<int> insertOnConflictUpdate(Insertable<D> entity) {
     return insert(entity, onConflict: DoUpdate((_) => entity));
   }
