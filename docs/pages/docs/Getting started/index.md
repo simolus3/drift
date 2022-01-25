@@ -85,8 +85,8 @@ examples. Otherwise, the generator won't be able to know what's going on.
 
 ## Generating the code
 Drift integrates with Dart's `build` system, so you can generate all the code needed with 
-`flutter packages pub run build_runner build`. If you want to continuously rebuild the generated code
-where you change your code, run `flutter packages pub run build_runner watch` instead.
+`flutter pub run build_runner build`. If you want to continuously rebuild the generated code
+where you change your code, run `flutter pub run build_runner watch` instead.
 After running either command once, the drift generator will have created a class for your
 database and data classes for your entities. To use it, change the `MyDatabase` class as
 follows:
