@@ -1565,7 +1565,7 @@ class Parser {
 
     _consume(TokenType.from, 'Expected a FROM here');
 
-    final table = _tableReference();
+    final table = _tableReference(allowAlias: false);
 
     final where = _whereOrNull();
     final returning = _returningOrNull();
