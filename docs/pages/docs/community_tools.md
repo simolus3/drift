@@ -11,17 +11,20 @@ Contact me on [Gitter](https://gitter.im/moor-dart/community), [Twitter](https:/
 or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 {% endblock %}
 
-## Moor inspector
+## Drift inspector
 
-[Chimerapps](https://github.com/Chimerapps) wrote the `drift_inspector` (and `moor_inspector`) package and plugin for IntelliJ
+[Chimerapps](https://github.com/Chimerapps) wrote the `drift_inspector` package and plugin for IntelliJ
 and Android Studio. You can use it to inspect a moor or drift database right from your IDE!
 
-- The [`moor_inspector` package](https://pub.dev/packages/moor_inspector) on pub
 - The [`drift_inspector` package](https://pub.dev/packages/drift_inspector) on pub
 - The [IntelliJ plugin](https://plugins.jetbrains.com/plugin/15364-drift-database-inspector)
 - The [project on GitHub](https://github.com/Chimerapps/drift_inspector)
 
-## moor_db_viewer
+The upcoming [`storage_inspector`](https://github.com/NicolaVerbeeck/flutter_local_storage_inspector) package
+and IntelliJ plugin will also enable you to inspect your drift database along with local storage or other
+persistence packages you use.
+
+## drift_db_viewer
 
 [drift_db_viewer](https://pub.dev/packages/drift_db_viewer) (and [moor_db_viewer](https://pub.dev/packages/moor_db_viewer)) by [Koen Van Looveren](https://github.com/vanlooverenkoen)
 is a package to view a moor or drift database in your Flutter app directly.
