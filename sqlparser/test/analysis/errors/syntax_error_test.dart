@@ -4,6 +4,7 @@ import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../data.dart';
+import 'utils.dart';
 
 void main() {
   group('DO UPDATE clause without conflict target', () {
@@ -65,5 +66,47 @@ void main() {
           .having((e) => e.message, 'message',
               contains('Only column names can be used in a PRIMARY KEY clause'))
     ]);
+  });
+
+  group('illegal constructs in triggers', () {
+    final engine = SqlEngine()..registerTable(demoTable);
+
+    test('DEFAULT VALUES', () {
+      engine.analyze('INSERT INTO demo DEFAULT VALUES').expectNoError();
+      engine
+          .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+              'INSERT INTO demo DEFAULT VALUES;'
+              'END;')
+          .expectError('DEFAULT VALUES', type: AnalysisErrorType.synctactic);
+    });
+
+    group('aliased source tables', () {
+      test('insert', () {
+        engine.analyze('INSERT INTO demo AS d VALUES (?, ?)').expectNoError();
+        engine
+            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+                'INSERT INTO demo AS d VALUES (?, ?);'
+                'END;')
+            .expectError('demo AS d', type: AnalysisErrorType.synctactic);
+      });
+
+      test('update', () {
+        engine.analyze('UPDATE demo AS d SET id = id + 1;').expectNoError();
+        engine
+            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+                'UPDATE demo AS d SET id = id + 1;'
+                'END;')
+            .expectError('demo AS d', type: AnalysisErrorType.synctactic);
+      });
+
+      test('delete', () {
+        engine.analyze('DELETE FROM demo d;').expectNoError();
+        engine
+            .analyze('CREATE TRIGGER tgr AFTER DELETE ON demo BEGIN '
+                'DELETE FROM demo d;'
+                'END;')
+            .expectError('demo d', type: AnalysisErrorType.synctactic);
+      });
+    });
   });
 }

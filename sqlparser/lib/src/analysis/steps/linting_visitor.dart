@@ -154,6 +154,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
+  void visitDefaultValues(DefaultValues e, void arg) {
+    // `DEFAULT VALUES` is not supported in a trigger, see https://www.sqlite.org/lang_insert.html
+    if (!_isTopLevelStatement) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          message: '`DEFAULT VALUES` cannot be used in a trigger.',
+          relevantNode: e,
+        ),
+      );
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitInsertStatement(InsertStatement e, void arg) {
     for (final target in e.targetColumns) {
       final resolved = target.resolvedColumn;
@@ -289,6 +305,25 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
             relevantNode: expr,
           ));
         }
+      }
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
+  void visitTableReference(TableReference e, void arg) {
+    final parent = e.parent;
+    if (parent is HasPrimarySource && parent.table == e) {
+      // The source of a `INSERT`, `UPDATE` or `DELETE` statement must not have
+      // an alias in `CREATE TRIGGER` statements.
+      if (!_isTopLevelStatement && e.as != null) {
+        context.reportError(AnalysisError(
+          type: AnalysisErrorType.synctactic,
+          message:
+              'The source must not have an `AS` alias when used in a trigger.',
+          relevantNode: e,
+        ));
       }
     }
 
