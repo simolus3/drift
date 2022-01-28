@@ -939,7 +939,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.distinct);
     }
 
-    _space();
     _join(e.columns, ',');
 
     _from(e.from);
