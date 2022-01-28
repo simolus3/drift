@@ -502,13 +502,6 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
   }
 
   @override
-  void visitNestedQueryVariable(NestedQueryVariable e, void arg) {
-    final current = _currentAs<NestedQueryVariable>(e);
-    _assert(current.name == e.name, e);
-    _checkChildren(e);
-  }
-
-  @override
   void visitNullLiteral(NullLiteral e, void arg) {
     _currentAs<NullLiteral>(e);
     _checkChildren(e);

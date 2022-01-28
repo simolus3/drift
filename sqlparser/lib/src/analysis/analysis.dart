@@ -21,7 +21,6 @@ part 'schema/table.dart';
 part 'schema/view.dart';
 part 'steps/column_resolver.dart';
 part 'steps/linting_visitor.dart';
-part 'steps/nested_query_resolver.dart';
 part 'steps/prepare_ast.dart';
 part 'steps/reference_resolver.dart';
 part 'steps/set_parent_visitor.dart';

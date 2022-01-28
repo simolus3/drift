@@ -4,6 +4,7 @@ import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
+import 'nested_queries.dart';
 import 'required_variables.dart';
 
 /// Converts tables and types between the moor_generator and the sqlparser
@@ -120,21 +121,21 @@ class TypeMapper {
   ///    a Dart placeholder, its indexed is LOWER than that element. This means
   ///    that elements can be expanded into multiple variables without breaking
   ///    variables that appear after them.
-  List<FoundElement> extractElements(AnalysisContext ctx, AstNode root,
-      {RequiredVariables required = RequiredVariables.empty}) {
+  List<FoundElement> extractElements({
+    required AnalysisContext ctx,
+    required AstNode root,
+    NestedQueriesContainer? nestedScope,
+    RequiredVariables required = RequiredVariables.empty,
+  }) {
+    final collector = _FindElements()..visit(root, nestedScope);
+
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
-    final variableCollector = _ElementCollector<Variable>();
-    final placeholderCollector = _ElementCollector<DartPlaceholder>();
+    final variables = collector.variables;
+    final placeholders = collector.dartPlaceholders;
 
-    root.accept(variableCollector, null);
-    root.accept(placeholderCollector, null);
-
-    final merged = _mergeVarsAndPlaceholders(
-      variableCollector.result,
-      placeholderCollector.result,
-    );
+    final merged = _mergeVarsAndPlaceholders(variables, placeholders);
 
     final foundElements = <FoundElement>[];
     // we don't allow variables with an explicit index after an array. For
@@ -157,13 +158,15 @@ class TypeMapper {
             (used is NumberedVariable) ? used.explicitIndex : null;
         final internalType = ctx.typeOf(used);
         final type = resolvedToMoor(internalType.type);
+        final forCapture = used.meta<CapturedVariable>();
 
-        if (used is NestedQueryVariable) {
+        if (forCapture != null) {
           foundElements.add(FoundVariable.nestedQuery(
             index: currentIndex,
-            name: used.name,
+            name: name,
             type: type,
             variable: used,
+            forCaptured: forCapture,
           ));
 
           continue;
@@ -358,39 +361,45 @@ class TypeMapper {
   }
 }
 
-/// Because FoundElements from nested queries should not be added to the parent
-/// query, it is necessary to use a visitor to decide when to stop collection
-/// elements.
+/// Finds variables, Dart placeholders and outgoing references from nested
+/// queries (which are eventually turned into variables) inside a query.
 ///
-/// [T] can either be a [Variable] or [DartPlaceholder]. If the type is anything
-/// else the result list will be empty.
-class _ElementCollector<T> extends RecursiveVisitor<void, void> {
-  final List<T> result;
-
-  _ElementCollector()
-      : result = [],
-        assert(T == Variable || T == DartPlaceholder, 'T is: $T');
+/// Nested children of this query are ignored, see `nested_queries.dart` for
+/// details on nested queries and how they're implemented.
+class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
+  final List<Variable> variables = [];
+  final List<DartPlaceholder> dartPlaceholders = [];
 
   @override
-  void visitVariable(Variable e, void arg) {
-    if (T == Variable) {
-      result.add(e as T);
-    }
-
+  void visitVariable(Variable e, NestedQueriesContainer? arg) {
+    variables.add(e);
     super.visitVariable(e, arg);
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitMoorSpecificNode(MoorSpecificNode e, NestedQueriesContainer? arg) {
     if (e is NestedQueryColumn) {
       // If the node ist a nested query, return to avoid collecting elements
       // inside of it
       return;
     }
-    if (e is DartPlaceholder && T == DartPlaceholder) {
-      result.add(e as T);
+
+    if (e is DartPlaceholder) {
+      dartPlaceholders.add(e);
     }
 
     super.visitMoorSpecificNode(e, arg);
+  }
+
+  @override
+  void visitReference(Reference e, NestedQueriesContainer? arg) {
+    if (arg is NestedQuery) {
+      final captured = arg.capturedVariables[e];
+      if (captured != null) {
+        variables.add(captured.introducedVariable);
+      }
+    }
+
+    super.visitReference(e, arg);
   }
 }

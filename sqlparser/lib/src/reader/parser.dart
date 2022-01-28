@@ -1942,13 +1942,9 @@ class Parser {
         'Expected opening parenthesis after LIST',
       );
 
-      // or _fullSelect but I don't think with support is required here because
-      // with statements can be added to the main select statement
-      final statement = select();
+      final statement = _fullSelect();
       if (statement == null || statement is! SelectStatement) {
-        _error(
-          'Expected a select statement but found ${statement?.toString()}',
-        );
+        _error('Expected a select statement here');
       }
 
       _consume(

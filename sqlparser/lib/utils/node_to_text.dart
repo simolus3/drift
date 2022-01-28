@@ -836,11 +836,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
-  void visitNestedQueryVariable(NestedQueryVariable e, void arg) {
-    visitNamedVariable(e, arg);
-  }
-
-  @override
   void visitNullLiteral(NullLiteral e, void arg) {
     _keyword(TokenType.$null);
   }
@@ -944,7 +939,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.distinct);
     }
 
-    _join(e.columns.where((e) => e is! NestedQueryColumn), ',');
+    _space();
+    _join(e.columns, ',');
 
     _from(e.from);
     _where(e.where);
@@ -1264,7 +1260,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   /// Writes an identifier, escaping it if necessary.
   void identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
+    if (isKeywordLexeme(identifier) || _notAKeywordRegex.hasMatch(identifier)) {
       identifier = '"$identifier"';
     }
 
@@ -1349,3 +1345,5 @@ extension NodeToText on AstNode {
     return builder.buffer.toString();
   }
 }
+
+final _notAKeywordRegex = RegExp('[^A-Za-z_]');

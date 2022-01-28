@@ -6,6 +6,7 @@ import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 
 import 'lints/linter.dart';
+import 'nested_queries.dart';
 import 'required_variables.dart';
 
 /// The context contains all data that is required to create an [SqlQuery]. This
@@ -13,6 +14,7 @@ import 'required_variables.dart';
 class _QueryHandlerContext {
   final List<FoundElement> foundElements;
   final AstNode root;
+  final NestedQueriesContainer? nestedScope;
   final String queryName;
   final String? requestedResultClass;
 
@@ -20,6 +22,7 @@ class _QueryHandlerContext {
     required List<FoundElement> foundElements,
     required this.root,
     required this.queryName,
+    required this.nestedScope,
     this.requestedResultClass,
   }) : foundElements = List.unmodifiable(foundElements);
 }
@@ -49,10 +52,18 @@ class QueryHandler {
   }) : nestedQueryCounter = 0;
 
   SqlQuery handle(DeclaredQuery source) {
+    final nestedAnalyzer = NestedQueryAnalyzer();
+    NestedQueriesContainer? nestedScope;
+
+    if (context.root is SelectStatement) {
+      nestedScope = nestedAnalyzer.analyzeRoot(context.root as SelectStatement);
+    }
+
     final foundElements = mapper.extractElements(
-      context,
-      context.root,
+      ctx: context,
+      root: context.root,
       required: requiredVariables,
+      nestedScope: nestedScope,
     );
     _verifyNoSkippedIndexes(foundElements);
 
@@ -68,11 +79,12 @@ class QueryHandler {
       queryName: source.name,
       requestedResultClass: requestedResultClass,
       root: context.root,
+      nestedScope: nestedScope,
     ));
 
     final linter = Linter.forHandler(this);
     linter.reportLints();
-    query.lints = linter.lints;
+    query.lints = [...nestedAnalyzer.errors, ...linter.lints];
 
     return query;
   }
@@ -152,6 +164,7 @@ class QueryHandler {
         (queryContext.root as BaseSelectStatement).resolvedColumns!,
       ),
       queryContext.requestedResultClass,
+      queryContext.nestedScope,
     );
   }
 
@@ -270,10 +283,13 @@ class QueryHandler {
           isNullable: isNullable,
         ));
       } else if (column is NestedQueryColumn) {
+        final childScope = queryContext.nestedScope?.nestedQueries[column];
+
         final foundElements = mapper.extractElements(
-          context,
-          column.select,
+          ctx: context,
+          root: column.select,
           required: requiredVariables,
+          nestedScope: childScope,
         );
         _verifyNoSkippedIndexes(foundElements);
 
@@ -296,6 +312,7 @@ class QueryHandler {
             requestedResultClass: resultClassName,
             root: column.select,
             foundElements: foundElements,
+            nestedScope: childScope,
           )),
         ));
       }

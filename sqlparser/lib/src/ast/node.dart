@@ -78,6 +78,8 @@ abstract class AstNode with HasMetaMixin implements SyntacticEntity {
     yield* allDescendants;
   }
 
+  bool isChildOf(AstNode other) => parents.contains(other);
+
   /// Finds the first element in [selfAndParents] of the type [T].
   ///
   /// Returns `null` if there's no node of type [T] surrounding this ast node.

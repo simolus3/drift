@@ -170,18 +170,6 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  @override
-  void visitNestedQueryVariable(NestedQueryVariable e, void arg) {
-    assert(
-      false,
-      'This should be unreachable, because NestedQueryVariables are only'
-      'introduced later in the NestedQueryResolver',
-    );
-
-    _foundVariables.add(e);
-    visitChildren(e, arg);
-  }
-
   static void resolveIndexOfVariables(List<Variable> variables) {
     // sort variables by the order in which they appear inside the statement.
     variables.sort((a, b) {

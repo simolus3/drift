@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/model/base_entity.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
@@ -195,6 +196,8 @@ class SqlSelectQuery extends SqlQuery {
   // todo: Allow custom result classes for RETURNING as well?
   final String? requestedResultClass;
 
+  final NestedQueriesContainer? nestedContainer;
+
   /// Whether this query contains nested queries or not
   bool get hasNestedQuery =>
       resultSet.nestedResults.any((e) => e is NestedResultQuery);
@@ -207,6 +210,7 @@ class SqlSelectQuery extends SqlQuery {
     this.readsFrom,
     this.resultSet,
     this.requestedResultClass,
+    this.nestedContainer,
   ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
 
   Set<MoorTable> get readsFromTables {
@@ -231,6 +235,7 @@ class SqlSelectQuery extends SqlQuery {
       readsFrom,
       resultSet,
       null,
+      nestedContainer,
     );
   }
 }
@@ -600,8 +605,9 @@ class FoundVariable extends FoundElement implements HasType {
   @override
   final bool hidden;
 
-  /// Whether this variable is used as input for a nested query or not.
-  final bool nestedQuery;
+  /// When this variable is introduced for a nested query referencing something
+  /// from an outer query, contains the backing variable.
+  final CapturedVariable? forCaptured;
 
   FoundVariable({
     required this.index,
@@ -613,7 +619,7 @@ class FoundVariable extends FoundElement implements HasType {
     this.isRequired = false,
     this.typeConverter,
   })  : hidden = false,
-        nestedQuery = false,
+        forCaptured = null,
         assert(variable.resolvedIndex == index);
 
   FoundVariable.nestedQuery({
@@ -621,11 +627,11 @@ class FoundVariable extends FoundElement implements HasType {
     required this.name,
     required this.type,
     required this.variable,
+    required this.forCaptured,
   })  : typeConverter = null,
         nullable = false,
         isArray = false,
         isRequired = true,
-        nestedQuery = true,
         hidden = true;
 
   @override

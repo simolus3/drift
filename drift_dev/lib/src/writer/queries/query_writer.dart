@@ -3,7 +3,7 @@ import 'dart:math' show max;
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/explicit_alias_transformer.dart';
-import 'package:drift_dev/src/analyzer/sql_queries/nested_query_transformer.dart';
+import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:recase/recase.dart';
@@ -47,7 +47,11 @@ class QueryWriter {
     if (resultSet != null && options.newSqlCodeGeneration) {
       _transformer = ExplicitAliasTransformer();
       _transformer.rewrite(query.root!);
-      NestedQueryTransformer().rewrite(query.root!);
+
+      final nested = query is SqlSelectQuery ? query.nestedContainer : null;
+      if (nested != null) {
+        addHelperNodes(nested);
+      }
     }
 
     if (query is SqlSelectQuery) {
@@ -64,7 +68,8 @@ class QueryWriter {
   void _writeSelect(SqlSelectQuery select) {
     if (select.hasNestedQuery && !scope.options.newSqlCodeGeneration) {
       throw UnsupportedError(
-        'To use nested result queries enable new_sql_code_generation',
+        'Using nested result queries (with `LIST`) requires the '
+        '`new_sql_code_generation` build option.',
       );
     }
 
@@ -860,6 +865,7 @@ class _ExpandedVariableWriter {
       final type =
           element.variableTypeCodeWithoutArray(scope.generationOptions);
       final buffer = StringBuffer('Variable<$type>(');
+      final capture = element.forCaptured;
 
       if (element.typeConverter != null) {
         // Apply the converter
@@ -871,8 +877,8 @@ class _ExpandedVariableWriter {
         if (needsNullAssertion) {
           buffer.write('!');
         }
-      } else if (element.nestedQuery) {
-        buffer.write('row.read(\'${query.name}_$dartExpr\')');
+      } else if (capture != null) {
+        buffer.write('row.read(${asDartLiteral(capture.helperColumn)})');
       } else {
         buffer.write(dartExpr);
       }

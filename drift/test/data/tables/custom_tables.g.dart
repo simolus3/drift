@@ -1551,7 +1551,7 @@ class MyView extends ViewInfo<MyView, MyViewData> implements HasResultSet {
   String get entityName => 'my_view';
   @override
   String get createViewStmt =>
-      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2';
+      'CREATE VIEW my_view AS SELECT  * FROM config WHERE sync_state = 2';
   @override
   MyView get asDslTable => this;
   @override
@@ -1604,7 +1604,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final WeirdTable weirdTable = WeirdTable(this);
   Selectable<Config> readConfig(String var1) {
     return customSelect(
-        'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
+        'SELECT  config_key AS ck, config_value AS cf, sync_state AS "cs1", sync_state_implicit AS "cs2" FROM config WHERE config_key = ?1',
         variables: [
           Variable<String>(var1)
         ],
@@ -1627,7 +1627,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         $write(clause(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
     return customSelect(
-        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
+        'SELECT  * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables
@@ -1645,7 +1645,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final generatedpredicate =
         $write(predicate(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
-    return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
+    return customSelect('SELECT  * FROM config WHERE ${generatedpredicate.sql}',
         variables: [
           ...generatedpredicate.introducedVariables
         ],
@@ -1665,7 +1665,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
+        'SELECT  config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           Variable<int?>(ConfigTable.$converter0.mapToSql(var1)),
           ...generatedpred.introducedVariables,
@@ -1680,7 +1680,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<JsonResult> tableValued() {
     return customSelect(
-        'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
+        'SELECT  "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {
           config,
@@ -1695,7 +1695,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<JsonResult> another() {
     return customSelect(
-        'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
+        'SELECT  \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
         variables: [],
         readsFrom: {}).map((QueryRow row) {
       return JsonResult(
@@ -1717,7 +1717,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelect(
-        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
+        'SELECT  d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
         variables: [
           ...generatedpredicate.introducedVariables
         ],
@@ -1737,7 +1737,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<EMail> searchEmails({required String? term}) {
     return customSelect(
-        'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
+        'SELECT  * FROM email WHERE email MATCH ?1 ORDER BY rank',
         variables: [
           Variable<String?>(term)
         ],
@@ -1753,7 +1753,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         $write(expr(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedexpr.amountOfVariables;
     return customSelect(
-        'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
+        'SELECT  oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
         variables: [
           ...generatedexpr.introducedVariables
         ],
@@ -1775,20 +1775,20 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   Selectable<MyViewData> readView() {
-    return customSelect('SELECT * FROM my_view', variables: [], readsFrom: {
+    return customSelect('SELECT  * FROM my_view', variables: [], readsFrom: {
       config,
     }).map(myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
     return customSelect(
-        'WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+        'WITH RECURSIVE cnt(x) AS (SELECT  1 UNION ALL SELECT  x + 1 FROM cnt LIMIT 1000000) SELECT  x FROM cnt',
         variables: [],
         readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
   }
 
   Selectable<int?> nullableQuery() {
-    return customSelect('SELECT MAX(oid) AS _c0 FROM config',
+    return customSelect('SELECT  MAX(oid) AS "_c0" FROM config',
         variables: [],
         readsFrom: {
           config,
@@ -1804,6 +1804,32 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         'INSERT INTO config ${generatedvalue.sql} RETURNING *',
         variables: [...generatedvalue.introducedVariables],
         updates: {config}).then((rows) => rows.map(config.mapFromRow).toList());
+  }
+
+  Selectable<NestedResult> nested(String? var1) {
+    return customSelect(
+        'SELECT "defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
+        variables: [
+          Variable<String?>(var1)
+        ],
+        readsFrom: {
+          withConstraints,
+          withDefaults,
+        }).asyncMap((QueryRow row) async {
+      return NestedResult(
+        row: row,
+        defaults: withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
+        nestedQuery0: await customSelect(
+            'SELECT  * FROM with_constraints AS c WHERE c.b = ?1',
+            variables: [
+              Variable<String>(row.read('\$n_0'))
+            ],
+            readsFrom: {
+              withConstraints,
+              withDefaults,
+            }).map(withConstraints.mapFromRow).get(),
+      );
+    });
   }
 
   Future<int> writeConfig({required String key, String? value}) {
@@ -1941,6 +1967,32 @@ class ReadRowIdResult extends CustomResultSet {
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')
           ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class NestedResult extends CustomResultSet {
+  final WithDefault defaults;
+  final List<WithConstraint> nestedQuery0;
+  NestedResult({
+    required QueryRow row,
+    required this.defaults,
+    required this.nestedQuery0,
+  }) : super(row);
+  @override
+  int get hashCode => Object.hash(defaults, nestedQuery0);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NestedResult &&
+          other.defaults == this.defaults &&
+          other.nestedQuery0 == this.nestedQuery0);
+  @override
+  String toString() {
+    return (StringBuffer('NestedResult(')
+          ..write('defaults: $defaults, ')
+          ..write('nestedQuery0: $nestedQuery0')
           ..write(')'))
         .toString();
   }
