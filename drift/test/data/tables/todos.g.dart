@@ -1575,7 +1575,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
-        'SELECT  t.*, c.id AS catId, c."desc" AS catDesc FROM todos AS t INNER JOIN categories AS c ON c.id = t.category',
+        'SELECT t.*, c.id AS catId, c."desc" AS catDesc FROM todos AS t INNER JOIN categories AS c ON c.id = t.category',
         variables: [],
         readsFrom: {
           categories,
@@ -1608,7 +1608,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelect(
-        'SELECT  * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
           Variable<String?>(var1),
           Variable<String?>(var2),
@@ -1621,7 +1621,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Selectable<TodoEntry> search({required int id}) {
     return customSelect(
-        'SELECT  * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
+        'SELECT * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
         variables: [
           Variable<int>(id)
         ],
@@ -1632,7 +1632,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Selectable<MyCustomObject> findCustom() {
     return customSelect(
-        'SELECT  custom FROM table_without_p_k WHERE some_float < 10',
+        'SELECT custom FROM table_without_p_k WHERE some_float < 10',
         variables: [],
         readsFrom: {
           tableWithoutPK,
@@ -1713,7 +1713,7 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
-        'SELECT  t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
         variables: [
           Variable<int>(user)
         ],

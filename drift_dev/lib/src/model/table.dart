@@ -44,7 +44,7 @@ class MoorTable extends MoorEntityWithResultSet {
   @override
   final List<MoorColumn> columns;
 
-  /// The name of this table when stored in the database
+  /// The (unescaped) name of this table when stored in the database
   final String sqlName;
 
   /// The name for the data class associated with this table

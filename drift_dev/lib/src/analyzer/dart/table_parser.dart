@@ -18,7 +18,7 @@ class TableParser {
     final table = MoorTable(
       fromClass: element,
       columns: columns,
-      sqlName: escapeIfNeeded(sqlName),
+      sqlName: sqlName,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
       primaryKey: primaryKey,

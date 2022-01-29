@@ -1345,4 +1345,5 @@ extension NodeToText on AstNode {
   }
 }
 
-final _notAKeywordRegex = RegExp('[^A-Za-z_]');
+// Allow 0, 1, 2, 3 in https://github.com/sqlite/sqlite/blob/665b6b6b35f10a46bb72377ade7c2e5d8ea42cb3/src/tokenize.c#L62-L80
+final _notAKeywordRegex = RegExp('[^A-Za-z_0-9]');
