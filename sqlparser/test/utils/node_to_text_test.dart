@@ -423,6 +423,20 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     });
   });
 
+  test('identifiers', () {
+    void testWith(String id, String formatted) {
+      final node = Reference(columnName: id);
+      expect(node.toSql(), formatted);
+    }
+
+    testWith('a', 'a');
+    testWith('_', '_');
+    testWith('c0', 'c0');
+    testWith('_c0', '_c0');
+    testWith('a b', '"a b"');
+    testWith(r'a$b', r'"a$b"');
+  });
+
   group('moor', () {
     test('dart placeholders', () {
       testFormat(r'SELECT $placeholder FROM foo');

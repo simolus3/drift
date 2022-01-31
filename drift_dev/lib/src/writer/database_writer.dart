@@ -117,9 +117,7 @@ class DatabaseWriter {
     }
 
     // Write implementation for query methods
-    for (final query in db.queries ?? const <Never>[]) {
-      QueryWriter(query, dbScope.child()).write();
-    }
+    db.queries?.forEach((query) => QueryWriter(dbScope.child()).write(query));
 
     // Write List of tables
     final schemaScope = dbScope.leaf();

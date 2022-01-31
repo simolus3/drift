@@ -1918,8 +1918,12 @@ class Parser {
           return StarResultColumn(identifier.identifier)
             ..setSpan(identifier, _previous);
         } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
-          return NestedStarResultColumn(identifier.identifier)
-            ..setSpan(identifier, _previous);
+          final as = _as();
+
+          return NestedStarResultColumn(
+            tableName: identifier.identifier,
+            as: as?.identifier,
+          )..setSpan(identifier, _previous);
         }
       }
 
@@ -1927,6 +1931,30 @@ class Parser {
       // todo this is a bit unorthodox. is there a better way to parse the
       // expression from before?
       _current = positionBefore;
+    }
+
+    // parsing for the nested query column
+    if (enableMoorExtensions && _matchOne(TokenType.list)) {
+      final list = _previous;
+
+      _consume(
+        TokenType.leftParen,
+        'Expected opening parenthesis after LIST',
+      );
+
+      final statement = _fullSelect();
+      if (statement == null || statement is! SelectStatement) {
+        _error('Expected a select statement here');
+      }
+
+      _consume(
+        TokenType.rightParen,
+        'Expected closing parenthesis to finish LIST expression',
+      );
+
+      final as = _as();
+      return NestedQueryColumn(select: statement, as: as?.identifier)
+        ..setSpan(list, _previous);
     }
 
     final tokenBefore = _peek;

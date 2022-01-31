@@ -93,3 +93,7 @@ cfeTest: WITH RECURSIVE
 
 nullableQuery: SELECT MAX(oid) FROM config;
 addConfig: INSERT INTO config $value RETURNING *;
+
+nested: SELECT defaults.**, LIST(SELECT * FROM with_constraints c WHERE c.b = defaults.b)
+  FROM with_defaults defaults
+  WHERE a = ?;

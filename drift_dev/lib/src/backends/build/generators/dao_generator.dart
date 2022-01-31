@@ -1,5 +1,4 @@
 import 'package:build/build.dart';
-import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/backends/build/moor_builder.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
@@ -32,9 +31,8 @@ class DaoGenerator extends Generator implements BaseGenerator {
             '$infoType get $getterName => attachedDatabase.$getterName;\n');
       }
 
-      for (final query in dao.queries ?? const <SqlQuery>[]) {
-        QueryWriter(query, classScope.child()).write();
-      }
+      dao.queries
+          ?.forEach((query) => QueryWriter(classScope.child()).write(query));
 
       classScope.leaf().write('}');
     }

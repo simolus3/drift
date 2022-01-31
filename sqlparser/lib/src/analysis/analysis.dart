@@ -12,6 +12,7 @@ export 'types/types.dart' show TypeInferenceResults;
 
 part 'context.dart';
 part 'error.dart';
+part 'options.dart';
 part 'schema/column.dart';
 part 'schema/from_create_table.dart';
 part 'schema/references.dart';
@@ -23,7 +24,6 @@ part 'steps/linting_visitor.dart';
 part 'steps/prepare_ast.dart';
 part 'steps/reference_resolver.dart';
 part 'steps/set_parent_visitor.dart';
-part 'options.dart';
 part 'utils/expand_function_parameters.dart';
 
 /// Something that can be represented in a human-readable description.

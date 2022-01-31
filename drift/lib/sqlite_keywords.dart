@@ -195,7 +195,7 @@ const additionalPostgresKeywords = <String>{
 /// [sqliteKeywords].
 bool isSqliteKeyword(String s) => sqliteKeywords.contains(s.toUpperCase());
 
-final _whitespace = RegExp(r'\s');
+final _notInKeyword = RegExp('[^A-Za-z_0-9]');
 
 /// Escapes [s] by wrapping it in backticks if it's an sqlite keyword.
 String escapeIfNeeded(String s, [SqlDialect dialect = SqlDialect.sqlite]) {
@@ -206,6 +206,6 @@ String escapeIfNeeded(String s, [SqlDialect dialect = SqlDialect.sqlite]) {
     isKeyword |= additionalPostgresKeywords.contains(inUpperCase);
   }
 
-  if (isKeyword || s.contains(_whitespace)) return '"$s"';
+  if (isKeyword || _notInKeyword.hasMatch(s)) return '"$s"';
   return s;
 }

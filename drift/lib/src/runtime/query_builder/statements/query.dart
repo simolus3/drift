@@ -253,6 +253,13 @@ abstract class Selectable<T>
   Selectable<N> map<N>(N Function(T) mapper) {
     return _MappedSelectable<T, N>(this, mapper);
   }
+
+  /// Maps this selectable by the [mapper] function.
+  ///
+  /// Like [map] just async.
+  Selectable<N> asyncMap<N>(Future<N> Function(T) mapper) {
+    return _AsyncMappedSelectable<T, N>(this, mapper);
+  }
 }
 
 class _MappedSelectable<S, T> extends Selectable<T> {
@@ -272,6 +279,26 @@ class _MappedSelectable<S, T> extends Selectable<T> {
   }
 
   List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
+}
+
+class _AsyncMappedSelectable<S, T> extends Selectable<T> {
+  final Selectable<S> _source;
+  final Future<T> Function(S) _mapper;
+
+  _AsyncMappedSelectable(this._source, this._mapper);
+
+  @override
+  Future<List<T>> get() {
+    return _source.get().then(_mapResults);
+  }
+
+  @override
+  Stream<List<T>> watch() {
+    return _source.watch().asyncMap(_mapResults);
+  }
+
+  Future<List<T>> _mapResults(List<S> results) async =>
+      [for (final result in results) await _mapper(result)];
 }
 
 /// Mixin for a [Query] that operates on a single primary table only.

@@ -437,9 +437,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       _keyword(TokenType.import);
       _stringLiteral(e.importedFile);
       symbol(';', spaceAfter: true);
-    } else if (e is NestedStarResultColumn) {
-      identifier(e.tableName);
-      symbol('.**', spaceAfter: true);
     } else if (e is StatementParameter) {
       if (e is VariableTypeHint) {
         if (e.isRequired) _keyword(TokenType.required);
@@ -468,6 +465,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     } else if (e is NestedStarResultColumn) {
       identifier(e.tableName);
       symbol('.**', spaceAfter: true);
+    } else if (e is NestedQueryColumn) {
+      symbol('LIST(');
+      visit(e.select, arg);
+      symbol(')', spaceAfter: true);
     } else if (e is TransactionBlock) {
       visit(e.begin, arg);
       _writeStatements(e.innerStatements);
@@ -1258,7 +1259,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   /// Writes an identifier, escaping it if necessary.
   void identifier(String identifier,
       {bool spaceBefore = true, bool spaceAfter = true}) {
-    if (isKeywordLexeme(identifier) || identifier.contains(' ')) {
+    if (isKeywordLexeme(identifier) || _notAKeywordRegex.hasMatch(identifier)) {
       identifier = '"$identifier"';
     }
 
@@ -1343,3 +1344,6 @@ extension NodeToText on AstNode {
     return builder.buffer.toString();
   }
 }
+
+// Allow 0, 1, 2, 3 in https://github.com/sqlite/sqlite/blob/665b6b6b35f10a46bb72377ade7c2e5d8ea42cb3/src/tokenize.c#L62-L80
+final _notAKeywordRegex = RegExp('[^A-Za-z_0-9]');

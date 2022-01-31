@@ -107,11 +107,11 @@ class TypeMapper {
     return engineView;
   }
 
-  /// Extracts variables and Dart templates from the [ctx]. Variables are
-  /// sorted by their ascending index. Placeholders are sorted by the position
-  /// they have in the query. When comparing variables and placeholders, the
-  /// variable comes first if the first variable with the same index appears
-  /// before the placeholder.
+  /// Extracts variables and Dart templates from the AST tree starting at
+  /// [root], but nested queries are excluded. Variables are sorted by their
+  /// ascending index. Placeholders are sorted by the position they have in the
+  /// query. When comparing variables and placeholders, the variable comes first
+  /// if the first variable with the same index appears before the placeholder.
   ///
   /// Additionally, the following assumptions can be made if this method returns
   /// without throwing:
@@ -120,14 +120,19 @@ class TypeMapper {
   ///    a Dart placeholder, its indexed is LOWER than that element. This means
   ///    that elements can be expanded into multiple variables without breaking
   ///    variables that appear after them.
-  List<FoundElement> extractElements(AnalysisContext ctx,
-      {RequiredVariables required = RequiredVariables.empty}) {
+  List<FoundElement> extractElements({
+    required AnalysisContext ctx,
+    required AstNode root,
+    NestedQueriesContainer? nestedScope,
+    RequiredVariables required = RequiredVariables.empty,
+  }) {
+    final collector = _FindElements()..visit(root, nestedScope);
+
     // this contains variable references. For instance, SELECT :a = :a would
     // contain two entries, both referring to the same variable. To do that,
     // we use the fact that each variable has a unique index.
-    final variables = ctx.root.allDescendants.whereType<Variable>().toList();
-    final placeholders =
-        ctx.root.allDescendants.whereType<DartPlaceholder>().toList();
+    final variables = collector.variables;
+    final placeholders = collector.dartPlaceholders;
 
     final merged = _mergeVarsAndPlaceholders(variables, placeholders);
 
@@ -152,6 +157,20 @@ class TypeMapper {
             (used is NumberedVariable) ? used.explicitIndex : null;
         final internalType = ctx.typeOf(used);
         final type = resolvedToMoor(internalType.type);
+        final forCapture = used.meta<CapturedVariable>();
+
+        if (forCapture != null) {
+          foundElements.add(FoundVariable.nestedQuery(
+            index: currentIndex,
+            name: name,
+            type: type,
+            variable: used,
+            forCaptured: forCapture,
+          ));
+
+          continue;
+        }
+
         final isArray = internalType.type?.isArray ?? false;
         final isRequired = required.requiredNamedVariables.contains(name) ||
             required.requiredNumberedVariables.contains(used.resolvedIndex);
@@ -338,5 +357,48 @@ class TypeMapper {
     if (moorTable != null) {
       return WrittenMoorTable(moorTable, moorKind);
     }
+  }
+}
+
+/// Finds variables, Dart placeholders and outgoing references from nested
+/// queries (which are eventually turned into variables) inside a query.
+///
+/// Nested children of this query are ignored, see `nested_queries.dart` for
+/// details on nested queries and how they're implemented.
+class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
+  final List<Variable> variables = [];
+  final List<DartPlaceholder> dartPlaceholders = [];
+
+  @override
+  void visitVariable(Variable e, NestedQueriesContainer? arg) {
+    variables.add(e);
+    super.visitVariable(e, arg);
+  }
+
+  @override
+  void visitMoorSpecificNode(MoorSpecificNode e, NestedQueriesContainer? arg) {
+    if (e is NestedQueryColumn) {
+      // If the node ist a nested query, return to avoid collecting elements
+      // inside of it
+      return;
+    }
+
+    if (e is DartPlaceholder) {
+      dartPlaceholders.add(e);
+    }
+
+    super.visitMoorSpecificNode(e, arg);
+  }
+
+  @override
+  void visitReference(Reference e, NestedQueriesContainer? arg) {
+    if (arg is NestedQuery) {
+      final captured = arg.capturedVariables[e];
+      if (captured != null) {
+        variables.add(captured.introducedVariable);
+      }
+    }
+
+    super.visitReference(e, arg);
   }
 }

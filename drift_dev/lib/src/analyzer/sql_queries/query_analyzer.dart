@@ -167,8 +167,8 @@ class SqlAnalyzer extends BaseAnalyzer {
 
     try {
       final handled =
-          QueryHandler(query, context, mapper, requiredVariables: variables)
-              .handle()
+          QueryHandler(context, mapper, requiredVariables: variables)
+              .handle(query)
             ..declaredInMoorFile = query is DeclaredMoorQuery;
       foundQueries.add(handled);
     } catch (e, s) {

@@ -43,7 +43,7 @@ Future<void> main() async {
   SqlQuery parse(String sql) {
     final parsed = engine.analyze(sql);
     final fakeQuery = DeclaredDartQuery('query', sql);
-    return QueryHandler(fakeQuery, parsed, mapper).handle();
+    return QueryHandler(parsed, mapper).handle(fakeQuery);
   }
 
   group('detects whether multiple tables are referenced', () {
@@ -105,9 +105,16 @@ FROM routes
 
     expect(resultSet.columns.map((e) => e.name), ['id', 'from', 'to']);
     expect(resultSet.matchingTable, isNull);
-    expect(resultSet.nestedResults.map((e) => e.name), ['from', 'to']);
-    expect(resultSet.nestedResults.map((e) => e.table.displayName),
-        ['points', 'points']);
+    expect(
+      resultSet.nestedResults.cast<NestedResultTable>().map((e) => e.name),
+      ['from', 'to'],
+    );
+    expect(
+      resultSet.nestedResults
+          .cast<NestedResultTable>()
+          .map((e) => e.table.displayName),
+      ['points', 'points'],
+    );
   });
 
   test('resolves nullability of aliases in nested result sets', () async {
@@ -144,9 +151,14 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
     final resultSet = (query as SqlSelectQuery).resultSet;
 
     final nested = resultSet.nestedResults;
-    expect(nested.map((e) => e.name),
-        ['tableA1', 'tableA2', 'tableB1', 'tableB2']);
-    expect(nested.map((e) => e.isNullable), [false, true, false, true]);
+    expect(
+      nested.cast<NestedResultTable>().map((e) => e.name),
+      ['tableA1', 'tableA2', 'tableB1', 'tableB2'],
+    );
+    expect(
+      nested.cast<NestedResultTable>().map((e) => e.isNullable),
+      [false, true, false, true],
+    );
   });
 
   test('infers result set for views', () async {

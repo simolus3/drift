@@ -18,7 +18,9 @@ void main() {
     final result = engine.analyze(
         'SELECT * FROM todos WHERE title = ?2 OR id IN ? OR title = ?1');
 
-    final elements = mapper.extractElements(result).cast<FoundVariable>();
+    final elements = mapper
+        .extractElements(ctx: result, root: result.root)
+        .cast<FoundVariable>();
 
     expect(elements.map((v) => v.index), [1, 2, 3]);
   });
@@ -26,14 +28,45 @@ void main() {
   test('throws when an array with an explicit index is used', () {
     final result = engine.analyze('SELECT 1 WHERE 1 IN ?1');
 
-    expect(() => mapper.extractElements(result), throwsArgumentError);
+    expect(() => mapper.extractElements(ctx: result, root: result.root),
+        throwsArgumentError);
   });
 
   test(
     'throws when an explicitly index var with higher index appears after array',
     () {
       final result = engine.analyze('SELECT 1 WHERE 1 IN ? OR 2 = ?2');
-      expect(() => mapper.extractElements(result), throwsArgumentError);
+      expect(() => mapper.extractElements(ctx: result, root: result.root),
+          throwsArgumentError);
     },
   );
+
+  test('extracts variables but excludes nested queries', () {
+    final result = engine.analyze(
+      'SELECT *, LIST(SELECT * FROM todos WHERE title = ?3)'
+      'FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
+    );
+
+    final elements = mapper
+        .extractElements(ctx: result, root: result.root)
+        .cast<FoundVariable>();
+
+    expect(elements.map((v) => v.index), [1, 2, 3]);
+  });
+
+  test('extracts variables from nested query', () {
+    final result = engine.analyze(
+      'SELECT *, LIST(SELECT * FROM todos WHERE title = ?1)'
+      'FROM todos WHERE title = ?2 OR id IN ? OR title = ?1',
+    );
+
+    final root =
+        ((result.root as SelectStatement).columns[1] as NestedQueryColumn)
+            .select;
+
+    final elements =
+        mapper.extractElements(ctx: result, root: root).cast<FoundVariable>();
+
+    expect(elements.map((v) => v.index), [1]);
+  });
 }

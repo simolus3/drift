@@ -1814,6 +1814,32 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         updates: {config}).then((rows) => rows.map(config.mapFromRow).toList());
   }
 
+  Selectable<NestedResult> nested(String? var1) {
+    return customSelect(
+        'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
+        variables: [
+          Variable<String?>(var1)
+        ],
+        readsFrom: {
+          withConstraints,
+          withDefaults,
+        }).asyncMap((QueryRow row) async {
+      return NestedResult(
+        row: row,
+        defaults: withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
+        nestedQuery0: await customSelect(
+            'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
+            variables: [
+              Variable<String>(row.read('\$n_0'))
+            ],
+            readsFrom: {
+              withConstraints,
+              withDefaults,
+            }).map(withConstraints.mapFromRow).get(),
+      );
+    });
+  }
+
   Future<int> writeConfig({required String key, String? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
@@ -1949,6 +1975,32 @@ class ReadRowIdResult extends CustomResultSet {
           ..write('configValue: $configValue, ')
           ..write('syncState: $syncState, ')
           ..write('syncStateImplicit: $syncStateImplicit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class NestedResult extends CustomResultSet {
+  final WithDefault defaults;
+  final List<WithConstraint> nestedQuery0;
+  NestedResult({
+    required QueryRow row,
+    required this.defaults,
+    required this.nestedQuery0,
+  }) : super(row);
+  @override
+  int get hashCode => Object.hash(defaults, nestedQuery0);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NestedResult &&
+          other.defaults == this.defaults &&
+          other.nestedQuery0 == this.nestedQuery0);
+  @override
+  String toString() {
+    return (StringBuffer('NestedResult(')
+          ..write('defaults: $defaults, ')
+          ..write('nestedQuery0: $nestedQuery0')
           ..write(')'))
         .toString();
   }

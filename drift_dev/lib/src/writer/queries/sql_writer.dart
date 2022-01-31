@@ -46,7 +46,7 @@ class SqlWriter extends NodeSqlBuilder {
     if (query is SqlSelectQuery) {
       doubleStarColumnToResolvedTable = {
         for (final nestedResult in query.resultSet.nestedResults)
-          nestedResult.from: nestedResult
+          if (nestedResult is NestedResultTable) nestedResult.from: nestedResult
       };
     }
     return SqlWriter._(query, options, doubleStarColumnToResolvedTable,
@@ -54,7 +54,7 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   String write() {
-    return writeNodeIntoStringLiteral(query!.fromContext!.root);
+    return writeNodeIntoStringLiteral(query!.root!);
   }
 
   String writeNodeIntoStringLiteral(AstNode node) {
@@ -147,6 +147,13 @@ class SqlWriter extends NodeSqlBuilder {
           query!.placeholders.singleWhere((p) => p.astNode == e);
 
       _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+    } else if (e is NestedQueryColumn) {
+      assert(
+        false,
+        'This should be unreachable, because all NestedQueryColumns are '
+        'replaced in the NestedQueryTransformer with there required input '
+        'variables (or just removed if no variables are required)',
+      );
     } else {
       return super.visitMoorSpecificNode(e, arg);
     }

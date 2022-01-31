@@ -218,6 +218,7 @@ enum TokenType {
   import,
   json,
   required,
+  list,
 
   /// A `**` token. This is only scanned when scanning for moor tokens.
   doubleStar,
@@ -413,6 +414,7 @@ const Map<String, TokenType> moorKeywords = {
   'JSON': TokenType.json,
   'MAPPED': TokenType.mapped,
   'REQUIRED': TokenType.required,
+  'LIST': TokenType.list,
 };
 
 /// A set of [TokenType]s that can be parsed as an identifier.

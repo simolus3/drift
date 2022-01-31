@@ -17,7 +17,7 @@ all: SELECT /* COUNT(*), */ * FROM tbl WHERE $predicate;
 @special: SELECT * FROM tbl;
 typeHints(REQUIRED :foo AS TEXT OR NULL, $predicate = TRUE):
   SELECT :foo WHERE $predicate;
-nested AS MyResultSet: SELECT foo.** FROM tbl foo;
+nested AS MyResultSet: SELECT foo.** AS fooRename FROM tbl foo;
 add: INSERT INTO tbl $row RETURNING *;
 ''';
 
@@ -103,7 +103,12 @@ void main() {
         DeclaredStatement(
           SimpleName('nested'),
           SelectStatement(
-            columns: [NestedStarResultColumn('foo')],
+            columns: [
+              NestedStarResultColumn(
+                tableName: 'foo',
+                as: 'fooRename',
+              )
+            ],
             from: TableReference('tbl', as: 'foo'),
           ),
           as: 'MyResultSet',

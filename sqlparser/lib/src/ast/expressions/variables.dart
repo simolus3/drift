@@ -29,13 +29,14 @@ class NumberedVariable extends Expression implements Variable {
 }
 
 class ColonNamedVariable extends Expression implements Variable {
-  final ColonVariableToken token;
-  String get name => token.name;
+  final String name;
 
   @override
   int? resolvedIndex;
 
-  ColonNamedVariable(this.token);
+  ColonNamedVariable.synthetic(this.name);
+
+  ColonNamedVariable(ColonVariableToken token) : name = token.name;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

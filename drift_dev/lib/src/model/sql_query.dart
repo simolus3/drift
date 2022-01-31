@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
+import 'package:drift_dev/src/analyzer/sql_queries/nested_queries.dart';
 import 'package:drift_dev/src/model/base_entity.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
@@ -68,6 +69,7 @@ abstract class SqlQuery {
   final String name;
 
   AnalysisContext? get fromContext;
+  AstNode? get root;
   List<AnalysisError>? lints;
 
   /// Whether this query was declared in a `.moor` file.
@@ -157,6 +159,28 @@ abstract class SqlQuery {
 
     return resultClassName;
   }
+
+  /// Returns all found elements, from this query an all nested queries. The
+  /// elements returned by this method are in no particular order, thus they
+  /// can only be used to determine the method parameters.
+  ///
+  /// This method makes some effort to remove duplicated parameters. But only
+  /// by comparing the dart name.
+  List<FoundElement> elementsWithNestedQueries() {
+    final elements = List.of(this.elements);
+
+    final subQueries = resultSet?.nestedResults.whereType<NestedResultQuery>();
+    for (final subQuery in subQueries ?? const <NestedResultQuery>[]) {
+      for (final subElement in subQuery.query.elementsWithNestedQueries()) {
+        if (elements
+            .none((e) => e.dartParameterName == subElement.dartParameterName)) {
+          elements.add(subElement);
+        }
+      }
+    }
+
+    return elements;
+  }
 }
 
 class SqlSelectQuery extends SqlQuery {
@@ -165,18 +189,28 @@ class SqlSelectQuery extends SqlQuery {
   final InferredResultSet resultSet;
   @override
   final AnalysisContext fromContext;
+  @override
+  final AstNode root;
 
   /// The name of the result class, as requested by the user.
   // todo: Allow custom result classes for RETURNING as well?
   final String? requestedResultClass;
 
+  final NestedQueriesContainer? nestedContainer;
+
+  /// Whether this query contains nested queries or not
+  bool get hasNestedQuery =>
+      resultSet.nestedResults.any((e) => e is NestedResultQuery);
+
   SqlSelectQuery(
     String name,
     this.fromContext,
+    this.root,
     List<FoundElement> elements,
     this.readsFrom,
     this.resultSet,
     this.requestedResultClass,
+    this.nestedContainer,
   ) : super(name, elements, hasMultipleTables: readsFrom.length > 1);
 
   Set<MoorTable> get readsFromTables {
@@ -196,11 +230,73 @@ class SqlSelectQuery extends SqlQuery {
     return SqlSelectQuery(
       name,
       fromContext,
+      root,
       elements,
       readsFrom,
       resultSet,
       null,
+      nestedContainer,
     );
+  }
+}
+
+/// Something that can contain nested queries.
+///
+/// This contains the root select statement and all nested queries that appear
+/// in a nested queries container.
+class NestedQueriesContainer {
+  final SelectStatement select;
+  final Map<NestedQueryColumn, NestedQuery> nestedQueries = {};
+
+  NestedQueriesContainer(this.select);
+
+  /// Columns that should be added to the [select] statement to read variables
+  /// captured by children.
+  ///
+  /// These columns aren't mounted to the same syntax tree as [select], they
+  /// will be mounted into the tree returned by [addHelperNodes].
+  final List<ExpressionResultColumn> addedColumns = [];
+
+  Iterable<CapturedVariable> get variablesCapturedByChildren {
+    return nestedQueries.values
+        .expand((nested) => nested.capturedVariables.values);
+  }
+}
+
+/// A nested query found in a SQL statement.
+///
+/// See the `NestedQueryAnalyzer` for an overview on how nested queries work.
+class NestedQuery extends NestedQueriesContainer {
+  final NestedQueryColumn queryColumn;
+  final NestedQueriesContainer parent;
+
+  /// All references that read from a table only available in the outer
+  /// select statement. It will need to be transformed in a later step.
+  final Map<Reference, CapturedVariable> capturedVariables = {};
+
+  NestedQuery(this.parent, this.queryColumn) : super(queryColumn.select);
+}
+
+class CapturedVariable {
+  final Reference reference;
+
+  /// A number uniquely identifying this captured variable in the select
+  /// statement analyzed.
+  ///
+  /// This is used to add the necessary helper column later.
+  final int queryGlobalId;
+
+  /// The variable introduced to replace the original reference.
+  ///
+  /// This variable is not mounted to the same syntax tree as [reference], it
+  /// will be mounted into the tree returned by [addHelperNodes].
+  final ColonNamedVariable introducedVariable;
+
+  String get helperColumn => '\$n_$queryGlobalId';
+
+  CapturedVariable(this.reference, this.queryGlobalId)
+      : introducedVariable = ColonNamedVariable.synthetic(':r$queryGlobalId') {
+    introducedVariable.setMeta<CapturedVariable>(this);
   }
 }
 
@@ -211,6 +307,8 @@ class UpdatingQuery extends SqlQuery {
   final InferredResultSet? resultSet;
   @override
   final AnalysisContext fromContext;
+  @override
+  final AstNode root;
 
   bool get isOnlyDelete => updates.every((w) => w.kind == UpdateKind.delete);
 
@@ -219,6 +317,7 @@ class UpdatingQuery extends SqlQuery {
   UpdatingQuery(
     String name,
     this.fromContext,
+    this.root,
     List<FoundElement> elements,
     this.updates, {
     this.isInsert = false,
@@ -239,6 +338,9 @@ class InTransactionQuery extends SqlQuery {
 
   @override
   AnalysisContext? get fromContext => null;
+
+  @override
+  AstNode? get root => null;
 }
 
 class InferredResultSet {
@@ -249,9 +351,9 @@ class InferredResultSet {
 
   /// Tables in the result set that should appear as a class.
   ///
-  /// See [NestedResultTable] for further discussion and examples.
-  final List<NestedResultTable> nestedResults;
-  Map<NestedResultTable, String>? _expandedNestedPrefixes;
+  /// See [NestedResult] for further discussion and examples.
+  final List<NestedResult> nestedResults;
+  Map<NestedResult, String>? _expandedNestedPrefixes;
 
   final List<ResultColumn> columns;
   final Map<ResultColumn, String> _dartNames = {};
@@ -293,7 +395,7 @@ class InferredResultSet {
   bool get singleColumn =>
       matchingTable == null && nestedResults.isEmpty && columns.length == 1;
 
-  String? nestedPrefixFor(NestedResultTable table) {
+  String? nestedPrefixFor(NestedResult table) {
     if (_expandedNestedPrefixes == null) {
       var index = 0;
       _expandedNestedPrefixes = {
@@ -329,12 +431,17 @@ class InferredResultSet {
     });
   }
 
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode => Object.hash(
+        Object.hashAll(columns.map((e) => e.compatibilityHashCode)),
+        Object.hashAll(nestedResults.map((e) => e.compatibilityHashCode)),
+      );
+
   /// Checks whether this and the [other] result set have the same columns and
   /// nested result sets.
   bool isCompatibleTo(InferredResultSet other) {
     const columnsEquality = UnorderedIterableEquality(_ResultColumnEquality());
-    const nestedEquality =
-        UnorderedIterableEquality(_NestedResultTableEquality());
+    const nestedEquality = UnorderedIterableEquality(_NestedResultEquality());
 
     return columnsEquality.equals(columns, other.columns) &&
         nestedEquality.equals(nestedResults, other.nestedResults);
@@ -406,6 +513,15 @@ class ResultColumn implements HasType {
   }
 }
 
+/// A nested result, could either be a NestedResultTable or a NestedQueryResult.
+abstract class NestedResult {
+  /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  int get compatibilityHashCode;
+
+  /// Checks whether this is compatible to the [other] nested result.
+  bool isCompatibleTo(NestedResult other);
+}
+
 /// A nested table extracted from a `**` column.
 ///
 /// For instance, consider this query:
@@ -432,7 +548,7 @@ class ResultColumn implements HasType {
 ///
 /// Knowing that `User` should be extracted into a field is represented with a
 /// [NestedResultTable] information as part of the result set.
-class NestedResultTable {
+class NestedResultTable extends NestedResult {
   final bool isNullable;
   final NestedStarResultColumn from;
   final String name;
@@ -443,17 +559,52 @@ class NestedResultTable {
   String get dartFieldName => ReCase(name).camelCase;
 
   /// [hashCode] that matches [isCompatibleTo] instead of `==`.
+  @override
   int get compatibilityHashCode {
     return Object.hash(name, table);
   }
 
   /// Checks whether this is compatible to the [other] nested result, which is
   /// the case iff they have the same and read from the same table.
-  bool isCompatibleTo(NestedResultTable other) {
+  @override
+  bool isCompatibleTo(NestedResult other) {
+    if (other is! NestedResultTable) return false;
+
     return other.name == name &&
         other.table == table &&
         other.isNullable == isNullable;
   }
+}
+
+class NestedResultQuery extends NestedResult {
+  final NestedQueryColumn from;
+
+  final SqlSelectQuery query;
+
+  NestedResultQuery({
+    required this.from,
+    required this.query,
+  });
+
+  String filedName() {
+    if (from.as != null) {
+      return from.as!;
+    }
+
+    return ReCase(query.name).camelCase;
+  }
+
+  String resultTypeCode() => query.resultTypeCode();
+
+  // Because it is currently not possible to reuse result classes from queries
+  // that use nested queries, every instance should be different. Therefore
+  // the object hashCode and equality operator is just fine.
+
+  @override
+  int get compatibilityHashCode => hashCode;
+
+  @override
+  bool isCompatibleTo(NestedResult other) => this == other;
 }
 
 /// Something in the query that needs special attention when generating code,
@@ -465,6 +616,9 @@ abstract class FoundElement {
   String? get name;
 
   bool get hasSqlName => name != null;
+
+  /// If the element should be hidden from the parameter list
+  bool get hidden => false;
 
   /// Dart code for a type representing tis element.
   String dartTypeCode([GenerationOptions options = const GenerationOptions()]);
@@ -508,6 +662,13 @@ class FoundVariable extends FoundElement implements HasType {
 
   final bool isRequired;
 
+  @override
+  final bool hidden;
+
+  /// When this variable is introduced for a nested query referencing something
+  /// from an outer query, contains the backing variable.
+  final CapturedVariable? forCaptured;
+
   FoundVariable({
     required this.index,
     required this.name,
@@ -517,7 +678,21 @@ class FoundVariable extends FoundElement implements HasType {
     this.isArray = false,
     this.isRequired = false,
     this.typeConverter,
-  }) : assert(variable.resolvedIndex == index);
+  })  : hidden = false,
+        forCaptured = null,
+        assert(variable.resolvedIndex == index);
+
+  FoundVariable.nestedQuery({
+    required this.index,
+    required this.name,
+    required this.type,
+    required this.variable,
+    required this.forCaptured,
+  })  : typeConverter = null,
+        nullable = false,
+        isArray = false,
+        isRequired = true,
+        hidden = true;
 
   @override
   String get dartParameterName {
@@ -742,16 +917,16 @@ class _ResultColumnEquality implements Equality<ResultColumn> {
   bool isValidKey(Object? e) => e is ResultColumn;
 }
 
-class _NestedResultTableEquality implements Equality<NestedResultTable> {
-  const _NestedResultTableEquality();
+class _NestedResultEquality implements Equality<NestedResult> {
+  const _NestedResultEquality();
 
   @override
-  bool equals(NestedResultTable e1, NestedResultTable e2) {
+  bool equals(NestedResult e1, NestedResult e2) {
     return e1.isCompatibleTo(e2);
   }
 
   @override
-  int hash(NestedResultTable e) => e.compatibilityHashCode;
+  int hash(NestedResult e) => e.compatibilityHashCode;
 
   @override
   bool isValidKey(Object? e) => e is NestedResultTable;

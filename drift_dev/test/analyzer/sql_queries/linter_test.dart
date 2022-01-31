@@ -17,7 +17,7 @@ void main() {
 
   test('warns when a result column is unresolved', () {
     final result = engine.analyze('SELECT ?;');
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('unknown type')));
@@ -25,7 +25,7 @@ void main() {
 
   test('warns when the result depends on a Dart template', () {
     final result = engine.analyze(r"SELECT 'string' = $expr;");
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(moorQuery.lints,
         anyElement((AnalysisError q) => q.message.contains('Dart template')));
@@ -33,7 +33,7 @@ void main() {
 
   test('warns when nested results refer to table-valued functions', () {
     final result = engine.analyze("SELECT json_each.** FROM json_each('')");
-    final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+    final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
     expect(
       moorQuery.lints,
@@ -95,7 +95,7 @@ in: INSERT INTO foo (id) $placeholder;
   group('warns about wrong types in subexpressions', () {
     test('strings in arithmetic', () {
       final result = engine.analyze("SELECT 'foo' + 3;");
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(
         moorQuery.lints,
@@ -106,14 +106,14 @@ in: INSERT INTO foo (id) $placeholder;
 
     test('allows numerics in arithmetic', () {
       final result = engine.analyze('SELECT 3.6 * 3;');
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(moorQuery.lints, isEmpty);
     });
 
     test('real in binary', () {
       final result = engine.analyze('SELECT 3.5 | 3;');
-      final moorQuery = QueryHandler(fakeQuery, result, mapper).handle();
+      final moorQuery = QueryHandler(result, mapper).handle(fakeQuery);
 
       expect(
         moorQuery.lints,
@@ -123,9 +123,11 @@ in: INSERT INTO foo (id) $placeholder;
     });
   });
 
-  test('warns when nested results appear in compound statements', () async {
-    final state = TestState.withContent({
-      'foo|lib/a.moor': '''
+  test(
+    'warns when nested results appear in compound statements',
+    () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
 CREATE TABLE foo (
   id INT NOT NULL PRIMARY KEY,
   content VARCHAR
@@ -133,20 +135,51 @@ CREATE TABLE foo (
 
 all: SELECT foo.** FROM foo UNION ALL SELECT foo.** FROM foo;
       ''',
-    });
+      });
 
-    final result = await state.analyze('package:foo/a.moor');
-    state.close();
+      final result = await state.analyze('package:foo/a.moor');
+      state.close();
 
-    expect(
-      result.errors.errors,
-      contains(isA<MoorError>().having(
-        (e) => e.message,
-        'message',
-        contains('may only appear in a top-level select'),
-      )),
-    );
-  });
+      expect(
+        result.errors.errors,
+        contains(isA<MoorError>().having(
+          (e) => e.message,
+          'message',
+          contains('columns may only appear in a top-level select'),
+        )),
+      );
+    },
+    timeout: Timeout.none,
+  );
+
+  test(
+    'warns when nested query appear in nested query',
+    () async {
+      final state = TestState.withContent({
+        'foo|lib/a.moor': '''
+CREATE TABLE foo (
+  id INT NOT NULL PRIMARY KEY,
+  content VARCHAR
+);
+
+all: SELECT foo.**, LIST(SELECT *, LIST(SELECT * FROM foo) FROM foo) FROM foo;
+      ''',
+      });
+
+      final result = await state.analyze('package:foo/a.moor');
+      state.close();
+
+      expect(
+        result.errors.errors,
+        contains(isA<MoorError>().having(
+          (e) => e.message,
+          'message',
+          contains('query may only appear in a top-level select'),
+        )),
+      );
+    },
+    timeout: Timeout.none,
+  );
 
   group('warns about insert column count mismatch', () {
     TestState state;

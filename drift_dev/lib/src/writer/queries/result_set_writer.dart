@@ -39,17 +39,31 @@ class ResultSetWriter {
     }
 
     for (final nested in resultSet.nestedResults) {
-      var typeName = nested.table.dartTypeCode(scope.generationOptions);
-      final fieldName = nested.dartFieldName;
+      if (nested is NestedResultTable) {
+        var typeName = nested.table.dartTypeCode(scope.generationOptions);
+        final fieldName = nested.dartFieldName;
 
-      if (nested.isNullable) {
-        typeName = scope.nullableType(typeName);
+        if (nested.isNullable) {
+          typeName = scope.nullableType(typeName);
+        }
+
+        into.write('$modifier $typeName $fieldName;\n');
+
+        fieldNames.add(fieldName);
+        if (!nested.isNullable) nonNullableFields.add(fieldName);
+      } else if (nested is NestedResultQuery) {
+        final fieldName = nested.filedName();
+        final typeName = nested.resultTypeCode();
+
+        if (nested.query.resultSet.needsOwnClass) {
+          ResultSetWriter(nested.query, scope).write();
+        }
+
+        into.write('$modifier List<$typeName> $fieldName;\n');
+
+        fieldNames.add(fieldName);
+        nonNullableFields.add(fieldName);
       }
-
-      into.write('$modifier $typeName $fieldName;\n');
-
-      fieldNames.add(fieldName);
-      if (!nested.isNullable) nonNullableFields.add(fieldName);
     }
 
     // write the constructor

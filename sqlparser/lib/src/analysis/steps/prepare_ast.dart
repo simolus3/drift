@@ -16,7 +16,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   void start(AstNode root) {
     root.accept(this, null);
-    _resolveIndexOfVariables();
+    resolveIndexOfVariables(_foundVariables);
   }
 
   @override
@@ -170,16 +170,16 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     visitChildren(e, arg);
   }
 
-  void _resolveIndexOfVariables() {
+  static void resolveIndexOfVariables(List<Variable> variables) {
     // sort variables by the order in which they appear inside the statement.
-    _foundVariables.sort((a, b) {
+    variables.sort((a, b) {
       return a.firstPosition.compareTo(b.firstPosition);
     });
     // Assigning rules are explained at https://www.sqlite.org/lang_expr.html#varparam
     var largestAssigned = 0;
     final resolvedNames = <String, int>{};
 
-    for (final variable in _foundVariables) {
+    for (final variable in variables) {
       if (variable is NumberedVariable) {
         // if the variable has an explicit index (e.g ?123), then 123 is the
         // resolved index and the next variable will have index 124. Otherwise,
@@ -248,5 +248,19 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     }
 
     visitChildren(e, null);
+  }
+
+  /// If a nested query was found. Collect everything separately.
+  @override
+  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+    if (e is NestedQueryColumn) {
+      // create a new scope for the nested query to differentiate between
+      // references that can be resolved in the nested query and references
+      // which require data from the parent query
+      e.select.scope = e.scope.createChild();
+      AstPreparingVisitor(context: context).start(e.select);
+    } else {
+      super.visitMoorSpecificNode(e, arg);
+    }
   }
 }
