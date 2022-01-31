@@ -240,6 +240,66 @@ class SqlSelectQuery extends SqlQuery {
   }
 }
 
+/// Something that can contain nested queries.
+///
+/// This contains the root select statement and all nested queries that appear
+/// in a nested queries container.
+class NestedQueriesContainer {
+  final SelectStatement select;
+  final Map<NestedQueryColumn, NestedQuery> nestedQueries = {};
+
+  NestedQueriesContainer(this.select);
+
+  /// Columns that should be added to the [select] statement to read variables
+  /// captured by children.
+  ///
+  /// These columns aren't mounted to the same syntax tree as [select], they
+  /// will be mounted into the tree returned by [addHelperNodes].
+  final List<ExpressionResultColumn> addedColumns = [];
+
+  Iterable<CapturedVariable> get variablesCapturedByChildren {
+    return nestedQueries.values
+        .expand((nested) => nested.capturedVariables.values);
+  }
+}
+
+/// A nested query found in a SQL statement.
+///
+/// See the `NestedQueryAnalyzer` for an overview on how nested queries work.
+class NestedQuery extends NestedQueriesContainer {
+  final NestedQueryColumn queryColumn;
+  final NestedQueriesContainer parent;
+
+  /// All references that read from a table only available in the outer
+  /// select statement. It will need to be transformed in a later step.
+  final Map<Reference, CapturedVariable> capturedVariables = {};
+
+  NestedQuery(this.parent, this.queryColumn) : super(queryColumn.select);
+}
+
+class CapturedVariable {
+  final Reference reference;
+
+  /// A number uniquely identifying this captured variable in the select
+  /// statement analyzed.
+  ///
+  /// This is used to add the necessary helper column later.
+  final int queryGlobalId;
+
+  /// The variable introduced to replace the original reference.
+  ///
+  /// This variable is not mounted to the same syntax tree as [reference], it
+  /// will be mounted into the tree returned by [addHelperNodes].
+  final ColonNamedVariable introducedVariable;
+
+  String get helperColumn => '\$n_$queryGlobalId';
+
+  CapturedVariable(this.reference, this.queryGlobalId)
+      : introducedVariable = ColonNamedVariable.synthetic(':r$queryGlobalId') {
+    introducedVariable.setMeta<CapturedVariable>(this);
+  }
+}
+
 class UpdatingQuery extends SqlQuery {
   final List<WrittenMoorTable> updates;
   final bool isInsert;

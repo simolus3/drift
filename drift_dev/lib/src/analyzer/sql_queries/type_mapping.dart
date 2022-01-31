@@ -4,7 +4,6 @@ import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart' as s;
 
-import 'nested_queries.dart';
 import 'required_variables.dart';
 
 /// Converts tables and types between the moor_generator and the sqlparser
