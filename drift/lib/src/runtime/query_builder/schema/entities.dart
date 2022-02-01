@@ -76,7 +76,7 @@ class OnCreateQuery extends DatabaseSchemaEntity {
 /// and the user-defined [Table] class. [Row] is the class used to hold a result
 /// row.
 abstract class ResultSetImplementation<Tbl, Row> extends DatabaseSchemaEntity {
-  /// The generated database instance that this view or table is attached too.
+  /// The generated database instance that this view or table is attached to.
   @internal
   DatabaseConnectionUser get attachedDatabase;
 
