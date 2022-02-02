@@ -1,8 +1,16 @@
 part of 'runtime_api.dart';
 
-/// Contains operations to run queries in a batched mode. This can be much more
-/// efficient when running a lot of similar queries at the same time, making
-/// this api suitable for bulk updates.
+/// Contains operations to run queries in a batched mode.
+///
+/// Inside a batch, a set of SQL statements is collected and then run at once.
+/// Conceptually, batches are similar to a transaction (and they will use
+/// transactions internally).
+/// Additionally, batches are very efficient when the same SQL statement is
+/// executed with different parameters. Outside of a batch, a new statement
+/// would be parsed and prepared for each execution. With batches, statements
+/// are only prepared once and then run with the parameters needed.
+///
+/// This makes batches particularly suitable for bulk updates.
 class Batch {
   final List<String> _createdSql = [];
   final Map<String, int> _sqlToIndex = {};

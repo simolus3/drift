@@ -194,6 +194,7 @@ otherwise.
 
 Multiple insert statements can be run efficiently by using a batch. To do that, you can
 use the `insertAll` method inside a `batch`:
+
 ```dart
 Future<void> insertMultipleEntries() async{
   await batch((batch) {
@@ -215,6 +216,10 @@ Future<void> insertMultipleEntries() async{
   });
 }
 ```
+
+Batches are similar to transactions in the sense that all updates are happening atomically,
+but they enable further optimizations to avoid preparing the same SQL statement twice.
+This makes them suitable for bulk insert or update operations.
 
 ### Upserts
 
