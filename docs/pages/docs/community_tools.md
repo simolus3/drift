@@ -13,8 +13,8 @@ or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 
 ## Storage inspector
 
-[Chimerapps](https://github.com/Chimerapps) wrote the `storage_inspector` packages, which
-allows you to inspect your app's persistent data in JetBrains tools like IntelliJ or Android Studio.
+[Nicola Verbeeck](https://github.com/NicolaVerbeeck) wrote the `storage_inspector` packages, which
+allow you to inspect your app's persistent data in JetBrains tools like IntelliJ or Android Studio.
 This includes drift databases, but preferences or secure local storage are also supported.
 
 - The general [`storage_inspector`](https://pub.dev/packages/storage_inspector) package on pub.
