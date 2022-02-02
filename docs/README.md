@@ -1,6 +1,6 @@
-# Moor documentation
+# Drift documentation
 
-Welcome to the source of moor's documentation, live at moor.simonbinder.eu.
+Welcome to the source of drift's documentation, live at drift.simonbinder.eu.
 We use a static site generator based on `build_runner` to build the documentation.
 
 ## Running the website locally

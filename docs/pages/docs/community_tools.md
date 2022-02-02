@@ -11,18 +11,15 @@ Contact me on [Gitter](https://gitter.im/moor-dart/community), [Twitter](https:/
 or via email to oss &lt;at&gt;simonbinder&lt;dot&gt;eu.
 {% endblock %}
 
-## Drift inspector
+## Storage inspector
 
-[Chimerapps](https://github.com/Chimerapps) wrote the `drift_inspector` package and plugin for IntelliJ
-and Android Studio. You can use it to inspect a moor or drift database right from your IDE!
+[Chimerapps](https://github.com/Chimerapps) wrote the `storage_inspector` packages, which
+allows you to inspect your app's persistent data in JetBrains tools like IntelliJ or Android Studio.
+This includes drift databases, but preferences or secure local storage are also supported.
 
-- The [`drift_inspector` package](https://pub.dev/packages/drift_inspector) on pub
-- The [IntelliJ plugin](https://plugins.jetbrains.com/plugin/15364-drift-database-inspector)
-- The [project on GitHub](https://github.com/Chimerapps/drift_inspector)
-
-The upcoming [`storage_inspector`](https://github.com/NicolaVerbeeck/flutter_local_storage_inspector) package
-and IntelliJ plugin will also enable you to inspect your drift database along with local storage or other
-persistence packages you use.
+- The general [`storage_inspector`](https://pub.dev/packages/storage_inspector) package on pub.
+- The [IDEA plugin for your IDE](https://plugins.jetbrains.com/plugin/18231-local-storage-inspector).
+- [drift support for `storage_inspector`](https://pub.dev/packages/drift_local_storage_inspector).
 
 ## drift_db_viewer
 
