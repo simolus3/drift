@@ -65,7 +65,7 @@ what we got:
 
 - Generated data classes (`Todo` and `Category`), and companion versions
   for inserts (see [Dart Interop](#dart-interop) for info). By default,
-  drift strips a trailing "s" from the table name for the class. That's why 
+  drift strips a trailing "s" from the table name for the class. That's why
   we used `AS Category` on the second table - it would have been called
   `Categorie` otherwise.
 - Methods to run the queries:
@@ -121,13 +121,13 @@ entriesWithId: SELECT * FROM todos WHERE id IN ?;
 ```
 Drift will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
 Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and
-bind the arguments accordingly. To make sure this works as expected, drift 
+bind the arguments accordingly. To make sure this works as expected, drift
 imposes two small restrictions:
 
-1. __No explicit variables__: `WHERE id IN ?2` will be rejected at build time. 
+1. __No explicit variables__: `WHERE id IN ?2` will be rejected at build time.
 As the variable is expanded, giving it a single index is invalid.
-2. __No higher explicit index after a variable__: Running 
-`WHERE id IN ? OR title = ?2` will also be rejected. Expanding the 
+2. __No higher explicit index after a variable__: Running
+`WHERE id IN ? OR title = ?2` will also be rejected. Expanding the
 variable can clash with the explicit index, which is why drift forbids
 it. Of course, `id IN ? OR title = ?` will work as expected.
 
@@ -137,7 +137,7 @@ We use [this algorithm](https://www.sqlite.org/datatype3.html#determination_of_c
 to determine the column type based on the declared type name.
 
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
-`bool` or `DateTime` as their Dart counterpart. Both will be 
+`bool` or `DateTime` as their Dart counterpart. Both will be
 written as an `INTEGER` column when the table gets created.
 
 ## Imports
@@ -154,14 +154,14 @@ Note that imports in drift file are always transitive, so in the above example
 you would have all imports declared in `other.drift` available as well.
 There is no `export` mechanism for drift files.
 
-Importing Dart files into a drift file will also work - then, 
+Importing Dart files into a drift file will also work - then,
 all the tables declared via Dart tables can be used inside queries.
 We support both relative imports and the `package:` imports you
 know from Dart.
 
 ## Nested results
 
-Many queries fetch all columns from some table, typically by using the 
+Many queries fetch all columns from some table, typically by using the
 `SELECT table.*` syntax. That approach can become a bit tedious when applied
 over multiple tables from a join, as shown in this example:
 
@@ -225,6 +225,56 @@ from the referred table. For instance, if we had a table `foo` with an `id INT`
 and a `bar TEXT` column. Then, `SELECT foo.** FROM foo` might be desugared to
 `SELECT foo.id AS "nested_0.id", foo.bar AS "nested_0".bar FROM foo`.
 
+## `LIST` subqueries
+
+Starting from Drift version `1.4.0`, subqueries can also be selected as a full
+list. Simply put the subquery in a `LIST()` function to include all rows of the
+subquery in the result set.
+
+Re-using the `coordinates` and `saved_routes` tables introduced in the example
+for [nested results](#nested-results), we add a new table storing coordinates
+along a route:
+
+```sql
+CREATE TABLE route_points (
+  route INTEGER NOT NULL REFERENCES saved_routes (id),
+  point INTEGER NOT NULL REFERENCES coordinates (id),
+  index_on_route INTEGER,
+  PRIMARY KEY (route, point)
+);
+```
+
+Now, assume we wanted to query a route with information about all points
+along the way. While this requires two SQL statements, we can write this as a
+single drift query that is then split into the two statements automatically:
+
+```sql
+routeWithPoints: SELECT
+    route.**
+    LIST(SELECT coordinates.* FROM route_points
+      INNER JOIN coordinates ON id = point
+      WHERE route = route.id
+      ORDER BY index_on_route
+    ) AS points
+  FROM saved_routes route;
+```
+
+This will generate a result set containing a `SavedRoute route` field along with a
+`List<Point> points` list of all points along the route.
+
+Internally, drift will split this query into two separate queries:
+ - The outer `SELECT route.** FROM saved_routes route` SQL queries
+ - A separate `SELECT coordinates.* FROM route_points ... ORDER BY index_on_route` query
+   that is run for each row in the outer query. The `route.id` reference in the inner
+   query is replaced with a variable that drift binds to the actual value in the
+   outer query.
+
+While `LIST()` subqueries are a very powerful feature, they can be costly when the outer query
+has lots of rows (as the inner query is executed for each outer row).
+
+Also, as `LIST()` needs a semantic rewrite of the original statement, this feature is only
+supported with the `new_sql_code_generation` [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}).
+
 ## Dart interop
 Drift files work perfectly together with drift's existing Dart API:
 
@@ -236,7 +286,7 @@ Future<void> insert(TodosCompanion companion) async {
 ```
 - by importing Dart files into a drift file, you can write sql queries for
   tables declared in Dart.
-- generated methods for queries can be used in transactions, they work 
+- generated methods for queries can be used in transactions, they work
   together with auto-updating queries, etc.
 
 If you're using the `fromJson` and `toJson` methods in the generated
@@ -247,7 +297,7 @@ would generate a column serialized as "userId" in json.
 ### Dart components in SQL
 
 You can make most of both SQL and Dart with "Dart Templates", which is a
-Dart expression that gets inlined to a query at runtime. To use them, declare a 
+Dart expression that gets inlined to a query at runtime. To use them, declare a
 $-variable in a query:
 ```sql
 _filterTodos: SELECT * FROM todos WHERE $predicate;
@@ -267,7 +317,7 @@ This feature works for
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
 - limit clauses: `SELECT * FROM todos LIMIT $limit`
-- insertables for insert statements: `INSERT INTO todos $row` generates an `Insertable<TodoEntry> row` 
+- insertables for insert statements: `INSERT INTO todos $row` generates an `Insertable<TodoEntry> row`
   parameter
 
 When used as expression, you can also supply a default value in your query:
@@ -343,7 +393,7 @@ For instance, let's say you had a Dart class defined as
 class User {
  final int id;
  final String name;
- 
+
  User(this.id, this.name);
 }
 ```
