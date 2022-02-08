@@ -29,6 +29,8 @@ class ExplicitAliasTransformer extends Transformer<bool> {
     if (column is ExpressionColumn) {
       return _renamed[column.expression];
     }
+
+    return null;
   }
 
   @override

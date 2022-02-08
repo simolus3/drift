@@ -61,6 +61,8 @@ class ErrorInDartCode extends MoorError {
 
       return span;
     }
+
+    return null;
   }
 
   @override

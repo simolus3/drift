@@ -35,6 +35,8 @@ class _MoorFfiFunctions with ArgumentCountLinter implements FunctionHandler {
       return 2;
     } else if (function == 'current_time_millis') {
       return 0;
+    } else {
+      return null;
     }
   }
 

@@ -450,5 +450,7 @@ class ColumnResolver extends RecursiveVisitor<void, void> {
         available: available,
       ));
     }
+
+    return null;
   }
 }

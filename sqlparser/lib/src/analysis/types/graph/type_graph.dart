@@ -251,7 +251,11 @@ class _ResolvedVariables {
 
     final normalized = t;
     final index = normalized.resolvedIndex;
-    if (index != null) return _referenceForIndex[index] ??= normalized;
+    if (index != null) {
+      return _referenceForIndex[index] ??= normalized;
+    } else {
+      return null;
+    }
   }
 }
 

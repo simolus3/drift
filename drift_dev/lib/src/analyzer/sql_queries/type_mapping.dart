@@ -356,6 +356,8 @@ class TypeMapper {
     final moorTable = tableToMoor(table.table);
     if (moorTable != null) {
       return WrittenMoorTable(moorTable, moorKind);
+    } else {
+      return null;
     }
   }
 }

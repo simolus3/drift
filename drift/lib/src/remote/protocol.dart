@@ -47,6 +47,8 @@ class DriftProtocol {
       ];
     } else if (message is CancelledResponse) {
       return [_tag_Response_cancelled, message.requestId];
+    } else {
+      return null;
     }
   }
 
