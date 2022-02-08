@@ -24,7 +24,7 @@ extension SqlIsNull on Expression {
 /// null if all [expressions] evaluate to null.
 Expression<T> coalesce<T>(List<Expression<T?>> expressions) {
   assert(expressions.length >= 2,
-      'coalesce must have at least 2 arguments, got ${expressions.length}');
+      'expressions must be of length >= 2, got ${expressions.length}');
 
   return FunctionCallExpression<T>('COALESCE', expressions);
 }
