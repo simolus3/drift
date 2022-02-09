@@ -8,9 +8,21 @@ aliases:
 template: layouts/docs/single
 ---
 
+As your app grows, you may want to change the table structure for your drift database:
+New features need new columns or tables, and outdated columns may have to be altered or
+removed altogether.
+When making changes to your database schema, you need to write migrations enabling users with
+an old version of your app to convert to the database expected by the latest version.
+Drift provides a set of APIs to make writing migrations easy.
+
+## Basics
+
 Drift provides a migration API that can be used to gradually apply schema changes after bumping
 the `schemaVersion` getter inside the `Database` class. To use it, override the `migration`
-getter. Here's an example: Let's say you wanted to add a due date to your todo entries:
+getter.
+
+Here's an example: Let's say you wanted to add a due date to your todo entries (`v2` of the schema).
+Later, you decide to also add a priority column (`v3` of the schema).
 
 ```dart
 class Todos extends Table {
@@ -60,6 +72,42 @@ you've actually added the column. In general, try to avoid running queries in mi
 `sqlite` can feel a bit limiting when it comes to migrations - there only are methods to create tables and columns.
 Existing columns can't be altered or removed. A workaround is described [here](https://stackoverflow.com/a/805508), it
 can be used together with `customStatement` to run the statements.
+Alternatively, [complex migrations](#complex-migrations) help automating this.
+
+### Tips
+
+To ensure your schema stays consistent during a migration, you can wrap it in a `transaction` block.
+However, be aware that some pragmas (including `foreign_keys`) can't be changed inside transactions.
+Still, it can be useful to:
+
+- always re-enable foreign keys before using the database, by enabling them in [`beforeOpen`](#post-migration-callbacks).
+- disable foreign-keys before migrations
+- run migrations inside a transaction
+- make sure your migrations didn't introduce any inconsistencies with `PRAGMA foreign_key_check`.
+
+With all of this combined, a migration callback can look like this:
+
+```dart
+MigrationStrategy(
+  onUpgrade: (m, from, to) async {
+    await customStatement('PRAGMA foreign_keys = OFF'); // disable foreign_keys before migrations
+
+    await transaction(() async {
+      // put your migration logic here
+    });
+
+    // Assert that the schema is valid after migrations
+    if (kDebugMode) {
+      final wrongForeignKeys = await customSelect('PRAGMA foreign_key_check').get();
+      assert(wrongForeignKeys.isEmpty, "${wrongForeignKeys.map((e) => e.data)}");
+    }
+  },
+  beforeOpen: (details) async {
+    await customStatement('PRAGMA foreign_keys = ON');
+    // ...
+  },
+)
+```
 
 ## Complex migrations
 
@@ -85,7 +133,7 @@ columnTransformer: {
 Internally, drift will use a `INSERT INTO SELECT` statement to copy old data. In this case, it would look like
 `INSERT INTO temporary_todos_copy SELECT id, title, content, CAST(category AS INT) FROM todos`.
 As you can see, drift will use the expression from the `columnTransformer` map and fall back to just copying the column
-otherwise.  
+otherwise.
 If you're introducing new columns in a table migration, be sure to include them in the `newColumns` parameter of
 `TableMigration`. Drift will ensure that those columns have a default value or a transformation in `columnTransformer`.
 Of course, drift won't attempt to copy `newColumns` from the old table either.
