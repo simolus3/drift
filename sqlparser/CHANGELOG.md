@@ -1,3 +1,7 @@
+## 0.20.0
+
+- Support `LIST` columns for a drift-specific feature.
+
 ## 0.19.2
 
 - Improve handling of drift-specific column types in `STRICT` tables.
