@@ -1,5 +1,6 @@
-## 1.4.0-dev
+## 1.4.0
 
+- Generator support for the `LIST()` feature introduced in drift 1.4.
 - Fix imported views in `.drift` files not being available in all cases.
 
 ## 1.3.0

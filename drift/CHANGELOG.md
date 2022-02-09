@@ -5,6 +5,8 @@
   now write `todos.replaceOne(newEntry)`.
 - Deprecate the `from(table)` API introduced in 1.3.0. Having the methods on
   the table instances turned out to be even easier!
+- In drift files, you can now use `LIST(SELECT ...)` as a result column to
+  get all results of the inner select as a `List` in the result set.
 
 ## 1.3.0
 
