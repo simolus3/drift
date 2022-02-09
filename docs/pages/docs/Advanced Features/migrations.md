@@ -18,7 +18,8 @@ class Todos extends Table {
   TextColumn get title => text().withLength(min: 6, max: 10)();
   TextColumn get content => text().named('body')();
   IntColumn get category => integer().nullable()();
-  DateTimeColumn get dueDate => dateTime().nullable()(); // new, added column
+  DateTimeColumn get dueDate => dateTime().nullable()(); // new, added column in v2
+  IntColumn get priority => integer().nullable()(); // new, added column in v3
 }
 ```
 
@@ -26,7 +27,7 @@ We can now change the `database` class like this:
 
 ```dart
   @override
-  int get schemaVersion => 2; // bump because the tables have changed
+  int get schemaVersion => 3; // bump because the tables have changed
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -34,9 +35,13 @@ We can now change the `database` class like this:
       return m.createAll();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      if (from == 1) {
+      if (from < 2) {
         // we added the dueDate property in the change from version 1
         await m.addColumn(todos, todos.dueDate);
+      }
+      if (from < 3) {
+        // we added the priority property in the change from version 2
+        await m.addColumn(todos, todos.priority);
       }
     }
   );
