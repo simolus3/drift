@@ -38,7 +38,7 @@ package when using `package:drift/native.dart`!
 {% block "blocks/alert" title="A note on ffi and Android" %}
 > `package:drift/native.dart` is the recommended drift implementation for new Android apps.
   However, there are some smaller issues on some devices that you should be aware of:
-  
+
   - Using `sqlite3_flutter_libs` will include prebuilt binaries for 32-bit `x86` devices which you
     probably won't need. You can apply a [filter](https://github.com/simolus3/sqlite3.dart/tree/master/sqlite3_flutter_libs#included-platforms)
     in your `build.gradle` to remove those binaries.

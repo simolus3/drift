@@ -80,8 +80,9 @@ Future<void> _createApiDocumentation(Directory output) async {
   // the line number.
   const source = 'https://github.com/simolus3/moor/blob/%r%/%f%/#L%l%';
   final dartDoc = await Process.start(
-    'dartdoc',
+    'dart',
     [
+      'doc',
       '--rel-canonical-prefix=https://pub.dev/documentation/drift/latest',
       '--link-to-source-revision=$rev',
       '--link-to-source-root=..',

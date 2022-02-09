@@ -7,17 +7,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: beta
+      - uses: dart-lang/setup-dart@v1.3
 
-      # Temporarily using a custom dartdoc until https://github.com/dart-lang/dartdoc/issues/2755 is fixed
       - name: Get dependencies
         run: dart pub get
         working-directory: docs
       - name: Run build
         env:
-          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/master' }}
+          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
         run: dart run tool/ci_build.dart
         working-directory: docs
 
@@ -25,7 +22,7 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v1.2
         with:
-          production-branch: master
+          production-branch: latest-release
           publish-dir: docs/deploy
           enable-pull-request-comment: true
           enable-commit-comment: false
@@ -43,7 +40,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: nwtgck/actions-netlify@v1.2
         with:
-          production-branch: master
+          production-branch: latest-release
           publish-dir: docs/deploy
           enable-pull-request-comment: true
           enable-commit-comment: false

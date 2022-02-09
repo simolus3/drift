@@ -246,7 +246,7 @@ By using those test databases, drift can help you test migrations from and to an
 {% block "blocks/alert" title="Complex topic ahead" %}
 > Writing schema tests is an advanced topic that requires a fairly complex setup described here.
   If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/moor/discussions).
-  Also, there's a working example [in the drift repository](https://github.com/simolus3/moor/tree/master/extras/migrations_example).
+  Also, there's a working example [in the drift repository](https://github.com/simolus3/moor/tree/latest-release/extras/migrations_example).
 {% endblock %}
 
 ### Setup
