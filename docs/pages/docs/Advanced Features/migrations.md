@@ -36,11 +36,11 @@ We can now change the `database` class like this:
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
-        // we added the dueDate property in the change from version 1
+        // we added the dueDate property in the change from version 1 to version 2
         await m.addColumn(todos, todos.dueDate);
       }
       if (from < 3) {
-        // we added the priority property in the change from version 2
+        // we added the priority property in the change from versions 1 or 2 to version 3
         await m.addColumn(todos, todos.priority);
       }
     }
