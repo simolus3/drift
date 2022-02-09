@@ -79,10 +79,11 @@ Future<void> _createApiDocumentation(Directory output) async {
   // Dartdoc supports %r% for the revision, %f% for the file name and %l% for
   // the line number.
   const source = 'https://github.com/simolus3/moor/blob/%r%/%f%/#L%l%';
+  // todo: Use `dart doc` after https://github.com/dart-lang/sdk/issues/46100#issuecomment-1033899215
+  // gets clarified.
   final dartDoc = await Process.start(
-    'dart',
+    'dartdoc',
     [
-      'doc',
       '--rel-canonical-prefix=https://pub.dev/documentation/drift/latest',
       '--link-to-source-revision=$rev',
       '--link-to-source-root=..',
