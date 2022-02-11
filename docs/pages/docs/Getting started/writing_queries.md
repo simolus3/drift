@@ -137,7 +137,7 @@ Future moveImportantTasksIntoCategory(Category target) {
   );
 }
 
-Future update(Todo entry) {
+Future updateTodo(Todo entry) {
   // using replace will update all fields from the entry that are not marked as a primary key.
   // it will also make sure that only the entry with the same primary key will be updated.
   // Here, this means that the row that has the same id as entry will be updated to reflect
