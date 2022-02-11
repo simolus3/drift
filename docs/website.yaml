@@ -7,7 +7,7 @@ site:
   copyright: "Simon Binder"
   github_repo: "https://github.com/simolus3/moor"
   github_subdir: "docs/"
-  github_branch: latest-release
+  github_branch: develop
   gcs_engine_id: set # this just needs to be set so that the search box shows
   sidebar_search_disable: true
 
