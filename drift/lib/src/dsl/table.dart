@@ -184,9 +184,12 @@ class DataClassName {
   /// {@macro drift_custom_data_class}
   final String name;
 
+  /// The parent class of generated data class. Class must extends [DataClass]!
+  final Type? extending;
+
   /// Customize the data class name for a given table.
   /// {@macro drift_custom_data_class}
-  const DataClassName(this.name);
+  const DataClassName(this.name, {this.extending});
 }
 
 /// An annotation specifying an existing class to be used as a data class.
@@ -239,6 +242,9 @@ class DriftView {
   /// {@macro drift_custom_data_class}
   final String? dataClassName;
 
+  /// The parent class of generated data class. Class must extends [DataClass]!
+  final Type? extending;
+
   /// Customize view name and data class name
-  const DriftView({this.name, this.dataClassName});
+  const DriftView({this.name, this.dataClassName, this.extending});
 }

@@ -1,7 +1,7 @@
+import 'package:drift_dev/src/analyzer/data_class.dart';
 import 'package:drift_dev/src/analyzer/options.dart';
 import 'package:drift_dev/src/analyzer/runner/file_graph.dart';
 import 'package:drift_dev/src/analyzer/runner/results.dart';
-import 'package:drift_dev/src/utils/names.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -36,6 +36,9 @@ class MoorView extends MoorEntityWithResultSet {
   @override
   ExistingRowClass? existingRowClass;
 
+  @override
+  final String? customParentClass;
+
   final ViewQueryInformation? viewQuery;
 
   MoorView({
@@ -44,6 +47,7 @@ class MoorView extends MoorEntityWithResultSet {
     required this.dartTypeName,
     required this.entityInfoName,
     this.existingRowClass,
+    this.customParentClass,
     this.viewQuery,
   });
 

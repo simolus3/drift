@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/data_class.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/analyzer/sql_queries/type_mapping.dart';
 import 'package:drift_dev/src/backends/backend.dart';
-import 'package:drift_dev/src/utils/names.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/utils/type_converter_hint.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';

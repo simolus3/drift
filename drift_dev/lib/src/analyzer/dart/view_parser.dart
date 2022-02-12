@@ -20,6 +20,7 @@ class ViewParser {
       name: name,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
+      customParentClass: dataClassInfo.extending,
       entityInfoName: '\$${element.name}View',
       viewQuery: query,
     );
@@ -36,6 +37,7 @@ class ViewParser {
       List<MoorColumn> columns, ClassElement element) {
     DartObject? useRowClass;
     String? dataClassName;
+    String? customParentClass;
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
@@ -43,6 +45,7 @@ class ViewParser {
 
       if (annotationClass == 'DriftView') {
         dataClassName = computed.getField('dataClassName')?.toStringValue();
+        customParentClass = parseCustomParentClass(computed, element, base);
       } else if (annotationClass == 'UseRowClass') {
         useRowClass = computed;
       }
@@ -84,7 +87,7 @@ class ViewParser {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass!, generateInsertable!, base.step);
-    return _DataClassInformation(name, verified);
+    return _DataClassInformation(name, customParentClass, verified);
   }
 
   Future<String> _parseViewName(ClassElement element) async {

@@ -24,7 +24,9 @@ class DataClassWriter {
       : 'driftRuntimeOptions';
 
   void write() {
-    _buffer.write('class ${table.dartTypeName} extends DataClass ');
+    final parentClass = table.customParentClass ?? 'DataClass';
+    _buffer.write('class ${table.dartTypeName} extends $parentClass ');
+
     if (isInsertable) {
       // The data class is only an insertable if we can actually insert rows
       // into the target entity.

@@ -5,10 +5,10 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift_dev/moor_generator.dart';
+import 'package:drift_dev/src/analyzer/data_class.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 import 'package:drift_dev/src/analyzer/runner/steps.dart';
 import 'package:drift_dev/src/utils/exception.dart';
-import 'package:drift_dev/src/utils/names.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
@@ -19,9 +19,9 @@ import '../custom_row_class.dart';
 
 part 'column_parser.dart';
 part 'table_parser.dart';
-part 'view_parser.dart';
 part 'use_dao_parser.dart';
 part 'use_moor_parser.dart';
+part 'view_parser.dart';
 
 class MoorDartParser {
   final ParseDartStep step;

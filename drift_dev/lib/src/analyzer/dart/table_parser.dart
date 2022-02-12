@@ -21,6 +21,7 @@ class TableParser {
       sqlName: sqlName,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
+      customParentClass: dataClassInfo.extending,
       primaryKey: primaryKey,
       overrideWithoutRowId: await _overrideWithoutRowId(element),
       declaration: DartTableDeclaration(element, base.step.file),
@@ -68,12 +69,14 @@ class TableParser {
     }
 
     String name;
+    String? customParentClass;
     FoundDartClass? existingClass;
     String? constructorInExistingClass;
     bool? generateInsertable;
 
     if (dataClassName != null) {
       name = dataClassName.getField('name')!.toStringValue()!;
+      customParentClass = parseCustomParentClass(dataClassName, element, base);
     } else {
       name = dataClassNameForClassName(element.name);
     }
@@ -100,7 +103,7 @@ class TableParser {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass!, generateInsertable!, base.step);
-    return _DataClassInformation(name, verified);
+    return _DataClassInformation(name, customParentClass, verified);
   }
 
   Future<String?> _parseTableName(ClassElement element) async {
@@ -238,9 +241,14 @@ class TableParser {
 
 class _DataClassInformation {
   final String enforcedName;
+  final String? extending;
   final ExistingRowClass? existingClass;
 
-  _DataClassInformation(this.enforcedName, this.existingClass);
+  _DataClassInformation(
+    this.enforcedName,
+    this.extending,
+    this.existingClass,
+  );
 }
 
 extension on Element {
