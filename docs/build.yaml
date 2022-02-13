@@ -10,10 +10,16 @@ targets:
     builders:
       "|versions":
         enabled: true
+      code_snippets:
+        enabled: true
+        generate_for:
+          - "lib/snippets/**/*.dart"
+          - "lib/snippets/*.dart"
     auto_apply_builders: false
     sources:
       - "$package$"
       - "lib/versions.json"
+      - "lib/snippets/**"
       - "tool/write_versions.dart"
 
   $default:
@@ -31,6 +37,8 @@ targets:
             - "-O4"
             - "--csp"
       moor_generator:
+        enabled: false
+      code_snippets:
         enabled: false
     sources:
       - "lib/**"

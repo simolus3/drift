@@ -104,27 +104,10 @@ install the dynamic library for `sqlite` next to your application executable.
 This example shows how to do that on Linux, by using a custom `sqlite3.so` that we assume
 lives next to your application:
 
-```dart
-import 'dart:ffi';
-import 'dart:io';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3/open.dart';
-
-void main() {
-  open.overrideFor(OperatingSystem.linux, _openOnLinux);
-
-  // After setting all the overrides, you can use drift!
-}
-
-DynamicLibrary _openOnLinux() {
-  final scriptDir = File(Platform.script.toFilePath()).parent;
-  final libraryNextToScript = File('${scriptDir.path}/sqlite3.so');
-  return DynamicLibrary.open(libraryNextToScript.path);
-}
-// _openOnWindows could be implemented similarly by opening `sqlite3.dll`
-```
+{% assign snippets = 'package:moor_documentation/snippets/platforms.dart.excerpt.json' | readString | json_decode %}
+{% include "blocks/snippet" snippets = snippets %}
 
 Be sure to use drift _after_ you set the platform-specific overrides.
-When you usedrift in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
+When you use drift in [another isolate]({{ 'Advanced Features/isolates.md' | pageUrl }}),
 you'll also need to apply the opening overrides on that background isolate.
 You can call them in the isolate's entrypoint before using any drift apis.

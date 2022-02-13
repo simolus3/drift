@@ -12,6 +12,9 @@ jobs:
       - name: Get dependencies
         run: dart pub get
         working-directory: docs
+      - name: Analyze Dart sources
+        working-directory: docs
+        run: dart analyze --fatal-infos --fatal-warnings
       - name: Run build
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}

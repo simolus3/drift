@@ -1,0 +1,4 @@
+{% assign excerpt = args.name | default: '(full)' %}
+<pre>
+<code>{{ args.snippets | get: excerpt }}</code>
+</pre>

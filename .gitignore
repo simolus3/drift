@@ -13,3 +13,5 @@ benchmark_results.json
 flutter_export_environment.sh
 # Local Netlify folder
 .netlify
+
+docs/**/*.g.dart
