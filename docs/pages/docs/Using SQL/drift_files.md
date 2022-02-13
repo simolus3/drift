@@ -250,7 +250,7 @@ single drift query that is then split into the two statements automatically:
 
 ```sql
 routeWithPoints: SELECT
-    route.**
+    route.**,
     LIST(SELECT coordinates.* FROM route_points
       INNER JOIN coordinates ON id = point
       WHERE route = route.id
