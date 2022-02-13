@@ -1,7 +1,6 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift_dev/src/analyzer/custom_row_class.dart';
 import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
 
@@ -28,11 +27,14 @@ String? parseCustomParentClass(
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final dartClass = FoundDartClass(
-        extendingType.element,
-        extendingType.typeArguments,
-      );
-      return dartClass.classElement.name;
+      final className = extendingType.element.name;
+      if (extendingType.typeArguments.length == 1) {
+        final genericType = extendingType.typeArguments[0].element?.name;
+        if (genericType == 'dynamic') {
+          return '$className<dynamic>';
+        }
+      }
+      return className;
     } else {
       base.step.reportError(
         ErrorInDartCode(
