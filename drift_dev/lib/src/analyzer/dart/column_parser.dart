@@ -246,14 +246,16 @@ class ColumnParser {
 
           // the map method has a parameter type that resolved to the runtime
           // type of the custom object
-          final type = remainingExpr.typeArgumentTypes!.single as InterfaceType;
+          final type = remainingExpr.typeArgumentTypes!.single;
           createdTypeConverter = expression;
 
           // If converter type argument is dynamic, the referenced
           // class is not exists yet. We assume it will be generated
-          if (type.typeArguments.isNotEmpty &&
-              type.typeArguments.single.isDynamic &&
-              remainingExpr.typeArguments != null) {
+          if (type is DynamicType ||
+              type is InterfaceType &&
+                  type.typeArguments.isNotEmpty &&
+                  type.typeArguments.single.isDynamic &&
+                  remainingExpr.typeArguments != null) {
             typeConverterRuntime = DriftDartType(
               name: remainingExpr.typeArguments!.arguments[0].toSource(),
               nullabilitySuffix: NullabilitySuffix.none,
