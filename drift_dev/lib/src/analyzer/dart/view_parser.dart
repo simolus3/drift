@@ -206,9 +206,17 @@ class ViewParser {
       try {
         final node = await base.loadElementDeclaration(as);
 
-        var target =
-            ((node as MethodDeclaration).body as ExpressionFunctionBody)
-                .expression as MethodInvocation;
+        final body = (node as MethodDeclaration).body;
+        if (body is! ExpressionFunctionBody) {
+          throw analysisError(
+            base.step,
+            element,
+            'The `as()` query declaration must be an expression (=>). '
+            'Block function body `{ return x; }` not acceptable.',
+          );
+        }
+
+        var target = body.expression as MethodInvocation;
 
         for (;;) {
           if (target.target == null) break;
