@@ -20,7 +20,7 @@ jobs:
 
       - name: Analyze Dart sources
         working-directory: docs
-        run: >
+        run: >-
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
 
