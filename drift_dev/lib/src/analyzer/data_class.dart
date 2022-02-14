@@ -62,7 +62,7 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
             ErrorInDartCode(
               message: 'Parameter `extending` in @DataClassName can only be '
                   'provided as `$className<Object>`, `$className<dynamic>` or '
-                  ' with omitted type parameter (`$className`)',
+                  'without declared type parameter (`$className`)',
               affectedElement: element,
             ),
           );
