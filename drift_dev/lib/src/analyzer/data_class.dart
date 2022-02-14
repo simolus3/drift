@@ -55,13 +55,14 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
       final className = extendingType.element.name;
       if (extendingType.typeArguments.length == 1) {
         final genericType = extendingType.typeArguments[0].element?.name;
-        if (genericType == 'Object') {
+        if (genericType == 'Object' || genericType == 'dynamic') {
           return '$className<$dartTypeName>';
         } else {
           base.step.reportError(
             ErrorInDartCode(
-              message: 'Parameter `extending` in @DataClassName can only have '
-                  '`Object` as type parameter: `YourType<Object>`',
+              message: 'Parameter `extending` in @DataClassName can only be '
+                  'provided as `$className<Object>`, `$className<dynamic>` or '
+                  ' with omitted type parameter (`$className`)',
               affectedElement: element,
             ),
           );
