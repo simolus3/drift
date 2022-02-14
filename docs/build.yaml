@@ -4,16 +4,23 @@ builders:
     build_to: cache
     builder_factories: ["writeVersions"]
     build_extensions: {"$package$": ["lib/versions.json"]}
+  code_snippets:
+    import: 'tool/snippets.dart'
+    build_to: cache
+    builder_factories: ["SnippetsBuilder.new"]
+    build_extensions: {"": [".excerpt.json"]}
+    auto_apply: none
 
 targets:
   prepare:
     builders:
       "|versions":
         enabled: true
-      code_snippets:
+      "|code_snippets":
         enabled: true
         generate_for:
           - "lib/snippets/**/*.dart"
+          - "lib/snippets/*/*.drift"
           - "lib/snippets/*.dart"
     auto_apply_builders: false
     sources:
@@ -21,6 +28,7 @@ targets:
       - "lib/versions.json"
       - "lib/snippets/**"
       - "tool/write_versions.dart"
+      - "tool/snippets.dart"
 
   $default:
     dependencies: [":prepare"]
@@ -37,8 +45,6 @@ targets:
             - "-O4"
             - "--csp"
       moor_generator:
-        enabled: false
-      code_snippets:
         enabled: false
     sources:
       - "lib/**"

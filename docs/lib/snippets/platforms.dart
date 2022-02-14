@@ -1,4 +1,3 @@
-// #docregion
 import 'dart:ffi';
 import 'dart:io';
 import 'package:sqlite3/open.dart';
@@ -15,4 +14,3 @@ DynamicLibrary _openOnLinux() {
   return DynamicLibrary.open(libraryNextToScript.path);
 }
 // _openOnWindows could be implemented similarly by opening `sqlite3.dll`
-// #enddocregion

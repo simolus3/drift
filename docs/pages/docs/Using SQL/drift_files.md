@@ -11,52 +11,21 @@ aliases:
 template: layouts/docs/single
 ---
 
+{% assign dart_snippets = "package:moor_documentation/snippets/drift_files/database.dart.excerpt.json" | readString | json_decode %}
+{% assign drift_tables = "package:moor_documentation/snippets/drift_files/tables.drift.excerpt.json" | readString | json_decode %}
+{% assign small = "package:moor_documentation/snippets/drift_files/small_snippets.drift.excerpt.json" | readString | json_decode %}
+
 Drift files are a new feature that lets you write all your database code in SQL - drift will generate typesafe APIs for them.
 
 ## Getting started
 To use this feature, lets create two files: `database.dart` and `tables.drift`. The Dart file only contains the minimum code
 to setup the database:
-```dart
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 
-part 'database.g.dart';
-
-@DriftDatabase(
-  include: {'tables.drift'},
-)
-class MyDb extends _$MyDb {
-  // This example creates a simple in-memory database (without actual persistence).
-  // To actually store data, see the database setups from other "Getting started" guides.
-  MyDb() : super(NativeDatabase.memory());
-
-  @override
-  int get schemaVersion => 1;
-}
-```
+{% include "blocks/snippet" snippets = dart_snippets name = "overview" %}
 
 We can now declare tables and queries in the drift file:
-```sql
-CREATE TABLE todos (
-    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    category INTEGER REFERENCES categories(id)
-);
 
-CREATE TABLE categories (
-    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
-    description TEXT NOT NULL
-) AS Category; -- the AS xyz after the table defines the data class name
-
--- You can also create an index or triggers with drift files
-CREATE INDEX categories_description ON categories(description);
-
--- we can put named sql queries in here as well:
-createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
-deleteById: DELETE FROM todos WHERE id = :id;
-allTodos: SELECT * FROM todos;
-```
+{% include "blocks/snippet" snippets = drift_tables %}
 
 After running the build runner with `flutter pub run build_runner build`,
 drift will write the `database.g.dart`
@@ -92,22 +61,17 @@ queries, the variables will be written as parameters to your method.
 When it's ambiguous, the analyzer might be unable to resolve the type of
 a variable. For those scenarios, you can also denote the explicit type
 of a variable:
-```sql
-myQuery(:variable AS TEXT): SELECT :variable;
-```
+
+{% include "blocks/snippet" snippets = small name = "q1" %}
 
 In addition to the base type, you can also declare that the type is nullable:
 
-```sql
-myQuery(:variable AS TEXT OR NULL): SELECT :variable;
-```
+{% include "blocks/snippet" snippets = small name = "q2" %}
 
 Finally, you can declare that a variable should be required in Dart when using
 named parameters. To do so, add a `REQUIRED` keyword:
 
-```sql
-myQuery(REQUIRED :variable AS TEXT OR NULL): SELECT :variable;
-```
+{% include "blocks/snippet" snippets = small name = "q3" %}
 
 Note that this only has an effect when the `named_parameters`
 [build option]({{ '../Advanced Features/builder_options.md' | pageUrl }}) is
@@ -116,9 +80,9 @@ enabled. Further, non-nullable variables are required by default.
 ### Arrays
 If you want to check whether a value is in an array of values, you can
 use `IN ?`. That's not valid sql, but drift will desugar that at runtime. So, for this query:
-```sql
-entriesWithId: SELECT * FROM todos WHERE id IN ?;
-```
+
+{% include "blocks/snippet" snippets = small name = "entries" %}
+
 Drift will generate a `Selectable<Todo> entriesWithId(List<int> ids)` method.
 Running `entriesWithId([1,2])` would generate `SELECT * ... id IN (?1, ?2)` and
 bind the arguments accordingly. To make sure this works as expected, drift
@@ -142,9 +106,9 @@ written as an `INTEGER` column when the table gets created.
 
 ## Imports
 You can put import statements at the top of a `drift` file:
-```sql
-import 'other.drift'; -- single quotes are required for imports
-```
+
+{% include "blocks/snippet" snippets = small name = "import" %}
+
 All tables reachable from the other file will then also be visible in
 the current file and to the database that `includes` it. If you want
 to declare queries on tables that were defined in another drift
@@ -161,28 +125,13 @@ know from Dart.
 
 ## Nested results
 
+{% assign nested = "package:moor_documentation/snippets/drift_files/nested.drift.excerpt.json" | readString | json_decode %}
+
 Many queries fetch all columns from some table, typically by using the
 `SELECT table.*` syntax. That approach can become a bit tedious when applied
 over multiple tables from a join, as shown in this example:
 
-```sql
-CREATE TABLE coordinates (
-  id INTEGER NOT NULL PRIMARY KEY,
-  lat REAL NOT NULL,
-  long REAL NOT NULL
-);
-
-CREATE TABLE saved_routes (
-  id INTEGER NOT NULL PRIMARY KEY,
-  name TEXT NOT NULL,
-  "from" INTEGER NOT NULL REFERENCES coordinates (id),
-  "to" INTEGER NOT NULL REFERENCES coordinates (id)
-);
-
-routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
-  INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON t.id = r."to";
-```
+{% include "blocks/snippet" snippets = nested name = "overview" %}
 
 To match the returned column names while avoiding name clashes in Dart, drift
 will generate a class having an `id`, `name`,  `id1`, `lat`, `long`, `lat1` and
@@ -190,11 +139,7 @@ a `long1` field.
 Of course, that's not helpful at all - was `lat1` coming from `from` or `to`
 again? Let's rewrite the query, this time using nested results:
 
-```sql
-routesWithNestedPoints: SELECT r.id, r.name, f.**, t.** FROM routes r
-  INNER JOIN coordinates f ON f.id = r."from"
-  INNER JOIN coordinates t ON t.id = r."to";
-```
+{% include "blocks/snippet" snippets = nested name = "nested" %}
 
 As you can see, we can nest a result simply by using the drift-specific
 `table.**` syntax.
@@ -235,29 +180,13 @@ Re-using the `coordinates` and `saved_routes` tables introduced in the example
 for [nested results](#nested-results), we add a new table storing coordinates
 along a route:
 
-```sql
-CREATE TABLE route_points (
-  route INTEGER NOT NULL REFERENCES saved_routes (id),
-  point INTEGER NOT NULL REFERENCES coordinates (id),
-  index_on_route INTEGER,
-  PRIMARY KEY (route, point)
-);
-```
+{% include "blocks/snippet" snippets = nested name = "route_points" %}
 
 Now, assume we wanted to query a route with information about all points
 along the way. While this requires two SQL statements, we can write this as a
 single drift query that is then split into the two statements automatically:
 
-```sql
-routeWithPoints: SELECT
-    route.**
-    LIST(SELECT coordinates.* FROM route_points
-      INNER JOIN coordinates ON id = point
-      WHERE route = route.id
-      ORDER BY index_on_route
-    ) AS points
-  FROM saved_routes route;
-```
+{% include "blocks/snippet" snippets = nested name = "list" %}
 
 This will generate a result set containing a `SavedRoute route` field along with a
 `List<Point> points` list of all points along the route.
@@ -279,11 +208,9 @@ supported with the `new_sql_code_generation` [build option]({{ '../Advanced Feat
 Drift files work perfectly together with drift's existing Dart API:
 
 - you can write Dart queries for tables declared in a drift file:
-```dart
-Future<void> insert(TodosCompanion companion) async {
-      await into(todos).insert(companion);
-}
-```
+
+{% include "blocks/snippet" snippets = dart_snippets name = "dart_interop_insert" %}
+
 - by importing Dart files into a drift file, you can write sql queries for
   tables declared in Dart.
 - generated methods for queries can be used in transactions, they work

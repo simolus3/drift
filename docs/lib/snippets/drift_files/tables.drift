@@ -1,0 +1,19 @@
+CREATE TABLE todos (
+    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category INTEGER REFERENCES categories(id)
+);
+
+CREATE TABLE categories (
+    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+    description TEXT NOT NULL
+) AS Category; -- the AS xyz after the table defines the data class name
+
+-- You can also create an index or triggers with drift files
+CREATE INDEX categories_description ON categories(description);
+
+-- we can put named sql queries in here as well:
+createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
+deleteById: DELETE FROM todos WHERE id = :id;
+allTodos: SELECT * FROM todos;

@@ -1,0 +1,44 @@
+/* #docregion overview */
+CREATE TABLE coordinates (
+  id INTEGER NOT NULL PRIMARY KEY,
+  lat REAL NOT NULL,
+  long REAL NOT NULL
+);
+
+CREATE TABLE saved_routes (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  "from" INTEGER NOT NULL REFERENCES coordinates (id),
+  "to" INTEGER NOT NULL REFERENCES coordinates (id)
+);
+
+/* #enddocregion overview */
+/* #docregion route_points*/
+CREATE TABLE route_points (
+  route INTEGER NOT NULL REFERENCES saved_routes (id),
+  point INTEGER NOT NULL REFERENCES coordinates (id),
+  index_on_route INTEGER,
+  PRIMARY KEY (route, point)
+);
+/* #enddocregion route_points */
+
+/* #docregion overview */
+routesWithPoints: SELECT r.id, r.name, f.*, t.* FROM routes r
+  INNER JOIN coordinates f ON f.id = r."from"
+  INNER JOIN coordinates t ON t.id = r."to";
+/* #enddocregion overview */
+/* #docregion nested */
+routesWithNestedPoints: SELECT r.id, r.name, f.** AS "from", t.** AS "to" FROM routes r
+  INNER JOIN coordinates f ON f.id = r."from"
+  INNER JOIN coordinates t ON t.id = r."to";
+/* #enddocregion nested */
+/* #docregion list */
+routeWithPoints: SELECT
+    route.**,
+    LIST(SELECT coordinates.* FROM route_points
+      INNER JOIN coordinates ON id = point
+      WHERE route = route.id
+      ORDER BY index_on_route
+    ) AS points
+  FROM saved_routes route;
+/* #enddocregion list */
