@@ -265,7 +265,9 @@ class CreateTableReader {
     final typeInDart = asTypeConverter.typeArguments.first;
 
     return UsedTypeConverter(
-        expression: code, mappedType: typeInDart, sqlType: sqlType);
+        expression: code,
+        mappedType: DriftDartType.of(typeInDart),
+        sqlType: sqlType);
   }
 
   Future<DartType?> _readDartType(String typeIdentifier) async {
