@@ -24,9 +24,7 @@ class DataClassWriter {
       : 'driftRuntimeOptions';
 
   void write() {
-    final customParent = table.customParentClass
-        ?.replaceFirst('<dynamic>', '<${table.dartTypeName}>');
-    final parentClass = customParent ?? 'DataClass';
+    final parentClass = table.customParentClass ?? 'DataClass';
     _buffer.write('class ${table.dartTypeName} extends $parentClass ');
 
     if (isInsertable) {

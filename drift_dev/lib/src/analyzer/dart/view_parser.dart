@@ -36,7 +36,7 @@ class ViewParser {
   _DataClassInformation _readDataClassInformation(
       List<MoorColumn> columns, ClassElement element) {
     DartObject? useRowClass;
-    String? dataClassName;
+    DartObject? driftView;
     String? customParentClass;
 
     for (final annotation in element.metadata) {
@@ -44,14 +44,13 @@ class ViewParser {
       final annotationClass = computed!.type!.element!.name;
 
       if (annotationClass == 'DriftView') {
-        dataClassName = computed.getField('dataClassName')?.toStringValue();
-        customParentClass = parseCustomParentClass(computed, element, base);
+        driftView = computed;
       } else if (annotationClass == 'UseRowClass') {
         useRowClass = computed;
       }
     }
 
-    if (dataClassName != null && useRowClass != null) {
+    if (driftView != null && useRowClass != null) {
       base.step.reportError(ErrorInDartCode(
         message: "A table can't be annotated with both @DataClassName and "
             '@UseRowClass',
@@ -63,7 +62,15 @@ class ViewParser {
     String? constructorInExistingClass;
     bool? generateInsertable;
 
-    var name = dataClassName ?? dataClassNameForClassName(element.name);
+    var name = dataClassNameForClassName(element.name);
+
+    if (driftView != null) {
+      final dataClassName =
+          driftView.getField('dataClassName')?.toStringValue();
+      name = dataClassName ?? dataClassNameForClassName(element.name);
+      customParentClass =
+          parseCustomParentClass(name, driftView, element, base);
+    }
 
     if (useRowClass != null) {
       final type = useRowClass.getField('type')!.toTypeValue();

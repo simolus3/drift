@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/analyzer/dart/parser.dart';
 import 'package:drift_dev/src/analyzer/errors.dart';
+import 'package:drift_dev/src/utils/type_utils.dart';
 
 String dataClassNameForClassName(String tableName) {
   // This implementation is very primitive at the moment. The basic idea is
@@ -21,19 +22,53 @@ String dataClassNameForClassName(String tableName) {
   return '${tableName}Data';
 }
 
-String? parseCustomParentClass(
-    DartObject dataClassName, ClassElement element, MoorDartParser base) {
+String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
+    ClassElement element, MoorDartParser base) {
   final extending = dataClassName.getField('extending');
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
+      final superType = extendingType.allSupertypes
+          .any((type) => isFromMoor(type) && type.element.name == 'DataClass');
+      if (!superType) {
+        base.step.reportError(
+          ErrorInDartCode(
+            message: 'Parameter `extending` in @DataClassName must be subtype '
+                'of DataClass',
+            affectedElement: element,
+          ),
+        );
+        return null;
+      }
+
+      if (extendingType.typeArguments.length > 1) {
+        base.step.reportError(
+          ErrorInDartCode(
+            message: 'Parameter `extending` in @DataClassName must have zero or'
+                ' one type parameter',
+            affectedElement: element,
+          ),
+        );
+        return null;
+      }
+
       final className = extendingType.element.name;
       if (extendingType.typeArguments.length == 1) {
         final genericType = extendingType.typeArguments[0].element?.name;
-        if (genericType == 'dynamic') {
-          return '$className<dynamic>';
+        if (genericType == 'Object') {
+          return '$className<$dartTypeName>';
+        } else {
+          base.step.reportError(
+            ErrorInDartCode(
+              message: 'Parameter `extending` in @DataClassName can only have '
+                  '`Object` as type parameter: `YourType<Object>`',
+              affectedElement: element,
+            ),
+          );
+          return null;
         }
       }
+
       return className;
     } else {
       base.step.reportError(

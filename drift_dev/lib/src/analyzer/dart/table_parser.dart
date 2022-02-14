@@ -76,7 +76,8 @@ class TableParser {
 
     if (dataClassName != null) {
       name = dataClassName.getField('name')!.toStringValue()!;
-      customParentClass = parseCustomParentClass(dataClassName, element, base);
+      customParentClass =
+          parseCustomParentClass(name, dataClassName, element, base);
     } else {
       name = dataClassNameForClassName(element.name);
     }
