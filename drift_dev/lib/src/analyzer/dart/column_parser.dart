@@ -70,7 +70,7 @@ class ColumnParser {
     Expression? foundDefaultExpression;
     Expression? clientDefaultExpression;
     Expression? createdTypeConverter;
-    DartType? typeConverterRuntime;
+    DriftDartType? typeConverterRuntime;
     ColumnGeneratedAs? generatedAs;
     var nullable = false;
 
@@ -246,10 +246,21 @@ class ColumnParser {
 
           // the map method has a parameter type that resolved to the runtime
           // type of the custom object
-          final type = remainingExpr.typeArgumentTypes!.single;
-
+          final type = remainingExpr.typeArgumentTypes!.single as InterfaceType;
           createdTypeConverter = expression;
-          typeConverterRuntime = type;
+
+          // If converter type argument is dynamic, the referenced
+          // class is not exists yet. We assume it will be generated
+          if (type.typeArguments.isNotEmpty &&
+              type.typeArguments.single.isDynamic &&
+              remainingExpr.typeArguments != null) {
+            typeConverterRuntime = DriftDartType(
+              name: remainingExpr.typeArguments!.arguments[0].toSource(),
+              nullabilitySuffix: NullabilitySuffix.none,
+            );
+          } else {
+            typeConverterRuntime = DriftDartType.of(type);
+          }
           break;
         case _methodGenerated:
           Expression? generatedExpression;

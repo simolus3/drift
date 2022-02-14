@@ -129,12 +129,12 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
     return;
   }
 
-  DartType expectedDartType;
+  DriftDartType expectedDartType;
 
   if (column.typeConverter != null) {
     expectedDartType = column.typeConverter!.mappedType;
   } else {
-    expectedDartType = provider.typeFor(column.type);
+    expectedDartType = DriftDartType.of(provider.typeFor(column.type));
   }
 
   // BLOB columns should be stored in an Uint8List (or a supertype of that).
@@ -146,7 +146,8 @@ void _checkType(ParameterElement element, MoorColumn column, Step step) {
       type.element.name == 'Uint8List' &&
       type.element.library.name == 'dart.typed_data';
 
-  if (!typesystem.isAssignableTo(expectedDartType, type) &&
+  if (expectedDartType.type != null &&
+      !typesystem.isAssignableTo(expectedDartType.type!, type) &&
       !isAllowedUint8List) {
     error('Parameter must accept '
         '${expectedDartType.getDisplayString(withNullability: true)}');

@@ -1,3 +1,5 @@
+import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/model/model.dart';
 import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
@@ -20,6 +22,55 @@ abstract class HasType {
 
   /// The applied type converter, or null.
   UsedTypeConverter? get typeConverter;
+}
+
+class DriftDartType {
+  final DartType? type;
+  final String name;
+  final NullabilitySuffix nullabilitySuffix;
+
+  const DriftDartType({
+    this.type,
+    required this.name,
+    required this.nullabilitySuffix,
+  });
+
+  factory DriftDartType.of(DartType type) {
+    return DriftDartType(
+      type: type,
+      name: type.toString(),
+      nullabilitySuffix: type.nullabilitySuffix,
+    );
+  }
+
+  String getDisplayString({required bool withNullability}) {
+    if (type != null) {
+      return type!.getDisplayString(withNullability: withNullability);
+    }
+
+    if (withNullability) {
+      switch (nullabilitySuffix) {
+        case NullabilitySuffix.question:
+          return '$name?';
+        case NullabilitySuffix.star:
+          return '$name*';
+        case NullabilitySuffix.none:
+          return '$name';
+      }
+    }
+    return '$name';
+  }
+
+  String codeString([GenerationOptions options = const GenerationOptions()]) {
+    if (type != null) {
+      return type!.codeString(options);
+    }
+
+    if (nullabilitySuffix == NullabilitySuffix.star) {
+      return getDisplayString(withNullability: false);
+    }
+    return getDisplayString(withNullability: options.nnbd);
+  }
 }
 
 extension OperationOnTypes on HasType {

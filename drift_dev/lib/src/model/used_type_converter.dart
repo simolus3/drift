@@ -21,7 +21,7 @@ class UsedTypeConverter {
   final String expression;
 
   /// The type that will be present at runtime.
-  final DartType mappedType;
+  final DriftDartType mappedType;
 
   /// The type that will be written to the database.
   final ColumnType sqlType;
@@ -56,10 +56,11 @@ class UsedTypeConverter {
 
     return UsedTypeConverter(
       expression: 'const EnumIndexConverter<$className>($className.values)',
-      mappedType: creatingClass.instantiate(
-          typeArguments: const [],
-          nullabilitySuffix:
-              nullable ? NullabilitySuffix.question : NullabilitySuffix.none),
+      mappedType: DriftDartType(
+        name: creatingClass.name,
+        nullabilitySuffix:
+            nullable ? NullabilitySuffix.question : NullabilitySuffix.none,
+      ),
       sqlType: ColumnType.integer,
     );
   }
