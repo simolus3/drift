@@ -1720,6 +1720,8 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
   $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
   $CategoriesTable get categories => attachedDatabase.categories;
   $TodosTableTable get todosTable => attachedDatabase.todosTable;
+  $TodoWithCategoryViewView get todoWithCategoryView =>
+      attachedDatabase.todoWithCategoryView;
   Selectable<TodoEntry> todosForUser({required int user}) {
     return customSelect(
         'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',

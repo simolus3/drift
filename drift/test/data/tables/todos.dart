@@ -181,6 +181,7 @@ class TodoDb extends _$TodoDb {
 
 @DriftAccessor(
   tables: [Users, SharedTodos, TodosTable],
+  views: [TodoWithCategoryView],
   queries: {
     'todosForUser': 'SELECT t.* FROM todos t '
         'INNER JOIN shared_todos st ON st.todo = t.id '

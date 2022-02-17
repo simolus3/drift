@@ -4,6 +4,8 @@ import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:source_gen/source_gen.dart';
 
+import '../../../model/base_entity.dart';
+
 class DaoGenerator extends Generator implements BaseGenerator {
   @override
   late MoorBuilder builder;
@@ -24,9 +26,9 @@ class DaoGenerator extends Generator implements BaseGenerator {
       classScope.leaf().write('mixin _\$${daoName}Mixin on '
           'DatabaseAccessor<$dbTypeName> {\n');
 
-      for (final table in dao.tables) {
-        final infoType = table.entityInfoName;
-        final getterName = table.dbGetterName;
+      for (final entity in dao.entities.whereType<MoorEntityWithResultSet>()) {
+        final infoType = entity.entityInfoName;
+        final getterName = entity.dbGetterName;
         classScope.leaf().write(
             '$infoType get $getterName => attachedDatabase.$getterName;\n');
       }
