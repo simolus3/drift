@@ -1,3 +1,8 @@
+## 1.5.0-dev
+
+- Add `DataClassName.extending` to control the superclass of generated row
+  classes.
+
 ## 1.4.0
 
 - Most methods to compose statements are now available as an extension on

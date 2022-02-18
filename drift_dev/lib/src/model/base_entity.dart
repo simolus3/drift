@@ -49,6 +49,9 @@ abstract class MoorEntityWithResultSet extends MoorSchemaEntity {
   /// The existing class designed to hold a row, if there is any.
   ExistingRowClass? get existingRowClass;
 
+  /// Class that added to data class as implementation
+  String? get customParentClass;
+
   /// The name of the Dart class storing the right column getters for this type.
   ///
   /// This class is equal to, or a superclass of, [entityInfoName].

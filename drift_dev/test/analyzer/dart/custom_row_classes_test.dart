@@ -149,6 +149,98 @@ class Cls extends HasBar {
   Cls(this.foo, int bar): super(bar);
 }
 ''',
+      'a|lib/custom_parent_class_no_error.dart': '''
+import 'package:drift/drift.dart';
+  
+abstract class BaseModel extends DataClass {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_typed_no_error.dart': '''
+import 'package:drift/drift.dart';
+  
+abstract class BaseModel<T> extends DataClass {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_no_super.dart': '''
+import 'package:drift/drift.dart';
+  
+abstract class BaseModel {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_wrong_super.dart': '''
+import 'package:drift/drift.dart';
+  
+class Test {
+}
+
+abstract class BaseModel extends Test {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_typed_wrong_type_arg.dart': '''
+import 'package:drift/drift.dart';
+  
+abstract class BaseModel<T> extends DataClass {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel<String>)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_two_type_argument.dart': '''
+import 'package:drift/drift.dart';
+  
+abstract class BaseModel<T, D> extends DataClass {
+  abstract final String id;
+}
+
+@DataClassName('Company', extending: BaseModel)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
+      'a|lib/custom_parent_class_not_class.dart': '''
+import 'package:drift/drift.dart';
+
+typedef NotClass = void Function();
+  
+@DataClassName('Company', extending: NotClass)
+class Companies extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().named('name')();
+}
+''',
     });
   });
 
@@ -267,5 +359,89 @@ class Cls extends HasBar {
   test('considers inheritance when checking expected getters', () async {
     final file = await state.analyze('package:a/insertable_valid.dart');
     expect(file.errors.errors, isEmpty);
+  });
+
+  group('custom data class parent', () {
+    test('check valid', () async {
+      final file =
+          await state.analyze('package:a/custom_parent_class_no_error.dart');
+      expect(file.errors.errors, isEmpty);
+    });
+
+    test('check valid with type argument', () async {
+      final file = await state
+          .analyze('package:a/custom_parent_class_typed_no_error.dart');
+      expect(file.errors.errors, isEmpty);
+    });
+
+    test('check extends DataClass (no super)', () async {
+      final file =
+          await state.analyze('package:a/custom_parent_class_no_super.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having(
+            (e) => e.message,
+            'message',
+            contains('Parameter `extending` in '
+                '@DataClassName must be subtype of DataClass'))),
+      );
+    });
+
+    test('extends DataClass (wrong super)', () async {
+      final file =
+          await state.analyze('package:a/custom_parent_class_wrong_super.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having(
+            (e) => e.message,
+            'message',
+            contains('Parameter `extending` in '
+                '@DataClassName must be subtype of DataClass'))),
+      );
+    });
+
+    test('wrong type argument in extending', () async {
+      final file = await state
+          .analyze('package:a/custom_parent_class_typed_wrong_type_arg.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having(
+            (e) => e.message,
+            'message',
+            contains('Parameter `extending` in @DataClassName can only be '
+                'provided as'))),
+      );
+    });
+
+    test('two type arguments in parent class', () async {
+      final file = await state
+          .analyze('package:a/custom_parent_class_two_type_argument.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having(
+            (e) => e.message,
+            'message',
+            contains('Parameter `extending` in @DataClassName must have zero '
+                'or one type parameter'))),
+      );
+    });
+
+    test('not a class in extending', () async {
+      final file =
+          await state.analyze('package:a/custom_parent_class_not_class.dart');
+
+      expect(
+        file.errors.errors,
+        contains(isA<ErrorInDartCode>().having(
+            (e) => e.message,
+            'message',
+            contains('Parameter `extending` in @DataClassName must be used '
+                'with a class'))),
+      );
+    });
   });
 }

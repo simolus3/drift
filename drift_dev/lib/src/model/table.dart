@@ -27,6 +27,9 @@ class MoorTable extends MoorEntityWithResultSet {
   @override
   final ExistingRowClass? existingRowClass;
 
+  @override
+  final String? customParentClass;
+
   /// If [fromClass] is null, another source to use when determining the name
   /// of this table in generated Dart code.
   final String? _overriddenName;
@@ -149,6 +152,7 @@ class MoorTable extends MoorEntityWithResultSet {
     this.overrideDontWriteConstraints,
     this.declaration,
     this.existingRowClass,
+    this.customParentClass,
     this.isStrict = false,
   }) : _overriddenName = overriddenName {
     _attachToConverters();

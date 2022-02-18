@@ -20,6 +20,7 @@ class ViewParser {
       name: name,
       dartTypeName: dataClassInfo.enforcedName,
       existingRowClass: dataClassInfo.existingClass,
+      customParentClass: dataClassInfo.extending,
       entityInfoName: '\$${element.name}View',
       viewQuery: query,
     );
@@ -35,20 +36,21 @@ class ViewParser {
   _DataClassInformation _readDataClassInformation(
       List<MoorColumn> columns, ClassElement element) {
     DartObject? useRowClass;
-    String? dataClassName;
+    DartObject? driftView;
+    String? customParentClass;
 
     for (final annotation in element.metadata) {
       final computed = annotation.computeConstantValue();
       final annotationClass = computed!.type!.element!.name;
 
       if (annotationClass == 'DriftView') {
-        dataClassName = computed.getField('dataClassName')?.toStringValue();
+        driftView = computed;
       } else if (annotationClass == 'UseRowClass') {
         useRowClass = computed;
       }
     }
 
-    if (dataClassName != null && useRowClass != null) {
+    if (driftView != null && useRowClass != null) {
       base.step.reportError(ErrorInDartCode(
         message: "A table can't be annotated with both @DataClassName and "
             '@UseRowClass',
@@ -60,7 +62,15 @@ class ViewParser {
     String? constructorInExistingClass;
     bool? generateInsertable;
 
-    var name = dataClassName ?? dataClassNameForClassName(element.name);
+    var name = dataClassNameForClassName(element.name);
+
+    if (driftView != null) {
+      final dataClassName =
+          driftView.getField('dataClassName')?.toStringValue();
+      name = dataClassName ?? dataClassNameForClassName(element.name);
+      customParentClass =
+          parseCustomParentClass(name, driftView, element, base);
+    }
 
     if (useRowClass != null) {
       final type = useRowClass.getField('type')!.toTypeValue();
@@ -84,7 +94,7 @@ class ViewParser {
         ? null
         : validateExistingClass(columns, existingClass,
             constructorInExistingClass!, generateInsertable!, base.step);
-    return _DataClassInformation(name, verified);
+    return _DataClassInformation(name, customParentClass, verified);
   }
 
   Future<String> _parseViewName(ClassElement element) async {
