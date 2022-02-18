@@ -1,7 +1,6 @@
 import 'package:drift/sqlite_keywords.dart';
 import 'package:drift_dev/moor_generator.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
-import 'package:drift_dev/src/utils/type_utils.dart';
 import 'package:drift_dev/writer.dart';
 import 'package:sqlparser/sqlparser.dart';
 
