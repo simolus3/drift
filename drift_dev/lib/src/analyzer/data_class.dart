@@ -74,8 +74,8 @@ String? parseCustomParentClass(String dartTypeName, DartObject dataClassName,
     } else {
       base.step.reportError(
         ErrorInDartCode(
-          message: 'Parameter `extending` in @DataClassName must be used with a'
-              ' class',
+          message: 'Parameter `extending` in @DataClassName must be used with '
+              'a class',
           affectedElement: element,
         ),
       );
