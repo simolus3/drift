@@ -1176,7 +1176,10 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
     _keyword(TokenType.conflict);
 
     if (e.onColumns != null) {
+      symbol('(', spaceBefore: true);
       _join(e.onColumns!, ',');
+      symbol(')', spaceAfter: true);
+
       _where(e.where);
     }
 

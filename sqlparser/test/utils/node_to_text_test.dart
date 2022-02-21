@@ -297,6 +297,16 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
             'INSERT OR REPLACE INTO foo DEFAULT VALUES ON CONFLICT DO NOTHING');
       });
 
+      test('upsert with conflict target', () {
+        testFormat('INSERT INTO foo VALUES (1, 2, 3) ON CONFLICT (a, b, c) '
+            'DO NOTHING;');
+      });
+
+      test('upsert with conflict target and where', () {
+        testFormat('INSERT INTO foo VALUES (1, 2, 3) '
+            'ON CONFLICT (a, b, c) WHERE foo = bar DO NOTHING;');
+      });
+
       test('upsert - update', () {
         testFormat('INSERT INTO foo VALUES (1, 2, 3) '
             'ON CONFLICT DO UPDATE SET a = b, c = d WHERE d < a;');
