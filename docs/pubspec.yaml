@@ -27,6 +27,8 @@ dev_dependencies:
   # Fake path_provider for snippets
   path_provider:
     path: assets/path_provider
+  # Used in examples
+  rxdart: ^0.27.3
 
   moor:
   moor_generator:
