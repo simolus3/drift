@@ -1,3 +1,7 @@
+## 0.20.1
+
+- Fix SQL generation for upsert statements with a conflict target.
+
 ## 0.20.0
 
 - Support `LIST` columns for a drift-specific feature.
