@@ -12,6 +12,7 @@ jobs:
     name: "Compile sqlite3 for tests"
     runs-on: ubuntu-20.04
     env:
+      SQLITE_YEAR: "2022"
       SQLITE_VERSION: "3380000"
 
     steps:
@@ -27,7 +28,7 @@ jobs:
           cd /tmp/
           mkdir sqlite
           cd sqlite
-          curl https://sqlite.org/2021/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.tar.gz
+          curl https://sqlite.org/$SQLITE_YEAR/sqlite-autoconf-$SQLITE_VERSION.tar.gz --output sqlite.tar.gz
           tar zxvf sqlite.tar.gz
           cd sqlite-autoconf-$SQLITE_VERSION
           ./configure
