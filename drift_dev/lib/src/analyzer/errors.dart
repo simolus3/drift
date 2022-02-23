@@ -93,13 +93,16 @@ class ErrorInMoorFile extends MoorError {
     var msg = error.message ?? error.type.toString();
     if (error.type == AnalysisErrorType.notSupportedInDesiredVersion) {
       msg = '$msg\nNote: You can change the sqlite version with build options. '
-          'See https://moor.simonbinder.eu/options/ for details!';
+          'See https://drift.simonbinder.eu/options/ for details!';
     }
+
+    final defaultSeverity =
+        error.type == AnalysisErrorType.hint ? Severity.hint : Severity.error;
 
     return ErrorInMoorFile(
       span: error.span!,
       message: msg,
-      severity: overrideSeverity ?? Severity.error,
+      severity: overrideSeverity ?? defaultSeverity,
     );
   }
 

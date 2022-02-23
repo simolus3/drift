@@ -1,3 +1,7 @@
+## 0.21.0
+
+- Analysis support for new features in sqlite version 3.38.
+
 ## 0.20.1
 
 - Fix SQL generation for upsert statements with a conflict target.

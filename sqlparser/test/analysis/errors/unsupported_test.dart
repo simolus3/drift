@@ -70,4 +70,39 @@ void main() {
 
     expect(currentEngine.analyze(sql).errors, isEmpty);
   });
+
+  test('does not support `->` and `->>`in old sqlite3 versions', () {
+    minimumEngine.analyze("SELECT '' -> ''").expectError('->',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    minimumEngine.analyze("SELECT '' ->> ''").expectError('->>',
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+
+    currentEngine.analyze("SELECT '' -> ''").expectNoError();
+    currentEngine.analyze("SELECT '' ->> ''").expectNoError();
+  });
+
+  test('warns about using `printf` after 3.38', () {
+    const sql = "SELECT printf('', 0, 'foo')";
+
+    currentEngine
+        .analyze(sql)
+        .expectError("printf('', 0, 'foo')", type: AnalysisErrorType.hint);
+    minimumEngine.analyze(sql).expectNoError();
+  });
+
+  test('warns about using unixepoch before 3.38', () {
+    const sql = "SELECT unixepoch('')";
+
+    minimumEngine.analyze(sql).expectError("unixepoch('')",
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
+
+  test('warns about using format before 3.38', () {
+    const sql = "SELECT format('', 0, 'foo')";
+
+    minimumEngine.analyze(sql).expectError("format('', 0, 'foo')",
+        type: AnalysisErrorType.notSupportedInDesiredVersion);
+    currentEngine.analyze(sql).expectNoError();
+  });
 }

@@ -11,6 +11,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   LintingVisitor(this.options, this.context);
 
   @override
+  void visitBinaryExpression(BinaryExpression e, void arg) {
+    final operator = e.operator.type;
+    if ((operator == TokenType.dashRangle ||
+            operator == TokenType.dashRangleRangle) &&
+        options.version < SqliteVersion.v3_38) {
+      context.reportError(AnalysisError(
+        type: AnalysisErrorType.notSupportedInDesiredVersion,
+        message: '`->` and `->>` require sqlite3 version 38',
+        relevantNode: e.operator,
+      ));
+    }
+
+    visitChildren(e, arg);
+  }
+
+  @override
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     if (e.materializationHint != null &&
         options.version < SqliteVersion.v3_35) {
@@ -193,6 +209,35 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     final lowercaseCall = e.name.toLowerCase();
     if (options.addedFunctions.containsKey(lowercaseCall)) {
       options.addedFunctions[lowercaseCall]!.reportErrors(e, context);
+    }
+
+    switch (e.name.toLowerCase()) {
+      case 'format':
+      case 'unixepoch':
+        // These were added in sqlite3 version 3.38
+        if (options.version < SqliteVersion.v3_38) {
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.notSupportedInDesiredVersion,
+              message: 'The `${e.name}` function is not available in '
+                  '${options.version}.',
+              relevantNode: e,
+            ),
+          );
+        }
+        break;
+      case 'printf':
+        // `printf` was renamed to `format` in sqlite3 version 3.38
+        if (options.version >= SqliteVersion.v3_38) {
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.hint,
+              message: '`printf` was renamed to `format()`, consider using '
+                  'that function instead.',
+              relevantNode: e,
+            ),
+          );
+        }
     }
 
     visitChildren(e, arg);

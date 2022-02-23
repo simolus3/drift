@@ -582,7 +582,11 @@ class Parser {
   }
 
   Expression _concatenation() {
-    return _parseSimpleBinary(const [TokenType.doublePipe], _unary);
+    return _parseSimpleBinary(const [
+      TokenType.doublePipe,
+      TokenType.dashRangle,
+      TokenType.dashRangleRangle
+    ], _unary);
   }
 
   Expression _unary() {

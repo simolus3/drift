@@ -431,6 +431,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       testFormat('SELECT foo.bar');
       testFormat('SELECT foo.bar.baz');
     });
+
+    test('json', () {
+      testFormat('SELECT a -> b');
+      testFormat('SELECT a ->> b');
+    });
   });
 
   test('identifiers', () {

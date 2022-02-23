@@ -323,12 +323,25 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         break;
       case TokenType.doublePipe:
         // string concatenation.
-        const stringType = ResolvedType(type: BasicType.text);
-        session._checkAndResolve(e, stringType, arg);
+        session._checkAndResolve(e, _textType, arg);
         session._addRelation(NullableIfSomeOtherIs(e, [e.left, e.right]));
-        const childExpectation = ExactTypeExpectation.laxly(stringType);
+        const childExpectation = ExactTypeExpectation.laxly(_textType);
         visit(e.left, childExpectation);
         visit(e.right, childExpectation);
+        break;
+      case TokenType.dashRangle:
+        // Extract as JSON, this takes two strings and returns a string (or
+        // `NULL` if the value wasn't found).
+        session._checkAndResolve(e, _textType.withNullable(true), arg);
+        visit(e.left, _expectString);
+        visit(e.right, _expectString);
+        break;
+      case TokenType.dashRangleRangle:
+        // Extract as JSON to SQL value.
+        session._hintNullability(e, true);
+
+        visit(e.left, _expectString);
+        visit(e.right, _expectString);
         break;
       default:
         throw StateError('Binary operator ${e.operator.type} not recognized '
@@ -482,6 +495,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'lower':
       case 'ltrim':
       case 'printf':
+      case 'format':
       case 'replace':
       case 'rtrim':
       case 'substr':
@@ -496,6 +510,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'datetime':
       case 'julianday':
       case 'strftime':
+      case 'unixepoch':
       case 'char':
       case 'hex':
       case 'quote':

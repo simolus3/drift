@@ -105,6 +105,8 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       TokenType.doubleEqual: '==',
       TokenType.exclamationEqual: '!=',
       TokenType.lessMore: '<>',
+      TokenType.dashRangle: '->',
+      TokenType.dashRangleRangle: '->>',
     }[e.operator.type];
 
     if (operatorSymbol != null) {

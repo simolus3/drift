@@ -44,6 +44,12 @@ const Map<String, ResolvedType?> _types = {
       ResolvedType.bool(),
   'SELECT GROUP_CONCAT(content) = ? FROM demo;':
       ResolvedType(type: BasicType.text, nullable: true),
+  "SELECT '' -> '' = ?": ResolvedType(type: BasicType.text, nullable: true),
+  "SELECT '' ->> '' = ?": null,
+  "SELECT ? -> 'a' = 'b'": ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT ? ->> 'a' = 'b'": ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT 'a' -> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
+  "SELECT 'a' ->> ? = 'b'": ResolvedType(type: BasicType.text, nullable: false),
 };
 
 SqlEngine _spawnEngine() {

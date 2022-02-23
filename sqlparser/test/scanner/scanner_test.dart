@@ -31,4 +31,14 @@ void main() {
           .having((e) => e.identifier, 'identifier', 'SELECT')),
     );
   });
+
+  test('scans new tokens for JSON extraction', () {
+    expect(Scanner('- -> ->>').scanTokens(), [
+      isA<Token>().having((e) => e.type, 'tokenType', TokenType.minus),
+      isA<Token>().having((e) => e.type, 'tokenType', TokenType.dashRangle),
+      isA<Token>()
+          .having((e) => e.type, 'tokenType', TokenType.dashRangleRangle),
+      isA<Token>().having((e) => e.type, 'tokenType', TokenType.eof),
+    ]);
+  });
 }

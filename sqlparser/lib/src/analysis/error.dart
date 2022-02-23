@@ -81,4 +81,5 @@ enum AnalysisErrorType {
   noTypeNameInStrictTable,
   invalidTypeNameInStrictTable,
   other,
+  hint,
 }

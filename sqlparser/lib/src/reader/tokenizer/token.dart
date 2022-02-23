@@ -63,6 +63,12 @@ enum TokenType {
   currentTimestamp,
   currentUser,
   database,
+
+  /// `->`, extract subcomponent of JSON
+  dashRangle,
+
+  /// `->>`, extract subcomponent of JSON as SQL value.
+  dashRangleRangle,
   deferrable,
   deferred,
   delete,

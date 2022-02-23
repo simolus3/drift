@@ -78,6 +78,10 @@ class Scanner {
       case $minus:
         if (_match($minus)) {
           _lineComment();
+        } else if (_match($rangle)) {
+          _addToken(_match($rangle)
+              ? TokenType.dashRangleRangle
+              : TokenType.dashRangle);
         } else {
           _addToken(TokenType.minus);
         }

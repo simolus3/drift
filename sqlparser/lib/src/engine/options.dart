@@ -11,7 +11,7 @@ class EngineOptions {
   ///
   /// The library will report when using sqlite features that were added after
   /// the desired [version].
-  /// Defaults to [SqliteVersion.current].
+  /// Defaults to [SqliteVersion.minimum].
   final SqliteVersion version;
 
   /// All [Extension]s that have been enabled in this sql engine.
@@ -28,9 +28,9 @@ class EngineOptions {
 
   EngineOptions({
     this.useMoorExtensions = false,
-    this.enabledExtensions = const [],
+    List<Extension> enabledExtensions = const [],
     this.version = SqliteVersion.minimum,
-  }) {
+  }) : enabledExtensions = _allExtensions(enabledExtensions, version) {
     if (version < SqliteVersion.minimum) {
       throw ArgumentError.value(
           version, 'version', 'Must at least be ${SqliteVersion.minimum}');
@@ -39,6 +39,18 @@ class EngineOptions {
       throw ArgumentError.value(
           version, 'version', 'Must at most be ${SqliteVersion.current}');
     }
+  }
+
+  static List<Extension> _allExtensions(
+      List<Extension> added, SqliteVersion version) {
+    return [
+      // The json1 extension was enabled by default in sqlite3 version 3.38, so
+      // add it if it's not already enabled.
+      if (version >= SqliteVersion.v3_38 &&
+          !added.any((e) => e is Json1Extension))
+        const Json1Extension(),
+      ...added,
+    ];
   }
 
   void addFunctionHandler(FunctionHandler handler) {
@@ -67,6 +79,9 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
+  /// Version `3.38.0` of `sqlite3`.
+  static const SqliteVersion v3_38 = SqliteVersion.v3(38);
+
   /// Version `3.37.0` of `sqlite3`.
   static const SqliteVersion v3_37 = SqliteVersion.v3(37);
 
@@ -76,7 +91,7 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// The highest sqlite version supported by this `sqlparser` package.
   ///
   /// Newer features in `sqlite3` may not be recognized by this library.
-  static const SqliteVersion current = v3_37;
+  static const SqliteVersion current = v3_38;
 
   /// The major version of sqlite.
   ///

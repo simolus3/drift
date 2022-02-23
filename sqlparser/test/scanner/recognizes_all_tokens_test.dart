@@ -29,7 +29,7 @@ void main() {
   }
 
   test(
-    'recognizes all sqlite tokens',
+    'recognizes all sqlite keywords',
     () {
       final keywordCount =
           library.lookupFunction<SqliteKeywordCountNative, SqliteKeywordCount>(
