@@ -97,6 +97,38 @@ void main() {
     });
   });
 
+  test('LIST queries integration test', () async {
+    final first = await db.withDefaults.insertReturning(
+        WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(1)));
+    final second = await db.withDefaults.insertReturning(
+        WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(2)));
+
+    await db.withConstraints.insertOne(WithConstraintsCompanion.insert(b: 1));
+    await db.withConstraints.insertOne(WithConstraintsCompanion.insert(b: 1));
+    await db.withConstraints.insertOne(WithConstraintsCompanion.insert(b: 2));
+
+    final nested = await db.nested('foo').get();
+    expect(nested, hasLength(2));
+
+    expect(
+      nested,
+      contains(
+        isA<NestedResult>()
+            .having((e) => e.defaults, 'defaults', first)
+            .having((e) => e.nestedQuery0, 'nested', hasLength(2)),
+      ),
+    );
+
+    expect(
+      nested,
+      contains(
+        isA<NestedResult>()
+            .having((e) => e.defaults, 'defaults', second)
+            .having((e) => e.nestedQuery0, 'nested', hasLength(1)),
+      ),
+    );
+  });
+
   group('returning', () {
     test('for custom inserts', () async {
       final result = await db.addConfig(

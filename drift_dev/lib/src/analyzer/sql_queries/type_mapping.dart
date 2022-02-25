@@ -155,9 +155,14 @@ class TypeMapper {
         final name = (used is ColonNamedVariable) ? used.name : null;
         final explicitIndex =
             (used is NumberedVariable) ? used.explicitIndex : null;
-        final internalType = ctx.typeOf(used);
-        final type = resolvedToMoor(internalType.type);
         final forCapture = used.meta<CapturedVariable>();
+
+        final internalType =
+            // If this variable was introduced to replace a reference from a
+            // `LIST` query to an outer query, use the type of the reference
+            // instead of the synthetic variable that we're replacing it with.
+            ctx.typeOf(forCapture != null ? forCapture.reference : used);
+        final type = resolvedToMoor(internalType.type);
 
         if (forCapture != null) {
           foundElements.add(FoundVariable.nestedQuery(

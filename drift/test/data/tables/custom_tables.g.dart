@@ -1830,7 +1830,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         nestedQuery0: await customSelect(
             'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
             variables: [
-              Variable<String>(row.read('\$n_0'))
+              Variable<int>(row.read('\$n_0'))
             ],
             readsFrom: {
               withConstraints,
