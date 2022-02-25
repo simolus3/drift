@@ -13,6 +13,20 @@ abstract class FunctionParameter implements Component {}
 /// include queries (which might evaluate to multiple values) but individual
 /// columns, functions and operators.
 ///
+/// To obtain the result of an [Expression], add it as a result column to a
+/// [JoinedSelectStatement], e.g. through [DatabaseConnectionUser.selectOnly]:
+///
+/// ```dart
+///  Expression<int?> countUsers = users.id.count();
+///
+///  // Add the expression to a select statement to evaluate it.
+///  final query = selectOnly(users)..addColumns([countUsers]);
+///  final row = await query.getSingle();
+///
+///  // Use .read() on a row to read expressions.
+///  final amountOfUsers = query.read(counUsers);
+/// ```
+///
 /// It's important that all subclasses properly implement [hashCode] and
 /// [==].
 abstract class Expression<D> implements FunctionParameter {
