@@ -93,7 +93,7 @@ abstract class AstVisitor<A, R> {
   R visitBeginTransaction(BeginTransactionStatement e, A arg);
   R visitCommitStatement(CommitStatement e, A arg);
 
-  R visitMoorSpecificNode(MoorSpecificNode e, A arg);
+  R visitDriftSpecificNode(DriftSpecificNode e, A arg);
 }
 
 /// Visitor that walks down the entire tree, visiting all children in order.
@@ -388,7 +388,7 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
   }
 
   @override
-  R? visitMoorSpecificNode(MoorSpecificNode e, A arg) {
+  R? visitDriftSpecificNode(DriftSpecificNode e, A arg) {
     return defaultNode(e, arg);
   }
 

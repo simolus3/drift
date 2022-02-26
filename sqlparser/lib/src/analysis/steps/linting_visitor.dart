@@ -43,7 +43,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   @override
   void visitCreateTableStatement(CreateTableStatement e, void arg) {
     final schemaReader =
-        SchemaFromCreateTable(moorExtensions: options.useMoorExtensions);
+        SchemaFromCreateTable(driftExtensions: options.useDriftExtensions);
     var hasNonGeneratedColumn = false;
     var hasPrimaryKeyDeclaration = false;
     var isStrict = false;

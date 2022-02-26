@@ -35,7 +35,7 @@ void main() {
 
   test('regression test for #1188', () {
     // Test for https://github.com/simolus3/moor/issues/1188
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTableFromSql('''
         CREATE TABLE IF NOT EXISTS "employees" (
      	    "id" INTEGER NOT NULL PRIMARY KEY,
@@ -85,7 +85,7 @@ void main() {
 
   test('regression test for #1234', () {
     // https://github.com/simolus3/moor/issues/1234#issuecomment-853270925
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTableFromSql('''
         CREATE TABLE inboxes (
           id TEXT PRIMARY KEY NOT NULL,
@@ -117,7 +117,7 @@ void main() {
   test('regression test for #1096', () {
     // https://github.com/simolus3/moor/issues/1096#issuecomment-931378474
     final engine = SqlEngine(
-        EngineOptions(useMoorExtensions: true, version: SqliteVersion.v3_35))
+        EngineOptions(useDriftExtensions: true, version: SqliteVersion.v3_35))
       ..registerTableFromSql('''
 CREATE TABLE downloads (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,

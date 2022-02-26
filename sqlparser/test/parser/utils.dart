@@ -24,21 +24,21 @@ IdentifierToken identifier(String content) {
   return IdentifierToken(false, fakeSpan(content));
 }
 
-MoorFile parseMoor(String content) {
-  return SqlEngine(EngineOptions(useMoorExtensions: true))
-      .parseMoorFile(content)
-      .rootNode as MoorFile;
+DriftFile parseDrift(String content) {
+  return SqlEngine(EngineOptions(useDriftExtensions: true))
+      .parseDriftFile(content)
+      .rootNode as DriftFile;
 }
 
-void testMoorFile(String moorFile, MoorFile expected) {
-  final parsed = parseMoor(moorFile);
+void testDriftFile(String driftFile, DriftFile expected) {
+  final parsed = parseDrift(driftFile);
   enforceHasSpan(parsed);
   enforceEqual(parsed, expected);
 }
 
-void testStatement(String sql, AstNode expected, {bool moorMode = false}) {
+void testStatement(String sql, AstNode expected, {bool driftMode = false}) {
   final result =
-      SqlEngine(EngineOptions(useMoorExtensions: moorMode)).parse(sql);
+      SqlEngine(EngineOptions(useDriftExtensions: driftMode)).parse(sql);
   expect(result.errors, isEmpty);
 
   final parsed = result.rootNode;

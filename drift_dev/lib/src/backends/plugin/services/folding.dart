@@ -25,15 +25,15 @@ class _FoldingVisitor extends RecursiveVisitor<void, void> {
   _FoldingVisitor(this.collector);
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
-    if (e is MoorFile) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
+    if (e is DriftFile) {
       visitMoorFile(e, arg);
     } else {
       visitChildren(e, arg);
     }
   }
 
-  void visitMoorFile(MoorFile e, void arg) {
+  void visitMoorFile(DriftFile e, void arg) {
     // construct a folding region for import statements
     final imports = e.imports.toList();
     if (imports.length > 1) {

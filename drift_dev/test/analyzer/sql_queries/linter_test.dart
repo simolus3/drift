@@ -10,7 +10,7 @@ import '../utils.dart';
 
 void main() {
   final engine = SqlEngine(EngineOptions(
-      useMoorExtensions: true, enabledExtensions: const [Json1Extension()]));
+      useDriftExtensions: true, enabledExtensions: const [Json1Extension()]));
   final mapper = TypeMapper();
 
   final fakeQuery = DeclaredDartQuery('query', 'sql');

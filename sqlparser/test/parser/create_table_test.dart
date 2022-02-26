@@ -181,7 +181,7 @@ void main() {
     );
   });
 
-  test('parses MAPPED BY constraints when in moor mode', () {
+  test('parses MAPPED BY constraints when in drift mode', () {
     testStatement(
       'CREATE TABLE a (b NOT NULL MAPPED BY `Mapper()` PRIMARY KEY)',
       CreateTableStatement(tableName: 'a', columns: [
@@ -195,11 +195,11 @@ void main() {
           ],
         ),
       ]),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
-  test('parses JSON KEY constraints in moor mode', () {
+  test('parses JSON KEY constraints in drift mode', () {
     testStatement(
       'CREATE TABLE a (b INTEGER JSON KEY "my_json_key")',
       CreateTableStatement(
@@ -217,11 +217,11 @@ void main() {
           ),
         ],
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
-  test('parses CREATE TABLE WITH in moor more', () {
+  test('parses CREATE TABLE WITH in drift more', () {
     testStatement(
       'CREATE TABLE a (b INTEGER) WITH MyExistingClass',
       CreateTableStatement(
@@ -232,15 +232,15 @@ void main() {
             typeName: 'INTEGER',
           ),
         ],
-        moorTableName: MoorTableName('MyExistingClass', true),
+        driftTableName: DriftTableName('MyExistingClass', true),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
   test('parses CREATE VIRTUAL TABLE statement', () {
     testStatement(
-      'CREATE VIRTUAL TABLE IF NOT EXISTS foo USING bar(a, b(), c) AS moor',
+      'CREATE VIRTUAL TABLE IF NOT EXISTS foo USING bar(a, b(), c) AS drift',
       CreateVirtualTableStatement(
         ifNotExists: true,
         tableName: 'foo',
@@ -250,9 +250,9 @@ void main() {
           fakeSpan('b()'),
           fakeSpan('c'),
         ],
-        moorTableName: MoorTableName('moor', false),
+        driftTableName: DriftTableName('drift', false),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 

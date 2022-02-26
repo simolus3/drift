@@ -29,9 +29,9 @@ void main() {
             ),
           ],
         ),
-        moorTableName: MoorTableName('ExistingDartClass', true),
+        driftTableName: DriftTableName('ExistingDartClass', true),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 

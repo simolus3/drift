@@ -1,7 +1,7 @@
 import '../ast.dart' show ResultColumn, Renamable, SelectStatement;
 import '../node.dart';
 import '../visitor.dart';
-import 'moor_file.dart';
+import 'drift_file.dart';
 
 /// To wrap the query name into its own type, to avoid conflicts when using
 /// the [AstNode] metadata.
@@ -18,7 +18,7 @@ class _NestedColumnNameMetadata {
 /// top level select query, because the result of them can only be computed
 /// in dart.
 class NestedQueryColumn extends ResultColumn
-    implements MoorSpecificNode, Renamable {
+    implements DriftSpecificNode, Renamable {
   @override
   final String? as;
 
@@ -36,7 +36,7 @@ class NestedQueryColumn extends ResultColumn
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   /// The unique name for this query. Used to identify it and it's variables in

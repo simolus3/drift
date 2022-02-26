@@ -217,7 +217,7 @@ class GeneratedAs extends ColumnConstraint {
   }
 }
 
-/// A `MAPPED BY` constraint, which is only parsed for moor files. It can be
+/// A `MAPPED BY` constraint, which is only parsed for drift files. It can be
 /// used to declare a type converter for this column.
 class MappedBy extends ColumnConstraint {
   /// The Dart expression creating the type converter we use to map this token.
@@ -232,7 +232,7 @@ class MappedBy extends ColumnConstraint {
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
-/// A `JSON KEY xyz` constraint, which is only parsed for moor files.
+/// A `JSON KEY xyz` constraint, which is only parsed for drift files.
 class JsonKey extends ColumnConstraint {
   Token? json;
   Token? key;
@@ -249,8 +249,8 @@ class JsonKey extends ColumnConstraint {
   void transformChildren<A>(Transformer<A> transformer, A arg) {}
 }
 
-/// A `AS xyz` constraint, which is only parsed for moor files.
-class MoorDartName extends ColumnConstraint {
+/// A `AS xyz` constraint, which is only parsed for drift files.
+class DriftDartName extends ColumnConstraint {
   Token? as;
   IdentifierToken identifier;
 
@@ -259,7 +259,7 @@ class MoorDartName extends ColumnConstraint {
 
   String get dartName => identifier.identifier;
 
-  MoorDartName(String? name, this.identifier) : super(name);
+  DriftDartName(String? name, this.identifier) : super(name);
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {}

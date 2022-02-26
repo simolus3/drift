@@ -218,7 +218,7 @@ enum TokenType {
   window,
   without,
 
-  /// Moor specific token, used to declare type converter
+  /// Drift specific token, used to declare type converter
   mapped,
   inlineDart,
   import,
@@ -226,7 +226,7 @@ enum TokenType {
   required,
   list,
 
-  /// A `**` token. This is only scanned when scanning for moor tokens.
+  /// A `**` token. This is only scanned when scanning for drift tokens.
   doubleStar,
 }
 
@@ -412,10 +412,10 @@ const Map<String, TokenType> postgresKeywords = {
 /// Maps [TokenType]s which are keywords to their lexeme.
 final Map<TokenType, String> reverseKeywords = {
   for (var entry in keywords.entries) entry.value: entry.key,
-  for (var entry in moorKeywords.entries) entry.value: entry.key,
+  for (var entry in driftKeywords.entries) entry.value: entry.key,
 };
 
-const Map<String, TokenType> moorKeywords = {
+const Map<String, TokenType> driftKeywords = {
   'IMPORT': TokenType.import,
   'JSON': TokenType.json,
   'MAPPED': TokenType.mapped,
@@ -539,8 +539,8 @@ class AtSignVariableToken extends Token {
       : super(TokenType.atSignVariable, span);
 }
 
-/// Inline Dart appearing in a create table statement. Only parsed when the moor
-/// extensions are enabled. Dart code is wrapped in backticks.
+/// Inline Dart appearing in a create table statement. Only parsed when the
+/// drift extensions are enabled. Dart code is wrapped in backticks.
 class InlineDartToken extends Token {
   InlineDartToken(FileSpan span) : super(TokenType.inlineDart, span);
 
@@ -562,7 +562,7 @@ class KeywordToken extends Token {
   bool canConvertToIdentifier() {
     // https://stackoverflow.com/a/45775719, but we don't parse indexed yet.
     return _identifierKeywords.contains(type) ||
-        moorKeywords.values.contains(type);
+        driftKeywords.values.contains(type);
   }
 
   IdentifierToken convertToIdentifier() {

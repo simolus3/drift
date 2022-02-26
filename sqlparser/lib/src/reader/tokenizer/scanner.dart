@@ -10,8 +10,8 @@ class Scanner {
   final String source;
   final Uint16List _charCodes;
 
-  /// Whether to scan tokens that are only relevant for moor.
-  final bool scanMoorTokens;
+  /// Whether to scan tokens that are only relevant for drift files.
+  final bool scanDriftTokens;
   final SourceFile _file;
 
   final List<Token> tokens = [];
@@ -29,7 +29,7 @@ class Scanner {
     return _file.location(_currentOffset);
   }
 
-  Scanner(this.source, {this.scanMoorTokens = false})
+  Scanner(this.source, {this.scanDriftTokens = false})
       : _file = SourceFile.fromString(source),
         _charCodes = Uint16List.fromList(source.codeUnits);
 
@@ -87,7 +87,7 @@ class Scanner {
         }
         break;
       case $asterisk:
-        if (scanMoorTokens && _match($asterisk)) {
+        if (scanDriftTokens && _match($asterisk)) {
           _addToken(TokenType.doubleStar);
         } else {
           _addToken(TokenType.star);
@@ -190,7 +190,7 @@ class Scanner {
         _identifier(escapeChar: $double_quote);
         break;
       case $backquote:
-        if (scanMoorTokens) {
+        if (scanDriftTokens) {
           _inlineDart();
         } else {
           _identifier(escapeChar: $backquote);
@@ -412,8 +412,8 @@ class Scanner {
       final text = _currentSpan.text.toUpperCase();
       if (keywords.containsKey(text)) {
         tokens.add(KeywordToken(keywords[text]!, _currentSpan));
-      } else if (scanMoorTokens && moorKeywords.containsKey(text)) {
-        tokens.add(KeywordToken(moorKeywords[text]!, _currentSpan));
+      } else if (scanDriftTokens && driftKeywords.containsKey(text)) {
+        tokens.add(KeywordToken(driftKeywords[text]!, _currentSpan));
       } else {
         tokens.add(IdentifierToken(false, _currentSpan));
       }

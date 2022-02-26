@@ -383,7 +383,8 @@ class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, NestedQueriesContainer? arg) {
+  void visitDriftSpecificNode(
+      DriftSpecificNode e, NestedQueriesContainer? arg) {
     if (e is NestedQueryColumn) {
       // If the node ist a nested query, return to avoid collecting elements
       // inside of it
@@ -394,7 +395,7 @@ class _FindElements extends RecursiveVisitor<NestedQueriesContainer?, void> {
       dartPlaceholders.add(e);
     }
 
-    super.visitMoorSpecificNode(e, arg);
+    super.visitDriftSpecificNode(e, arg);
   }
 
   @override

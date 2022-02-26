@@ -61,8 +61,8 @@ void main() {
     );
   });
 
-  test("resolved columns don't include moor nested results", () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+  test("resolved columns don't include drift nested results", () {
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTable(demoTable);
 
     final context = engine.analyze('SELECT demo.** FROM demo;');
@@ -95,7 +95,7 @@ void main() {
   });
 
   test('resolves columns from nested results', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTable(demoTable)
       ..registerTable(anotherTable);
 
@@ -113,7 +113,7 @@ void main() {
   });
 
   test('resolves columns in nested queries', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTable(demoTable);
 
     final context =

@@ -8,15 +8,15 @@ abstract class TableInducingStatement extends Statement
   final bool ifNotExists;
   final String tableName;
 
-  /// Moor-specific information about the desired name of a Dart class for this
+  /// Drift-specific information about the desired name of a Dart class for this
   /// table.
   ///
-  /// This will always be `null` when moor extensions are not enabled.
-  MoorTableName? moorTableName;
+  /// This will always be `null` when drift extensions are not enabled.
+  DriftTableName? driftTableName;
   Token? tableNameToken;
 
   TableInducingStatement._(this.ifNotExists, this.tableName,
-      [this.moorTableName]);
+      [this.driftTableName]);
 
   @override
   String get createdName => tableName;
@@ -48,8 +48,8 @@ class CreateTableStatement extends TableInducingStatement {
     this.tableConstraints = const [],
     this.withoutRowId = false,
     this.isStrict = false,
-    MoorTableName? moorTableName,
-  }) : super._(ifNotExists, tableName, moorTableName);
+    DriftTableName? driftTableName,
+  }) : super._(ifNotExists, tableName, driftTableName);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -61,15 +61,15 @@ class CreateTableStatement extends TableInducingStatement {
     columns = transformer.transformChildren(columns, this, arg);
     tableConstraints =
         transformer.transformChildren(tableConstraints, this, arg);
-    moorTableName =
-        transformer.transformNullableChild(moorTableName, this, arg);
+    driftTableName =
+        transformer.transformNullableChild(driftTableName, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes => [
         ...columns,
         ...tableConstraints,
-        if (moorTableName != null) moorTableName!,
+        if (driftTableName != null) driftTableName!,
       ];
 }
 
@@ -93,8 +93,8 @@ class CreateVirtualTableStatement extends TableInducingStatement {
     required String tableName,
     required this.moduleName,
     this.arguments = const [],
-    MoorTableName? moorTableName,
-  }) : super._(ifNotExists, tableName, moorTableName);
+    DriftTableName? driftTableName,
+  }) : super._(ifNotExists, tableName, driftTableName);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
@@ -103,11 +103,11 @@ class CreateVirtualTableStatement extends TableInducingStatement {
 
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
-    moorTableName =
-        transformer.transformNullableChild(moorTableName, this, arg);
+    driftTableName =
+        transformer.transformNullableChild(driftTableName, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes =>
-      [if (moorTableName != null) moorTableName!];
+      [if (driftTableName != null) driftTableName!];
 }

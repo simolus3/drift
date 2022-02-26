@@ -69,7 +69,7 @@ resolvedColumns.map((c) => context.typeOf(c).type.type); // int, text, int, text
 ```
 
 ## But why?
-[Moor](https://pub.dev/packages/moor), a persistence library for Dart apps, uses this
+[Drift](https://pub.dev/packages/drift), a persistence library for Dart apps, uses this
 package to generate type-safe methods from sql.
 
 ## Thanks

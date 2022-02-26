@@ -1,6 +1,7 @@
 ## 0.21.0
 
 - Analysis support for new features in sqlite version 3.38.
+- Replace internal `moor` references with `drift` references.
 
 ## 0.20.1
 

@@ -21,7 +21,7 @@ class CreateTableReader {
   final Step step;
   final List<ImportStatement> imports;
 
-  static const _schemaReader = SchemaFromCreateTable(moorExtensions: true);
+  static const _schemaReader = SchemaFromCreateTable(driftExtensions: true);
   static final RegExp _enumRegex =
       RegExp(r'^enum\((\w+)\)$', caseSensitive: false);
 
@@ -125,7 +125,7 @@ class CreateTableReader {
           // those are moor-specific as well, don't write them
           continue;
         }
-        if (constraint is MoorDartName) {
+        if (constraint is DriftDartName) {
           overriddenDartName = constraint.dartName;
           // ditto
           continue;
@@ -167,7 +167,7 @@ class CreateTableReader {
     String? dartTableName, dataClassName;
     ExistingRowClass? existingRowClass;
 
-    final moorTableInfo = stmt.moorTableName;
+    final moorTableInfo = stmt.driftTableName;
     if (moorTableInfo != null) {
       final overriddenNames = moorTableInfo.overriddenDataClassName;
 

@@ -118,11 +118,11 @@ class SqlWriter extends NodeSqlBuilder {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is NestedStarResultColumn) {
       final result = _starColumnToResolved[e];
       if (result == null) {
-        return super.visitMoorSpecificNode(e, arg);
+        return super.visitDriftSpecificNode(e, arg);
       }
 
       final select = query as SqlSelectQuery;
@@ -155,7 +155,7 @@ class SqlWriter extends NodeSqlBuilder {
         'variables (or just removed if no variables are required)',
       );
     } else {
-      return super.visitMoorSpecificNode(e, arg);
+      return super.visitDriftSpecificNode(e, arg);
     }
   }
 }

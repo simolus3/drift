@@ -28,7 +28,7 @@ class ViewAnalyzer extends BaseAnalyzer {
       final declaration = viewDeclaration.creatingStatement;
 
       final parserView = view.parserView =
-          const SchemaFromCreateTable(moorExtensions: true)
+          const SchemaFromCreateTable(driftExtensions: true)
               .readView(ctx, declaration);
 
       final columns = <MoorColumn>[];
@@ -51,7 +51,7 @@ class ViewAnalyzer extends BaseAnalyzer {
 
       view.columns = columns;
 
-      final desiredNames = declaration.moorTableName;
+      final desiredNames = declaration.driftTableName;
       if (desiredNames != null) {
         final dataClassName = desiredNames.overriddenDataClassName;
         if (desiredNames.useExistingDartClass) {

@@ -2,10 +2,10 @@ import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 class EngineOptions {
-  /// Moor extends the sql grammar a bit to support type converters and other
+  /// Drift extends the sql grammar a bit to support type converters and other
   /// features. Enabling this flag will make this engine parse sql with these
   /// extensions enabled.
-  final bool useMoorExtensions;
+  final bool useDriftExtensions;
 
   /// The target sqlite version.
   ///
@@ -27,7 +27,7 @@ class EngineOptions {
   final Map<String, TableValuedFunctionHandler> addedTableFunctions = {};
 
   EngineOptions({
-    this.useMoorExtensions = false,
+    this.useDriftExtensions = false,
     List<Extension> enabledExtensions = const [],
     this.version = SqliteVersion.minimum,
   }) : enabledExtensions = _allExtensions(enabledExtensions, version) {

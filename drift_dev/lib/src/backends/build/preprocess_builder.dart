@@ -40,13 +40,13 @@ class PreprocessBuilder extends Builder {
   FutureOr<void> build(BuildStep buildStep) async {
     final input = buildStep.inputId;
     final moorFileContent = await buildStep.readAsString(input);
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
 
     ParseResult parsedInput;
     try {
-      parsedInput = engine.parseMoorFile(moorFileContent);
+      parsedInput = engine.parseDriftFile(moorFileContent);
     } on Exception {
-      // Moor file couldn't be parsed, ignore... If it's imported, the main
+      // Drift file couldn't be parsed, ignore... If it's imported, the main
       // builder will provide a better error message.
       return;
     }
@@ -71,7 +71,7 @@ class PreprocessBuilder extends Builder {
         if (asset.extension == '.moor' || asset.extension == '.drift') {
           final parsed = asset == input
               ? parsedInput
-              : engine.parseMoorFile(await buildStep.readAsString(asset));
+              : engine.parseDriftFile(await buildStep.readAsString(asset));
 
           parsed.rootNode.allDescendants
               .whereType<ImportStatement>()

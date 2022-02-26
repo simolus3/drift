@@ -5,23 +5,23 @@ import 'declared_statement.dart';
 import 'import_statement.dart';
 
 /// Marker interface for AST nodes that are moor-specific.
-abstract class MoorSpecificNode implements AstNode {}
+abstract class DriftSpecificNode implements AstNode {}
 
 /// Something that can appear as a top-level declaration inside a `.moor` file.
-abstract class PartOfMoorFile implements Statement, MoorSpecificNode {}
+abstract class PartOfDriftFile implements Statement, DriftSpecificNode {}
 
-/// A moor file.
+/// A parsed `.drift` file.
 ///
-/// A moor file consists of [ImportStatement], followed by ddl statements,
+/// A drift file consists of [ImportStatement]s, followed by ddl statements,
 /// followed by [DeclaredStatement]s.
-class MoorFile extends AstNode implements MoorSpecificNode {
-  List<PartOfMoorFile> statements;
+class DriftFile extends AstNode implements DriftSpecificNode {
+  List<PartOfDriftFile> statements;
 
-  MoorFile(this.statements);
+  DriftFile(this.statements);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   @override
@@ -37,15 +37,15 @@ class MoorFile extends AstNode implements MoorSpecificNode {
       childNodes.whereType<ImportStatement>();
 }
 
-class MoorTableName extends AstNode implements MoorSpecificNode {
+class DriftTableName extends AstNode implements DriftSpecificNode {
   final String overriddenDataClassName;
   final bool useExistingDartClass;
 
-  MoorTableName(this.overriddenDataClassName, this.useExistingDartClass);
+  DriftTableName(this.overriddenDataClassName, this.useExistingDartClass);
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   @override

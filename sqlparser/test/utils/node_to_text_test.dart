@@ -3,10 +3,10 @@ import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
-enum _ParseKind { statement, moorFile }
+enum _ParseKind { statement, driftFile }
 
 void main() {
-  final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+  final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
 
   void testFormat(String input, {_ParseKind kind = _ParseKind.statement}) {
     AstNode parse(String input) {
@@ -16,8 +16,8 @@ void main() {
         case _ParseKind.statement:
           result = engine.parse(input);
           break;
-        case _ParseKind.moorFile:
-          result = engine.parseMoorFile(input);
+        case _ParseKind.driftFile:
+          result = engine.parseDriftFile(input);
           break;
       }
 
@@ -452,28 +452,28 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
     testWith(r'a$b', r'"a$b"');
   });
 
-  group('moor', () {
+  group('drift', () {
     test('dart placeholders', () {
       testFormat(r'SELECT $placeholder FROM foo');
     });
 
     test('imports', () {
-      testFormat('import \'foo.bar\';', kind: _ParseKind.moorFile);
+      testFormat('import \'foo.bar\';', kind: _ParseKind.driftFile);
     });
 
     test('declared statements', () {
       testFormat('foo (?1 AS INT): SELECT * FROM bar WHERE ? < 10;',
-          kind: _ParseKind.moorFile);
+          kind: _ParseKind.driftFile);
       testFormat('foo: SELECT * FROM bar WHERE :id < 10;',
-          kind: _ParseKind.moorFile);
+          kind: _ParseKind.driftFile);
       testFormat('foo (REQUIRED :x AS TEXT OR NULL): SELECT :x;',
-          kind: _ParseKind.moorFile);
+          kind: _ParseKind.driftFile);
       testFormat(r'foo ($pred = FALSE): SELECT * FROM bar WHERE $pred;',
-          kind: _ParseKind.moorFile);
+          kind: _ParseKind.driftFile);
     });
 
     test('nested star', () {
-      testFormat('q: SELECT foo.** FROM foo;', kind: _ParseKind.moorFile);
+      testFormat('q: SELECT foo.** FROM foo;', kind: _ParseKind.driftFile);
     });
 
     test('transaction block', () {
@@ -486,7 +486,7 @@ test: BEGIN TRANSACTION
   INSERT INTO foo VALUES (x, y, z);
 COMMIT TRANSACTION;
 ''',
-        kind: _ParseKind.moorFile,
+        kind: _ParseKind.driftFile,
       );
     });
   });

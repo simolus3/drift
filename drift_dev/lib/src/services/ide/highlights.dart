@@ -147,7 +147,7 @@ class _HighlightingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DeclaredStatement) {
       final identifier = e.identifier;
       if (identifier is SimpleName && identifier.identifier != null) {

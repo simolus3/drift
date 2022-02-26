@@ -100,11 +100,11 @@ class MigrateCommand extends MoorCommand {
   }
 
   Future<String> _transformMoorFile(File file) async {
-    final engine = SqlEngine(
-        EngineOptions(useMoorExtensions: true, version: SqliteVersion.current));
+    final engine = SqlEngine(EngineOptions(
+        useDriftExtensions: true, version: SqliteVersion.current));
     final originalContent = await file.readAsString();
     var output = originalContent;
-    final result = engine.parseMoorFile(originalContent);
+    final result = engine.parseDriftFile(originalContent);
 
     if (result.errors.isNotEmpty) {
       cli.logger.warning('Could not parse ${file.path}, skipping...');
@@ -112,7 +112,7 @@ class MigrateCommand extends MoorCommand {
     }
 
     // Change imports to point from .moor to .drift files
-    final root = result.rootNode as MoorFile;
+    final root = result.rootNode as DriftFile;
     for (final import in root.imports) {
       final importedFile = import.importedFile;
       if (p.url.extension(importedFile) == '.moor') {

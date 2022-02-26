@@ -14,7 +14,7 @@ import '../ast.dart';
 ///  moor.
 ///  4. A list of order-by clauses, which will be exposed as a `OrderBy` from
 ///  moor.
-abstract class DartPlaceholder extends AstNode implements MoorSpecificNode {
+abstract class DartPlaceholder extends AstNode implements DriftSpecificNode {
   final String name;
 
   DollarSignVariableToken? token;
@@ -29,7 +29,7 @@ abstract class DartPlaceholder extends AstNode implements MoorSpecificNode {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   T? when<T>({

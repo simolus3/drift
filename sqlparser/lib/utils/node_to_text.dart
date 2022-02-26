@@ -408,7 +408,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
       symbol(r'$', spaceBefore: true);
       symbol(e.name, spaceAfter: true);
@@ -429,7 +429,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       symbol(':', spaceAfter: true);
       visit(e.statement, arg);
       symbol(';');
-    } else if (e is MoorFile) {
+    } else if (e is DriftFile) {
       for (final stmt in e.statements) {
         visit(stmt, arg);
         buffer.write('\n');
@@ -461,7 +461,7 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
       } else {
         throw AssertionError('Unknown StatementParameter: $e');
       }
-    } else if (e is MoorTableName) {
+    } else if (e is DriftTableName) {
       _keyword(e.useExistingDartClass ? TokenType.$with : TokenType.as);
       identifier(e.overriddenDataClassName);
     } else if (e is NestedStarResultColumn) {

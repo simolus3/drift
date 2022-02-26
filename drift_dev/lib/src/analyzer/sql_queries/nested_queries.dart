@@ -58,7 +58,7 @@ class NestedQueryAnalyzer extends RecursiveVisitor<_AnalyzerState, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, _AnalyzerState arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, _AnalyzerState arg) {
     if (e is NestedQueryColumn) {
       final expectedParent = arg.container.select;
       if (e.parent != expectedParent || !expectedParent.columns.contains(e)) {
@@ -75,12 +75,12 @@ class NestedQueryAnalyzer extends RecursiveVisitor<_AnalyzerState, void> {
       arg.container.nestedQueries[e] = nested;
 
       final childState = _AnalyzerState(nested);
-      super.visitMoorSpecificNode(e, childState);
+      super.visitDriftSpecificNode(e, childState);
       childState._process();
       return;
     }
 
-    super.visitMoorSpecificNode(e, arg);
+    super.visitDriftSpecificNode(e, arg);
   }
 
   @override
@@ -154,8 +154,8 @@ class _NestedQueryTransformer extends Transformer<NestedQueriesContainer> {
   }
 
   @override
-  AstNode? visitMoorSpecificNode(
-      MoorSpecificNode e, NestedQueriesContainer arg) {
+  AstNode? visitDriftSpecificNode(
+      DriftSpecificNode e, NestedQueriesContainer arg) {
     if (e is NestedQueryColumn) {
       final child = arg.nestedQueries[e];
       if (child != null) {
@@ -165,7 +165,7 @@ class _NestedQueryTransformer extends Transformer<NestedQueriesContainer> {
       // Remove nested query colums from the parent query
       return null;
     }
-    return super.visitMoorSpecificNode(e, arg);
+    return super.visitDriftSpecificNode(e, arg);
   }
 
   @override

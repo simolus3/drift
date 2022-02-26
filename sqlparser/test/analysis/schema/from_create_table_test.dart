@@ -86,15 +86,15 @@ void main() {
     );
   });
 
-  test('supports booleans when moor extensions are enabled', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+  test('supports booleans when drift extensions are enabled', () {
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
     final stmt = engine.parse('''
     CREATE TABLE foo (
       a BOOL, b DATETIME, c DATE, d BOOLEAN NOT NULL
     )
     ''').rootNode;
 
-    final table = const SchemaFromCreateTable(moorExtensions: true)
+    final table = const SchemaFromCreateTable(driftExtensions: true)
         .read(stmt as CreateTableStatement);
     expect(table.resolvedColumns.map((c) => c.type), const [
       ResolvedType(type: BasicType.int, hint: IsBoolean(), nullable: true),

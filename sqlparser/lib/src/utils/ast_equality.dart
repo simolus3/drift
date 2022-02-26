@@ -419,58 +419,58 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
-  void visitMoorDeclaredStatement(DeclaredStatement e, void arg) {
+  void visitDriftDeclaredStatement(DeclaredStatement e, void arg) {
     final current = _currentAs<DeclaredStatement>(e);
     _assert(current.identifier == e.identifier && current.as == e.as, e);
     _checkChildren(e);
   }
 
-  void visitMoorFile(MoorFile e, void arg) {
-    _currentAs<MoorFile>(e);
+  void visitDriftFile(DriftFile e, void arg) {
+    _currentAs<DriftFile>(e);
     _checkChildren(e);
   }
 
-  void visitMoorImportStatement(ImportStatement e, void arg) {
+  void visitDriftImportStatement(ImportStatement e, void arg) {
     final current = _currentAs<ImportStatement>(e);
     _assert(current.importedFile == e.importedFile, e);
     _checkChildren(e);
   }
 
-  void visitMoorNestedStarResultColumn(NestedStarResultColumn e, void arg) {
+  void visitDriftNestedStarResultColumn(NestedStarResultColumn e, void arg) {
     final current = _currentAs<NestedStarResultColumn>(e);
     _assert(current.tableName == e.tableName, e);
     _assert(current.as == e.as, e);
     _checkChildren(e);
   }
 
-  void visitMoorNestedQueryColumn(NestedQueryColumn e, void arg) {
+  void visitDriftNestedQueryColumn(NestedQueryColumn e, void arg) {
     final current = _currentAs<NestedQueryColumn>(e);
     _assert(current.as == e.as, e);
     _checkChildren(e);
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
       return visitDartPlaceholder(e, arg);
     } else if (e is DeclaredStatement) {
-      return visitMoorDeclaredStatement(e, arg);
-    } else if (e is MoorFile) {
-      return visitMoorFile(e, arg);
+      return visitDriftDeclaredStatement(e, arg);
+    } else if (e is DriftFile) {
+      return visitDriftFile(e, arg);
     } else if (e is ImportStatement) {
-      return visitMoorImportStatement(e, arg);
+      return visitDriftImportStatement(e, arg);
     } else if (e is NestedStarResultColumn) {
-      return visitMoorNestedStarResultColumn(e, arg);
+      return visitDriftNestedStarResultColumn(e, arg);
     } else if (e is StatementParameter) {
-      return visitMoorStatementParameter(e, arg);
-    } else if (e is MoorTableName) {
-      return visitMoorTableName(e, arg);
+      return visitDriftStatementParameter(e, arg);
+    } else if (e is DriftTableName) {
+      return visitDriftTableName(e, arg);
     } else if (e is NestedQueryColumn) {
-      return visitMoorNestedQueryColumn(e, arg);
+      return visitDriftNestedQueryColumn(e, arg);
     }
   }
 
-  void visitMoorStatementParameter(StatementParameter e, void arg) {
+  void visitDriftStatementParameter(StatementParameter e, void arg) {
     if (e is VariableTypeHint) {
       final current = _currentAs<VariableTypeHint>(e);
       _assert(
@@ -486,8 +486,8 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _checkChildren(e);
   }
 
-  void visitMoorTableName(MoorTableName e, void arg) {
-    final current = _currentAs<MoorTableName>(e);
+  void visitDriftTableName(DriftTableName e, void arg) {
+    final current = _currentAs<DriftTableName>(e);
     _assert(
         current.overriddenDataClassName == e.overriddenDataClassName &&
             current.useExistingDartClass == e.useExistingDartClass,

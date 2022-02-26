@@ -2,10 +2,10 @@ import '../../reader/tokenizer/token.dart';
 import '../node.dart';
 import '../statements/statement.dart';
 import '../visitor.dart';
-import 'moor_file.dart';
+import 'drift_file.dart';
 
 /// An `import "file.dart";` statement that can appear inside a moor file.
-class ImportStatement extends Statement implements PartOfMoorFile {
+class ImportStatement extends Statement implements PartOfDriftFile {
   Token? importToken;
   StringLiteralToken? importString;
   final String importedFile;
@@ -14,7 +14,7 @@ class ImportStatement extends Statement implements PartOfMoorFile {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   @override

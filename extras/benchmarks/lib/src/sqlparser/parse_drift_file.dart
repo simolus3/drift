@@ -25,25 +25,26 @@ foo: SELECT
   ORDER BY
     revenue DESC,
     o_orderdate;
-    
-manyColumns: 
+
+manyColumns:
   SELECT a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z FROM test;
 ''';
 
-class ParseMoorFile extends BenchmarkBase {
-  ParseMoorFile(ScoreEmitter emitter) : super('Moor file: Parse only', emitter);
+class ParseDriftFile extends BenchmarkBase {
+  ParseDriftFile(ScoreEmitter emitter)
+      : super('Moor file: Parse only', emitter);
 
-  final _engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+  final _engine = SqlEngine(EngineOptions(useDriftExtensions: true));
 
   @override
   void exercise() {
     for (var i = 0; i < 10; i++) {
-      assert(_engine.parseMoorFile(file).errors.isEmpty);
+      assert(_engine.parseDriftFile(file).errors.isEmpty);
     }
   }
 
   @override
   void run() {
-    _engine.parseMoorFile(file);
+    _engine.parseDriftFile(file);
   }
 }

@@ -78,7 +78,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
       return visitDartPlaceholder(e, arg);
     } else if (e is NestedStarResultColumn) {

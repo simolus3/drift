@@ -33,14 +33,14 @@ class ParsedDartFile extends FileResult {
 
 class ParsedMoorFile extends FileResult {
   final ParseResult parseResult;
-  MoorFile get parsedFile => parseResult.rootNode as MoorFile;
+  DriftFile get parsedFile => parseResult.rootNode as DriftFile;
 
   final List<ImportStatement> imports;
   final List<DeclaredQuery> queries;
 
   /// Schema component that are neither tables nor queries. This can include
   /// triggers or indexes.
-  final List<PartOfMoorFile> otherComponents;
+  final List<PartOfDriftFile> otherComponents;
 
   List<SqlQuery>? resolvedQueries;
   Map<ImportStatement, FoundFile>? resolvedImports;

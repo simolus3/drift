@@ -12,4 +12,5 @@ export 'src/engine/options.dart';
 export 'src/engine/sql_engine.dart';
 export 'src/reader/parser.dart' show ParsingError;
 export 'src/reader/syntactic_entity.dart';
-export 'src/reader/tokenizer/token.dart' hide keywords, moorKeywords, isKeyword;
+export 'src/reader/tokenizer/token.dart'
+    hide keywords, driftKeywords, isKeyword;

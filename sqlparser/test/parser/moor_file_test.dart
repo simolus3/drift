@@ -5,7 +5,7 @@ import 'utils.dart';
 
 const content = r'''
 import 'other.dart';
-import 'another.moor';
+import 'another.drift';
 
 CREATE TABLE tbl (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -22,12 +22,12 @@ add: INSERT INTO tbl $row RETURNING *;
 ''';
 
 void main() {
-  test('parses moor files', () {
-    testMoorFile(
+  test('parses drift files', () {
+    testDriftFile(
       content,
-      MoorFile([
+      DriftFile([
         ImportStatement('other.dart'),
-        ImportStatement('another.moor'),
+        ImportStatement('another.drift'),
         CreateTableStatement(
           tableName: 'tbl',
           columns: [
@@ -52,11 +52,11 @@ void main() {
                     ],
                   ),
                 ),
-                MoorDartName(null, identifier('placeRef')),
+                DriftDartName(null, identifier('placeRef')),
               ],
             ),
           ],
-          moorTableName: MoorTableName('RowName', false),
+          driftTableName: DriftTableName('RowName', false),
         ),
         DeclaredStatement(
           SimpleName('all'),
@@ -129,14 +129,14 @@ void main() {
   });
 
   test('parses transaction blocks', () {
-    testMoorFile(
+    testDriftFile(
       '''
 test: BEGIN
   UPDATE foo SET bar = baz;
   DELETE FROM t;
 END;
 ''',
-      MoorFile([
+      DriftFile([
         DeclaredStatement(
           SimpleName('test'),
           TransactionBlock(
@@ -162,8 +162,8 @@ END;
 
   test("reports error when the statement can't be parsed", () {
     // regression test for https://github.com/simolus3/moor/issues/280#issuecomment-570789454
-    final parsed = SqlEngine(EngineOptions(useMoorExtensions: true))
-        .parseMoorFile('name: NSERT INTO foo DEFAULT VALUES;');
+    final parsed = SqlEngine(EngineOptions(useDriftExtensions: true))
+        .parseDriftFile('name: NSERT INTO foo DEFAULT VALUES;');
 
     expect(
       parsed.errors,
@@ -174,7 +174,7 @@ END;
       )),
     );
 
-    final root = parsed.rootNode as MoorFile;
+    final root = parsed.rootNode as DriftFile;
     expect(
       root.allDescendants,
       isNot(contains(const TypeMatcher<DeclaredStatement>())),
@@ -182,10 +182,10 @@ END;
   });
 
   test('syntax errors contain correct position', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
-    final result = engine.parseMoorFile('''
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
+    final result = engine.parseDriftFile('''
 worksByComposer:
-SELECT DISTINCT A.* FROM works A, works B ON A.id = 
+SELECT DISTINCT A.* FROM works A, works B ON A.id =
     WHERE A.composer = :id OR B.composer = :id;
     ''');
 
@@ -198,9 +198,9 @@ SELECT DISTINCT A.* FROM works A, works B ON A.id =
 
   test('parses REQUIRED without type hint', () {
     final variable = ColonVariableToken(fakeSpan(':category'), ':category');
-    testMoorFile(
+    testDriftFile(
       'test(REQUIRED :category): SELECT :category;',
-      MoorFile([
+      DriftFile([
         DeclaredStatement(
           SimpleName('test'),
           SelectStatement(columns: [

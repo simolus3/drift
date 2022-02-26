@@ -12,7 +12,7 @@ void main() {
         from: TableReference('tbl'),
         limit: DartLimitPlaceholder(name: 'limit'),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
@@ -28,7 +28,7 @@ void main() {
           offset: NumericLiteral(3, token(TokenType.numberLiteral)),
         ),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
@@ -48,7 +48,7 @@ void main() {
           ],
         ),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 
@@ -60,7 +60,7 @@ void main() {
         from: TableReference('tbl'),
         orderBy: DartOrderByPlaceholder(name: 'order'),
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 }

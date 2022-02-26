@@ -55,7 +55,7 @@ abstract class StatementReturningColumns extends Statement {
 }
 
 /// Marker interface for statements that change the table structure.
-abstract class SchemaStatement extends Statement implements PartOfMoorFile {}
+abstract class SchemaStatement extends Statement implements PartOfDriftFile {}
 
 /// Marker interface for schema statements that create a schematic entity.
 abstract class CreatingStatement extends SchemaStatement {

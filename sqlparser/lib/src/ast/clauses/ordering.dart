@@ -1,11 +1,11 @@
 part of '../ast.dart';
 
-/// Base for `ORDER BY` clauses. Without moor extensions, ony [OrderBy] will be
+/// Base for `ORDER BY` clauses. Without drift extensions, ony [OrderBy] will be
 /// parsed. Otherwise, [DartOrderByPlaceholder] can be parsed as well.
 abstract class OrderByBase extends AstNode {}
 
-/// Base for a single ordering term that is a part of a [OrderBy]. Without moor
-/// extensions, only [OrderingTerm] will be parsed. With moor extensions, a
+/// Base for a single ordering term that is a part of a [OrderBy]. Without drift
+/// extensions, only [OrderingTerm] will be parsed. With drift extensions, a
 /// [DartOrderingTermPlaceholder] can be parsed as well.
 abstract class OrderingTermBase extends AstNode {}
 

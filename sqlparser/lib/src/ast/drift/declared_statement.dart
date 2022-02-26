@@ -5,11 +5,11 @@ import '../node.dart';
 import '../statements/statement.dart';
 import '../statements/transaction.dart';
 import '../visitor.dart';
-import 'moor_file.dart';
+import 'drift_file.dart';
 
 /// A declared statement inside a `.moor` file. It consists of an identifier,
 /// followed by a colon and the query to run.
-class DeclaredStatement extends Statement implements PartOfMoorFile {
+class DeclaredStatement extends Statement implements PartOfDriftFile {
   final DeclaredStatementIdentifier identifier;
   AstNode statement;
   List<StatementParameter> parameters;
@@ -29,7 +29,7 @@ class DeclaredStatement extends Statement implements PartOfMoorFile {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   @override
@@ -96,10 +96,10 @@ class SpecialStatementIdentifier extends DeclaredStatementIdentifier {
 /// identifier.
 /// In `selectString(:name AS TEXT): SELECT :name`, `:name AS TEXT` is a
 /// statement parameter.
-abstract class StatementParameter extends AstNode implements MoorSpecificNode {
+abstract class StatementParameter extends AstNode implements DriftSpecificNode {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 }
 
@@ -154,7 +154,7 @@ class DartPlaceholderDefaultValue extends StatementParameter {
   }
 }
 
-class TransactionBlock extends AstNode implements MoorSpecificNode {
+class TransactionBlock extends AstNode implements DriftSpecificNode {
   BeginTransactionStatement begin;
   List<CrudStatement> innerStatements;
   CommitStatement commit;
@@ -167,7 +167,7 @@ class TransactionBlock extends AstNode implements MoorSpecificNode {
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
-    return visitor.visitMoorSpecificNode(this, arg);
+    return visitor.visitDriftSpecificNode(this, arg);
   }
 
   @override

@@ -6,7 +6,7 @@ import '../utils.dart';
 
 void main() {
   test('parses nested query statements', () {
-    final stmt = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final stmt = SqlEngine(EngineOptions(useDriftExtensions: true))
         .parse('SELECT LIST(SELECT * FROM test) FROM test')
         .rootNode as SelectStatement;
 
@@ -23,7 +23,7 @@ void main() {
   });
 
   test('parses nested query statements with as', () {
-    final stmt = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final stmt = SqlEngine(EngineOptions(useDriftExtensions: true))
         .parse('SELECT LIST(SELECT * FROM test) AS newname FROM test')
         .rootNode as SelectStatement;
 

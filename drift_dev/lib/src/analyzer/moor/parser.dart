@@ -12,8 +12,8 @@ class MoorParser {
 
   Future<ParsedMoorFile> parseAndAnalyze() async {
     final engine = step.task.session.spawnEngine();
-    final result = engine.parseMoorFile(step.content);
-    final parsedFile = result.rootNode as MoorFile;
+    final result = engine.parseDriftFile(step.content);
+    final parsedFile = result.rootNode as DriftFile;
 
     final createdReaders = <CreateTableReader>[];
     final queryDeclarations = <DeclaredMoorQuery>[];

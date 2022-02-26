@@ -26,7 +26,7 @@ void main() {
   });
 
   test('does not register the same result set multiple times', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true))
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true))
       ..registerTableFromSql('''
         CREATE TABLE with_defaults (
           a TEXT DEFAULT 'something',

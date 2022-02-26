@@ -10,9 +10,9 @@ void main() {
   test('can parse multiple statements', () {
     const sql = 'a: UPDATE tbl SET a = b; b: SELECT * FROM tbl;';
 
-    testMoorFile(
+    testDriftFile(
       sql,
-      MoorFile([
+      DriftFile([
         DeclaredStatement(
           SimpleName('a'),
           UpdateStatement(
@@ -39,7 +39,7 @@ void main() {
   test('recovers from invalid statements', () {
     const sql = 'a: UPDATE tbl SET a = * d; b: SELECT * FROM tbl;';
     final tokens = Scanner(sql).scanTokens();
-    final statements = Parser(tokens).moorFile().statements;
+    final statements = Parser(tokens).driftFile().statements;
 
     expect(statements, hasLength(1));
     enforceEqual(
@@ -54,14 +54,14 @@ void main() {
     );
   });
 
-  test('parses imports and declared statements in moor mode', () {
+  test('parses imports and declared statements in drift mode', () {
     const sql = r'''
     import 'test.dart';
     query: SELECT * FROM tbl;
      ''';
 
-    final tokens = Scanner(sql, scanMoorTokens: true).scanTokens();
-    final statements = Parser(tokens, useMoor: true).moorFile().statements;
+    final tokens = Scanner(sql, scanDriftTokens: true).scanTokens();
+    final statements = Parser(tokens, useDrift: true).driftFile().statements;
 
     expect(statements, hasLength(2));
 

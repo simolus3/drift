@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'src/moor/key_value_insert.dart';
 import 'src/sqlite/bind_string.dart';
-import 'src/sqlparser/parse_moor_file.dart';
+import 'src/sqlparser/parse_drift_file.dart';
 import 'src/sqlparser/tokenizer.dart';
 
 export 'package:benchmark_harness/benchmark_harness.dart' show ScoreEmitter;
@@ -20,7 +20,7 @@ List<Reportable> allBenchmarks(ScoreEmitter emitter) {
     KeyValueInsertBatch(emitter),
     KeyValueInsertSerial(emitter),
     // sql parser
-    ParseMoorFile(emitter),
+    ParseDriftFile(emitter),
     TokenizerBenchmark(emitter),
   ];
 }

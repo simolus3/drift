@@ -28,7 +28,7 @@ void main() {
           ),
         ],
       ),
-      moorMode: true,
+      driftMode: true,
     );
   });
 }

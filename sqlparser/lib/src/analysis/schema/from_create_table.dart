@@ -4,9 +4,9 @@ part of '../analysis.dart';
 class SchemaFromCreateTable {
   /// Whether we should provide additional type hints for nonstandard `BOOL`
   /// and `DATETIME` columns.
-  final bool moorExtensions;
+  final bool driftExtensions;
 
-  const SchemaFromCreateTable({this.moorExtensions = false});
+  const SchemaFromCreateTable({this.driftExtensions = false});
 
   /// Reads a [Table] schema from the [stmt] inducing a table (either a
   /// [CreateTableStatement] or a [CreateVirtualTableStatement]).
@@ -126,7 +126,7 @@ class SchemaFromCreateTable {
   }
 
   /// Resolves a column type via its typename, see the linked rules below.
-  /// Additionally, if [moorExtensions] are enabled, we support [IsBoolean] and
+  /// Additionally, if [driftExtensions] are enabled, we support [IsBoolean] and
   /// [IsDateTime] hints if the type name contains `BOOL` or `DATE`,
   /// respectively.
   /// https://www.sqlite.org/datatype3.html#determination_of_column_affinity
@@ -149,7 +149,7 @@ class SchemaFromCreateTable {
       return const ResolvedType(type: BasicType.blob);
     }
 
-    if (moorExtensions) {
+    if (driftExtensions) {
       if (upper.contains('BOOL')) {
         return const ResolvedType.bool();
       }
@@ -166,7 +166,7 @@ class SchemaFromCreateTable {
   }
 
   bool isValidTypeNameForStrictTable(String typeName) {
-    if (moorExtensions) {
+    if (driftExtensions) {
       // Drift_dev will use resolveColumnType to analyze the actual type of the
       // column, and the generated code will always use a valid type name for
       // that type. So, anything goes!

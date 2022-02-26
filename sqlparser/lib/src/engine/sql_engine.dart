@@ -35,7 +35,7 @@ class SqlEngine {
   /// [TableInducingStatement] by using [SchemaFromCreateTable.read].
   SchemaFromCreateTable get schemaReader {
     return _schemaReader ??=
-        SchemaFromCreateTable(moorExtensions: options.useMoorExtensions);
+        SchemaFromCreateTable(driftExtensions: options.useDriftExtensions);
   }
 
   /// Registers the [table], which means that it can later be used in sql
@@ -96,7 +96,8 @@ class SqlEngine {
   /// you need to filter them. When using the methods in this class, this will
   /// be taken care of automatically.
   List<Token> tokenize(String source) {
-    final scanner = Scanner(source, scanMoorTokens: options.useMoorExtensions);
+    final scanner =
+        Scanner(source, scanDriftTokens: options.useDriftExtensions);
     final tokens = scanner.scanTokens();
 
     return tokens;
@@ -106,29 +107,30 @@ class SqlEngine {
   ParseResult parse(String sql) {
     final tokens = tokenize(sql);
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
-    final parser = Parser(tokensForParser, useMoor: options.useMoorExtensions);
+    final parser =
+        Parser(tokensForParser, useDrift: options.useDriftExtensions);
 
     final stmt = parser.safeStatement();
     return ParseResult._(stmt, tokens, parser.errors, sql, null);
   }
 
-  /// Parses a `.moor` file, which can consist of multiple statements and
+  /// Parses a `.drift` file, which can consist of multiple statements and
   /// additional components like import statements.
-  ParseResult parseMoorFile(String content) {
-    assert(options.useMoorExtensions);
+  ParseResult parseDriftFile(String content) {
+    assert(options.useDriftExtensions);
 
     final tokens = tokenize(content);
     final autoComplete = AutoCompleteEngine(tokens, this);
 
     final tokensForParser = tokens.where((t) => !t.invisibleToParser).toList();
     final parser =
-        Parser(tokensForParser, useMoor: true, autoComplete: autoComplete);
+        Parser(tokensForParser, useDrift: true, autoComplete: autoComplete);
 
-    final moorFile = parser.moorFile();
-    _attachRootScope(moorFile);
+    final driftFile = parser.driftFile();
+    _attachRootScope(driftFile);
 
     return ParseResult._(
-        moorFile, tokens, parser.errors, content, autoComplete);
+        driftFile, tokens, parser.errors, content, autoComplete);
   }
 
   /// Parses and analyzes the [sql] statement. The [AnalysisContext] returned

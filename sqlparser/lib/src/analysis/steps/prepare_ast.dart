@@ -252,7 +252,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
 
   /// If a nested query was found. Collect everything separately.
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is NestedQueryColumn) {
       // create a new scope for the nested query to differentiate between
       // references that can be resolved in the nested query and references
@@ -260,7 +260,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
       e.select.scope = e.scope.createChild();
       AstPreparingVisitor(context: context).start(e.select);
     } else {
-      super.visitMoorSpecificNode(e, arg);
+      super.visitDriftSpecificNode(e, arg);
     }
   }
 }

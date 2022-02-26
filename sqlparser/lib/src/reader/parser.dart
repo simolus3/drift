@@ -33,16 +33,16 @@ class Parser {
   final List<ParsingError> errors = [];
   final AutoCompleteEngine? autoComplete;
 
-  // todo remove this and don't be that lazy in moorFile()
+  // todo remove this and don't be that lazy in driftFile()
   var _lastStmtHadParsingError = false;
 
-  /// Whether to enable the extensions moor makes to the sql grammar.
-  final bool enableMoorExtensions;
+  /// Whether to enable the extensions drift makes to the sql grammar.
+  final bool enableDriftExtensions;
 
   int _current = 0;
 
-  Parser(this.tokens, {bool useMoor = false, this.autoComplete})
-      : enableMoorExtensions = useMoor;
+  Parser(this.tokens, {bool useDrift = false, this.autoComplete})
+      : enableDriftExtensions = useDrift;
 
   bool get _reportAutoComplete => autoComplete != null;
 
@@ -206,7 +206,7 @@ class Parser {
       return _commit();
     }
 
-    if (enableMoorExtensions) {
+    if (enableDriftExtensions) {
       if (_check(TokenType.import)) {
         return _import()!;
       }
@@ -232,9 +232,9 @@ class Parser {
     return stmt..setSpan(first, _previous);
   }
 
-  MoorFile moorFile() {
+  DriftFile driftFile() {
     final first = _peek;
-    final foundComponents = <PartOfMoorFile?>[];
+    final foundComponents = <PartOfDriftFile?>[];
 
     // (we try again if the last statement had a parsing error)
 
@@ -265,7 +265,7 @@ class Parser {
 
     foundComponents.removeWhere((c) => c == null);
 
-    final file = MoorFile(foundComponents.cast());
+    final file = DriftFile(foundComponents.cast());
     if (foundComponents.isNotEmpty) {
       file.setSpan(first, _previous);
     } else {
@@ -798,7 +798,7 @@ class Parser {
           ..setSpan(left, _previous);
       }
     } else if (_matchOne(TokenType.dollarSignVariable)) {
-      if (enableMoorExtensions) {
+      if (enableDriftExtensions) {
         final typedToken = _previous as DollarSignVariableToken;
         return DartExpressionPlaceholder(name: typedToken.name)
           ..token = typedToken
@@ -1708,7 +1708,7 @@ class Parser {
       final first = _previous;
       _consume(TokenType.$values, 'Expected DEFAULT VALUES');
       return DefaultValues()..setSpan(first, _previous);
-    } else if (enableMoorExtensions &&
+    } else if (enableDriftExtensions &&
         _matchOne(TokenType.dollarSignVariable)) {
       final token = _previous as DollarSignVariableToken;
       return DartInsertablePlaceholder(name: token.name)
@@ -1921,7 +1921,7 @@ class Parser {
         if (_matchOne(TokenType.star)) {
           return StarResultColumn(identifier.identifier)
             ..setSpan(identifier, _previous);
-        } else if (enableMoorExtensions && _matchOne(TokenType.doubleStar)) {
+        } else if (enableDriftExtensions && _matchOne(TokenType.doubleStar)) {
           final as = _as();
 
           return NestedStarResultColumn(
@@ -1938,7 +1938,7 @@ class Parser {
     }
 
     // parsing for the nested query column
-    if (enableMoorExtensions && _matchOne(TokenType.list)) {
+    if (enableDriftExtensions && _matchOne(TokenType.list)) {
       final list = _previous;
 
       _consume(
@@ -2080,7 +2080,7 @@ class Parser {
       }
     }
 
-    final overriddenName = _moorTableName();
+    final overriddenName = _driftTableName();
 
     return CreateTableStatement(
       ifNotExists: ifNotExists,
@@ -2089,7 +2089,7 @@ class Parser {
       columns: columns,
       tableConstraints: tableConstraints,
       isStrict: isStrict,
-      moorTableName: overriddenName,
+      driftTableName: overriddenName,
     )
       ..setSpan(first, _previous)
       ..openingBracket = leftParen
@@ -2155,30 +2155,30 @@ class Parser {
       }
     }
 
-    final moorDataClassName = _moorTableName();
+    final driftTableName = _driftTableName();
     return CreateVirtualTableStatement(
       ifNotExists: ifNotExists,
       tableName: nameToken.identifier,
       moduleName: moduleName.identifier,
       arguments: args,
-      moorTableName: moorDataClassName,
+      driftTableName: driftTableName,
     )
       ..setSpan(first, _previous)
       ..tableNameToken = nameToken
       ..moduleNameToken = moduleName;
   }
 
-  MoorTableName? _moorTableName([bool supportAs = true]) {
+  DriftTableName? _driftTableName({bool supportAs = true}) {
     final types =
         supportAs ? const [TokenType.as, TokenType.$with] : [TokenType.$with];
 
-    if (enableMoorExtensions && (_match(types))) {
+    if (enableDriftExtensions && (_match(types))) {
       final first = _previous;
       final useExisting = _previous.type == TokenType.$with;
       final name =
           _consumeIdentifier('Expected the name for the data class').identifier;
 
-      return MoorTableName(name, useExisting)..setSpan(first, _previous);
+      return DriftTableName(name, useExisting)..setSpan(first, _previous);
     }
     return null;
   }
@@ -2279,7 +2279,7 @@ class Parser {
 
     // Don't allow the "AS ClassName" syntax for views since it causes an
     // ambiguity with the regular view syntax.
-    final moorTableName = _moorTableName(false);
+    final driftTableName = _driftTableName(supportAs: false);
 
     List<String>? columnNames;
     if (_matchOne(TokenType.leftParen)) {
@@ -2299,7 +2299,7 @@ class Parser {
       viewName: name.identifier,
       columns: columnNames,
       query: query,
-      moorTableName: moorTableName,
+      driftTableName: driftTableName,
     )
       ..viewNameToken = name
       ..setSpan(create, _previous);
@@ -2525,7 +2525,7 @@ class Parser {
         ..setSpan(first, _previous);
     }
 
-    if (enableMoorExtensions && _matchOne(TokenType.mapped)) {
+    if (enableDriftExtensions && _matchOne(TokenType.mapped)) {
       _consume(TokenType.by, 'Expected a MAPPED BY constraint');
 
       final dartExpr = _consume(
@@ -2534,7 +2534,7 @@ class Parser {
       return MappedBy(resolvedName, dartExpr as InlineDartToken)
         ..setSpan(first, _previous);
     }
-    if (enableMoorExtensions && _matchOne(TokenType.json)) {
+    if (enableDriftExtensions && _matchOne(TokenType.json)) {
       final jsonToken = _previous;
       final keyToken =
           _consume(TokenType.key, 'Expected a JSON KEY constraint');
@@ -2545,11 +2545,11 @@ class Parser {
         ..json = jsonToken
         ..key = keyToken;
     }
-    if (enableMoorExtensions && _matchOne(TokenType.as)) {
+    if (enableDriftExtensions && _matchOne(TokenType.as)) {
       final asToken = _previous;
       final nameToken = _consumeIdentifier('Expected Dart getter name');
 
-      return MoorDartName(resolvedName, nameToken)
+      return DriftDartName(resolvedName, nameToken)
         ..setSpan(first, _previous)
         ..as = asToken;
     }

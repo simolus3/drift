@@ -6,7 +6,7 @@ class AnalyzeStatementOptions {
   final Map<int, ResolvedType> indexedVariableTypes;
   final Map<String, ResolvedType> namedVariableTypes;
 
-  /// Moor specific. Maps from a Dart placeholder in a query to its default
+  /// Drift specific. Maps from a Dart placeholder in a query to its default
   /// expression, if set.
   final Map<String, Expression> defaultValuesForPlaceholder;
 

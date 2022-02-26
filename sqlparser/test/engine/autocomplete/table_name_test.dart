@@ -35,8 +35,8 @@ void main() {
   });
 }
 
-ComputedSuggestions _compute(String moorFile) {
-  return completionsFor(moorFile, setup: _setupEngine);
+ComputedSuggestions _compute(String driftFile) {
+  return completionsFor(driftFile, setup: _setupEngine);
 }
 
 void _setupEngine(SqlEngine engine) {

@@ -6,7 +6,7 @@ import 'utils.dart';
 
 void main() {
   test('parses create table statements with a previous malformed inport', () {
-    final file = parseMoor('''
+    final file = parseDrift('''
 import ;
 CREATE TABLE foo (name TEXT);
     ''');
@@ -16,10 +16,10 @@ CREATE TABLE foo (name TEXT);
   });
 
   test('recovers from parsing errors in column definition', () {
-    final file = parseMoor('''
+    final file = parseDrift('''
 CREATE TABLE foo (
   id INTEGER PRIMARY,
-  name TEXT NOT NULL 
+  name TEXT NOT NULL
 );
     ''');
 
@@ -41,9 +41,9 @@ CREATE TABLE foo (
   });
 
   test('parses trailing comma with error', () {
-    final engine = SqlEngine(EngineOptions(useMoorExtensions: true));
+    final engine = SqlEngine(EngineOptions(useDriftExtensions: true));
 
-    final result = engine.parseMoorFile('''
+    final result = engine.parseDriftFile('''
 CREATE TABLE foo (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,

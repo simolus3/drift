@@ -39,7 +39,7 @@ class MoorSession {
   /// Creates a properly configured [SqlEngine].
   SqlEngine spawnEngine() {
     final sqlOptions = EngineOptions(
-      useMoorExtensions: true,
+      useDriftExtensions: true,
       enabledExtensions: [
         if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
         if (options.hasModule(SqlModule.json1)) const Json1Extension(),

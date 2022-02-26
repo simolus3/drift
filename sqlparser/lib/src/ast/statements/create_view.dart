@@ -12,18 +12,18 @@ class CreateViewStatement extends Statement implements CreatingStatement {
 
   final List<String>? columns;
 
-  /// Moor-specific information about the desired name of a Dart class for this
+  /// Drift-specific information about the desired name of a Dart class for this
   /// table.
   ///
-  /// This will always be `null` when moor extensions are not enabled.
-  MoorTableName? moorTableName;
+  /// This will always be `null` when drift extensions are not enabled.
+  DriftTableName? driftTableName;
 
   CreateViewStatement({
     this.ifNotExists = false,
     required this.viewName,
     this.columns,
     required this.query,
-    this.moorTableName,
+    this.driftTableName,
   });
 
   @override
@@ -37,11 +37,11 @@ class CreateViewStatement extends Statement implements CreatingStatement {
   @override
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     query = transformer.transformChild(query, this, arg);
-    moorTableName =
-        transformer.transformNullableChild(moorTableName, this, arg);
+    driftTableName =
+        transformer.transformNullableChild(driftTableName, this, arg);
   }
 
   @override
   Iterable<AstNode> get childNodes =>
-      [query, if (moorTableName != null) moorTableName!];
+      [query, if (driftTableName != null) driftTableName!];
 }

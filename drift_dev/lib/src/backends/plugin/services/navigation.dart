@@ -42,7 +42,7 @@ class _NavigationVisitor extends RecursiveVisitor<void, void> {
   }
 
   @override
-  void visitMoorSpecificNode(MoorSpecificNode e, void arg) {
+  void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is ImportStatement) {
       return visitMoorImportStatement(e, arg);
     }
