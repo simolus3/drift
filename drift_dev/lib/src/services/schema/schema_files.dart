@@ -270,7 +270,7 @@ class SchemaReader {
       dartTypeName: '${pascalCase}Data',
       primaryKey: explicitPk,
       overrideTableConstraints: tableConstraints,
-      overrideDontWriteConstraints: content['was_declared_in_moor'] as bool,
+      overrideDontWriteConstraints: content['was_declared_in_moor'] as bool?,
       overrideWithoutRowId: withoutRowId,
       declaration: const CustomTableDeclaration(),
     );
@@ -281,7 +281,7 @@ class SchemaReader {
     final moorType = ColumnType.values
         .firstWhere((type) => type.toString() == data['moor_type']);
     final nullable = data['nullable'] as bool;
-    final customConstraints = data['customConstraints'] as String;
+    final customConstraints = data['customConstraints'] as String?;
     final dslFeatures = [
       for (final feature in data['dsl_features'] as List<dynamic>)
         _columnFeature(feature)
@@ -294,7 +294,7 @@ class SchemaReader {
       dartGetterName: ReCase(name).camelCase,
       type: moorType,
       nullable: nullable,
-      defaultArgument: data['default_dart'] as String,
+      defaultArgument: data['default_dart'] as String?,
       customConstraints: customConstraints,
       features: dslFeatures.whereType<ColumnFeature>().toList(),
     );
@@ -307,8 +307,8 @@ class SchemaReader {
     if (data is Map<String, dynamic>) {
       final allowedLengths = data['allowed-lengths'] as Map<String, dynamic>;
       return LimitingTextLength(
-        minLength: allowedLengths['min'] as int,
-        maxLength: allowedLengths['max'] as int,
+        minLength: allowedLengths['min'] as int?,
+        maxLength: allowedLengths['max'] as int?,
       );
     }
 
